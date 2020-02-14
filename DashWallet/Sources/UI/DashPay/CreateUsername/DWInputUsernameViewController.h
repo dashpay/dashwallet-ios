@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,16 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWInputUsernameViewControllerDelegate <NSObject>
 
-- (void)inputUsernameViewControllerDidUpdateText:(DWInputUsernameViewController *)controller;
+- (void)inputUsernameViewControllerRegisterAction:(DWInputUsernameViewController *)controller;
 
 @end
 
-@interface DWInputUsernameViewController : UIViewController
+@interface DWInputUsernameViewController : DWBaseViewController
 
 @property (nullable, nonatomic, copy) NSString *text;
 @property (nullable, nonatomic, weak) id<DWInputUsernameViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
 
 @end
 

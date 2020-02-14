@@ -188,8 +188,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showCreateUsername {
     DWCreateUsernameViewController *controller = [[DWCreateUsernameViewController alloc] init];
-    [self presentControllerModallyInNavigationController:controller
-                                  modalPresentationStyle:UIModalPresentationFullScreen];
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {

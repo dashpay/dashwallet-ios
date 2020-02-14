@@ -18,62 +18,116 @@
 #import "DWCreateUsernameViewController.h"
 
 #import "DWConfirmUsernameViewController.h"
+#import "DWContainerViewController.h"
 #import "DWInputUsernameViewController.h"
+#import "DWUIKit.h"
+#import "DWUsernameHeaderView.h"
 #import "DWUsernamePendingViewController.h"
 #import "UIViewController+DWEmbedding.h"
 
+static CGFloat const HEADER_HEIGHT = 231.0;
+
+NS_ASSUME_NONNULL_BEGIN
+
 @interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate, DWConfirmUsernameViewControllerDelegate>
 
-@property (nonatomic, strong) DWInputUsernameViewController *inputUsername;
+@property (null_resettable, nonatomic, strong) DWContainerViewController *containerController;
+
+@property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
+@property (null_resettable, nonatomic, strong) UIView *contentView;
+
+@property (null_resettable, nonatomic, strong) DWInputUsernameViewController *inputUsername;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWCreateUsernameViewController
 
 - (NSString *)actionButtonTitle {
-    // TODO: Localize
-    return @"Register";
+    return NSLocalizedString(@"Register", @"Action button title: Register (username)");
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.hidesBottomBarWhenPushed = YES;
-    self.keyboardNotificationsEnabled = YES;
+    self.view.clipsToBounds = YES;
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    // TODO: Localize
-    self.title = @"Dash Username";
+    [self.view addSubview:self.contentView];
+    [self.view addSubview:self.headerView];
 
-    UIView *contentView = [[UIView alloc] initWithFrame:CGRectZero];
-    [self setupContentView:contentView];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.headerView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [self.headerView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.view.trailingAnchor constraintEqualToAnchor:self.headerView.trailingAnchor],
+        [self.headerView.heightAnchor constraintEqualToConstant:HEADER_HEIGHT],
 
-    [self dw_embedChild:self.inputUsername inContainer:contentView];
+        [self.contentView.topAnchor constraintEqualToAnchor:self.headerView.bottomAnchor],
+        [self.contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.view.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
+        [self.view.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
+    ]];
+
+    [self dw_embedChild:self.containerController inContainer:self.contentView];
+
+    [self.containerController displayViewController:self.inputUsername];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
+    return UIStatusBarStyleDefault;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.headerView showInitialAnimation];
+}
+
+- (DWContainerViewController *)containerController {
+    if (_containerController == nil) {
+        _containerController = [[DWContainerViewController alloc] init];
+    }
+
+    return _containerController;
+}
+
+- (UIView *)contentView {
+    if (_contentView == nil) {
+        _contentView = [[UIView alloc] initWithFrame:CGRectZero];
+        _contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    }
+
+    return _contentView;
+}
+
+- (DWUsernameHeaderView *)headerView {
+    if (_headerView == nil) {
+        _headerView = [[DWUsernameHeaderView alloc] initWithFrame:CGRectZero];
+        _headerView.translatesAutoresizingMaskIntoConstraints = NO;
+        [_headerView.cancelButton addTarget:self
+                                     action:@selector(cancelButtonAction)
+                           forControlEvents:UIControlEventTouchUpInside];
+    }
+
+    return _headerView;
 }
 
 - (DWInputUsernameViewController *)inputUsername {
     if (_inputUsername == nil) {
-        _inputUsername = [DWInputUsernameViewController controller];
+        _inputUsername = [[DWInputUsernameViewController alloc] init];
         _inputUsername.delegate = self;
     }
 
     return _inputUsername;
 }
 
-- (void)actionButtonAction:(id)sender {
-    DWConfirmUsernameViewController *controller = [[DWConfirmUsernameViewController alloc] init];
-    controller.delegate = self;
-    [self presentViewController:controller animated:YES completion:nil];
-}
-
 #pragma mark - DWInputUsernameViewControllerDelegate
 
-- (void)inputUsernameViewControllerDidUpdateText:(DWInputUsernameViewController *)controller {
-    // TODO: validation logic
-    self.actionButton.enabled = controller.text.length > 0;
+- (void)inputUsernameViewControllerRegisterAction:(DWInputUsernameViewController *)inputController {
+    DWConfirmUsernameViewController *confirmController = [[DWConfirmUsernameViewController alloc] init];
+    confirmController.delegate = self;
+    [self presentViewController:confirmController animated:YES completion:nil];
 }
 
 #pragma mark - DWConfirmUsernameViewControllerDelegate
@@ -84,6 +138,12 @@
     DWUsernamePendingViewController *pendingController = [[DWUsernamePendingViewController alloc] init];
     pendingController.username = self.inputUsername.text;
     [self.navigationController setViewControllers:@[ pendingController ] animated:YES];
+}
+
+#pragma mark - Actions
+
+- (void)cancelButtonAction {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

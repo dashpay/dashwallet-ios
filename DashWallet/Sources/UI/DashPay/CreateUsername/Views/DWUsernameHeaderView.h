@@ -19,7 +19,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+@interface DWUsernameHeaderView : UIView
+
+@property (readonly, nonatomic, strong) UIButton *cancelButton;
+
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+- (void)showInitialAnimation;
 
 @end
 
