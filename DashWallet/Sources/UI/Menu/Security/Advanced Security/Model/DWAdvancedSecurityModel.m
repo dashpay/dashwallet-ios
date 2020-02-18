@@ -17,6 +17,7 @@
 
 #import "DWAdvancedSecurityModel.h"
 
+#import <DashSync/DSBiometricsAuthenticator.h>
 #import <DashSync/DashSync.h>
 
 #import "DWGlobalOptions.h"
@@ -30,9 +31,8 @@ uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DUFFS / 2;
 @synthesize lockTimerTimeInterval = _lockTimerTimeInterval;
 
 - (instancetype)init {
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-
-    self = [super initWithHasTouchID:authManager.touchIdEnabled hasFaceID:authManager.faceIdEnabled];
+    self = [super initWithHasTouchID:DSBiometricsAuthenticator.touchIDEnabled
+                           hasFaceID:DSBiometricsAuthenticator.faceIDEnabled];
     if (self) {
         DWGlobalOptions *globalOptions = [DWGlobalOptions sharedInstance];
         _lockTimerTimeInterval = @(globalOptions.autoLockAppInterval);
