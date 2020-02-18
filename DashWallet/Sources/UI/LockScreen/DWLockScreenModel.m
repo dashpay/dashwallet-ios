@@ -18,6 +18,7 @@
 #import "DWLockScreenModel.h"
 
 #import <DashSync/DSAuthenticationManager+Private.h>
+#import <DashSync/DSBiometricsAuthenticator.h>
 #import <DashSync/DashSync.h>
 
 #import "DWGlobalOptions.h"
@@ -45,10 +46,7 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return LABiometryTypeTouchID;
 #else
-    LAContext *context = [[LAContext alloc] init];
-    [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
-
-    return context.biometryType;
+    return DSBiometricsAuthenticator.biometryType;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
