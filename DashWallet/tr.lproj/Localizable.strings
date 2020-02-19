@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Internal Transfer";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Geçersiz";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Taşındı";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Dahili olarak şuraya taşı";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Adrese Taşındı";
@@ -801,7 +801,7 @@
 "Very High" = "Çok Yüksek";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "Gezginde görüntüle";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Kurtarma sözcük grubunu göster, cüzdanı yedekle...";

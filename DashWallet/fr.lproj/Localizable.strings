@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Transfert interne";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Invalide";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Déplacé de";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Déplacé en interne vers";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Déplacé vers l'adresse";
@@ -801,7 +801,7 @@
 "Very High" = "Très élevé";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "Voir dans l'explorateur";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Voir la phrase de récupération, sauvegarder le portefeuille…";

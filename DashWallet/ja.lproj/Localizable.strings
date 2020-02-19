@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "内部の送金";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "無効";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "から移動した";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "へ内部で移動した";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "アドレスへ移動した";
@@ -801,7 +801,7 @@
 "Very High" = " 非常に高い";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "エクスプローラーで表示";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "パスフレーズを表示して、ウォレットをバックアップ ...";

@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Giao dịch nội bộ";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Không hợp lệ";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Được di chuyển từ";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Được di chuyển nội bộ đến";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Được chuyển đến Địa chỉ";
@@ -801,7 +801,7 @@
 "Very High" = "Rất cao";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "Xem trên công cụ khám phá khối";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Xem mật khẩu, sao lưu ví...";
