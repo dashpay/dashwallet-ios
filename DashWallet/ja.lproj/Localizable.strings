@@ -801,7 +801,7 @@
 "Very High" = " 非常に高い";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "エクスプローラーで表示";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "パスフレーズを表示して、ウォレットをバックアップ ...";
