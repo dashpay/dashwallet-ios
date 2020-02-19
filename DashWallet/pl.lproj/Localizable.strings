@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Przelew wewnętrzny";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Niewłaściwy";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Przeniesiony z";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Przeniesiony całkowicie do";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Przeniesione na Adres";

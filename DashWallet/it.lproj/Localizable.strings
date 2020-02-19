@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Trasferimento Interno";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Non valido";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Trasferito da";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Spostato internamente a";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Spostato in Indirizzo";

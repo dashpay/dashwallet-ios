@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "โอนเงินภายใน";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "ไม่ถูกต้อง";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "เคลื่อนย้ายจาก";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "เคลื่อย้ายภายในไปสู่";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "ย้ายไปยังที่อยู่";

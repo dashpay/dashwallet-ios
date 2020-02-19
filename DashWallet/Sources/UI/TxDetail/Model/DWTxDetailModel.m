@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
             title = NSLocalizedString(@"Received at", nil);
             break;
         case DSTransactionDirection_Moved:
-            title = NSLocalizedString(@"Moved internally to", nil);
+            title = NSLocalizedString(@"Internally moved to", nil);
             break;
         case DSTransactionDirection_NotAccountFunds:
             title = @""; //this should not be possible
