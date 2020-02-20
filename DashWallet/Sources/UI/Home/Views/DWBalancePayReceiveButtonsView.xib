@@ -139,16 +139,16 @@
                     <rect key="frame" x="20" y="163" width="374" height="40"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KuJ-kV-DqU" userLabel="Pay Shadow View" customClass="DWShadowView">
-                            <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
+                            <rect key="frame" x="0.0" y="0.0" width="184" height="40"/>
                         </view>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D7n-gC-fC8" userLabel="Receive Shadow View" customClass="DWShadowView">
-                            <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
+                            <rect key="frame" x="190" y="0.0" width="184" height="40"/>
                         </view>
-                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
                             <rect key="frame" x="0.0" y="0.0" width="374" height="40"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWPressableButton">
-                                    <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="184" height="40"/>
                                     <color key="backgroundColor" name="BackgroundColor"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                     <color key="tintColor" name="DashBlueColor"/>
@@ -167,7 +167,7 @@
                                     </connections>
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWPressableButton">
-                                    <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
+                                    <rect key="frame" x="190" y="0.0" width="184" height="40"/>
                                     <color key="backgroundColor" name="BackgroundColor"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                     <color key="tintColor" name="DashBlueColor"/>
