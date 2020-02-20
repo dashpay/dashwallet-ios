@@ -67,7 +67,7 @@ static CGFloat const SECTION_SPACING = 10.0;
     self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
     const NSUInteger selectedIndex = self.model.selectedIndex;
-    if (selectedIndex != NSNotFound) {
+    if (selectedIndex != NSNotFound && selectedIndex < self.model.items.count) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:selectedIndex];
         [self.tableView scrollToRowAtIndexPath:indexPath
                               atScrollPosition:UITableViewScrollPositionMiddle
