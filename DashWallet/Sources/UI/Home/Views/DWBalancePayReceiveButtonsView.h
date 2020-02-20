@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWBalancePayReceiveButtonsViewDelegate <NSObject>
 
 - (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+              balanceLongPressAction:(UIControl *)sender;
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
                      payButtonAction:(UIButton *)sender;
 - (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
                  receiveButtonAction:(UIButton *)sender;
