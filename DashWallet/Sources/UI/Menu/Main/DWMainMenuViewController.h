@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWMainMenuViewControllerDelegate <NSObject>
 
 - (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
+- (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
 
 @end
 

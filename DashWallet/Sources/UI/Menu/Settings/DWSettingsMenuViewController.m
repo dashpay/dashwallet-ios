@@ -188,7 +188,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)rescanBlockchainActionFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
     [DWSettingsMenuModel rescanBlockchainActionFromController:self
                                                    sourceView:sourceView
-                                                   sourceRect:sourceRect];
+                                                   sourceRect:sourceRect
+                                                   completion:^(BOOL confirmed) {
+                                                       if (confirmed) {
+                                                           [self.delegate settingsMenuViewControllerDidRescanBlockchain:self];
+                                                       }
+                                                   }];
 }
 
 - (void)showCurrencySelector {

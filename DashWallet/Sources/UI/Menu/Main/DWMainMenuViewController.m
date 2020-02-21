@@ -30,7 +30,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMainMenuViewController () <DWMainMenuContentViewDelegate, DWToolsMenuViewControllerDelegate>
+@interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
+                                        DWToolsMenuViewControllerDelegate,
+                                        DWSettingsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
@@ -97,6 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWMainMenuItemType_Settings: {
             DWSettingsMenuViewController *controller = [[DWSettingsMenuViewController alloc] init];
+            controller.delegate = self;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;
@@ -116,6 +119,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller {
     [self.navigationController popToRootViewControllerAnimated:NO];
     [self.delegate mainMenuViewControllerImportPrivateKey:self];
+}
+
+#pragma mark - DWSettingsMenuViewControllerDelegate
+
+- (void)settingsMenuViewControllerDidRescanBlockchain:(DWSettingsMenuViewController *)controller {
+    [self.navigationController popToRootViewControllerAnimated:NO];
+    [self.delegate mainMenuViewControllerOpenHomeScreen:self];
 }
 
 @end
