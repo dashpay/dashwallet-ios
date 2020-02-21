@@ -89,6 +89,7 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UIButton *actionButton;
+@property (strong, nonatomic) NSLayoutConstraint *actionButtonWidth;
 
 @end
 
@@ -100,6 +101,10 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
     self.iconImageView.tintColor = [UIColor dw_iconTintColor];
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+
+    self.actionButtonWidth = [self.actionButton.widthAnchor constraintGreaterThanOrEqualToConstant:0];
+    self.actionButtonWidth.priority = UILayoutPriorityRequired - 10;
+    self.actionButtonWidth.active = YES;
 
     // KVO
 
@@ -115,8 +120,17 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
     DWPayOptionModelType type = model.type;
     self.titleLabel.text = TitleForOptionType(type);
     self.iconImageView.image = IconForOptionType(type);
+
     [self.actionButton setTitle:ActionTitleForOptionType(type) forState:UIControlStateNormal];
+    [self.actionButton sizeToFit];
+    [self.delegate payTableViewCell:self didUpdateButtonWidth:self.actionButton.bounds.size.width];
+
     [self updateDetails];
+}
+
+- (void)setPreferredActionButtonWidth:(CGFloat)preferredActionButtonWidth {
+    _preferredActionButtonWidth = preferredActionButtonWidth;
+    self.actionButtonWidth.constant = preferredActionButtonWidth;
 }
 
 #pragma mark - Actions
