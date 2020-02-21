@@ -52,7 +52,7 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 
 - (void)authenticateUsingBiometricsOnlyCompletion:(void (^)(BOOL authenticated))completion {
     [[DSAuthenticationManager sharedInstance] authenticateUsingBiometricsOnlyWithPrompt:nil
-                                                                             completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                                                                             completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                                                                                  if (completion) {
                                                                                      completion(authenticatedOrSuccess);
                                                                                  }

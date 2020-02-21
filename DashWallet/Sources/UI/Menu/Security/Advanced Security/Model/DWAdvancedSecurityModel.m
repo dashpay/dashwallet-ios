@@ -93,14 +93,13 @@ uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DUFFS / 2;
 }
 
 - (NSNumber *)spendingConfirmationLimit {
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-    const uint64_t value = chainsManager.spendingLimit;
+    const uint64_t value = [DSAuthenticationManager sharedInstance].biometricSpendingLimit;
     return @(value);
 }
 
 - (void)setSpendingConfirmationLimit:(NSNumber *)spendingConfirmationLimit {
     const long long limit = spendingConfirmationLimit.longLongValue;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
+    [[DSAuthenticationManager sharedInstance] setBiometricSpendingLimitIfAuthenticated:limit];
 }
 
 #pragma mark - Actions

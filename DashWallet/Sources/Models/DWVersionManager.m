@@ -81,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"Please enter PIN to upgrade wallet", nil))
                                         usingBiometricAuthentication:NO
                                                       alertIfLockout:NO
-                                                          completion:^(BOOL authenticated, BOOL cancelled) {
+                                                          completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                                               if (!authenticated) {
                                                                   completion(YES, NO, cancelled, nil);
                                                                   return;

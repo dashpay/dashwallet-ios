@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
                       authenticateWithPrompt:nil
                 usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
                               alertIfLockout:YES
-                                  completion:^(BOOL authenticated, BOOL cancelled) {
+                                  completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
                                           UIViewController *controller = [DWUpholdViewController controller];
                                           DWNavigationController *navigationController =
