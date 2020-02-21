@@ -79,7 +79,8 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
                                            [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
 
                                            const uint64_t spendingLimit = success ? DEFAULT_BIOMETRIC_SPENDING_LIMIT : 0;
-                                           [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:spendingLimit];
+                                           [[DSAuthenticationManager sharedInstance]
+                                               setBiometricSpendingLimitIfAuthenticated:spendingLimit];
 
                                            completion(success);
                                        }];

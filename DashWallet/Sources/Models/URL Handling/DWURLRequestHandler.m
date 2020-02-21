@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
               authenticateWithPrompt:prompt
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                          completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                               if (authenticatedOrSuccess) {
                                   DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
@@ -90,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
               authenticateWithPrompt:prompt
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                          completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                               if (authenticatedOrSuccess) {
                                   DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
