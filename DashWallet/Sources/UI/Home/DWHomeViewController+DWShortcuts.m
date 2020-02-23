@@ -61,7 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
         case DWShortcutActionType_SyncNow: {
             [DWSettingsMenuModel rescanBlockchainActionFromController:self
                                                            sourceView:sender
-                                                           sourceRect:sender.bounds];
+                                                           sourceRect:sender.bounds
+                                                           completion:nil];
             break;
         }
         case DWShortcutActionType_PayWithNFC: {

@@ -19,7 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWSettingsMenuViewController;
+
+@protocol DWSettingsMenuViewControllerDelegate <NSObject>
+
+- (void)settingsMenuViewControllerDidRescanBlockchain:(DWSettingsMenuViewController *)controller;
+
+@end
+
 @interface DWSettingsMenuViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWSettingsMenuViewControllerDelegate> delegate;
 
 @end
 

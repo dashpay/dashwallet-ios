@@ -33,7 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)rescanBlockchainActionFromController:(UIViewController *)controller
                                   sourceView:(UIView *)sourceView
-                                  sourceRect:(CGRect)sourceRect;
+                                  sourceRect:(CGRect)sourceRect
+                                  completion:(void (^_Nullable)(BOOL confirmed))completion;
 
 @end
 
