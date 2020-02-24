@@ -173,7 +173,12 @@ static NSString *sanitizeString(NSString *s) {
         }
         signedCompletion:self.signedCompletionBlock
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
-            if (!error) {
+            if (error) {
+                [self failedWithError:error
+                                title:NSLocalizedString(@"Couldn't make payment", nil)
+                              message:nil];
+            }
+            else {
                 [self txManagerPublishedCompletion:address
                                               sent:sent
                                                 tx:tx];
