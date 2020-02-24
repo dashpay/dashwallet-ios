@@ -98,7 +98,6 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 - (void)awakeFromNib {
     [super awakeFromNib];
 
-    self.iconImageView.tintColor = [UIColor dw_iconTintColor];
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
 
