@@ -57,7 +57,7 @@ static UIColor *DescriptionColor(DWPayOptionModelType type, BOOL empty) {
 static NSString *ActionTitleForOptionType(DWPayOptionModelType type) {
     switch (type) {
         case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Scan", nil);
+            return NSLocalizedString(@"Scan", @"should be as short as possible");
         case DWPayOptionModelType_Pasteboard:
             return NSLocalizedString(@"Send", nil);
         case DWPayOptionModelType_NFC:
@@ -82,6 +82,8 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 
     return image;
 }
+
+static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
 
 @interface DWPayTableViewCell ()
 
@@ -122,7 +124,8 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 
     [self.actionButton setTitle:ActionTitleForOptionType(type) forState:UIControlStateNormal];
     [self.actionButton sizeToFit];
-    [self.delegate payTableViewCell:self didUpdateButtonWidth:self.actionButton.bounds.size.width];
+    [self.delegate payTableViewCell:self
+               didUpdateButtonWidth:MIN(MAX_ALLOWED_BUTTON_WIDTH, self.actionButton.bounds.size.width)];
 
     [self updateDetails];
 }
