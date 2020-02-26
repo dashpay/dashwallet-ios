@@ -339,7 +339,7 @@
 "Local Currency" = "通貨表示";
 
 /* No comment provided by engineer. */
-"Local requested amount: %@" = "現地通貨の要求額: %@";
+"Local requested amount: %@" = "現地通貨の請求金額: %@";
 
 /* No comment provided by engineer. */
 "Locked" = "ロック済み";

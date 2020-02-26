@@ -561,7 +561,7 @@
 "Rewards" = "Вознаграждения";
 
 /* No comment provided by engineer. */
-"Scan" = "Сканировать";
+"Scan" = "Скан.";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Сканировать приватный ключ";
@@ -801,7 +801,7 @@
 "Very High" = "Очень высокий";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Посмотреть в Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Показать кодовую фразу, сделать резервную копию кошелька...";
