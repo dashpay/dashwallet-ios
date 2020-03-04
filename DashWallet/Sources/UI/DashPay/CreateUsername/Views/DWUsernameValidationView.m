@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_END
 
         UIImageView *iconImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
         iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
-        iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+        iconImageView.contentMode = UIViewContentModeCenter;
         [self addSubview:iconImageView];
         _iconImageView = iconImageView;
 
@@ -57,10 +57,9 @@ NS_ASSUME_NONNULL_END
 
         [NSLayoutConstraint activateConstraints:@[
             [iconImageView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [iconImageView.centerYAnchor constraintEqualToAnchor:titleLabel.firstBaselineAnchor],
+            [iconImageView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
             [iconImageView.widthAnchor constraintEqualToConstant:ICON_SIZE],
             [iconImageView.heightAnchor constraintEqualToConstant:ICON_SIZE],
-            [self.bottomAnchor constraintGreaterThanOrEqualToAnchor:iconImageView.bottomAnchor],
 
             [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
             [titleLabel.leadingAnchor constraintEqualToAnchor:iconImageView.trailingAnchor

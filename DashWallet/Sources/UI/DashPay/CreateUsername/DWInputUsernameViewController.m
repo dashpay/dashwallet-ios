@@ -27,7 +27,15 @@
 static CGFloat const SPACING = 16.0;
 static CGFloat const CORNER_RADIUS = 10.0;
 static CGFloat const TEXTFIELD_MAX_HEIGHT = 56.0;
-static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
+
+static CGFloat BottomButtonHeight(void) {
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return 44.0;
+    }
+    else {
+        return 54.0;
+    }
+}
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -79,6 +87,8 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:stackView];
     [self.view addSubview:self.registerButton];
 
+    [self updateValidationContentViewForSize:self.view.bounds.size];
+
     UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
     UILayoutGuide *safeAreaGuide = self.view.safeAreaLayoutGuide;
 
@@ -103,9 +113,21 @@ NS_ASSUME_NONNULL_END
                                                       constant:SPACING],
         [self.registerButton.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [self.registerButton.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
-        [self.registerButton.heightAnchor constraintEqualToConstant:BOTTOM_BUTTON_HEIGHT],
+        [self.registerButton.heightAnchor constraintEqualToConstant:BottomButtonHeight()],
         self.contentBottomConstraint,
     ]];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    [coordinator
+        animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+            [self updateValidationContentViewForSize:size];
+        }
+                        completion:^(id<UIViewControllerTransitionCoordinatorContext> _Nonnull context){
+
+                        }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -166,6 +188,16 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - Private
+
+- (void)updateValidationContentViewForSize:(CGSize)size {
+    BOOL isLandscape = size.width > size.height;
+    if (isLandscape) {
+        self.validationContentView.axis = UILayoutConstraintAxisHorizontal;
+    }
+    else {
+        self.validationContentView.axis = UILayoutConstraintAxisVertical;
+    }
+}
 
 - (NSArray<DWUsernameValidationRule *> *)validators {
     if (_validators == nil) {
@@ -232,6 +264,7 @@ NS_ASSUME_NONNULL_END
         _validationContentView.translatesAutoresizingMaskIntoConstraints = NO;
         _validationContentView.axis = UILayoutConstraintAxisVertical;
         _validationContentView.spacing = 6.0;
+        _validationContentView.distribution = UIStackViewDistributionFillEqually;
     }
 
     return _validationContentView;

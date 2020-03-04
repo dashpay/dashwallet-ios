@@ -18,7 +18,6 @@
 #import "DWCreateUsernameViewController.h"
 
 #import "DWConfirmUsernameViewController.h"
-#import "DWContainerViewController.h"
 #import "DWInputUsernameViewController.h"
 #import "DWUIKit.h"
 #import "DWUsernameHeaderView.h"
@@ -27,23 +26,26 @@
 
 static CGFloat const HeaderHeight(void) {
     if (IS_IPHONE_6 || IS_IPHONE_5_OR_LESS) {
-        return 125.0;
+        return 135.0;
     }
     else {
         return 231.0;
     }
 }
 
+static CGFloat const LandscapeHeaderHeight(void) {
+    return 158.0;
+}
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate, DWConfirmUsernameViewControllerDelegate>
-
-@property (null_resettable, nonatomic, strong) DWContainerViewController *containerController;
 
 @property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
 @property (null_resettable, nonatomic, strong) UIView *contentView;
 
 @property (null_resettable, nonatomic, strong) DWInputUsernameViewController *inputUsername;
+@property (nonatomic, strong) NSLayoutConstraint *headerHeightConstraint;
 
 @end
 
@@ -64,21 +66,51 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:self.contentView];
     [self.view addSubview:self.headerView];
 
+    const BOOL isLandscape = CGRectGetWidth(self.view.bounds) > CGRectGetHeight(self.view.bounds);
+    const CGFloat headerHeight = isLandscape ? LandscapeHeaderHeight() : HeaderHeight();
+    self.headerView.landscapeMode = isLandscape;
+
     [NSLayoutConstraint activateConstraints:@[
         [self.headerView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [self.headerView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [self.view.trailingAnchor constraintEqualToAnchor:self.headerView.trailingAnchor],
-        [self.headerView.heightAnchor constraintEqualToConstant:HeaderHeight()],
+        (self.headerHeightConstraint = [self.headerView.heightAnchor constraintEqualToConstant:headerHeight]),
 
         [self.contentView.topAnchor constraintEqualToAnchor:self.headerView.bottomAnchor],
         [self.contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [self.view.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
         [self.view.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
+        [self.contentView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
     ]];
 
-    [self dw_embedChild:self.containerController inContainer:self.contentView];
+    [self dw_embedChild:self.inputUsername inContainer:self.contentView];
 
-    [self.containerController displayViewController:self.inputUsername];
+    NSLayoutConstraint *heightConstraint = [self.inputUsername.view.heightAnchor constraintEqualToAnchor:self.contentView.heightAnchor];
+    heightConstraint.priority = UILayoutPriorityRequired - 1;
+
+    [NSLayoutConstraint activateConstraints:@[
+        heightConstraint,
+        [self.inputUsername.view.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor]
+    ]];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    [coordinator
+        animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+            BOOL isLandscape = size.width > size.height;
+            self.headerView.landscapeMode = isLandscape;
+            if (isLandscape) {
+                self.headerHeightConstraint.constant = LandscapeHeaderHeight();
+            }
+            else {
+                self.headerHeightConstraint.constant = HeaderHeight();
+            }
+        }
+                        completion:^(id<UIViewControllerTransitionCoordinatorContext> _Nonnull context){
+
+                        }];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -91,17 +123,9 @@ NS_ASSUME_NONNULL_END
     [self.headerView showInitialAnimation];
 }
 
-- (DWContainerViewController *)containerController {
-    if (_containerController == nil) {
-        _containerController = [[DWContainerViewController alloc] init];
-    }
-
-    return _containerController;
-}
-
 - (UIView *)contentView {
     if (_contentView == nil) {
-        _contentView = [[UIView alloc] initWithFrame:CGRectZero];
+        _contentView = [[UIScrollView alloc] initWithFrame:CGRectZero];
         _contentView.translatesAutoresizingMaskIntoConstraints = NO;
     }
 

@@ -25,6 +25,7 @@ typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
 
 @property (readonly, nonatomic, strong) UIButton *cancelButton;
 @property (nullable, nonatomic, copy) DWTitleStringBuilder titleBuilder;
+@property (nonatomic, assign) BOOL landscapeMode;
 
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

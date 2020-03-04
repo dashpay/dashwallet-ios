@@ -21,12 +21,21 @@
 
 #import "DWBlueActionButton.h"
 #import "DWUIKit.h"
+#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 static CGFloat const SPACING = 16.0;
-static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
+
+static CGFloat BottomButtonHeight(void) {
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return 44.0;
+    }
+    else {
+        return 54.0;
+    }
+}
 
 #pragma mark - Helper
 
@@ -227,7 +236,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     ]];
 
     if (bottomActionButton) {
-        [bottomActionButton.heightAnchor constraintEqualToConstant:BOTTOM_BUTTON_HEIGHT].active = YES;
+        [bottomActionButton.heightAnchor constraintEqualToConstant:BottomButtonHeight()].active = YES;
     }
 }
 
