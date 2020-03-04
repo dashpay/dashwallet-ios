@@ -20,7 +20,7 @@
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
-NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
+static NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
 
 @implementation DWEnvironment
 

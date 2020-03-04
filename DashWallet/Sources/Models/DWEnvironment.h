@@ -22,7 +22,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
-extern NSString *const DWDevnetEvonetIdentifier;
 
 @interface DWEnvironment : NSObject
 
