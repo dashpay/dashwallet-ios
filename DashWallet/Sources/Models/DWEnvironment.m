@@ -18,9 +18,9 @@
 #import "DWEnvironment.h"
 
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
-#define EVONET_IDENTIFIER @"devnet-evonet"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
+static NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
 
 @implementation DWEnvironment
 
@@ -47,7 +47,7 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
-    DSChain *evonet = [DSChain devnetWithIdentifier:EVONET_IDENTIFIER];
+    DSChain *evonet = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
     if (evonet) {
         [evonet setDevnetNetworkName:@"Evonet"];
         [[DSChainsManager sharedInstance] chainManagerForChain:evonet];
@@ -68,7 +68,7 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
             self.currentChain = [DSChain testnet];
             break;
         case DSChainType_DevNet: //we will only have evonet
-            self.currentChain = [DSChain devnetWithIdentifier:EVONET_IDENTIFIER];
+            self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
             break;
         default:
             break;
@@ -119,8 +119,8 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
 }
 
 - (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain devnetWithIdentifier:EVONET_IDENTIFIER]) {
-        [self switchToNetwork:DSChainType_DevNet withIdentifier:EVONET_IDENTIFIER withCompletion:completion];
+    if (self.currentChain != [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier]) {
+        [self switchToNetwork:DSChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
     }
 }
 
@@ -167,7 +167,7 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
             break;
         case DSChainType_DevNet:
             destinationChain = [DSChain devnetWithIdentifier:identifier];
-            if (!destinationChain && [identifier isEqualToString:EVONET_IDENTIFIER]) {
+            if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
                 destinationChain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:[self evonetServiceLocation] standardPort:20001 dapiJRPCPort:3000 dapiGRPCPort:3010 protocolVersion:70215 minProtocolVersion:70215 sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm" sporkPrivateKey:nil];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }

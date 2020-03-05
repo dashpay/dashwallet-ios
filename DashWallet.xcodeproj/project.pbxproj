@@ -55,6 +55,8 @@
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
 		2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */; };
+		2A1AE78E23F4668B00179A6E /* DWUsernameHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */; };
+		2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */; };
 		2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
 		2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */; };
 		2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */; };
@@ -245,6 +247,9 @@
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
 		2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
+		2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC623F6928C00CDA1EE /* DWTextField.m */; };
+		2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC923F6BD5200CDA1EE /* DWUsernameValidationView.m */; };
+		2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */; };
 		2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */; };
 		2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */; };
 		2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDFD2230FF2B00956D5F /* DWUpholdTransactionObject.m */; };
@@ -347,7 +352,6 @@
 		2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
 		2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */; };
 		2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */; };
-		2AE8B64623CDC3190016F221 /* InputUsername.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AE8B64523CDC3190016F221 /* InputUsername.storyboard */; };
 		2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */; };
 		2AE8B66723CF0A190016F221 /* ConfirmUsernameView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AE8B66623CF0A190016F221 /* ConfirmUsernameView.xib */; };
 		2AE8B66B23CF0F390016F221 /* DWUsernamePendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66A23CF0F390016F221 /* DWUsernamePendingViewController.m */; };
@@ -592,6 +596,10 @@
 		2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoMainTabbarViewController.m; sourceTree = "<group>"; };
 		2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWExtendedContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
+		2A1AE78C23F4668B00179A6E /* DWUsernameHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameHeaderView.h; sourceTree = "<group>"; };
+		2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameHeaderView.m; sourceTree = "<group>"; };
+		2A1AE79023F468CD00179A6E /* DWPlanetarySystemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPlanetarySystemView.h; sourceTree = "<group>"; };
+		2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPlanetarySystemView.m; sourceTree = "<group>"; };
 		2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~ipad.xib"; sourceTree = "<group>"; };
 		2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~iphone.xib"; sourceTree = "<group>"; };
 		2A1B7D7F232151D400BA8C6A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
@@ -964,6 +972,12 @@
 		2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTabBarView.m; sourceTree = "<group>"; };
 		2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewController.h; sourceTree = "<group>"; };
 		2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeViewController.m; sourceTree = "<group>"; };
+		2A9E7DC523F6928C00CDA1EE /* DWTextField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTextField.h; sourceTree = "<group>"; };
+		2A9E7DC623F6928C00CDA1EE /* DWTextField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTextField.m; sourceTree = "<group>"; };
+		2A9E7DC823F6BD5200CDA1EE /* DWUsernameValidationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameValidationView.h; sourceTree = "<group>"; };
+		2A9E7DC923F6BD5200CDA1EE /* DWUsernameValidationView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameValidationView.m; sourceTree = "<group>"; };
+		2A9E7DCC23F6C01A00CDA1EE /* DWUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameValidationRule.h; sourceTree = "<group>"; };
+		2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameValidationRule.m; sourceTree = "<group>"; };
 		2A9FFDEE2230FF1A00956D5F /* UIView+DWAnimations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+DWAnimations.h"; sourceTree = "<group>"; };
 		2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWAnimations.m"; sourceTree = "<group>"; };
 		2A9FFDF02230FF1A00956D5F /* SFSafariViewController+DashWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFSafariViewController+DashWallet.h"; sourceTree = "<group>"; };
@@ -1164,7 +1178,6 @@
 		2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateUsernameViewController.m; sourceTree = "<group>"; };
 		2AE8B64223CDC0F40016F221 /* DWInputUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInputUsernameViewController.h; sourceTree = "<group>"; };
 		2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInputUsernameViewController.m; sourceTree = "<group>"; };
-		2AE8B64523CDC3190016F221 /* InputUsername.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = InputUsername.storyboard; sourceTree = "<group>"; };
 		2AE8B66223CF09000016F221 /* DWConfirmUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameViewController.h; sourceTree = "<group>"; };
 		2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameViewController.m; sourceTree = "<group>"; };
 		2AE8B66623CF0A190016F221 /* ConfirmUsernameView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ConfirmUsernameView.xib; sourceTree = "<group>"; };
@@ -1579,6 +1592,21 @@
 				2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */,
 			);
 			path = Entities;
+			sourceTree = "<group>";
+		};
+		2A1AE78B23F463FB00179A6E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A1AE79023F468CD00179A6E /* DWPlanetarySystemView.h */,
+				2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */,
+				2A1AE78C23F4668B00179A6E /* DWUsernameHeaderView.h */,
+				2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */,
+				2A9E7DC523F6928C00CDA1EE /* DWTextField.h */,
+				2A9E7DC623F6928C00CDA1EE /* DWTextField.m */,
+				2A9E7DC823F6BD5200CDA1EE /* DWUsernameValidationView.h */,
+				2A9E7DC923F6BD5200CDA1EE /* DWUsernameValidationView.m */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		2A1B7D7E232151B800BA8C6A /* TxDetail */ = {
@@ -2557,6 +2585,15 @@
 			path = Home;
 			sourceTree = "<group>";
 		};
+		2A9E7DCB23F6C00C00CDA1EE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2A9E7DCC23F6C01A00CDA1EE /* DWUsernameValidationRule.h */,
+				2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		2A9FFDF62230FF2B00956D5F /* Uphold */ = {
 			isa = PBXGroup;
 			children = (
@@ -3084,7 +3121,8 @@
 		2AE8B63E23CDB9570016F221 /* CreateUsername */ = {
 			isa = PBXGroup;
 			children = (
-				2AE8B64523CDC3190016F221 /* InputUsername.storyboard */,
+				2A9E7DCB23F6C00C00CDA1EE /* Models */,
+				2A1AE78B23F463FB00179A6E /* Views */,
 				2AE8B63F23CDB98A0016F221 /* DWCreateUsernameViewController.h */,
 				2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */,
 				2AE8B64223CDC0F40016F221 /* DWInputUsernameViewController.h */,
@@ -3669,7 +3707,6 @@
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
 				2ACCD865231959CD00A96B62 /* DWAmountPreviewView.xib in Resources */,
-				2AE8B64623CDC3190016F221 /* InputUsername.storyboard in Resources */,
 				2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4064,6 +4101,7 @@
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
 				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
+				2A1AE78E23F4668B00179A6E /* DWUsernameHeaderView.m in Sources */,
 				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
@@ -4076,7 +4114,9 @@
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
+				2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
+				2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */,
 				2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */,
 				2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
@@ -4112,6 +4152,7 @@
 				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */,
+				2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */,
 				2A0C699923103952001B8C90 /* DWMaxButton.m in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
@@ -4230,6 +4271,7 @@
 				2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
+				2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
@@ -4568,6 +4610,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -5124,6 +5167,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;

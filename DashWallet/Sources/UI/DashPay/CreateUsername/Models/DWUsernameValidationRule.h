@@ -15,11 +15,27 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+typedef NS_ENUM(NSUInteger, DWUsernameValidationRuleResult) {
+    DWUsernameValidationRuleResultEmpty,
+    DWUsernameValidationRuleResultValid,
+    DWUsernameValidationRuleResultInvalid,
+    DWUsernameValidationRuleResultHidden,
+};
+
+@interface DWUsernameValidationRule : NSObject
+
+@property (readonly, nonatomic, copy) NSString *title;
+
+- (instancetype)initWithTitle:(NSString *)title
+              validationBlock:(DWUsernameValidationRuleResult (^)(NSString *_Nullable))validationBlock;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+- (DWUsernameValidationRuleResult)validateText:(NSString *_Nullable)text;
 
 @end
 

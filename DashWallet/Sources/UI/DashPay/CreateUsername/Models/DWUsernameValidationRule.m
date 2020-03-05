@@ -15,12 +15,32 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWUsernameValidationRule.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+@interface DWUsernameValidationRule ()
+
+@property (nonatomic, copy) DWUsernameValidationRuleResult (^validationBlock)(NSString *_Nullable text);
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+@implementation DWUsernameValidationRule
+
+- (instancetype)initWithTitle:(NSString *)title
+              validationBlock:(DWUsernameValidationRuleResult (^)(NSString *_Nullable))validationBlock {
+    self = [super init];
+    if (self) {
+        _title = [title copy];
+        _validationBlock = [validationBlock copy];
+    }
+    return self;
+}
+
+- (DWUsernameValidationRuleResult)validateText:(NSString *_Nullable)text {
+    return self.validationBlock(text);
+}
+
+@end

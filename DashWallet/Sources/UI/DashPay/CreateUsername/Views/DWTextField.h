@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+@interface DWTextField : UITextField
 
 @end
 

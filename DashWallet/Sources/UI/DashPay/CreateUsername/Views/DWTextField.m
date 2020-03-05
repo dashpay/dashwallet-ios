@@ -15,12 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWTextField.h"
 
-NS_ASSUME_NONNULL_BEGIN
+static CGFloat const HORIZONTAL_PADDING = 30.0;
+static CGFloat const VERTICAL_PADDING = 16.0;
 
-@interface DWCreateUsernameViewController : UIViewController
+@implementation DWTextField
+
+- (CGRect)textRectForBounds:(CGRect)bounds {
+    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+}
+
+- (CGRect)editingRectForBounds:(CGRect)bounds {
+    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+}
+
+- (CGRect)placeholderRectForBounds:(CGRect)bounds {
+    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

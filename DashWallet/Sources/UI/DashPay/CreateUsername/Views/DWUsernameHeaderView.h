@@ -19,7 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
+
+@interface DWUsernameHeaderView : UIView
+
+@property (readonly, nonatomic, strong) UIButton *cancelButton;
+@property (nullable, nonatomic, copy) DWTitleStringBuilder titleBuilder;
+@property (nonatomic, assign) BOOL landscapeMode;
+
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+- (void)showInitialAnimation;
 
 @end
 
