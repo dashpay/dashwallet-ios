@@ -168,7 +168,19 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
         case DSChainType_DevNet:
             destinationChain = [DSChain devnetWithIdentifier:identifier];
             if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
-                destinationChain = [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:[self evonetServiceLocation] standardPort:20001 dapiJRPCPort:3000 dapiGRPCPort:3010 protocolVersion:70215 minProtocolVersion:70215 sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm" sporkPrivateKey:nil];
+                // TODO: provide valid `dpnsContractID` and `dashpayContractID`
+                destinationChain = [[DSChainsManager sharedInstance]
+                    registerDevnetChainWithIdentifier:identifier
+                                  forServiceLocations:[self evonetServiceLocation]
+                                         standardPort:20001
+                                         dapiJRPCPort:3000
+                                         dapiGRPCPort:3010
+                                       dpnsContractID:UINT256_ZERO
+                                    dashpayContractID:UINT256_ZERO
+                                      protocolVersion:70215
+                                   minProtocolVersion:70215
+                                         sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
+                                      sporkPrivateKey:nil];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }
             break;
