@@ -289,13 +289,14 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
         return NO;
     }
 
-    // TODO: add check if appropriate spork is on and username has been registered
-    BOOL hasUsername = NO;
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    BOOL usernameNotRegistered = wallet.blockchainIdentitiesCount == 0;
+    // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
-    const uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
+    const uint64_t balanceValue = wallet.balance;
     BOOL isEnoughBalance = balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME;
     BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
-    return canRegisterUsername && !hasUsername && isSynced && isEnoughBalance;
+    return canRegisterUsername && usernameNotRegistered && isSynced && isEnoughBalance;
 }
 
 #pragma mark - Notifications
