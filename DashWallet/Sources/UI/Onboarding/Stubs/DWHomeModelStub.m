@@ -19,6 +19,7 @@
 
 #import "DWBalanceDisplayOptionsStub.h"
 #import "DWBalanceModel.h"
+#import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
@@ -49,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
+@synthesize dashPayModel = _dashPayModel;
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
@@ -62,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
         _stubTxs = [DWTransactionStub stubs];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
+        _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: consider using stub
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];

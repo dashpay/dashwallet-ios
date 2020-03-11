@@ -152,6 +152,7 @@
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameView.m */; };
 		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
+		2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
 		2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
@@ -779,6 +780,9 @@
 		2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameView.m; sourceTree = "<group>"; };
 		2A56EEFE2419310C002C32F3 /* DWDashPayConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayConstants.h; sourceTree = "<group>"; };
 		2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPayConstants.m; sourceTree = "<group>"; };
+		2A56EF0424193AEB002C32F3 /* DWDashPayModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayModel.h; sourceTree = "<group>"; };
+		2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPayModel.m; sourceTree = "<group>"; };
+		2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayProtocol.h; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseLegacyViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseLegacyViewController.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
@@ -1705,6 +1709,8 @@
 				2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */,
 				2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */,
 				2A913EA023A79909006A2A59 /* DWTransactionObject.h */,
+				2A56EF0424193AEB002C32F3 /* DWDashPayModel.h */,
+				2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -2439,6 +2445,7 @@
 				2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */,
 				2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */,
 				2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */,
+				2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -4316,6 +4323,7 @@
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
+				2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,

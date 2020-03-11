@@ -15,20 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWDashPayProtocol.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+@protocol DWDashPayProtocol <NSObject>
 
-- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel;
-
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)createUsername:(NSString *)username;
 
 @end
 

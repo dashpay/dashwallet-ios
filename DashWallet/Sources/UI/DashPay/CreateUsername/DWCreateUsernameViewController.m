@@ -41,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate, DWConfirmUsernameViewControllerDelegate>
 
+@property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
+
 @property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
 @property (null_resettable, nonatomic, strong) UIView *contentView;
 
@@ -52,6 +54,14 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWCreateUsernameViewController
+
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _dashPayModel = dashPayModel;
+    }
+    return self;
+}
 
 - (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Register", @"Action button title: Register (username)");
@@ -200,8 +210,11 @@ NS_ASSUME_NONNULL_END
 - (void)confirmUsernameViewControllerDidConfirm:(DWConfirmUsernameViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
 
+    NSString *username = self.inputUsername.text;
+    [self.dashPayModel createUsername:username];
+
     DWUsernamePendingViewController *pendingController = [[DWUsernamePendingViewController alloc] init];
-    pendingController.username = self.inputUsername.text;
+    pendingController.username = username;
     [self.navigationController setViewControllers:@[ pendingController ] animated:YES];
 }
 

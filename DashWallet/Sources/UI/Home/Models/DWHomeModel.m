@@ -26,10 +26,10 @@
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWDashPayConstants.h"
+#import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
-#import "DWPayModelProtocol.h"
 #import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
@@ -81,6 +81,7 @@ static BOOL IsJailbroken(void) {
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
+@synthesize dashPayModel = _dashPayModel;
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
@@ -107,6 +108,8 @@ static BOOL IsJailbroken(void) {
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
+
+        _dashPayModel = [[DWDashPayModel alloc] init];
 
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 

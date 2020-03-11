@@ -187,7 +187,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCreateUsername {
-    DWCreateUsernameViewController *controller = [[DWCreateUsernameViewController alloc] init];
+    DWCreateUsernameViewController *controller = [[DWCreateUsernameViewController alloc]
+        initWithDashPayModel:self.model.dashPayModel];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
 }
