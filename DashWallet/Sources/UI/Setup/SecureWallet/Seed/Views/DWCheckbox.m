@@ -54,7 +54,7 @@ static CGFloat const ICON_TEXT_PADDING = 7.0;
 }
 
 - (void)commonInit {
-    self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    self.backgroundColor = [UIColor clearColor];
 
     UIView *contentView = [[UIView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;

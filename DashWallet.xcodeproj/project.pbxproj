@@ -150,6 +150,8 @@
 		2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameView.m */; };
+		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
 		2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
@@ -353,7 +355,6 @@
 		2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */; };
 		2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */; };
 		2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */; };
-		2AE8B66723CF0A190016F221 /* ConfirmUsernameView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AE8B66623CF0A190016F221 /* ConfirmUsernameView.xib */; };
 		2AE8B66B23CF0F390016F221 /* DWUsernamePendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66A23CF0F390016F221 /* DWUsernamePendingViewController.m */; };
 		2AE8B66E23CF0F500016F221 /* DWUsernamePendingContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66D23CF0F500016F221 /* DWUsernamePendingContentViewController.m */; };
 		2AE9549D23D0C4F4003612B3 /* DWContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE9549C23D0C4F4003612B3 /* DWContactsViewController.m */; };
@@ -774,6 +775,10 @@
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
 		2A5279BB23D994BC00F856D3 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
+		2A56EEF92417E30F002C32F3 /* DWConfirmUsernameView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameView.h; sourceTree = "<group>"; };
+		2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameView.m; sourceTree = "<group>"; };
+		2A56EEFE2419310C002C32F3 /* DWDashPayConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayConstants.h; sourceTree = "<group>"; };
+		2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPayConstants.m; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseLegacyViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseLegacyViewController.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
@@ -1180,7 +1185,6 @@
 		2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInputUsernameViewController.m; sourceTree = "<group>"; };
 		2AE8B66223CF09000016F221 /* DWConfirmUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameViewController.h; sourceTree = "<group>"; };
 		2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameViewController.m; sourceTree = "<group>"; };
-		2AE8B66623CF0A190016F221 /* ConfirmUsernameView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ConfirmUsernameView.xib; sourceTree = "<group>"; };
 		2AE8B66923CF0F390016F221 /* DWUsernamePendingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingViewController.h; sourceTree = "<group>"; };
 		2AE8B66A23CF0F390016F221 /* DWUsernamePendingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernamePendingViewController.m; sourceTree = "<group>"; };
 		2AE8B66C23CF0F500016F221 /* DWUsernamePendingContentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingContentViewController.h; sourceTree = "<group>"; };
@@ -3114,6 +3118,8 @@
 				2AE8B66823CF0EEA0016F221 /* UsernamePending */,
 				2AE8B66123CF08C50016F221 /* ConfirmUsername */,
 				2AE8B63E23CDB9570016F221 /* CreateUsername */,
+				2A56EEFE2419310C002C32F3 /* DWDashPayConstants.h */,
+				2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */,
 			);
 			path = DashPay;
 			sourceTree = "<group>";
@@ -3144,7 +3150,8 @@
 		2AE8B66523CF09A00016F221 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2AE8B66623CF0A190016F221 /* ConfirmUsernameView.xib */,
+				2A56EEF92417E30F002C32F3 /* DWConfirmUsernameView.h */,
+				2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3701,7 +3708,6 @@
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
 				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
-				2AE8B66723CF0A190016F221 /* ConfirmUsernameView.xib in Resources */,
 				2A951CEA23D1D48C00602824 /* ContactProfile.storyboard in Resources */,
 				2A7A7BBF2347950700451078 /* DWMainMenuTableViewCell.xib in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
@@ -4040,6 +4046,7 @@
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
 				2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */,
 				2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */,
+				2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
 				2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */,
@@ -4142,6 +4149,7 @@
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
+				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameView.m in Sources */,
 				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
 				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,

@@ -25,6 +25,7 @@
 #import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
+#import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
@@ -55,9 +56,6 @@ static BOOL IsJailbroken(void) {
 
     return jailbroken;
 }
-
-// TODO: consider moving to the DashSync
-static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
 
 @interface DWHomeModel () <DWShortcutsModelDataSource>
 
@@ -294,7 +292,7 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
     // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
     const uint64_t balanceValue = wallet.balance;
-    BOOL isEnoughBalance = balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME;
+    BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
     BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
     return canRegisterUsername && usernameNotRegistered && isSynced && isEnoughBalance;
 }
@@ -448,7 +446,7 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
         options.balanceChangedDate = [NSDate date];
     }
 
-    if (balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME) {
+    if (balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME) {
         [self reloadShortcuts];
     }
 }

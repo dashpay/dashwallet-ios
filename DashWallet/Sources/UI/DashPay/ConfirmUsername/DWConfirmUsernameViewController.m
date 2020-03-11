@@ -17,9 +17,17 @@
 
 #import "DWConfirmUsernameViewController.h"
 
+#import "DWConfirmUsernameView.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
 @interface DWConfirmUsernameViewController ()
 
+@property (nonatomic, strong) DWConfirmUsernameView *confirmUsernameView;
+
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWConfirmUsernameViewController
 
@@ -38,13 +46,23 @@
 
     [self setModalTitle:NSLocalizedString(@"Confirm", nil)];
 
-    UIView *contentView = [[NSBundle mainBundle] loadNibNamed:@"ConfirmUsernameView" owner:self options:nil].firstObject;
-    [self setupModalContentView:contentView];
+    self.actionButton.enabled = NO;
+
+    self.confirmUsernameView = [[DWConfirmUsernameView alloc] initWithFrame:CGRectZero];
+    [self.confirmUsernameView.confirmationCheckbox addTarget:self
+                                                      action:@selector(confirmationCheckboxAction:)
+                                            forControlEvents:UIControlEventValueChanged];
+
+    [self setupModalContentView:self.confirmUsernameView];
 }
 
 - (void)actionButtonAction:(id)sender {
     self.actionButton.enabled = NO;
     [self.delegate confirmUsernameViewControllerDidConfirm:self];
+}
+
+- (void)confirmationCheckboxAction:(DWCheckbox *)sender {
+    self.actionButton.enabled = sender.isOn;
 }
 
 @end
