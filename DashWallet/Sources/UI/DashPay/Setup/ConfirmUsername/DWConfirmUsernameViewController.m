@@ -31,14 +31,20 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWConfirmUsernameViewController
 
+- (instancetype)initWithUsername:(NSString *)username {
+    self = [super init];
+    if (self) {
+        _username = [username copy];
+    }
+    return self;
+}
 
 + (BOOL)isActionButtonInNavigationBar {
     return NO;
 }
 
 - (NSString *)actionButtonTitle {
-    // TODO: localize
-    return @"Confirm & Pay";
+    return NSLocalizedString(@"Confirm & Pay", nil);
 }
 
 - (void)viewDidLoad {

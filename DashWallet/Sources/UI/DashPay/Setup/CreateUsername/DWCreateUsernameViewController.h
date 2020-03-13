@@ -21,7 +21,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWCreateUsernameViewController;
+
+@protocol DWCreateUsernameViewControllerDelegate <NSObject>
+
+- (void)createUsernameViewController:(DWCreateUsernameViewController *)controller
+                    registerUsername:(NSString *)username;
+
+@end
+
 @interface DWCreateUsernameViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWCreateUsernameViewControllerDelegate> delegate;
+
+- (NSAttributedString *)attributedTitle;
 
 - (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel;
 

@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWCreateUsernameViewController.h"
+#import "DWDashPaySetupFlowController.h"
 
 #import "DWConfirmUsernameViewController.h"
-#import "DWInputUsernameViewController.h"
+#import "DWContainerViewController.h"
+#import "DWCreateUsernameViewController.h"
 #import "DWUIKit.h"
 #import "DWUsernameHeaderView.h"
 #import "DWUsernamePendingViewController.h"
+#import "UIViewController+DWDisplayError.h"
 #import "UIViewController+DWEmbedding.h"
 
 static CGFloat const HeaderHeight(void) {
@@ -39,21 +41,22 @@ static CGFloat const LandscapeHeaderHeight(void) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate, DWConfirmUsernameViewControllerDelegate>
+@interface DWDashPaySetupFlowController () <DWCreateUsernameViewControllerDelegate,
+                                            DWConfirmUsernameViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
 @property (null_resettable, nonatomic, strong) UIView *contentView;
-
-@property (null_resettable, nonatomic, strong) DWInputUsernameViewController *inputUsername;
 @property (nonatomic, strong) NSLayoutConstraint *headerHeightConstraint;
+
+@property (nonatomic, strong) DWContainerViewController *containerController;
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWCreateUsernameViewController
+@implementation DWDashPaySetupFlowController
 
 - (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel {
     self = [super initWithNibName:nil bundle:nil];
@@ -61,10 +64,6 @@ NS_ASSUME_NONNULL_END
         _dashPayModel = dashPayModel;
     }
     return self;
-}
-
-- (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Register", @"Action button title: Register (username)");
 }
 
 - (void)viewDidLoad {
@@ -93,15 +92,15 @@ NS_ASSUME_NONNULL_END
         [self.contentView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
     ]];
 
-    [self dw_embedChild:self.inputUsername inContainer:self.contentView];
+    self.containerController = [[DWContainerViewController alloc] init];
+    [self dw_embedChild:self.containerController inContainer:self.contentView];
 
-    NSLayoutConstraint *heightConstraint = [self.inputUsername.view.heightAnchor constraintEqualToAnchor:self.contentView.heightAnchor];
-    heightConstraint.priority = UILayoutPriorityRequired - 1;
-
-    [NSLayoutConstraint activateConstraints:@[
-        heightConstraint,
-        [self.inputUsername.view.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor]
-    ]];
+    if (self.dashPayModel.registrationState == DWDashPayModelRegistrationState_None) {
+        [self showCreateUsernameController];
+    }
+    else {
+        [self showPendingController:self.dashPayModel.username];
+    }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -133,12 +132,31 @@ NS_ASSUME_NONNULL_END
     [self.headerView showInitialAnimation];
 }
 
+#pragma mark - Private
+
+- (void)createUsername:(NSString *)username {
+    __weak typeof(self) weakSelf = self;
+    [self.dashPayModel createUsername:username
+                    partialCompletion:^(NSError *_Nullable error) {
+                        __strong typeof(weakSelf) strongSelf = weakSelf;
+                        if (!strongSelf) {
+                            return;
+                        }
+
+                        if (error == nil) {
+                            [strongSelf showPendingController:username];
+                        }
+                        else {
+                            [strongSelf dw_displayErrorModally:error];
+                        }
+                    }];
+}
+
 - (UIView *)contentView {
     if (_contentView == nil) {
-        _contentView = [[UIScrollView alloc] initWithFrame:CGRectZero];
+        _contentView = [[UIView alloc] initWithFrame:CGRectZero];
         _contentView.translatesAutoresizingMaskIntoConstraints = NO;
     }
-
     return _contentView;
 }
 
@@ -147,39 +165,6 @@ NS_ASSUME_NONNULL_END
         _headerView = [[DWUsernameHeaderView alloc] initWithFrame:CGRectZero];
         _headerView.translatesAutoresizingMaskIntoConstraints = NO;
         _headerView.preservesSuperviewLayoutMargins = YES;
-        _headerView.titleBuilder = ^NSAttributedString *_Nonnull {
-            // TODO: DynamicType
-            NSDictionary *regularAttributes = @{
-                NSFontAttributeName : [UIFont dw_regularFontOfSize:22.0],
-                NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
-            };
-
-            NSDictionary *emphasizedAttributes = @{
-                NSFontAttributeName : [UIFont dw_mediumFontOfSize:22.0],
-                NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
-            };
-
-            NSAttributedString *chooseYourString =
-                [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Choose your", @"Choose your Dash username")
-                                                attributes:regularAttributes];
-
-            NSAttributedString *spaceString =
-                [[NSAttributedString alloc] initWithString:@"\n"
-                                                attributes:regularAttributes];
-
-            NSAttributedString *dashUsernameString =
-                [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Dash username", nil)
-                                                attributes:emphasizedAttributes];
-
-            NSMutableAttributedString *resultString = [[NSMutableAttributedString alloc] init];
-            [resultString beginEditing];
-            [resultString appendAttributedString:chooseYourString];
-            [resultString appendAttributedString:spaceString];
-            [resultString appendAttributedString:dashUsernameString];
-            [resultString endEditing];
-
-            return resultString;
-        };
         [_headerView.cancelButton addTarget:self
                                      action:@selector(cancelButtonAction)
                            forControlEvents:UIControlEventTouchUpInside];
@@ -188,19 +173,38 @@ NS_ASSUME_NONNULL_END
     return _headerView;
 }
 
-- (DWInputUsernameViewController *)inputUsername {
-    if (_inputUsername == nil) {
-        _inputUsername = [[DWInputUsernameViewController alloc] init];
-        _inputUsername.delegate = self;
-    }
-
-    return _inputUsername;
+- (void)showPendingController:(NSString *)username {
+    DWUsernamePendingViewController *controller = [[DWUsernamePendingViewController alloc] init];
+    controller.username = username;
+    __weak DWUsernamePendingViewController *weakController = controller;
+    self.headerView.titleBuilder = ^NSAttributedString *_Nonnull {
+        return [weakController attributedTitle];
+    };
+    [self.containerController transitionToController:controller];
 }
 
-#pragma mark - DWInputUsernameViewControllerDelegate
+- (void)showCreateUsernameController {
+    DWCreateUsernameViewController *controller =
+        [[DWCreateUsernameViewController alloc] initWithDashPayModel:self.dashPayModel];
+    controller.delegate = self;
+    __weak DWCreateUsernameViewController *weakController = controller;
+    self.headerView.titleBuilder = ^NSAttributedString *_Nonnull {
+        return [weakController attributedTitle];
+    };
+    [self.containerController transitionToController:controller];
+}
 
-- (void)inputUsernameViewControllerRegisterAction:(DWInputUsernameViewController *)inputController {
-    DWConfirmUsernameViewController *confirmController = [[DWConfirmUsernameViewController alloc] init];
+#pragma mark - Actions
+
+- (void)cancelButtonAction {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWCreateUsernameViewControllerDelegate
+
+- (void)createUsernameViewController:(DWCreateUsernameViewController *)controller
+                    registerUsername:(NSString *)username {
+    DWConfirmUsernameViewController *confirmController = [[DWConfirmUsernameViewController alloc] initWithUsername:username];
     confirmController.delegate = self;
     [self presentViewController:confirmController animated:YES completion:nil];
 }
@@ -208,20 +212,13 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWConfirmUsernameViewControllerDelegate
 
 - (void)confirmUsernameViewControllerDidConfirm:(DWConfirmUsernameViewController *)controller {
-    [controller dismissViewControllerAnimated:YES completion:nil];
-
-    NSString *username = self.inputUsername.text;
-    [self.dashPayModel createUsername:username];
-
-    DWUsernamePendingViewController *pendingController = [[DWUsernamePendingViewController alloc] init];
-    pendingController.username = username;
-    [self.navigationController setViewControllers:@[ pendingController ] animated:YES];
-}
-
-#pragma mark - Actions
-
-- (void)cancelButtonAction {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    NSString *username = controller.username;
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       // initiate creation process once confirmation is dismissed because
+                                       // DashSync will be showing pin request modally
+                                       [self createUsername:username];
+                                   }];
 }
 
 @end

@@ -282,7 +282,7 @@ static BOOL IsJailbroken(void) {
     [syncModel forceStartSyncingActivity];
 }
 
-#pragma mark - #pragma mark - DWShortcutsModelDataSource
+#pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
@@ -449,9 +449,7 @@ static BOOL IsJailbroken(void) {
         options.balanceChangedDate = [NSDate date];
     }
 
-    if (balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME) {
-        [self reloadShortcuts];
-    }
+    [self reloadShortcuts];
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions

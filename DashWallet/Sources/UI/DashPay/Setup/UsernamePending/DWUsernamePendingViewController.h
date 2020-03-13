@@ -15,26 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWBaseActionButtonViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWDashPayModelRegistrationState) {
-    DWDashPayModelRegistrationState_None,
-    DWDashPayModelRegistrationState_Initiated,
-    DWDashPayModelRegistrationState_Failure,
-    DWDashPayModelRegistrationState_Success,
-};
+@interface DWUsernamePendingViewController : DWBaseActionButtonViewController
 
-@protocol DWDashPayProtocol <NSObject>
+- (NSAttributedString *)attributedTitle;
 
-@property (nullable, readonly, nonatomic, copy) NSString *username;
-
-@property (readonly, nonatomic, assign) DWDashPayModelRegistrationState registrationState;
-@property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
-
-- (void)createUsername:(NSString *)username
-     partialCompletion:(void (^)(NSError *_Nullable))partialCompletion;
+@property (nonatomic, copy) NSString *username;
 
 @end
 

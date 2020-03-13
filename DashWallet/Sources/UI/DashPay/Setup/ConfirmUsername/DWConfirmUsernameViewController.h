@@ -15,13 +15,25 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButtonViewController.h"
+#import "DWBaseModalViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUsernamePendingViewController : DWBaseActionButtonViewController
+@class DWConfirmUsernameViewController;
 
-@property (nonatomic, copy) NSString *username;
+@protocol DWConfirmUsernameViewControllerDelegate <NSObject>
+
+- (void)confirmUsernameViewControllerDidConfirm:(DWConfirmUsernameViewController *)controller;
+
+@end
+
+@interface DWConfirmUsernameViewController : DWBaseModalViewController
+
+@property (readonly, nonatomic, copy) NSString *username;
+
+@property (nullable, nonatomic, weak) id<DWConfirmUsernameViewControllerDelegate> delegate;
+
+- (instancetype)initWithUsername:(NSString *)username;
 
 @end
 

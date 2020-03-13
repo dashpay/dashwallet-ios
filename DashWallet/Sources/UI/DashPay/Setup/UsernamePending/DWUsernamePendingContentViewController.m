@@ -30,7 +30,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    self.view.backgroundColor = [UIColor dw_dashBlueColor];
 
     [self.view addSubview:self.detailLabel];
 
@@ -56,7 +56,7 @@
         detailLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
         detailLabel.numberOfLines = 0;
         detailLabel.adjustsFontSizeToFitWidth = YES;
-        detailLabel.textColor = [UIColor dw_darkTitleColor];
+        detailLabel.textColor = [UIColor dw_lightTitleColor];
         detailLabel.textAlignment = NSTextAlignmentCenter;
         _detailLabel = detailLabel;
     }

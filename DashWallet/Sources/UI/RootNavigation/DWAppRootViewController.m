@@ -183,7 +183,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if (controller) {
-        [self displayViewController:controller];
+        [self transitionToController:controller];
     }
 
     if (hasAWallet) {
@@ -222,8 +222,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         strongSelf->_mainController = nil;
 
         UIViewController *controller = [strongSelf mainController];
-        [strongSelf transitionToViewController:controller
-                                      withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+        [strongSelf transitionToController:controller
+                            transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
     };
 }
 
@@ -253,16 +253,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model setupDidFinish];
 
     UIViewController *mainController = self.mainController;
-    [self transitionToViewController:mainController
-                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+    [self transitionToController:mainController
+                  transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 }
 
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
     UIViewController *setupController = [self setupController];
-    [self transitionToViewController:setupController
-                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+    [self transitionToController:setupController
+                  transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
 
     // reset main controller stack
@@ -278,7 +278,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     if (self.currentController == nil) {
         UIViewController *controller = [self mainController];
-        [self displayViewController:controller];
+        [self transitionToController:controller];
     }
 
     [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION

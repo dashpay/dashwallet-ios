@@ -20,7 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWBackupInfoViewController.h"
-#import "DWCreateUsernameViewController.h"
+#import "DWDashPaySetupFlowController.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
@@ -187,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCreateUsername {
-    DWCreateUsernameViewController *controller = [[DWCreateUsernameViewController alloc]
+    DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
         initWithDashPayModel:self.model.dashPayModel];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
