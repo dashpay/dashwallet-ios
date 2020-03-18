@@ -359,7 +359,6 @@
 		2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */; };
 		2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */; };
 		2AE8B66B23CF0F390016F221 /* DWUsernamePendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66A23CF0F390016F221 /* DWUsernamePendingViewController.m */; };
-		2AE8B66E23CF0F500016F221 /* DWUsernamePendingContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66D23CF0F500016F221 /* DWUsernamePendingContentViewController.m */; };
 		2AE9549D23D0C4F4003612B3 /* DWContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE9549C23D0C4F4003612B3 /* DWContactsViewController.m */; };
 		2AE954A123D0C528003612B3 /* DWContactsContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE954A023D0C528003612B3 /* DWContactsContentView.m */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
@@ -1197,8 +1196,6 @@
 		2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameViewController.m; sourceTree = "<group>"; };
 		2AE8B66923CF0F390016F221 /* DWUsernamePendingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingViewController.h; sourceTree = "<group>"; };
 		2AE8B66A23CF0F390016F221 /* DWUsernamePendingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernamePendingViewController.m; sourceTree = "<group>"; };
-		2AE8B66C23CF0F500016F221 /* DWUsernamePendingContentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingContentViewController.h; sourceTree = "<group>"; };
-		2AE8B66D23CF0F500016F221 /* DWUsernamePendingContentViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernamePendingContentViewController.m; sourceTree = "<group>"; };
 		2AE9549B23D0C4F4003612B3 /* DWContactsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsViewController.h; sourceTree = "<group>"; };
 		2AE9549C23D0C4F4003612B3 /* DWContactsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsViewController.m; sourceTree = "<group>"; };
 		2AE9549F23D0C528003612B3 /* DWContactsContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsContentView.h; sourceTree = "<group>"; };
@@ -3186,8 +3183,6 @@
 			children = (
 				2AE8B66923CF0F390016F221 /* DWUsernamePendingViewController.h */,
 				2AE8B66A23CF0F390016F221 /* DWUsernamePendingViewController.m */,
-				2AE8B66C23CF0F500016F221 /* DWUsernamePendingContentViewController.h */,
-				2AE8B66D23CF0F500016F221 /* DWUsernamePendingContentViewController.m */,
 			);
 			path = UsernamePending;
 			sourceTree = "<group>";
@@ -4141,7 +4136,6 @@
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
-				2AE8B66E23CF0F500016F221 /* DWUsernamePendingContentViewController.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,

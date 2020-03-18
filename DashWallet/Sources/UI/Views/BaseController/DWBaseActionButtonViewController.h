@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern CGFloat DWBottomButtonHeight(void);
+
 @protocol DWActionButtonProtocol <NSObject>
 
 @property (nonatomic, assign, getter=isEnabled) BOOL enabled;

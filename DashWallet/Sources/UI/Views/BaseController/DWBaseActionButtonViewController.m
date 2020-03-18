@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 static CGFloat const SPACING = 16.0;
 
-static CGFloat BottomButtonHeight(void) {
+CGFloat DWBottomButtonHeight(void) {
     if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
         return 44.0;
     }
@@ -236,7 +236,7 @@ static CGFloat BottomButtonHeight(void) {
     ]];
 
     if (bottomActionButton) {
-        [bottomActionButton.heightAnchor constraintEqualToConstant:BottomButtonHeight()].active = YES;
+        [bottomActionButton.heightAnchor constraintEqualToConstant:DWBottomButtonHeight()].active = YES;
     }
 }
 

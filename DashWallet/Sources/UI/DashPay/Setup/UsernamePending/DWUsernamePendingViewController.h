@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButtonViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUsernamePendingViewController : DWBaseActionButtonViewController
+@interface DWUsernamePendingViewController : UIViewController
 
 - (NSAttributedString *)attributedTitle;
 
