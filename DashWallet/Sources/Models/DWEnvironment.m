@@ -20,7 +20,7 @@
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
-static NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
+static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 @implementation DWEnvironment
 
@@ -126,18 +126,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
 
 - (NSOrderedSet *)evonetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"18.236.131.253"];
-    [serviceLocations addObject:@"34.217.94.88"];
-    [serviceLocations addObject:@"34.208.173.119"];
-    [serviceLocations addObject:@"35.161.212.27"];
-    [serviceLocations addObject:@"34.220.12.121"];
-    [serviceLocations addObject:@"50.112.229.110"];
-    [serviceLocations addObject:@"34.222.26.118"];
-    [serviceLocations addObject:@"34.221.120.97"];
-    [serviceLocations addObject:@"18.237.194.152"];
-    [serviceLocations addObject:@"34.218.253.214"];
-    [serviceLocations addObject:@"54.200.220.68"];
-    [serviceLocations addObject:@"52.12.224.246"];
+    [serviceLocations addObject:@"18.237.82.208"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -175,12 +164,12 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-evonet";
                                          standardPort:20001
                                          dapiJRPCPort:3000
                                          dapiGRPCPort:3010
-                                       dpnsContractID:UINT256_ZERO
-                                    dashpayContractID:UINT256_ZERO
+                                       dpnsContractID:@"7hjHdNMWNvj3QMiDWuehzBPzMbxCVrWPazukrT2uNGVB".base58ToData.UInt256
+                                    dashpayContractID:@"42isZhFyhPzVFfJPZbNqAotFHb1iBajbaQAMPyVdvY6F".base58ToData.UInt256
                                       protocolVersion:70215
                                    minProtocolVersion:70215
-                                         sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
-                                      sporkPrivateKey:nil];
+                                         sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
+                                      sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }
             break;
