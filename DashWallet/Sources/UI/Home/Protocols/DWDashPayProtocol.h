@@ -15,11 +15,26 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateUsernameViewController : UIViewController
+typedef NS_ENUM(NSUInteger, DWDashPayModelRegistrationState) {
+    DWDashPayModelRegistrationState_None,
+    DWDashPayModelRegistrationState_Initiated,
+    DWDashPayModelRegistrationState_Failure,
+    DWDashPayModelRegistrationState_Success,
+};
+
+@protocol DWDashPayProtocol <NSObject>
+
+@property (nullable, readonly, nonatomic, copy) NSString *username;
+
+@property (readonly, nonatomic, assign) DWDashPayModelRegistrationState registrationState;
+@property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
+
+- (void)createUsername:(NSString *)username
+     partialCompletion:(void (^)(NSError *_Nullable))partialCompletion;
 
 @end
 

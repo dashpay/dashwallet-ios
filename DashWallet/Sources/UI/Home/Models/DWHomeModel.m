@@ -25,10 +25,11 @@
 #import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
+#import "DWDashPayConstants.h"
+#import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
-#import "DWPayModelProtocol.h"
 #import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
@@ -56,9 +57,6 @@ static BOOL IsJailbroken(void) {
     return jailbroken;
 }
 
-// TODO: consider moving to the DashSync
-static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
-
 @interface DWHomeModel () <DWShortcutsModelDataSource>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -83,6 +81,7 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
+@synthesize dashPayModel = _dashPayModel;
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
@@ -109,6 +108,8 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
+
+        _dashPayModel = [[DWDashPayModel alloc] init];
 
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
@@ -281,7 +282,7 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
     [syncModel forceStartSyncingActivity];
 }
 
-#pragma mark - #pragma mark - DWShortcutsModelDataSource
+#pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
@@ -289,13 +290,14 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
         return NO;
     }
 
-    // TODO: add check if appropriate spork is on and username has been registered
-    BOOL hasUsername = NO;
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    BOOL usernameNotRegistered = wallet.blockchainIdentitiesCount == 0;
+    // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
-    const uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
-    BOOL isEnoughBalance = balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME;
+    const uint64_t balanceValue = wallet.balance;
+    BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
     BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
-    return canRegisterUsername && !hasUsername && isSynced && isEnoughBalance;
+    return canRegisterUsername && usernameNotRegistered && isSynced && isEnoughBalance;
 }
 
 #pragma mark - Notifications
@@ -447,9 +449,7 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
         options.balanceChangedDate = [NSDate date];
     }
 
-    if (balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME) {
-        [self reloadShortcuts];
-    }
+    [self reloadShortcuts];
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions

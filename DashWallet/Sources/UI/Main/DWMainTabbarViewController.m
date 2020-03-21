@@ -64,22 +64,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - Public
 
 - (void)performScanQRCodeAction {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController performScanQRCodeAction];
 }
 
 - (void)performPayToURL:(NSURL *)url {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController performPayToURL:url];
 }
 
 - (void)handleFile:(NSData *)file {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController handleFile:file];
 }
@@ -104,8 +104,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self transitionToViewController:self.homeNavigationController
-                                    withType:DWContainerTransitionType_WithoutAnimation];
+            [self transitionToController:self.homeNavigationController
+                          transitionType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -114,8 +114,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self transitionToViewController:self.contactsNavigationController
-                                    withType:DWContainerTransitionType_WithoutAnimation];
+            [self transitionToController:self.contactsNavigationController
+                          transitionType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -124,8 +124,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self transitionToViewController:self.menuNavigationController
-                                    withType:DWContainerTransitionType_WithoutAnimation];
+            [self transitionToController:self.menuNavigationController
+                          transitionType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -294,7 +294,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (void)setupControllers {
     DWNavigationController *navigationController = self.homeNavigationController;
-    [self displayViewController:navigationController];
+    [self transitionToController:navigationController];
 }
 
 - (void)setTabBarHiddenAnimated:(BOOL)hidden animated:(BOOL)animated {

@@ -15,21 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWBaseModalViewController.h"
+#import <UIKit/UIKit.h>
+
+#import "DWDashPayProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWConfirmUsernameViewController;
+@interface DWDashPaySetupFlowController : UIViewController
 
-@protocol DWConfirmUsernameViewControllerDelegate <NSObject>
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel;
 
-- (void)confirmUsernameViewControllerDidConfirm:(DWConfirmUsernameViewController *)controller;
-
-@end
-
-@interface DWConfirmUsernameViewController : DWBaseModalViewController
-
-@property (nullable, nonatomic, weak) id<DWConfirmUsernameViewControllerDelegate> delegate;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

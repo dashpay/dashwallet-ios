@@ -32,19 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
     return self.view;
 }
 
-- (void)displayViewController:(UIViewController *)controller {
-    NSParameterAssert(controller);
-    if (!controller) {
-        return;
-    }
-
-    [self dw_embedChild:controller inContainer:self.containerView];
-    self.currentController = controller;
-    [self setNeedsStatusBarAppearanceUpdate];
+- (void)transitionToController:(UIViewController *)controller {
+    [self transitionToController:controller transitionType:DWContainerTransitionType_CrossDissolve];
 }
 
-- (void)transitionToViewController:(UIViewController *)toViewController
-                          withType:(DWContainerTransitionType)transitionType {
+- (void)transitionToController:(UIViewController *)toViewController
+                transitionType:(DWContainerTransitionType)transitionType {
     NSParameterAssert(toViewController);
     if (!toViewController) {
         return;
@@ -55,9 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     UIViewController *fromViewController = self.childViewControllers.firstObject;
-    NSAssert(fromViewController, @"To perform transition there should be child view controller. Use displayViewController: instead");
     if (!fromViewController) {
-        [self displayViewController:toViewController];
+        [self dw_embedChild:toViewController inContainer:self.containerView];
+        self.currentController = toViewController;
+        [self setNeedsStatusBarAppearanceUpdate];
 
         return;
     }

@@ -17,6 +17,7 @@
 
 #import "DWUsernamePendingViewController.h"
 
+#import "DWUIKit.h"
 #import "DWUsernamePendingContentViewController.h"
 #import "UIViewController+DWEmbedding.h"
 
@@ -27,6 +28,18 @@
 @end
 
 @implementation DWUsernamePendingViewController
+
+- (NSAttributedString *)attributedTitle {
+    NSDictionary *regularAttributes = @{
+        NSFontAttributeName : [UIFont dw_regularFontOfSize:22.0],
+        NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+    };
+
+    NSAttributedString *pleaseString =
+        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Please wait", nil)
+                                        attributes:regularAttributes];
+    return pleaseString;
+}
 
 - (void)setUsername:(NSString *)username {
     _username = username;
