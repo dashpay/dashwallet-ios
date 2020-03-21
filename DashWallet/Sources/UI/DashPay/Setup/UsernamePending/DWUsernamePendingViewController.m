@@ -19,14 +19,15 @@
 
 #import "DWBaseActionButtonViewController.h"
 #import "DWButton.h"
+#import "DWDashPayAnimationView.h"
 #import "DWUIKit.h"
-#import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUsernamePendingViewController ()
 
 @property (null_resettable, strong, nonatomic) UIView *contentView;
+@property (null_resettable, strong, nonatomic) DWDashPayAnimationView *progressView;
 @property (null_resettable, strong, nonatomic) UILabel *detailLabel;
 @property (null_resettable, strong, nonatomic) UIButton *actionButton;
 
@@ -58,12 +59,21 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_dashBlueColor];
 
-    [self.contentView addSubview:self.detailLabel];
+    UIView *centeredView = [[UIView alloc] init];
+    centeredView.translatesAutoresizingMaskIntoConstraints = NO;
+    [centeredView addSubview:self.progressView];
+    [centeredView addSubview:self.detailLabel];
+
+    [self.contentView addSubview:centeredView];
     [self.view addSubview:self.contentView];
     [self.view addSubview:self.actionButton];
 
     UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
     UILayoutGuide *safeAreaGuide = self.view.safeAreaLayoutGuide;
+
+    [self.progressView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+    [self.detailLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+    [centeredView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
 
     const CGFloat bottomPadding = [DWBaseActionButtonViewController deviceSpecificBottomPadding];
     [NSLayoutConstraint activateConstraints:@[
@@ -71,11 +81,18 @@ NS_ASSUME_NONNULL_END
         [self.contentView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [self.contentView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
 
-        [self.detailLabel.topAnchor constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor],
-        [self.detailLabel.bottomAnchor constraintGreaterThanOrEqualToAnchor:self.contentView.bottomAnchor],
-        [self.detailLabel.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        [self.detailLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
-        [self.detailLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
+        [self.progressView.topAnchor constraintEqualToAnchor:centeredView.topAnchor],
+        [self.progressView.centerXAnchor constraintEqualToAnchor:centeredView.centerXAnchor],
+
+        [self.detailLabel.topAnchor constraintEqualToAnchor:self.progressView.bottomAnchor
+                                                   constant:10.0],
+        [self.detailLabel.leadingAnchor constraintEqualToAnchor:centeredView.leadingAnchor],
+        [self.detailLabel.trailingAnchor constraintEqualToAnchor:centeredView.trailingAnchor],
+        [self.detailLabel.bottomAnchor constraintEqualToAnchor:centeredView.bottomAnchor],
+
+        [centeredView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
+        [centeredView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
+        [centeredView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
 
         [self.actionButton.topAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
         [self.actionButton.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
@@ -96,6 +113,14 @@ NS_ASSUME_NONNULL_END
     return UIStatusBarStyleLightContent;
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.progressView startAnimating];
+}
+
+#pragma mark - Private
+
 - (UIView *)contentView {
     if (_contentView == nil) {
         UIView *contentView = [[UIView alloc] init];
@@ -106,8 +131,17 @@ NS_ASSUME_NONNULL_END
     return _contentView;
 }
 
+- (DWDashPayAnimationView *)progressView {
+    if (_progressView == nil) {
+        DWDashPayAnimationView *progressView = [[DWDashPayAnimationView alloc] initWithFrame:CGRectZero];
+        progressView.translatesAutoresizingMaskIntoConstraints = NO;
+        _progressView = progressView;
+    }
+    return _progressView;
+}
+
 - (UILabel *)detailLabel {
-    if (!_detailLabel) {
+    if (_detailLabel == nil) {
         UILabel *detailLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         detailLabel.translatesAutoresizingMaskIntoConstraints = NO;
         detailLabel.numberOfLines = 0;
