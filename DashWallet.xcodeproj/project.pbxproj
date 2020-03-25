@@ -99,6 +99,8 @@
 		2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392564234CD21300316EA6 /* DWTabBarButton.m */; };
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
 		2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392767235732E9004E9A96 /* DWDerivationPathKeysModel.m */; };
+		2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3CCEF8242BB1B900300AF8 /* DWRegistrationCompletedViewController.m */; };
+		2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */; };
 		2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */; };
 		2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */; };
 		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
@@ -689,6 +691,10 @@
 		2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+DWHighlightText.m"; sourceTree = "<group>"; };
 		2A392766235732E9004E9A96 /* DWDerivationPathKeysModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDerivationPathKeysModel.h; sourceTree = "<group>"; };
 		2A392767235732E9004E9A96 /* DWDerivationPathKeysModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDerivationPathKeysModel.m; sourceTree = "<group>"; };
+		2A3CCEF7242BB1B900300AF8 /* DWRegistrationCompletedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRegistrationCompletedViewController.h; sourceTree = "<group>"; };
+		2A3CCEF8242BB1B900300AF8 /* DWRegistrationCompletedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRegistrationCompletedViewController.m; sourceTree = "<group>"; };
+		2A3CCEFA242BB1DD00300AF8 /* DWDPAvatarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPAvatarView.h; sourceTree = "<group>"; };
+		2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPAvatarView.m; sourceTree = "<group>"; };
 		2A3DC86C239717C2004B3DBA /* DWRecoverWalletCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverWalletCommand.h; sourceTree = "<group>"; };
 		2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverWalletCommand.m; sourceTree = "<group>"; };
 		2A3DC86F23972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"; sourceTree = "<group>"; };
@@ -1768,6 +1774,15 @@
 				2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		2A3CCEF6242BB0AF00300AF8 /* RegistrationCompleted */ = {
+			isa = PBXGroup;
+			children = (
+				2A3CCEF7242BB1B900300AF8 /* DWRegistrationCompletedViewController.h */,
+				2A3CCEF8242BB1B900300AF8 /* DWRegistrationCompletedViewController.m */,
+			);
+			path = RegistrationCompleted;
 			sourceTree = "<group>";
 		};
 		2A4430E922CBB98D009BAF7F /* Setup */ = {
@@ -2964,6 +2979,7 @@
 		2AC52AD3241BB5CC00D9A829 /* Setup */ = {
 			isa = PBXGroup;
 			children = (
+				2A3CCEF6242BB0AF00300AF8 /* RegistrationCompleted */,
 				2AE8B66823CF0EEA0016F221 /* UsernamePending */,
 				2AE8B66123CF08C50016F221 /* ConfirmUsername */,
 				2AE8B63E23CDB9570016F221 /* CreateUsername */,
@@ -3121,6 +3137,8 @@
 			children = (
 				2ADB396724223D9B00A6F898 /* DWDashPayAnimationView.h */,
 				2ADB396824223D9B00A6F898 /* DWDashPayAnimationView.m */,
+				2A3CCEFA242BB1DD00300AF8 /* DWDPAvatarView.h */,
+				2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4264,6 +4282,7 @@
 				2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
+				2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */,
@@ -4357,6 +4376,7 @@
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
+				2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */,
 				2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,

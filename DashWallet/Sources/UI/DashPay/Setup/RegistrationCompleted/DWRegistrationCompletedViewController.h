@@ -19,17 +19,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUsernamePendingViewControllerDelegate <NSObject>
+@protocol DWRegistrationCompletedViewControllerDelegate <NSObject>
 
-- (void)usernamePendingViewControllerAction:(UIViewController *)controller;
+- (void)registrationCompletedViewControllerAction:(UIViewController *)controller;
 
 @end
 
-@interface DWUsernamePendingViewController : UIViewController
+@interface DWRegistrationCompletedViewController : UIViewController
 
-- (NSAttributedString *)attributedTitle;
-
-@property (nullable, nonatomic, weak) id<DWUsernamePendingViewControllerDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWRegistrationCompletedViewControllerDelegate> delegate;
 @property (nonatomic, copy) NSString *username;
 
 @end

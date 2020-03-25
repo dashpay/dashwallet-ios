@@ -31,6 +31,8 @@ typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
+- (void)configurePlanetsViewWithUsername:(NSString *)username;
+
 - (void)showInitialAnimation;
 
 @end

@@ -17,6 +17,7 @@
 
 #import "DWUsernameHeaderView.h"
 
+#import "DWDPAvatarView.h"
 #import "DWPlanetarySystemView.h"
 #import "DWUIKit.h"
 
@@ -71,13 +72,16 @@ static NSArray<UIColor *> *OrbitColors(void) {
     }
 }
 
-static NSArray<DWPlanetObject *> *Planets(void) {
+static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable usernameLetter) {
     CGSize size;
+    CGSize avatarSize;
     if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
         size = CGSizeMake(28.0, 28.0);
+        avatarSize = CGSizeMake(46.0, 46.0);
     }
     else {
         size = CGSizeMake(36.0, 36.0);
+        avatarSize = CGSizeMake(60.0, 60.0);
     }
 
     NSMutableArray<DWPlanetObject *> *planets = [NSMutableArray array];
@@ -109,7 +113,14 @@ static NSArray<DWPlanetObject *> *Planets(void) {
 
         {
             DWPlanetObject *planet = [[DWPlanetObject alloc] init];
-            planet.image = [UIImage imageNamed:@"dp_user_generic"];
+            if (usernameLetter.length > 0) {
+                DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, avatarSize}];
+                avatarView.letter = usernameLetter;
+                planet.customView = avatarView;
+            }
+            else {
+                planet.image = [UIImage imageNamed:@"dp_user_generic"];
+            }
             planet.speed = 1.0;
             planet.duration = 0.75;
             planet.offset = 250.0 / 360.0;
@@ -170,7 +181,14 @@ static NSArray<DWPlanetObject *> *Planets(void) {
 
         {
             DWPlanetObject *planet = [[DWPlanetObject alloc] init];
-            planet.image = [UIImage imageNamed:@"dp_user_generic"];
+            if (usernameLetter.length > 0) {
+                DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, avatarSize}];
+                avatarView.letter = usernameLetter;
+                planet.customView = avatarView;
+            }
+            else {
+                planet.image = [UIImage imageNamed:@"dp_user_generic"];
+            }
             planet.speed = 1.0;
             planet.duration = 0.75;
             planet.offset = 250.0 / 360.0;
@@ -219,7 +237,7 @@ NS_ASSUME_NONNULL_END
         planetaryView.colors = colors;
         planetaryView.lineWidth = 1.0;
         planetaryView.numberOfOrbits = colors.count;
-        planetaryView.planets = Planets();
+        planetaryView.planets = Planets(nil);
         [self addSubview:planetaryView];
         _planetaryView = planetaryView;
 
@@ -276,6 +294,11 @@ NS_ASSUME_NONNULL_END
     _titleBuilder = [titleBuilder copy];
 
     [self updateTitle];
+}
+
+- (void)configurePlanetsViewWithUsername:(NSString *)username {
+    NSString *firstLetter = [username substringToIndex:1];
+    self.planetaryView.planets = Planets(firstLetter);
 }
 
 - (void)showInitialAnimation {
