@@ -28,7 +28,7 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
-	<string>org.dashfoundation.dash</string>
+	<string>org.dashfoundation.dashredesign2019</string>
 	<key>WKWatchKitApp</key>
 	<true/>
 </dict>
