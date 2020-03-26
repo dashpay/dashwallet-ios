@@ -32,7 +32,6 @@
     if (self) {
         self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
         self.layer.masksToBounds = YES;
-        self.layer.shouldRasterize = YES;
 
         UILabel *letterLabel = [[UILabel alloc] init];
         letterLabel.font = [UIFont dw_regularFontOfSize:30];

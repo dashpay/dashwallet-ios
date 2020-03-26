@@ -33,8 +33,7 @@ typedef NS_ENUM(NSUInteger, DWDashPayModelRegistrationState) {
 @property (readonly, nonatomic, assign) DWDashPayModelRegistrationState registrationState;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
 
-- (void)createUsername:(NSString *)username
-     partialCompletion:(void (^)(NSError *_Nullable))partialCompletion;
+- (void)createUsername:(NSString *)username;
 
 @end
 

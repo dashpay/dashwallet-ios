@@ -80,7 +80,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
     return [[self.currentChain wallets] firstObject];
 }
 
-- (DSWallet *)currentAccount {
+- (DSAccount *)currentAccount {
     return [[self.currentWallet accounts] firstObject];
 }
 

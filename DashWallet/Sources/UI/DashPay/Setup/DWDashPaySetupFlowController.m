@@ -139,20 +139,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)createUsername:(NSString *)username {
     __weak typeof(self) weakSelf = self;
-    [self.dashPayModel createUsername:username
-                    partialCompletion:^(NSError *_Nullable error) {
-                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                        if (!strongSelf) {
-                            return;
-                        }
-
-                        if (error == nil) {
-                            [strongSelf showPendingController:username];
-                        }
-                        else {
-                            [strongSelf dw_displayErrorModally:error];
-                        }
-                    }];
+    [self.dashPayModel createUsername:username];
+    [self showPendingController:username];
 }
 
 - (UIView *)contentView {
