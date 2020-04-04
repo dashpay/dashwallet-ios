@@ -211,7 +211,8 @@ NS_ASSUME_NONNULL_END
                         return DWUsernameValidationRuleResultEmpty;
                     }
 
-                    NSCharacterSet *illegalChars = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+                    NSCharacterSet *alllowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
+                    NSCharacterSet *illegalChars = [alllowedCharacterSet invertedSet];
                     BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:illegalChars].location != NSNotFound;
                     return hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
                 }],
