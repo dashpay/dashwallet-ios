@@ -98,12 +98,21 @@ NS_ASSUME_NONNULL_END
     self.containerController = [[DWContainerViewController alloc] init];
     [self dw_embedChild:self.containerController inContainer:self.contentView];
 
-    if (self.dashPayModel.registrationState == DWDashPayModelRegistrationState_None) {
-        [self showCreateUsernameController];
-    }
-    else {
-        [self showPendingController:self.dashPayModel.username];
-    }
+    __weak typeof(self) weakSelf = self;
+    self.dashPayModel.stateUpdateHandler = ^(id<DWDashPayProtocol> _Nonnull dashPayModel) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (dashPayModel.registrationState == DWDashPayModelRegistrationState_Failure) {
+            [strongSelf dw_displayErrorModally:dashPayModel.lastRegistrationError];
+        }
+
+        [strongSelf setCurrentStateController];
+    };
+
+    [self setCurrentStateController];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -136,6 +145,21 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - Private
+
+- (void)setCurrentStateController {
+    switch (self.dashPayModel.registrationState) {
+        case DWDashPayModelRegistrationState_None:
+        case DWDashPayModelRegistrationState_Failure:
+            [self showCreateUsernameController];
+            break;
+        case DWDashPayModelRegistrationState_Initiated:
+            [self showPendingController:self.dashPayModel.username];
+            break;
+        case DWDashPayModelRegistrationState_Success:
+            [self showRegistrationCompletedController:self.dashPayModel.username];
+            break;
+    }
+}
 
 - (void)createUsername:(NSString *)username {
     __weak typeof(self) weakSelf = self;

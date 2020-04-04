@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         self.tableView.dataSource = dataSource;
 
-        if (shouldAnimate) {
+        if (shouldAnimate && self.window) {
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
                           withRowAnimation:UITableViewRowAnimationAutomatic];
         }

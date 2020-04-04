@@ -19,4 +19,4 @@
 
 #import <DashSync/DashSync.h>
 
-uint64_t DWDP_MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
+uint64_t DWDP_MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 100); // 0.01 Dash
