@@ -126,7 +126,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 - (NSOrderedSet *)evonetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"18.237.82.208"];
+    [serviceLocations addObject:@"34.213.26.85"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -164,8 +164,8 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
                                          standardPort:20001
                                          dapiJRPCPort:3000
                                          dapiGRPCPort:3010
-                                       dpnsContractID:@"7hjHdNMWNvj3QMiDWuehzBPzMbxCVrWPazukrT2uNGVB".base58ToData.UInt256
-                                    dashpayContractID:@"42isZhFyhPzVFfJPZbNqAotFHb1iBajbaQAMPyVdvY6F".base58ToData.UInt256
+                                       dpnsContractID:@"ForwNrvKy8jdyoCNTYBK4gcV6o15n79DmFQio2gGac5p".base58ToData.UInt256
+                                    dashpayContractID:@"FW2BGfVdTLgGWGkJRjC838MPpEcL2cSfkNkwao8ooxm5".base58ToData.UInt256
                                       protocolVersion:70215
                                    minProtocolVersion:70215
                                          sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"

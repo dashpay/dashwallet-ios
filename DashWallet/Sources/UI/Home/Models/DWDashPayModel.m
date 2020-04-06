@@ -84,26 +84,43 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
+
     if (blockchainIdentity) {
-        if (blockchainIdentity.isLocal) {
-            blockchainIdentity.type = DSBlockchainIdentityType_User;
-        }
-        [self continueRegistering:blockchainIdentity];
+        blockchainIdentity.type = DSBlockchainIdentityType_User;
+        [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity isNew:NO];
     }
     else {
         blockchainIdentity = [wallet createBlockchainIdentityOfType:DSBlockchainIdentityType_User
                                                         forUsername:username];
 
         // TODO: fix prompt
-        [blockchainIdentity generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Generate extended public keys?"
-                                                                        completion:^(BOOL registered) {
-                                                                            if (!registered) {
-                                                                                return;
-                                                                            }
+        [blockchainIdentity
+            generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Generate extended public keys?"
+                                                        completion:^(BOOL registered) {
+                                                            if (!registered) {
+                                                                return;
+                                                            }
 
-                                                                            [self registerIdentity:blockchainIdentity];
-                                                                        }];
+                                                            [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity
+                                                                                                         isNew:YES];
+                                                        }];
     }
+}
+
+#pragma mark - Private
+
+- (void)createFundingPrivateKeyForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity isNew:(BOOL)isNew {
+    [blockchainIdentity createFundingPrivateKeyWithPrompt:@"Register?"
+                                               completion:^(BOOL success, BOOL cancelled) {
+                                                   if (success) {
+                                                       if (isNew) {
+                                                           [self registerIdentity:blockchainIdentity];
+                                                       }
+                                                       else {
+                                                           [self continueRegistering:blockchainIdentity];
+                                                       }
+                                                   }
+                                               }];
 }
 
 - (void)registerIdentity:(DSBlockchainIdentity *)blockchainIdentity {
