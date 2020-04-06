@@ -90,7 +90,22 @@ NS_ASSUME_NONNULL_END
                                                         forUsername:username];
     }
 
+    // TODO: fix prompt
+    [blockchainIdentity generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Generate extended public keys?"
+                                                                    completion:^(BOOL registered) {
+                                                                        if (!registered) {
+                                                                            return;
+                                                                        }
+
+                                                                        [self registerIdentity:blockchainIdentity];
+                                                                    }];
+}
+
+- (void)registerIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     DSBlockchainIdentityRegistrationStep steps = [self stepsForBlockchainIdentity:blockchainIdentity];
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
     __weak typeof(self) weakSelf = self;
     [blockchainIdentity registerOnNetwork:steps

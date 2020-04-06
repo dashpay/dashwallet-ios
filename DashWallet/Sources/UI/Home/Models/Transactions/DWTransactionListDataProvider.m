@@ -63,7 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
     // inherited from DWTxDetailViewController `- (void)setTransaction:(DSTransaction *)transaction`
 
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSAccount *account = transaction.account;
+#warning Fix usage of the first account on tx
+    DSAccount *account = transaction.firstAccount;
 
     DSTransactionDirection transactionDirection = account ? [account directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
     uint64_t dashAmount;
