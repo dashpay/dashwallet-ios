@@ -205,7 +205,7 @@ NS_ASSUME_NONNULL_END
                     return length >= 4 ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
                 }],
             [[DWUsernameValidationRule alloc]
-                  initWithTitle:NSLocalizedString(@"Leters and numbers only", @"Validation rule")
+                  initWithTitle:NSLocalizedString(@"Letters and numbers only", @"Validation rule")
                 validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
                     if (text.length == 0) {
                         return DWUsernameValidationRuleResultEmpty;
