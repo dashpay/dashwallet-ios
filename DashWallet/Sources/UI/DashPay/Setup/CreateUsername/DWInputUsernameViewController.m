@@ -195,14 +195,14 @@ NS_ASSUME_NONNULL_END
     if (_validators == nil) {
         _validators = @[
             [[DWUsernameValidationRule alloc]
-                  initWithTitle:NSLocalizedString(@"Minimum 4 characters", @"Validation rule")
+                  initWithTitle:NSLocalizedString(@"Minimum 3 characters", @"Validation rule")
                 validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
                     const NSUInteger length = text.length;
                     if (length == 0) {
                         return DWUsernameValidationRuleResultEmpty;
                     }
 
-                    return length >= 4 ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
+                    return length >= 3 ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
                 }],
             [[DWUsernameValidationRule alloc]
                   initWithTitle:NSLocalizedString(@"Letters and numbers only", @"Validation rule")
