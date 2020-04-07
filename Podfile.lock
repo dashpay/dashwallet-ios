@@ -33,7 +33,7 @@ PODS:
     - DSDynamicOptions (= 0.1.1)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.3-alpha.2)
-    - TinyCborObjc (= 0.4.3)
+    - TinyCborObjc (= 0.4.4)
   - DSDynamicOptions (0.1.1)
   - DWAlertController (0.2.1)
   - gRPC-Core (1.26.0):
@@ -79,7 +79,7 @@ PODS:
   - Protobuf (3.11.2)
   - secp256k1_dash (0.1.3-alpha.2)
   - tinycbor (0.5.3)
-  - TinyCborObjc (0.4.3):
+  - TinyCborObjc (0.4.4):
     - tinycbor (= 0.5.3)
   - UIViewController-KeyboardAdditions (1.2.1)
 
@@ -137,7 +137,7 @@ SPEC CHECKSUMS:
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   DAPI-GRPC: faca236b4d2357cbab85a67a8341e4eeb6c51798
-  DashSync: 3b27159c06e34893f0f5ba547b04522aef3ec35c
+  DashSync: 449bc062a53b6ee210193ccb4831c74bde179a8e
   DSDynamicOptions: 23229bb4e60e7fc966cc1842eb405ea3b94b042e
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 01cad0fe812eb92170a8748b7507607752350e2b
@@ -150,7 +150,7 @@ SPEC CHECKSUMS:
   Protobuf: dd1aaea7140debfe4dd0683fb8ef208e527ae153
   secp256k1_dash: 5a10f3369ea82b75bb655c2f3fa119debbaa10ee
   tinycbor: 1a978845921ea4befaf5c977e55b3f0e09a80395
-  TinyCborObjc: 467e99890f005b85af9dad281129edd43f33cd0a
+  TinyCborObjc: d7e40c16e7882ba48f15fa3699db85d2c05dbe84
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
 PODFILE CHECKSUM: 13405ac5195818115c3211c25acc1a05333457f9
