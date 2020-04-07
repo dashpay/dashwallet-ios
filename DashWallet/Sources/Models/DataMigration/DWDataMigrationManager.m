@@ -288,7 +288,7 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     }
 
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
-    DSAccountEntity *accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:currentAccount.wallet.uniqueID
+    DSAccountEntity *accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:currentAccount.wallet.uniqueIDString
                                                                                index:currentAccount.accountNumber
                                                                              onChain:[DWEnvironment sharedInstance].currentChain];
 

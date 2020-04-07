@@ -19,18 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUsernamePendingViewControllerDelegate <NSObject>
+@interface DWDPAvatarView : UIView
 
-- (void)usernamePendingViewControllerAction:(UIViewController *)controller;
+@property (nullable, nonatomic, copy) NSString *letter;
 
-@end
-
-@interface DWUsernamePendingViewController : UIViewController
-
-- (NSAttributedString *)attributedTitle;
-
-@property (nullable, nonatomic, weak) id<DWUsernamePendingViewControllerDelegate> delegate;
-@property (nonatomic, copy) NSString *username;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
 

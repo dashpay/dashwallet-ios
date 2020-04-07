@@ -24,7 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPlanetObject : NSObject
 
 /// The planet image.
-@property (nonatomic, strong) UIImage *image;
+@property (nullable, nonatomic, strong) UIImage *image;
+/// Custom view to display as a planet
+@property (nullable, nonatomic, strong) UIView *customView;
+
 /// The speed of animation.
 @property (nonatomic, assign) CGFloat speed;
 /// The duration of the complete rotation along the orbit.

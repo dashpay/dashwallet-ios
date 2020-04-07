@@ -291,7 +291,7 @@ static BOOL IsJailbroken(void) {
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    BOOL usernameNotRegistered = wallet.blockchainIdentitiesCount == 0;
+    BOOL usernameNotRegistered = ![DWGlobalOptions sharedInstance].dashpayUsernameRegistered;
     // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
     const uint64_t balanceValue = wallet.balance;

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) NSMutableArray<UIBezierPath *> *orbits;
 @property (strong, nonatomic) NSMutableArray<CAShapeLayer *> *orbitLayers;
-@property (strong, nonatomic) NSMutableArray<UIImageView *> *planetViews;
+@property (strong, nonatomic) NSMutableArray<UIView *> *planetViews;
 
 @end
 
@@ -144,7 +144,7 @@ NS_ASSUME_NONNULL_END
 
     for (NSInteger i = 0; i < self.planets.count; i++) {
         DWPlanetObject *planet = self.planets[i];
-        UIImageView *planetView = self.planetViews[i];
+        UIView *planetView = self.planetViews[i];
 
         NSAssert(planet.orbit < self.orbits.count, @"Internal inconsistency");
         UIBezierPath *path = self.orbits[planet.orbit];
@@ -221,8 +221,16 @@ NS_ASSUME_NONNULL_END
     for (DWPlanetObject *planet in self.planets) {
         const CGRect rect = CGRectMake(-planet.size.width * 0.5, -planet.size.height * 0.5,
                                        planet.size.width, planet.size.height);
-        UIImageView *planetView = [[UIImageView alloc] initWithFrame:rect];
-        planetView.image = planet.image;
+
+        UIView *planetView = nil;
+        if (planet.image) {
+            UIImageView *imageView = [[UIImageView alloc] initWithFrame:rect];
+            imageView.image = planet.image;
+            planetView = imageView;
+        }
+        else {
+            planetView = planet.customView;
+        }
         planetView.layer.opacity = 0.0; // initially hidden
         [self addSubview:planetView];
 

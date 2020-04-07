@@ -20,6 +20,7 @@
 #import "DWConfirmUsernameViewController.h"
 #import "DWContainerViewController.h"
 #import "DWCreateUsernameViewController.h"
+#import "DWRegistrationCompletedViewController.h"
 #import "DWUIKit.h"
 #import "DWUsernameHeaderView.h"
 #import "DWUsernamePendingViewController.h"
@@ -42,7 +43,9 @@ static CGFloat const LandscapeHeaderHeight(void) {
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDashPaySetupFlowController () <DWCreateUsernameViewControllerDelegate,
-                                            DWConfirmUsernameViewControllerDelegate>
+                                            DWConfirmUsernameViewControllerDelegate,
+                                            DWUsernamePendingViewControllerDelegate,
+                                            DWRegistrationCompletedViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
@@ -95,12 +98,21 @@ NS_ASSUME_NONNULL_END
     self.containerController = [[DWContainerViewController alloc] init];
     [self dw_embedChild:self.containerController inContainer:self.contentView];
 
-    if (self.dashPayModel.registrationState == DWDashPayModelRegistrationState_None) {
-        [self showCreateUsernameController];
-    }
-    else {
-        [self showPendingController:self.dashPayModel.username];
-    }
+    __weak typeof(self) weakSelf = self;
+    self.dashPayModel.stateUpdateHandler = ^(id<DWDashPayProtocol> _Nonnull dashPayModel) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (dashPayModel.registrationState == DWDashPayModelRegistrationState_Failure) {
+            [strongSelf dw_displayErrorModally:dashPayModel.lastRegistrationError];
+        }
+
+        [strongSelf setCurrentStateController];
+    };
+
+    [self setCurrentStateController];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -134,22 +146,25 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
+- (void)setCurrentStateController {
+    switch (self.dashPayModel.registrationState) {
+        case DWDashPayModelRegistrationState_None:
+        case DWDashPayModelRegistrationState_Failure:
+            [self showCreateUsernameController];
+            break;
+        case DWDashPayModelRegistrationState_Initiated:
+            [self showPendingController:self.dashPayModel.username];
+            break;
+        case DWDashPayModelRegistrationState_Success:
+            [self showRegistrationCompletedController:self.dashPayModel.username];
+            break;
+    }
+}
+
 - (void)createUsername:(NSString *)username {
     __weak typeof(self) weakSelf = self;
-    [self.dashPayModel createUsername:username
-                    partialCompletion:^(NSError *_Nullable error) {
-                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                        if (!strongSelf) {
-                            return;
-                        }
-
-                        if (error == nil) {
-                            [strongSelf showPendingController:username];
-                        }
-                        else {
-                            [strongSelf dw_displayErrorModally:error];
-                        }
-                    }];
+    [self.dashPayModel createUsername:username];
+    [self showPendingController:username];
 }
 
 - (UIView *)contentView {
@@ -176,6 +191,7 @@ NS_ASSUME_NONNULL_END
 - (void)showPendingController:(NSString *)username {
     DWUsernamePendingViewController *controller = [[DWUsernamePendingViewController alloc] init];
     controller.username = username;
+    controller.delegate = self;
     __weak DWUsernamePendingViewController *weakController = controller;
     self.headerView.titleBuilder = ^NSAttributedString *_Nonnull {
         return [weakController attributedTitle];
@@ -190,6 +206,20 @@ NS_ASSUME_NONNULL_END
     __weak DWCreateUsernameViewController *weakController = controller;
     self.headerView.titleBuilder = ^NSAttributedString *_Nonnull {
         return [weakController attributedTitle];
+    };
+    [self.containerController transitionToController:controller];
+}
+
+- (void)showRegistrationCompletedController:(NSString *)username {
+    NSAssert(username.length > 1, @"Invalid username");
+
+    [self.headerView configurePlanetsViewWithUsername:username];
+
+    DWRegistrationCompletedViewController *controller = [[DWRegistrationCompletedViewController alloc] init];
+    controller.username = username;
+    controller.delegate = self;
+    self.headerView.titleBuilder = ^NSAttributedString *_Nonnull {
+        return [[NSAttributedString alloc] init];
     };
     [self.containerController transitionToController:controller];
 }
@@ -219,6 +249,18 @@ NS_ASSUME_NONNULL_END
                                        // DashSync will be showing pin request modally
                                        [self createUsername:username];
                                    }];
+}
+
+#pragma mark - DWUsernamePendingViewControllerDelegate
+
+- (void)usernamePendingViewControllerAction:(UIViewController *)controller {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWRegistrationCompletedViewControllerDelegate
+
+- (void)registrationCompletedViewControllerAction:(UIViewController *)controller {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

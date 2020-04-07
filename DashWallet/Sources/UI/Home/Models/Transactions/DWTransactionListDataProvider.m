@@ -63,9 +63,11 @@ NS_ASSUME_NONNULL_BEGIN
     // inherited from DWTxDetailViewController `- (void)setTransaction:(DSTransaction *)transaction`
 
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSAccount *account = transaction.account;
+#warning Fix usage of the first account on tx
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSAccount *account = transaction.firstAccount;
 
-    DSTransactionDirection transactionDirection = account ? [account directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
+    DSTransactionDirection transactionDirection = account ? [chain directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
     uint64_t dashAmount;
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
@@ -79,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DSTransactionDirection_Sent: {
-            dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
+            dataItem.dashAmount = [chain amountSentByTransaction:transaction] - [chain amountReceivedFromTransaction:transaction] - transaction.feeUsed;
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
             break;
         }

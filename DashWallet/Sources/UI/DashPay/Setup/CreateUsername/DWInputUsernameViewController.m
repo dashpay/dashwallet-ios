@@ -19,6 +19,7 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DWBaseActionButtonViewController.h"
 #import "DWBlueActionButton.h"
 #import "DWTextField.h"
 #import "DWUIKit.h"
@@ -27,15 +28,6 @@
 static CGFloat const SPACING = 16.0;
 static CGFloat const CORNER_RADIUS = 10.0;
 static CGFloat const TEXTFIELD_MAX_HEIGHT = 56.0;
-
-static CGFloat BottomButtonHeight(void) {
-    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
-        return 44.0;
-    }
-    else {
-        return 54.0;
-    }
-}
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -113,7 +105,7 @@ NS_ASSUME_NONNULL_END
                                                       constant:SPACING],
         [self.registerButton.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [self.registerButton.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
-        [self.registerButton.heightAnchor constraintEqualToConstant:BottomButtonHeight()],
+        [self.registerButton.heightAnchor constraintEqualToConstant:DWBottomButtonHeight()],
         self.contentBottomConstraint,
     ]];
 }
@@ -213,13 +205,14 @@ NS_ASSUME_NONNULL_END
                     return length >= 4 ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
                 }],
             [[DWUsernameValidationRule alloc]
-                  initWithTitle:NSLocalizedString(@"Leters and numbers only", @"Validation rule")
+                  initWithTitle:NSLocalizedString(@"Letters and numbers only", @"Validation rule")
                 validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
                     if (text.length == 0) {
                         return DWUsernameValidationRuleResultEmpty;
                     }
 
-                    NSCharacterSet *illegalChars = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+                    NSCharacterSet *alllowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
+                    NSCharacterSet *illegalChars = [alllowedCharacterSet invertedSet];
                     BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:illegalChars].location != NSNotFound;
                     return hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
                 }],

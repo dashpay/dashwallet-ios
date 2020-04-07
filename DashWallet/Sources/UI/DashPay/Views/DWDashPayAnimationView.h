@@ -19,18 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUsernamePendingViewControllerDelegate <NSObject>
+@interface DWDashPayAnimationView : UIView
 
-- (void)usernamePendingViewControllerAction:(UIViewController *)controller;
-
-@end
-
-@interface DWUsernamePendingViewController : UIViewController
-
-- (NSAttributedString *)attributedTitle;
-
-@property (nullable, nonatomic, weak) id<DWUsernamePendingViewControllerDelegate> delegate;
-@property (nonatomic, copy) NSString *username;
+- (void)startAnimating;
+- (void)stopAnimating;
 
 @end
 

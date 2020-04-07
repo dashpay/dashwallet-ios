@@ -19,6 +19,7 @@
 
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -55,8 +56,23 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDashPayModel
 
-- (void)createUsername:(NSString *)username
-     partialCompletion:(void (^)(NSError *_Nullable))partialCompletion {
+@synthesize stateUpdateHandler;
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        if ([DWGlobalOptions sharedInstance].dashpayUsernameRegistered) {
+            self.registrationState = DWDashPayModelRegistrationState_Success;
+        }
+
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
+        self.username = blockchainIdentity.currentUsername;
+    }
+    return self;
+}
+
+- (void)createUsername:(NSString *)username {
     if (self.registrationState == DWDashPayModelRegistrationState_Initiated) {
         return;
     }
@@ -66,80 +82,106 @@ NS_ASSUME_NONNULL_END
     self.username = username;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *blockchainIdentity = [wallet createBlockchainIdentityOfType:DSBlockchainIdentityType_User
-                                                                          forUsername:username
-                                                                 usingDerivationIndex:0];
-    // clang-format off
+
+    DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
+
+    if (blockchainIdentity) {
+        blockchainIdentity.type = DSBlockchainIdentityType_User;
+        [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity isNew:NO];
+    }
+    else {
+        blockchainIdentity = [wallet createBlockchainIdentityOfType:DSBlockchainIdentityType_User
+                                                        forUsername:username];
+
+        // TODO: fix prompt
+        [blockchainIdentity
+            generateBlockchainIdentityExtendedPublicKeysWithPrompt:@"Generate extended public keys?"
+                                                        completion:^(BOOL registered) {
+                                                            if (!registered) {
+                                                                return;
+                                                            }
+
+                                                            [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity
+                                                                                                         isNew:YES];
+                                                        }];
+    }
+}
+
+#pragma mark - Private
+
+- (void)createFundingPrivateKeyForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity isNew:(BOOL)isNew {
+    [blockchainIdentity createFundingPrivateKeyWithPrompt:@"Register?"
+                                               completion:^(BOOL success, BOOL cancelled) {
+                                                   if (success) {
+                                                       if (isNew) {
+                                                           [self registerIdentity:blockchainIdentity];
+                                                       }
+                                                       else {
+                                                           [self continueRegistering:blockchainIdentity];
+                                                       }
+                                                   }
+                                               }];
+}
+
+- (void)registerIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+
     __weak typeof(self) weakSelf = self;
-    [blockchainIdentity generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
-        if (exists) {
-            DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-            NSString *creditFundingRegistrationAddress = [blockchainIdentity registrationFundingAddress];
-            [blockchainIdentity fundingTransactionForTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-                                                       toAddress:creditFundingRegistrationAddress
-                                                 fundedByAccount:account
-                                                      completion:^(DSCreditFundingTransaction *_Nonnull fundingTransaction) {
-                [account signTransaction:fundingTransaction
-                              withPrompt:NSLocalizedString(@"Would you like to create this user?", nil)
-                              completion:^(BOOL signedTransaction, BOOL cancelled) {
-                    if (signedTransaction) {
-                        if (partialCompletion) {
-                            partialCompletion(nil);
-                        }
-                        
-                        DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-                        [chainManager.transactionManager publishTransaction:fundingTransaction
-                                                                 completion:^(NSError *_Nullable error) {
-                            __strong typeof(weakSelf) strongSelf = weakSelf;
-                            if (!strongSelf) {
-                                return;
-                            }
-
-                            if (error) {
-                                strongSelf.lastRegistrationError = error;
-                                strongSelf.registrationState = DWDashPayModelRegistrationState_Failure;
-                                DSDLog(@"[DWDashPayModel] Registration error: %@", error.localizedDescription);
-                            }
-                            else {
-                                [blockchainIdentity registerInWalletForRegistrationFundingTransaction:fundingTransaction];
-                                strongSelf.registrationState = DWDashPayModelRegistrationState_Success;
-                                DSDLog(@"[DWDashPayModel] Registration succeeded");
-                            }
-                        }];
-                    }
-                    else {
-                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                        if (!strongSelf) {
-                            return;
-                        }
-
-                        NSError *error = ErrorForCode(DWDashPayErrorCode_CreateBUTxNotSigned);
-                        strongSelf.lastRegistrationError = error;
-                        strongSelf.registrationState = DWDashPayModelRegistrationState_Failure;
-                        
-                        if (partialCompletion) {
-                            partialCompletion(error);
-                        }
-                    }
-                }];
-            }];
+    [blockchainIdentity registerOnNetwork:[self steps]
+        withFundingAccount:account
+        forTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+            NSLog(@">>>> %@", @(stepCompleted));
         }
-        else {
+        completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
 
-            NSError *error = ErrorForCode(DWDashPayErrorCode_UnableToRegisterBU);
-            strongSelf.lastRegistrationError = error;
-            strongSelf.registrationState = DWDashPayModelRegistrationState_Failure;
-            
-            if (partialCompletion) {
-                partialCompletion(error);
-            }
+            [strongSelf handleCompletion:stepsCompleted error:error];
+        }];
+}
+
+- (void)continueRegistering:(DSBlockchainIdentity *)blockchainIdentity {
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+
+    __weak typeof(self) weakSelf = self;
+    [blockchainIdentity continueRegisteringOnNetwork:[self steps]
+        withFundingAccount:account
+        forTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+            NSLog(@">>>> %@", @(stepCompleted));
         }
-    }];
-    // clang-format on
+        completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf handleCompletion:stepsCompleted error:error];
+        }];
+}
+
+- (DSBlockchainIdentityRegistrationStep)steps {
+    return (DSBlockchainIdentityRegistrationStep_L1Steps |
+            DSBlockchainIdentityRegistrationStep_Identity |
+            DSBlockchainIdentityRegistrationStep_Username);
+}
+
+- (void)handleCompletion:(DSBlockchainIdentityRegistrationStep)stepsCompleted error:(NSError *)error {
+    if (error) {
+        self.lastRegistrationError = error;
+        self.registrationState = DWDashPayModelRegistrationState_Failure;
+    }
+    else {
+        [DWGlobalOptions sharedInstance].dashpayUsernameRegistered = YES;
+        self.registrationState = DWDashPayModelRegistrationState_Success;
+    }
+
+    if (self.stateUpdateHandler) {
+        self.stateUpdateHandler(self);
+    }
 }
 
 @end

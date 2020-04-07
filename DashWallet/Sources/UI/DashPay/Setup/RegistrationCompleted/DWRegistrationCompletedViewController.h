@@ -19,8 +19,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUsernamePendingContentViewController : UIViewController
+@protocol DWRegistrationCompletedViewControllerDelegate <NSObject>
 
+- (void)registrationCompletedViewControllerAction:(UIViewController *)controller;
+
+@end
+
+@interface DWRegistrationCompletedViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWRegistrationCompletedViewControllerDelegate> delegate;
 @property (nonatomic, copy) NSString *username;
 
 @end
