@@ -149,6 +149,9 @@ NS_ASSUME_NONNULL_BEGIN
                     if (cancelBlock) {
                         cancelBlock();
                     }
+
+                    NSAssert(self.confirmViewController.sendingEnabled,
+                             @"paymentProcessorDidCancelTransactionSigning: should be called");
                 }];
     [alert addAction:cancelAction];
 
@@ -160,6 +163,8 @@ NS_ASSUME_NONNULL_BEGIN
                     if (actionBlock) {
                         actionBlock();
                     }
+
+                    self.confirmViewController.sendingEnabled = YES;
                 }];
     [alert addAction:actionAction];
 
