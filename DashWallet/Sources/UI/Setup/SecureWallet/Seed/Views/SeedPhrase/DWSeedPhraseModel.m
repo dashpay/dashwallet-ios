@@ -86,6 +86,12 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+#if DEBUG
+- (NSString *)debug_seedText {
+    return [[self.words valueForKeyPath:@"word"] componentsJoinedByString:@" "];
+}
+#endif /* DEBUG */
+
 #pragma mark - NSCopying
 
 - (id)copyWithZone:(nullable NSZone *)zone {

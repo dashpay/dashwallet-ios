@@ -25,6 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSArray<DWSeedWordModel *> *words;
 
+#if DEBUG
+- (NSString *)debug_seedText;
+#endif /* DEBUG */
+
 - (instancetype)initWithSeed:(NSString *)seed NS_DESIGNATED_INITIALIZER;
 - (instancetype)initByShufflingSeedPhrase:(DWSeedPhraseModel *)seedPhrase NS_DESIGNATED_INITIALIZER;
 
