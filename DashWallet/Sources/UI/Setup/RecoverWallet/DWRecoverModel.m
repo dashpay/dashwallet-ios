@@ -93,11 +93,11 @@ NSInteger const DW_PHRASE_LENGTH = 12;
     DSAccount *testingAccount = [testingWallet accountWithNumber:0];
     DSAccount *ourAccount = [DWEnvironment sharedInstance].currentAccount;
 
-    NSData *testingExtended32Data = testingAccount.bip32DerivationPath.extendedPublicKey;
-    NSData *accountExtended32Data = ourAccount.bip32DerivationPath.extendedPublicKey;
+    NSData *testingExtended32Data = testingAccount.bip32DerivationPath.extendedPublicKey.publicKeyData;
+    NSData *accountExtended32Data = ourAccount.bip32DerivationPath.extendedPublicKey.publicKeyData;
 
-    NSData *testingExtended44Data = testingAccount.bip44DerivationPath.extendedPublicKey;
-    NSData *accountExtended44Data = ourAccount.bip44DerivationPath.extendedPublicKey;
+    NSData *testingExtended44Data = testingAccount.bip44DerivationPath.extendedPublicKey.publicKeyData;
+    NSData *accountExtended44Data = ourAccount.bip44DerivationPath.extendedPublicKey.publicKeyData;
 
     return ([testingExtended32Data isEqual:accountExtended32Data] ||
             [testingExtended44Data isEqual:accountExtended44Data] ||
