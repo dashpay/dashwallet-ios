@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-CGFloat const DW_TABBAR_HEIGHT = 49.0;
+static CGFloat const DW_TABBAR_HEIGHT = 64.0;
 static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
 static CGFloat const CENTER_CIRCLE_SIZE = 68.0;

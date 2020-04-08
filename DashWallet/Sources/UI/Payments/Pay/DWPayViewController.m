@@ -32,10 +32,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayViewController () <UITableViewDataSource,
+                                   UITableViewDelegate,
                                    DWPayTableViewCellDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
-
+@property (assign, nonatomic) CGFloat maxActionButtonWidth;
 
 @end
 
@@ -92,10 +93,17 @@ NS_ASSUME_NONNULL_BEGIN
     DWPayTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
 
     DWPayOptionModel *option = self.payModel.options[indexPath.row];
-    cell.model = option;
     cell.delegate = self;
+    cell.model = option;
 
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if ([cell isKindOfClass:DWPayTableViewCell.class]) {
+        DWPayTableViewCell *payCell = (DWPayTableViewCell *)cell;
+        payCell.preferredActionButtonWidth = self.maxActionButtonWidth;
+    }
 }
 
 #pragma mark - DWPayTableViewCellDelegate
@@ -124,6 +132,10 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
     }
+}
+
+- (void)payTableViewCell:(DWPayTableViewCell *)cell didUpdateButtonWidth:(CGFloat)buttonWidth {
+    self.maxActionButtonWidth = MAX(self.maxActionButtonWidth, buttonWidth);
 }
 
 #pragma mark - Private

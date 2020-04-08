@@ -25,8 +25,6 @@ typedef NS_ENUM(NSUInteger, DWTabBarViewButtonType) {
     DWTabBarViewButtonType_Others,
 };
 
-extern CGFloat const DW_TABBAR_HEIGHT;
-
 @class DWTabBarView;
 
 @protocol DWTabBarViewDelegate <NSObject>

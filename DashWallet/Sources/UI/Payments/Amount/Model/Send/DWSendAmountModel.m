@@ -63,7 +63,7 @@
         [authManager authenticateWithPrompt:nil
                usingBiometricAuthentication:YES
                              alertIfLockout:YES
-                                 completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                                 completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                                      if (authenticatedOrSuccess) {
                                          selectAllFundsBlock();
                                      }

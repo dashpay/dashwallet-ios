@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "내부 송금";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "유효하지 않음";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "다음에서 이동";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "다음에 내부적으로 이동";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "주소로 이동";
@@ -801,7 +801,7 @@
 "Very High" = "매우 높음";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "탐색기에서 보기";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "비밀문구, 백업 지갑 보기....";

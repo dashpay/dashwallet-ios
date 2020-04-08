@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
                   authenticateWithPrompt:nil
             usingBiometricAuthentication:NO
                           alertIfLockout:YES
-                              completion:^(BOOL authenticated, BOOL cancelled) {
+                              completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                   if (!authenticated) {
                                       return;
                                   }

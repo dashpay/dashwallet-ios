@@ -178,6 +178,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self performScanQRCodeAction];
 }
 
+- (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller {
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
+    [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
+}
+
 #pragma mark - UINavigationControllerDelegate
 
 - (void)navigationController:(UINavigationController *)navigationController

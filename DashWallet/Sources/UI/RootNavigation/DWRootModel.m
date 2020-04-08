@@ -23,6 +23,8 @@
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 
+#import <DashSync/DSBiometricsAuthenticator.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRootModel ()
@@ -57,8 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)walletOperationAllowed {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    return authenticationManager.passcodeEnabled;
+    return DSBiometricsAuthenticator.passcodeEnabled;
 }
 
 - (void)applicationDidEnterBackground {

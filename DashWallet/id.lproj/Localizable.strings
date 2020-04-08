@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Transfer Internal";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Tidak valid";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Pindah dari";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Pindah internal ke";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Terpindah ke Alamat";
@@ -801,7 +801,7 @@
 "Very High" = "Sangat tinggi";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "Lihat di Explorer";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Lihat frasa sandi, cadangkan domept...";

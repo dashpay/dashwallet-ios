@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Вътрешен трансфер";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "Невалиден";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "Преместено от";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "Преместено вътрешно в";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Преместено в адрес";
@@ -801,7 +801,7 @@
 "Very High" = "Много високо";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "Преглед в Explorer";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Преглед на парола, резервен портфейл ...";

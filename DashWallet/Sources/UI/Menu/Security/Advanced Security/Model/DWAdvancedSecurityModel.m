@@ -17,6 +17,7 @@
 
 #import "DWAdvancedSecurityModel.h"
 
+#import <DashSync/DSBiometricsAuthenticator.h>
 #import <DashSync/DashSync.h>
 
 #import "DWGlobalOptions.h"
@@ -30,9 +31,8 @@ uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DUFFS / 2;
 @synthesize lockTimerTimeInterval = _lockTimerTimeInterval;
 
 - (instancetype)init {
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-
-    self = [super initWithHasTouchID:authManager.touchIdEnabled hasFaceID:authManager.faceIdEnabled];
+    self = [super initWithHasTouchID:DSBiometricsAuthenticator.touchIDEnabled
+                           hasFaceID:DSBiometricsAuthenticator.faceIDEnabled];
     if (self) {
         DWGlobalOptions *globalOptions = [DWGlobalOptions sharedInstance];
         _lockTimerTimeInterval = @(globalOptions.autoLockAppInterval);
@@ -93,14 +93,13 @@ uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DUFFS / 2;
 }
 
 - (NSNumber *)spendingConfirmationLimit {
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-    const uint64_t value = chainsManager.spendingLimit;
+    const uint64_t value = [DSAuthenticationManager sharedInstance].biometricSpendingLimit;
     return @(value);
 }
 
 - (void)setSpendingConfirmationLimit:(NSNumber *)spendingConfirmationLimit {
     const long long limit = spendingConfirmationLimit.longLongValue;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
+    [[DSAuthenticationManager sharedInstance] setBiometricSpendingLimitIfAuthenticated:limit];
 }
 
 #pragma mark - Actions

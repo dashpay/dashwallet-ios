@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
 
     const uint64_t limit = biometricsEnabled ? DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT : 0;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
+    [[DSAuthenticationManager sharedInstance] setBiometricSpendingLimitIfAuthenticated:limit];
 }
 
 - (BOOL)balanceHidden {
@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
               authenticateWithPrompt:nil
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticated, BOOL cancelled) {
+                          completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                               if (continueBlock) {
                                   DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
                                   authManager.didAuthenticate = NO;
@@ -121,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
               authenticateWithPrompt:nil
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                          completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                               if (authenticatedOrSuccess) {
                                   if (enabled) {
                                       __weak typeof(self) weakSelf = self;

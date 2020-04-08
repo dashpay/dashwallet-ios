@@ -30,7 +30,7 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
         [contentSizeCategory isEqualToString:UIContentSizeCategorySmall] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategoryMedium] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategoryLarge]) {
-        size = CGSizeMake(79.0, 79.0);
+        size = CGSizeMake(80.0, 80.0);
     }
     else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraLarge]) {
         size = CGSizeMake(88.0, 88.0);

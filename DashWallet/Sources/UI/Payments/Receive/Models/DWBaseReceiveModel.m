@@ -26,6 +26,9 @@ static CGSize QRCodeSizeBasic(void) {
     if (IS_IPAD) {
         return CGSizeMake(360.0, 360.0);
     }
+    else if (IS_IPHONE_5_OR_LESS) {
+        return CGSizeMake(220.0, 220.0);
+    }
     else {
         const CGFloat screenWidth = CGRectGetWidth([UIScreen mainScreen].bounds);
         const CGFloat padding = 38.0;
@@ -49,7 +52,7 @@ static CGSize HoleSize(BOOL hasAmount) {
         return CGSizeMake(84.0, 84.0); // 2 + 80(logo size) + 2
     }
     else if (IS_IPHONE_5_OR_LESS) {
-        return CGSizeMake(58.0, 58.0);
+        return CGSizeMake(48.0, 48.0);
     }
     else {
         if (hasAmount) {

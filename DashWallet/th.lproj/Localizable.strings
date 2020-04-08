@@ -105,7 +105,7 @@
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
 
 /* No comment provided by engineer. */
-"Block #%d of %d" = "Block #%1$d of %2$d";
+"Block #%d of %d" = "กลุ่ม # %1$d of %2$d";
 
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "ซื้อ & ขาย Dash";
@@ -317,6 +317,9 @@
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "โอนเงินภายใน";
 
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
 /* Invalid transaction */
 "Invalid" = "ไม่ถูกต้อง";
 
@@ -391,9 +394,6 @@
 
 /* No comment provided by engineer. */
 "Moved from" = "เคลื่อนย้ายจาก";
-
-/* No comment provided by engineer. */
-"Moved internally to" = "เคลื่อย้ายภายในไปสู่";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "ย้ายไปยังที่อยู่";
@@ -492,10 +492,10 @@
 "Quick Receive" = "ได้รับอย่างรวดเร็ว";
 
 /* No comment provided by engineer. */
-"Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
+"Quorums validated: %d/%d" = "องค์ประชุมที่ได้รับการรับรอง%1$d/%2$d";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
-"Rate: %@ = %@" = "Rate: %1$@ = %2$@";
+"Rate: %@ = %@" = "ราคา: %1$@ = %2$@";
 
 /* No comment provided by engineer. */
 "Receive" = "ได้รับ";
@@ -504,7 +504,7 @@
 "Received" = "ได้รับ";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"Received %@ (%@)" = "ได้รับ %1$@(%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "ได้รับที่";
@@ -522,7 +522,7 @@
 "Recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
+"Recovery phrase must have %d words" = "การกู้คืนวลีต้องมี %d คำ";
 
 /* No comment provided by engineer. */
 "Registered from" = "ลงทะเบียนจาก";
@@ -606,7 +606,7 @@
 "Send" = "ส่ง";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "ส่ง %1$@ (%2$@) จากกุญแจส่วนตัวไปยังกระเป๋าสตางค์ของคุณ เครือข่ายของ Dash จะได้รับค่าธรรมเนียมของ %3$@ (%4$@)";
 
 /* Send by (scanning QR code) */
 "Send by" = "ส่งจาก";
@@ -651,7 +651,7 @@
 "Sent to" = "ส่งไปยัง";
 
 /* No comment provided by engineer. */
-"Set a trusted node" = "Set a trusted node";
+"Set a trusted node" = "ติดตั้ง node ที่เชื่อถือได้";
 
 /* No comment provided by engineer. */
 "Set PIN" = "ตั้งค่า PIN";
@@ -693,10 +693,10 @@
 "Swept!" = "ลบล้าง";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Switch to Mainnet" = "Switch to Mainnet";
+"Switch to Mainnet" = "เปลี่ยนเป็น Mainnet";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Switch to Testnet" = "Switch to Testnet";
+"Switch to Testnet" = "เปลี่ยนเป็น Testnet";
 
 /* No comment provided by engineer. */
 "Sync Failed" = "ซิงค์ล้มเหลว";
@@ -720,13 +720,13 @@
 "There are no transactions to display" = "ไม่มีธุรกรรมเพื่อแสดง";
 
 /* No comment provided by engineer. */
-"This app is open source:" = "This app is open source:";
+"This app is open source:" = "แอพพลิเคชั่นนี้คือ ซอฟต์แวร์ที่เปิดเผยหลักการหรือแหล่งที่มาของเทคโนโลยีของซอฟต์แวร์นั้นให้บุคคลภายนอกได้ใช้ ภายใต้เงื่อนไขบางประการที่เปิดโอกาสให้ผู้ใช้ทำการแก้ไข ดัดแปลงและเผยแพร่ซอร์สโค้ดได้ ภายใต้เงื่อนไขทางข้อตกลงทางกฎหมาย";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "ต้องใช้ PIN นี้เพื่อปลดล็อคแอพของคุณทุกครั้งที่ใช้";
 
 /* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
+"This recovery phrase is your access to the funds in this wallet." = "วลีกู้คืนนี้จะทำให้คุณเข้าถึงจำนวนเงินในวอลเล็ท";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "ธุรกรรมนี้อาจใช้เวลาหลายนาทีในการชำระ";
@@ -738,10 +738,10 @@
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
 
 /* No comment provided by engineer. */
-"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+"This will move all coins from that wallet to your wallet on this device." = "จะทำการย้ายเหรียญทั้งหมดของมายังวอลเล็ทบนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
-"Tools" = "Tools";
+"Tools" = "เครื่องมือ";
 
 /* No comment provided by engineer. */
 "Total" = "ทั้งหมด";
@@ -762,55 +762,55 @@
 "Transfer from Uphold" = "Transfer from Uphold";
 
 /* An action */
-"Try again" = "Try again";
+"Try again" = "ลองอีกครั้ง";
 
 /* Alert title */
-"Turn device passcode on" = "Turn device passcode on";
+"Turn device passcode on" = "เปิดรหัสผ่านของอุปกรณ์";
 
 /* No comment provided by engineer. */
-"Unable to connect" = "Unable to connect";
+"Unable to connect" = "ไม่สามารถเชื่อมต่อ";
 
 /* No comment provided by engineer. */
-"Unable to get new QR code" = "Unable to get new QR code";
+"Unable to get new QR code" = "ไม่สามารถได้รับโค้ด QR ใหม่";
 
 /* No comment provided by engineer. */
-"Unsupported or corrupted document" = "Unsupported or corrupted document";
+"Unsupported or corrupted document" = "ไม่รับรอง หรือเอกสารได้รับความเสียหาย";
 
 /* No comment provided by engineer. */
-"Unsupported URL" = "Unsupported URL";
+"Unsupported URL" = "ไม่รับรองแหล่งที่มาของทรัพยากร URL";
 
 /* ex., Updated: 27.12, 8:30 */
-"Updated: %@" = "Updated: %@";
+"Updated: %@" = "อัพเดต: %@";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Used" = "Used";
+"Used" = "ใช้แล้ว";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "Used at IP address";
+"Used at IP address" = "ใช้ที่ที่อยู่ IP";
 
 /* No comment provided by engineer. */
-"Verified Successfully" = "Verified Successfully";
+"Verified Successfully" = "ตรวจสอบสำเร็จ";
 
 /* No comment provided by engineer. */
-"Verify" = "Verify";
+"Verify" = "ตรวจสอบ";
 
 /* adjective, security level */
-"Very High" = "Very High";
+"Very High" = "สูงมาก";
 
 /* No comment provided by engineer. */
-"View in Explorer" = "View in Explorer";
+"View in Block Explorer" = "View in Block Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "View passphrase, backup wallet…";
+"View passphrase, backup wallet…" = "ดูวลี, สำรองวอลเล็ท...";
 
 /* No comment provided by engineer. */
-"View Recovery Phrase" = "View Recovery Phrase";
+"View Recovery Phrase" = "ดูวลีกู้คืน";
 
 /* No comment provided by engineer. */
-"Voting Address" = "Voting Address";
+"Voting Address" = "ที่อยู่ซึ่งใช้ในการออกเสียงลงคะแนน";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
@@ -822,64 +822,64 @@
 "Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
-"Warning" = "Warning";
+"Warning" = "คำเตือน";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
 
 /* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
+"We are about to show you the secret key to your wallet." = "เรากำลังจะแสดงให้คุณเห็นถึง การเข้ารหัสและถอดรหัสโดยใช้กุญแจรหัสตัวเดียวกันในการเข้าถึงกระเป๋าสตางค์ของคุณ";
 
 /* No comment provided by engineer. */
-"We do not store this recovery phrase." = "We do not store this recovery phrase.";
+"We do not store this recovery phrase." = "เราไม่เก็บรักษาวลีกู้คืนนี้";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดระหว่างการย้ายข้อมูล การสแกน Blockchain ใหม่อีกครั้งจะช่วยแก้ปัญหานี้หรือคุณอาจจะต้องลองอีกครั้ง  ควรทำการสแกนซ้ำโดยใช้ wifi โดยจะใช้เวลาประมาณครึ่งชั่วโมง  เงินของคุณจะสามารถใช้ได้เมื่อกระบวนการซิงค์เสร็จสมบูรณ์";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดครั้งล่าสุดที่ถูกเปิด คุณต้องการที่จะช่วยเราแก้ไขปัญหานี้โดยรายงานข้อมูลหรือไม่? ประวัติธุรกรรมและข้อมูลส่วนตัวอื่นๆของคุณจะไม่ถูกแชร์";
 
 /* No comment provided by engineer. */
-"We Upgraded" = "We Upgraded";
+"We Upgraded" = "อัพเกรด";
 
 /* No comment provided by engineer. */
-"Welcome" = "Welcome";
+"Welcome" = "ยินดีต้อนรับ";
 
 /* No comment provided by engineer. */
-"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "เมื่อธุรกรรมถูกยืนยัน วอลเล็ทอื่นๆจะไม่มีจราคาและไม่ควรนำมาใช้อีกครั้งเพื่อความปลอดภัย";
 
 /* No comment provided by engineer. */
 "Wipe" = "ลบล้าง";
 
 /* No comment provided by engineer. */
-"Wipe Wallet" = "Wipe Wallet";
+"Wipe Wallet" = "รีเซ็ตกระเป๋าสตางค์";
 
 /* No comment provided by engineer. */
-"with Dash blockchain" = "with Dash blockchain";
+"with Dash blockchain" = "กับ Dash Blockchain";
 
 /* No comment provided by engineer. */
-"You are about to sweep funds from another Dash Wallet." = "You are about to sweep funds from another Dash Wallet.";
+"You are about to sweep funds from another Dash Wallet." = "คุณกำลังจะเคลื่อนย้ายเงินจาก Dash Wallet อื่น";
 
 /* No comment provided by engineer. */
-"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "คุณกำลังจะล้างวอลเล็ทนี้จากอุปกรณ์นี้ เงินทุนที่เกี่ยวข้องกับกระเป๋าเงินนี้สามารถเรียกคืนได้หากคุณมีวลีกู้คืนของคุณ";
 
 /* No comment provided by engineer. */
-"You can authenticate with Face ID for payments below" = "You can authenticate with Face ID for payments below";
+"You can authenticate with Face ID for payments below" = "คุณสามารถตรวจสอบด้วย Face ID สำหรับการชำระเงินด้านล่าง";
 
 /* No comment provided by engineer. */
-"You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
+"You can authenticate with Touch ID for payments below" = "คุณสามารถตรวจสอบด้วย Touch ID สำหรับการชำระเงินด้านล่าง";
 
 /* No comment provided by engineer. */
-"You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
+"You must enter your PIN in order to enter Dash Wallet" = "คุณต้องใส่รหัสผ่านเพื่อทำการเข้า Dash Wallet";
 
 /* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "คุณได้รับ Dash! หากคุณทำอุปกรณ์นี้หายคุณจะเสียเงิน รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าเงินของคุณบนอุปกรณ์อื่น";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "คุณจะต้องออกจากระบบของเว็บไซต์ Uphold โดยใช้เบราว์เซอร์ของคุณ";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "คุณจะต้องใช้วลีกู้คืนนี้เพื่อเข้าถึงเงินทุนของคุณหากอุปกรณ์นี้สูญหายได้รับความเสียหายหรือหาก Dash Wallet เคยถอนการติดตั้งโดยไม่ได้ตั้งใจจากอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";
@@ -888,4 +888,4 @@
 "Your Uphold account Dash balance is" = "ยอด Dash ของบัญชี Uphold ของคุณคือ";
 
 /* No comment provided by engineer. */
-"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";

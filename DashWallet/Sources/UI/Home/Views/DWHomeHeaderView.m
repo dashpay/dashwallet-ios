@@ -18,6 +18,7 @@
 #import "DWHomeHeaderView.h"
 
 #import "DWBalancePayReceiveButtonsView.h"
+#import "DWShortcutAction.h"
 #import "DWShortcutsView.h"
 #import "DWSyncView.h"
 
@@ -117,6 +118,14 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - DWBalancePayReceiveButtonsViewDelegate
+
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+              balanceLongPressAction:(UIControl *)sender {
+    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
+    [self.shortcutsDelegate shortcutsView:self.balancePayReceiveButtonsView
+                          didSelectAction:action
+                                   sender:sender];
+}
 
 - (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
                      payButtonAction:(UIButton *)sender {
