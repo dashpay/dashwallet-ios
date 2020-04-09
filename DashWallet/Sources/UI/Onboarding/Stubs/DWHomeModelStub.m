@@ -155,6 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadTxDataSource {
     self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:self.stubTxs
+                                                                registrationStatus:[self.dashPayModel registrationStatus]
                                                                       dataProvider:self.dataProvider];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];

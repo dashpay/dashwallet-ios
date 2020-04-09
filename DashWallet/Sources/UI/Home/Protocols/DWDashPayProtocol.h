@@ -26,6 +26,8 @@ typedef NS_ENUM(NSUInteger, DWDashPayModelRegistrationState) {
     DWDashPayModelRegistrationState_Success,
 };
 
+@class DWDPRegistrationStatus;
+
 @protocol DWDashPayProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, copy) NSString *username;
@@ -36,6 +38,8 @@ typedef NS_ENUM(NSUInteger, DWDashPayModelRegistrationState) {
 @property (nullable, nonatomic, copy) void (^stateUpdateHandler)(id<DWDashPayProtocol> dashPayModel);
 
 - (void)createUsername:(NSString *)username;
+
+- (nullable DWDPRegistrationStatus *)registrationStatus;
 
 @end
 

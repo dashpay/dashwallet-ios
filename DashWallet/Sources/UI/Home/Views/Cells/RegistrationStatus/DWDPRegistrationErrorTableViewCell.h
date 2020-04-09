@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,21 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSTransaction;
 @class DWDPRegistrationStatus;
 
-@interface DWTransactionListDataSource : NSObject <UITableViewDataSource>
+@interface DWDPRegistrationErrorTableViewCell : UITableViewCell
 
-@property (nullable, nonatomic, weak) id<DWDPRegistrationErrorRetryDelegate> retryDelegate;
-
-@property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
-@property (readonly, copy, nonatomic) NSArray<DSTransaction *> *items;
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (readonly, nonatomic, assign) BOOL showsRegistrationStatus;
-
-- (nullable DSTransaction *)transactionForIndexPath:(NSIndexPath *)indexPath;
-
-- (instancetype)init NS_UNAVAILABLE;
+@property (nullable, nonatomic, strong) DWDPRegistrationStatus *status;
+@property (nullable, nonatomic, weak) id<DWDPRegistrationErrorRetryDelegate> delegate;
 
 @end
 

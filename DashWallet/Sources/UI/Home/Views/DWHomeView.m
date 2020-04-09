@@ -17,6 +17,10 @@
 
 #import "DWHomeView.h"
 
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
@@ -31,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
                           UITableViewDataSource,
                           UITableViewDelegate,
                           DWHomeModelUpdatesObserver,
-                          DWTxListHeaderViewDelegate>
+                          DWTxListHeaderViewDelegate,
+                          DWDPRegistrationErrorRetryDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
@@ -76,6 +81,9 @@ NS_ASSUME_NONNULL_BEGIN
         NSArray<NSString *> *cellIds = @[
             DWTxListEmptyTableViewCell.dw_reuseIdentifier,
             DWTxListTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
         ];
         for (NSString *cellId in cellIds) {
             UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -127,6 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeModel:(id<DWHomeProtocol>)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
     self.currentDataSource = dataSource;
+    dataSource.retryDelegate = self;
 
     if (dataSource.isEmpty) {
         self.tableView.dataSource = self;
@@ -135,13 +144,15 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         self.tableView.dataSource = dataSource;
 
-        if (shouldAnimate && self.window) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-        else {
-            [self.tableView reloadData];
-        }
+        [self.tableView reloadData];
+
+        //        if (shouldAnimate && self.window) {
+        //            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+        //                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        //        }
+        //        else {
+        //            [self.tableView reloadData];
+        //        }
     }
 }
 
@@ -172,8 +183,15 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSTransaction *transaction = self.currentDataSource.items[indexPath.row];
-    [self.delegate homeView:self didSelectTransaction:transaction];
+    DSTransaction *transaction = [self.currentDataSource transactionForIndexPath:indexPath];
+    if (transaction) {
+        [self.delegate homeView:self didSelectTransaction:transaction];
+    }
+    else { // registration status cell
+        if (self.currentDataSource.registrationStatus.state == DWDPRegistrationState_Done) {
+            // TODO: impl
+        }
+    }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -200,6 +218,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender {
     [self.delegate homeView:self receiveButtonAction:sender];
+}
+
+#pragma mark - DWDPRegistrationErrorRetryDelegate
+
+- (void)registrationErrorRetryAction {
+#warning TODO impl registration retry
 }
 
 @end

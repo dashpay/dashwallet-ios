@@ -17,6 +17,7 @@
 
 #import "DWDashPayModel.h"
 
+#import "DWDPRegistrationStatus.h"
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -105,6 +106,10 @@ NS_ASSUME_NONNULL_END
                                                                                                          isNew:YES];
                                                         }];
     }
+}
+
+- (nullable DWDPRegistrationStatus *)registrationStatus {
+    return [[DWDPRegistrationStatus alloc] initWithState:DWDPRegistrationState_ProcessingPayment failed:NO username:@"test"];
 }
 
 #pragma mark - Private

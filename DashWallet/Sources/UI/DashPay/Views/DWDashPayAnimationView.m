@@ -93,59 +93,15 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        DWAnimatedShapeLayer *leftSideLayer = [DWAnimatedShapeLayer layer];
-        leftSideLayer.fillColor = [UIColor dw_darkBlueColor].CGColor;
-        leftSideLayer.path = LeftSidePath().CGPath;
-        leftSideLayer.opacity = 0;
-        leftSideLayer.transform = LeftSideTransform();
-        [self.layer addSublayer:leftSideLayer];
-        _leftSideLayer = leftSideLayer;
+        [self setupView];
+    }
+    return self;
+}
 
-        DWAnimatedShapeLayer *rightSideLayer = [DWAnimatedShapeLayer layer];
-        rightSideLayer.fillColor = [UIColor dw_darkBlueColor].CGColor;
-        rightSideLayer.path = RightSidePath().CGPath;
-        rightSideLayer.opacity = 0;
-        rightSideLayer.transform = RightSideTransform();
-        [self.layer addSublayer:rightSideLayer];
-        _rightSideLayer = rightSideLayer;
-
-        DWAnimatedShapeLayer *topSideLayer = [DWAnimatedShapeLayer layer];
-        topSideLayer.fillColor = [UIColor colorWithRed:166.0 / 255.0 green:215.0 / 255.0 blue:245.0 / 255.0 alpha:1.0].CGColor;
-        topSideLayer.path = TopSidePath().CGPath;
-        topSideLayer.opacity = 0;
-        topSideLayer.transform = TopSideTransform();
-        [self.layer addSublayer:topSideLayer];
-        _topSideLayer = topSideLayer;
-
-        UIImage *headImage = [UIImage imageNamed:@"dp_animation_head"];
-        CALayer *leftHeadLayer = [CALayer layer];
-        leftHeadLayer.contents = (id)headImage.CGImage;
-        leftHeadLayer.zPosition = 10;
-        leftHeadLayer.opacity = 0;
-        [self.layer addSublayer:leftHeadLayer];
-        _leftHeadLayer = leftHeadLayer;
-
-        UIImage *bodyImage = [UIImage imageNamed:@"dp_animation_body"];
-        CALayer *leftBodyLayer = [CALayer layer];
-        leftBodyLayer.contents = (id)bodyImage.CGImage;
-        leftBodyLayer.zPosition = 10;
-        leftBodyLayer.opacity = 0;
-        [self.layer addSublayer:leftBodyLayer];
-        _leftBodyLayer = leftBodyLayer;
-
-        CALayer *rightHeadLayer = [CALayer layer];
-        rightHeadLayer.contents = (id)headImage.CGImage;
-        rightHeadLayer.zPosition = 10;
-        rightHeadLayer.opacity = 0;
-        [self.layer addSublayer:rightHeadLayer];
-        _rightHeadLayer = rightHeadLayer;
-
-        CALayer *rightBodyLayer = [CALayer layer];
-        rightBodyLayer.contents = (id)bodyImage.CGImage;
-        rightBodyLayer.zPosition = 10;
-        rightBodyLayer.opacity = 0;
-        [self.layer addSublayer:rightBodyLayer];
-        _rightBodyLayer = rightBodyLayer;
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupView];
     }
     return self;
 }
@@ -203,6 +159,62 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - Private
+
+- (void)setupView {
+    DWAnimatedShapeLayer *leftSideLayer = [DWAnimatedShapeLayer layer];
+    leftSideLayer.fillColor = [UIColor dw_darkBlueColor].CGColor;
+    leftSideLayer.path = LeftSidePath().CGPath;
+    leftSideLayer.opacity = 0;
+    leftSideLayer.transform = LeftSideTransform();
+    [self.layer addSublayer:leftSideLayer];
+    _leftSideLayer = leftSideLayer;
+
+    DWAnimatedShapeLayer *rightSideLayer = [DWAnimatedShapeLayer layer];
+    rightSideLayer.fillColor = [UIColor dw_darkBlueColor].CGColor;
+    rightSideLayer.path = RightSidePath().CGPath;
+    rightSideLayer.opacity = 0;
+    rightSideLayer.transform = RightSideTransform();
+    [self.layer addSublayer:rightSideLayer];
+    _rightSideLayer = rightSideLayer;
+
+    DWAnimatedShapeLayer *topSideLayer = [DWAnimatedShapeLayer layer];
+    topSideLayer.fillColor = [UIColor colorWithRed:166.0 / 255.0 green:215.0 / 255.0 blue:245.0 / 255.0 alpha:1.0].CGColor;
+    topSideLayer.path = TopSidePath().CGPath;
+    topSideLayer.opacity = 0;
+    topSideLayer.transform = TopSideTransform();
+    [self.layer addSublayer:topSideLayer];
+    _topSideLayer = topSideLayer;
+
+    UIImage *headImage = [UIImage imageNamed:@"dp_animation_head"];
+    CALayer *leftHeadLayer = [CALayer layer];
+    leftHeadLayer.contents = (id)headImage.CGImage;
+    leftHeadLayer.zPosition = 10;
+    leftHeadLayer.opacity = 0;
+    [self.layer addSublayer:leftHeadLayer];
+    _leftHeadLayer = leftHeadLayer;
+
+    UIImage *bodyImage = [UIImage imageNamed:@"dp_animation_body"];
+    CALayer *leftBodyLayer = [CALayer layer];
+    leftBodyLayer.contents = (id)bodyImage.CGImage;
+    leftBodyLayer.zPosition = 10;
+    leftBodyLayer.opacity = 0;
+    [self.layer addSublayer:leftBodyLayer];
+    _leftBodyLayer = leftBodyLayer;
+
+    CALayer *rightHeadLayer = [CALayer layer];
+    rightHeadLayer.contents = (id)headImage.CGImage;
+    rightHeadLayer.zPosition = 10;
+    rightHeadLayer.opacity = 0;
+    [self.layer addSublayer:rightHeadLayer];
+    _rightHeadLayer = rightHeadLayer;
+
+    CALayer *rightBodyLayer = [CALayer layer];
+    rightBodyLayer.contents = (id)bodyImage.CGImage;
+    rightBodyLayer.zPosition = 10;
+    rightBodyLayer.opacity = 0;
+    [self.layer addSublayer:rightBodyLayer];
+    _rightBodyLayer = rightBodyLayer;
+}
 
 - (void)stopAllAnimations {
     NSArray<CALayer *> *layers = @[ self.leftSideLayer, self.rightSideLayer, self.topSideLayer ];

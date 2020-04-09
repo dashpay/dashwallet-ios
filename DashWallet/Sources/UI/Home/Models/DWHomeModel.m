@@ -102,14 +102,15 @@ static BOOL IsJailbroken(void) {
 
         _syncModel = [[DWSyncModel alloc] initWithReachability:_reachability];
 
+        _dashPayModel = [[DWDashPayModel alloc] init];
+
         // set empty datasource
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
+                                                                registrationStatus:[_dashPayModel registrationStatus]
                                                                       dataProvider:_dataProvider];
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
-
-        _dashPayModel = [[DWDashPayModel alloc] init];
 
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
@@ -349,6 +350,7 @@ static BOOL IsJailbroken(void) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
                                                            forDisplayMode:DWHomeTxDisplayMode_Received];
         _receivedDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                     registrationStatus:[self.dashPayModel registrationStatus]
                                                                            dataProvider:self.dataProvider];
     }
 
@@ -360,6 +362,7 @@ static BOOL IsJailbroken(void) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
                                                            forDisplayMode:DWHomeTxDisplayMode_Sent];
         _sentDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                 registrationStatus:[self.dashPayModel registrationStatus]
                                                                        dataProvider:self.dataProvider];
     }
 
@@ -371,6 +374,7 @@ static BOOL IsJailbroken(void) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
                                                            forDisplayMode:DWHomeTxDisplayMode_Rewards];
         _rewardsDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                    registrationStatus:[self.dashPayModel registrationStatus]
                                                                           dataProvider:self.dataProvider];
     }
 
@@ -401,6 +405,7 @@ static BOOL IsJailbroken(void) {
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                    registrationStatus:[self.dashPayModel registrationStatus]
                                                                           dataProvider:self.dataProvider];
         self.receivedDataSource = nil;
         self.sentDataSource = nil;
