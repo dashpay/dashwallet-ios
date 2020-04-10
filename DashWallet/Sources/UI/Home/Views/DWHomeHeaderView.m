@@ -114,6 +114,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                           else {
                               self.profileView.hidden = YES;
                           }
+                          [self.delegate homeHeaderViewDidUpdateContents:self];
                       }];
     }
     return self;
