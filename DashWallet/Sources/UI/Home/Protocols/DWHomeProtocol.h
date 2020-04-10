@@ -18,6 +18,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DWBalanceProtocol.h"
+#import "DWDashPayProtocol.h"
 #import "DWShortcutsProtocol.h"
 #import "DWSyncContainerProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
@@ -29,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWPayModelProtocol;
 @protocol DWReceiveModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
-@protocol DWDashPayProtocol;
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
 

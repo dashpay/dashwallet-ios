@@ -15,11 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWDashPayProtocol.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayModel : NSObject <DWDashPayProtocol>
+@interface DWDashPayProfileView : UIView
+
+@property (nullable, nonatomic, copy) NSString *username;
+
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
 

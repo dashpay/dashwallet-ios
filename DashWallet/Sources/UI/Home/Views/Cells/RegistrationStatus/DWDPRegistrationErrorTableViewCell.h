@@ -15,11 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWDashPayProtocol.h"
+#import <UIKit/UIKit.h>
+
+#import "DWDPRegistrationErrorRetryDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayModel : NSObject <DWDashPayProtocol>
+@class DWDPRegistrationStatus;
+
+@interface DWDPRegistrationErrorTableViewCell : UITableViewCell
+
+@property (nullable, nonatomic, strong) DWDPRegistrationStatus *status;
+@property (nullable, nonatomic, weak) id<DWDPRegistrationErrorRetryDelegate> delegate;
 
 @end
 

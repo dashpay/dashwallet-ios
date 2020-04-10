@@ -119,6 +119,9 @@ NS_ASSUME_NONNULL_BEGIN
     else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
         dataItem.transactionType = DWTransactionType_MasternodeRevoke;
     }
+    else if ([transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+        dataItem.transactionType = DWTransactionType_BlockchainIdentityRegistration;
+    }
     else {
         dataItem.transactionType = DWTransactionType_Classic;
     }

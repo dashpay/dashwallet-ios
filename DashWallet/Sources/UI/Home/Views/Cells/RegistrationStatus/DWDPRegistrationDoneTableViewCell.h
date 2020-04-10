@@ -15,11 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWDashPayProtocol.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayModel : NSObject <DWDashPayProtocol>
+@class DWDPRegistrationStatus;
+
+@interface DWDPRegistrationDoneTableViewCell : UITableViewCell
+
+@property (nullable, nonatomic, strong) DWDPRegistrationStatus *status;
 
 @end
 

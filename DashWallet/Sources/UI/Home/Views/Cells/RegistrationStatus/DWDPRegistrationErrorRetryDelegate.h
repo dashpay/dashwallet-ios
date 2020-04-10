@@ -15,11 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWDashPayProtocol.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayModel : NSObject <DWDashPayProtocol>
+@protocol DWDPRegistrationErrorRetryDelegate <NSObject>
+
+- (void)registrationErrorRetryAction;
 
 @end
 

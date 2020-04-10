@@ -30,15 +30,15 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
-        self.layer.masksToBounds = YES;
+        [self setup];
+    }
+    return self;
+}
 
-        UILabel *letterLabel = [[UILabel alloc] init];
-        letterLabel.font = [UIFont dw_regularFontOfSize:30];
-        letterLabel.textAlignment = NSTextAlignmentCenter;
-        letterLabel.textColor = [UIColor dw_lightTitleColor];
-        [self addSubview:letterLabel];
-        _letterLabel = letterLabel;
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setup];
     }
     return self;
 }
@@ -51,12 +51,57 @@
     self.letterLabel.frame = self.bounds;
 }
 
+- (void)setBackgroundMode:(DWDPAvatarBackgroundMode)backgroundMode {
+    _backgroundMode = backgroundMode;
+
+    [self updateBackgroundColor];
+}
+
 - (NSString *)letter {
     return self.letterLabel.text;
 }
 
 - (void)setLetter:(NSString *)letter {
     self.letterLabel.text = letter;
+
+    [self updateBackgroundColor];
+}
+
+#pragma mark - Private
+
+- (void)setup {
+    self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
+    self.layer.masksToBounds = YES;
+
+    UILabel *letterLabel = [[UILabel alloc] init];
+    letterLabel.font = [UIFont dw_regularFontOfSize:30];
+    letterLabel.textAlignment = NSTextAlignmentCenter;
+    letterLabel.textColor = [UIColor dw_lightTitleColor];
+    [self addSubview:letterLabel];
+    _letterLabel = letterLabel;
+}
+
+- (void)updateBackgroundColor {
+    UIColor *color = nil;
+    switch (self.backgroundMode) {
+        case DWDPAvatarBackgroundMode_DashBlue:
+            color = [UIColor dw_dashBlueColor];
+            break;
+
+        case DWDPAvatarBackgroundMode_Random: {
+            if (self.letter.length > 0) {
+                unichar firstChar = [self.letter characterAtIndex:0];
+                CGFloat hue = firstChar / 65535.0; // unsigned short max
+                color = [UIColor colorWithHue:hue saturation:0.3 brightness:0.6 alpha:1.0];
+            }
+            else {
+                color = [UIColor blackColor];
+            }
+            break;
+        }
+    }
+    NSParameterAssert(color);
+    self.layer.backgroundColor = color.CGColor;
 }
 
 @end

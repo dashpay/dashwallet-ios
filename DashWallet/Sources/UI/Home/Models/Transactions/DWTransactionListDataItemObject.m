@@ -114,6 +114,8 @@ NS_ASSUME_NONNULL_BEGIN
             return NSLocalizedString(@"Masternode Update", nil);
         case DWTransactionType_MasternodeRevoke:
             return NSLocalizedString(@"Masternode Revocation", nil);
+        case DWTransactionType_BlockchainIdentityRegistration:
+            return NSLocalizedString(@"DashPay Upgrade Fee", nil);
         default:
             break;
     }
