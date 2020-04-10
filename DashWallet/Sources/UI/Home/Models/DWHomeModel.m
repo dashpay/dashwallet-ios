@@ -143,6 +143,10 @@ static BOOL IsJailbroken(void) {
                                selector:@selector(chainWalletsDidChangeNotification:)
                                    name:DSChainWalletsDidChangeNotification
                                  object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(dashPayRegistrationStatusUpdatedNotification)
+                                   name:DWDashPayRegistrationStatusUpdatedNotification
+                                 object:nil];
 
         [self reloadTxDataSource];
     }
@@ -343,6 +347,10 @@ static BOOL IsJailbroken(void) {
     }
 }
 
+- (void)dashPayRegistrationStatusUpdatedNotification {
+    [self reloadTxDataSource];
+}
+
 #pragma mark - Private
 
 - (DWTransactionListDataSource *)receivedDataSource {
@@ -405,7 +413,7 @@ static BOOL IsJailbroken(void) {
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                    registrationStatus:[self.dashPayModel registrationStatus]
+                                                                    registrationStatus:self.dashPayModel.registrationStatus
                                                                           dataProvider:self.dataProvider];
         self.receivedDataSource = nil;
         self.sentDataSource = nil;

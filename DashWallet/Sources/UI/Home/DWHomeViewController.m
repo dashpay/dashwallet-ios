@@ -107,6 +107,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
+- (void)homeViewShowDashPayRegistrationCompleted:(DWHomeView *)homeView {
+    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
+    [self performActionForShortcut:action sender:homeView];
+}
+
 #pragma mark - DWShortcutsActionDelegate
 
 - (void)shortcutsView:(UIView *)view didSelectAction:(DWShortcutAction *)action sender:(UIView *)sender {

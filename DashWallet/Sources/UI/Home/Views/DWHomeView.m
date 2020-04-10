@@ -21,6 +21,7 @@
 #import "DWDPRegistrationErrorTableViewCell.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDashPayProtocol.h"
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
@@ -189,7 +190,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else { // registration status cell
         if (self.currentDataSource.registrationStatus.state == DWDPRegistrationState_Done) {
-            // TODO: impl
+            [self.delegate homeViewShowDashPayRegistrationCompleted:self];
         }
     }
 }
@@ -223,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWDPRegistrationErrorRetryDelegate
 
 - (void)registrationErrorRetryAction {
-#warning TODO impl registration retry
+    [self.model.dashPayModel retry];
 }
 
 @end

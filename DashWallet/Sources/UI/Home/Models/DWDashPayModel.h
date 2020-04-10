@@ -19,13 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSErrorDomain DWDashPayErrorDomain;
-
-typedef NS_ENUM(NSInteger, DWDashPayErrorCode) {
-    DWDashPayErrorCode_UnableToRegisterBU = 1,
-    DWDashPayErrorCode_CreateBUTxNotSigned = 2,
-};
-
 @interface DWDashPayModel : NSObject <DWDashPayProtocol>
 
 @end

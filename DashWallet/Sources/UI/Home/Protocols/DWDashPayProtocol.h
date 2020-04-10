@@ -19,27 +19,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWDashPayModelRegistrationState) {
-    DWDashPayModelRegistrationState_None,
-    DWDashPayModelRegistrationState_Initiated,
-    DWDashPayModelRegistrationState_Failure,
-    DWDashPayModelRegistrationState_Success,
-};
+extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 
 @class DWDPRegistrationStatus;
 
 @protocol DWDashPayProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, copy) NSString *username;
-
-@property (readonly, nonatomic, assign) DWDashPayModelRegistrationState registrationState;
+@property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
 
-@property (nullable, nonatomic, copy) void (^stateUpdateHandler)(id<DWDashPayProtocol> dashPayModel);
-
 - (void)createUsername:(NSString *)username;
-
-- (nullable DWDPRegistrationStatus *)registrationStatus;
+- (void)retry;
 
 @end
 

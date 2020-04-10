@@ -20,6 +20,7 @@
 #import "DWConfirmUsernameViewController.h"
 #import "DWContainerViewController.h"
 #import "DWCreateUsernameViewController.h"
+#import "DWDPRegistrationStatus.h"
 #import "DWRegistrationCompletedViewController.h"
 #import "DWUIKit.h"
 #import "DWUsernameHeaderView.h"
@@ -98,19 +99,10 @@ NS_ASSUME_NONNULL_END
     self.containerController = [[DWContainerViewController alloc] init];
     [self dw_embedChild:self.containerController inContainer:self.contentView];
 
-    __weak typeof(self) weakSelf = self;
-    self.dashPayModel.stateUpdateHandler = ^(id<DWDashPayProtocol> _Nonnull dashPayModel) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        if (dashPayModel.registrationState == DWDashPayModelRegistrationState_Failure) {
-            [strongSelf dw_displayErrorModally:dashPayModel.lastRegistrationError];
-        }
-
-        [strongSelf setCurrentStateController];
-    };
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(registrationStatusUpdatedNotification)
+                                                 name:DWDashPayRegistrationStatusUpdatedNotification
+                                               object:nil];
 
     [self setCurrentStateController];
 }
@@ -146,18 +138,26 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
+- (void)registrationStatusUpdatedNotification {
+    if (self.dashPayModel.lastRegistrationError) {
+        [self dw_displayErrorModally:self.dashPayModel.lastRegistrationError];
+    }
+
+    [self setCurrentStateController];
+}
+
 - (void)setCurrentStateController {
-    switch (self.dashPayModel.registrationState) {
-        case DWDashPayModelRegistrationState_None:
-        case DWDashPayModelRegistrationState_Failure:
-            [self showCreateUsernameController];
-            break;
-        case DWDashPayModelRegistrationState_Initiated:
-            [self showPendingController:self.dashPayModel.username];
-            break;
-        case DWDashPayModelRegistrationState_Success:
-            [self showRegistrationCompletedController:self.dashPayModel.username];
-            break;
+    if (self.dashPayModel.registrationStatus == nil || self.dashPayModel.registrationStatus.failed) {
+        [self showCreateUsernameController];
+
+        return;
+    }
+
+    if (self.dashPayModel.registrationStatus.state != DWDPRegistrationState_Done) {
+        [self showPendingController:self.dashPayModel.username];
+    }
+    else {
+        [self showRegistrationCompletedController:self.dashPayModel.username];
     }
 }
 
