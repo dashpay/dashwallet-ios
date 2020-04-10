@@ -19,15 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
-    DWDPAvatarBackgroundMode_DashBlue,
-    DWDPAvatarBackgroundMode_Random,
-};
+@interface DWDashPayProfileView : UIView
 
-@interface DWDPAvatarView : UIView
+@property (nullable, nonatomic, copy) NSString *username;
 
-@property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) NSString *letter;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
 
