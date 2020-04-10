@@ -2100,16 +2100,16 @@
 		2A5E4544243E0595006BA067 /* RegistrationStatus */ = {
 			isa = PBXGroup;
 			children = (
-				2A5E4545243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.h */,
-				2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */,
-				2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */,
-				2AFF01DC243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.h */,
-				2AFF01DD243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m */,
-				2AFF01DE243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.xib */,
-				2AFF01E1243F829F003718DC /* DWDPRegistrationErrorRetryDelegate.h */,
 				2AFF01E2243F8625003718DC /* DWDPRegistrationDoneTableViewCell.h */,
 				2AFF01E3243F8625003718DC /* DWDPRegistrationDoneTableViewCell.m */,
 				2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */,
+				2AFF01E1243F829F003718DC /* DWDPRegistrationErrorRetryDelegate.h */,
+				2AFF01DC243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.h */,
+				2AFF01DD243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m */,
+				2AFF01DE243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.xib */,
+				2A5E4545243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.h */,
+				2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */,
+				2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */,
 			);
 			path = RegistrationStatus;
 			sourceTree = "<group>";

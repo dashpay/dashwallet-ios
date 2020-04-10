@@ -189,9 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self.delegate homeView:self didSelectTransaction:transaction];
     }
     else { // registration status cell
-        if (self.currentDataSource.registrationStatus.state == DWDPRegistrationState_Done) {
-            [self.delegate homeViewShowDashPayRegistrationCompleted:self];
-        }
+        [self.delegate homeViewShowDashPayRegistrationFlow:self];
     }
 }
 

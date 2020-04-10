@@ -62,7 +62,7 @@
 }
 
 - (void)setLetter:(NSString *)letter {
-    self.letterLabel.text = letter;
+    self.letterLabel.text = [letter uppercaseString];
 
     [self updateBackgroundColor];
 }
@@ -91,7 +91,7 @@
         case DWDPAvatarBackgroundMode_Random: {
             if (self.letter.length > 0) {
                 unichar firstChar = [self.letter characterAtIndex:0];
-                CGFloat hue = firstChar / 65535.0; // unsigned short max
+                CGFloat hue = firstChar / 90.0; // 90: ascii code of Z
                 color = [UIColor colorWithHue:hue saturation:0.3 brightness:0.6 alpha:1.0];
             }
             else {

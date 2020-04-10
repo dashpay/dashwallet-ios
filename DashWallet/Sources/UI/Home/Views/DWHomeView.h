@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeView:(DWHomeView *)homeView payButtonAction:(UIButton *)sender;
 - (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender;
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction;
-- (void)homeViewShowDashPayRegistrationCompleted:(DWHomeView *)homeView;
+- (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView;
 
 @end
 

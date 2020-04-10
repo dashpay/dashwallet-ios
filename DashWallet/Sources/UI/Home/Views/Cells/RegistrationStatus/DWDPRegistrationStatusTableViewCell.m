@@ -45,6 +45,12 @@ NS_ASSUME_NONNULL_END
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 }
 
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [super setHighlighted:highlighted animated:animated];
+
+    [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
+}
+
 - (void)setStatus:(DWDPRegistrationStatus *)status {
     _status = status;
 
