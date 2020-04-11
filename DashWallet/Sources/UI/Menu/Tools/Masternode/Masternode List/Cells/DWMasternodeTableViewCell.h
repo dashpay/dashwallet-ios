@@ -17,6 +17,8 @@
 
 #import "DWBaseFormTableViewCell.h"
 
+@class DSSimplifiedMasternodeEntry;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMasternodeTableViewCell : DWBaseFormTableViewCell

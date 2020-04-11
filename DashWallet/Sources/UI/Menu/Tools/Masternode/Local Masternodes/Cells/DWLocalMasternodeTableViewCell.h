@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSLocalMasternode;
+
 @interface DWLocalMasternodeTableViewCell : DWBaseFormTableViewCell
 
 - (void)configureWithModel:(DSLocalMasternode *)model

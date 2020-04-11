@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSLocalMasternode;
+
 @interface DWLocalMasternodeListModel : NSObject
 
 @property (readonly, copy, nonatomic) NSArray<DSLocalMasternode *> *items;

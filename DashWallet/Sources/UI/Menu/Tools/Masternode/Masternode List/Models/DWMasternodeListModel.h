@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSSimplifiedMasternodeEntry;
+
 @interface DWMasternodeListModel : NSObject
 
 @property (readonly, copy, nonatomic) NSArray<DSSimplifiedMasternodeEntry *> *items;

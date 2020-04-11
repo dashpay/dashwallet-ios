@@ -20,6 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSLocalMasternode;
+
 @interface DWLocalMasternodeControlViewController : KVOUIViewController
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;

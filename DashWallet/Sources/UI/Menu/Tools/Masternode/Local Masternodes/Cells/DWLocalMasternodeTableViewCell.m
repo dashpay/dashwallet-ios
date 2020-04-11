@@ -20,6 +20,7 @@
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "NSAttributedString+DWHighlightText.h"
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

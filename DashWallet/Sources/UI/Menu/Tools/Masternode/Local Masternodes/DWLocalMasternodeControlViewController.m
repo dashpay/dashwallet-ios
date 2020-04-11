@@ -24,6 +24,7 @@
 #import "DWSignPayloadModel.h"
 #import "DWSignPayloadViewController.h"
 #import "DWUIKit.h"
+#import <DashSync/DashSync.h>
 
 #define INPUT_CELL_HEIGHT 75
 #define PUBLIC_KEY_CELL_HEIGHT 150

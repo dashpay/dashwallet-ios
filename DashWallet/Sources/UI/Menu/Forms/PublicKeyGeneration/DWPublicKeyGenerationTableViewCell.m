@@ -16,9 +16,9 @@
 //
 
 #import "DWPublicKeyGenerationTableViewCell.h"
-
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
