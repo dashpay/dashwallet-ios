@@ -3999,7 +3999,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/scripts/dashsync_version.sh\"\n";
+			shellScript = "#\"${SRCROOT}/scripts/dashsync_version.sh\"\n";
 		};
 		2ADC722623B4071700D9DD37 /* Run Script Swift Format */ = {
 			isa = PBXShellScriptBuildPhase;

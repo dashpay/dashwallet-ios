@@ -1,7 +1,8 @@
 target 'dashwallet' do
   platform :ios, '11.0'
   
-  pod 'DashSync', :git => 'https://github.com/dashevo/dashsync-iOS/', :commit => 'debd950a54124cf85e1aa89cc6a6f643c763ec39'
+  pod 'DashSync', :path => '../DashSync/'
+  #:git => 'https://github.com/dashevo/dashsync-iOS/', :commit => 'debd950a54124cf85e1aa89cc6a6f643c763ec39'
   pod 'CloudInAppMessaging', '0.1.0'
   
   pod 'KVO-MVVM', '0.5.6'
@@ -39,8 +40,8 @@ target 'WatchApp Extension' do
 
 end
 
-post_install do |installer|
+#post_install do |installer|
     # update info about current DashSync version
     # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
-    system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
-end
+#    system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
+#end
