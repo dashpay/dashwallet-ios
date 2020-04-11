@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-CGFloat const DW_TABBAR_HEIGHT = 49.0;
+static CGFloat const DW_TABBAR_HEIGHT = 64.0;
 static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
 static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
@@ -94,6 +94,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             [self addSubview:button];
             [buttons addObject:button];
             _paymentsButton = button;
+
+#if SNAPSHOT
+            button.accessibilityIdentifier = @"tabbar_payments_button";
+#endif /* SNAPSHOT */
         }
 
         {
@@ -104,6 +108,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             [self addSubview:button];
             [buttons addObject:button];
             _othersButton = button;
+
+#if SNAPSHOT
+            button.accessibilityIdentifier = @"tabbar_menu_button";
+#endif /* SNAPSHOT */
         }
 
         _buttons = [buttons copy];
@@ -169,6 +177,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
 - (void)setPaymentsButtonOpened:(BOOL)opened {
     self.paymentsButton.opened = opened;
+}
+
+- (void)togglePaymentsOpenState {
+    [self paymentsButtonAction:self.paymentsButton];
 }
 
 #pragma mark - Actions

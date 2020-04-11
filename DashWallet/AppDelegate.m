@@ -21,15 +21,15 @@
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
 
-#import "DWAppRootViewController.h"
+#import "DWInitialViewController.h"
 #import "DWDataMigrationManager.h"
 #import "DWStartViewController.h"
 #import "DWStartModel.h"
-#import "DWCrashReporter.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
+#import "DWEnvironment.h"
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
@@ -105,9 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
     [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
-    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
-    if (migrationManager.shouldMigrate || crashReporter.shouldHandleCrashReports) {
+    if (migrationManager.shouldMigrate) {
         // start updating prices earlier than migration to update `secureTime`
         // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
         if (migrationManager.shouldMigrate) {
@@ -137,9 +136,8 @@ NS_ASSUME_NONNULL_BEGIN
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
     // Schedule background fetch if the wallet (DashSync) had been started
-    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
-    if (!migrationManager.shouldMigrate && !crashReporter.shouldHandleCrashReports) {
+    if (!migrationManager.shouldMigrate) {
         [[DashSync sharedSyncController] scheduleBackgroundFetch];
     }
 }
@@ -178,9 +176,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if (![DWURLParser allowsURLHandling]) {
+        return NO;
+    }
+    
     if (![DWURLParser canHandleURL:url]) {
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a dash URL", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okAction = [UIAlertAction
@@ -196,12 +198,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         return NO;
     }
     
-    DWAppRootViewController *rootController = (DWAppRootViewController *)self.window.rootViewController;
-    if ([rootController isKindOfClass:DWAppRootViewController.class]) {
-        [rootController handleURL:url];
+    DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
+    if ([controller isKindOfClass:DWInitialViewController.class]) {
+        [controller handleURL:url];
     }
     else {
-        NSAssert(NO, @"%@ is not supports handling URL: %@", self.window.rootViewController, url);
+        // TODO: defer action when start controller finish
+        DSLogVerbose(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
 
     return YES;
@@ -219,27 +222,30 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions wasDeferred:(BOOL)wasDeferred {
-    [[DWCrashReporter sharedInstance] enableCrashReporter];
-    
-    DWAppRootViewController *rootController = [[DWAppRootViewController alloc] init];
+    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
     if (wasDeferred) {
-        [rootController setLaunchingAsDeferredController];
+        [controller setLaunchingAsDeferredController];
     }
-    self.window.rootViewController = rootController;
+    self.window.rootViewController = controller;
     
     [self setupDashWalletComponentsWithOptions:launchOptions];
 }
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
-    // TODO: <redesign> impl
-//    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
-//        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
-//
-//        if (file.length > 0) {
-//            [[NSNotificationCenter defaultCenter] postNotificationName:BRFileNotification object:nil
-//                                                              userInfo:@{@"file":file}];
-//        }
-//    }
+    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
+        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
+
+        if (file.length > 0) {
+            DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
+            if ([controller isKindOfClass:DWInitialViewController.class]) {
+                [controller handleFile:file];
+            }
+            else {
+                // TODO: defer action when start controller finish
+                DSLogVerbose(@"Ignoring handle file. Root controller hasn't been set up yet");
+            }
+        }
+    }
     
     [[DashSync sharedSyncController] setupDashSyncOnce];
     

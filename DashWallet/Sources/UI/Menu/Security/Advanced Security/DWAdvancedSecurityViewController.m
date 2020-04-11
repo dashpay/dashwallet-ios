@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAdvancedSecurityViewController ()
 
-@property (null_resettable, nonatomic, strong) DWAdvancedSecurityModel *model;
+@property (nonatomic, strong) id<DWAdvancedSecurityModelProtocol> model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 @property (nonatomic, strong) DWSecurityStatusView *securityStatusView;
 
@@ -36,28 +36,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAdvancedSecurityViewController
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+- (instancetype)init {
+    return [self initWithModel:[[DWAdvancedSecurityModel alloc] init]];
+}
+
+- (instancetype)initWithModel:(id<DWAdvancedSecurityModelProtocol>)model {
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _model = model;
+
         self.title = NSLocalizedString(@"Advanced Security", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
-
     return self;
-}
-
-- (DWAdvancedSecurityModel *)model {
-    if (!_model) {
-        _model = [[DWAdvancedSecurityModel alloc] init];
-    }
-
-    return _model;
 }
 
 - (NSArray<DWBaseFormCellModel *> *)firstSectionItems {
     __weak typeof(self) weakSelf = self;
 
-    DWAdvancedSecurityModel *model = self.model;
+    id<DWAdvancedSecurityModelProtocol> model = self.model;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -91,17 +88,24 @@ NS_ASSUME_NONNULL_BEGIN
 
             return [strongSelf.model currentLockTimerTimeIntervalWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             model.lockTimerTimeInterval = model.lockTimerTimeIntervals[cellModel.selectedItemIndex];
             cellModel.title = [model titleForCurrentLockTimerTimeInterval];
 
             [strongSelf updateSecurityLevel];
+
+            UITableView *tableView = strongSelf.formController.tableView;
+            NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+            if (indexPath) {
+                [tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                                 withRowAnimation:UITableViewRowAnimationNone];
+            }
         };
         [items addObject:cellModel];
     }
@@ -112,7 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DWBaseFormCellModel *> *)secondSectionItems {
     __weak typeof(self) weakSelf = self;
 
-    DWAdvancedSecurityModel *model = self.model;
+    id<DWAdvancedSecurityModelProtocol> model = self.model;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -125,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        DWAdvancedSecurityModel *model = strongSelf.model;
+        id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
         model.spendingConfirmationEnabled = cellModel.on;
 
         if (model.canConfigureSpendingConfirmation) {
@@ -147,7 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return [[NSAttributedString alloc] init];
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             return [model spendingConfirmationString:model.spendingConfirmationValues.firstObject
                                                 font:font
                                                color:color];
@@ -158,7 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return [[NSAttributedString alloc] init];
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             return [model spendingConfirmationString:model.spendingConfirmationValues.lastObject
                                                 font:font
                                                color:color];
@@ -179,16 +183,23 @@ NS_ASSUME_NONNULL_BEGIN
 
             return [strongSelf.model currentSpendingConfirmationDescriptionWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             model.spendingConfirmationLimit = model.spendingConfirmationValues[cellModel.selectedItemIndex];
 
             [strongSelf updateSecurityLevel];
+
+            UITableView *tableView = strongSelf.formController.tableView;
+            NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+            if (indexPath) {
+                [tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                                 withRowAnimation:UITableViewRowAnimationNone];
+            }
         };
         [items addObject:cellModel];
     }
@@ -233,11 +244,7 @@ NS_ASSUME_NONNULL_BEGIN
     [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
     formController.tableView.tableFooterView = resetButton;
 
-    [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
-    [formController didMoveToParentViewController:self];
+    [self dw_embedChild:formController];
     self.formController = formController;
 
     [self reloadData];
@@ -314,11 +321,24 @@ NS_ASSUME_NONNULL_BEGIN
                              withRowAnimation:UITableViewRowAnimationNone];
 
             NSIndexPath *secondIndexPath = [NSIndexPath indexPathForRow:1 inSection:section];
+            UITableViewCell *animatedCell = [tableView cellForRowAtIndexPath:secondIndexPath];
+
             if (cellModel.on) {
+                animatedCell.contentView.alpha = 0.0;
+                [UIView animateWithDuration:[CATransaction animationDuration]
+                                 animations:^{
+                                     animatedCell.contentView.alpha = 1.0;
+                                 }];
+
                 [tableView insertRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];
             }
             else {
+                [UIView animateWithDuration:[CATransaction animationDuration]
+                                 animations:^{
+                                     animatedCell.contentView.alpha = 0.0;
+                                 }];
+
                 [tableView deleteRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];
             }

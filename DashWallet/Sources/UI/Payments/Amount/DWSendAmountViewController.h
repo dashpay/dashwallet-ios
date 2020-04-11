@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
                                paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
 
+- (void)insufficientFundsErrorWasShown;
+
 @end
 
 NS_ASSUME_NONNULL_END

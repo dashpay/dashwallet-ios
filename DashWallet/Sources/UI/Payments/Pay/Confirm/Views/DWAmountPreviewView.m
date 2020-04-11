@@ -17,6 +17,8 @@
 
 #import "DWAmountPreviewView.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWUIKit.h"
 #import "NSAttributedString+DWBuilder.h"
 

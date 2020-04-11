@@ -20,7 +20,8 @@
 #import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
-#import "DWBalanceDisplayOptions.h"
+#import "DWAdvancedSecurityModel.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWBiometricAuthModel.h"
 #import "DWGlobalOptions.h"
 
@@ -52,14 +53,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSecurityMenuModel ()
 
 @property (assign, nonatomic) BOOL biometricsEnabled;
-@property (readonly, strong, nonatomic) DWBalanceDisplayOptions *balanceDisplayOptions;
+@property (readonly, strong, nonatomic) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 @property (readonly, nonatomic, strong) DWBiometricAuthModel *biometricAuthModel;
 
 @end
 
 @implementation DWSecurityMenuModel
 
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
     self = [super init];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
@@ -79,6 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBiometricsEnabled:(BOOL)biometricsEnabled {
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
+
+    const uint64_t limit = biometricsEnabled ? DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT : 0;
+    [[DSAuthenticationManager sharedInstance] setBiometricSpendingLimitIfAuthenticated:limit];
 }
 
 - (BOOL)balanceHidden {
@@ -95,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
               authenticateWithPrompt:nil
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticated, BOOL cancelled) {
+                          completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                               if (continueBlock) {
                                   DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
                                   authManager.didAuthenticate = NO;
@@ -112,40 +116,42 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setBiometricsEnabled:(BOOL)enabled completion:(void (^)(BOOL success))completion {
-    if (enabled) {
-        DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-        [authenticationManager authenticateWithPrompt:nil
-                         usingBiometricAuthentication:NO
-                                       alertIfLockout:YES
-                                           completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
-                                               if (authenticatedOrSuccess) {
-                                                   __weak typeof(self) weakSelf = self;
-                                                   [self.biometricAuthModel enableBiometricAuth:^(BOOL success) {
-                                                       __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                       if (!strongSelf) {
-                                                           return;
-                                                       }
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                              if (authenticatedOrSuccess) {
+                                  if (enabled) {
+                                      __weak typeof(self) weakSelf = self;
+                                      [self.biometricAuthModel enableBiometricAuth:^(BOOL success) {
+                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                          if (!strongSelf) {
+                                              return;
+                                          }
 
-                                                       strongSelf.biometricsEnabled = success;
+                                          strongSelf.biometricsEnabled = success;
 
-                                                       if (completion) {
-                                                           completion(success);
-                                                       }
-                                                   }];
-                                               }
-                                               else {
-                                                   if (completion) {
-                                                       completion(NO);
-                                                   }
-                                               }
-                                           }];
-    }
-    else {
-        self.biometricsEnabled = NO;
-        if (completion) {
-            completion(YES);
-        }
-    }
+                                          if (completion) {
+                                              completion(success);
+                                          }
+                                      }];
+                                  }
+                                  else {
+                                      self.biometricsEnabled = NO;
+
+                                      if (completion) {
+                                          completion(YES);
+                                      }
+                                  }
+                              }
+                              else {
+                                  if (completion) {
+                                      completion(NO);
+                                  }
+                              }
+                          }];
 }
 
 @end

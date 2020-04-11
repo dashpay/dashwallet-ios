@@ -20,7 +20,6 @@
 #import "DWUpholdCardObject.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdTransactionObject.h"
-#import <DashSync/UIImage+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,65 +27,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWUpholdCardObject *card;
 @property (assign, nonatomic) DWUpholdConfirmTransferModelState state;
-@property (nullable, strong, nonatomic) NSNumberFormatter *depositNumberFormatter;
 
 @end
 
+NS_ASSUME_NONNULL_END
+
 @implementation DWUpholdConfirmTransferModel
 
-- (instancetype)initWithCard:(DWUpholdCardObject *)card transaction:(DWUpholdTransactionObject *)transaction {
+- (instancetype)initWithCard:(DWUpholdCardObject *)card
+                 transaction:(DWUpholdTransactionObject *)transaction {
     self = [super init];
     if (self) {
         _card = card;
         _transaction = transaction;
-        if (transaction.type == DWUpholdTransactionObjectTypeDeposit) {
-            NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-            numberFormatter.lenient = YES;
-            numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
-            numberFormatter.generatesDecimalNumbers = YES;
-            numberFormatter.currencyCode = transaction.currency;
-            _depositNumberFormatter = numberFormatter;
-        }
     }
     return self;
 }
 
-- (NSAttributedString *)amountString {
-    NSDecimalNumber *amount = self.transaction.amount;
-    if (self.transaction.type == DWUpholdTransactionObjectTypeWithdrawal) {
-        return [self attributedDashStringForDash:amount];
-    }
-    else {
-        return [self attributedStringForLocalCurrency:amount];
-    }
-}
-
-- (NSAttributedString *)feeString {
-    NSDecimalNumber *fee = self.transaction.fee;
-    if (self.transaction.type == DWUpholdTransactionObjectTypeWithdrawal) {
-        return [self attributedDashStringForDash:fee];
-    }
-    else {
-        return [self attributedStringForLocalCurrency:fee];
-    }
-}
-
-- (NSAttributedString *)totalString {
-    NSDecimalNumber *total = self.transaction.total;
-    if (self.transaction.type == DWUpholdTransactionObjectTypeWithdrawal) {
-        return [self attributedDashStringForDash:total];
-    }
-    else {
-        return [self attributedStringForLocalCurrency:total];
-    }
-}
-
-- (BOOL)feeWasDeductedFromAmount {
-    return self.transaction.feeWasDeductedFromAmount;
-}
-
 - (void)confirmWithOTPToken:(nullable NSString *)otpToken {
-    self.state = DWUpholdConfirmTransferModelStateLoading;
+    NSParameterAssert(self.stateNotifier);
+
+    self.state = DWUpholdConfirmTransferModelState_Loading;
 
     DWUpholdClient *client = [DWUpholdClient sharedInstance];
     __weak typeof(self) weakSelf = self;
@@ -100,10 +61,10 @@ NS_ASSUME_NONNULL_BEGIN
                        }
 
                        if (otpRequired) {
-                           strongSelf.state = DWUpholdConfirmTransferModelStateOTP;
+                           strongSelf.state = DWUpholdConfirmTransferModelState_OTP;
                        }
                        else {
-                           strongSelf.state = success ? DWUpholdConfirmTransferModelStateSuccess : DWUpholdConfirmTransferModelStateFail;
+                           strongSelf.state = success ? DWUpholdConfirmTransferModelState_Success : DWUpholdConfirmTransferModelState_Fail;
                        }
                    }];
 }
@@ -113,31 +74,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)resetState {
-    self.state = DWUpholdConfirmTransferModelStateNone;
+    self.state = DWUpholdConfirmTransferModelState_None;
 }
 
 #pragma mark - Private
 
-- (NSAttributedString *)attributedDashStringForDash:(NSDecimalNumber *)number {
-    NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
-    dashAttachmentSymbol.bounds = CGRectMake(0.0, -2.0, 19.0, 15.0);
-    dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:[UIColor blackColor]];
-    NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
-    NSString *numberString = [number descriptionWithLocale:[NSLocale currentLocale]];
-    NSString *numberStringFormatted = [NSString stringWithFormat:@" %@", numberString];
-    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
-    [result beginEditing];
-    [result appendAttributedString:dashSymbol];
-    [result appendAttributedString:[[NSAttributedString alloc] initWithString:numberStringFormatted]];
-    [result endEditing];
-    return [result copy];
-}
+- (void)setState:(DWUpholdConfirmTransferModelState)state {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-- (NSAttributedString *)attributedStringForLocalCurrency:(NSDecimalNumber *)number {
-    NSString *formattedString = [self.depositNumberFormatter stringFromNumber:number];
-    return [[NSAttributedString alloc] initWithString:formattedString];
+    if (_state == state) {
+        return;
+    }
+
+    _state = state;
+
+    [self.stateNotifier upholdConfirmTransferModel:self didUpdateState:state];
 }
 
 @end
-
-NS_ASSUME_NONNULL_END

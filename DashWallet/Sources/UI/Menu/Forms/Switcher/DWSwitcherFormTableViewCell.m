@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
         titleLabel.adjustsFontSizeToFitWidth = YES;
         [titleLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                     forAxis:UILayoutConstraintAxisVertical];
+        [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 1
+                                      forAxis:UILayoutConstraintAxisHorizontal];
         [contentView addSubview:titleLabel];
         _titleLabel = titleLabel;
 
@@ -58,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
         switcher.onTintColor = [UIColor dw_dashBlueColor];
         switcher.transform = CGAffineTransformMakeScale(0.705, 0.705);
         [switcher addTarget:self action:@selector(switcherAction:) forControlEvents:UIControlEventValueChanged];
+        [switcher setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                                  forAxis:UILayoutConstraintAxisHorizontal];
         [contentView addSubview:switcher];
         _switcher = switcher;
 
@@ -99,6 +103,13 @@ NS_ASSUME_NONNULL_BEGIN
                           [self.switcher setOn:on animated:animated];
                       }
                   }];
+
+#if SNAPSHOT
+    [self mvvm_observe:DW_KEYPATH(self, cellModel.accessibilityIdentifier)
+                  with:^(typeof(self) self, NSString *value) {
+                      self.accessibilityIdentifier = value;
+                  }];
+#endif /* SNAPSHOT */
 }
 
 - (BOOL)shouldAnimatePressWhenHighlighted {

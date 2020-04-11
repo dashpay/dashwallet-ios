@@ -19,7 +19,6 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWHomeModel.h"
 #import "DWNavigationController.h"
 #import "DWRecoverViewController.h"
 
@@ -43,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!self.model.isWalletEmpty) {
         message = NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                      "Any 'jailbreak' app can access any other app's keychain data "
-                                     "(and steal your dash). "
+                                     "(and steal your Dash). "
                                      "Wipe this wallet immediately and restore on a secure device.",
                                     nil);
         mainAction = [UIAlertAction
@@ -56,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         message = NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                      "Any 'jailbreak' app can access any other app's keychain data "
-                                     "(and steal your dash).",
+                                     "(and steal your Dash).",
                                     nil);
         mainAction = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"Close App", nil)

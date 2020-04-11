@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear;
 - (void)viewWillDisappear;
 
-- (instancetype)initWithModel:(DWAmountModel *)model;
+- (instancetype)initWithModel:(DWAmountModel *)model demoMode:(BOOL)demoMode;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;

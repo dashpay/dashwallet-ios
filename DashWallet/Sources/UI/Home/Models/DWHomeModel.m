@@ -22,16 +22,19 @@
 
 #import <UIKit/UIApplication.h>
 
+#import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
-#import "DWReceiveModel+Private.h"
+#import "DWPayModelProtocol.h"
+#import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWTransactionListDataSource+DWProtected.h"
+#import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -67,9 +70,19 @@ static BOOL IsJailbroken(void) {
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
 
+@property (nonatomic, assign) BOOL upgradedExtendedKeys;
+
 @end
 
 @implementation DWHomeModel
+
+@synthesize balanceDisplayOptions = _balanceDisplayOptions;
+@synthesize displayMode = _displayMode;
+@synthesize payModel = _payModel;
+@synthesize receiveModel = _receiveModel;
+@synthesize shortcutsModel = _shortcutsModel;
+@synthesize syncModel = _syncModel;
+@synthesize updatesObserver = _updatesObserver;
 
 - (instancetype)init {
     self = [super init];
@@ -205,6 +218,10 @@ static BOOL IsJailbroken(void) {
     [self.shortcutsModel reloadShortcuts];
 }
 
+- (void)registerForPushNotifications {
+    [[AppDelegate appDelegate] registerForPushNotifications];
+}
+
 - (void)retrySyncing {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
         [self.reachability stopMonitoring];
@@ -226,6 +243,41 @@ static BOOL IsJailbroken(void) {
     options.walletBackupReminderWasShown = YES;
 }
 
+- (BOOL)performOnSetupUpgrades {
+    if (self.upgradedExtendedKeys) {
+        return NO;
+    }
+
+    self.upgradedExtendedKeys = YES;
+
+    DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
+    NSArray *wallets = [DWEnvironment sharedInstance].allWallets;
+
+    [dashSyncVersionManager
+        upgradeExtendedKeysForWallets:wallets
+                          withMessage:NSLocalizedString(@"Please enter PIN to upgrade wallet", nil)
+                       withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+                           DWVersionManager *dashwalletVersionManager = [DWVersionManager sharedInstance];
+                           [dashwalletVersionManager
+                               checkPassphraseWasShownCorrectlyForWallet:wallets.firstObject
+                                                          withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString *_Nullable seedPhrase) {
+                                                              if (needsCheck) {
+                                                                  // Show backup reminder shortcut
+                                                                  [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
+                                                                  [self reloadShortcuts];
+                                                              }
+                                                          }];
+                       }];
+
+    return YES;
+}
+
+- (void)forceStartSyncingActivity {
+    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
+    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
+    [syncModel forceStartSyncingActivity];
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
@@ -235,7 +287,9 @@ static BOOL IsJailbroken(void) {
         [self connectIfNeeded];
     }
 
-    [self.syncModel reachabilityStatusDidChange];
+    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
+    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
+    [syncModel reachabilityStatusDidChange];
 }
 
 - (void)walletBalanceDidChangeNotification {
@@ -267,7 +321,6 @@ static BOOL IsJailbroken(void) {
 }
 
 #pragma mark - Private
-
 
 - (DWTransactionListDataSource *)receivedDataSource {
     if (_receivedDataSource == nil) {
@@ -312,10 +365,6 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)reloadTxDataSource {
-    if (self.syncModel.state == DWSyncModelState_Syncing) {
-        return;
-    }
-
     dispatch_async(self.queue, ^{
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 

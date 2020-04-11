@@ -33,7 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWSetupViewControllerDelegate> delegate;
 
-+ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWSetupViewControllerDelegate>)delegate;
++ (instancetype)controller;
+
+- (void)setLaunchingAsDeferredController;
 
 @end
 

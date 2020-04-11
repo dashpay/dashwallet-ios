@@ -19,14 +19,14 @@
 
 #import "DWAmountPreviewView.h"
 #import "DWReceiveContentView.h"
-#import "DWReceiveModel.h"
+#import "DWReceiveModelProtocol.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRequestAmountContentView () <DWReceiveContentViewDelegate>
 
-@property (nonatomic, strong) DWReceiveModel *model;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> model;
 @property (nonatomic, strong) DWAmountPreviewView *amountView;
 @property (nonatomic, strong) DWReceiveContentView *contentView;
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWRequestAmountContentView
 
-- (instancetype)initWithModel:(DWReceiveModel *)model {
+- (instancetype)initWithModel:(id<DWReceiveModelProtocol>)model {
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _model = model;

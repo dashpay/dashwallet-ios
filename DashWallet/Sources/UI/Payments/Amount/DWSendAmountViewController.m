@@ -17,21 +17,30 @@
 
 #import "DWSendAmountViewController.h"
 
-#import "DWAmountModel.h"
+#import "DWSendAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface DWSendAmountViewController ()
+
+@property (readonly, strong, nonatomic) DWSendAmountModel *sendAmountModel;
+
+@end
 
 @implementation DWSendAmountViewController
 
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
                                paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
-    DWAmountModel *model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntent_Send
-                                                   sendingDestination:sendingDestination
-                                                       paymentDetails:paymentDetails];
+    DWSendAmountModel *model = [[DWSendAmountModel alloc] initWithSendingDestination:sendingDestination
+                                                                      paymentDetails:paymentDetails];
 
     DWSendAmountViewController *controller = [[DWSendAmountViewController alloc] initWithModel:model];
 
     return controller;
+}
+
+- (DWSendAmountModel *)sendAmountModel {
+    return (DWSendAmountModel *)self.model;
 }
 
 - (NSString *)actionButtonTitle {
@@ -44,6 +53,22 @@ NS_ASSUME_NONNULL_BEGIN
     self.title = NSLocalizedString(@"Send", nil);
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    if (self.demoMode) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.35 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.model updateAmountWithReplacementString:@"1" range:NSMakeRange(0, 1)];
+            id dummySender = nil;
+            [self actionButtonAction:dummySender];
+        });
+    }
+}
+
+- (void)insufficientFundsErrorWasShown {
+    self.sendAmountModel.insufficientFundsErrorWasShown = YES;
+}
+
 #pragma mark - Actions
 
 - (void)actionButtonAction:(id)sender {
@@ -52,11 +77,12 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    NSAssert(self.model.inputIntent == DWAmountInputIntent_Send, @"Inconsistent state");
+    DWSendAmountModel *sendModel = (DWSendAmountModel *)self.model;
+    NSAssert([sendModel isKindOfClass:DWSendAmountModel.class], @"Inconsistent state");
 
-    const DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
+    const DWAmountSendOptionsModelState state = sendModel.sendingOptions.state;
     const BOOL usedInstantSend = state == DWAmountSendOptionsModelState_ProposeInstantSend &&
-                                 self.model.sendingOptions.useInstantSend;
+                                 sendModel.sendingOptions.useInstantSend;
     [self.delegate sendAmountViewController:self
                              didInputAmount:self.model.amount.plainAmount
                             usedInstantSend:usedInstantSend];

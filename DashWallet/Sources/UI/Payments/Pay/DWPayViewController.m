@@ -18,7 +18,7 @@
 #import "DWPayViewController.h"
 
 #import "DWConfirmPaymentViewController.h"
-#import "DWPayModel.h"
+#import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
 #import "DWPayTableViewCell.h"
 #import "DWPaymentInputBuilder.h"
@@ -32,16 +32,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayViewController () <UITableViewDataSource,
+                                   UITableViewDelegate,
                                    DWPayTableViewCellDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
-
+@property (assign, nonatomic) CGFloat maxActionButtonWidth;
 
 @end
 
 @implementation DWPayViewController
 
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel
++ (instancetype)controllerWithModel:(id<DWPayModelProtocol>)payModel
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Pay" bundle:nil];
     DWPayViewController *controller = [storyboard instantiateInitialViewController];
@@ -63,6 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView flashScrollIndicators];
 
     [self.payModel startPasteboardIntervalObserving];
+
+    if (self.demoMode) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self performPayToPasteboardAction];
+        });
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -86,10 +93,17 @@ NS_ASSUME_NONNULL_BEGIN
     DWPayTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
 
     DWPayOptionModel *option = self.payModel.options[indexPath.row];
-    cell.model = option;
     cell.delegate = self;
+    cell.model = option;
 
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if ([cell isKindOfClass:DWPayTableViewCell.class]) {
+        DWPayTableViewCell *payCell = (DWPayTableViewCell *)cell;
+        payCell.preferredActionButtonWidth = self.maxActionButtonWidth;
+    }
 }
 
 #pragma mark - DWPayTableViewCellDelegate
@@ -118,6 +132,10 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
     }
+}
+
+- (void)payTableViewCell:(DWPayTableViewCell *)cell didUpdateButtonWidth:(CGFloat)buttonWidth {
+    self.maxActionButtonWidth = MAX(self.maxActionButtonWidth, buttonWidth);
 }
 
 #pragma mark - Private

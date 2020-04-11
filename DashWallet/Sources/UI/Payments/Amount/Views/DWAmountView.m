@@ -46,7 +46,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
 @implementation DWAmountView
 
-- (instancetype)initWithModel:(DWAmountModel *)model {
+- (instancetype)initWithModel:(DWAmountModel *)model demoMode:(BOOL)demoMode {
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _model = model;
@@ -64,7 +64,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
         DWMaxButton *maxButton = [[DWMaxButton alloc] initWithFrame:CGRectZero];
         maxButton.translatesAutoresizingMaskIntoConstraints = NO;
-        maxButton.hidden = model.inputIntent == DWAmountInputIntent_Request;
+        maxButton.hidden = !model.showsMaxButton;
         [maxButton addTarget:self
                       action:@selector(maxButtonAction:)
             forControlEvents:UIControlEventTouchUpInside];
@@ -90,9 +90,16 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         textField.spellCheckingType = UITextSpellCheckingTypeNo;
         CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-        DWNumberKeyboardInputViewAudioFeedback *inputView =
-            [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
-        textField.inputView = inputView;
+        // In Demo Mode we don't need any input clicks. But this inputView affects appearance
+        // by drawing a white line in the bottom of the screen.
+        if (demoMode == NO) {
+            DWNumberKeyboardInputViewAudioFeedback *inputView =
+                [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+            textField.inputView = inputView;
+        }
+        else {
+            textField.inputView = [[UIView alloc] init];
+        }
         UITextInputAssistantItem *inputAssistantItem = textField.inputAssistantItem;
         inputAssistantItem.leadingBarButtonGroups = @[];
         inputAssistantItem.trailingBarButtonGroups = @[];
@@ -128,6 +135,8 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                                            forAxis:UILayoutConstraintAxisVertical];
 
         [NSLayoutConstraint activateConstraints:@[
+            [descriptionView.widthAnchor constraintEqualToAnchor:contentStackView.widthAnchor],
+
             [contentStackView.topAnchor constraintEqualToAnchor:self.topAnchor],
             [contentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [contentStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
@@ -151,35 +160,17 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                       with:^(__typeof(self) self, DWAmountObject *value) {
                           self.textField.text = value.amountInternalRepresentation;
                           self.inputControl.source = value;
-                          [self.delegate amountView:self setActionButtonEnabled:value.plainAmount > 0];
+                          [self.delegate amountView:self
+                              setActionButtonEnabled:self.model.amountIsValidForProceeding];
                       }];
 
-
-        if (_model.inputIntent == DWAmountInputIntent_Send) {
-            [self mvvm_observe:DW_KEYPATH(self, model.sendingOptions.state)
-                          with:^(__typeof(self) self, NSNumber *value) {
-                              DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
-                              switch (state) {
-                                  case DWAmountSendOptionsModelState_None: {
-                                      break;
-                                  }
-                                  case DWAmountSendOptionsModelState_Regular: {
-                                      self.descriptionView.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
-
-                                      break;
-                                  }
-                                  case DWAmountSendOptionsModelState_ProposeInstantSend:
-                                  case DWAmountSendOptionsModelState_AutoLocks: {
-                                      self.descriptionView.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
-
-                                      break;
-                                  }
-                              }
-                          }];
-        }
-        else {
-            _descriptionView.hidden = YES;
-        }
+        [self mvvm_observe:DW_KEYPATH(self, model.descriptionModel)
+                      with:^(typeof(self) self, DWAmountDescriptionViewModel *value) {
+                          const BOOL isHidden = (value == nil ||
+                                                 (value.text == nil && value.attributedText == nil));
+                          self.descriptionView.hidden = isHidden;
+                          self.descriptionView.model = self.model.descriptionModel;
+                      }];
     }
     return self;
 }

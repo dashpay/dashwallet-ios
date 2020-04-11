@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="jVR-Ew-QUb">
-    <device id="retina4_0" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="jVR-Ew-QUb">
+    <device id="retina4_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
-        <array key="Montserrat-Medium.otf">
-            <string>Montserrat-Medium</string>
-        </array>
         <array key="Montserrat-Regular.otf">
             <string>Montserrat-Regular</string>
         </array>
@@ -23,15 +18,15 @@
             <objects>
                 <viewController id="jVR-Ew-QUb" customClass="DWUpholdOTPViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="9zV-nV-6r1">
-                        <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
+                        <rect key="frame" x="0.0" y="0.0" width="270" height="100"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="O0g-QR-wrm" userLabel="Content View">
-                                <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
+                                <rect key="frame" x="0.0" y="0.0" width="270" height="100"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter your 2FA code below" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="CN9-80-DrP">
-                                        <rect key="frame" x="0.0" y="0.0" width="270" height="22"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter your 2FA code below" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CN9-80-DrP">
+                                        <rect key="frame" x="0.0" y="0.0" width="270" height="37"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                         <attributedString key="userComments">
@@ -39,11 +34,10 @@
                                         </attributedString>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="center" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="6eh-Oh-fVj">
-                                        <rect key="frame" x="0.0" y="115" width="270" height="30"/>
+                                        <rect key="frame" x="0.0" y="53" width="270" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="30" id="YeX-jG-Mt9"/>
                                         </constraints>
-                                        <nil key="textColor"/>
                                         <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad" returnKeyType="done" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no" textContentType="one-time-code"/>
                                         <attributedString key="userComments">
@@ -51,7 +45,7 @@
                                         </attributedString>
                                     </textField>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eZG-v6-1vn" userLabel="Line View">
-                                        <rect key="frame" x="0.0" y="145" width="270" height="1"/>
+                                        <rect key="frame" x="0.0" y="83" width="270" height="1"/>
                                         <color key="backgroundColor" red="0.60392156860000001" green="0.60784313729999995" blue="0.61176470589999998" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="1" id="R9y-Bx-PXT"/>
@@ -60,13 +54,13 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="260" id="1Lk-es-UHa"/>
-                                    <constraint firstItem="6eh-Oh-fVj" firstAttribute="centerY" secondItem="O0g-QR-wrm" secondAttribute="centerY" id="CdS-sC-CKb"/>
                                     <constraint firstItem="eZG-v6-1vn" firstAttribute="leading" secondItem="O0g-QR-wrm" secondAttribute="leading" id="Dqw-ay-9gR"/>
                                     <constraint firstItem="eZG-v6-1vn" firstAttribute="top" secondItem="6eh-Oh-fVj" secondAttribute="bottom" id="EOp-Pf-BfX"/>
                                     <constraint firstItem="CN9-80-DrP" firstAttribute="top" secondItem="O0g-QR-wrm" secondAttribute="top" id="JjD-fr-K3M"/>
                                     <constraint firstAttribute="trailing" secondItem="CN9-80-DrP" secondAttribute="trailing" id="QHY-pb-rme"/>
+                                    <constraint firstAttribute="bottom" secondItem="eZG-v6-1vn" secondAttribute="bottom" constant="16" id="QTF-on-Cyt"/>
                                     <constraint firstAttribute="trailing" secondItem="eZG-v6-1vn" secondAttribute="trailing" id="Qgt-ky-oSR"/>
+                                    <constraint firstItem="6eh-Oh-fVj" firstAttribute="top" secondItem="CN9-80-DrP" secondAttribute="bottom" constant="16" id="ZCt-ci-n2S"/>
                                     <constraint firstAttribute="trailing" secondItem="6eh-Oh-fVj" secondAttribute="trailing" id="bVv-p5-3fK"/>
                                     <constraint firstItem="CN9-80-DrP" firstAttribute="leading" secondItem="O0g-QR-wrm" secondAttribute="leading" id="egA-qh-KyZ"/>
                                     <constraint firstItem="6eh-Oh-fVj" firstAttribute="leading" secondItem="O0g-QR-wrm" secondAttribute="leading" id="mpj-Yg-OVo"/>
@@ -88,7 +82,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="qb5-ab-6s4"/>
                     </view>
-                    <size key="freeformSize" width="270" height="260"/>
+                    <size key="freeformSize" width="270" height="100"/>
                     <connections>
                         <outlet property="textField" destination="6eh-Oh-fVj" id="AAz-Qs-ayZ"/>
                         <outlet property="titleLabel" destination="CN9-80-DrP" id="X0J-H7-cPW"/>

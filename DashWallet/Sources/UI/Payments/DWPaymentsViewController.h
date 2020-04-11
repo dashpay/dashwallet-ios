@@ -17,13 +17,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDemoDelegate.h"
 #import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPaymentsViewController;
-@class DWReceiveModel;
-@class DWPayModel;
+@protocol DWReceiveModelProtocol;
+@protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
 
 typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
@@ -43,8 +44,11 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 @property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
 @property (nonatomic, assign) DWPaymentsViewControllerIndex currentIndex;
 
-+ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel
-                                  payModel:(DWPayModel *)payModel
+@property (nonatomic, assign) BOOL demoMode;
+@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
+
++ (instancetype)controllerWithReceiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                                  payModel:(id<DWPayModelProtocol>)payModel
                               dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end

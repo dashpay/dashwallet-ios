@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
                   authenticateWithPrompt:nil
             usingBiometricAuthentication:NO
                           alertIfLockout:YES
-                              completion:^(BOOL authenticated, BOOL cancelled) {
+                              completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                   if (!authenticated) {
                                       return;
                                   }
@@ -105,11 +105,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *descriptionText = nil;
     switch (self.type) {
         case DWSecureWalletInfoType_Setup: {
-            descriptionText = NSLocalizedString(@"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
+            descriptionText = NSLocalizedString(@"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.", nil);
             break;
         }
         case DWSecureWalletInfoType_Reminder: {
-            descriptionText = NSLocalizedString(@"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
+            descriptionText = NSLocalizedString(@"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.", nil);
             break;
         }
     }

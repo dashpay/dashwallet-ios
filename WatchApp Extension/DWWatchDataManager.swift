@@ -106,7 +106,7 @@ final class DWWatchDataManager: NSObject {
                                         code: 500,
                                         userInfo: [
                                             NSLocalizedDescriptionKey:
-                                                "Unable to get new qr code",
+                                                "Unable to get new QR code",
                                         ])
                     responseHandler(nil, error)
                 }, errorHandler: { _ in
@@ -114,7 +114,7 @@ final class DWWatchDataManager: NSObject {
                                         code: 500,
                                         userInfo: [
                                             NSLocalizedDescriptionKey:
-                                                NSLocalizedString("Unable to get new qr code", comment: ""),
+                                                NSLocalizedString("Unable to get new QR code", comment: ""),
                                         ])
                     responseHandler(nil, error)
                 }
@@ -210,11 +210,13 @@ final class DWWatchDataManager: NSObject {
         let attributedString = NSMutableAttributedString()
 
         attributedString.append(
-            NSAttributedString(string: "Đ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]))
+            NSAttributedString(string: "Đ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray])
+        )
 
         attributedString.append(
             NSAttributedString(string: balance ?? "0", attributes:
-                [NSAttributedString.Key.foregroundColor: UIColor.white]))
+                [NSAttributedString.Key.foregroundColor: UIColor.white])
+        )
 
         return attributedString
     }

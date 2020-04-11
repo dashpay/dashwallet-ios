@@ -24,13 +24,15 @@
 //  THE SOFTWARE.
 
 #import "DWPhoneWCSessionManager.h"
+
+#import <WatchConnectivity/WatchConnectivity.h>
+
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
 #import "DSWatchTransactionDataObject.h"
 #import "DWAppGroupConstants.h"
+#import "DWEnvironment.h"
 #import "UIImage+Utils.h"
-#import <DashSync/DashSync.h>
-#import <WatchConnectivity/WatchConnectivity.h>
 
 static CGSize const QR_SIZE = {240.0, 240.0};
 static CGSize const HOLE_SIZE = {58.0, 58.0};
@@ -233,7 +235,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     return appleWatchData;
 }
 
-- (NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction {
+- (nullable NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction {
     if (transaction) {
         NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
         NSString *transactionTypeString;
@@ -244,16 +246,16 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
         switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
             case BRAWTransactionTypeSent:
-                transactionTypeString = NSLocalizedString(@"sent", nil);
+                transactionTypeString = NSLocalizedString(@"Sent", @"Sent transaction");
                 break;
             case BRAWTransactionTypeReceive:
-                transactionTypeString = NSLocalizedString(@"received", nil);
+                transactionTypeString = NSLocalizedString(@"Received", @"Received transaction");
                 break;
             case BRAWTransactionTypeMove:
-                transactionTypeString = NSLocalizedString(@"moved", nil);
+                transactionTypeString = NSLocalizedString(@"Internal Transfer", @"Transaction within the wallet, transfer of own funds");
                 break;
             case BRAWTransactionTypeInvalid:
-                transactionTypeString = NSLocalizedString(@"invalid transaction", nil);
+                transactionTypeString = NSLocalizedString(@"Invalid", @"Invalid transaction");
                 break;
         }
         NSString *amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
@@ -268,7 +270,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                              timeDescriptionString];
     }
 
-    return @"no transaction";
+    return nil;
 }
 
 - (NSString *)timeDescriptionStringFrom:(NSDate *)date {

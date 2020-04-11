@@ -17,10 +17,10 @@
 
 #import "DWAmountObject.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAmountInputValidator.h"
 #import "UIColor+DWStyle.h"
-#import <DashSync/DSPriceManager.h>
-#import <DashSync/NSString+Dash.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

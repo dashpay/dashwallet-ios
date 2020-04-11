@@ -22,7 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat PresentedHeightPercent(void) {
+CGFloat DWModalPresentedHeightPercent(void) {
     if (IS_IPHONE_5_OR_LESS) {
         return 6.0 / 7.0;
     }
@@ -50,7 +50,7 @@ static CGFloat PresentedHeightPercent(void) {
     const CGRect bounds = self.containerView.bounds;
     const CGFloat height = CGRectGetHeight(bounds);
     const CGFloat width = CGRectGetWidth(bounds);
-    const CGFloat viewHeight = ceil(height * PresentedHeightPercent());
+    const CGFloat viewHeight = ceil(height * DWModalPresentedHeightPercent());
     const CGRect frame = CGRectMake(0.0, height - viewHeight, width, viewHeight);
 
     return frame;
@@ -118,13 +118,19 @@ static CGFloat PresentedHeightPercent(void) {
                                                     action:@selector(tapGestureRecognizerAction:)];
         [dimmingView addGestureRecognizer:tapGestureRecognizer];
 
+#if SNAPSHOT
+        dimmingView.accessibilityIdentifier = @"modal_dimming_view";
+#endif /* SNAPSHOT */
+
         _dimmingView = dimmingView;
     }
     return _dimmingView;
 }
 
 - (void)tapGestureRecognizerAction:(id)sender {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    if (self.interactiveTransition.interactiveTransitionAllowed) {
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    }
 }
 
 - (void)performBlockAnimatedIfPossible:(void (^)(void))block {

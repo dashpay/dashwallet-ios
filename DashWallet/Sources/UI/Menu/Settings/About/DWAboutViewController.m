@@ -20,7 +20,9 @@
 #import <StoreKit/StoreKit.h>
 
 #import "DWAboutModel.h"
+#import "DWEnvironment.h"
 #import "DWUIKit.h"
+#import "DWWindow.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *copyrightLabel;
 
 @property (strong, nonatomic) DWAboutModel *model;
+
+@property (nullable, nonatomic, weak) UIAlertController *techInfoAlert;
 
 @end
 
@@ -76,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.rateReviewLabel.text = NSLocalizedString(@"Help us improve your experience", nil);
     [self.rateReviewButton setTitle:NSLocalizedString(@"Review & Rate the app", nil) forState:UIControlStateNormal];
     [self.contactSupportButton setTitle:NSLocalizedString(@"Contact Support", nil) forState:UIControlStateNormal];
-    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2019 Dash Core", nil);
+    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2020 Dash Core", nil);
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -98,6 +102,10 @@ NS_ASSUME_NONNULL_BEGIN
     [notificationCenter addObserver:self
                            selector:@selector(updateStatusNotification:)
                                name:DSQuorumListDidChangeNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(deviceDidShakeNotification:)
+                               name:DWDeviceDidShakeNotification
                              object:nil];
 
     [self updateStatusNotification:nil];
@@ -123,68 +131,50 @@ NS_ASSUME_NONNULL_BEGIN
     [self displaySafariControllerWithURL:url];
 }
 
-// TODO: <redesign> enable copy logs button
-
-//- (IBAction)logsCopyButtonAction:(id)sender {
-//    NSArray *dataToShare = [self.model logFiles];
-//    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare applicationActivities:nil];
-//    [self presentViewController:activityViewController animated:YES completion:nil];
-//}
-
-// TODO: <redesign> set fixed peer
-
-- (IBAction)setFixedPeerButtonAction:(id)sender {
-    if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
-        UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:nil
-                             message:NSLocalizedString(@"Set a trusted node", nil)
-                      preferredStyle:UIAlertControllerStyleAlert];
-        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            textField.placeholder = NSLocalizedString(@"Node ip", nil);
-            textField.textColor = [UIColor darkTextColor];
-            textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-            textField.borderStyle = UITextBorderStyleRoundedRect;
-        }];
-        UIAlertAction *cancelButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                      style:UIAlertActionStyleCancel
-                    handler:nil];
-        UIAlertAction *trustButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Trust", nil)
-                      style:UIAlertActionStyleDefault
-                    handler:^(UIAlertAction *action) {
-                        UITextField *ipField = alert.textFields.firstObject;
-                        NSString *fixedPeer = ipField.text;
-                        [self.model setFixedPeer:fixedPeer];
-                    }];
-        [alert addAction:trustButton];
-        [alert addAction:cancelButton];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-    else {
-        UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:nil
-                             message:NSLocalizedString(@"Clear trusted node?", nil)
-                      preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction *cancelButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                      style:UIAlertActionStyleCancel
-                    handler:nil];
-        UIAlertAction *clearButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Clear", nil)
-                      style:UIAlertActionStyleDestructive
-                    handler:^(UIAlertAction *action) {
-                        [self.model clearFixedPeer];
-                    }];
-        [alert addAction:clearButton];
-        [alert addAction:cancelButton];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-}
+#pragma mark - Notifications
 
 - (void)updateStatusNotification:(nullable NSNotification *)sender {
-    // TODO: <redesign> put tech info somewhere else
-    //    [self.statusButton setTitle:[self.model status] forState:UIControlStateNormal];
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    self.techInfoAlert.message = [self.model status];
+}
+
+- (void)deviceDidShakeNotification:(NSNotification *)sender {
+    NSString *techInfo = [self.model status];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@""
+                                                                   message:techInfo
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *copyAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Copy", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *_Nonnull action) {
+                    [UIPasteboard generalPasteboard].string = [self.model status];
+                }];
+    [alert addAction:copyAction];
+
+    UIAlertAction *copyLogs = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Copy Logs", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *_Nonnull action) {
+                    [self performLogsCopy];
+                }];
+    [alert addAction:copyLogs];
+
+    UIAlertAction *setPeerAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Manage Trusted Node", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *_Nonnull action) {
+                    [self setFixedPeer];
+                }];
+    [alert addAction:setPeerAction];
+
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                       style:UIAlertActionStyleCancel
+                                                     handler:nil];
+    [alert addAction:okAction];
+    alert.preferredAction = okAction;
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark Private
@@ -197,6 +187,70 @@ NS_ASSUME_NONNULL_BEGIN
 
     SFSafariViewController *safariViewController = [SFSafariViewController dw_controllerWithURL:url];
     [self presentViewController:safariViewController animated:YES completion:nil];
+}
+
+- (void)performLogsCopy {
+    NSArray *dataToShare = [self.model logFiles];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare
+                                                                                         applicationActivities:nil];
+    [self presentViewController:activityViewController animated:YES completion:nil];
+}
+
+- (void)setFixedPeer {
+    if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:nil
+                             message:NSLocalizedString(@"Set a trusted node", nil)
+                      preferredStyle:UIAlertControllerStyleAlert];
+
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder = NSLocalizedString(@"Node IP", nil);
+            textField.textColor = [UIColor darkTextColor];
+            textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+            textField.borderStyle = UITextBorderStyleRoundedRect;
+        }];
+
+        UIAlertAction *cancelButton = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:cancelButton];
+
+        UIAlertAction *trustButton = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"OK", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *action) {
+                        UITextField *ipField = alert.textFields.firstObject;
+                        NSString *fixedPeer = ipField.text;
+                        [self.model setFixedPeer:fixedPeer];
+                    }];
+        [alert addAction:trustButton];
+        alert.preferredAction = trustButton;
+
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+    else {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:nil
+                             message:NSLocalizedString(@"Clear trusted node?", nil)
+                      preferredStyle:UIAlertControllerStyleAlert];
+
+        UIAlertAction *cancelButton = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:cancelButton];
+
+        UIAlertAction *clearButton = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Clear", nil)
+                      style:UIAlertActionStyleDestructive
+                    handler:^(UIAlertAction *action) {
+                        [self.model clearFixedPeer];
+                    }];
+        [alert addAction:clearButton];
+
+        [self presentViewController:alert animated:YES completion:nil];
+    }
 }
 
 @end

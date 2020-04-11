@@ -19,11 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@protocol DWReceiveModelProtocol;
 
 @interface UIViewController (DWShareReceiveInfo)
 
-- (void)dw_shareReceiveInfo:(DWReceiveModel *)model sender:(UIButton *)sender;
+- (void)dw_shareReceiveInfo:(id<DWReceiveModelProtocol>)model sender:(UIButton *)sender;
 
 @end
 

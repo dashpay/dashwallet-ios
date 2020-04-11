@@ -31,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWConfirmPaymentViewController
 
++ (BOOL)isActionButtonInNavigationBar {
+    return NO;
+}
+
 - (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Send", nil);
 }
@@ -86,14 +90,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)actionButtonAction:(id)sender {
-    [self.delegate confirmPaymentViewControllerDidConfirm:self];
     [self setSendingEnabled:NO];
+    [self.delegate confirmPaymentViewControllerDidConfirm:self];
 }
 
-- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
-    _paymentOutput = paymentOutput;
+- (nullable id<DWConfirmPaymentViewProtocol>)model {
+    return self.confirmPaymentView.model;
+}
 
-    [self.confirmPaymentView setPaymentOutput:paymentOutput];
+- (void)setModel:(nullable id<DWConfirmPaymentViewProtocol>)model {
+    self.confirmPaymentView.model = model;
 }
 
 #pragma mark - Private

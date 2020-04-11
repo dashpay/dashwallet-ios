@@ -58,6 +58,10 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
         [self addSubview:confirmationCheckbox];
         _confirmationCheckbox = confirmationCheckbox;
 
+#if SNAPSHOT
+        confirmationCheckbox.accessibilityIdentifier = @"seedphrase_checkbox";
+#endif /* SNAPSHOT */
+
         _seedPhraseTopConstraint = [seedPhraseView.topAnchor constraintEqualToAnchor:self.topAnchor
                                                                             constant:DW_TOP_COMPACT_PADDING];
 

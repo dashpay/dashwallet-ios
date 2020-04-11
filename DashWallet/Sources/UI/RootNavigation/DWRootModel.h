@@ -17,28 +17,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWRootProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
-
-@interface DWRootModel : NSObject
-
-@property (readonly, nonatomic, assign) BOOL hasAWallet;
-
-@property (readonly, nonatomic, strong) DWHomeModel *homeModel;
-
-@property (nullable, nonatomic, copy) void (^currentNetworkDidChangeBlock)(void);
-
-/**
- NO if running Dashwallet is not allowed on this device for security reasons
- */
-@property (readonly, nonatomic, assign) BOOL walletOperationAllowed;
-
-- (void)applicationDidEnterBackground;
-- (BOOL)shouldShowLockScreen;
-
-- (void)setupDidFinished;
-
+@interface DWRootModel : NSObject <DWRootProtocol>
 
 @end
 

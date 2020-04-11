@@ -16,6 +16,7 @@
 //
 
 #import "DWSignMessageViewController.h"
+#import <DashSync/DashSync.h>
 
 @interface DWSignMessageViewController ()
 

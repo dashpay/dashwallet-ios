@@ -45,11 +45,23 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 @property (nullable, nonatomic, strong) UIStackView *stackView;
 @property (nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
 
+@property (nullable, nonatomic, strong) UIButton *bottomActionButton;
+@property (nullable, nonatomic, strong) UIBarButtonItem *barActionButton;
+@property (nullable, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
+
 @property (nullable, strong, nonatomic) NSLayoutConstraint *contentBottomConstraint;
 
 @end
 
 @implementation DWBaseActionButtonViewController
+
++ (BOOL)showsActionButton {
+    return YES;
+}
+
++ (BOOL)isActionButtonInNavigationBar {
+    return IS_IPHONE_5_OR_LESS;
+}
 
 - (NSString *)actionButtonTitle {
     NSAssert(NO, @"Must be overriden in subclass");
@@ -58,10 +70,6 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
 - (NSString *)actionButtonDisabledTitle {
     return [self actionButtonTitle];
-}
-
-+ (BOOL)showsActionButton {
-    return YES;
 }
 
 - (void)viewDidLoad {
@@ -80,9 +88,36 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 - (void)reloadActionButtonTitles {
     NSString *actionButtonTitle = [self actionButtonTitle];
     NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
-    if (!IS_IPHONE_5_OR_LESS) {
+    if (![self.class isActionButtonInNavigationBar]) {
         [(DWBlueActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
         [(DWBlueActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
+    }
+}
+
+- (void)showActivityIndicator {
+    if ([self.class isActionButtonInNavigationBar]) {
+        UIActivityIndicatorView *activityIndicator = [self configuredActivityIndicator];
+        [activityIndicator startAnimating];
+        [activityIndicator sizeToFit];
+        UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityIndicator];
+        self.navigationItem.rightBarButtonItem = barButtonItem;
+    }
+    else {
+        NSParameterAssert(self.activityIndicatorView);
+        NSParameterAssert(self.bottomActionButton);
+        self.bottomActionButton.hidden = YES;
+        self.activityIndicatorView.hidden = NO;
+        [self.activityIndicatorView startAnimating];
+    }
+}
+
+- (void)hideActivityIndicator {
+    if ([self.class isActionButtonInNavigationBar]) {
+        self.navigationItem.rightBarButtonItem = self.barActionButton;
+    }
+    else {
+        self.activityIndicatorView.hidden = YES;
+        self.bottomActionButton.hidden = NO;
     }
 }
 
@@ -105,7 +140,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
         NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
         NSParameterAssert(actionButtonTitle);
 
-        if (IS_IPHONE_5_OR_LESS) {
+        if ([self.class isActionButtonInNavigationBar]) {
             UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc]
                 initWithTitle:actionButtonTitle
                         style:UIBarButtonItemStylePlain
@@ -113,6 +148,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
                        action:@selector(actionButtonAction:)];
             self.navigationItem.rightBarButtonItem = barButtonItem;
             self.actionButton = barButtonItem;
+            self.barActionButton = barButtonItem;
         }
         else {
             bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
@@ -124,6 +160,13 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
                          forControlEvents:UIControlEventTouchUpInside];
             self.actionButton = bottomActionButton;
             [arrangedSubviews addObject:bottomActionButton];
+            self.bottomActionButton = bottomActionButton;
+
+            UIActivityIndicatorView *activityIndicatorView = [self configuredActivityIndicator];
+            activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+            activityIndicatorView.hidden = YES;
+            [arrangedSubviews addObject:activityIndicatorView];
+            self.activityIndicatorView = activityIndicatorView;
         }
 
         self.actionButton.enabled = NO;
@@ -158,10 +201,26 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     }
 }
 
+- (UIActivityIndicatorView *)configuredActivityIndicator {
+    UIActivityIndicatorView *activityIndicatorView = nil;
+
+    if ([self.class isActionButtonInNavigationBar]) {
+        activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        activityIndicatorView.color = [UIColor dw_tintColor];
+    }
+    else {
+        activityIndicatorView =
+            [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        activityIndicatorView.color = [UIColor dw_iconTintColor];
+    }
+
+    return activityIndicatorView;
+}
+
 #pragma mark - Configuration
 
 + (CGFloat)deviceSpecificBottomPadding {
-    if (IS_IPHONE_5_OR_LESS) {
+    if ([self isActionButtonInNavigationBar]) {
         return 0.0;
     }
     else {

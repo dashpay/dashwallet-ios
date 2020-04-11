@@ -17,13 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
-NS_ASSUME_NONNULL_BEGIN
+#import "DWConfirmPaymentViewProtocol.h"
 
-@class DWPaymentOutput;
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWConfirmPaymentContentView : UIView
 
-@property (nullable, nonatomic, strong) DWPaymentOutput *paymentOutput;
+@property (nullable, nonatomic, strong) id<DWConfirmPaymentViewProtocol> model;
 
 @end
 

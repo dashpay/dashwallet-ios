@@ -18,7 +18,6 @@
 #import "DWHomeView.h"
 
 #import "DWHomeHeaderView.h"
-#import "DWHomeModel.h"
 #import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
@@ -92,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)setModel:(DWHomeModel *)model {
+- (void)setModel:(id<DWHomeProtocol>)model {
     NSParameterAssert(model);
     _model = model;
     model.updatesObserver = self;
@@ -126,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWHomeModelUpdatesObserver
 
-- (void)homeModel:(DWHomeModel *)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
+- (void)homeModel:(id<DWHomeProtocol>)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
     self.currentDataSource = dataSource;
 
     if (dataSource.isEmpty) {

@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,27 +15,26 @@
 //  limitations under the License.
 //
 
-#import <DWAlertController/DWAlertController.h>
+#import "DWAmountViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
+@class DWUpholdTransactionObject;
 @class DWUpholdTransferViewController;
 
 @protocol DWUpholdTransferViewControllerDelegate <NSObject>
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller;
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
-                           openTransactionURL:(NSURL *)url;
-- (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller;
+- (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
+                  didSendTransaction:(DWUpholdTransactionObject *)transaction;
 
 @end
 
-@interface DWUpholdTransferViewController : DWAlertController
+@interface DWUpholdTransferViewController : DWAmountViewController
 
-@property (nullable, weak, nonatomic) id<DWUpholdTransferViewControllerDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWUpholdTransferViewControllerDelegate> delegate;
 
-+ (instancetype)controllerWithCard:(DWUpholdCardObject *)card;
+- (instancetype)initWithCard:(DWUpholdCardObject *)card;
 
 @end
 

@@ -17,9 +17,8 @@
 
 #import "DWHomeViewController.h"
 
-#import "AppDelegate.h"
-#import "DWBalanceDisplayOptions.h"
-#import "DWHomeModel.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
+#import "DWEnvironment.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -62,14 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self setupView];
     [self performJailbreakCheck];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(deviceDidShakeNotification)
-                                                 name:DWDeviceDidShakeNotification
-                                               object:nil];
-
-    // TODO: impl migration stuff from protectedViewDidAppear of DWRootViewController
-    // TODO: check if wallet is watchOnly and show info about it
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -79,9 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self showWalletBackupReminderIfNeeded];
+    BOOL upgrading = [self.model performOnSetupUpgrades];
+    if (!upgrading) {
+        // since these both methods might display modals, don't allow running them simultaneously
+        [self showWalletBackupReminderIfNeeded];
+    }
 
-    [[AppDelegate appDelegate] registerForPushNotifications];
+    [self.model registerForPushNotifications];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -118,16 +113,9 @@ NS_ASSUME_NONNULL_BEGIN
     [self performActionForShortcut:action sender:sender];
 }
 
-#pragma mark - Notifications
-
-- (void)deviceDidShakeNotification {
-#warning Disable debug feature in Release
-    [self debug_wipeWallet];
-}
-
 #pragma mark - Private
 
-- (DWPayModel *)payModel {
+- (id<DWPayModelProtocol>)payModel {
     return self.model.payModel;
 }
 
@@ -140,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
     CGFloat logoHeight;
     if ([DWEnvironment sharedInstance].currentChain.chainType == DSChainType_TestNet) {
         logoImage = [UIImage imageNamed:@"dash_logo_testnet"];
-        logoHeight = 43.0;
+        logoHeight = 40.0;
     }
     else {
         logoImage = [UIImage imageNamed:@"dash_logo_template"];

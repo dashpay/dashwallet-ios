@@ -97,7 +97,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>0</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -121,8 +121,10 @@
 	<string>Used to authorize payments</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We will use your location to determine where you are. Your location will never be recorded or shared with anyone.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Used to save media data</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Unused</string>
+	<string>Used to save media data</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Montserrat-Regular.otf</string>

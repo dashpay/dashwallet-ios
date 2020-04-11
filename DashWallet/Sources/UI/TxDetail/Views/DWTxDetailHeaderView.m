@@ -256,7 +256,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setViewInExplorerDefaultTitle {
-    [self.viewInExplorerButton setTitle:NSLocalizedString(@"View in Explorer", nil)
+    [self.viewInExplorerButton setTitle:NSLocalizedString(@"View in Block Explorer", nil)
                                forState:UIControlStateNormal];
 }
 

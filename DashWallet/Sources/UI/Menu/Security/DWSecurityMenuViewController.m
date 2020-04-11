@@ -17,6 +17,8 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
@@ -24,15 +26,18 @@
 #import "DWPreviewSeedPhraseViewController.h"
 #import "DWResetWalletInfoViewController.h"
 #import "DWSecurityMenuModel.h"
-#import "DWSelectorViewController.h"
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
+
+#if SNAPSHOT
+#import "DWDemoAdvancedSecurityViewController.h"
+#endif /* SNAPSHOT */
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate>
 
-@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
+@property (readonly, nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 
@@ -40,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSecurityMenuViewController
 
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
@@ -132,6 +137,9 @@ NS_ASSUME_NONNULL_BEGIN
 
             [strongSelf showAdvancedSecurity];
         };
+#if SNAPSHOT
+        cellModel.accessibilityIdentifier = @"menu_security_advanced_item";
+#endif /* SNAPSHOT */
         [items addObject:cellModel];
     }
 
@@ -172,11 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
     DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     [formController setSections:[self sections] placeholderText:nil];
 
-    [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
-    [formController didMoveToParentViewController:self];
+    [self dw_embedChild:formController];
     self.formController = formController;
 }
 
@@ -212,7 +216,7 @@ NS_ASSUME_NONNULL_BEGIN
               authenticateWithPrompt:nil
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticated, BOOL cancelled) {
+                          completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                               if (!authenticated) {
                                   return;
                               }
@@ -243,12 +247,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showAdvancedSecurity {
+#if SNAPSHOT
+    DWDemoAdvancedSecurityViewController *controller = [[DWDemoAdvancedSecurityViewController alloc] init];
+    [self.navigationController pushViewController:controller animated:YES];
+#else
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager
               authenticateWithPrompt:nil
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
-                          completion:^(BOOL authenticated, BOOL cancelled) {
+                          completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                               if (!authenticated) {
                                   return;
                               }
@@ -256,6 +264,7 @@ NS_ASSUME_NONNULL_BEGIN
                               DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
                               [self.navigationController pushViewController:controller animated:YES];
                           }];
+#endif /* SNAPSHOT */
 }
 
 - (void)biometricSwitchAction:(DWSwitcherFormCellModel *)cellModel {

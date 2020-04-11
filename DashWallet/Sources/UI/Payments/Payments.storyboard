@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zh6-OB-CNe">
-    <device id="retina5_9" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zh6-OB-CNe">
+    <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -25,10 +23,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" translatesAutoresizingMaskIntoConstraints="NO" id="his-9a-KlT" userLabel="Nav Bar Like View">
-                                <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                                <rect key="frame" x="16" y="44" width="343" height="44"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AaY-d3-NZT" userLabel="Left Dummy View">
-                                        <rect key="frame" x="16" y="0.0" width="44" height="44"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                         <color key="backgroundColor" name="BackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="44" id="7ED-hN-Zge"/>
@@ -36,14 +34,14 @@
                                         </constraints>
                                     </view>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NsT-lW-QFC">
-                                        <rect key="frame" x="60" y="0.0" width="255" height="44"/>
+                                        <rect key="frame" x="44" y="0.0" width="255" height="44"/>
                                         <color key="backgroundColor" name="BackgroundColor"/>
                                         <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
                                         <color key="textColor" name="DarkTitleColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dWN-QP-uyD">
-                                        <rect key="frame" x="315" y="0.0" width="44" height="44"/>
+                                        <rect key="frame" x="299" y="0.0" width="44" height="44"/>
                                         <color key="backgroundColor" name="BackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="44" id="54K-LK-OrA"/>
@@ -102,16 +100,16 @@
                         </subviews>
                         <color key="backgroundColor" name="BackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="un1-2d-gkb" firstAttribute="trailing" secondItem="ZtR-LU-F8z" secondAttribute="trailing" id="4lH-DZ-DrY"/>
-                            <constraint firstItem="his-9a-KlT" firstAttribute="leading" secondItem="un1-2d-gkb" secondAttribute="leading" id="CgB-6C-M0x"/>
+                            <constraint firstAttribute="trailing" secondItem="ZtR-LU-F8z" secondAttribute="trailing" id="4lH-DZ-DrY"/>
+                            <constraint firstItem="his-9a-KlT" firstAttribute="leading" secondItem="sqo-JG-nXd" secondAttribute="leadingMargin" id="CgB-6C-M0x"/>
                             <constraint firstAttribute="trailingMargin" secondItem="1hT-sr-wN7" secondAttribute="trailing" id="Cnk-hI-PoR"/>
-                            <constraint firstItem="un1-2d-gkb" firstAttribute="trailing" secondItem="his-9a-KlT" secondAttribute="trailing" id="R99-sr-qXJ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="his-9a-KlT" secondAttribute="trailing" id="R99-sr-qXJ"/>
                             <constraint firstItem="1hT-sr-wN7" firstAttribute="leading" secondItem="sqo-JG-nXd" secondAttribute="leadingMargin" id="b7q-0N-R6f"/>
                             <constraint firstItem="1hT-sr-wN7" firstAttribute="top" secondItem="his-9a-KlT" secondAttribute="bottom" constant="24" id="cnD-8M-5aT"/>
                             <constraint firstItem="ZtR-LU-F8z" firstAttribute="top" secondItem="1hT-sr-wN7" secondAttribute="bottom" id="e32-K3-RUy"/>
-                            <constraint firstItem="his-9a-KlT" firstAttribute="top" secondItem="un1-2d-gkb" secondAttribute="top" id="eog-sd-NAv"/>
-                            <constraint firstItem="ZtR-LU-F8z" firstAttribute="leading" secondItem="un1-2d-gkb" secondAttribute="leading" id="utL-gh-M4q"/>
-                            <constraint firstItem="un1-2d-gkb" firstAttribute="bottom" secondItem="ZtR-LU-F8z" secondAttribute="bottom" id="vny-n1-paS"/>
+                            <constraint firstItem="his-9a-KlT" firstAttribute="top" secondItem="sqo-JG-nXd" secondAttribute="topMargin" id="eog-sd-NAv"/>
+                            <constraint firstItem="ZtR-LU-F8z" firstAttribute="leading" secondItem="sqo-JG-nXd" secondAttribute="leading" id="utL-gh-M4q"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="ZtR-LU-F8z" secondAttribute="bottom" id="vny-n1-paS"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="un1-2d-gkb"/>
                     </view>

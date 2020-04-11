@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTransactionListDataSource+DWProtected.h"
 #import "NSAttributedString+DWBuilder.h"
@@ -71,7 +72,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSUInteger)inputAddressesCount {
-    return self.dataItem.inputSendAddresses.count;
+    if ([self shouldDisplayInputAddresses]) {
+        return self.dataItem.inputSendAddresses.count;
+    }
+    else {
+        return 0;
+    }
 }
 
 - (NSUInteger)outputAddressesCount {
@@ -117,18 +123,20 @@ NS_ASSUME_NONNULL_BEGIN
             break;
     }
 
-    NSSet<NSString *> *addresses = [NSSet setWithArray:self.dataItem.inputSendAddresses];
-    NSString *firstAddress = addresses.anyObject;
-    for (NSString *address in addresses) {
-        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
-        const BOOL hasTitle = address == firstAddress;
-        DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                    title:hasTitle ? title : @""
-                                         attributedDetail:detail
-                                             copyableData:address];
-        [models addObject:model];
+    if ([self shouldDisplayInputAddresses]) {
+        NSSet<NSString *> *addresses = [NSSet setWithArray:self.dataItem.inputSendAddresses];
+        NSString *firstAddress = addresses.anyObject;
+        for (NSString *address in addresses) {
+            NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                                   withFont:font];
+            const BOOL hasTitle = address == firstAddress;
+            DWTitleDetailCellModel *model =
+                [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                        title:hasTitle ? title : @""
+                                             attributedDetail:detail
+                                                 copyableData:address];
+            [models addObject:model];
+        }
     }
 
     return [models copy];
@@ -145,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
             title = NSLocalizedString(@"Received at", nil);
             break;
         case DSTransactionDirection_Moved:
-            title = NSLocalizedString(@"Moved internally to", nil);
+            title = NSLocalizedString(@"Internally moved to", nil);
             break;
         case DSTransactionDirection_NotAccountFunds:
             title = @""; //this should not be possible
@@ -223,7 +231,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<DWTitleDetailItem>)date {
     NSString *title = NSLocalizedString(@"Date", nil);
-    NSString *detail = [self.dataProvider dateForTransaction:self.transaction];
+    NSString *detail = [self.dataProvider longDateStringForTransaction:self.transaction];
     DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
                                                                             title:title
                                                                       plainDetail:detail];
@@ -254,6 +262,12 @@ NS_ASSUME_NONNULL_BEGIN
     [UIPasteboard generalPasteboard].string = transactionId;
 
     return YES;
+}
+
+#pragma mark - Private
+
+- (BOOL)shouldDisplayInputAddresses {
+    return [self.transaction isKindOfClass:[DSCoinbaseTransaction class]] || self.dataItem.direction != DSTransactionDirection_Received;
 }
 
 @end

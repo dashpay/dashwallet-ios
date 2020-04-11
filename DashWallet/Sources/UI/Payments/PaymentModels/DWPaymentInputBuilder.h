@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
                    source:(DWPaymentInputSource)source
                completion:(void (^)(DWPaymentInput *paymentInput))completion;
 
+- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
+
 @end
 
 NS_ASSUME_NONNULL_END

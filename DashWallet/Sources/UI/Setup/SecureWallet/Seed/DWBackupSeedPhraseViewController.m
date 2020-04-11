@@ -33,10 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Backup Wallet", nil);
+    self.title = NSLocalizedString(@"Backup Wallet", @"A noun. Used as a title.");
     self.actionButton.enabled = NO;
 
     self.contentView.displayType = DWSeedPhraseDisplayType_Backup;
+
+#if SNAPSHOT
+    [(UIBarButtonItem *)self.actionButton setAccessibilityIdentifier:@"seedphrase_continue_button"];
+#endif /* SNAPSHOT */
 }
 
 - (void)actionButtonAction:(id)sender {

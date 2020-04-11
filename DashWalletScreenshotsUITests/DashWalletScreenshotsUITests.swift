@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -23,11 +23,6 @@ class DashWalletScreenshotsUITests: XCTestCase {
 
         continueAfterFailure = false
 
-        // Set time in status bar to 9:41, full battery, wifi and carrier
-        if _SNAPSHOT {
-            SDStatusBarManager.sharedInstance()?.enableOverrides()
-        }
-
         let app = XCUIApplication()
         setupSnapshot(app)
         app.launch()
@@ -37,40 +32,49 @@ class DashWalletScreenshotsUITests: XCTestCase {
         if _SNAPSHOT {
             let app = XCUIApplication()
 
-            // Send screen
-            //
+            // Home screen
             snapshot("1")
 
-            // Receive screen
-            //
-            app.pageIndicators.element(boundBy: 0).tap()
+            waitAndTap(app.cells["shortcut_secure_wallet"])
+            waitAndTap(app.buttons["show_recovery_button"])
+            waitAndTap(app.otherElements["seedphrase_checkbox"])
+            waitAndTap(app.buttons["seedphrase_continue_button"])
+            sleep(1)
+            // Seed Phrase Backup
+            snapshot("5")
+
+            waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
+            waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
+            waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
+
+            waitAndTap(app.buttons["tabbar_payments_button"])
+            waitAndTap(app.buttons["send_pasteboard_button"])
+            waitAndTap(app.staticTexts["1"])
+            waitAndTap(app.buttons["amount_send_button"])
+            sleep(1)
+            // Sending confirmation
             snapshot("2")
 
-            // Request amount screen
-            //
-            app.buttons["share_button"].tap()
+            waitAndTap(app.otherElements["modal_dimming_view"])
+            waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
+            waitAndTap(app.otherElements["payments_receive_segment"])
             sleep(1)
-            app.sheets.buttons.element(boundBy: 1).tap()
-            sleep(2)
-            app.staticTexts["3"].tap()
-            app.staticTexts["amount_button_separator"].tap()
-            app.staticTexts["1"].tap()
-            app.staticTexts["4"].tap()
+            // Receive screen
             snapshot("3")
 
-            // Transactions screen
-            //
-            // press cancel button
-            app.navigationBars["DWAmountView"].children(matching: .button).element(boundBy: 0).tap()
-            // press menu button
-            app.navigationBars["DWRootView"].children(matching: .button).element(boundBy: 0).tap()
+            waitAndTap(app.buttons["tabbar_payments_button"])
+            waitAndTap(app.otherElements["tabbar_menu_button"])
+            waitAndTap(app.cells["menu_security_item"])
+            waitAndTap(app.cells["menu_security_advanced_item"])
+            sleep(1)
+            // Advanced Security
             snapshot("4")
-
-            // About
-            //
-            app.tables.cells.element(boundBy: 5).tap()
-            app.tables.cells.element(boundBy: 0).tap()
-            snapshot("5")
         }
+    }
+
+    private func waitAndTap(_ element: XCUIElement) {
+        let exists = element.waitForExistence(timeout: 3)
+        XCTAssert(exists, "\(element)")
+        element.tap()
     }
 }

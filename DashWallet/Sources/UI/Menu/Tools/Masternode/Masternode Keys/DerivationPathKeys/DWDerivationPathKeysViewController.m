@@ -17,6 +17,8 @@
 
 #import "DWDerivationPathKeysViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWDerivationPathKeysModel.h"
 #import "DWDerivationPathKeysTableViewCell.h"
 #import "DWSelectorFormTableViewCell.h"

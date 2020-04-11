@@ -17,6 +17,8 @@
 
 #import "DSWatchTransactionDataObject.h"
 
+#import "DWEnvironment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSWatchTransactionDataObject

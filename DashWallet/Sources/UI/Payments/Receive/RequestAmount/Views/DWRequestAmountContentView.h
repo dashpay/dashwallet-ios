@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@protocol DWReceiveModelProtocol;
 @class DWRequestAmountContentView;
 
 @protocol DWRequestAmountContentViewDelegate <NSObject>
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidAppear;
 
-- (instancetype)initWithModel:(DWReceiveModel *)model;
+- (instancetype)initWithModel:(id<DWReceiveModelProtocol>)model;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;

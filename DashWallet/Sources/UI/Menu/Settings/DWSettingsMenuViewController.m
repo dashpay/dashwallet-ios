@@ -17,6 +17,8 @@
 
 #import "DWSettingsMenuViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAboutViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWLocalCurrencyViewController.h"
@@ -158,11 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
     DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     [formController setSections:[self sections] placeholderText:nil];
 
-    [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
-    [formController didMoveToParentViewController:self];
+    [self dw_embedChild:formController];
     self.formController = formController;
 }
 
@@ -190,7 +188,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)rescanBlockchainActionFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
     [DWSettingsMenuModel rescanBlockchainActionFromController:self
                                                    sourceView:sourceView
-                                                   sourceRect:sourceRect];
+                                                   sourceRect:sourceRect
+                                                   completion:^(BOOL confirmed) {
+                                                       if (confirmed) {
+                                                           [self.delegate settingsMenuViewControllerDidRescanBlockchain:self];
+                                                       }
+                                                   }];
 }
 
 - (void)showCurrencySelector {

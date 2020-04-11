@@ -158,6 +158,12 @@ static CGFloat SeparatorHeight(void) {
     return self;
 }
 
+- (void)prepareForReuse {
+    [super prepareForReuse];
+
+    self.contentView.alpha = 1.0;
+}
+
 - (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
     [super setHighlighted:highlighted animated:animated];
 

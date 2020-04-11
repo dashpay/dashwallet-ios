@@ -25,12 +25,14 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWPayTableViewCellDelegate <NSObject>
 
 - (void)payTableViewCell:(DWPayTableViewCell *)cell action:(UIButton *)sender;
+- (void)payTableViewCell:(DWPayTableViewCell *)cell didUpdateButtonWidth:(CGFloat)buttonWidth;
 
 @end
 
 @interface DWPayTableViewCell : KVOUITableViewCell
 
 @property (nullable, strong, nonatomic) DWPayOptionModel *model;
+@property (nonatomic, assign) CGFloat preferredActionButtonWidth;
 @property (nullable, nonatomic, weak) id<DWPayTableViewCellDelegate> delegate;
 
 @end

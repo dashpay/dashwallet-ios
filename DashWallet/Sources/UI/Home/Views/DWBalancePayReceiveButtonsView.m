@@ -17,9 +17,8 @@
 
 #import "DWBalancePayReceiveButtonsView.h"
 
-#import "DWBalanceDisplayOptions.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWBalanceModel.h"
-#import "DWHomeModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -38,6 +37,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 @interface DWBalancePayReceiveButtonsView ()
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (strong, nonatomic) IBOutlet UIControl *balanceButton;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIView *hidingView;
 @property (strong, nonatomic) IBOutlet UIImageView *eyeSlashImageView;
@@ -104,6 +104,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 
     self.balanceViewHeightContraint.constant = BalanceButtonMinHeight();
 
+    UILongPressGestureRecognizer *recognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(balanceLongPressAction:)];
+    [self.balanceButton addGestureRecognizer:recognizer];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(contentSizeCategoryDidChangeNotification:)
                                                  name:UIContentSizeCategoryDidChangeNotification
@@ -149,8 +154,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 }
 
 - (IBAction)balanceButtonAction:(UIControl *)sender {
-    DWBalanceDisplayOptions *balanceDisplayOptions = self.model.balanceDisplayOptions;
+    id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions = self.model.balanceDisplayOptions;
     balanceDisplayOptions.balanceHidden = !balanceDisplayOptions.balanceHidden;
+}
+
+- (void)balanceLongPressAction:(UIControl *)sender {
+    [self.delegate balancePayReceiveButtonsView:self balanceLongPressAction:sender];
 }
 
 #pragma mark - Notifications

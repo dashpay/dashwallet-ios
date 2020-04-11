@@ -30,10 +30,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMainMenuViewController () <DWMainMenuContentViewDelegate, DWToolsMenuViewControllerDelegate>
+@interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
+                                        DWToolsMenuViewControllerDelegate,
+                                        DWSettingsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
-@property (nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
+@property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 
 @end
 
@@ -41,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
@@ -77,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
                       authenticateWithPrompt:nil
                 usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
                               alertIfLockout:YES
-                                  completion:^(BOOL authenticated, BOOL cancelled) {
+                                  completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
                                           UIViewController *controller = [DWUpholdViewController controller];
                                           DWNavigationController *navigationController =
@@ -97,6 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWMainMenuItemType_Settings: {
             DWSettingsMenuViewController *controller = [[DWSettingsMenuViewController alloc] init];
+            controller.delegate = self;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;
@@ -116,6 +119,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller {
     [self.navigationController popToRootViewControllerAnimated:NO];
     [self.delegate mainMenuViewControllerImportPrivateKey:self];
+}
+
+#pragma mark - DWSettingsMenuViewControllerDelegate
+
+- (void)settingsMenuViewControllerDidRescanBlockchain:(DWSettingsMenuViewController *)controller {
+    [self.navigationController popToRootViewControllerAnimated:NO];
+    [self.delegate mainMenuViewControllerOpenHomeScreen:self];
 }
 
 @end

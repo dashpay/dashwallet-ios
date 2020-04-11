@@ -17,9 +17,10 @@
 
 #import "DWBaseModalViewController.h"
 
+#import "DWConfirmPaymentViewProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPaymentOutput;
 @class DWConfirmPaymentViewController;
 
 @protocol DWConfirmPaymentViewControllerDelegate <NSObject>
@@ -31,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWConfirmPaymentViewController : DWBaseModalViewController
 
 @property (nullable, nonatomic, weak) id<DWConfirmPaymentViewControllerDelegate> delegate;
-@property (nullable, nonatomic, strong) DWPaymentOutput *paymentOutput;
+@property (nullable, nonatomic, strong) id<DWConfirmPaymentViewProtocol> model;
 @property (nonatomic, assign) BOOL sendingEnabled;
 
 @end

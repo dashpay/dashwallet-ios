@@ -28,4 +28,6 @@
 #import "UITableViewCell+DWReuseHelper.h"
 #import "UICollectionViewCell+DWReuseHelper.h"
 
+#import "UIViewController+DWEmbedding.h"
+
 #endif /* DWUIKit_h */

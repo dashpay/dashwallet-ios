@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWBalanceDisplayOptions
 
+@synthesize balanceHidden = _balanceHidden;
+
 - (instancetype)init {
     self = [super init];
     if (self) {

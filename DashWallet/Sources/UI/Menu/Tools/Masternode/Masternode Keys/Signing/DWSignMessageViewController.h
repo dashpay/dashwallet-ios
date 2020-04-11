@@ -17,6 +17,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class DSKey;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSignMessageViewController : UIViewController

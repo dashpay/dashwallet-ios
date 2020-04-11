@@ -21,6 +21,8 @@
 #import <netdb.h>
 #import <sys/socket.h>
 
+#import "DWEnvironment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutModel
@@ -70,18 +72,25 @@ NS_ASSUME_NONNULL_BEGIN
     DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
     DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
 
-    return [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
-                                                         "connected peers: %d\ndl peer: %@\nquorums validated: %d/%d",
-                                                        NULL),
-                                      [priceManager localCurrencyStringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
-                                      [priceManager stringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
-                                      [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString,
-                                      chain.lastBlockHeight,
-                                      chain.estimatedBlockHeight,
-                                      peerManager.connectedPeerCount,
-                                      peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-",
-                                      [currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
-                                      [currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
+    NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
+                                                      [priceManager localCurrencyStringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
+                                                      [priceManager stringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue]];
+    NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
+                                                         [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
+    NSString *blockString = [NSString stringWithFormat:NSLocalizedString(@"Block #%d of %d", nil),
+                                                       chain.lastBlockHeight,
+                                                       chain.estimatedBlockHeight];
+    NSString *peersString = [NSString stringWithFormat:NSLocalizedString(@"Connected peers: %d", nil),
+                                                       peerManager.connectedPeerCount];
+    NSString *dlPeerString = [NSString stringWithFormat:NSLocalizedString(@"Download peer: %@", @"ex., Download peer: 127.0.0.1:9999"),
+                                                        peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-"];
+    NSString *quorumsString = [NSString stringWithFormat:NSLocalizedString(@"Quorums validated: %d/%d", nil),
+                                                         [currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
+                                                         [currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
+
+    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString ];
+
+    return [statusLines componentsJoinedByString:@"\n"];
 }
 
 - (nullable NSString *)currentPriceSourcing {

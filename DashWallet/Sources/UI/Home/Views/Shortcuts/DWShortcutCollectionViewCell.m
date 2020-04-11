@@ -41,7 +41,7 @@ static NSString *TitleForAction(DWShortcutAction *action) {
             return NSLocalizedString(@"Sync Now",
                                      @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_PayWithNFC:
-            return NSLocalizedString(@"Pay with NFC",
+            return NSLocalizedString(@"Send with NFC",
                                      @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_LocalCurrency:
             return NSLocalizedString(@"Local Currency",

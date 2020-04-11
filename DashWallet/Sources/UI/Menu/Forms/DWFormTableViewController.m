@@ -258,7 +258,6 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     UIView *view = [[UIView alloc] init];
-    view.backgroundColor = self.view.backgroundColor;
     return view;
 }
 

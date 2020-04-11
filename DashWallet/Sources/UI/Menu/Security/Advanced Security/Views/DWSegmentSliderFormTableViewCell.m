@@ -183,7 +183,7 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
 
 - (void)segmentSliderAction:(DWSegmentSlider *)sender {
     self.cellModel.selectedItemIndex = sender.selectedItemIndex;
-    self.cellModel.didChangeValueBlock(self.cellModel);
+    self.cellModel.didChangeValueBlock(self.cellModel, self);
 
     [self reloadAttributedData];
 }

@@ -17,9 +17,11 @@
 
 #import "DWBasePayViewController.h"
 
-#import "DWConfirmPaymentViewController.h"
+#import <DashSync/DashSync.h>
+
+#import "DWConfirmSendPaymentViewController.h"
 #import "DWHomeViewController.h"
-#import "DWPayModel.h"
+#import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"
@@ -29,6 +31,7 @@
 #import "DWTxDetailFullscreenViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
+#import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
                                        DWQRScanModelDelegate,
                                        DWConfirmPaymentViewControllerDelegate>
 
-@property (nullable, nonatomic, weak) DWConfirmPaymentViewController *confirmViewController;
+@property (nullable, nonatomic, weak) DWSendAmountViewController *amountViewController;
+@property (nullable, nonatomic, weak) DWConfirmSendPaymentViewController *confirmViewController;
 
 @end
 
@@ -94,6 +98,18 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)performPayToURL:(NSURL *)url {
+    DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
+
+    self.paymentProcessor = nil;
+    [self.paymentProcessor processPaymentInput:paymentInput];
+}
+
+- (void)handleFile:(NSData *)file {
+    self.paymentProcessor = nil;
+    [self.paymentProcessor processFile:file];
+}
+
 - (void)payViewControllerDidShowPaymentResult {
     // to be overriden
 }
@@ -109,7 +125,9 @@ NS_ASSUME_NONNULL_BEGIN
         [DWSendAmountViewController sendControllerWithDestination:sendingDestination
                                                    paymentDetails:nil];
     controller.delegate = self;
+    controller.demoMode = self.demoMode;
     [self.navigationController pushViewController:controller animated:YES];
+    self.amountViewController = controller;
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
@@ -131,6 +149,9 @@ NS_ASSUME_NONNULL_BEGIN
                     if (cancelBlock) {
                         cancelBlock();
                     }
+
+                    NSAssert(self.confirmViewController.sendingEnabled,
+                             @"paymentProcessorDidCancelTransactionSigning: should be called");
                 }];
     [alert addAction:cancelAction];
 
@@ -142,6 +163,8 @@ NS_ASSUME_NONNULL_BEGIN
                     if (actionBlock) {
                         actionBlock();
                     }
+
+                    self.confirmViewController.sendingEnabled = YES;
                 }];
     [alert addAction:actionAction];
 
@@ -156,20 +179,39 @@ NS_ASSUME_NONNULL_BEGIN
         self.confirmViewController.paymentOutput = paymentOutput;
     }
     else {
-        DWConfirmPaymentViewController *controller = [[DWConfirmPaymentViewController alloc] init];
+        DWConfirmSendPaymentViewController *controller = [[DWConfirmSendPaymentViewController alloc] init];
         controller.paymentOutput = paymentOutput;
         controller.delegate = self;
-        [self presentViewController:controller animated:YES completion:nil];
+
+        if (self.demoMode) {
+            controller.transitioningDelegate = nil;
+            controller.modalPresentationStyle = UIModalPresentationPageSheet;
+
+            [self.demoDelegate presentModalController:controller sender:self];
+        }
+        else {
+            [self presentViewController:controller animated:YES completion:nil];
+        }
 
         self.confirmViewController = controller;
     }
 }
 
+- (void)paymentProcessorDidCancelTransactionSigning:(DWPaymentProcessor *)processor {
+    self.confirmViewController.sendingEnabled = YES;
+}
+
 // Result
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-        didFailWithTitle:(nullable NSString *)title
+        didFailWithError:(nullable NSError *)error
+                   title:(nullable NSString *)title
                  message:(nullable NSString *)message {
+    if ([error.domain isEqual:DSErrorDomain] &&
+        (error.code == DSErrorInsufficientFunds || error.code == DSErrorInsufficientFundsForNetworkFee)) {
+        [self.amountViewController insufficientFundsErrorWasShown];
+    }
+
     [self.navigationController.view dw_hideProgressHUD];
     [self showAlertWithTitle:title message:message];
     if (self.confirmViewController) {
@@ -249,7 +291,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWConfirmPaymentViewControllerDelegate
 
-- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller {
+- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmSendPaymentViewController *)controller {
     [self.paymentProcessor confirmPaymentOutput:controller.paymentOutput];
 }
 

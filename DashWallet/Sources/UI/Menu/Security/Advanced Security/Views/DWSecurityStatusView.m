@@ -78,24 +78,24 @@ NS_ASSUME_NONNULL_BEGIN
     UIImage *image = [UIImage imageNamed:@"icon_security_ok"];
     switch (securityLevel) {
         case DWSecurityLevel_None:
-            text = NSLocalizedString(@"None", nil);
+            text = NSLocalizedString(@"None", @"adjective, security level");
             color = [UIColor dw_redColor];
             image = [UIImage imageNamed:@"icon_security_excl"];
             break;
         case DWSecurityLevel_Low:
-            text = NSLocalizedString(@"Low", nil);
+            text = NSLocalizedString(@"Low", @"adjective, security level");
             color = [UIColor dw_orangeColor];
             break;
         case DWSecurityLevel_Medium:
-            text = NSLocalizedString(@"Medium", nil);
+            text = NSLocalizedString(@"Medium", @"adjective, security level");
             color = [UIColor dw_orangeColor];
             break;
         case DWSecurityLevel_High:
-            text = NSLocalizedString(@"High", nil);
+            text = NSLocalizedString(@"High", @"adjective, security level");
             color = [UIColor dw_dashBlueColor];
             break;
         case DWSecurityLevel_VeryHigh:
-            text = NSLocalizedString(@"Very High", nil);
+            text = NSLocalizedString(@"Very High", @"adjective, security level");
             color = [UIColor dw_greenColor];
             break;
     }

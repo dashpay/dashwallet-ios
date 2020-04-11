@@ -80,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
     UIView *contentView = self.view;
 
     childView.translatesAutoresizingMaskIntoConstraints = NO;
+    childView.preservesSuperviewLayoutMargins = YES;
     [contentView addSubview:childView];
 
     const CGRect bounds = [UIScreen mainScreen].bounds;

@@ -32,6 +32,10 @@
 #define IS_IPHONE_X (IS_IPHONE && SCREEN_MAX_LENGTH == 812.0)
 #define IS_IPHONE_XSMAX_OR_XR (IS_IPHONE && SCREEN_MAX_LENGTH == 896.0)
 
+#define IS_IPAD_7TH_GEN (IS_IPAD && SCREEN_MAX_LENGTH == 1080.0)
+#define IS_IPAD_PRO_11 (IS_IPAD && SCREEN_MAX_LENGTH == 1194.0)
+#define IS_IPAD_PRO_12_9 (IS_IPAD && SCREEN_MAX_LENGTH == 1366.0)
+
 #define DEVICE_HAS_HOME_INDICATOR ([UIApplication sharedApplication].delegate.window.safeAreaInsets.bottom > 0)
 
 #endif /* DevicesCompatibility_h */

@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
-    self.descriptionLabel.text = NSLocalizedString(@"This PIN will be required to unlock your app everytime when you use it.", nil);
+    self.descriptionLabel.text = NSLocalizedString(@"This PIN will be required to unlock your app every time when you use it.", nil);
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
     [self.pinView configureWithKeyboard:self.keyboardView];

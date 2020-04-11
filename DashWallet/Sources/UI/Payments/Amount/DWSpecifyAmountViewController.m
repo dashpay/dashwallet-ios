@@ -17,16 +17,14 @@
 
 #import "DWSpecifyAmountViewController.h"
 
-#import "DWAmountModel.h"
+#import "DWReceiveAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSpecifyAmountViewController
 
 + (instancetype)controller {
-    DWAmountModel *model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntent_Request
-                                                   sendingDestination:nil
-                                                       paymentDetails:nil];
+    DWReceiveAmountModel *model = [[DWReceiveAmountModel alloc] init];
 
     DWSpecifyAmountViewController *controller = [[DWSpecifyAmountViewController alloc] initWithModel:model];
 
@@ -50,8 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
     if (!inputValid) {
         return;
     }
-
-    NSAssert(self.model.inputIntent == DWAmountInputIntent_Request, @"Inconsistent state");
 
     [self.delegate specifyAmountViewController:self didInputAmount:self.model.amount.plainAmount];
 }

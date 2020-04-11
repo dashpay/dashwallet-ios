@@ -18,7 +18,10 @@
 #import "DWUpholdMainModel.h"
 
 #import "DWUpholdClient.h"
-#import <DashSync/UIImage+DSUtils.h>
+#import "DWUpholdTransactionObject.h"
+#import "NSAttributedString+DWBuilder.h"
+#import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWUpholdMainModel
 
 - (void)fetch {
-    self.state = DWUpholdMainModelStateLoading;
+    self.state = DWUpholdMainModelState_Loading;
 
     __weak typeof(self) weakSelf = self;
 
@@ -46,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
         strongSelf.dashCard = dashCard;
         strongSelf.fiatCards = fiatCards;
         BOOL success = !!strongSelf.dashCard;
-        strongSelf.state = success ? DWUpholdMainModelStateDone : DWUpholdMainModelStateFailed;
+        strongSelf.state = success ? DWUpholdMainModelState_Done : DWUpholdMainModelState_Failed;
     }];
 }
 
@@ -60,23 +63,29 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
 
-    NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
-    dashAttachmentSymbol.bounds = CGRectMake(0.0, -1.0, 14.0, 11.0);
-    dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
-    NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
     NSString *available = [self.dashCard.available descriptionWithLocale:[NSLocale currentLocale]];
-    NSString *availableFormatted = [NSString stringWithFormat:@" %@", available];
-    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
-    [result beginEditing];
-    [result appendAttributedString:dashSymbol];
-    [result appendAttributedString:[[NSAttributedString alloc] initWithString:availableFormatted]];
-    [result endEditing];
-    return [result copy];
+    NSAttributedString *result = [NSAttributedString
+        dw_dashAttributedStringForFormattedAmount:available
+                                        tintColor:[UIColor dw_dashBlueColor]
+                                             font:[UIFont dw_fontForTextStyle:UIFontTextStyleTitle3]];
+    return result;
 }
 
 - (void)logOut {
     [[DWUpholdClient sharedInstance] logOut];
 }
+
+- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction {
+    return [[DWUpholdClient sharedInstance] transactionURLForTransaction:transaction];
+}
+
+- (NSString *)successMessageTextForTransaction:(DWUpholdTransactionObject *)transaction {
+    return [NSString stringWithFormat:@"%@\n%@: %@",
+                                      NSLocalizedString(@"Your transaction was sent and the amount should appear in your wallet in a few minutes.", nil),
+                                      NSLocalizedString(@"Transaction id", nil),
+                                      transaction.identifier];
+}
+
 
 @end
 

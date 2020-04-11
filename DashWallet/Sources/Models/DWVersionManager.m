@@ -8,6 +8,7 @@
 
 #import "DWVersionManager.h"
 
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 
 #define IDEO_SP @"\xE3\x80\x80" // ideographic space (utf-8)
@@ -77,10 +78,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
     CGRect screenRect = [[UIScreen mainScreen] bounds];
 
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil))
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"Please enter PIN to upgrade wallet", nil))
                                         usingBiometricAuthentication:NO
                                                       alertIfLockout:NO
-                                                          completion:^(BOOL authenticated, BOOL cancelled) {
+                                                          completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                                               if (!authenticated) {
                                                                   completion(YES, NO, cancelled, nil);
                                                                   return;

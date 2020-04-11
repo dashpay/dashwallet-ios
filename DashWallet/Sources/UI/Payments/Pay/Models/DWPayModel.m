@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPayModel
 
+@synthesize options = _options;
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -60,7 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
         [options addObject:pasteboardOption];
         _pasteboardOption = pasteboardOption;
 
-        if ([NFCNDEFReaderSession readingAvailable]) {
+        // CoreNFC is optional framework
+        Class NFCNDEFReaderSessionClass = NSClassFromString(@"NFCNDEFReaderSession");
+        if ([(id)NFCNDEFReaderSessionClass readingAvailable]) {
             DWPayOptionModel *nfcOption = [[DWPayOptionModel alloc]
                 initWithType:DWPayOptionModelType_NFC];
             [options addObject:nfcOption];
@@ -108,6 +112,10 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
+    return [self.inputBuilder paymentInputWithURL:url];
+}
+
 #pragma mark - Notifications
 
 - (void)pasteboardObserverNotification {
@@ -150,7 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef DEBUG
     if (FALSE) {
         // this is kept here on purpose to keep the string in our localization script
-        __unused NSString *s = NSLocalizedString(@"NFC device didn't transmit a valid dash or bitcoin address", nil);
+        __unused NSString *s = NSLocalizedString(@"NFC device didn't transmit a valid Dash address", nil);
     }
 #endif
 

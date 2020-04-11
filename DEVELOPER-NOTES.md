@@ -1,12 +1,6 @@
 
 # Developer Notes
 
-## Pre Requirements
-
-- Xcode 10.2
-- Dependency manager [CocoaPods](https://cocoapods.org). Installation: `gem install cocoapods`
-- Localized files helper tool (optional) [BartyCrouch](https://github.com/Flinesoft/BartyCrouch). Installation: `brew install bartycrouch`
-
 ## Generating screenshots for AppStore
 
  1. Install [fastlane](fastlane.tools) by running `brew cask install fastlane`

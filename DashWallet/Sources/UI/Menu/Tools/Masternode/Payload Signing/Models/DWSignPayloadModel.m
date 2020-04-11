@@ -16,6 +16,8 @@
 //
 
 #import "DWSignPayloadModel.h"
+#import "DWEnvironment.h"
+#import <DashSync/DashSync.h>
 
 @implementation DWSignPayloadModel
 

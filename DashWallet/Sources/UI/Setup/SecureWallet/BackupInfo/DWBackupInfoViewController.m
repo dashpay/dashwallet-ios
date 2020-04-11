@@ -52,6 +52,10 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     [super viewDidLoad];
 
     [self setupView];
+
+#if SNAPSHOT
+    self.showRecoveryPhraseButton.accessibilityIdentifier = @"show_recovery_button";
+#endif /* SNAPSHOT */
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -121,7 +125,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Private
 
 - (void)setupView {
-    self.title = NSLocalizedString(@"Backup Wallet", nil);
+    self.title = NSLocalizedString(@"Backup Wallet", @"A noun. Used as a title.");
 
     NSString *cellId = DWInfoTextCell.dw_reuseIdentifier;
     UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -143,7 +147,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
         _items = @[
             NSLocalizedString(@"This recovery phrase is your access to the funds in this wallet.", nil),
             NSLocalizedString(@"We do not store this recovery phrase.", nil),
-            NSLocalizedString(@"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.", nil),
+            NSLocalizedString(@"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.", nil),
         ];
     }
 

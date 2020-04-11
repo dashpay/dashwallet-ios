@@ -21,10 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWUpholdTransactionObject;
+
 typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
-    DWUpholdMainModelStateLoading,
-    DWUpholdMainModelStateDone,
-    DWUpholdMainModelStateFailed,
+    DWUpholdMainModelState_Loading,
+    DWUpholdMainModelState_Done,
+    DWUpholdMainModelState_Failed,
 };
 
 @interface DWUpholdMainModel : NSObject
@@ -38,6 +40,9 @@ typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
 - (nullable NSURL *)buyDashURL;
 - (nullable NSAttributedString *)availableDashString;
 - (void)logOut;
+
+- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction;
+- (NSString *)successMessageTextForTransaction:(DWUpholdTransactionObject *)transaction;
 
 @end
 

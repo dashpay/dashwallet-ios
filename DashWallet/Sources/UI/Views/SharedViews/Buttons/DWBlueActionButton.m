@@ -39,6 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self resetAppearance];
+}
+
 - (void)setUsedOnDarkBackground:(BOOL)usedOnDarkBackground {
     _usedOnDarkBackground = usedOnDarkBackground;
 
@@ -148,7 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (UIColor *)disabledTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return inverted ? [UIColor dw_disabledButtonColor] : [UIColor dw_lightTitleColor];
+    return inverted ? [UIColor dw_disabledButtonColor] : [UIColor dw_disabledButtonTextColor];
 }
 
 + (UIColor *)borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
@@ -164,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (UIEdgeInsets)smallButtonContentEdgeInsets {
-    return UIEdgeInsetsMake(10.0, 20.0, 10.0, 20.0);
+    return UIEdgeInsetsMake(0.0, 12.0, 0.0, 12.0);
 }
 
 + (CGFloat)cornerRadius {

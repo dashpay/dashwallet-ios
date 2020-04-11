@@ -1,4 +1,3 @@
-# A list of devices you want to take the screenshots from
 devices([
   "iPhone SE",
   "iPhone 8",
@@ -6,7 +5,7 @@ devices([
   "iPhone Xs",
   "iPhone Xs Max",
 
-  "iPad Air",
+  "iPad Air 2",
   "iPad Pro (10.5-inch)",
   "iPad Pro (11-inch)",
   "iPad Pro (12.9-inch) (2nd generation)",
@@ -14,36 +13,35 @@ devices([
 
 languages([
   "en-US",
-  "fr-FR",
-  "ja",
-  "ko",
-  "nl-NL",
-  "ru",  
-  "de-DE",
-  "zh-Hans",
   "es-ES",
-  "it",
-  "tr",
-  "pl",
-  "el",
-  "pt-PT",
-  "vi",
-  "th",
-  "zh-Hant",
-  "id",
+  "fr",
+  "de",
+  "ru",
+  "ko",
+  # "ja",
+  # "nl-NL",
+  # "zh-Hans",
+  # "it",
+  # "tr",
+  # "pl",
+  # "el",
+  # "pt-PT",
+  # "vi",
+  # "th",
+  # "zh-Hant",
+  # "id",
 ])
 
-# The name of the scheme which contains the UI Tests
 scheme("DashWalletScreenshotsUITests")
 
-# Where should the resulting screenshots be stored?
 output_directory("./fastlane/screenshots")
 
-# remove the '#' to clear all previously generated screenshots before creating new ones
-clear_previous_screenshots(true)
+clear_previous_screenshots(false)
 
-# Arguments to pass to the app on launch. See https://docs.fastlane.tools/actions/snapshot/#launch-arguments
-# launch_arguments(["-favColor red"])
+number_of_retries 3
+reinstall_app true
+clean true
+erase_simulator true
 
 # For more information about all available options run
 # fastlane action snapshot

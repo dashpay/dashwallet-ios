@@ -17,13 +17,13 @@
 
 #import "UIViewController+DWShareReceiveInfo.h"
 
-#import "DWReceiveModel.h"
+#import "DWReceiveModelProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation UIViewController (DWShareReceiveInfo)
 
-- (void)dw_shareReceiveInfo:(DWReceiveModel *)model sender:(UIButton *)sender {
+- (void)dw_shareReceiveInfo:(id<DWReceiveModelProtocol>)model sender:(UIButton *)sender {
     NSMutableArray *activityItems = [NSMutableArray array];
 
     NSString *paymentAddressOrRequest = [model paymentAddressOrRequestToShare];

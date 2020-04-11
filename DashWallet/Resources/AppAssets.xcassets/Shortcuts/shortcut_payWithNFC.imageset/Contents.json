@@ -2,17 +2,50 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "shortcut_payWithNFC.png",
+      "filename" : "pay_nfc-2.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "shortcut_payWithNFC@2x.png",
+      "filename" : "pay_nfc-1.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "pay_nfc-1@2x-1.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "shortcut_payWithNFC@3x.png",
+      "filename" : "pay_nfc-1@2x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "pay_nfc-1@3x-1.png",
+      "scale" : "3x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "pay_nfc-1@3x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
       "scale" : "3x"
     }
   ],

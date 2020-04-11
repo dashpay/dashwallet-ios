@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [self setupView];
+
+#if SNAPSHOT
+    [(UIBarButtonItem *)self.actionButton setAccessibilityIdentifier:@"amount_send_button"];
+#endif /* SNAPSHOT */
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -72,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupView {
     NSParameterAssert(self.model);
 
-    DWAmountView *contentView = [[DWAmountView alloc] initWithModel:self.model];
+    DWAmountView *contentView = [[DWAmountView alloc] initWithModel:self.model demoMode:self.demoMode];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.delegate = self;
     [self setupContentView:contentView];

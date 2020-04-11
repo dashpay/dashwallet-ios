@@ -17,23 +17,11 @@
 
 #import "DWPaymentOutput.h"
 
-#import "DWTitleDetailItem.h"
+#import "DWConfirmPaymentViewProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class UIFont;
-@class UIColor;
-
-@interface DWPaymentOutput (DWView)
-
-- (uint64_t)amountToDisplay;
-
-- (nullable id<DWTitleDetailItem>)generalInfo;
-- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font;
-- (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
-- (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
-
-- (BOOL)copyAddressToPasteboard;
+@interface DWPaymentOutput (DWView) <DWConfirmPaymentViewProtocol>
 
 @end
 

@@ -1,26 +1,23 @@
 target 'dashwallet' do
   platform :ios, '11.0'
   
-  pod 'DashSync', :path => '../DashSync/'
+  pod 'DashSync', :git => 'https://github.com/dashevo/dashsync-iOS/', :commit => 'debd950a54124cf85e1aa89cc6a6f643c763ec39'
   pod 'CloudInAppMessaging', '0.1.0'
   
   pod 'KVO-MVVM', '0.5.6'
-  pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash_1.5.1', :commit => 'b472e89', :inhibit_warnings => true
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
 
-  # Pods for dashwallet
+  # Debugging purposes
+#  pod 'Reveal-SDK', :configurations => ['Debug']
   
   target 'DashWalletTests' do
     inherit! :search_paths
-    # Pods for testing
   end
 
   target 'DashWalletScreenshotsUITests' do
     inherit! :search_paths
-    
-    pod 'SimulatorStatusMagic', '2.4.1'
   end
 
 end
@@ -42,8 +39,8 @@ target 'WatchApp Extension' do
 
 end
 
-# fixes warnings about unsupported Deployment Target in Xcode 10
 post_install do |installer|
     # update info about current DashSync version
-    system("bash ./scripts/dashsync_version.sh")
+    # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
+    system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
 end

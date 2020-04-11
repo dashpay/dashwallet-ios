@@ -24,8 +24,6 @@ typedef NS_ENUM(NSUInteger, DWTabBarViewButtonType) {
     DWTabBarViewButtonType_Others,
 };
 
-extern CGFloat const DW_TABBAR_HEIGHT;
-
 @class DWTabBarView;
 
 @protocol DWTabBarViewDelegate <NSObject>
@@ -44,6 +42,8 @@ extern CGFloat const DW_TABBAR_HEIGHT;
 
 - (void)setPaymentsButtonOpened:(BOOL)opened;
 - (void)updateSelectedTabButton:(DWTabBarViewButtonType)type;
+
+- (void)togglePaymentsOpenState;
 
 @end
 

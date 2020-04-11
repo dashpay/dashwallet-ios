@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, copy, nonatomic) NSString *title;
 @property (assign, nonatomic) NSUInteger tag;
+@property (nullable, copy, nonatomic) NSString *accessibilityIdentifier;
 
 - (instancetype)initWithTitle:(nullable NSString *)title NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

@@ -17,6 +17,9 @@
 
 #import "DWBiometricAuthModel.h"
 
+#import <DashSync/DSBiometricsAuthenticator.h>
+#import <DashSync/DashSync.h>
+
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,10 +42,7 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return YES;
 #else
-    LAContext *context = [[LAContext alloc] init];
-    BOOL available = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
-
-    return available;
+    return DSBiometricsAuthenticator.biometricsAuthenticationEnabled;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
@@ -50,19 +50,15 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return LABiometryTypeTouchID;
 #else
-    LAContext *context = [[LAContext alloc] init];
-    [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
-
-    return context.biometryType;
+    return DSBiometricsAuthenticator.biometryType;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
 - (void)enableBiometricAuth:(void (^)(BOOL success))completion {
     NSParameterAssert(completion);
 
-    LAContext *context = [[LAContext alloc] init];
     NSString *reason = nil;
-    switch (context.biometryType) {
+    switch (DSBiometricsAuthenticator.biometryType) {
         case LABiometryTypeTouchID:
             reason = NSLocalizedString(@"Enable Touch ID", nil);
             break;
@@ -74,19 +70,20 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
             break;
     }
 
-    [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-            localizedReason:reason
-                      reply:^(BOOL success, NSError *_Nullable error) {
-                          [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
-                          [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
+    [DSBiometricsAuthenticator
+        performBiometricsAuthenticationWithReason:reason
+                                    fallbackTitle:nil
+                                       completion:^(DSBiometricsAuthenticationResult result) {
+                                           const BOOL success = result == DSBiometricsAuthenticationResultSucceeded;
+                                           [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
+                                           [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
 
-                          const uint64_t spendingLimit = success ? DEFAULT_BIOMETRIC_SPENDING_LIMIT : 0;
-                          [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:spendingLimit];
+                                           const uint64_t spendingLimit = success ? DEFAULT_BIOMETRIC_SPENDING_LIMIT : 0;
+                                           [[DSAuthenticationManager sharedInstance]
+                                               setBiometricSpendingLimitIfAuthenticated:spendingLimit];
 
-                          dispatch_async(dispatch_get_main_queue(), ^{
-                              completion(success);
-                          });
-                      }];
+                                           completion(success);
+                                       }];
 }
 
 - (void)disableBiometricAuth {

@@ -32,14 +32,20 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSString *)userDetails {
+    NSString *result = nil;
     if (self.request) {
-        return self.request.string;
+        result = self.request.string;
     }
     else if (self.protocolRequest) {
-        return (self.protocolRequest.details.memo ?: self.protocolRequest.details.paymentURL) ?: @"<?>";
+        result = (self.protocolRequest.details.memo ?: self.protocolRequest.details.paymentURL) ?: @"<?>";
     }
 
-    return nil;
+    NSString *prefixToRemove = @"dash:";
+    if ([result hasPrefix:prefixToRemove]) {
+        result = [result substringFromIndex:prefixToRemove.length];
+    }
+
+    return result;
 }
 
 @end

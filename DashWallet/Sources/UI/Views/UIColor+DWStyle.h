@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)dw_greenColor;
 + (UIColor *)dw_orangeColor;
 + (UIColor *)dw_disabledButtonColor;
++ (UIColor *)dw_disabledButtonTextColor;
 
 + (UIColor *)dw_pinBackgroundColor;
 + (UIColor *)dw_pinInputDotColor;

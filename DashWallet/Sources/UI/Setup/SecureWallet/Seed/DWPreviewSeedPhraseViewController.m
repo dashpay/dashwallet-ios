@@ -87,6 +87,13 @@ NS_ASSUME_NONNULL_BEGIN
         [contentView.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor],
     ]];
 
+#if DEBUG
+    UILongPressGestureRecognizer *gestureRecognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(debugContentViewLongPressAction:)];
+    [contentView addGestureRecognizer:gestureRecognizer];
+#endif /* DEBUG */
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(userDidTakeScreenshotNotification:)
                                                  name:UIApplicationUserDidTakeScreenshotNotification
@@ -116,6 +123,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)actionButtonAction:(id)sender {
     [self.delegate secureWalletRoutineDidCanceled:self];
 }
+
+#if DEBUG
+- (void)debugContentViewLongPressAction:(UIGestureRecognizer *)sender {
+    if (sender.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    NSString *seed = [self.contentView.model debug_seedText];
+    [UIPasteboard generalPasteboard].string = seed;
+    NSLog(@"The seed phrase was copied to the clipboard.");
+}
+#endif /* DEBUG */
 
 #pragma mark - DWPreviewSeedPhraseContentViewDelegate
 

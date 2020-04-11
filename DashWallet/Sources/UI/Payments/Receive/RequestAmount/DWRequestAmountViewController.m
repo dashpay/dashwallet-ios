@@ -17,7 +17,9 @@
 
 #import "DWRequestAmountViewController.h"
 
-#import "DWReceiveModel.h"
+#import <DashSync/DashSync.h>
+
+#import "DWReceiveModelProtocol.h"
 #import "DWRequestAmountContentView.h"
 #import "UIViewController+DWShareReceiveInfo.h"
 
@@ -25,14 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRequestAmountViewController () <DWRequestAmountContentViewDelegate>
 
-@property (nonatomic, strong) DWReceiveModel *model;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> model;
 @property (nonatomic, strong) DWRequestAmountContentView *requestAmountView;
 
 @end
 
 @implementation DWRequestAmountViewController
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)model {
++ (instancetype)controllerWithModel:(id<DWReceiveModelProtocol>)model {
     DWRequestAmountViewController *controller = [[DWRequestAmountViewController alloc] init];
     controller.model = model;
 

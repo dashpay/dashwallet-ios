@@ -50,7 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)rescanBlockchainActionFromController:(UIViewController *)controller
                                   sourceView:(UIView *)sourceView
-                                  sourceRect:(CGRect)sourceRect {
+                                  sourceRect:(CGRect)sourceRect
+                                  completion:(void (^_Nullable)(BOOL confirmed))completion {
     UIAlertController *actionSheet = [UIAlertController
         alertControllerWithTitle:NSLocalizedString(@"Rescan Blockchain", nil)
                          message:nil
@@ -61,12 +62,20 @@ NS_ASSUME_NONNULL_BEGIN
                 handler:^(UIAlertAction *action) {
                     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
                     [chainManager rescan];
+
+                    if (completion) {
+                        completion(YES);
+                    }
                 }];
 
     UIAlertAction *cancelAction = [UIAlertAction
         actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
-                handler:nil];
+                handler:^(UIAlertAction *_Nonnull action) {
+                    if (completion) {
+                        completion(NO);
+                    }
+                }];
     [actionSheet addAction:rescanAction];
     [actionSheet addAction:cancelAction];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
