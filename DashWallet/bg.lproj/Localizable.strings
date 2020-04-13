@@ -315,7 +315,7 @@
 "Internal Transfer" = "Вътрешен трансфер";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Вътрешно преместени към";
 
 /* Invalid transaction */
 "Invalid" = "Невалиден";
@@ -792,7 +792,7 @@
 "Very High" = "Много високо";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Преглед в Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Преглед на парола, резервен портфейл ...";

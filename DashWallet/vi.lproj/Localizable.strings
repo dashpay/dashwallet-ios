@@ -315,7 +315,7 @@
 "Internal Transfer" = "Giao dịch nội bộ";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Được di chuyển nội bộ đến";
 
 /* Invalid transaction */
 "Invalid" = "Không hợp lệ";
@@ -792,7 +792,7 @@
 "Very High" = "Rất cao";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Xem trên công cụ khám phá khối";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Xem mật khẩu, sao lưu ví...";

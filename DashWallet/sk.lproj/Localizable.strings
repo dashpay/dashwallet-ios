@@ -315,7 +315,7 @@
 "Internal Transfer" = "Interný prevod";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Interne presunuté do";
 
 /* Invalid transaction */
 "Invalid" = "Neplatná";
@@ -792,7 +792,7 @@
 "Very High" = "Veľmi vysoké";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Zobraziť v prehliadači blokov";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Zobraziť prístupové heslo, zálohovať peňaženku...";

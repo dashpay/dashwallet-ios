@@ -315,7 +315,7 @@
 "Internal Transfer" = "Εσωτερική Μεταφορά";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Μετακινήθηκε εσωτερικά στο";
 
 /* Invalid transaction */
 "Invalid" = "Μη έγκυρο";
@@ -651,7 +651,7 @@
 "Set PIN" = "Ορίστε PIN";
 
 /* No comment provided by engineer. */
-"Settings" = "ρυθμίσεις";
+"Settings" = "Ρυθμίσεις";
 
 /* No comment provided by engineer. */
 "Setup Wallet" = "Εγκατάσταση πορτοφολιού";
@@ -792,7 +792,7 @@
 "Very High" = "Πολύ Υψηλά";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Προβολή στον Explorer των Block";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Προβολή φράσης πρόσβασης, εφεδρικού πορτοφολιού ...";

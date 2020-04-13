@@ -315,7 +315,7 @@
 "Internal Transfer" = "内部の送金";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "内部で移転";
 
 /* Invalid transaction */
 "Invalid" = "無効";
@@ -792,7 +792,7 @@
 "Very High" = " 非常に高い";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "ブロックエクスプローラーで見る";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "パスフレーズを表示して、ウォレットをバックアップ ...";
