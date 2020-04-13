@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, nonatomic, copy) NSString *paymentAddress;
 @property (nullable, nonatomic, strong) DSPaymentRequest *paymentRequest;
+@property (nonatomic, strong) dispatch_queue_t updateQueue;
 
 @end
 
@@ -38,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithAmount:(uint64_t)amount {
     self = [super initWithAmount:amount];
     if (self) {
+        _updateQueue = dispatch_queue_create("org.dash.wallet.DWReceiveModel.queue", DISPATCH_QUEUE_SERIAL);
+
         [self updateReceivingInfo];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -133,7 +136,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)updateReceivingInfo {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(self.updateQueue, ^{
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
         if (!account) {
             // wallet has been wiped
@@ -161,7 +164,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
             paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
         }
-        self.paymentRequest = paymentRequest;
 
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
@@ -198,6 +200,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            self.paymentRequest = paymentRequest;
             self.qrCodeImage = qrCodeImage;
             self.paymentAddress = paymentAddress;
         });
