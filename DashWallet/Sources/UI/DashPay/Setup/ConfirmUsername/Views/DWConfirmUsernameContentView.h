@@ -21,9 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWConfirmUsernameView : UIView
+@interface DWConfirmUsernameContentView : UIView
 
-@property (readonly, nonatomic, strong) DWCheckbox *confirmationCheckbox;
+@property (readonly, nonatomic, weak) DWCheckbox *confirmationCheckbox;
+
+@property (nullable, nonatomic, copy) NSString *username;
 
 @end
 
