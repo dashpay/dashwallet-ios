@@ -393,6 +393,9 @@
 "It's Important" = "Het is belangrijk";
 
 /* No comment provided by engineer. */
+"Key to use" = "Key to use";
+
+/* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
@@ -525,6 +528,9 @@
 "OK" = "Oké";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operator sleutels";
 
 /* No comment provided by engineer. */
@@ -532,6 +538,9 @@
 
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
+
+/* No comment provided by engineer. */
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Eigenaar sleutels";
@@ -976,6 +985,9 @@
 
 /* No comment provided by engineer. */
 "Voting Address" = "Voting Address";
+
+/* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Stem sleutels";

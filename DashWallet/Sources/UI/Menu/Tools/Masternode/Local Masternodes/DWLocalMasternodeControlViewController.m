@@ -21,6 +21,7 @@
 #import "DWFormTableViewController.h"
 #import "DWKeyValueFormTableViewCell.h"
 #import "DWPublicKeyGenerationTableViewCell.h"
+#import "DWSignMessageViewController.h"
 #import "DWSignPayloadModel.h"
 #import "DWSignPayloadViewController.h"
 #import "DWUIKit.h"
@@ -295,59 +296,128 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
         if (!strongSelf) {
             return;
         }
-
+        UITableView *tableView = self.formController.tableView;
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        [strongSelf showKeyForSignMessageFromSourceView:tableView sourceRect:cell.frame];
         [strongSelf resignCellsFirstResponders];
     };
     return actionModel;
 }
 
+- (void)showKeyForSignMessageFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+
+    UIAlertController *actionSheet = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Key to use", nil)
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *ownerKey = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Owner Key", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+        [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Allow signing with owner key?"
+                                                   forAmount:0
+                                                  completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                      if (seed) {
+                                                          DSECDSAKey *ownerKey = [self.localMasternode ownerKeyFromSeed:seed];
+                                                          [self showSignMessageForKey:ownerKey];
+                                                      }
+                                                  }];
+    }];
+        UIAlertAction *operatorKey = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Operator Key", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *action){
+                        [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Allow signing with operator key?"
+                                                                   forAmount:0
+                                                                  completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                                      if (seed) {
+                                                                          DSBLSKey *operatorKey = [self.localMasternode operatorKeyFromSeed:seed];
+                                                                          [self showSignMessageForKey:operatorKey];
+                                                                      }
+                                                                  }];
+                    }];
+        UIAlertAction *votingKey = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Voting Key", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *action){
+                        [self.localMasternode.votingKeysWallet seedWithPrompt:@"Allow signing with voting key?"
+                                                                   forAmount:0
+                                                                  completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                                      if (seed) {
+                                                                          DSECDSAKey *ownerKey = [self.localMasternode votingKeyFromSeed:seed];
+                                                                          [self showSignMessageForKey:ownerKey];
+                                                                      }
+                                                                  }];
+                    }];
+
+        UIAlertAction *cancel = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [actionSheet addAction:ownerKey];
+        [actionSheet addAction:operatorKey];
+        [actionSheet addAction:votingKey];
+        [actionSheet addAction:cancel];
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            actionSheet.popoverPresentationController.sourceView = sourceView;
+            actionSheet.popoverPresentationController.sourceRect = sourceRect;
+        }
+        [self presentViewController:actionSheet animated:YES completion:nil];
+}
+
+- (void)showSignMessageForKey:(DSKey*)key {
+        DWSignMessageViewController *signMessageViewController = [[DWSignMessageViewController alloc] init];
+        signMessageViewController.key = key;
+        [self.navigationController pushViewController:signMessageViewController animated:YES];
+}
+
 - (NSArray<DWBaseFormCellModel *> *)actionItems {
-    NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
+        NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
-    for (NSUInteger i = 0; i < _DWMasternodeActionCell_Count; i++) {
-        [items addObject:[self actionModelAtIndex:i]];
-    }
+        for (NSUInteger i = 0; i < _DWMasternodeActionCell_Count; i++) {
+            [items addObject:[self actionModelAtIndex:i]];
+        }
 
-    return items;
+        return items;
 }
 
 - (DWBaseFormCellModel *)registerActionModel {
-    __weak typeof(self) weakSelf = self;
-    DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"View Signing Info", nil)];
-    registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+        __weak typeof(self) weakSelf = self;
+        DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"View Signing Info", nil)];
+        registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
 
-        [strongSelf resignCellsFirstResponders];
+            [strongSelf resignCellsFirstResponders];
 
-        //        [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
-        //            if (error) {
-        //                return;
-        //            }
-        //            [self.model registerMasternode:self
-        //                    requestsPayloadSigning:^{
-        //                        [self showPayloadSigning];
-        //                    }
-        //                                completion:^(NSError *_Nonnull error){
-        //
-        //                                }];
-        //            [self showPayloadSigning];
-        //        }];
-    };
-    self.registerActionModel = registerModel;
-    return registerModel;
+            //        [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
+            //            if (error) {
+            //                return;
+            //            }
+            //            [self.model registerMasternode:self
+            //                    requestsPayloadSigning:^{
+            //                        [self showPayloadSigning];
+            //                    }
+            //                                completion:^(NSError *_Nonnull error){
+            //
+            //                                }];
+            //            [self showPayloadSigning];
+            //        }];
+        };
+        self.registerActionModel = registerModel;
+        return registerModel;
 }
 
 - (NSArray<DWFormSectionModel *> *)sections {
-    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-    section.items = [self items];
+        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+        section.items = [self items];
 
-    DWFormSectionModel *actionsSection = [[DWFormSectionModel alloc] init];
-    actionsSection.items = [self actionItems];
+        DWFormSectionModel *actionsSection = [[DWFormSectionModel alloc] init];
+        actionsSection.items = [self actionItems];
 
-    return @[ section, actionsSection ];
+        return @[ section, actionsSection ];
 }
 
 @end

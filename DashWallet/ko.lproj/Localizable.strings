@@ -393,6 +393,9 @@
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
+"Key to use" = "Key to use";
+
+/* No comment provided by engineer. */
 "Keypair %ld" = "키페어 %ld";
 
 /* No comment provided by engineer. */
@@ -525,6 +528,9 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "운영자 키";
 
 /* No comment provided by engineer. */
@@ -532,6 +538,9 @@
 
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
+
+/* No comment provided by engineer. */
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "소유자 키";
@@ -976,6 +985,9 @@
 
 /* No comment provided by engineer. */
 "Voting Address" = "Voting Address";
+
+/* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "투표 키";
