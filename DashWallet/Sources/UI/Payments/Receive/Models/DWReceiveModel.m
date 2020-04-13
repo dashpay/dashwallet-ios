@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithAmount:(uint64_t)amount {
     self = [super initWithAmount:amount];
     if (self) {
-        _updateQueue = dispatch_queue_create("org.dash.DWReceiveModel.queue", DISPATCH_QUEUE_SERIAL);
+        _updateQueue = dispatch_queue_create("org.dash.wallet.DWReceiveModel.queue", DISPATCH_QUEUE_SERIAL);
 
         [self updateReceivingInfo];
 
