@@ -219,9 +219,6 @@
 "Download peer: %@" = "Scarica peer: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Il client di posta elettronica non è configurato. Aggiungi il tuo account e-mail nelle Impostazioni";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Abilita Face ID";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Inviato da";
 
-/* An action */
-"Send crash report" = "Invia un rapporto sugli arresti anomali";
-
 /* No comment provided by engineer. */
 "Send to" = "Manda a";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Conferma della spesa";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Passi per riprodurre il crash";
 
 /* No comment provided by engineer. */
 "Swept!" = "Pulito!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Abbiamo rilevato che Dash Wallet si è arrestato in modo anomalo durante la migrazione. Ricontrollare la blockchain può risolvere questo problema altrimenti prova a rifare la procedura. Il controllo dovrebbe preferibilmente essere eseguito su wifi e può durare fino a mezz'ora. I fondi saranno disponibili una volta completato il processo di sincronizzazione.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Abbiamo rilevato che Dash Wallet si è arrestato in modo anomalo l'ultima volta che è stato aperto. Vorresti aiutarci a risolvere il problema inviandoci i dati del rapporto sugli arresti anomali? La cronologia delle transazioni e qualsiasi altra informazione privata NON saranno incluse.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Abbiamo aggiornato";

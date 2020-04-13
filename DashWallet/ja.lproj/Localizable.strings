@@ -219,9 +219,6 @@
 "Download peer: %@" = " %@:ピアをダウンロードする";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Eメールクライアントが設定されていません。 「設定」であなたのメールアカウントを追加してください";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Face IDを有効にする";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "で送金する";
 
-/* An action */
-"Send crash report" = "クラッシュレポートを送信する";
-
 /* No comment provided by engineer. */
 "Send to" = "へ送金する";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "支出の確認";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "クラッシュを再現する手順";
 
 /* No comment provided by engineer. */
 "Swept!" = "残高が送金されました!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashウォレットの移行中にクラッシュが発生しました。この問題を解決するためには、ブロックチェーンを再スキャンするか、もう一度お試しください。再スキャンは、最大30分ほどかかりますので、Wi-Fiをお使いください。いったん同期プロセスが完了すれば、あなたの残高がご利用可能となります。";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Dashウォレットが前回開かれた際にクラッシュしていたことが判明しました。 クラッシュレポートデータを送信して問題の解決にご協力ください。 あなたの取引履歴やその他の個人情報は共有されません。";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "アップグレード済み";

@@ -219,9 +219,6 @@
 "Download peer: %@" = "İndirilen dağıtıcı: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-posta istemcisi yapılandırılmadı. Lütfen e-posta hesabınızı Ayarlar’a ekleyin.";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Yüz Kimliğini Etkinleştir";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Tarafından Gönderildi";
 
-/* An action */
-"Send crash report" = "Çökme raporu gönder";
-
 /* No comment provided by engineer. */
 "Send to" = "Gönder";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Harcama Onayı";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Çökmeyi yeniden oluşturma adımları";
 
 /* No comment provided by engineer. */
 "Swept!" = "Tarandı!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dash Wallet'ın taşıma işlemi sırasında çöktüğünü tespit ettik. Blok zincirini tekrar tararsanız sorun çözülecektir veya tekrar deneyebilirsiniz. Tekrar taramanın kablosuz ağ üzerinde yapılması tercih edilir ve bu işlem yarım saat kadar sürer. Eşleşme süreci tamamlanınca bakiyenizi kullanabilirsiniz.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Dash Wallet'ın son açıldığında çökme yaşadığını tespit ettik. Çökme raporu verilerini bize göndererek bu sorunu çözmemize yardımcı olmak ister misiniz? İşlem geçmişiniz ve diğer özel bilgileriniz paylaşılmayacaktır.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Yeni sürüme geçtik";

@@ -219,9 +219,6 @@
 "Download peer: %@" = "Uzol na sťahovanie: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mailový klient nie je nakonfigurovaný. Pridajte váš e-mailový účet v časti Nastavenia";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Povoliť Face ID";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Poslať od";
 
-/* An action */
-"Send crash report" = "Poslať správu o chybe";
-
 /* No comment provided by engineer. */
 "Send to" = "Poslať ku";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Potvrdenie minutia";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Kroky na reprodukciu chyby";
 
 /* No comment provided by engineer. */
 "Swept!" = "Načítať!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Zistili sme, že Dash Wallet zlyhal počas migrácie. Opätovné skenovanie blockchainu tento problém vyrieši, prípadne môžete skúsiť znova. Opätovné skenovanie by sa malo prednostne vykonávať na wifi a môže trvať zhruba pol hodiny. Vaše prostriedky budú k dispozícii po dokončení procesu synchronizácie.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Zistili sme, že program Dash Wallet sa naposledy neukončil správne. Chceli by ste nám pomôcť vyriešiť problém odoslaním údajov o zlyhaní? Vaša história transakcií ani akékoľvek ďalšie súkromné informácie NEBUDÚ zdieľané.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Aktualizovali sme";

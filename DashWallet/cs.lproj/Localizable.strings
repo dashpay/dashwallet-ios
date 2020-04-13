@@ -219,9 +219,6 @@
 "Download peer: %@" = "Download peer: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mailový klient není nakonfigurován. Přidejte prosím váš e-mailový účet v nastavení.";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Zapnout Face ID";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Odeslat pomocí";
 
-/* An action */
-"Send crash report" = "Odeslat hlášení o pádu";
-
 /* No comment provided by engineer. */
 "Send to" = "Odeslat prostřednictvím";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Potvrzení";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Kroky pro reprodukování pádu";
 
 /* No comment provided by engineer. */
 "Swept!" = "Přeneseno!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Během migrace jsme zachytili pád aplikace Dash Wallet. Opětovné načtení blockchainu vyřeší tento problém nebo to můžete zkusit znovu. Načtení blockchainu by mělo být uskutočněno při připojení na Wi-Fi a může trvat až hodinu. Vaše prostředky budou k dispozici po dokončení synchronizačního procesu.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Zachytili jsme pád aplikace Dash Wallet po posledním spuštění. Pomůžete nám vyřešit tento problém zasláním hlášení o pádu? Historie vašich transakcí ani jiná osobní informace nebudou odeslány.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Vylepšovali jsme";
