@@ -219,9 +219,6 @@
 "Download peer: %@" = "Pair de téléchargement : %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Le client e-mail n'est pas configuré. Veuillez ajouter votre compte e-mail dans les Réglages";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Activer Face ID";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Envoyé par";
 
-/* An action */
-"Send crash report" = "Envoyer un rapport de plantage";
-
 /* No comment provided by engineer. */
 "Send to" = "Envoyer à";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Confirmation de dépense";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Étapes pour reproduire le plantage";
 
 /* No comment provided by engineer. */
 "Swept!" = "Récupéré !";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Nous avons détecté que Dash Wallet a planté pendant la migration. Réinspecter la blockchain résoudra ce problème, ou bien vous pouvez réessayer. La réinspection doit être faite de préférence sur un réseau wifi et peut prendre jusqu'à une demi-heure. Vos fonds seront disponibles quand la synchronisation sera achevée.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Nous avons détecté que Dash Wallet a planté lors de sa précédente ouverture. Voulez-vous nous aider à résoudre ce problème, en nous envoyant le rapport de données sur le plantage ? Votre historique de transactions et toute autre information personnelle ne seront PAS envoyés.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Nous avons mis à jour";

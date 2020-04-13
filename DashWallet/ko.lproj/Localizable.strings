@@ -219,9 +219,6 @@
 "Download peer: %@" = "피어 다운로드: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "이메일 클라이언트가 설정되지 않았습니다. 설정에서 당신의 이메일 계정을 추가해주십시오.";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "페이스 ID 활성화";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "다음에서 전송하였습니다";
 
-/* An action */
-"Send crash report" = "충돌 리포트 보내기";
-
 /* No comment provided by engineer. */
 "Send to" = "다음에 전송합니다";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "승인 보내는 중";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "충돌 복사본 생성 방법";
 
 /* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "대시 지갑의 마이그레이션 중 충돌을 감지하였습니다. 블록체인을 재스캔하거나 다시 시도하여 이 문제를 해결할 수 있습니다. 재스캔은 와이파이에서 수행하실 것을 권장하며 30분 가량 소요됩니다. 당신의 자금은 동기화 과정이 완료되게 되면 이용할 수 있습니다.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "지난 번 대시 지갑을 열었을 때 충돌을 감지하였습니다. 해당 충돌 보고서 데이터를 전송해 우리가 해당 이슈를 해결할 수 있도록 도와주시겠습니까? 당신의 거래 기록이나 기타 개인 정보는 절대로 공유되지 않습니다.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "다음을 업그레이드 하였습니다";

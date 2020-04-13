@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
         _deferredLaunchOptions = [launchOptions copy];
         _shouldMigrate = [DWDataMigrationManager sharedInstance].shouldMigrate;
         _applicationCrashedDuringLastMigration = ![DWDataMigrationManager sharedInstance].migrationSuccessful;
-        _shouldHandleCrashReports = NO;
     }
     return self;
 }
@@ -69,23 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.state = DWStartModelStateDoneAndRescan;
 }
 
-#pragma mark - Crash Reporting
-
-- (NSArray<NSString *> *)crashReportFiles {
-    return @[];
-}
-
-- (void)removeCrashReportFiles {
-}
-
-- (void)updateLastCrashReportAskDate {
-}
-
-- (NSString *)gatherUserDeviceInfo {
-    return @"";
-}
-
-- (void)finalizeCrashReporting {
+- (void)finalizeAsIs {
     self.state = DWStartModelStateDone;
 }
 

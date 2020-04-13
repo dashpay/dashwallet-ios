@@ -219,9 +219,6 @@
 "Download peer: %@" = "Downloade Peer: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-Mail Client nicht konfiguriert. Bitte füge eine E-Mail Adresse in den Einstellungen hinzu";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Face ID aktivieren";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Gesendet von";
 
-/* An action */
-"Send crash report" = "Absturzbericht senden";
-
 /* No comment provided by engineer. */
 "Send to" = "Senden an";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Zahlungsbestätigungen";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Schritte, um den Absturz zu reproduzieren";
 
 /* No comment provided by engineer. */
 "Swept!" = "Geleert!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Wir haben festgestellt, dass Dash Wallet während der Migration abgestürzt ist. Ein erneutes Scannen der Blockchain sollte dieses Problem lösen. Zum erneuten Scannen sollte WiFi eingeschaltet werden und es dauert etwa eine halbe Stunde. Dein Guthaben sollte wieder sichtbar sein, nachdem der Synchronisierungsvorgang abgeschlossen wurde.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Wir haben festgestellt, dass Dash Wallet abgestürzt ist, nachdem es geöffnet wurde. Würdest du uns dabei helfen dieses Problem zu lösen, indem du uns den Absturzbericht zusendest? Dein Transaktionsverlauf und andere private Informationen WERDEN NICHT geteilt.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Wir haben ein Upgrade durchgeführt";

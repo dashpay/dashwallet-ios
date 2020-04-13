@@ -219,9 +219,6 @@
 "Download peer: %@" = "Узел загрузки: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mail клиент не настроен. Пожалуйста, добавьте Ваш e-mail аккаунт в Настройках. ";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Включить Face ID";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Оплатить по";
 
-/* An action */
-"Send crash report" = "Отправить отчёт об ошибке";
-
 /* No comment provided by engineer. */
 "Send to" = "Отправить";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Подтверждения";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Шаги для воспроизведения ошибки";
 
 /* No comment provided by engineer. */
 "Swept!" = "Переведено!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Обнаружено, что во время миграции Dash Wallet произошёл сбой. Повторное сканирование блокчейн решит эту проблему, либо попробуйте ещё раз. Повторное сканирование желательно проводить с использованием Wi-Fi и это займет до получаса. Ваши средства будут доступны после завершения процесса синхронизации.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Мы обнаружили, что во время последней сессии кошелёк Dash Wallet завершил работу некорректно. Хотите отправить отчёт об ошибках, чтобы помочь нам решить эту проблему? Ваша история транзакций и любая другая личная информация НЕ БУДЕТ передана.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Мы обновились";
