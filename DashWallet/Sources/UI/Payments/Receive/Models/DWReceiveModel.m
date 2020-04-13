@@ -164,7 +164,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
             paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
         }
-        self.paymentRequest = paymentRequest;
 
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
@@ -201,6 +200,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            self.paymentRequest = paymentRequest;
             self.qrCodeImage = qrCodeImage;
             self.paymentAddress = paymentAddress;
         });
