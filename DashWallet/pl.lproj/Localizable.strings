@@ -315,7 +315,7 @@
 "Internal Transfer" = "Przelew wewnętrzny";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Wewnętrznie przeniesiony do";
 
 /* Invalid transaction */
 "Invalid" = "Niewłaściwy";
@@ -792,7 +792,7 @@
 "Very High" = "Bardzo Wysoki";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Zobacz na eksplorerze bloków";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Wyświetl hasło, kopia zapasowa portfela…";

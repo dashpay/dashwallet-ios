@@ -315,7 +315,7 @@
 "Internal Transfer" = "Transfer Internal";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Pindah ke internal";
 
 /* Invalid transaction */
 "Invalid" = "Tidak valid";
@@ -792,7 +792,7 @@
 "Very High" = "Sangat tinggi";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Lihat di Blok Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Lihat frasa sandi, cadangkan domept...";

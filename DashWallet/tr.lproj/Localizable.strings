@@ -315,7 +315,7 @@
 "Internal Transfer" = "Dahili Transfer";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Dahili olarak taşındı";
 
 /* Invalid transaction */
 "Invalid" = "Geçersiz";
@@ -792,7 +792,7 @@
 "Very High" = "Çok Yüksek";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Blok gezgininde görüntüle";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Kurtarma sözcük grubunu göster, cüzdanı yedekle...";

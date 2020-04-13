@@ -315,7 +315,7 @@
 "Internal Transfer" = "โอนเงินภายใน";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "ย้ายไปภายแล้ว";
 
 /* Invalid transaction */
 "Invalid" = "ไม่ถูกต้อง";
@@ -792,7 +792,7 @@
 "Very High" = "สูงมาก";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "ดูใน Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "ดูวลี, สำรองวอลเล็ท...";

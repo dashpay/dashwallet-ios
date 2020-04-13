@@ -315,7 +315,7 @@
 "Internal Transfer" = "Trasferimento Interno";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Trasferito internamente a";
 
 /* Invalid transaction */
 "Invalid" = "Non valido";
@@ -792,7 +792,7 @@
 "Very High" = "Molto Alto";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Visualizza in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Visualizza passphrase,  di backup del portafoglio ...";
