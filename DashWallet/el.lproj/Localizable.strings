@@ -219,9 +219,6 @@
 "Download peer: %@" = "Λήψη ομότιμου: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Το Email client δεν έχει ρυθμιστεί. Παρακαλώ προσθέστε το λογαριασμό ηλεκτρονικού ταχυδρομείου σας στις Ρυθμίσεις";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Ενεργοποίηση Face ID";
 
 /* No comment provided by engineer. */
@@ -318,7 +315,7 @@
 "Internal Transfer" = "Εσωτερική Μεταφορά";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Μετακινήθηκε εσωτερικά στο";
 
 /* Invalid transaction */
 "Invalid" = "Μη έγκυρο";
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Εστάλη από";
 
-/* An action */
-"Send crash report" = "Αποστόλη αναφοράς κατάρρευσης";
-
 /* No comment provided by engineer. */
 "Send to" = "Εστάλη στο";
 
@@ -657,7 +651,7 @@
 "Set PIN" = "Ορίστε PIN";
 
 /* No comment provided by engineer. */
-"Settings" = "ρυθμίσεις";
+"Settings" = "Ρυθμίσεις";
 
 /* No comment provided by engineer. */
 "Setup Wallet" = "Εγκατάσταση πορτοφολιού";
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Επιβεβαίωση Ξοδέματος";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Βήματα για να αναπαραχθεί η κατάρρευση";
 
 /* No comment provided by engineer. */
 "Swept!" = "Σαρώθηκε";
@@ -801,7 +792,7 @@
 "Very High" = "Πολύ Υψηλά";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Προβολή στον Explorer των Block";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Προβολή φράσης πρόσβασης, εφεδρικού πορτοφολιού ...";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Εντοπίσαμε ότι το Dash Wallet κατέρρευσε κατά τη διάρκεια της μεταφοράς. Η επανασάρωση του blockchain θα λύσει αυτό το ζήτημα ή μπορείτε να προσπαθήσετε ξανά. Η επανασάρωση  θα πρέπει κατά προτίμηση να εκτελεστει σε wifi και θα διαρκέσει έως και μισή ώρα. Τα χρηματά σας θα είναι διαθέσιμα μόλις ολοκληρωθεί η διαδικασία συγχρονισμού.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Εντοπίσαμε ότι το Dash Wallet κατέρρευσε την τελευταία φορά που άνοιξε. Θα θέλατε να μας βοηθήσετε να επιλύσουμε το πρόβλημα στέλνοντας μας μια αναφορά με τα δεδομένα της κατάρρευσης; Το ιστορικό συναλλαγών σας και οποιεσδήποτε άλλες ιδιωτικές πληροφορίες ΔΕΝ θα μοιραστούν.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Αναβαθμίσαμε";

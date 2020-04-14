@@ -219,9 +219,6 @@
 "Download peer: %@" = "Nút tải xuống: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Phần mềm email chưa được cấu hình. Hãy thêm tài khoản email của bạn trong phần Setting của iPhone";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Cho phép Face ID";
 
 /* No comment provided by engineer. */
@@ -318,7 +315,7 @@
 "Internal Transfer" = "Giao dịch nội bộ";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Được di chuyển nội bộ đến";
 
 /* Invalid transaction */
 "Invalid" = "Không hợp lệ";
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Gửi bởi";
 
-/* An action */
-"Send crash report" = "Gửi thông báo lỗi";
-
 /* No comment provided by engineer. */
 "Send to" = "Gửi đến";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Xác nhận chi tiêu";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Các bước để tái tạo lại lỗi";
 
 /* No comment provided by engineer. */
 "Swept!" = "Đã quét!";
@@ -801,7 +792,7 @@
 "Very High" = "Rất cao";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Xem trên công cụ khám phá khối";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Xem mật khẩu, sao lưu ví...";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Chúng tôi phát hiện thấy ví Dash bị lỗi trong quá trình nhập dữ liệu. Quét lại blockchain sẽ giải quyết được vấn đề hoặc bạn có thể thử lại. Việc quét lại nên được thực hiện với kết nối wifi và nó sẽ mất khoảng nửa giờ đồng hồ. Số tiền của bạn sẽ được sẵn sàng cho chi tiêu một khi việc đồng bộ hoàn tất.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Chúng tôi phát hiện thấy ví Dash bị lỗi lần cuối khi nó được mở. Bạn có muốn giúp chúng tôi giải quyết vấn đề này bằng việc gửi chúng tôi dữ liệu báo cáo về lỗi vừa rồi? Lịch sử giao dịch của bạn và những thông tin riêng tư khác SẼ KHÔNG bị chia sẻ.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Chúng tôi đã Nâng cấp";

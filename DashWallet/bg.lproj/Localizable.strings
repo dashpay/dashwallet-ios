@@ -219,9 +219,6 @@
 "Download peer: %@" = "Изтеглени пиъри: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Електронната поща не е конфигурирана. Моля добавете вашата ел.поща в Настройки";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Включи Face ID";
 
 /* No comment provided by engineer. */
@@ -318,7 +315,7 @@
 "Internal Transfer" = "Вътрешен трансфер";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Вътрешно преместени към";
 
 /* Invalid transaction */
 "Invalid" = "Невалиден";
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Изпращане от";
 
-/* An action */
-"Send crash report" = "Изпрати доклад при срив";
-
 /* No comment provided by engineer. */
 "Send to" = "Изпрати на";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Потвърждение за похарчване";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Стъпки за възпроизвеждане на срива";
 
 /* No comment provided by engineer. */
 "Swept!" = "Изчистен!";
@@ -801,7 +792,7 @@
 "Very High" = "Много високо";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Преглед в Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Преглед на парола, резервен портфейл ...";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Устоановихме, че Dash Wallet се е повредил по време на миграцията. Повторното сканиране на блок веригата може да реши този проблем или опитайте отново. Повторното сканиране е препоръчително да се извърши чрез wifi и може да отнеме до половин час. Вашите средства ще бъдат налични след като синхронизацията приключи. ";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Установихме, че е имало срив в Dash Wallet , когато е бил отворен последно. Искате ли да ни помогнете да разрешим проблема, като ни изпратите данните от доклада за сривове? Историята на транзакциите ви и всяка друга лична информация НЯМА ДА БЪДАТ споделяни.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Надградихме";

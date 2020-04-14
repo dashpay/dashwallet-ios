@@ -219,9 +219,6 @@
 "Download peer: %@" = "Par de download: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mail não está configurado. Por favor, adicione sua conta de e-mail em Configurações";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Habilitar Face ID";
 
 /* No comment provided by engineer. */
@@ -318,7 +315,7 @@
 "Internal Transfer" = "Transferência Interna";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Movido internamente para";
 
 /* Invalid transaction */
 "Invalid" = "Inválido";
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Enviar por";
 
-/* An action */
-"Send crash report" = "Enviar relatório de falha";
-
 /* No comment provided by engineer. */
 "Send to" = "Enviar para";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Confirmação de Gastos";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Passos para reproduzir a falha";
 
 /* No comment provided by engineer. */
 "Swept!" = "Varrido!";
@@ -801,7 +792,7 @@
 "Very High" = "Muito Alto";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Ver no Explorador de Blocos";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Ver frase de recuperação, fazer backup...";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Detectamos que Dash Wallet travou durante a migração. Re-scanear a blockchain resolverá este problema ou você pode tentar novamente. Re-scanear deve ser preferencialmente feito por wifi e pode tomar até uma hora. Seus fundos estarão disponíveis assim que o processo de sincronização esteja completo.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Detectamos que Dash Wallet travou na última vez que foi aberta. Você gostaria de ajudar-nos a resolver este problema enviando dados do relatório de falha? Seu histórico de transação e qualquer outra informação privada NÃO SERÁ compartilhada.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Nós Atualizamos";

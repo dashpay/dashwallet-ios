@@ -219,9 +219,6 @@
 "Download peer: %@" = "เชื่อมต่อเพื่อน: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "ไม่ได้กำหนดอีเมล กรุณาเพิ่มบัญชีอีเมลของคุณในการตั้งค่า";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "เชื่อมต่อ Face ID";
 
 /* No comment provided by engineer. */
@@ -318,7 +315,7 @@
 "Internal Transfer" = "โอนเงินภายใน";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "ย้ายไปภายแล้ว";
 
 /* Invalid transaction */
 "Invalid" = "ไม่ถูกต้อง";
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "ส่งจาก";
 
-/* An action */
-"Send crash report" = "รายงานข้อขัดข้อง";
-
 /* No comment provided by engineer. */
 "Send to" = "ส่งไปยัง";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "การยืนยันการใช้จ่าย";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "ขั้นตอนในการทำให้เกิดความผิดพลาดซ้ำ";
 
 /* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";
@@ -801,7 +792,7 @@
 "Very High" = "สูงมาก";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "ดูใน Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "ดูวลี, สำรองวอลเล็ท...";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดระหว่างการย้ายข้อมูล การสแกน Blockchain ใหม่อีกครั้งจะช่วยแก้ปัญหานี้หรือคุณอาจจะต้องลองอีกครั้ง  ควรทำการสแกนซ้ำโดยใช้ wifi โดยจะใช้เวลาประมาณครึ่งชั่วโมง  เงินของคุณจะสามารถใช้ได้เมื่อกระบวนการซิงค์เสร็จสมบูรณ์";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดครั้งล่าสุดที่ถูกเปิด คุณต้องการที่จะช่วยเราแก้ไขปัญหานี้โดยรายงานข้อมูลหรือไม่? ประวัติธุรกรรมและข้อมูลส่วนตัวอื่นๆของคุณจะไม่ถูกแชร์";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "อัพเกรด";

@@ -219,9 +219,6 @@
 "Download peer: %@" = "Download peer: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mailprogramma is niet geconfigureerd. Voer a.u.b. je e-mailaccount toe aan Instellingen";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Gezichtsherkenning inschakelen";
 
 /* No comment provided by engineer. */
@@ -318,7 +315,7 @@
 "Internal Transfer" = "Interne transfer";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Intern verplaatst naar";
 
 /* Invalid transaction */
 "Invalid" = "Ongeldig";
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Verstuurd door";
 
-/* An action */
-"Send crash report" = "Verstuur crashrapport";
-
 /* No comment provided by engineer. */
 "Send to" = "Verstuur naar";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Bevestiging van de uitgaven";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steppen om crash te reproduceren";
 
 /* No comment provided by engineer. */
 "Swept!" = "Geveegd!";
@@ -801,7 +792,7 @@
 "Very High" = "Heel hoog";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "Bekijk in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Bekijk wachtwoord, maak backup portemonnee ...";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We detecteerden dat de Dash portemonnee tijdens de migratie is gecrasht. Opnieuw scannen van de blockchain zal dit probleem oplossen of uw kan het opnieuw proberen. Opnieuw scannen dient bij voorkeur met wifi te worden gedaan en duurt ongeveer een half uur. Uw saldo zal pas beschikbaar zijn zodra het synchronisatieproces is afgerond.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We hebben gedetecteerd dat de Dash portemonnee is gecrasht toen het voor de laatste keer werd gebruikt. Wil je ons helpen dit probleem op te lossen door een crashrapport in te sturen? Je transactiegeschiedenis en andere privé-informatie WORDT NIET gedeeld.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "We hebben een upgrade uitgevoerd";

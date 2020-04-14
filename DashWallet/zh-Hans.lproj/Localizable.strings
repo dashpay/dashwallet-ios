@@ -219,9 +219,6 @@
 "Download peer: %@" = "Download peer: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
@@ -611,9 +608,6 @@
 /* Send by (scanning QR code) */
 "Send by" = "Send by";
 
-/* An action */
-"Send crash report" = "Send crash report";
-
 /* No comment provided by engineer. */
 "Send to" = "Send to";
 
@@ -685,9 +679,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Spending Confirmation";
-
-/* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "Swept!" = "Swept!";
@@ -835,9 +826,6 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
-
-/* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "We Upgraded";
