@@ -17,13 +17,13 @@
 
 #import "DWConfirmUsernameViewController.h"
 
-#import "DWConfirmUsernameView.h"
+#import "DWConfirmUsernameContentView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWConfirmUsernameViewController ()
 
-@property (nonatomic, strong) DWConfirmUsernameView *confirmUsernameView;
+@property (nonatomic, strong) DWConfirmUsernameContentView *confirmUsernameView;
 
 @end
 
@@ -54,7 +54,8 @@ NS_ASSUME_NONNULL_END
 
     self.actionButton.enabled = NO;
 
-    self.confirmUsernameView = [[DWConfirmUsernameView alloc] initWithFrame:CGRectZero];
+    self.confirmUsernameView = [[DWConfirmUsernameContentView alloc] initWithFrame:CGRectZero];
+    self.confirmUsernameView.username = self.username;
     [self.confirmUsernameView.confirmationCheckbox addTarget:self
                                                       action:@selector(confirmationCheckboxAction:)
                                             forControlEvents:UIControlEventValueChanged];
