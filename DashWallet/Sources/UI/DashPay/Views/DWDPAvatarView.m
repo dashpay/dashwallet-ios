@@ -90,8 +90,14 @@
 
         case DWDPAvatarBackgroundMode_Random: {
             if (self.letter.length > 0) {
-                unichar firstChar = [self.letter characterAtIndex:0];
-                CGFloat hue = firstChar / 90.0; // 90: ascii code of Z
+                unichar charCode = [self.letter characterAtIndex:0];
+                CGFloat hue;
+                if (charCode <= 57) {             // is digit
+                    hue = (charCode - 48) / 36.0; // 48 == '0', 36 == total count of supported characters
+                }
+                else {
+                    hue = (charCode - 65 + 10) / 36.0; // 65 == 'A', 10 == count of digits
+                }
                 color = [UIColor colorWithHue:hue saturation:0.3 brightness:0.6 alpha:1.0];
             }
             else {
