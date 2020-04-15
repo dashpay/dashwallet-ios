@@ -290,6 +290,10 @@ static BOOL IsJailbroken(void) {
 #pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
+        return NO;
+    }
+    
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     if (chain.isEvolutionEnabled == NO) {
         return NO;
@@ -313,6 +317,8 @@ static BOOL IsJailbroken(void) {
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
+    [self reloadShortcuts];
+    
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
 
