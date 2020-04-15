@@ -534,6 +534,9 @@
 "Operator Keys" = "Операторски ключове";
 
 /* No comment provided by engineer. */
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
 "Operator Public Key" = "Operator Public Key";
 
 /* No comment provided by engineer. */
@@ -547,6 +550,9 @@
 
 /* No comment provided by engineer. */
 "Owner Private Key" = "Owner Private Key";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Платете и вземете плащане незабавно с лесни за използване потоци на плащане";
@@ -597,6 +603,9 @@
 "Private key" = "Частен ключ";
 
 /* No comment provided by engineer. */
+"Private Key" = "Private Key";
+
+/* No comment provided by engineer. */
 "Processing" = "Обработване";
 
 /* No comment provided by engineer. */
@@ -604,6 +613,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Публичен адрес";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Бързо получаване";
@@ -685,6 +697,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Възнаграждения";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Сканирай";
@@ -921,13 +936,22 @@
 "Unable to get new QR code" = "Не може да получи нов QR код";
 
 /* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
 "Unknown Operator Public Key" = "Unknown Operator Public Key";
 
 /* No comment provided by engineer. */
 "Unknown Owner Private Key" = "Unknown Owner Private Key";
 
 /* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
 "Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
 
 /* No comment provided by engineer. */
 "Unknown Voting Public Key" = "Unknown Voting Public Key";
@@ -991,6 +1015,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Ключове за гласуване";
+
+/* No comment provided by engineer. */
+"Voting Private Key" = "Voting Private Key";
 
 /* No comment provided by engineer. */
 "Voting Public Key" = "Voting Public Key";

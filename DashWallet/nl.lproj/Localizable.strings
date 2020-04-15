@@ -534,6 +534,9 @@
 "Operator Keys" = "Operator sleutels";
 
 /* No comment provided by engineer. */
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
 "Operator Public Key" = "Operator Public Key";
 
 /* No comment provided by engineer. */
@@ -547,6 +550,9 @@
 
 /* No comment provided by engineer. */
 "Owner Private Key" = "Owner Private Key";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Betaal en word betaald met eenvoudig te gebruiken betaalverkeer";
@@ -597,6 +603,9 @@
 "Private key" = "persoonlijke sleutel";
 
 /* No comment provided by engineer. */
+"Private Key" = "Private Key";
+
+/* No comment provided by engineer. */
 "Processing" = "Verwerken";
 
 /* No comment provided by engineer. */
@@ -604,6 +613,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Publieke sleutel";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Snel Ontvangen";
@@ -685,6 +697,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Beloningen";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Scan";
@@ -921,13 +936,22 @@
 "Unable to get new QR code" = "Verkrijgen van nieuwe QR-code is mislukt";
 
 /* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
 "Unknown Operator Public Key" = "Unknown Operator Public Key";
 
 /* No comment provided by engineer. */
 "Unknown Owner Private Key" = "Unknown Owner Private Key";
 
 /* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
 "Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
 
 /* No comment provided by engineer. */
 "Unknown Voting Public Key" = "Unknown Voting Public Key";
@@ -991,6 +1015,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Stem sleutels";
+
+/* No comment provided by engineer. */
+"Voting Private Key" = "Voting Private Key";
 
 /* No comment provided by engineer. */
 "Voting Public Key" = "Voting Public Key";

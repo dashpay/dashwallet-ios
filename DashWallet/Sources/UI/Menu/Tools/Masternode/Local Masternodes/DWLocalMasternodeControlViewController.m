@@ -43,6 +43,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeControlCell) {
 
 typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
     DWMasternodeActionCell_SignMessage,
+    DWMasternodeActionCell_Reset,
     DWMasternodeActionCell_UpdateHost,
     DWMasternodeActionCell_ChangePayoutAddress,
     DWMasternodeActionCell_ChangeOperator,
@@ -50,11 +51,19 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
     _DWMasternodeActionCell_Count,
 };
 
+typedef NS_ENUM(NSUInteger, DWMasternodeControlViewState) {
+    DWMasternodeControlViewState_PublicInfo = 0,
+    DWMasternodeControlViewState_PrivateInfo = 1,
+};
+
 @interface DWLocalMasternodeControlViewController ()
 
 @property (nonatomic, strong) DWActionFormCellModel *registerActionModel;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 @property (nonatomic, strong) DSLocalMasternode *localMasternode;
+@property (nonatomic, assign) BOOL isViewingOwnerPrivateKey;
+@property (nonatomic, assign) BOOL isViewingOperatorPrivateKey;
+@property (nonatomic, assign) BOOL isViewingVotingPrivateKey;
 
 @end
 
@@ -65,6 +74,9 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
         self.title = NSLocalizedString(@"Control", nil);
         self.hidesBottomBarWhenPushed = YES;
         _localMasternode = localMasternode;
+        _isViewingOwnerPrivateKey = NO;
+        _isViewingOperatorPrivateKey = NO;
+        _isViewingVotingPrivateKey = NO;
     }
     return self;
 }
@@ -102,11 +114,26 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
         case DWMasternodeControlCell_PayoutAddress:
             return NSLocalizedString(@"Payout Address", nil);
         case DWMasternodeControlCell_OwnerKey:
-            return NSLocalizedString(@"Owner Private Key", nil);
+            if (!self.isViewingOwnerPrivateKey) {
+                return NSLocalizedString(@"Owner Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Owner Private Key", nil);
+            }
         case DWMasternodeControlCell_OperatorKey:
-            return NSLocalizedString(@"Operator Public Key", nil);
+            if (!self.isViewingOperatorPrivateKey) {
+                return NSLocalizedString(@"Operator Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Operator Private Key", nil);
+            }
         case DWMasternodeControlCell_VotingKey:
-            return NSLocalizedString(@"Voting Public Key", nil);
+            if (!self.isViewingVotingPrivateKey) {
+                return NSLocalizedString(@"Voting Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Voting Private Key", nil);
+            }
     }
     return @"";
 }
@@ -120,11 +147,26 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
         case DWMasternodeControlCell_PayoutAddress:
             return NSLocalizedString(@"Unknown Payout Address", nil);
         case DWMasternodeControlCell_OwnerKey:
-            return NSLocalizedString(@"Unknown Owner Private Key", nil);
+            if (!self.isViewingOwnerPrivateKey) {
+                return NSLocalizedString(@"Unknown Owner Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Unknown Owner Private Key", nil);
+            }
         case DWMasternodeControlCell_OperatorKey:
-            return NSLocalizedString(@"Unknown Operator Public Key", nil);
+            if (!self.isViewingOperatorPrivateKey) {
+                return NSLocalizedString(@"Unknown Operator Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Unknown Operator Private Key", nil);
+            }
         case DWMasternodeControlCell_VotingKey:
-            return NSLocalizedString(@"Unknown Voting Public Key", nil);
+            if (!self.isViewingVotingPrivateKey) {
+                return NSLocalizedString(@"Unknown Voting Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Unknown Voting Private Key", nil);
+            }
     }
     return @"";
 }
@@ -136,11 +178,26 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
         case DWMasternodeControlCell_PayoutAddress:
             return NSLocalizedString(@"Lookup", nil);
         case DWMasternodeControlCell_OwnerKey:
-            return NSLocalizedString(@"Lookup", nil);
+            if (self.isViewingOwnerPrivateKey) {
+                return NSLocalizedString(@"Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Private Key", nil);
+            }
         case DWMasternodeControlCell_OperatorKey:
-            return NSLocalizedString(@"Lookup", nil);
+            if (self.isViewingOperatorPrivateKey) {
+                return NSLocalizedString(@"Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Private Key", nil);
+            }
         case DWMasternodeControlCell_VotingKey:
-            return NSLocalizedString(@"Lookup", nil);
+            if (self.isViewingVotingPrivateKey) {
+                return NSLocalizedString(@"Public Key", nil);
+            }
+            else {
+                return NSLocalizedString(@"Private Key", nil);
+            }
         default:
             return nil;
     }
@@ -150,6 +207,8 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
     switch (row) {
         case DWMasternodeActionCell_SignMessage:
             return NSLocalizedString(@"Sign Message", nil);
+        case DWMasternodeActionCell_Reset:
+            return NSLocalizedString(@"Reset", nil);
         case DWMasternodeActionCell_UpdateHost:
             return NSLocalizedString(@"Update Host", nil);
         case DWMasternodeActionCell_ChangeOperator:
@@ -203,6 +262,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
                 if (!strongModel) {
                     return;
                 }
+                self.isViewingOwnerPrivateKey = !self.isViewingOwnerPrivateKey;
             };
         case DWMasternodeControlCell_OperatorKey:
             return ^{
@@ -210,6 +270,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
                 if (!strongModel) {
                     return;
                 }
+                self.isViewingOperatorPrivateKey = !self.isViewingOperatorPrivateKey;
             };
         case DWMasternodeControlCell_VotingKey:
             return ^{
@@ -217,6 +278,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
                 if (!strongModel) {
                     return;
                 }
+                self.isViewingVotingPrivateKey = !self.isViewingVotingPrivateKey;
             };
         default:
             return nil;
@@ -269,8 +331,15 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
             break;
         }
         case DWMasternodeControlCell_VotingKey: {
-            model.valueText = self.localMasternode.votingPublicKeyData.hexString;
-            model.editable = FALSE;
+            NSData *votingKeyData = self.localMasternode.votingPublicKeyData;
+            if (votingKeyData.length) {
+                model.valueText = votingKeyData.hexString;
+                model.editable = FALSE;
+            }
+            else {
+                model.valueText = NSLocalizedString(@"Same as owner", @"Should be understood as `same as owner key`");
+                model.editable = FALSE;
+            }
             break;
         }
     }
@@ -291,16 +360,36 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
 - (DWBaseFormCellModel *)actionModelAtIndex:(NSUInteger)index {
     __weak typeof(self) weakSelf = self;
     DWActionFormCellModel *actionModel = [[DWActionFormCellModel alloc] initWithTitle:[self actionTitleForCellAtRow:index]];
-    actionModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        UITableView *tableView = self.formController.tableView;
-        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-        [strongSelf showKeyForSignMessageFromSourceView:tableView sourceRect:cell.frame];
-        [strongSelf resignCellsFirstResponders];
-    };
+    switch (index) {
+        case DWMasternodeActionCell_SignMessage: {
+            actionModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                UITableView *tableView = self.formController.tableView;
+                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                [strongSelf showKeyForSignMessageFromSourceView:tableView sourceRect:cell.frame];
+                [strongSelf resignCellsFirstResponders];
+            };
+        } break;
+        case DWMasternodeActionCell_Reset: {
+            actionModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                UITableView *tableView = self.formController.tableView;
+                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                [strongSelf resetMasternodeFromSourceView:tableView sourceRect:cell.frame];
+                [strongSelf resignCellsFirstResponders];
+            };
+        } break;
+
+        default:
+            break;
+    }
+
     return actionModel;
 }
 
@@ -314,110 +403,161 @@ typedef NS_ENUM(NSUInteger, DWMasternodeActionCell) {
         actionWithTitle:NSLocalizedString(@"Owner Key", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
-        [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Allow signing with owner key?"
-                                                   forAmount:0
-                                                  completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                                      if (seed) {
-                                                          DSECDSAKey *ownerKey = [self.localMasternode ownerKeyFromSeed:seed];
-                                                          [self showSignMessageForKey:ownerKey];
-                                                      }
-                                                  }];
-    }];
-        UIAlertAction *operatorKey = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Operator Key", nil)
-                      style:UIAlertActionStyleDefault
-                    handler:^(UIAlertAction *action){
-                        [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Allow signing with operator key?"
-                                                                   forAmount:0
-                                                                  completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                                                      if (seed) {
-                                                                          DSBLSKey *operatorKey = [self.localMasternode operatorKeyFromSeed:seed];
-                                                                          [self showSignMessageForKey:operatorKey];
-                                                                      }
-                                                                  }];
-                    }];
-        UIAlertAction *votingKey = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Voting Key", nil)
-                      style:UIAlertActionStyleDefault
-                    handler:^(UIAlertAction *action){
-                        [self.localMasternode.votingKeysWallet seedWithPrompt:@"Allow signing with voting key?"
-                                                                   forAmount:0
-                                                                  completion:^(NSData *_Nullable seed, BOOL cancelled) {
-                                                                      if (seed) {
-                                                                          DSECDSAKey *ownerKey = [self.localMasternode votingKeyFromSeed:seed];
-                                                                          [self showSignMessageForKey:ownerKey];
-                                                                      }
-                                                                  }];
-                    }];
+                    [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Allow signing with owner key?"
+                                                               forAmount:0
+                                                              completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                                  if (seed) {
+                                                                      DSECDSAKey *ownerKey = [self.localMasternode ownerKeyFromSeed:seed];
+                                                                      [self showSignMessageForKey:ownerKey];
+                                                                  }
+                                                              }];
+                }];
+    UIAlertAction *operatorKey = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Operator Key", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Allow signing with operator key?"
+                                                                  forAmount:0
+                                                                 completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                                     if (seed) {
+                                                                         DSBLSKey *operatorKey = [self.localMasternode operatorKeyFromSeed:seed];
+                                                                         [self showSignMessageForKey:operatorKey];
+                                                                     }
+                                                                 }];
+                }];
+    UIAlertAction *votingKey = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Voting Key", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self.localMasternode.votingKeysWallet seedWithPrompt:@"Allow signing with voting key?"
+                                                                forAmount:0
+                                                               completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                                   if (seed) {
+                                                                       DSECDSAKey *ownerKey = [self.localMasternode votingKeyFromSeed:seed];
+                                                                       [self showSignMessageForKey:ownerKey];
+                                                                   }
+                                                               }];
+                }];
 
-        UIAlertAction *cancel = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                      style:UIAlertActionStyleCancel
-                    handler:nil];
-        [actionSheet addAction:ownerKey];
-        [actionSheet addAction:operatorKey];
-        [actionSheet addAction:votingKey];
-        [actionSheet addAction:cancel];
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-            actionSheet.popoverPresentationController.sourceView = sourceView;
-            actionSheet.popoverPresentationController.sourceRect = sourceRect;
-        }
-        [self presentViewController:actionSheet animated:YES completion:nil];
+    UIAlertAction *cancel = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [actionSheet addAction:ownerKey];
+    [actionSheet addAction:operatorKey];
+    [actionSheet addAction:votingKey];
+    [actionSheet addAction:cancel];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
+    [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
-- (void)showSignMessageForKey:(DSKey*)key {
-        DWSignMessageViewController *signMessageViewController = [[DWSignMessageViewController alloc] init];
-        signMessageViewController.key = key;
-        [self.navigationController pushViewController:signMessageViewController animated:YES];
+- (void)resetMasternodeFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+    DSAccount *account = [self.localMasternode.chain firstAccountWithBalance];
+    if (account) {
+        [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Do you wish to reset this masternode?"
+                                                      forAmount:0
+                                                     completion:^(NSData *_Nullable seed, BOOL cancelled) {
+                                                         [self.localMasternode updateTransactionForResetFundedByAccount:account
+                                                                                                             completion:^(DSProviderUpdateServiceTransaction *_Nonnull providerUpdateServiceTransaction) {
+                                                                                                                 if (providerUpdateServiceTransaction) {
+                                                                                                                     [account signTransaction:providerUpdateServiceTransaction
+                                                                                                                                   withPrompt:@"Would you like to update this masternode?"
+                                                                                                                                   completion:^(BOOL signedTransaction, BOOL cancelled) {
+                                                                                                                                       if (signedTransaction) {
+                                                                                                                                           NSLog(@"%@", providerUpdateServiceTransaction.data.hexString);
+                                                                                                                                           [self.localMasternode.providerRegistrationTransaction.chain.chainManager.transactionManager publishTransaction:providerUpdateServiceTransaction
+                                                                                                                                                                                                                                               completion:^(NSError *_Nullable error) {
+                                                                                                                                                                                                                                                   if (error) {
+                                                                                                                                                                                                                                                       [self raiseIssue:@"Error" message:error.localizedDescription];
+                                                                                                                                                                                                                                                   }
+                                                                                                                                                                                                                                                   else {
+                                                                                                                                                                                                                                                       [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                                                                                                                                                                                                                                                   }
+                                                                                                                                                                                                                                               }];
+                                                                                                                                       }
+                                                                                                                                       else {
+                                                                                                                                           [self raiseIssue:@"Error" message:@"Transaction was not signed."];
+                                                                                                                                       }
+                                                                                                                                   }];
+                                                                                                                 }
+                                                                                                                 else {
+                                                                                                                     [self raiseIssue:@"Error" message:@"Unable to create ProviderRegistrationTransaction."];
+                                                                                                                 }
+                                                                                                             }];
+                                                     }];
+    }
+}
+
+- (void)raiseIssue:(NSString *)issue message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Ok"
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *_Nonnull action){
+
+                                            }]];
+    [self presentViewController:alert
+                       animated:TRUE
+                     completion:^{
+
+                     }];
+}
+
+- (void)showSignMessageForKey:(DSKey *)key {
+    DWSignMessageViewController *signMessageViewController = [[DWSignMessageViewController alloc] init];
+    signMessageViewController.key = key;
+    [self.navigationController pushViewController:signMessageViewController animated:YES];
 }
 
 - (NSArray<DWBaseFormCellModel *> *)actionItems {
-        NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
+    NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
-        for (NSUInteger i = 0; i < _DWMasternodeActionCell_Count; i++) {
-            [items addObject:[self actionModelAtIndex:i]];
-        }
+    for (NSUInteger i = 0; i < _DWMasternodeActionCell_Count; i++) {
+        [items addObject:[self actionModelAtIndex:i]];
+    }
 
-        return items;
+    return items;
 }
 
 - (DWBaseFormCellModel *)registerActionModel {
-        __weak typeof(self) weakSelf = self;
-        DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"View Signing Info", nil)];
-        registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
+    __weak typeof(self) weakSelf = self;
+    DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"View Signing Info", nil)];
+    registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
 
-            [strongSelf resignCellsFirstResponders];
+        [strongSelf resignCellsFirstResponders];
 
-            //        [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
-            //            if (error) {
-            //                return;
-            //            }
-            //            [self.model registerMasternode:self
-            //                    requestsPayloadSigning:^{
-            //                        [self showPayloadSigning];
-            //                    }
-            //                                completion:^(NSError *_Nonnull error){
-            //
-            //                                }];
-            //            [self showPayloadSigning];
-            //        }];
-        };
-        self.registerActionModel = registerModel;
-        return registerModel;
+        //        [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
+        //            if (error) {
+        //                return;
+        //            }
+        //            [self.model registerMasternode:self
+        //                    requestsPayloadSigning:^{
+        //                        [self showPayloadSigning];
+        //                    }
+        //                                completion:^(NSError *_Nonnull error){
+        //
+        //                                }];
+        //            [self showPayloadSigning];
+        //        }];
+    };
+    self.registerActionModel = registerModel;
+    return registerModel;
 }
 
 - (NSArray<DWFormSectionModel *> *)sections {
-        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.items = [self items];
+    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+    section.items = [self items];
 
-        DWFormSectionModel *actionsSection = [[DWFormSectionModel alloc] init];
-        actionsSection.items = [self actionItems];
+    DWFormSectionModel *actionsSection = [[DWFormSectionModel alloc] init];
+    actionsSection.items = [self actionItems];
 
-        return @[ section, actionsSection ];
+    return @[ section, actionsSection ];
 }
 
 @end
