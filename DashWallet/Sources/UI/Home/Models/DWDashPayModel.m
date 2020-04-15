@@ -180,6 +180,11 @@ NS_ASSUME_NONNULL_END
 
     NSLog(@">>> %@", @(stepsCompleted));
 
+    if (stepsCompleted == DSBlockchainIdentityRegistrationStep_Cancelled) {
+        [self cancel];
+        return;
+    }
+
     if (error) {
         self.lastRegistrationError = error;
     }
