@@ -28,7 +28,6 @@ NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification = @"DWDa
 
 @interface DWDashPayModel ()
 
-@property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
 
@@ -43,24 +42,26 @@ NS_ASSUME_NONNULL_END
     if (self) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
-        NSString *username = blockchainIdentity.currentUsername;
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
 
-        if ([DWGlobalOptions sharedInstance].dashpayUsernameRegistered) {
+        if (blockchainIdentity) {
             NSAssert(username != nil, @"Username is invalid");
-            _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:DWDPRegistrationState_Done
-                                                                         failed:NO
-                                                                       username:username];
-        }
-        // else TODO: set registration status
 
-        _username = username;
+            DWDPRegistrationState state = [self stateForCompletedSteps:blockchainIdentity.stepsCompleted];
+            const BOOL failed = state != DWDPRegistrationState_Done;
+            _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:failed username:username];
+        }
     }
     return self;
 }
 
+- (NSString *)username {
+    return [DWGlobalOptions sharedInstance].dashpayUsername;
+}
+
 - (void)createUsername:(NSString *)username {
     self.lastRegistrationError = nil;
-    self.username = username;
+    [DWGlobalOptions sharedInstance].dashpayUsername = username;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
@@ -126,9 +127,7 @@ NS_ASSUME_NONNULL_END
                 return;
             }
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [strongSelf handleSteps:stepCompleted error:nil];
-            });
+            [strongSelf handleSteps:stepCompleted error:nil];
         }
         completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -154,9 +153,7 @@ NS_ASSUME_NONNULL_END
                 return;
             }
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [strongSelf handleSteps:stepCompleted error:nil];
-            });
+            [strongSelf handleSteps:stepCompleted error:nil];
         }
         completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -170,9 +167,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (DSBlockchainIdentityRegistrationStep)steps {
-    return (DSBlockchainIdentityRegistrationStep_L1Steps |
-            DSBlockchainIdentityRegistrationStep_Identity |
-            DSBlockchainIdentityRegistrationStep_Username);
+    return DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername;
 }
 
 - (void)handleSteps:(DSBlockchainIdentityRegistrationStep)stepsCompleted error:(nullable NSError *)error {
@@ -189,26 +184,10 @@ NS_ASSUME_NONNULL_END
         self.lastRegistrationError = error;
     }
 
-    DWDPRegistrationState state;
-    if (stepsCompleted < DSBlockchainIdentityRegistrationStep_L1Steps) {
-        state = DWDPRegistrationState_ProcessingPayment;
-    }
-    else if (stepsCompleted < DSBlockchainIdentityRegistrationStep_Identity) {
-        state = DWDPRegistrationState_CreatingID;
-    }
-    else if (stepsCompleted < DSBlockchainIdentityRegistrationStep_Username) {
-        state = DWDPRegistrationState_RegistrationUsername;
-    }
-    else {
-        state = DWDPRegistrationState_Done;
-    }
+    DWDPRegistrationState state = [self stateForCompletedSteps:stepsCompleted];
 
     const BOOL failed = error != nil;
     self.registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:failed username:self.username];
-
-    if (state == DWDPRegistrationState_Done) {
-        [DWGlobalOptions sharedInstance].dashpayUsernameRegistered = YES;
-    }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
 }
@@ -216,11 +195,27 @@ NS_ASSUME_NONNULL_END
 - (void)cancel {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    self.username = nil;
+    [DWGlobalOptions sharedInstance].dashpayUsername = nil;
     self.lastRegistrationError = nil;
     self.registrationStatus = nil;
 
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
+}
+
+- (DWDPRegistrationState)stateForCompletedSteps:(DSBlockchainIdentityRegistrationStep)stepsCompleted {
+    DWDPRegistrationState state;
+    if (stepsCompleted < DSBlockchainIdentityRegistrationStep_L1Steps) {
+        return DWDPRegistrationState_ProcessingPayment;
+    }
+    else if (stepsCompleted < DSBlockchainIdentityRegistrationStep_Identity) {
+        return DWDPRegistrationState_CreatingID;
+    }
+    else if (stepsCompleted < DSBlockchainIdentityRegistrationStep_Username) {
+        return DWDPRegistrationState_RegistrationUsername;
+    }
+    else {
+        return DWDPRegistrationState_Done;
+    }
 }
 
 @end

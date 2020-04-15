@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
 
-@property (nonatomic, assign) BOOL dashpayUsernameRegistered;
+@property (nullable, nonatomic, copy) NSString *dashpayUsername;
 
 // Non-dynamic
 

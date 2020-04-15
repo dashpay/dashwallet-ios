@@ -293,32 +293,31 @@ static BOOL IsJailbroken(void) {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
         return NO;
     }
-    
+
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     if (chain.isEvolutionEnabled == NO) {
         return NO;
     }
-    
-    if ([DWGlobalOptions sharedInstance].dashpayUsernameRegistered) {
+
+    // username is registered / in progress
+    if (self.dashPayModel.registrationStatus != nil) {
         return NO;
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
-    BOOL usernameNotRegistered = blockchainIdentity == nil;
     // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
     const uint64_t balanceValue = wallet.balance;
     BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
     BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
-    return canRegisterUsername && usernameNotRegistered && isSynced && isEnoughBalance;
+    return canRegisterUsername && isSynced && isEnoughBalance;
 }
 
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
     [self reloadShortcuts];
-    
+
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
 
