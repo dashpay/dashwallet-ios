@@ -294,6 +294,10 @@ static BOOL IsJailbroken(void) {
     if (chain.isEvolutionEnabled == NO) {
         return NO;
     }
+    
+    if ([DWGlobalOptions sharedInstance].dashpayUsernameRegistered) {
+        return NO;
+    }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
