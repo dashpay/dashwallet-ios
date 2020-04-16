@@ -9,6 +9,24 @@
 "%@ is not allowed to access Touch ID" = "%@ запрещен доступ к Touch ID";
 
 /* No comment provided by engineer. */
+"(1/3) Processing Payment" = "(1/3) Processing Payment";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "(1/3) Unable to process payment";
+
+/* No comment provided by engineer. */
+"(2/3) Creating ID" = "(2/3) Creating ID";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create ID" = "(2/3) Unable to create ID";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "(3/3) Can't register username";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "(3/3) Registering Username";
+
+/* No comment provided by engineer. */
 "1 hour" = "1 час";
 
 /* Shorten version of minute */
@@ -137,6 +155,9 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Проверьте ваше интернет-соединение";
 
+/* Choose your Dash username */
+"Choose your" = "Choose your";
+
 /* No comment provided by engineer. */
 "Clear" = "Удалить";
 
@@ -154,6 +175,9 @@
 
 /* No comment provided by engineer. */
 "Confirm" = "Подтвердить";
+
+/* No comment provided by engineer. */
+"Confirm & Pay" = "Confirm & Pay";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Подтвердите PIN";
@@ -201,6 +225,12 @@
 "Dash payments can't be less than %@" = "Платежи Dash не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
+"Dash username" = "Dash username";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "DashPay Upgrade Fee";
+
+/* No comment provided by engineer. */
 "Date" = "Дата";
 
 /* No comment provided by engineer. */
@@ -217,6 +247,9 @@
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Узел загрузки: %@";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "eg: johndoe";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Включить Face ID";
@@ -243,6 +276,12 @@
 "Enter your 2FA code below" = "Введите код 2FA ниже";
 
 /* No comment provided by engineer. */
+"Error" = "Error";
+
+/* No comment provided by engineer. */
+"Error Upgrading" = "Error Upgrading";
+
+/* No comment provided by engineer. */
 "Exit" = "Выход";
 
 /* No comment provided by engineer. */
@@ -267,6 +306,9 @@
 "Forgot PIN?" = "Забыли PIN?";
 
 /* No comment provided by engineer. */
+"Generate extended public keys?" = "Generate extended public keys?";
+
+/* No comment provided by engineer. */
 "Get Started" = "Начать";
 
 /* No comment provided by engineer. */
@@ -274,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Полный контроль и настройки кошелька для Ваших нужд";
+
+/* Hello username, */
+"Hello %@," = "Hello %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Помогите нам стать лучше";
@@ -283,6 +328,9 @@
 
 /* No comment provided by engineer. */
 "History" = "История";
+
+/* No comment provided by engineer. */
+"I Accept" = "I Accept";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я понимаю, что потеряю свои средства, если у меня не будет фразы восстановления";
@@ -324,7 +372,16 @@
 "It's Important" = "Это важно";
 
 /* No comment provided by engineer. */
+"Join Evolution" = "Join Evolution";
+
+/* No comment provided by engineer. */
 "Keypair %ld" = "Ключи %ld";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "Let me know when it’s done";
+
+/* Validation rule */
+"Letters and numbers only" = "Letters and numbers only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Привязать Uphold аккаунт ";
@@ -380,8 +437,14 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Макс";
 
+/* Validation rule */
+"Maximum 24 characters" = "Maximum 24 characters";
+
 /* adjective, security level */
 "Medium" = "Средний";
+
+/* Validation rule */
+"Minimum 3 characters" = "Minimum 3 characters";
 
 /* No comment provided by engineer. */
 "More" = "Больше";
@@ -465,6 +528,9 @@
 "Please try again" = "Попробуйте еще раз";
 
 /* No comment provided by engineer. */
+"Please wait" = "Please wait";
+
+/* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Пожалуйста, подождите завершения синхронизации";
 
 /* No comment provided by engineer. */
@@ -520,6 +586,12 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Фраза восстановления должна состоять из %d слов";
+
+/* Button title, Register (username) */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register?" = "Register?";
 
 /* No comment provided by engineer. */
 "Registered from" = "Зарегистрировано от";
@@ -774,6 +846,12 @@
 "Updated: %@" = "Обновлено: %@";
 
 /* No comment provided by engineer. */
+"Upgrade Fee" = "Upgrade Fee";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "Upgrading to DashPay";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
@@ -858,6 +936,9 @@
 "You can authenticate with Touch ID for payments below" = "Вам будут доступны платежи через Touch ID меньше";
 
 /* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Username cannot be changed once it's registered" = "You have chosen \"%@\" as your username. Username cannot be changed once it's registered";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Вы должны ввести PIN для входа в Dash Wallet";
 
 /* No comment provided by engineer. */
@@ -870,10 +951,19 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Вам понадобится эта фраза восстановления для доступа к Вашим средствам, если это устройство будет утеряно, повреждено или приложение Dash Wallet будет случайно удалено.";
 
 /* No comment provided by engineer. */
+"Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакция была отправлена и её сумма отобразится в вашем кошельке через несколько минут.";
 
 /* No comment provided by engineer. */
 "Your Uphold account Dash balance is" = "Баланс Dash на вашей учётной записи Uphold составляет";
+
+/* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Сейчас Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему аккаунту на другом устройстве.";
