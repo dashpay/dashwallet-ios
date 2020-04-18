@@ -50,6 +50,12 @@
 /* No comment provided by engineer. */
 "About" = "A proposito di";
 
+/* No comment provided by engineer. */
+"Accept" = "Accept";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Add a New Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Aggiungi Scorciatoia";
 
@@ -195,6 +201,9 @@
 "Contact Support" = "Contatta il Supporto";
 
 /* No comment provided by engineer. */
+"Contacts" = "Contacts";
+
+/* No comment provided by engineer. */
 "Continue" = "Continua";
 
 /* No comment provided by engineer. */
@@ -301,6 +310,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtra Transazioni";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Hai dimenticato il PIN?";
@@ -657,6 +669,12 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Gli screenshot sono visibili ad altri dispositivi e applicazioni. Genera una nuova frase di recupero e tienila segreta.";
 
 /* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+
+/* No comment provided by engineer. */
 "Secure now" = "Rendilo sicuro ora";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -781,6 +799,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Non ci sono transazioni da visualizzare";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@" = "There are no users that matches with the name %@";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Questa app è open source:";

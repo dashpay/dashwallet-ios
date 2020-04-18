@@ -15,25 +15,27 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import "DWContactItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWContactItemDisplayType) {
-    DWContactItemDisplayType_Search,
-    DWContactItemDisplayType_Contact,
-    DWContactItemDisplayType_IncomingRequest,
-    DWContactItemDisplayType_OutgoingRequest,
-};
+@protocol DWContactListTableViewCellDelegate;
+@class DWUserSearchResultViewController;
 
-@protocol DWContactItem <NSObject>
+@protocol DWUserSearchResultViewControllerDelegate <NSObject>
 
-// TODO: avatar
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                willDisplayItemAtIndex:(NSInteger)index;
 
-@property (readonly, nonatomic, assign) DWContactItemDisplayType displayType;
-@property (readonly, nonatomic, copy) NSString *username;
-@property (readonly, nullable, nonatomic, copy) NSString *tagline;
-@property (readonly, nullable, nonatomic, copy) NSString *dateString;
+@end
+
+@interface DWUserSearchResultViewController : UITableViewController
+
+@property (nullable, nonatomic, copy) NSArray<id<DWContactItem>> *items;
+@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> contactsDelegate;
+@property (nullable, nonatomic, weak) id<DWUserSearchResultViewControllerDelegate> delegate;
 
 @end
 

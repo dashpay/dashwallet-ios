@@ -50,6 +50,12 @@
 /* No comment provided by engineer. */
 "About" = "Giới thiệu";
 
+/* No comment provided by engineer. */
+"Accept" = "Accept";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Add a New Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Thêm shortcut";
 
@@ -195,6 +201,9 @@
 "Contact Support" = "Liên hệ hỗ trợ";
 
 /* No comment provided by engineer. */
+"Contacts" = "Contacts";
+
+/* No comment provided by engineer. */
 "Continue" = "Tiếp tục";
 
 /* No comment provided by engineer. */
@@ -301,6 +310,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Lọc các giao dịch";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Quên mã PIN";
@@ -657,6 +669,12 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Hãy sinh ra một cụm từ phục hồi mới và giữ nó bí mật.";
 
 /* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+
+/* No comment provided by engineer. */
 "Secure now" = "Bảo mật ngay";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -781,6 +799,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Không có giao dịch nào để hiển thị";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@" = "There are no users that matches with the name %@";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ứng dụng này là mã nguồn mở:";

@@ -17,23 +17,26 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWContactItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWContactItemDisplayType) {
-    DWContactItemDisplayType_Search,
-    DWContactItemDisplayType_Contact,
-    DWContactItemDisplayType_IncomingRequest,
-    DWContactItemDisplayType_OutgoingRequest,
-};
+@class DWUserSearchModel;
 
-@protocol DWContactItem <NSObject>
+@protocol DWUserSearchModelDelegate <NSObject>
 
-// TODO: avatar
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWContactItem>> *)items;
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error;
 
-@property (readonly, nonatomic, assign) DWContactItemDisplayType displayType;
-@property (readonly, nonatomic, copy) NSString *username;
-@property (readonly, nullable, nonatomic, copy) NSString *tagline;
-@property (readonly, nullable, nonatomic, copy) NSString *dateString;
+@end
+
+@interface DWUserSearchModel : NSObject
+
+@property (readonly, nonatomic, copy) NSString *trimmedQuery;
+@property (nullable, nonatomic, weak) id<DWUserSearchModelDelegate> delegate;
+
+- (void)searchWithQuery:(nullable NSString *)searchQuery;
+- (void)willDisplayItemAtIndex:(NSInteger)index;
 
 @end
 

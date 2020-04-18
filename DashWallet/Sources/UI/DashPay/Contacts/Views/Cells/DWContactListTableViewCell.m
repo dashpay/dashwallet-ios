@@ -57,8 +57,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     UIView *actionView = nil;
     switch (contact.displayType) {
+        case DWContactItemDisplayType_Search: {
+            self.subtitleLabel.text = nil;
+
+            break;
+        }
         case DWContactItemDisplayType_Contact: {
             self.subtitleLabel.text = contact.tagline;
+
             break;
         }
         case DWContactItemDisplayType_IncomingRequest: {
@@ -110,7 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
     DWBlueActionButton *acceptButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
     acceptButton.translatesAutoresizingMaskIntoConstraints = NO;
     acceptButton.small = YES;
-    [acceptButton setTitle:@"Accept" forState:UIControlStateNormal];
+    [acceptButton setTitle:NSLocalizedString(@"Accept", nil) forState:UIControlStateNormal];
     [acceptButton addTarget:self
                      action:@selector(acceptButtonAction)
            forControlEvents:UIControlEventTouchUpInside];

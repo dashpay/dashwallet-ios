@@ -126,7 +126,9 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 - (NSOrderedSet *)evonetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"34.213.26.85"];
+    [serviceLocations addObject:@"34.222.170.127"];
+    [serviceLocations addObject:@"34.217.61.209"];
+    [serviceLocations addObject:@"54.214.177.132"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {

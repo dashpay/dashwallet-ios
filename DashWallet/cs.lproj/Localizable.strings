@@ -50,6 +50,12 @@
 /* No comment provided by engineer. */
 "About" = "O aplikaci";
 
+/* No comment provided by engineer. */
+"Accept" = "Accept";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Add a New Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Přidat zkratku";
 
@@ -195,6 +201,9 @@
 "Contact Support" = "Podpora";
 
 /* No comment provided by engineer. */
+"Contacts" = "Contacts";
+
+/* No comment provided by engineer. */
 "Continue" = "Pokračovat";
 
 /* No comment provided by engineer. */
@@ -301,6 +310,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtrovat transakce";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Zapomenutý PIN?";
@@ -657,6 +669,12 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Snímky obrazovky jsou dostupné pro ostatní aplikace a zařízení. Vygenerujte novou frázi pro obnovení a udržujte ji v tajnosti.";
 
 /* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+
+/* No comment provided by engineer. */
 "Secure now" = "Ihned zabezpečit";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -781,6 +799,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Žádné transakce k zobrazení";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@" = "There are no users that matches with the name %@";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Aplikace má otevřený zdrojový kód:";

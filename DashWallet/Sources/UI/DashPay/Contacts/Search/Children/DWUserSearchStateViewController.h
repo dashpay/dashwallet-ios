@@ -15,20 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWContactsModel.h"
+#import <UIKit/UIKit.h>
 
-#import "DWContactObject.h"
-#import "DWContactsDataSourceObject.h"
+NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWContactsModel
+@interface DWUserSearchStateViewController : UIViewController
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        DWContactsDataSourceObject *datasource = [[DWContactsDataSourceObject alloc] initWithItems:@[]];
-        _contactsDataSource = datasource;
-    }
-    return self;
-}
+- (void)setPlaceholderState;
+- (void)setSearchingStateWithQuery:(NSString *)query;
+- (void)setNoResultsStateWithQuery:(NSString *)query;
+- (void)setErrorStateWithError:(NSError *)error;
 
 @end
+
+NS_ASSUME_NONNULL_END

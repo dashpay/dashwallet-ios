@@ -15,20 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DWContactsModel.h"
+#import <Foundation/Foundation.h>
 
-#import "DWContactObject.h"
-#import "DWContactsDataSourceObject.h"
+#import "DWContactItem.h"
 
-@implementation DWContactsModel
+NS_ASSUME_NONNULL_BEGIN
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        DWContactsDataSourceObject *datasource = [[DWContactsDataSourceObject alloc] initWithItems:@[]];
-        _contactsDataSource = datasource;
-    }
-    return self;
-}
+@class DSBlockchainIdentity;
+
+@interface DWContactObject : NSObject <DWContactItem>
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -50,6 +50,12 @@
 /* No comment provided by engineer. */
 "About" = "О программе";
 
+/* No comment provided by engineer. */
+"Accept" = "Accept";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Add a New Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Добавить";
 
@@ -195,6 +201,9 @@
 "Contact Support" = "Связаться с поддержкой";
 
 /* No comment provided by engineer. */
+"Contacts" = "Contacts";
+
+/* No comment provided by engineer. */
 "Continue" = "Продолжить";
 
 /* No comment provided by engineer. */
@@ -301,6 +310,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Показать транзакции";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Забыли PIN?";
@@ -657,6 +669,12 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Скриншоты видимы другими приложениями и устройствами. Создайте новую фразу восстановления и держите её в секрете.";
 
 /* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+
+/* No comment provided by engineer. */
 "Secure now" = "Сохранить кошелек";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -781,6 +799,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Нет транзакций для отображения";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@" = "There are no users that matches with the name %@";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Это приложение с открытым исходным кодом:";

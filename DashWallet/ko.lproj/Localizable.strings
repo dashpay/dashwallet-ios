@@ -50,6 +50,12 @@
 /* No comment provided by engineer. */
 "About" = "정보";
 
+/* No comment provided by engineer. */
+"Accept" = "Accept";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Add a New Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "단축키 추가";
 
@@ -195,6 +201,9 @@
 "Contact Support" = "고객 지원부에 문의하기";
 
 /* No comment provided by engineer. */
+"Contacts" = "Contacts";
+
+/* No comment provided by engineer. */
 "Continue" = "계속";
 
 /* No comment provided by engineer. */
@@ -301,6 +310,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "거래 필터링 하기";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PIN을 잊어버리셨나요?";
@@ -657,6 +669,12 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 복원 문구를 새로 만들고 비밀로 간직하세요.";
 
 /* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+
+/* No comment provided by engineer. */
 "Secure now" = "현재 안전합니다";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -781,6 +799,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "표시할 거래가 없습니다";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@" = "There are no users that matches with the name %@";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "이 어플은 오픈 소스입니다:";

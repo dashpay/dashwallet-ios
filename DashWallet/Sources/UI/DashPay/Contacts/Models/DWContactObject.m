@@ -15,18 +15,30 @@
 //  limitations under the License.
 //
 
-#import "DWContactsModel.h"
-
 #import "DWContactObject.h"
-#import "DWContactsDataSourceObject.h"
 
-@implementation DWContactsModel
+#import <DashSync/DashSync.h>
 
-- (instancetype)init {
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWContactObject ()
+
+@property (nonatomic, assign) DWContactItemDisplayType displayType;
+@property (nonatomic, copy) NSString *username;
+@property (nullable, nonatomic, copy) NSString *tagline;
+@property (nullable, nonatomic, copy) NSString *dateString;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+@implementation DWContactObject
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
-        DWContactsDataSourceObject *datasource = [[DWContactsDataSourceObject alloc] initWithItems:@[]];
-        _contactsDataSource = datasource;
+        _displayType = DWContactItemDisplayType_Search;
+        _username = blockchainIdentity.currentUsername;
     }
     return self;
 }
