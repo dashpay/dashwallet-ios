@@ -39,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) DWUserSearchStateViewController *stateController;
 @property (null_resettable, nonatomic, strong) DWUserSearchResultViewController *resultsController;
 
+@property (nonatomic, strong) dispatch_block_t searchBlock;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -106,9 +108,16 @@ NS_ASSUME_NONNULL_END
 #pragma mark - UISearchBarDelegate
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
-    [self performSearch];
+    if (searchText.length > 2) {
+        if (self.searchBlock) {
+            dispatch_cancel(self.searchBlock);
+        }
+        self.searchBlock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, ^{
+            [self performSearch];
+        });
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), self.searchBlock);
+    }
 }
-
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     [searchBar resignFirstResponder];
 }
@@ -203,6 +212,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)performSearch {
+    if (self.searchBar.text.length < 3) return;
     [self.model searchWithQuery:self.searchBar.text];
 
     if (self.model.trimmedQuery.length == 0) {
