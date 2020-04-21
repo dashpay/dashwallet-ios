@@ -20,12 +20,14 @@
 #import <DashSync/DSTransaction.h>
 
 #import "DWBlueActionButton.h"
+#import "DWDPAvatarView.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactListTableViewCell ()
 
+@property (strong, nonatomic) IBOutlet DWDPAvatarView *avatarView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *subtitleLabel;
 @property (strong, nonatomic) IBOutlet UIView *rightActionView;
@@ -38,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)awakeFromNib {
     [super awakeFromNib];
 
+    self.avatarView.small = YES;
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     self.subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
 }
@@ -53,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.actionView removeFromSuperview];
 
+    self.avatarView.username = contact.username;
     self.titleLabel.text = contact.username;
 
     UIView *actionView = nil;

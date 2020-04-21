@@ -27,7 +27,8 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 @interface DWDPAvatarView : UIView
 
 @property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) NSString *letter;
+@property (nullable, nonatomic, copy) NSString *username;
+@property (nonatomic, assign, getter=isSmall) BOOL small;
 
 @end
 
