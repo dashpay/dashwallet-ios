@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -20,5 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern uint64_t DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
+extern NSInteger DW_MIN_USERNAME_LENGTH;
+extern NSInteger DW_MAX_USERNAME_LENGTH;
 
 NS_ASSUME_NONNULL_END

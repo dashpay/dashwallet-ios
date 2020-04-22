@@ -18,6 +18,7 @@
 #import "DWUserSearchModel.h"
 
 #import "DWContactObject.h"
+#import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -52,7 +53,7 @@ NS_ASSUME_NONNULL_END
 NS_ASSUME_NONNULL_BEGIN
 
 static uint32_t const LIMIT = 100;
-static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.25;
+static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
 
 @interface DWUserSearchModel ()
 
@@ -69,36 +70,48 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {
+    self.searchRequest = nil;
+
     NSCharacterSet *whitespaces = [NSCharacterSet whitespaceCharacterSet];
     NSString *trimmedQuery = [searchQuery stringByTrimmingCharactersInSet:whitespaces] ?: @"";
     if ([self.searchRequest.trimmedQuery isEqualToString:trimmedQuery]) {
         return;
     }
+    if (trimmedQuery.length < DW_MIN_USERNAME_LENGTH) {
+        return;
+    }
+
     self.searchRequest = [[DWUserSearchRequest alloc] initWithTrimmedQuery:trimmedQuery];
 
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearch) object:nil];
-    [self performSelector:@selector(performSearch) withObject:nil afterDelay:SEARCH_DEBOUNCE_DELAY];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performInitialSearch) object:nil];
+    [self performSelector:@selector(performInitialSearch) withObject:nil afterDelay:SEARCH_DEBOUNCE_DELAY];
 }
 
 - (void)willDisplayItemAtIndex:(NSInteger)index {
     const BOOL shouldRequestNextPage = self.searchRequest.items.count >= LIMIT && index >= self.searchRequest.items.count - LIMIT / 4;
     if (shouldRequestNextPage && self.searchRequest.hasNextPage && !self.searchRequest.requestInProgress) {
         self.searchRequest.offset += LIMIT;
-        [self performSearch];
+        [self performSearchAndNotify:NO];
     }
 }
 
 #pragma mark Private
 
-- (void)performSearch {
-    [self performSearchWithQuery:self.searchRequest.trimmedQuery offset:self.searchRequest.offset];
+- (void)performInitialSearch {
+    [self performSearchAndNotify:YES];
+}
+
+- (void)performSearchAndNotify:(BOOL)notify {
+    if (notify) {
+        [self.delegate userSearchModelDidStartSearch:self];
+    }
+
+    if (self.searchRequest) {
+        [self performSearchWithQuery:self.searchRequest.trimmedQuery offset:self.searchRequest.offset];
+    }
 }
 
 - (void)performSearchWithQuery:(NSString *)query offset:(uint32_t)offset {
-    if (query.length == 0) {
-        return;
-    }
-
     self.searchRequest.requestInProgress = YES;
 
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;

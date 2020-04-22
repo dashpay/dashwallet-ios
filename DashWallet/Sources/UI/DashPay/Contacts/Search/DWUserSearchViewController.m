@@ -19,6 +19,7 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DWDashPayConstants.h"
 #import "DWUIKit.h"
 #import "DWUserSearchModel.h"
 #import "DWUserSearchResultViewController.h"
@@ -106,14 +107,34 @@ NS_ASSUME_NONNULL_END
 #pragma mark - UISearchBarDelegate
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
-    [self performSearch];
+    [self.model searchWithQuery:self.searchBar.text];
+
+    if (self.model.trimmedQuery.length == 0) {
+        [self.stateController setPlaceholderState];
+    }
+
+    [self.resultsController dw_detachFromParent];
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     [searchBar resignFirstResponder];
 }
 
+- (BOOL)searchBar:(UISearchBar *)searchBar shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+    NSString *resultText = [searchBar.text stringByReplacingCharactersInRange:range withString:text];
+    return resultText.length <= DW_MAX_USERNAME_LENGTH;
+}
+
 #pragma mark - DWUserSearchModelDelegate
+
+- (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model {
+    if (self.model.trimmedQuery.length == 0) {
+        [self.stateController setPlaceholderState];
+    }
+    else {
+        [self.stateController setSearchingStateWithQuery:self.model.trimmedQuery];
+    }
+}
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWContactItem>> *)items {
     if (items.count > 0) {
@@ -200,19 +221,6 @@ NS_ASSUME_NONNULL_END
         _resultsController.delegate = self;
     }
     return _resultsController;
-}
-
-- (void)performSearch {
-    [self.model searchWithQuery:self.searchBar.text];
-
-    if (self.model.trimmedQuery.length == 0) {
-        [self.stateController setPlaceholderState];
-    }
-    else {
-        [self.stateController setSearchingStateWithQuery:self.model.trimmedQuery];
-    }
-
-    [self.resultsController dw_detachFromParent];
 }
 
 @end

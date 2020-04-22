@@ -449,8 +449,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Maximum";
 
-/* Validation rule */
-"Maximum 24 characters" = "Maximum 24 characters";
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Maximum %ld characters";
 
 /* adjective, security level */
 "Medium" = "Moyen";

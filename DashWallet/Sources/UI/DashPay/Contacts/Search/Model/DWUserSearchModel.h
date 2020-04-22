@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWUserSearchModelDelegate <NSObject>
 
+- (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model;
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWContactItem>> *)items;
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error;
 
@@ -35,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nullable, nonatomic, weak) id<DWUserSearchModelDelegate> delegate;
 
-- (void)searchWithQuery:(nullable NSString *)searchQuery;
+- (void)searchWithQuery:(NSString *)searchQuery;
 - (void)willDisplayItemAtIndex:(NSInteger)index;
 
 @end
