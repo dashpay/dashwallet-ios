@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)willDisplayItemAtIndex:(NSInteger)index {
     const BOOL shouldRequestNextPage = self.searchRequest.items.count >= LIMIT && index >= self.searchRequest.items.count - LIMIT / 4;
-    if (shouldRequestNextPage && self.searchRequest.hasNextPage) {
+    if (shouldRequestNextPage && self.searchRequest.hasNextPage && !self.searchRequest.requestInProgress) {
         self.searchRequest.offset += LIMIT;
         [self performSearch];
     }
