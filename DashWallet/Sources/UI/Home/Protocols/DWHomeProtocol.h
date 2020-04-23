@@ -63,6 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider;
 
+- (void)walletDidWipe;
+
 @end
 
 NS_ASSUME_NONNULL_END

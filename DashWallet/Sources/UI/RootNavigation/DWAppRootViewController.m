@@ -265,6 +265,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
 
+    [self.model.homeModel walletDidWipe];
     // reset main controller stack
     _mainController = nil;
 }

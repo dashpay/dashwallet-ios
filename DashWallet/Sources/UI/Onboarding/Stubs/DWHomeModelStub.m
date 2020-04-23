@@ -135,6 +135,9 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
+- (void)walletDidWipe {
+}
+
 #pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {

@@ -30,6 +30,8 @@ typedef NS_ENUM(NSUInteger, DWUsernameValidationRuleResult) {
     DWUsernameValidationRuleResultInvalid,
     /// Red cross and red text
     DWUsernameValidationRuleResultInvalidCritical,
+    /// Red cross and red text
+    DWUsernameValidationRuleResultError,
     /// View is hidden
     DWUsernameValidationRuleResultHidden,
 };

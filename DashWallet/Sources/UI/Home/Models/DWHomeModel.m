@@ -64,6 +64,7 @@ static BOOL IsJailbroken(void) {
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
@@ -285,6 +286,10 @@ static BOOL IsJailbroken(void) {
     DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
     NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
     [syncModel forceStartSyncingActivity];
+}
+
+- (void)walletDidWipe {
+    self.dashPayModel = [[DWDashPayModel alloc] init];
 }
 
 #pragma mark - DWShortcutsModelDataSource

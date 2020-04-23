@@ -46,7 +46,8 @@ NS_ASSUME_NONNULL_END
 
         NSMutableDictionary<NSNumber *, NSString *> *titleByResult = [NSMutableDictionary dictionary];
         titleByResult[@(DWUsernameValidationRuleResultLoading)] = NSLocalizedString(@"Validating username…", nil);
-        titleByResult[@(DWUsernameValidationRuleResultValid)] = NSLocalizedString(@"Validating username done.", nil);
+        titleByResult[@(DWUsernameValidationRuleResultValid)] = NSLocalizedString(@"Validating username done", nil);
+        titleByResult[@(DWUsernameValidationRuleResultError)] = NSLocalizedString(@"Validating username failed", nil);
         titleByResult[@(DWUsernameValidationRuleResultInvalidCritical)] = NSLocalizedString(@"Validating username failed: username is taken.", nil);
         self.titleByResult = titleByResult;
     }
@@ -106,7 +107,7 @@ NS_ASSUME_NONNULL_END
                           }
 
                           if (error) {
-                              strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
+                              strongSelf.validationResult = DWUsernameValidationRuleResultError;
                           }
                           else {
                               DSBlockchainIdentity *blockchainIdentity = blockchainIdentities.firstObject;

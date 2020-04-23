@@ -119,6 +119,7 @@ NS_ASSUME_NONNULL_END
             [self.activityIndicatorView stopAnimating];
             break;
         case DWUsernameValidationRuleResultInvalidCritical:
+        case DWUsernameValidationRuleResultError:
             self.hidden = NO;
             self.iconImageView.image = [UIImage imageNamed:@"validation_cross"];
             self.iconImageView.tintColor = nil;
