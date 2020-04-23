@@ -72,7 +72,7 @@ static NSArray<UIColor *> *OrbitColors(void) {
     }
 }
 
-static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable usernameLetter) {
+static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable username) {
     CGSize size;
     CGSize avatarSize;
     if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
@@ -113,9 +113,9 @@ static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable usernameLetter) {
 
         {
             DWPlanetObject *planet = [[DWPlanetObject alloc] init];
-            if (usernameLetter.length > 0) {
+            if (username.length > 0) {
                 DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, avatarSize}];
-                avatarView.letter = usernameLetter;
+                avatarView.username = username;
                 planet.customView = avatarView;
             }
             else {
@@ -181,9 +181,9 @@ static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable usernameLetter) {
 
         {
             DWPlanetObject *planet = [[DWPlanetObject alloc] init];
-            if (usernameLetter.length > 0) {
+            if (username.length > 0) {
                 DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, avatarSize}];
-                avatarView.letter = usernameLetter;
+                avatarView.username = username;
                 planet.customView = avatarView;
             }
             else {
@@ -297,8 +297,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configurePlanetsViewWithUsername:(NSString *)username {
-    NSString *firstLetter = [username substringToIndex:1];
-    self.planetaryView.planets = Planets(firstLetter);
+    self.planetaryView.planets = Planets(username);
 }
 
 - (void)showInitialAnimation {

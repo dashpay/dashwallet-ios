@@ -20,3 +20,6 @@
 #import <DashSync/DashSync.h>
 
 uint64_t DWDP_MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 100); // 0.01 Dash
+
+NSInteger DW_MIN_USERNAME_LENGTH = 3;
+NSInteger DW_MAX_USERNAME_LENGTH = 24;

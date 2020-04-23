@@ -20,6 +20,7 @@
 #import "DWContactProfileViewController.h"
 #import "DWContactsContentView.h"
 #import "DWContactsModel.h"
+#import "DWUserSearchViewController.h"
 
 @interface DWContactsViewController () <DWContactsContentViewDelegate>
 
@@ -54,14 +55,27 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    // TODO: localize
-    self.title = @"Contacts";
+    self.title = NSLocalizedString(@"Contacts", nil);
+
+    UIImage *image = [[UIImage imageNamed:@"dp_add_contact"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithImage:image
+                                                               style:UIBarButtonItemStylePlain
+                                                              target:self
+                                                              action:@selector(addContactButtonAction)];
+    self.navigationItem.rightBarButtonItem = button;
 
     self.view.model = self.model;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - Actions
+
+- (void)addContactButtonAction {
+    DWUserSearchViewController *controller = [[DWUserSearchViewController alloc] init];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - DWContactsContentViewDelegate

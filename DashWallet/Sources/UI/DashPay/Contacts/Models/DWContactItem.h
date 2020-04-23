@@ -20,6 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWContactItemDisplayType) {
+    DWContactItemDisplayType_Search,
     DWContactItemDisplayType_Contact,
     DWContactItemDisplayType_IncomingRequest,
     DWContactItemDisplayType_OutgoingRequest,

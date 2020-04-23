@@ -53,6 +53,13 @@ NS_ASSUME_NONNULL_END
     self.usernameLabel.text = self.contact.username;
 
     switch (self.contact.displayType) {
+        case DWContactItemDisplayType_Search: {
+            self.payButton.hidden = YES;
+            self.incomingContactActionsView.hidden = YES;
+            self.outgoingStatusLabel.hidden = YES;
+
+            break;
+        }
         case DWContactItemDisplayType_Contact: {
             self.incomingContactActionsView.hidden = YES;
             self.outgoingStatusLabel.hidden = YES;

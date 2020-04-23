@@ -21,6 +21,7 @@
 
 #import "DWBaseActionButtonViewController.h"
 #import "DWBlueActionButton.h"
+#import "DWDashPayConstants.h"
 #import "DWTextField.h"
 #import "DWUIKit.h"
 #import "DWUsernameValidationView.h"
@@ -202,7 +203,7 @@ NS_ASSUME_NONNULL_END
                         return DWUsernameValidationRuleResultEmpty;
                     }
 
-                    return length >= 3 ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
+                    return length >= DW_MIN_USERNAME_LENGTH ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
                 }],
             [[DWUsernameValidationRule alloc]
                   initWithTitle:NSLocalizedString(@"Letters and numbers only", @"Validation rule")
@@ -217,9 +218,9 @@ NS_ASSUME_NONNULL_END
                     return hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
                 }],
             [[DWUsernameValidationRule alloc]
-                  initWithTitle:NSLocalizedString(@"Maximum 24 characters", @"Validation rule")
+                  initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Maximum %ld characters", @"Validation rule: Maximum 24 characters"), DW_MAX_USERNAME_LENGTH]
                 validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
-                    return text.length < 24 ? DWUsernameValidationRuleResultHidden : DWUsernameValidationRuleResultInvalid;
+                    return text.length <= DW_MAX_USERNAME_LENGTH ? DWUsernameValidationRuleResultHidden : DWUsernameValidationRuleResultInvalid;
                 }],
         ];
     }

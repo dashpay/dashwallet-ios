@@ -61,10 +61,28 @@
     return self.letterLabel.text;
 }
 
-- (void)setLetter:(NSString *)letter {
-    self.letterLabel.text = [letter uppercaseString];
+- (void)setUsername:(NSString *)username {
+    if (username.length >= 1) {
+        NSString *firstLetter = [username substringToIndex:1];
+        self.letterLabel.text = [firstLetter uppercaseString];
 
-    [self updateBackgroundColor];
+        [self updateBackgroundColor];
+    }
+    else {
+        self.letterLabel.text = nil;
+        self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
+    }
+}
+
+- (void)setSmall:(BOOL)small {
+    _small = small;
+
+    if (small) {
+        self.letterLabel.font = [UIFont dw_regularFontOfSize:20];
+    }
+    else {
+        self.letterLabel.font = [UIFont dw_regularFontOfSize:30];
+    }
 }
 
 #pragma mark - Private

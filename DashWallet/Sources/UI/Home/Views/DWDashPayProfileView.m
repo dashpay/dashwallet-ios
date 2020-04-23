@@ -68,10 +68,7 @@ NS_ASSUME_NONNULL_END
 - (void)setUsername:(NSString *)username {
     _username = username;
 
-    if (username.length > 0) {
-        NSString *firstLetter = [username substringToIndex:1];
-        self.avatarView.letter = firstLetter;
-    }
+    self.avatarView.username = username;
 }
 
 @end
