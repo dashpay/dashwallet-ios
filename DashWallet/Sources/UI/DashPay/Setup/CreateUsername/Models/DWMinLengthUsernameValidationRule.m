@@ -15,20 +15,25 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import "DWMinLengthUsernameValidationRule.h"
 
-#import "DWUsernameValidationRule.h"
+#import "DWDashPayConstants.h"
+#import "DWUsernameValidationRule+Protected.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DWMinLengthUsernameValidationRule
 
-@interface DWUsernameValidationView : KVOUIView
+- (NSString *)title {
+    return NSLocalizedString(@"Minimum 3 characters", @"Validation rule");
+}
 
-@property (nullable, nonatomic, strong) DWUsernameValidationRule *rule;
+- (void)validateText:(NSString *_Nullable)text {
+    const NSUInteger length = text.length;
+    if (length == 0) {
+        self.validationResult = DWUsernameValidationRuleResultEmpty;
+        return;
+    }
 
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+    self.validationResult = length >= DW_MIN_USERNAME_LENGTH ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

@@ -882,6 +882,15 @@
 "Used at IP address" = "IP adresinde kullanıldı";
 
 /* No comment provided by engineer. */
+"Validating username done." = "Validating username done.";
+
+/* No comment provided by engineer. */
+"Validating username failed: username is taken." = "Validating username failed: username is taken.";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Validating username…";
+
+/* No comment provided by engineer. */
 "Verified Successfully" = "Başarıyla Doğrulandı";
 
 /* No comment provided by engineer. */

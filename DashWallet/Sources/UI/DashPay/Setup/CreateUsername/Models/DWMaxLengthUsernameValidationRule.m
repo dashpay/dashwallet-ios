@@ -15,20 +15,19 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import "DWMaxLengthUsernameValidationRule.h"
 
-#import "DWUsernameValidationRule.h"
+#import "DWDashPayConstants.h"
+#import "DWUsernameValidationRule+Protected.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DWMaxLengthUsernameValidationRule
 
-@interface DWUsernameValidationView : KVOUIView
+- (NSString *)title {
+    return [NSString stringWithFormat:NSLocalizedString(@"Maximum %ld characters", @"Validation rule: Maximum 24 characters"), DW_MAX_USERNAME_LENGTH];
+}
 
-@property (nullable, nonatomic, strong) DWUsernameValidationRule *rule;
-
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)validateText:(NSString *)text {
+    self.validationResult = text.length <= DW_MAX_USERNAME_LENGTH ? DWUsernameValidationRuleResultHidden : DWUsernameValidationRuleResultInvalid;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
