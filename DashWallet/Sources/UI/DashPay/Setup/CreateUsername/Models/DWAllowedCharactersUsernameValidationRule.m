@@ -31,8 +31,8 @@
         return;
     }
 
-    NSCharacterSet *alllowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
-    NSCharacterSet *illegalChars = [alllowedCharacterSet invertedSet];
+    NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
+    NSCharacterSet *illegalChars = [allowedCharacterSet invertedSet];
     BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:illegalChars].location != NSNotFound;
     self.validationResult = hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
 }
