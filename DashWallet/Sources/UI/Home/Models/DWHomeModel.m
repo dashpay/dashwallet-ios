@@ -309,6 +309,10 @@ static BOOL IsJailbroken(void) {
         return NO;
     }
 
+    if (self.dashPayModel.registrationCompleted) {
+        return NO;
+    }
+
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;

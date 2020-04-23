@@ -107,7 +107,8 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.registrationStatus)
                       with:^(typeof(self) self, id value) {
                           DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
-                          if (status.state == DWDPRegistrationState_Done) {
+                          const BOOL completed = self.model.dashPayModel.registrationCompleted;
+                          if (status.state == DWDPRegistrationState_Done || completed) {
                               self.profileView.username = self.model.dashPayModel.username;
                               self.profileView.hidden = NO;
                           }

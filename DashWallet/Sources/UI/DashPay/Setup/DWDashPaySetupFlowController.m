@@ -269,6 +269,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWRegistrationCompletedViewControllerDelegate
 
 - (void)registrationCompletedViewControllerAction:(UIViewController *)controller {
+    [self.dashPayModel completeRegistration];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

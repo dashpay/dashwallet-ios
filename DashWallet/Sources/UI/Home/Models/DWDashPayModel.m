@@ -47,9 +47,11 @@ NS_ASSUME_NONNULL_END
         if (blockchainIdentity) {
             NSAssert(username != nil, @"Username is invalid");
 
-            DWDPRegistrationState state = [self stateForCompletedSteps:blockchainIdentity.stepsCompleted];
-            const BOOL failed = state != DWDPRegistrationState_Done;
-            _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:failed username:username];
+            if (![DWGlobalOptions sharedInstance].dashpayRegistrationCompleted) {
+                DWDPRegistrationState state = [self stateForCompletedSteps:blockchainIdentity.stepsCompleted];
+                const BOOL failed = state != DWDPRegistrationState_Done;
+                _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:failed username:username];
+            }
         }
     }
     return self;
@@ -57,6 +59,10 @@ NS_ASSUME_NONNULL_END
 
 - (NSString *)username {
     return [DWGlobalOptions sharedInstance].dashpayUsername;
+}
+
+- (BOOL)registrationCompleted {
+    return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
 }
 
 - (void)createUsername:(NSString *)username {
@@ -93,6 +99,12 @@ NS_ASSUME_NONNULL_END
     NSAssert(self.username != nil, @"Username is invalid.");
 
     [self createUsername:self.username];
+}
+
+- (void)completeRegistration {
+    [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
+    self.registrationStatus = nil;
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
 }
 
 #pragma mark - Private
