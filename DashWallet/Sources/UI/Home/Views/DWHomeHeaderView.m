@@ -106,16 +106,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
         [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.registrationStatus)
                       with:^(typeof(self) self, id value) {
-                          DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
-                          const BOOL completed = self.model.dashPayModel.registrationCompleted;
-                          if (status.state == DWDPRegistrationState_Done || completed) {
-                              self.profileView.username = self.model.dashPayModel.username;
-                              self.profileView.hidden = NO;
-                          }
-                          else {
-                              self.profileView.hidden = YES;
-                          }
-                          [self.delegate homeHeaderViewDidUpdateContents:self];
+                          [self updateProfileView];
                       }];
     }
     return self;
@@ -126,6 +117,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
     self.balancePayReceiveButtonsView.model = model;
     self.shortcutsView.model = model.shortcutsModel;
+    [self updateProfileView];
 }
 
 - (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
@@ -173,6 +165,19 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 }
 
 #pragma mark - Private
+
+- (void)updateProfileView {
+    DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
+    const BOOL completed = self.model.dashPayModel.registrationCompleted;
+    if (status.state == DWDPRegistrationState_Done || completed) {
+        self.profileView.username = self.model.dashPayModel.username;
+        self.profileView.hidden = NO;
+    }
+    else {
+        self.profileView.hidden = YES;
+    }
+    [self.delegate homeHeaderViewDidUpdateContents:self];
+}
 
 - (void)hideSyncView {
     self.syncView.hidden = YES;

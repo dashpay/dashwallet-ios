@@ -45,6 +45,11 @@ NS_ASSUME_NONNULL_END
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
 
         if (blockchainIdentity) {
+            if (username == nil) {
+                [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentUsername;
+                username = blockchainIdentity.currentUsername;
+            }
+
             NSAssert(username != nil, @"Username is invalid");
 
             if (![DWGlobalOptions sharedInstance].dashpayRegistrationCompleted) {
@@ -105,6 +110,19 @@ NS_ASSUME_NONNULL_END
     [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
     self.registrationStatus = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
+}
+
+- (void)updateUsernameStatus {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
+
+    [self willChangeValueForKey:DW_KEYPATH(self, username)];
+    if (blockchainIdentity) {
+        if (self.username == nil) {
+            [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentUsername;
+        }
+    }
+    [self didChangeValueForKey:DW_KEYPATH(self, username)];
 }
 
 #pragma mark - Private

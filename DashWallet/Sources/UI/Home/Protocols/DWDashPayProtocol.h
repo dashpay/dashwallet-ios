@@ -33,6 +33,7 @@ extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 - (void)createUsername:(NSString *)username;
 - (void)retry;
 - (void)completeRegistration;
+- (void)updateUsernameStatus;
 
 @end
 
