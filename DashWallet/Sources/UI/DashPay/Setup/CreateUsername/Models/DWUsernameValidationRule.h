@@ -20,22 +20,28 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWUsernameValidationRuleResult) {
+    /// No icon, black text
     DWUsernameValidationRuleResultEmpty,
+    /// activity indicator, black text
+    DWUsernameValidationRuleResultLoading,
+    /// Checkmark, black text
     DWUsernameValidationRuleResultValid,
+    /// Red cross and black text
     DWUsernameValidationRuleResultInvalid,
+    /// Red cross and red text
+    DWUsernameValidationRuleResultInvalidCritical,
+    /// Red cross and red text
+    DWUsernameValidationRuleResultError,
+    /// View is hidden
     DWUsernameValidationRuleResultHidden,
 };
 
 @interface DWUsernameValidationRule : NSObject
 
 @property (readonly, nonatomic, copy) NSString *title;
+@property (readonly, nonatomic, assign) DWUsernameValidationRuleResult validationResult;
 
-- (instancetype)initWithTitle:(NSString *)title
-              validationBlock:(DWUsernameValidationRuleResult (^)(NSString *_Nullable))validationBlock;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-
-- (DWUsernameValidationRuleResult)validateText:(NSString *_Nullable)text;
+- (void)validateText:(NSString *_Nullable)text;
 
 @end
 

@@ -19,9 +19,13 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DWAllowedCharactersUsernameValidationRule.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWBlueActionButton.h"
+#import "DWCheckExistenceUsernameValidationRule.h"
 #import "DWDashPayConstants.h"
+#import "DWMaxLengthUsernameValidationRule.h"
+#import "DWMinLengthUsernameValidationRule.h"
 #import "DWTextField.h"
 #import "DWUIKit.h"
 #import "DWUsernameValidationView.h"
@@ -32,9 +36,7 @@ static CGFloat const TEXTFIELD_MAX_HEIGHT = 56.0;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWInputUsernameViewController () <UITextFieldDelegate>
-
-@property (null_resettable, nonatomic, copy) NSArray<DWUsernameValidationRule *> *validators;
+@interface DWInputUsernameViewController () <UITextFieldDelegate, DWCheckExistenceUsernameValidationRuleDelegate>
 
 @property (null_resettable, nonatomic, strong) UITextField *textField;
 @property (null_resettable, nonatomic, strong) UIStackView *validationContentView;
@@ -42,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) UIButton *registerButton;
 
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentBottomConstraint;
+
+@property (null_resettable, nonatomic, strong) DWCheckExistenceUsernameValidationRule *checkExistenceValidator;
 
 @end
 
@@ -62,15 +66,24 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    for (DWUsernameValidationRule *validationRule in self.validators) {
+    NSArray<DWUsernameValidationRule *> *validators = @[
+        [[DWMinLengthUsernameValidationRule alloc] init],
+        [[DWAllowedCharactersUsernameValidationRule alloc] init],
+        [[DWMaxLengthUsernameValidationRule alloc] init],
+        self.checkExistenceValidator,
+    ];
+
+    NSMutableArray<DWUsernameValidationView *> *validationViews = [NSMutableArray array];
+    for (DWUsernameValidationRule *validationRule in validators) {
         DWUsernameValidationView *validationView = [[DWUsernameValidationView alloc] initWithFrame:CGRectZero];
         validationView.translatesAutoresizingMaskIntoConstraints = NO;
-        validationView.title = validationRule.title;
-        [validationView setValidationResult:[validationRule validateText:nil]];
+        validationView.rule = validationRule;
         [self.validationContentView addArrangedSubview:validationView];
+        [validationViews addObject:validationView];
 
         [validationView.heightAnchor constraintLessThanOrEqualToConstant:26.0].active = YES;
     }
+    self.validationViews = validationViews;
 
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ self.validationContentView ]];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -152,22 +165,26 @@ NS_ASSUME_NONNULL_END
         string = @"";
     }
     NSString *text = [[self.textField.text stringByReplacingCharactersInRange:range withString:string] lowercaseString];
-    BOOL canRegister = YES;
-    for (NSInteger i = 0; i < self.validators.count; i++) {
-        DWUsernameValidationRule *validator = self.validators[i];
-        DWUsernameValidationView *validationView = self.validationContentView.arrangedSubviews[i];
-        const DWUsernameValidationRuleResult result = [validator validateText:text];
-        [validationView setValidationResult:result];
-        canRegister &= result != DWUsernameValidationRuleResultInvalid && result != DWUsernameValidationRuleResultEmpty;
+    for (DWUsernameValidationView *validationView in self.validationViews) {
+        DWUsernameValidationRule *validator = validationView.rule;
+        [validator validateText:text];
     }
-    self.registerButton.enabled = canRegister;
+    self.registerButton.enabled = NO;
     textField.text = text;
 
-    if (isDone && canRegister) {
-        [self registerButtonAction:self.registerButton];
-    }
-
     return NO;
+}
+
+#pragma mark - DWCheckExistenceUsernameValidationRuleDelegate
+
+- (void)checkExistenceUsernameValidationRuleDidValidate:(DWCheckExistenceUsernameValidationRule *)rule {
+    BOOL canRegister = YES;
+    for (DWUsernameValidationView *validationView in self.validationViews) {
+        DWUsernameValidationRule *validator = validationView.rule;
+        DWUsernameValidationRuleResult result = validator.validationResult;
+        canRegister &= result != DWUsernameValidationRuleResultInvalid && result != DWUsernameValidationRuleResultInvalidCritical && result != DWUsernameValidationRuleResultEmpty;
+    }
+    self.registerButton.enabled = canRegister;
 }
 
 #pragma mark - Keyboard
@@ -190,42 +207,6 @@ NS_ASSUME_NONNULL_END
     else {
         self.validationContentView.axis = UILayoutConstraintAxisVertical;
     }
-}
-
-- (NSArray<DWUsernameValidationRule *> *)validators {
-    if (_validators == nil) {
-        _validators = @[
-            [[DWUsernameValidationRule alloc]
-                  initWithTitle:NSLocalizedString(@"Minimum 3 characters", @"Validation rule")
-                validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
-                    const NSUInteger length = text.length;
-                    if (length == 0) {
-                        return DWUsernameValidationRuleResultEmpty;
-                    }
-
-                    return length >= DW_MIN_USERNAME_LENGTH ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
-                }],
-            [[DWUsernameValidationRule alloc]
-                  initWithTitle:NSLocalizedString(@"Letters and numbers only", @"Validation rule")
-                validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
-                    if (text.length == 0) {
-                        return DWUsernameValidationRuleResultEmpty;
-                    }
-
-                    NSCharacterSet *alllowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
-                    NSCharacterSet *illegalChars = [alllowedCharacterSet invertedSet];
-                    BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:illegalChars].location != NSNotFound;
-                    return hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
-                }],
-            [[DWUsernameValidationRule alloc]
-                  initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Maximum %ld characters", @"Validation rule: Maximum 24 characters"), DW_MAX_USERNAME_LENGTH]
-                validationBlock:^DWUsernameValidationRuleResult(NSString *_Nullable text) {
-                    return text.length <= DW_MAX_USERNAME_LENGTH ? DWUsernameValidationRuleResultHidden : DWUsernameValidationRuleResultInvalid;
-                }],
-        ];
-    }
-
-    return _validators;
 }
 
 - (UITextField *)textField {
@@ -277,6 +258,13 @@ NS_ASSUME_NONNULL_END
     }
 
     return _registerButton;
+}
+
+- (DWCheckExistenceUsernameValidationRule *)checkExistenceValidator {
+    if (_checkExistenceValidator == nil) {
+        _checkExistenceValidator = [[DWCheckExistenceUsernameValidationRule alloc] initWithDelegate:self];
+    }
+    return _checkExistenceValidator;
 }
 
 #pragma mark - Actions

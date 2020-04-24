@@ -156,6 +156,10 @@
 		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
 		2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
+		2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */; };
+		2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */; };
+		2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */; };
+		2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */; };
 		2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */; };
 		2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */; };
 		2A60C9452444BF3A00AF72CF /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A60C9442444BF3900AF72CF /* DWConfirmUsernameContentView.xib */; };
@@ -810,6 +814,15 @@
 		2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseLegacyViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseLegacyViewController.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
+		2A5BD5902451D68200688A8D /* DWMinLengthUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMinLengthUsernameValidationRule.h; sourceTree = "<group>"; };
+		2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMinLengthUsernameValidationRule.m; sourceTree = "<group>"; };
+		2A5BD5932451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAllowedCharactersUsernameValidationRule.h; sourceTree = "<group>"; };
+		2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAllowedCharactersUsernameValidationRule.m; sourceTree = "<group>"; };
+		2A5BD5962451DD0700688A8D /* DWMaxLengthUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMaxLengthUsernameValidationRule.h; sourceTree = "<group>"; };
+		2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMaxLengthUsernameValidationRule.m; sourceTree = "<group>"; };
+		2A5BD5992451F1A100688A8D /* DWUsernameValidationRule+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWUsernameValidationRule+Protected.h"; sourceTree = "<group>"; };
+		2A5BD59C2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCheckExistenceUsernameValidationRule.h; sourceTree = "<group>"; };
+		2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCheckExistenceUsernameValidationRule.m; sourceTree = "<group>"; };
 		2A5E4545243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationStatusTableViewCell.h; sourceTree = "<group>"; };
 		2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationStatusTableViewCell.m; sourceTree = "<group>"; };
 		2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationStatusTableViewCell.xib; sourceTree = "<group>"; };
@@ -2712,8 +2725,17 @@
 		2A9E7DCB23F6C00C00CDA1EE /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2A5BD5932451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.h */,
+				2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */,
+				2A5BD59C2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.h */,
+				2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */,
+				2A5BD5962451DD0700688A8D /* DWMaxLengthUsernameValidationRule.h */,
+				2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */,
+				2A5BD5902451D68200688A8D /* DWMinLengthUsernameValidationRule.h */,
+				2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */,
 				2A9E7DCC23F6C01A00CDA1EE /* DWUsernameValidationRule.h */,
 				2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */,
+				2A5BD5992451F1A100688A8D /* DWUsernameValidationRule+Protected.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -4406,15 +4428,18 @@
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
+				2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				2ACCD8ED231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
+				2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */,
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */,
+				2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */,
 				2A00AB2123D10A7D00DC4745 /* DWContactsDataSourceObject.m in Sources */,
 				2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
@@ -4434,6 +4459,7 @@
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
+				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
 				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,

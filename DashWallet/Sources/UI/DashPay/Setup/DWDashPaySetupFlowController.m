@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSLayoutConstraint *headerHeightConstraint;
 
 @property (nonatomic, strong) DWContainerViewController *containerController;
+@property (null_resettable, nonatomic, strong) DWCreateUsernameViewController *createUsernameViewController;
 
 @end
 
@@ -188,6 +189,16 @@ NS_ASSUME_NONNULL_END
     return _headerView;
 }
 
+- (DWCreateUsernameViewController *)createUsernameViewController {
+    if (_createUsernameViewController == nil) {
+        DWCreateUsernameViewController *controller =
+            [[DWCreateUsernameViewController alloc] initWithDashPayModel:self.dashPayModel];
+        controller.delegate = self;
+        _createUsernameViewController = controller;
+    }
+    return _createUsernameViewController;
+}
+
 - (void)showPendingController:(NSString *)username {
     DWUsernamePendingViewController *controller = [[DWUsernamePendingViewController alloc] init];
     controller.username = username;
@@ -200,9 +211,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)showCreateUsernameController {
-    DWCreateUsernameViewController *controller =
-        [[DWCreateUsernameViewController alloc] initWithDashPayModel:self.dashPayModel];
-    controller.delegate = self;
+    DWCreateUsernameViewController *controller = self.createUsernameViewController;
     __weak DWCreateUsernameViewController *weakController = controller;
     self.headerView.titleBuilder = ^NSAttributedString *_Nonnull {
         return [weakController attributedTitle];
@@ -260,6 +269,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWRegistrationCompletedViewControllerDelegate
 
 - (void)registrationCompletedViewControllerAction:(UIViewController *)controller {
+    [self.dashPayModel completeRegistration];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

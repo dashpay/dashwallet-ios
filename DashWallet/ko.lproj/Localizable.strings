@@ -882,6 +882,18 @@
 "Used at IP address" = "이 IP 주소에서 사용됨";
 
 /* No comment provided by engineer. */
+"Validating username done" = "Validating username done";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Validating username failed";
+
+/* No comment provided by engineer. */
+"Validating username failed: username is taken." = "Validating username failed: username is taken.";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Validating username…";
+
+/* No comment provided by engineer. */
 "Verified Successfully" = "성공적으로 인증되었습니다";
 
 /* No comment provided by engineer. */

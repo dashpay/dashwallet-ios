@@ -39,6 +39,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
 @dynamic dashpayUsername;
+@dynamic dashpayRegistrationCompleted;
 
 #pragma mark - Init
 
@@ -112,6 +113,8 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
+    self.dashpayUsername = nil;
+    self.dashpayRegistrationCompleted = NO;
 }
 
 @end

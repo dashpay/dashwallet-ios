@@ -58,6 +58,7 @@ static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
 @interface DWUserSearchModel ()
 
 @property (nullable, nonatomic, strong) DWUserSearchRequest *searchRequest;
+@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
 
 @end
 
@@ -70,6 +71,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performInitialSearch) object:nil];
+
+    [self.request cancel];
+    self.request = nil;
+
     self.searchRequest = nil;
 
     NSCharacterSet *whitespaces = [NSCharacterSet whitespaceCharacterSet];
@@ -83,7 +89,6 @@ NS_ASSUME_NONNULL_END
 
     self.searchRequest = [[DWUserSearchRequest alloc] initWithTrimmedQuery:trimmedQuery];
 
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performInitialSearch) object:nil];
     [self performSelector:@selector(performInitialSearch) withObject:nil afterDelay:SEARCH_DEBOUNCE_DELAY];
 }
 
@@ -116,7 +121,7 @@ NS_ASSUME_NONNULL_END
 
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
-    [manager
+    self.request = [manager
         searchIdentitiesByNamePrefix:query
                               offset:offset
                                limit:LIMIT

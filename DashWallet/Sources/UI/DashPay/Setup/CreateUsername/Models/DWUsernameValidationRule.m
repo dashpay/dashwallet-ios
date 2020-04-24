@@ -15,32 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWUsernameValidationRule.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWUsernameValidationRule ()
-
-@property (nonatomic, copy) DWUsernameValidationRuleResult (^validationBlock)(NSString *_Nullable text);
-
-@end
-
-NS_ASSUME_NONNULL_END
+#import "DWUsernameValidationRule+Protected.h"
 
 @implementation DWUsernameValidationRule
 
-- (instancetype)initWithTitle:(NSString *)title
-              validationBlock:(DWUsernameValidationRuleResult (^)(NSString *_Nullable))validationBlock {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _title = [title copy];
-        _validationBlock = [validationBlock copy];
+        [self validateText:nil];
     }
     return self;
 }
 
-- (DWUsernameValidationRuleResult)validateText:(NSString *_Nullable)text {
-    return self.validationBlock(text);
+- (void)validateText:(NSString *_Nullable)text {
+    NSAssert(NO, @"To be overriden");
 }
 
 @end

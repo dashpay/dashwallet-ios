@@ -15,19 +15,13 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
-
 #import "DWUsernameValidationRule.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUsernameValidationView : KVOUIView
+@interface DWUsernameValidationRule ()
 
-@property (nullable, nonatomic, strong) DWUsernameValidationRule *rule;
-
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+@property (nonatomic, assign) DWUsernameValidationRuleResult validationResult;
 
 @end
 

@@ -25,8 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUsernameValidationView ()
 
-@property (nonatomic, strong) UIImageView *iconImageView;
-@property (nonatomic, strong) UILabel *titleLabel;
+@property (readonly, nonatomic, strong) UIImageView *iconImageView;
+@property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
+@property (readonly, nonatomic, strong) UILabel *titleLabel;
 
 @end
 
@@ -45,6 +46,12 @@ NS_ASSUME_NONNULL_END
         [self addSubview:iconImageView];
         _iconImageView = iconImageView;
 
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+        activityIndicatorView.color = [UIColor dw_darkTitleColor];
+        [self addSubview:activityIndicatorView];
+        _activityIndicatorView = activityIndicatorView;
+
         UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
         titleLabel.backgroundColor = self.backgroundColor;
@@ -61,45 +68,70 @@ NS_ASSUME_NONNULL_END
             [iconImageView.widthAnchor constraintEqualToConstant:ICON_SIZE],
             [iconImageView.heightAnchor constraintEqualToConstant:ICON_SIZE],
 
+            [activityIndicatorView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [activityIndicatorView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+
             [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
             [titleLabel.leadingAnchor constraintEqualToAnchor:iconImageView.trailingAnchor
                                                      constant:5.0],
             [self.trailingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor],
             [self.bottomAnchor constraintEqualToAnchor:titleLabel.bottomAnchor],
         ]];
+
+        [self mvvm_observe:DW_KEYPATH(self, rule.validationResult)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          [self setValidationResult:self.rule.validationResult];
+                      }];
     }
     return self;
 }
 
-- (NSString *)title {
-    return self.titleLabel.text;
-}
-
-- (void)setTitle:(NSString *)title {
-    self.titleLabel.text = title;
-}
-
 - (void)setValidationResult:(DWUsernameValidationRuleResult)validationResult {
+    self.titleLabel.text = self.rule.title;
+
     switch (validationResult) {
         case DWUsernameValidationRuleResultEmpty:
             self.hidden = NO;
             self.iconImageView.image = nil;
             self.iconImageView.tintColor = nil;
+            self.titleLabel.textColor = [UIColor dw_darkTitleColor];
+            [self.activityIndicatorView stopAnimating];
+            break;
+        case DWUsernameValidationRuleResultLoading:
+            self.hidden = NO;
+            self.iconImageView.image = nil;
+            self.iconImageView.tintColor = nil;
+            self.titleLabel.textColor = [UIColor dw_darkTitleColor];
+            [self.activityIndicatorView startAnimating];
             break;
         case DWUsernameValidationRuleResultValid:
             self.hidden = NO;
             self.iconImageView.image = [UIImage imageNamed:@"validation_checkmark"];
             self.iconImageView.tintColor = [UIColor dw_darkTitleColor];
+            self.titleLabel.textColor = [UIColor dw_darkTitleColor];
+            [self.activityIndicatorView stopAnimating];
             break;
         case DWUsernameValidationRuleResultInvalid:
             self.hidden = NO;
             self.iconImageView.image = [UIImage imageNamed:@"validation_cross"];
             self.iconImageView.tintColor = nil;
+            self.titleLabel.textColor = [UIColor dw_darkTitleColor];
+            [self.activityIndicatorView stopAnimating];
+            break;
+        case DWUsernameValidationRuleResultInvalidCritical:
+        case DWUsernameValidationRuleResultError:
+            self.hidden = NO;
+            self.iconImageView.image = [UIImage imageNamed:@"validation_cross"];
+            self.iconImageView.tintColor = nil;
+            self.titleLabel.textColor = [UIColor dw_redColor];
+            [self.activityIndicatorView stopAnimating];
             break;
         case DWUsernameValidationRuleResultHidden:
             self.hidden = YES;
             self.iconImageView.image = nil;
             self.iconImageView.tintColor = nil;
+            self.titleLabel.textColor = [UIColor dw_darkTitleColor];
+            [self.activityIndicatorView stopAnimating];
             break;
     }
 }

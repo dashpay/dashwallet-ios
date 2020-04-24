@@ -882,6 +882,18 @@
 "Used at IP address" = "Digunakan di alamat IP";
 
 /* No comment provided by engineer. */
+"Validating username done" = "Validating username done";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Validating username failed";
+
+/* No comment provided by engineer. */
+"Validating username failed: username is taken." = "Validating username failed: username is taken.";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Validating username…";
+
+/* No comment provided by engineer. */
 "Verified Successfully" = "Berhasil Diverifikasi";
 
 /* No comment provided by engineer. */

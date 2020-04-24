@@ -64,6 +64,7 @@ static BOOL IsJailbroken(void) {
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
@@ -287,6 +288,10 @@ static BOOL IsJailbroken(void) {
     [syncModel forceStartSyncingActivity];
 }
 
+- (void)walletDidWipe {
+    self.dashPayModel = [[DWDashPayModel alloc] init];
+}
+
 #pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {
@@ -301,6 +306,10 @@ static BOOL IsJailbroken(void) {
 
     // username is registered / in progress
     if (self.dashPayModel.registrationStatus != nil) {
+        return NO;
+    }
+
+    if (self.dashPayModel.registrationCompleted) {
         return NO;
     }
 
