@@ -356,6 +356,11 @@ static BOOL IsJailbroken(void) {
 - (void)syncStateChangedNotification {
     [self updateBalance];
     [self reloadTxDataSource];
+
+    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
+    if (isSynced) {
+        [self.dashPayModel updateUsernameStatus];
+    }
 }
 
 - (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
