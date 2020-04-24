@@ -19,7 +19,26 @@
 
 #import "DWUsernameValidationRule+Protected.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWAllowedCharactersUsernameValidationRule ()
+
+@property (readonly, strong, nonatomic) NSCharacterSet *illegalChars;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation DWAllowedCharactersUsernameValidationRule
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
+        _illegalChars = [allowedCharacterSet invertedSet];
+    }
+    return self;
+}
 
 - (NSString *)title {
     return NSLocalizedString(@"Letters and numbers only", @"Validation rule");
@@ -31,9 +50,7 @@
         return;
     }
 
-    NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
-    NSCharacterSet *illegalChars = [allowedCharacterSet invertedSet];
-    BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:illegalChars].location != NSNotFound;
+    BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:self.illegalChars].location != NSNotFound;
     self.validationResult = hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
 }
 
