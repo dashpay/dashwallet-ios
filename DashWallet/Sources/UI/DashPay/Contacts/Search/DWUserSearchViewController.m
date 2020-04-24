@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:self.contentView];
 
     [NSLayoutConstraint activateConstraints:@[
-        [self.searchBar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [self.searchBar.topAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.topAnchor],
         [self.searchBar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [self.view.trailingAnchor constraintEqualToAnchor:self.searchBar.trailingAnchor],
 
@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
+    return self.searchBar.isFirstResponder ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
 }
 
 - (void)viewDidLayoutSubviews {
@@ -106,6 +106,18 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - UISearchBarDelegate
 
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:YES animated:YES];
+    [self.navigationController setNavigationBarHidden:YES animated:YES];
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:NO animated:YES];
+    [self.navigationController setNavigationBarHidden:NO animated:YES];
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     [self.model searchWithQuery:self.searchBar.text];
 
@@ -117,6 +129,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    [searchBar resignFirstResponder];
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [searchBar resignFirstResponder];
 }
 

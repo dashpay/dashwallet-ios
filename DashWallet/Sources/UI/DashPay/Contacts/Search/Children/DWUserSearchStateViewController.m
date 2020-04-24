@@ -140,6 +140,8 @@ NS_ASSUME_NONNULL_END
 
     switch (self.state) {
         case DWUserSearchState_Placeholder: {
+            [self.iconImageView stopAnimating];
+            self.iconImageView.animationImages = nil;
             self.iconImageView.image = [UIImage imageNamed:@"dp_user_search_placeholder"];
 
             NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
@@ -166,8 +168,18 @@ NS_ASSUME_NONNULL_END
         case DWUserSearchState_Searching: {
             NSParameterAssert(self.searchQuery);
 
-            // TODO: fix icon
-            self.iconImageView.image = [UIImage imageNamed:@"dp_user_search_placeholder"];
+            if (self.iconImageView.animationImages == nil) {
+                NSArray<UIImage *> *frames = @[
+                    [UIImage imageNamed:@"dp_user_search_anim_1"],
+                    [UIImage imageNamed:@"dp_user_search_anim_2"],
+                    [UIImage imageNamed:@"dp_user_search_anim_3"],
+                    [UIImage imageNamed:@"dp_user_search_anim_4"],
+                ];
+                self.iconImageView.animationImages = frames;
+                self.iconImageView.animationDuration = 0.65;
+                self.iconImageView.animationRepeatCount = 0;
+                [self.iconImageView startAnimating];
+            }
 
             NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
             [result beginEditing];
@@ -196,6 +208,8 @@ NS_ASSUME_NONNULL_END
         case DWUserSearchState_NoResults: {
             NSParameterAssert(self.searchQuery);
 
+            [self.iconImageView stopAnimating];
+            self.iconImageView.animationImages = nil;
             self.iconImageView.image = [UIImage imageNamed:@"dp_user_search_warning"];
 
             NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
@@ -223,6 +237,8 @@ NS_ASSUME_NONNULL_END
             break;
         }
         case DWUserSearchState_Error: {
+            [self.iconImageView stopAnimating];
+            self.iconImageView.animationImages = nil;
             self.iconImageView.image = [UIImage imageNamed:@"dp_user_search_warning"];
 
             NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
