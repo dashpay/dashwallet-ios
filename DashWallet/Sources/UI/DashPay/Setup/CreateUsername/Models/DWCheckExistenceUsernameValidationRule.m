@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_END
         titleByResult[@(DWUsernameValidationRuleResultLoading)] = NSLocalizedString(@"Validating username…", nil);
         titleByResult[@(DWUsernameValidationRuleResultValid)] = NSLocalizedString(@"Validating username done", nil);
         titleByResult[@(DWUsernameValidationRuleResultError)] = NSLocalizedString(@"Validating username failed", nil);
-        titleByResult[@(DWUsernameValidationRuleResultInvalidCritical)] = NSLocalizedString(@"Validating username failed: username is taken.", nil);
+        titleByResult[@(DWUsernameValidationRuleResultInvalidCritical)] = NSLocalizedString(@"Username taken", nil);
         self.titleByResult = titleByResult;
     }
     return self;
