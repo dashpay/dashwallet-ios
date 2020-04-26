@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.firstDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     self.secondDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     // NSLocalizedString(@"Link Uphold Account", nil)
-    [self.linkButton setTitle:NSLocalizedString(@"Uphold", nil) forState:UIControlStateNormal];
+    [self.linkButton setTitle:NSLocalizedString(@"Open Uphold.com", nil) forState:UIControlStateNormal];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveURLNotification:)
