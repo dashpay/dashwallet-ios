@@ -207,6 +207,9 @@
 "Default currency, shortcuts, about…" = "Výchozí měna, zkratky, o aplikaci";
 
 /* No comment provided by engineer. */
+"Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions." = "Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions.";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "ZABEZPEČENÍ ZAŘÍZENÍ KOMPROMITOVÁNO\nJakákoliv ‚jailbreak‘ aplikace může přistupovat k datům jiné aplikace (a ukrást váš Dash).";
 
 /* No comment provided by engineer. */
@@ -856,6 +859,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Pro placení se níže můžete ověřit přes Touch ID";
+
+/* No comment provided by engineer. */
+"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting Uphold.com";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Pro otevření Dash Wallet musíte zadat váš PIN.";
