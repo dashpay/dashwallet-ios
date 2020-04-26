@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput;
 - (void)processFile:(NSData *)file;
 
-- (void)provideAmount:(uint64_t)amount usedInstantSend:(BOOL)usedInstantSend;
+- (void)provideAmount:(uint64_t)amount;
 
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
 

@@ -88,7 +88,6 @@
 
             break;
         }
-        case DWAmountSendOptionsModelState_ProposeInstantSend:
         case DWAmountSendOptionsModelState_AutoLocks: {
             descriptionText = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
 

@@ -24,16 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, DWAmountSendOptionsModelState) {
     DWAmountSendOptionsModelState_None,
     DWAmountSendOptionsModelState_Regular,
-    DWAmountSendOptionsModelState_ProposeInstantSend,
-    DWAmountSendOptionsModelState_AutoLocks,
+    DWAmountSendOptionsModelState_AutoLocks
 };
 
 @interface DWAmountSendingOptionsModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *sendingDestination;
 @property (readonly, assign, nonatomic) DWAmountSendOptionsModelState state;
-@property (readonly, assign, nonatomic) BOOL useInstantSend;
-@property (nullable, readonly, copy, nonatomic) NSString *instantSendFee;
 
 - (instancetype)initWithSendingDestination:(NSString *)sendingDestination paymentDetails:(DSPaymentProtocolDetails *)paymentDetails;
 

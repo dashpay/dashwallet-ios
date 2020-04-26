@@ -124,13 +124,11 @@ static NSString *sanitizeString(NSString *s) {
     [self handleFile:file];
 }
 
-- (void)provideAmount:(uint64_t)amount usedInstantSend:(BOOL)usedInstantSend {
+- (void)provideAmount:(uint64_t)amount {
     self.amount = amount;
 
     NSParameterAssert(self.request);
 
-    [self.request updateForRequestsInstantSend:usedInstantSend
-                           requiresInstantSend:self.request.requiresInstantSend];
     [self confirmProtocolRequest:self.request];
 }
 
