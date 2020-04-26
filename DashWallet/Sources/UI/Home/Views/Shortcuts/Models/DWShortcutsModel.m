@@ -82,7 +82,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 
     [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
     [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
-    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_LocalCurrency]];
 
     const BOOL canConfigureShortcuts = !walletNeedsBackup;
     if (canConfigureShortcuts) {
