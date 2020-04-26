@@ -53,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                object:nil];
 
     BOOL authorized = [DWUpholdClient sharedInstance].authorized;
+    // Uphold is disabled
+    authorized = NO;
     UIViewController *controller = authorized ? [self mainController] : [self authController];
     [self displayViewController:controller];
 }

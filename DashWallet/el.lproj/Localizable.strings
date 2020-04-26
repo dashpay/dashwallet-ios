@@ -207,6 +207,9 @@
 "Default currency, shortcuts, about…" = "Προεπιλεγμένο νόμισμα, συντομεύσεις, σχετικά με...";
 
 /* No comment provided by engineer. */
+"Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions." = "Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions.";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας).";
 
 /* No comment provided by engineer. */
@@ -856,6 +859,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Μπορείτε να επαληθεύσετε το Touch ID για πληρωμές παρακάτω";
+
+/* No comment provided by engineer. */
+"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting Uphold.com";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Πρέπει να εισάγετε το PIN σας για να μπείτε στο Dash Πορτοφόλι";

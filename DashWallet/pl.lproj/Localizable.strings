@@ -207,6 +207,9 @@
 "Default currency, shortcuts, about…" = "Domyślna waluta, skróty, o…";
 
 /* No comment provided by engineer. */
+"Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions." = "Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions.";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "BEZPIECZEŃSTWO URZĄDZENIA ZŁAMANE\nKażda aplikacja \"jailbreak\" ma dostęp do danych twoich kluczy w innych aplikacjach (i może ukraść twoje Dashe).";
 
 /* No comment provided by engineer. */
@@ -856,6 +859,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Możesz dokonać uwierzytelnienia za pomocą Touch ID dla płatności poniżej";
+
+/* No comment provided by engineer. */
+"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting Uphold.com";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Musisz podać swój PIN, aby wejść do Portfela Dash";

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YEX-OT-hZk">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YEX-OT-hZk">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -18,26 +18,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bwv-Wn-hrH" userLabel="Info View">
-                                <rect key="frame" x="16" y="64" width="343" height="400.5"/>
+                                <rect key="frame" x="16" y="64" width="343" height="291"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
-                                        <rect key="frame" x="71.5" y="0.0" width="200" height="282"/>
+                                        <rect key="frame" x="121.5" y="0.0" width="100" height="141"/>
                                     </imageView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TJj-fr-ZH9" userLabel="Embed View">
-                                        <rect key="frame" x="0.0" y="314" width="343" height="86.5"/>
+                                        <rect key="frame" x="0.0" y="173" width="343" height="118"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MdV-BP-3Kw" userLabel="Center View">
-                                                <rect key="frame" x="3" y="0.0" width="337" height="86.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="343" height="118"/>
                                                 <subviews>
-                                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-buy-dash-icon" translatesAutoresizingMaskIntoConstraints="NO" id="fgh-bY-Bhr">
-                                                        <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="30" id="Q0c-mF-hc7"/>
-                                                            <constraint firstAttribute="width" constant="30" id="brv-rm-KH9"/>
-                                                        </constraints>
-                                                    </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Buy Dash with Uphold account" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
-                                                        <rect key="frame" x="38" y="0.0" width="299" height="30"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
+                                                        <rect key="frame" x="0.0" y="0.0" width="343" height="61.5"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="SXM-ij-QIC"/>
                                                         </constraints>
@@ -47,15 +40,8 @@
                                                             <fragment content="#bc-ignore!"/>
                                                         </attributedString>
                                                     </label>
-                                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-transfer-icon" translatesAutoresizingMaskIntoConstraints="NO" id="TYQ-Nf-baj">
-                                                        <rect key="frame" x="0.0" y="46" width="30" height="30"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="30" id="bSK-J5-hYF"/>
-                                                            <constraint firstAttribute="width" constant="30" id="oL6-Zq-yxS"/>
-                                                        </constraints>
-                                                    </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer Dash from your Uphold account to this wallet" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
-                                                        <rect key="frame" x="38" y="46" width="299" height="40.5"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You may still view your balance in a browser by visiting Uphold.com." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
+                                                        <rect key="frame" x="0.0" y="77.5" width="343" height="40.5"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="pfN-YJ-oOo"/>
                                                         </constraints>
@@ -69,16 +55,12 @@
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <constraints>
                                                     <constraint firstItem="5q3-QS-3E4" firstAttribute="top" secondItem="MdV-BP-3Kw" secondAttribute="top" id="0Yi-ky-rmR"/>
+                                                    <constraint firstItem="qxt-8C-MKW" firstAttribute="leading" secondItem="MdV-BP-3Kw" secondAttribute="leading" id="3Jv-Hw-n6s"/>
                                                     <constraint firstItem="qxt-8C-MKW" firstAttribute="top" secondItem="5q3-QS-3E4" secondAttribute="bottom" constant="16" id="Acm-oQ-aRr"/>
                                                     <constraint firstAttribute="trailing" secondItem="5q3-QS-3E4" secondAttribute="trailing" id="Eny-aW-bnX"/>
-                                                    <constraint firstItem="5q3-QS-3E4" firstAttribute="leading" secondItem="fgh-bY-Bhr" secondAttribute="trailing" constant="8" id="Hei-DJ-1lf"/>
-                                                    <constraint firstItem="fgh-bY-Bhr" firstAttribute="leading" secondItem="MdV-BP-3Kw" secondAttribute="leading" id="MKn-IC-6py"/>
-                                                    <constraint firstItem="fgh-bY-Bhr" firstAttribute="top" secondItem="MdV-BP-3Kw" secondAttribute="top" id="WCR-Ii-fyA"/>
-                                                    <constraint firstItem="TYQ-Nf-baj" firstAttribute="leading" secondItem="MdV-BP-3Kw" secondAttribute="leading" id="e4D-Gw-nE8"/>
+                                                    <constraint firstItem="5q3-QS-3E4" firstAttribute="leading" secondItem="MdV-BP-3Kw" secondAttribute="leading" id="Mfi-57-eVD"/>
                                                     <constraint firstAttribute="bottom" secondItem="qxt-8C-MKW" secondAttribute="bottom" id="ivr-Ea-ITc"/>
-                                                    <constraint firstItem="qxt-8C-MKW" firstAttribute="leading" secondItem="TYQ-Nf-baj" secondAttribute="trailing" constant="8" id="maI-JM-ovj"/>
                                                     <constraint firstAttribute="trailing" secondItem="qxt-8C-MKW" secondAttribute="trailing" id="oFp-bg-olL"/>
-                                                    <constraint firstItem="TYQ-Nf-baj" firstAttribute="top" secondItem="5q3-QS-3E4" secondAttribute="bottom" constant="16" id="wWB-S1-LLm"/>
                                                 </constraints>
                                             </view>
                                         </subviews>
@@ -108,7 +90,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="Ifs-Hw-QAz"/>
                                 </constraints>
-                                <state key="normal" title="Link Uphold Account"/>
+                                <state key="normal" title="Uphold"/>
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
@@ -146,8 +128,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="uphold-buy-dash-icon" width="25" height="30"/>
-        <image name="uphold-transfer-icon" width="23" height="24"/>
         <image name="uphold_logo" width="100" height="141"/>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
