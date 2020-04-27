@@ -207,9 +207,6 @@
 "Default currency, shortcuts, about…" = "통화 기본값, 단축키, 관련 정보...";
 
 /* No comment provided by engineer. */
-"Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions." = "Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
 
 /* No comment provided by engineer. */
@@ -859,9 +856,6 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "지불을 위해서는 터치 ID를 통해 아래에서 인증할 수 있습니다";
-
-/* No comment provided by engineer. */
-"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting Uphold.com";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "대시 지갑에 접근하시려면 PIN을 입력해야 합니다";
