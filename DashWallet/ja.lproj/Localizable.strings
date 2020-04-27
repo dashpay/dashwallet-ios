@@ -207,6 +207,9 @@
 "Default currency, shortcuts, about…" = "初期設定の通貨、ショートカット、...について";
 
 /* No comment provided by engineer. */
+"Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions." = "Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions.";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "端末が危険な状態です！！！\nどの脱獄アプリからでも、他のあらゆるアプリのキーチェーンのデータへアクセスが可能です（そしてあなたのDashを簡単に盗めます）。";
 
 /* No comment provided by engineer. */
@@ -430,6 +433,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Open Uphold.com" = "Uphold.com";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "運用者の諸々のキー";
@@ -856,6 +862,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "以下の支払いにはTouch IDの指紋認証をご利用いただけます";
+
+/* No comment provided by engineer. */
+"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting Uphold.com";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "DashウォレットにアクセスするにはPINの入力が必要です";

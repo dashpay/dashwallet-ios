@@ -23,6 +23,7 @@
 #import "DWUIKit.h"
 #import "DWUpholdAuthURLNotification.h"
 #import "DWUpholdClient.h"
+#import "DWUpholdConstants.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -48,13 +49,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.firstDescriptionLabel.text = NSLocalizedString(@"Buy Dash with Uphold account", nil);
-    self.secondDescriptionLabel.text = NSLocalizedString(@"Transfer Dash from your Uphold account to this wallet", nil);
+    // NSLocalizedString(@"Buy Dash with Uphold account", nil);
+    // NSLocalizedString(@"Transfer Dash from your Uphold account to this wallet", nil);
+
+    self.firstDescriptionLabel.text = NSLocalizedString(@"Deposits and withdrawals from Uphold’s Dash cards are currently disabled. Please contact Uphold support if you have questions.", nil);
+    self.secondDescriptionLabel.text = NSLocalizedString(@"You may still view your balance in a browser by visiting Uphold.com", nil);
     self.firstDescriptionLabel.textColor = [UIColor dw_darkTitleColor];
     self.secondDescriptionLabel.textColor = [UIColor dw_darkTitleColor];
     self.firstDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     self.secondDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-    [self.linkButton setTitle:NSLocalizedString(@"Link Uphold Account", nil) forState:UIControlStateNormal];
+    // NSLocalizedString(@"Link Uphold Account", nil)
+    [self.linkButton setTitle:NSLocalizedString(@"Open Uphold.com", nil) forState:UIControlStateNormal];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveURLNotification:)
@@ -69,47 +74,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)linkUpholdAccountButtonAction:(id)sender {
-    self.linkButton.userInteractionEnabled = NO;
-
-    NSURL *url = [[DWUpholdClient sharedInstance] startAuthRoutineByURL];
-
-    NSString *callbackURLScheme = @"dashwallet://";
-    __weak typeof(self) weakSelf = self;
-    void (^completionHandler)(NSURL *_Nullable callbackURL, NSError *_Nullable error) = ^(NSURL *_Nullable callbackURL, NSError *_Nullable error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        if (callbackURL) {
-            [strongSelf handleCallbackURL:callbackURL];
-        }
-        strongSelf.linkButton.userInteractionEnabled = YES;
-    };
-
-    if (@available(iOS 12.0, *)) {
-        ASWebAuthenticationSession *authenticationSession =
-            [[ASWebAuthenticationSession alloc] initWithURL:url
-                                          callbackURLScheme:callbackURLScheme
-                                          completionHandler:completionHandler];
-        if (@available(iOS 13.0, *)) {
-            authenticationSession.presentationContextProvider = self;
-        }
-        [authenticationSession start];
-        self.authenticationSession = authenticationSession;
+    // logout URL is Uphold's dashboard page
+    NSURL *url = [NSURL URLWithString:[DWUpholdConstants logoutURLString]];
+    if (!url) {
+        return;
     }
-    else if (@available(iOS 11.0, *)) {
-        SFAuthenticationSession *authenticationSession =
-            [[SFAuthenticationSession alloc] initWithURL:url
-                                       callbackURLScheme:callbackURLScheme
-                                       completionHandler:completionHandler];
-        [authenticationSession start];
-        self.authenticationSession = authenticationSession;
-    }
-    else {
-        SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
-        [self presentViewController:controller animated:YES completion:nil];
-    }
+
+    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)didReceiveURLNotification:(NSNotification *)n {
@@ -123,6 +95,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)handleCallbackURL:(NSURL *)url {
+    const BOOL ignoreCallback = YES;
+    if (ignoreCallback) {
+        return;
+    }
+
     if (![url.absoluteString containsString:@"uphold"]) {
         return;
     }
