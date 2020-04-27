@@ -435,9 +435,6 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Open Uphold.com" = "Go To Uphold.com";
-
-/* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
 
 /* No comment provided by engineer. */
@@ -864,7 +861,7 @@
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
-"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting the Uphold website.";
+"You may still view your balance in a browser by visiting Uphold.com" = "You may still view your balance in a browser by visiting Uphold.com";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
