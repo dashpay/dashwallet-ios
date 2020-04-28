@@ -25,6 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWCaptureSessionFrameDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class AVCaptureSession;
@@ -55,7 +57,8 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 
 @property (readonly, class, getter=isTorchAvailable) BOOL torchAvailable;
 
-@property (weak, nonatomic) id<DWQRScanModelDelegate> delegate;
+@property (nullable, weak, nonatomic) id<DWQRScanModelDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWCaptureSessionFrameDelegate> frameDelegate;
 
 @property (readonly, strong, nonatomic) AVCaptureSession *captureSession;
 @property (readonly, assign, nonatomic, getter=isCameraDeniedOrRestricted) BOOL cameraDeniedOrRestricted;

@@ -46,6 +46,8 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 
 @end
 
+NS_ASSUME_NONNULL_END
+
 @implementation QRCodeObject
 
 - (instancetype)initWithMetadataObject:(AVMetadataMachineReadableCodeObject *)metadataObject {
@@ -93,6 +95,14 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 
 + (BOOL)isTorchAvailable {
     return [DWCaptureSessionManager sharedInstance].isTorchAvailable;
+}
+
+- (id<DWCaptureSessionFrameDelegate>)frameDelegate {
+    return [DWCaptureSessionManager sharedInstance].frameDelegate;
+}
+
+- (void)setFrameDelegate:(id<DWCaptureSessionFrameDelegate>)frameDelegate {
+    [DWCaptureSessionManager sharedInstance].frameDelegate = frameDelegate;
 }
 
 - (AVCaptureSession *)captureSession {
@@ -270,5 +280,3 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 }
 
 @end
-
-NS_ASSUME_NONNULL_END

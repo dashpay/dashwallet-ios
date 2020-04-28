@@ -297,10 +297,13 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -  DWQRScanModelDelegate
 
 - (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput {
+    self.view.userInteractionEnabled = NO;
     [self dismissViewControllerAnimated:YES
                              completion:^{
                                  self.paymentProcessor = nil;
                                  [self.paymentProcessor processPaymentInput:paymentInput];
+
+                                 self.view.userInteractionEnabled = YES;
                              }];
 }
 

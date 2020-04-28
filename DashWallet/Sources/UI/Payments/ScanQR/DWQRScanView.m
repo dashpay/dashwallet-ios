@@ -25,17 +25,23 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+#import "DWCaptureSessionFrameDelegate.h"
 #import "DWQRScanModel.h"
 #import "DWQRScanView.h"
 #import "DWUIKit.h"
+#import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWQRScanView ()
+@interface DWQRScanView () <DWCaptureSessionFrameDelegate>
 
-@property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
-@property (nonatomic, strong) CAShapeLayer *qrCodeLayer;
-@property (nonatomic, strong) CATextLayer *qrCodeTextLayer;
+@property (readonly, nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
+@property (readonly, nonatomic, strong) AVSampleBufferDisplayLayer *sampleBufferDisplayLayer;
+
+@property (nullable, nonatomic, strong) CAShapeLayer *qrCodeLayer;
+@property (nullable, nonatomic, strong) CATextLayer *qrCodeTextLayer;
+
+@property (atomic, assign) BOOL pauseAcceptingSampleBuffers;
 
 @end
 
@@ -50,6 +56,12 @@ NS_ASSUME_NONNULL_BEGIN
         previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
         [self.layer addSublayer:previewLayer];
         _previewLayer = previewLayer;
+
+        AVSampleBufferDisplayLayer *sampleBufferDisplayLayer = [AVSampleBufferDisplayLayer layer];
+        sampleBufferDisplayLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        sampleBufferDisplayLayer.opacity = 0.95;
+        [self.layer addSublayer:sampleBufferDisplayLayer];
+        _sampleBufferDisplayLayer = sampleBufferDisplayLayer;
 
         UIImageView *frameImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"qr_frame"]];
         frameImageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -114,10 +126,16 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)setModel:(DWQRScanModel *)model {
+    _model = model;
+    _model.frameDelegate = self;
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
 
     self.previewLayer.frame = self.bounds;
+    self.sampleBufferDisplayLayer.frame = self.bounds;
 }
 
 - (void)connectCaptureSession {
@@ -140,14 +158,37 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model switchTorch];
 }
 
+#pragma mark DWCaptureSessionFrameDelegate
+
+- (void)didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    if (!sampleBuffer) {
+        return;
+    }
+
+    if (self.pauseAcceptingSampleBuffers) {
+        return;
+    }
+
+    if (self.sampleBufferDisplayLayer.status == AVQueuedSampleBufferRenderingStatusFailed) {
+        DSLogError(@"Failed to display frame: %@", self.sampleBufferDisplayLayer.error);
+        [self.sampleBufferDisplayLayer flush];
+    }
+
+    [self.sampleBufferDisplayLayer enqueueSampleBuffer:sampleBuffer];
+}
+
 #pragma mark Private
 
 - (void)handleQRCodeObject:(QRCodeObject *)qrCodeObject {
     [self.qrCodeLayer removeFromSuperlayer];
 
+    self.pauseAcceptingSampleBuffers = NO;
+
     if (!qrCodeObject) {
         return;
     }
+
+    self.pauseAcceptingSampleBuffers = YES;
 
     AVMetadataMachineReadableCodeObject *transformedObject =
         (AVMetadataMachineReadableCodeObject *)[self.previewLayer

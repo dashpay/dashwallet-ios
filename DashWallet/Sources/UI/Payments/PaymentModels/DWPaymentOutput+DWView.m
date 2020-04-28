@@ -58,7 +58,8 @@ static NSString *sanitizeString(NSString *s) {
     if (self.protocolRequest.commonName) {
         NSString *title = NSLocalizedString(@"Pay to", nil);
         NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : font};
-        NSAttributedString *detail = [[NSAttributedString alloc] initWithString:self.protocolRequest. attributes:attributes];
+        NSAttributedString *detail = [[NSAttributedString alloc] initWithString:self.protocolRequest.commonName
+                                                                     attributes:attributes];
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
                                                     title:title

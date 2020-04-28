@@ -1137,6 +1137,7 @@
 		2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalOptions.m; sourceTree = "<group>"; };
 		2AD46230232A286000C71557 /* DWLockScreenModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLockScreenModel.h; sourceTree = "<group>"; };
 		2AD46231232A286000C71557 /* DWLockScreenModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockScreenModel.m; sourceTree = "<group>"; };
+		2AD85A9C245874B30045B480 /* DWCaptureSessionFrameDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCaptureSessionFrameDelegate.h; sourceTree = "<group>"; };
 		2ADC722823B5547000D9DD37 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
@@ -1390,6 +1391,7 @@
 				2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */,
 				2A7A7BAC234770C900451078 /* DWCaptureSessionManager.h */,
 				2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */,
+				2AD85A9C245874B30045B480 /* DWCaptureSessionFrameDelegate.h */,
 			);
 			path = ScanQR;
 			sourceTree = "<group>";
