@@ -55,15 +55,26 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    NSString *title = NSLocalizedString(@"Send to", nil);
-
-    NSString *address = self.address;
-    NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];
-    DWTitleDetailCellModel *model =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                title:title
-                                     attributedDetail:detail];
-    return model;
+    if (self.protocolRequest.commonName) {
+        NSString *title = NSLocalizedString(@"Pay to", nil);
+        NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : font};
+        NSAttributedString *detail = [[NSAttributedString alloc] initWithString:self.protocolRequest. attributes:attributes];
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                    title:title
+                                         attributedDetail:detail];
+        return model;
+    }
+    else {
+        NSString *title = NSLocalizedString(@"Send to", nil);
+        NSString *address = self.address;
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                    title:title
+                                         attributedDetail:detail];
+        return model;
+    }
 }
 
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
