@@ -167,6 +167,9 @@
 "Connected peers: %d" = "接続しているピア: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "サポートへ連絡する";
 
 /* No comment provided by engineer. */
@@ -323,6 +326,9 @@
 "Invalid" = "無効";
 
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "それが重要です";
 
 /* No comment provided by engineer. */
@@ -471,6 +477,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "もう一度お試しください";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "同期が完了するまでお待ちください";
@@ -768,6 +780,9 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "接続できません";
+
+/* No comment provided by engineer. */
+"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "新しいQRコードが取得できません";

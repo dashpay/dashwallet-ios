@@ -167,6 +167,9 @@
 "Connected peers: %d" = "연결된 피어: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "고객 지원부에 문의하기";
 
 /* No comment provided by engineer. */
@@ -323,6 +326,9 @@
 "Invalid" = "유효하지 않음";
 
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "중요";
 
 /* No comment provided by engineer. */
@@ -471,6 +477,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "다시 시도하세요";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "동기화가 완료될 때까지 기다려주세요";
@@ -768,6 +780,9 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "연결할 수 없습니다";
+
+/* No comment provided by engineer. */
+"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "새로운 QR 코드를 불러올 수 없습니다";

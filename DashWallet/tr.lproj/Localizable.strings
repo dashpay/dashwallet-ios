@@ -167,6 +167,9 @@
 "Connected peers: %d" = "Bağlı dağıtıcılar: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Destekle İletişime Geçin";
 
 /* No comment provided by engineer. */
@@ -323,6 +326,9 @@
 "Invalid" = "Geçersiz";
 
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "Bu önemli";
 
 /* No comment provided by engineer. */
@@ -471,6 +477,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Lütfen tekrar deneyin";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Lütfen senkronizasyonun tamamlanmasını bekleyin";
@@ -768,6 +780,9 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Bağlanılamıyor";
+
+/* No comment provided by engineer. */
+"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Yeni QR kod alınamıyor";

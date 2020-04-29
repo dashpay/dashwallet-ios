@@ -167,6 +167,9 @@
 "Connected peers: %d" = "Подключенные узлы: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Связаться с поддержкой";
 
 /* No comment provided by engineer. */
@@ -323,6 +326,9 @@
 "Invalid" = "Некорректная";
 
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "Это важно";
 
 /* No comment provided by engineer. */
@@ -471,6 +477,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Попробуйте еще раз";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Пожалуйста, подождите завершения синхронизации";
@@ -768,6 +780,9 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Не удалось подключиться";
+
+/* No comment provided by engineer. */
+"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Не удалось получить новый QR-код";

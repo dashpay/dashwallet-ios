@@ -167,6 +167,9 @@
 "Connected peers: %d" = "Přípojených peerů: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Podpora";
 
 /* No comment provided by engineer. */
@@ -323,6 +326,9 @@
 "Invalid" = "Neplatná";
 
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "Je důležité";
 
 /* No comment provided by engineer. */
@@ -471,6 +477,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Zkuste to ještě jednou";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Počkejte na dokončení synchronizace";
@@ -768,6 +780,9 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Nelze se připojit";
+
+/* No comment provided by engineer. */
+"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Nelze získat nový QR kód";

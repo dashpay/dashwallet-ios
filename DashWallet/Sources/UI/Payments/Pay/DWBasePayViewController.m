@@ -307,12 +307,6 @@ NS_ASSUME_NONNULL_BEGIN
                              }];
 }
 
-- (void)qrScanModel:(DWQRScanModel *)viewModel
-     showErrorTitle:(nullable NSString *)title
-            message:(nullable NSString *)message {
-    [self showAlertWithTitle:title message:message];
-}
-
 - (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
     [self dismissViewControllerAnimated:YES completion:nil];
 }

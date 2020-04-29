@@ -35,7 +35,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const kReqeustTimeout = 5.0;
-static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
+static NSTimeInterval const kResumeSearchTimeInterval = 2.5;
 
 #pragma - QR Object
 
@@ -61,6 +61,16 @@ NS_ASSUME_NONNULL_END
 - (void)setValid {
     self.errorMessage = nil;
     self.type = QRCodeObjectTypeValid;
+}
+
+- (void)setValidPaymentRequest {
+    self.errorMessage = nil;
+    self.type = QRCodeObjectTypeValidPaymentRequest;
+}
+
+- (void)setPaymentRequestFailedWithErrorMessage:(NSString *)errorMessage {
+    self.errorMessage = errorMessage;
+    self.type = QRCodeObjectTypePaymentRequestFailed;
 }
 
 - (void)setInvalidWithErrorMessage:(NSString *)errorMessage {
@@ -181,19 +191,18 @@ NS_ASSUME_NONNULL_END
     }
 
     NSAssert(![NSThread isMainThread], nil);
-    dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
-        self.qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
-    });
 
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
     if (request.isValid || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
-        dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
-            [self.qrCodeObject setValid];
-        });
+        if (request.r.length > 0) {                     // start fetching payment protocol request right away
+            dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
+                QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+                [qrCodeObject setValidPaymentRequest];
+                self.qrCodeObject = qrCodeObject;
+            });
 
-        if (request.r.length > 0) { // start fetching payment protocol request right away
             __weak typeof(self) weakSelf = self;
             [DSPaymentRequest
                      fetch:request.r
@@ -212,10 +221,12 @@ NS_ASSUME_NONNULL_END
                         }
 
                         if (error && !request.isValid) {
-                            NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
-                            [strongSelf.delegate qrScanModel:strongSelf
-                                              showErrorTitle:title
-                                                     message:error.localizedDescription];
+                            [strongSelf.qrCodeObject setPaymentRequestFailedWithErrorMessage:error.localizedDescription];
+                            [strongSelf performSelector:@selector(resumeQRCodeSearch)
+                                             withObject:nil
+                                             afterDelay:kResumeSearchTimeInterval];
+
+                            return;
                         }
 
                         DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
@@ -234,6 +245,10 @@ NS_ASSUME_NONNULL_END
         }
         else { // standard non payment protocol request
             dispatch_async(dispatch_get_main_queue(), ^{
+                QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+                [qrCodeObject setValid];
+                self.qrCodeObject = qrCodeObject;
+
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
                 paymentInput.request = request;
                 paymentInput.canChangeAmount = request.amount > 0;
@@ -242,6 +257,12 @@ NS_ASSUME_NONNULL_END
         }
     }
     else {
+        dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
+            QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+            [qrCodeObject setValidPaymentRequest];
+            self.qrCodeObject = qrCodeObject;
+        });
+
         __weak __typeof__(self) weakSelf = self;
         [DSPaymentRequest
                  fetch:request.r
@@ -271,8 +292,9 @@ NS_ASSUME_NONNULL_END
                             errorMessage = NSLocalizedString(@"Not a Dash QR code", nil);
                         }
                         [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
-
-                        [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
+                        [strongSelf performSelector:@selector(resumeQRCodeSearch)
+                                         withObject:nil
+                                         afterDelay:kResumeSearchTimeInterval];
                     }
                 });
             }];
