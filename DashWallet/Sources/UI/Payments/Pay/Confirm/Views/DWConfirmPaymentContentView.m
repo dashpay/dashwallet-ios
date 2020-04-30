@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet DWAmountPreviewView *amountView;
+@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *nameRowView;
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *infoRowView;
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *addressRowView;
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *feeRowView;
@@ -67,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.backgroundColor = [UIColor dw_backgroundColor];
 
+    self.nameRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Hidden;
     self.infoRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
     self.addressRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
     self.feeRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
@@ -88,6 +90,10 @@ NS_ASSUME_NONNULL_BEGIN
     _model = model;
 
     [self.amountView setAmount:[model amountToDisplay]];
+
+    id<DWTitleDetailItem> name = [model nameInfo];
+    self.nameRowView.model = name;
+    self.nameRowView.hidden = (name == nil);
 
     id<DWTitleDetailItem> info = [model generalInfo];
     self.infoRowView.model = info;

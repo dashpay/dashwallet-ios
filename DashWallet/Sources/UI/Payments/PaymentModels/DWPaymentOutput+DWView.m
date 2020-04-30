@@ -26,8 +26,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
-
 static NSString *sanitizeString(NSString *s) {
     NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
     CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
@@ -40,31 +38,36 @@ static NSString *sanitizeString(NSString *s) {
     return self.amount - self.fee;
 }
 
+- (nullable id<DWTitleDetailItem>)nameInfo {
+    NSString *name = [self nameString];
+    if (name == nil) {
+        return nil;
+    }
+
+    DWTitleDetailCellModel *model =
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+                                  plainCenteredDetail:name];
+
+    return model;
+}
+
 - (nullable id<DWTitleDetailItem>)generalInfo {
     NSString *detail = [self generalInfoString];
     if (detail == nil) {
         return nil;
     }
 
-    DWTitleDetailCellModel *info =
+    DWTitleDetailCellModel *model =
         [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
-                                                title:nil
-                                          plainDetail:detail];
+                               plainLeftAlignedDetail:detail];
 
-    return info;
+    return model;
 }
 
 - (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
     if (self.protocolRequest.commonName) {
-        NSString *title = NSLocalizedString(@"Pay to", nil);
-        NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : font};
-        NSAttributedString *detail = [[NSAttributedString alloc] initWithString:self.protocolRequest.commonName
-                                                                     attributes:attributes];
-        DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                    title:title
-                                         attributedDetail:detail];
-        return model;
+        // don't show "send to" for BIP70 payment requests
+        return nil;
     }
     else {
         NSString *title = NSLocalizedString(@"Send to", nil);
@@ -121,27 +124,34 @@ static NSString *sanitizeString(NSString *s) {
 
 #pragma mark - Private
 
+- (nullable NSString *)nameString {
+    if (self.name.length > 0) {
+        NSString *sanitizedName = sanitizeString(self.name);
+        if (self.isSecure) {
+            return [NSString stringWithFormat:@"🔒 %@", sanitizedName];
+        }
+        else {
+            return sanitizedName;
+        }
+    }
+
+    return nil;
+}
+
 - (nullable NSString *)generalInfoString {
     BOOL hasInfo = NO;
     NSString *info = @"";
-    if (self.name.length > 0) {
-        if (self.isSecure) {
-            info = LOCK @" ";
-        }
-
-        info = [info stringByAppendingString:sanitizeString(self.name)];
-        hasInfo = YES;
-    }
-
     if (self.memo.length > 0) {
-        info = [info stringByAppendingFormat:@"\n%@", sanitizeString(self.memo)];
+        info = sanitizeString(self.memo);
         hasInfo = YES;
     }
 
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     if (self.localCurrency && ![self.localCurrency isEqualToString:priceManager.localCurrencyCode]) {
         NSString *requestedAmount = [[DSPriceManager sharedInstance] fiatCurrencyString:self.localCurrency forDashAmount:self.amount];
-        info = [info stringByAppendingString:@"\n"];
+        if (info.length > 0) {
+            info = [info stringByAppendingString:@"\n"];
+        }
         info = [info stringByAppendingFormat:NSLocalizedString(@"Local requested amount: %@", nil), requestedAmount];
         hasInfo = YES;
     }

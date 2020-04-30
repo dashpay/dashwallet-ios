@@ -31,6 +31,10 @@
     return amountValue;
 }
 
+- (nullable id<DWTitleDetailItem>)nameInfo {
+    return nil;
+}
+
 - (nullable id<DWTitleDetailItem>)generalInfo {
     if (![self feeWasDeductedFromAmount]) {
         return nil;
