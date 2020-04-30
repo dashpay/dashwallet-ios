@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ ไม่สามารถเข้าถึง Face ID";
 
@@ -168,6 +167,9 @@
 "Connected peers: %d" = "เชื่อมต่อเพื่อน: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "ติดต่อฝ่ายสนับสนุน";
 
 /* No comment provided by engineer. */
@@ -321,6 +323,12 @@
 "Invalid" = "ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "สำคัญ";
 
 /* No comment provided by engineer. */
@@ -441,10 +449,25 @@
 "Owner Keys" = "เจ้าของ Keys";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "ชำระเงินและรับเงินทันทีด้วยกระบวนการชำระเงินที่ใช้งานง่าย";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "ชำระเงินได้อย่างง่ายดาย";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "การชำระเงิน";
@@ -463,6 +486,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "โปรดลองใหม่อีกครั้ง";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "โปรดรอจนกว่าการซิงค์จะเสร็จสมบูรณ์";

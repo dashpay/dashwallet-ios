@@ -80,12 +80,8 @@ NS_ASSUME_NONNULL_BEGIN
     DWSendAmountModel *sendModel = (DWSendAmountModel *)self.model;
     NSAssert([sendModel isKindOfClass:DWSendAmountModel.class], @"Inconsistent state");
 
-    const DWAmountSendOptionsModelState state = sendModel.sendingOptions.state;
-    const BOOL usedInstantSend = state == DWAmountSendOptionsModelState_ProposeInstantSend &&
-                                 sendModel.sendingOptions.useInstantSend;
     [self.delegate sendAmountViewController:self
-                             didInputAmount:self.model.amount.plainAmount
-                            usedInstantSend:usedInstantSend];
+                             didInputAmount:sendModel.amount.plainAmount];
 }
 
 @end

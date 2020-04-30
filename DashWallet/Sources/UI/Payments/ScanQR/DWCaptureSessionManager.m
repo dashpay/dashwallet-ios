@@ -24,11 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 static NSTimeInterval const STOP_PREVIEW_TIMEOUT = 3.0;
 static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
 
-@interface DWCaptureSessionManager () <AVCaptureMetadataOutputObjectsDelegate>
+@interface DWCaptureSessionManager () <AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
 @property (null_resettable, nonatomic, strong) AVCaptureSession *captureSession;
 @property (null_resettable, nonatomic, strong) dispatch_queue_t sessionQueue;
 @property (null_resettable, nonatomic, strong) dispatch_queue_t metadataQueue;
+@property (null_resettable, nonatomic, strong) dispatch_queue_t framesOutputQueue;
 @property (nonatomic, assign, getter=isCaptureSessionConfigured) BOOL captureSessionConfigured;
 @property (atomic, assign, getter=isActive) BOOL active;
 
@@ -152,6 +153,24 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
     [self.delegate didOutputMetadataObjects:metadataObjects];
 }
 
+#pragma mark AVCaptureVideoDataOutputSampleBufferDelegate
+
+- (void)captureOutput:(AVCaptureOutput *)output
+    didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+           fromConnection:(AVCaptureConnection *)connection {
+    if (!self.frameDelegate) {
+        return;
+    }
+
+    [self.frameDelegate didOutputSampleBuffer:sampleBuffer];
+}
+
+- (void)captureOutput:(AVCaptureOutput *)output
+    didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer
+         fromConnection:(AVCaptureConnection *)connection {
+    // this is fine 🔥
+}
+
 #pragma mark Private
 
 - (void)stopPreviewInternal {
@@ -211,6 +230,23 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
             output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
         }
 
+        AVCaptureVideoDataOutput *videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+        videoOutput.alwaysDiscardsLateVideoFrames = YES;
+        videoOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
+        [videoOutput setSampleBufferDelegate:self queue:self.framesOutputQueue];
+
+        if ([self.captureSession canAddOutput:videoOutput]) {
+            [self.captureSession addOutput:videoOutput];
+        }
+        else {
+            DSLogInfo(@"DWCaptureSessionManager: can't add AVCaptureVideoDataOutput");
+        }
+
+        AVCaptureConnection *connection = [videoOutput connectionWithMediaType:AVMediaTypeVideo];
+        if (connection.supportsVideoOrientation) {
+            connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+        }
+
         [self.captureSession commitConfiguration];
     });
 }
@@ -220,6 +256,7 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
     self.captureSession = nil;
     self.sessionQueue = nil;
     self.metadataQueue = nil;
+    self.framesOutputQueue = nil;
     self.captureSessionConfigured = NO;
 }
 
@@ -245,6 +282,13 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
     }
 
     return _metadataQueue;
+}
+
+- (dispatch_queue_t)framesOutputQueue {
+    if (!_framesOutputQueue) {
+        _framesOutputQueue = dispatch_queue_create("DWQRScanViewModel.VideoFramesOutput.queue", DISPATCH_QUEUE_SERIAL);
+    }
+    return _framesOutputQueue;
 }
 
 @end

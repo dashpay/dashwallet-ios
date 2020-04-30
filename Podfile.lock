@@ -20,7 +20,7 @@ PODS:
 
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
-  - DashSync (from `https://github.com/dashevo/dashsync-iOS/`, commit `4bf7704f8c26dd6eec147fe73d1b798232d4febd`)
+  - DashSync (from `https://github.com/dashevo/dashsync-iOS/`, commit `efe725ffa67151b3f23386354a07d76cd81e441a`)
   - DSDynamicOptions (= 0.1.0)
   - KVO-MVVM (= 0.5.6)
   - MBProgressHUD (= 1.1.0)
@@ -41,7 +41,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   DashSync:
-    :commit: 4bf7704f8c26dd6eec147fe73d1b798232d4febd
+    :commit: efe725ffa67151b3f23386354a07d76cd81e441a
     :git: https://github.com/dashevo/dashsync-iOS/
   MMSegmentSlider:
     :commit: 2d91366
@@ -49,7 +49,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DashSync:
-    :commit: 4bf7704f8c26dd6eec147fe73d1b798232d4febd
+    :commit: efe725ffa67151b3f23386354a07d76cd81e441a
     :git: https://github.com/dashevo/dashsync-iOS/
   MMSegmentSlider:
     :commit: 2d91366
@@ -68,6 +68,6 @@ SPEC CHECKSUMS:
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: e9735af8361eb8ddf303d48bba0b535bc5d3fca8
+PODFILE CHECKSUM: 4eea9500bd0c00bc440f733950b27baf88155071
 
 COCOAPODS: 1.9.1

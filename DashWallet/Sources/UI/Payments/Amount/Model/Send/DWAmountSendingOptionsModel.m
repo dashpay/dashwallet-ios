@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DSPaymentProtocolDetails *paymentDetails;
 @property (assign, nonatomic) DWAmountSendOptionsModelState state;
-@property (nullable, copy, nonatomic) NSString *instantSendFee;
 
 @end
 
@@ -41,7 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateWithAmount:(uint64_t)amount {
-    self.instantSendFee = nil;
 
     if (amount == 0) {
         self.state = DWAmountSendOptionsModelState_None;

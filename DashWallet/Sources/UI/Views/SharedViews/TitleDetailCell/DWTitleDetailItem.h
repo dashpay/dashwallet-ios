@@ -38,6 +38,7 @@ typedef NS_ENUM(NSUInteger, DWTitleDetailItemStyle) {
 @property (nullable, readonly, nonatomic) NSString *plainDetail;
 @property (nullable, readonly, nonatomic) NSAttributedString *attributedDetail;
 @property (nullable, readonly, nonatomic) NSString *copyableData;
+@property (assign, nonatomic) NSTextAlignment detailAlignment;
 
 @end
 

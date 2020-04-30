@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ はFace IDへのアクセスが許可されていません";
 
@@ -168,6 +167,9 @@
 "Connected peers: %d" = "接続しているピア: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "サポートへ連絡する";
 
 /* No comment provided by engineer. */
@@ -321,6 +323,12 @@
 "Invalid" = "無効";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "それが重要です";
 
 /* No comment provided by engineer. */
@@ -441,10 +449,25 @@
 "Owner Keys" = "所有者の諸々のキー";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "簡単なお支払い手順で速やかに送金と入金";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "簡単支払い";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "お支払い";
@@ -463,6 +486,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "もう一度お試しください";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "同期が完了するまでお待ちください";

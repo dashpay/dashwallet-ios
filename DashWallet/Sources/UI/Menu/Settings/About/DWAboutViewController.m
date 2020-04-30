@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAboutViewController ()
 
+@property (strong, nonatomic) IBOutlet UIImageView *dashLogoImageView;
 @property (strong, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashSyncVersionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
@@ -67,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.dashLogoImageView.tintColor = [UIColor dw_dashBlueColor];
     self.appVersionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
     self.dashSyncVersionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];

@@ -150,7 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
                         cancelBlock();
                     }
 
-                    NSAssert(self.confirmViewController.sendingEnabled,
+                    NSAssert(!self.confirmViewController || self.confirmViewController.sendingEnabled,
                              @"paymentProcessorDidCancelTransactionSigning: should be called");
                 }];
     [alert addAction:cancelAction];
@@ -283,10 +283,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWSendAmountViewControllerDelegate
 
 - (void)sendAmountViewController:(DWSendAmountViewController *)controller
-                  didInputAmount:(uint64_t)amount
-                 usedInstantSend:(BOOL)usedInstantSend {
+                  didInputAmount:(uint64_t)amount {
     NSParameterAssert(self.paymentProcessor);
-    [self.paymentProcessor provideAmount:amount usedInstantSend:usedInstantSend];
+    [self.paymentProcessor provideAmount:amount];
 }
 
 #pragma mark - DWConfirmPaymentViewControllerDelegate
@@ -298,17 +297,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -  DWQRScanModelDelegate
 
 - (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput {
+    self.view.userInteractionEnabled = NO;
     [self dismissViewControllerAnimated:YES
                              completion:^{
                                  self.paymentProcessor = nil;
                                  [self.paymentProcessor processPaymentInput:paymentInput];
-                             }];
-}
 
-- (void)qrScanModel:(DWQRScanModel *)viewModel
-     showErrorTitle:(nullable NSString *)title
-            message:(nullable NSString *)message {
-    [self showAlertWithTitle:title message:message];
+                                 self.view.userInteractionEnabled = YES;
+                             }];
 }
 
 - (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
