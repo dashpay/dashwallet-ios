@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWConfirmPaymentViewProtocol <NSObject>
 
+- (BOOL)hasCommonName;
 - (uint64_t)amountToDisplay;
 - (nullable id<DWTitleDetailItem>)nameInfo;
 - (nullable id<DWTitleDetailItem>)generalInfo;

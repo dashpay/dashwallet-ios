@@ -452,10 +452,25 @@
 "Owner Keys" = "Κλειδιά Κατόχου";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Πληρώστε και πληρωθείτε άμεσα με εύκολες στην χρήση πληρωμές";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Πληρώστε με ευκολία";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Πληρωμές";

@@ -452,10 +452,25 @@
 "Owner Keys" = "Ключове на собственика";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Платете и вземете плащане незабавно с лесни за използване потоци на плащане";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Платете с лекота";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Плащания";

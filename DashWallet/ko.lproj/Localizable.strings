@@ -452,10 +452,25 @@
 "Owner Keys" = "소유자 키";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "사용하기 쉬운 지불 플로우로 즉시 송금하고 송금 받으세요";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "쉬운 지불";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "지불";

@@ -34,6 +34,10 @@ static NSString *sanitizeString(NSString *s) {
 
 @implementation DWPaymentOutput (DWView)
 
+- (BOOL)hasCommonName {
+    return self.name != nil;
+}
+
 - (uint64_t)amountToDisplay {
     return self.amount - self.fee;
 }

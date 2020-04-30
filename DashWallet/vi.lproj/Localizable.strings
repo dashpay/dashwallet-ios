@@ -452,10 +452,25 @@
 "Owner Keys" = "Khoá của chủ sở hữu";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Trả và nhận một cách tức thời một cách dễ dàng bằng cách sử dụng các quy trình thanh toán";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Giao dịch một cách đơn giản";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Các giao dịch";

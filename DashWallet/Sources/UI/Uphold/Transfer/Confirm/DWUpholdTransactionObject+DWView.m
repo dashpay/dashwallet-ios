@@ -24,6 +24,10 @@
 
 @implementation DWUpholdTransactionObject (DWView)
 
+- (BOOL)hasCommonName {
+    return NO;
+}
+
 - (uint64_t)amountToDisplay {
     NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
     const uint64_t amountValue = [self.amount decimalNumberByMultiplyingBy:duffs].longLongValue;

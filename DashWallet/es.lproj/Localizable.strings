@@ -452,10 +452,25 @@
 "Owner Keys" = "Llaves del propietario";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Pague y reciba instantáneamente con flujos de pagos fáciles de usar";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Pague con facilidad";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Pago";

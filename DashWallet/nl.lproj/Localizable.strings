@@ -452,10 +452,25 @@
 "Owner Keys" = "Eigenaar sleutels";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Betaal en word betaald met eenvoudig te gebruiken betaalverkeer";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Betaal met gemak";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Betalingen";

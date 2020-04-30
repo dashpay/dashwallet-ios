@@ -452,10 +452,25 @@
 "Owner Keys" = "Kľúče vlastníka";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Plaťte a dostaňte okamžite zaplatené pomocou ľahko použiteľných platobných tokov";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Plaťte jednoducho";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Platby";
