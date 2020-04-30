@@ -137,11 +137,11 @@ NS_ASSUME_NONNULL_END
 
             break;
         }
-        case DWQRScanStatus_UnableToConnect: {
+        case DWQRScanStatus_InvalidPaymentRequest: {
             [self.imageView stopAnimating];
             self.imageView.animationImages = nil;
             self.imageView.image = [UIImage imageNamed:@"unable_to_connect"];
-            self.titleLabel.text = NSLocalizedString(@"Unable to Connect", nil);
+            self.titleLabel.text = NSLocalizedString(@"Invalid Payment Request", nil);
             self.descriptionLabel.text = errorMessage ?: NSLocalizedString(@"Please try scanning again", nil);
 
             break;

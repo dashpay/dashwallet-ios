@@ -326,6 +326,9 @@
 "Invalid" = "Invalid";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
 
 /* No comment provided by engineer. */
@@ -792,9 +795,6 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Unable to connect";
-
-/* No comment provided by engineer. */
-"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Unable to get new QR code";

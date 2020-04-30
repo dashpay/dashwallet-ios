@@ -280,7 +280,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case QRCodeObjectTypePaymentRequestFailed: {
-            status = DWQRScanStatus_UnableToConnect;
+            status = DWQRScanStatus_InvalidPaymentRequest;
 
             break;
         }

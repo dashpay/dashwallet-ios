@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, DWQRScanStatus) {
     DWQRScanStatus_None,
     DWQRScanStatus_Connecting,
-    DWQRScanStatus_UnableToConnect,
+    DWQRScanStatus_InvalidPaymentRequest,
     DWQRScanStatus_InvalidQR,
 };
 

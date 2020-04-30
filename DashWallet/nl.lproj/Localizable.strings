@@ -326,6 +326,9 @@
 "Invalid" = "Ongeldig";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
 
 /* No comment provided by engineer. */
@@ -792,9 +795,6 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Kan geen verbinding maken";
-
-/* No comment provided by engineer. */
-"Unable to Connect" = "Unable to Connect";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Verkrijgen van nieuwe QR-code is mislukt";
