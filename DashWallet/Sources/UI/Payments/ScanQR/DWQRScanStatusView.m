@@ -149,7 +149,7 @@ NS_ASSUME_NONNULL_END
         case DWQRScanStatus_InvalidQR: {
             [self.imageView stopAnimating];
             self.imageView.animationImages = nil;
-            self.imageView.image = [UIImage imageNamed:@"unable_to_connect"];
+            self.imageView.image = [UIImage imageNamed:@"invalid_qr"];
             self.titleLabel.text = NSLocalizedString(@"Invalid QR Code", nil);
             self.descriptionLabel.text = errorMessage ?: NSLocalizedString(@"Please try scanning again", nil);
 

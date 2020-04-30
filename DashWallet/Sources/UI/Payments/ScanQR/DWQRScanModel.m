@@ -221,7 +221,7 @@ NS_ASSUME_NONNULL_END
                         }
 
                         if (error && !request.isValid) {
-                            [strongSelf.qrCodeObject setPaymentRequestFailedWithErrorMessage:error.localizedDescription];
+                            [strongSelf.qrCodeObject setInvalidWithErrorMessage:error.localizedDescription];
                             [strongSelf performSelector:@selector(resumeQRCodeSearch)
                                              withObject:nil
                                              afterDelay:kResumeSearchTimeInterval];
