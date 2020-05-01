@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWCaptureSessionFrameDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class AVCaptureSession;
@@ -24,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWCaptureSessionManager;
 
 @protocol DWCaptureSessionMetadataDelegate <NSObject>
-
 
 /// This method will be called on a background queue
 - (void)didOutputMetadataObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects;
@@ -37,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign, getter=isCameraDeniedOrRestricted) BOOL cameraDeniedOrRestricted;
 @property (readonly, nonatomic, assign, getter=isTorchAvailable) BOOL torchAvailable;
 @property (nullable, nonatomic, weak) id<DWCaptureSessionMetadataDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWCaptureSessionFrameDelegate> frameDelegate;
 
 + (instancetype)sharedInstance;
 

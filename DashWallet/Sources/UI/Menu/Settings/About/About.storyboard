@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Khk-i4-iGF">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Khk-i4-iGF">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -18,29 +18,28 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash_logo_template" translatesAutoresizingMaskIntoConstraints="NO" id="bL4-py-5Pp">
-                                <rect key="frame" x="88" y="119" width="238" height="66"/>
-                                <color key="tintColor" name="DashBlueColor"/>
+                                <rect key="frame" x="147.5" y="119" width="119" height="33"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="App Version Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pJw-Vp-Xdk">
-                                <rect key="frame" x="20" y="223" width="374" height="24"/>
+                                <rect key="frame" x="20" y="190" width="374" height="24"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
                                 <color key="textColor" name="DarkTitleColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashSync Version Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HJF-Ju-zuu">
-                                <rect key="frame" x="20" y="257" width="374" height="16"/>
+                                <rect key="frame" x="20" y="224" width="374" height="16"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                 <color key="textColor" name="QuaternaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Description Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qL5-kd-XMW">
-                                <rect key="frame" x="20" y="303" width="374" height="19.5"/>
+                                <rect key="frame" x="20" y="270" width="374" height="19.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DWButton">
-                                <rect key="frame" x="20" y="322.5" width="374" height="44"/>
+                                <rect key="frame" x="20" y="289.5" width="374" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="N9b-1b-4qG"/>
                                 </constraints>
@@ -128,6 +127,7 @@
                         <outlet property="appVersionLabel" destination="pJw-Vp-Xdk" id="Yxy-lr-OnK"/>
                         <outlet property="contactSupportButton" destination="y5q-5a-QDG" id="Lb9-go-ES0"/>
                         <outlet property="copyrightLabel" destination="vjR-PV-utO" id="ekz-QT-lQn"/>
+                        <outlet property="dashLogoImageView" destination="bL4-py-5Pp" id="ue8-PG-Zkc"/>
                         <outlet property="dashSyncVersionLabel" destination="HJF-Ju-zuu" id="Av7-Z6-NVw"/>
                         <outlet property="descriptionLabel" destination="qL5-kd-XMW" id="GH0-e0-Mom"/>
                         <outlet property="rateReviewButton" destination="QEh-Hn-zyc" id="9V3-vL-TZe"/>

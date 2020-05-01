@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ tidak diizinkan mengakses Pengenal Wajah";
 
@@ -198,6 +197,9 @@
 "Connected peers: %d" = "Peers yang terhubung: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Hubungi Dukungan";
 
 /* No comment provided by engineer. */
@@ -381,6 +383,12 @@
 "Invalid" = "Tidak valid";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "Ini penting";
 
 /* No comment provided by engineer. */
@@ -516,10 +524,25 @@
 "Owner Keys" = "Kunci Pemilik";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Bayar dan dapatkan bayaran instan dengan aliran pembayaran yang mudah digunakan";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Bayar dengan Mudah";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Pembayaran";
@@ -538,6 +561,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Silakan coba lagi";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";

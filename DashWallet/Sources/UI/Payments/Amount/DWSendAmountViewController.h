@@ -25,8 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWSendAmountViewControllerDelegate <NSObject>
 
 - (void)sendAmountViewController:(DWSendAmountViewController *)controller
-                  didInputAmount:(uint64_t)amount
-                 usedInstantSend:(BOOL)usedInstantSend;
+                  didInputAmount:(uint64_t)amount;
 
 @end
 

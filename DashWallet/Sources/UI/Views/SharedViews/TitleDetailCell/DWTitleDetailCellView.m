@@ -80,7 +80,6 @@ static CGFloat const SMALL_PADDING = 12.0;
     detailLabel.minimumScaleFactor = 0.5;
     detailLabel.numberOfLines = 0;
     detailLabel.textColor = [UIColor dw_secondaryTextColor];
-    detailLabel.textAlignment = NSTextAlignmentRight;
     _detailLabel = detailLabel;
 
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, detailLabel ]];
@@ -160,6 +159,8 @@ static CGFloat const SMALL_PADDING = 12.0;
     else {
         self.detailLabel.hidden = YES;
     }
+
+    self.detailLabel.textAlignment = model.detailAlignment;
 }
 
 - (void)layoutSubviews {

@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ không được cho phép truy cập Face ID";
 
@@ -198,6 +197,9 @@
 "Connected peers: %d" = "Số kết nối ngang hàng: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Liên hệ hỗ trợ";
 
 /* No comment provided by engineer. */
@@ -381,6 +383,12 @@
 "Invalid" = "Không hợp lệ";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "Điều này là quan trọng";
 
 /* No comment provided by engineer. */
@@ -516,10 +524,25 @@
 "Owner Keys" = "Khoá của chủ sở hữu";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Trả và nhận một cách tức thời một cách dễ dàng bằng cách sử dụng các quy trình thanh toán";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Giao dịch một cách đơn giản";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Các giao dịch";
@@ -538,6 +561,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Hãy thử lại";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";

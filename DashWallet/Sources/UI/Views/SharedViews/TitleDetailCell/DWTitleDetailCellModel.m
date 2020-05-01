@@ -26,11 +26,35 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize plainDetail = _plainDetail;
 @synthesize attributedDetail = _attributedDetail;
 @synthesize copyableData = _copyableData;
+@synthesize detailAlignment = _detailAlignment;
+
+- (instancetype)initWithStyle:(DWTitleDetailItemStyle)style plainCenteredDetail:(NSString *)plainDetail {
+    return [self initWithStyle:style
+                         title:nil
+                   plainDetail:plainDetail
+              attributedDetail:nil
+                  copyableData:nil
+               detailAlignment:NSTextAlignmentCenter];
+}
+
+- (instancetype)initWithStyle:(DWTitleDetailItemStyle)style plainLeftAlignedDetail:(NSString *)plainDetail {
+    return [self initWithStyle:style
+                         title:nil
+                   plainDetail:plainDetail
+              attributedDetail:nil
+                  copyableData:nil
+               detailAlignment:NSTextAlignmentLeft];
+}
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
                   plainDetail:(NSString *)plainDetail {
-    return [self initWithStyle:style title:title plainDetail:plainDetail attributedDetail:nil copyableData:nil];
+    return [self initWithStyle:style
+                         title:title
+                   plainDetail:plainDetail
+              attributedDetail:nil
+                  copyableData:nil
+               detailAlignment:NSTextAlignmentRight];
 }
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
@@ -40,7 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
                          title:title
                    plainDetail:nil
               attributedDetail:attributedDetail
-                  copyableData:nil];
+                  copyableData:nil
+               detailAlignment:NSTextAlignmentRight];
 }
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
@@ -51,14 +76,16 @@ NS_ASSUME_NONNULL_BEGIN
                          title:title
                    plainDetail:nil
               attributedDetail:attributedDetail
-                  copyableData:copyableData];
+                  copyableData:copyableData
+               detailAlignment:NSTextAlignmentRight];
 }
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
                   plainDetail:(nullable NSString *)plainDetail
              attributedDetail:(nullable NSAttributedString *)attributedDetail
-                 copyableData:(nullable NSString *)copyableData {
+                 copyableData:(nullable NSString *)copyableData
+              detailAlignment:(NSTextAlignment)detailAlignment {
     self = [super init];
     if (self) {
         _style = style;
@@ -66,6 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
         _plainDetail = [plainDetail copy];
         _attributedDetail = [attributedDetail copy];
         _copyableData = [copyableData copy];
+        _detailAlignment = detailAlignment;
     }
     return self;
 }

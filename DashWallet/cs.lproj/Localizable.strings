@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ nemá přístup k Face ID";
 
@@ -198,6 +197,9 @@
 "Connected peers: %d" = "Přípojených peerů: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Connecting to payment server";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Podpora";
 
 /* No comment provided by engineer. */
@@ -381,6 +383,12 @@
 "Invalid" = "Neplatná";
 
 /* No comment provided by engineer. */
+"Invalid Payment Request" = "Invalid Payment Request";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
 "It's Important" = "Je důležité";
 
 /* No comment provided by engineer. */
@@ -516,10 +524,25 @@
 "Owner Keys" = "Klíče majitele";
 
 /* No comment provided by engineer. */
+"Pay" = "Pay";
+
+/* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Plať a přijímej platby zcela okamžitě";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Plať snadno";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Paying";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Paying.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Paying..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Paying...";
 
 /* No comment provided by engineer. */
 "Payments" = "Platby";
@@ -538,6 +561,12 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Zkuste to ještě jednou";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Please try scanning again";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
