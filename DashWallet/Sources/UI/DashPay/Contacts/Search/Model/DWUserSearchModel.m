@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign) uint32_t offset;
-@property (nullable, nonatomic, copy) NSArray<id<DWContactItem>> *items;
+@property (nullable, nonatomic, copy) NSArray<DWContactObject *> *items;
 @property (nonatomic, assign) BOOL requestInProgress;
 @property (nonatomic, assign) BOOL hasNextPage;
 
@@ -100,6 +100,16 @@ NS_ASSUME_NONNULL_END
     }
 }
 
+- (DSBlockchainIdentity *)blokchainIdentityAtIndex:(NSInteger)index {
+    if (index < 0 || self.searchRequest.items.count < index) {
+        NSAssert(NO, @"No blockchain identity for invalid index %ld", index);
+        return nil;
+    }
+
+    DWContactObject *contactObject = self.searchRequest.items[index];
+    return contactObject.blockchainIdentity;
+}
+
 #pragma mark Private
 
 - (void)performInitialSearch {
@@ -145,7 +155,7 @@ NS_ASSUME_NONNULL_END
                               [strongSelf.delegate userSearchModel:strongSelf completedWithError:error];
                           }
                           else {
-                              NSMutableArray<id<DWContactItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                              NSMutableArray<DWContactObject *> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
                               for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
                                   DWContactObject *contact = [[DWContactObject alloc] initWithBlockchainIdentity:blockchainIdentity];
                                   [items addObject:contact];

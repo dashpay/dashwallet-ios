@@ -21,6 +21,7 @@
 
 #import "DWDashPayConstants.h"
 #import "DWUIKit.h"
+#import "DWUserProfileViewController.h"
 #import "DWUserSearchModel.h"
 #import "DWUserSearchResultViewController.h"
 #import "DWUserSearchStateViewController.h"
@@ -40,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) DWUserSearchStateViewController *stateController;
 @property (null_resettable, nonatomic, strong) DWUserSearchResultViewController *resultsController;
 
+@property (nonatomic, assign) BOOL wasFirstResponder;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -48,6 +51,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    self.wasFirstResponder = YES;
 
     self.title = NSLocalizedString(@"Add a New Contact", nil);
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
@@ -87,7 +92,9 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self.searchBar becomeFirstResponder];
+    if (self.wasFirstResponder) {
+        [self.searchBar becomeFirstResponder];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -97,11 +104,13 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    // hide semi-transparent overlays above UITextField in UISearchBar to achive basic white color
-    UISearchBar *searchBar = self.searchBar;
-    UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
-    UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
-    [searchTextFieldBackground.subviews makeObjectsPerformSelector:@selector(setHidden:) withObject:@YES];
+    if ([NSProcessInfo processInfo].operatingSystemVersion.majorVersion >= 13) {
+        // hide semi-transparent overlays above UITextField in UISearchBar to achive basic white color
+        UISearchBar *searchBar = self.searchBar;
+        UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
+        UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
+        [searchTextFieldBackground.subviews makeObjectsPerformSelector:@selector(setHidden:) withObject:@YES];
+    }
 }
 
 #pragma mark - UISearchBarDelegate
@@ -110,12 +119,14 @@ NS_ASSUME_NONNULL_END
     [searchBar setShowsCancelButton:YES animated:YES];
     [self.navigationController setNavigationBarHidden:YES animated:YES];
     [self setNeedsStatusBarAppearanceUpdate];
+    self.wasFirstResponder = YES;
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
     [searchBar setShowsCancelButton:NO animated:YES];
     [self.navigationController setNavigationBarHidden:NO animated:YES];
     [self setNeedsStatusBarAppearanceUpdate];
+    self.wasFirstResponder = NO;
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
@@ -170,8 +181,21 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWUserSearchResultViewControllerDelegate
 
-- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller willDisplayItemAtIndex:(NSInteger)index {
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                willDisplayItemAtIndex:(NSInteger)index {
     [self.model willDisplayItemAtIndex:index];
+}
+
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                  didSelectItemAtIndex:(NSInteger)index {
+    DSBlockchainIdentity *blockchainIdentity = [self.model blokchainIdentityAtIndex:index];
+    if (!blockchainIdentity) {
+        return;
+    }
+
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithBlockchainIdentity:blockchainIdentity];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 #pragma mark - Keyboard

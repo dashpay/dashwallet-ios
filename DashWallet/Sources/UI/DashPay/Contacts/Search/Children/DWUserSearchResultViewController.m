@@ -63,4 +63,10 @@
     [self.delegate userSearchResultViewController:self willDisplayItemAtIndex:indexPath.row];
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row];
+}
+
 @end

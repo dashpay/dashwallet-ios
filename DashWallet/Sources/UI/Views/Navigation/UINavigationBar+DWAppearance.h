@@ -15,11 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWNavigationChildViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController : DWNavigationChildViewController
+@interface UINavigationBar (DWAppearance)
+
+- (void)dw_configureForDefaultAppearance;
+- (void)dw_configureForWhiteAppearance;
 
 @end
 

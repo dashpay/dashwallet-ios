@@ -15,11 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWNavigationChildViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController : DWNavigationChildViewController
+typedef NS_ENUM(NSUInteger, DWNavigationBarAppearance) {
+    /// Dash Blue Navigation Bar
+    DWNavigationBarAppearanceDefault,
+    /// White Navigation Bar (or Black in Dark Mode)
+    DWNavigationBarAppearanceWhite,
+};
+
+@interface DWNavigationChildViewController : UIViewController
+
+@property (readonly, assign, nonatomic) DWNavigationBarAppearance navigationBarAppearance;
 
 @end
 

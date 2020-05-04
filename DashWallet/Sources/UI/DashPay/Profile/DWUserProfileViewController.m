@@ -15,33 +15,41 @@
 //  limitations under the License.
 //
 
-#import "DWContactObject.h"
+#import "DWUserProfileViewController.h"
 
-#import <DashSync/DashSync.h>
+#import "DWEnvironment.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactObject ()
+@interface DWUserProfileViewController ()
 
-@property (nonatomic, assign) DWContactItemDisplayType displayType;
-@property (nonatomic, copy) NSString *username;
-@property (nullable, nonatomic, copy) NSString *tagline;
-@property (nullable, nonatomic, copy) NSString *dateString;
+@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWContactObject
+@implementation DWUserProfileViewController
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self = [super init];
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _blockchainIdentity = blockchainIdentity;
-        _displayType = DWContactItemDisplayType_Search;
-        _username = blockchainIdentity.currentUsername;
     }
     return self;
+}
+
+- (DWNavigationBarAppearance)navigationBarAppearance {
+    return DWNavigationBarAppearanceWhite;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.title = @"Profile";
+
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 }
 
 @end

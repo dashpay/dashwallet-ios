@@ -19,7 +19,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController : DWNavigationChildViewController
+@class DSBlockchainIdentity;
+
+@interface DWUserProfileViewController : DWNavigationChildViewController
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 
