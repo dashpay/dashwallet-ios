@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_END
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _blockchainIdentity = blockchainIdentity;
+
+        self.hidesBottomBarWhenPushed = YES;
     }
     return self;
 }

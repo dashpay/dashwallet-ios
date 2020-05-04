@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,21 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "UISearchBar+DWAdditions.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation UISearchBar (DWAdditions)
 
-@protocol DWNavigationFullscreenable <NSObject>
+- (void)dw_enableCancelButton {
+    [self dw_enableControlsInView:self];
+}
 
-@property (readonly, nonatomic, assign) BOOL requiresNoNavigationBar;
+- (void)dw_enableControlsInView:(UIView *)view {
+    for (id subview in view.subviews) {
+        if ([subview isKindOfClass:UIControl.class]) {
+            [subview setEnabled:YES];
+        }
+        [self dw_enableControlsInView:subview];
+    }
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

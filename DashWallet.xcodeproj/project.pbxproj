@@ -372,6 +372,7 @@
 		2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 2ADC722723B5547000D9DD37 /* Localizable.stringsdict */; };
 		2ADC9D10245FF852001D7C0D /* DWNavigationChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D0F245FF852001D7C0D /* DWNavigationChildViewController.m */; };
 		2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D12245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m */; };
+		2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */; };
 		2ADF83FA23632D1C008459A7 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
 		2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
@@ -1259,6 +1260,8 @@
 		2ADC9D0F245FF852001D7C0D /* DWNavigationChildViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNavigationChildViewController.m; sourceTree = "<group>"; };
 		2ADC9D11245FFC5B001D7C0D /* UINavigationBar+DWAppearance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UINavigationBar+DWAppearance.h"; sourceTree = "<group>"; };
 		2ADC9D12245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UINavigationBar+DWAppearance.m"; sourceTree = "<group>"; };
+		2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISearchBar+DWAdditions.h"; sourceTree = "<group>"; };
+		2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISearchBar+DWAdditions.m"; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
 		2AE2F0F7245C16C8001DD722 /* DWUserProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileViewController.h; sourceTree = "<group>"; };
 		2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileViewController.m; sourceTree = "<group>"; };
@@ -1909,6 +1912,8 @@
 				2ACCD8D0231D33EA00A96B62 /* DWAnimatedShapeLayer.m */,
 				2A9FFDF02230FF1A00956D5F /* SFSafariViewController+DashWallet.h */,
 				2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */,
+				2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */,
+				2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4435,6 +4440,7 @@
 				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
 				2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */,
+				2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */,
 				2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,

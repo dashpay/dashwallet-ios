@@ -17,9 +17,11 @@
 
 #import "DWNavigationChildViewController.h"
 
+#import "DWNavigationFullscreenable.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserSearchViewController : DWNavigationChildViewController
+@interface DWUserSearchViewController : DWNavigationChildViewController <DWNavigationFullscreenable>
 
 @end
 

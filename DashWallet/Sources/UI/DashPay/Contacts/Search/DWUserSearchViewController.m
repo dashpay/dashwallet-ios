@@ -25,6 +25,7 @@
 #import "DWUserSearchModel.h"
 #import "DWUserSearchResultViewController.h"
 #import "DWUserSearchStateViewController.h"
+#import "UISearchBar+DWAdditions.h"
 #import "UIView+DWFindConstraints.h"
 #import "UIView+DWRecursiveSubview.h"
 #import "UIViewController+DWEmbedding.h"
@@ -32,6 +33,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchViewController () <UISearchBarDelegate, DWUserSearchModelDelegate, DWUserSearchResultViewControllerDelegate>
+
+@property (nonatomic, assign) BOOL requiresNoNavigationBar;
 
 @property (null_resettable, nonatomic, strong) DWUserSearchModel *model;
 
@@ -41,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) DWUserSearchStateViewController *stateController;
 @property (null_resettable, nonatomic, strong) DWUserSearchResultViewController *resultsController;
 
-@property (nonatomic, assign) BOOL wasFirstResponder;
+@property (nonatomic, assign) BOOL searchBarIsFirstResponder;
 
 @end
 
@@ -49,10 +52,21 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchViewController
 
+@synthesize requiresNoNavigationBar = _requiresNoNavigationBar;
+
+- (BOOL)requiresNoNavigationBar {
+    return _requiresNoNavigationBar;
+}
+
+- (void)setRequiresNoNavigationBar:(BOOL)requiresNoNavigationBar {
+    _requiresNoNavigationBar = requiresNoNavigationBar;
+
+    [self.navigationController setNavigationBarHidden:requiresNoNavigationBar animated:YES];
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    self.wasFirstResponder = YES;
 
     self.title = NSLocalizedString(@"Add a New Contact", nil);
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
@@ -92,13 +106,15 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    if (self.wasFirstResponder) {
+    // Activate Search Bar initially
+    if (!self.searchBarIsFirstResponder) {
         [self.searchBar becomeFirstResponder];
+        self.searchBarIsFirstResponder = YES;
     }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.searchBar.isFirstResponder ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
+    return self.requiresNoNavigationBar ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
 }
 
 - (void)viewDidLayoutSubviews {
@@ -117,16 +133,15 @@ NS_ASSUME_NONNULL_END
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     [searchBar setShowsCancelButton:YES animated:YES];
-    [self.navigationController setNavigationBarHidden:YES animated:YES];
-    [self setNeedsStatusBarAppearanceUpdate];
-    self.wasFirstResponder = YES;
+    self.requiresNoNavigationBar = YES;
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
-    [searchBar setShowsCancelButton:NO animated:YES];
-    [self.navigationController setNavigationBarHidden:NO animated:YES];
-    [self setNeedsStatusBarAppearanceUpdate];
-    self.wasFirstResponder = NO;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (searchBar.showsCancelButton) {
+            [searchBar dw_enableCancelButton];
+        }
+    });
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
@@ -144,7 +159,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
+
+    self.requiresNoNavigationBar = NO;
 }
 
 - (BOOL)searchBar:(UISearchBar *)searchBar shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
