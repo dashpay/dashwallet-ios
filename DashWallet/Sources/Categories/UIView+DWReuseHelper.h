@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UICollectionViewCell (DWReuseHelper)
+@interface UIView (DWReuseHelper)
 
 @property (class, readonly, nonatomic) NSString *dw_reuseIdentifier;
 

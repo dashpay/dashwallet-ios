@@ -1,6 +1,6 @@
-//  
+//
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,19 @@
 //  limitations under the License.
 //
 
-#ifndef DWUIKit_h
-#define DWUIKit_h
+#import <UIKit/UIKit.h>
 
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
+NS_ASSUME_NONNULL_BEGIN
 
-#import "UIView+DWAnimations.h"
-#import "CALayer+DWShadow.h"
-#import "DevicesCompatibility.h"
+@interface DWUserProfileNavigationTitleView : UIView
 
-#import "UIView+DWReuseHelper.h"
+- (void)updateWithUsername:(NSString *)username;
+- (void)setScrollingPercent:(float)percent;
 
-#import "UIViewController+DWEmbedding.h"
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
-#endif /* DWUIKit_h */
+@end
+
+NS_ASSUME_NONNULL_END

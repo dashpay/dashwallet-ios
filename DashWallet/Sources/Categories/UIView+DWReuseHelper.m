@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "UIView+DWReuseHelper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UITableViewCell (DWReuseHelper)
+@implementation UIView (DWReuseHelper)
 
-@property (class, readonly, nonatomic) NSString *dw_reuseIdentifier;
++ (NSString *)dw_reuseIdentifier {
+    return NSStringFromClass(self);
+}
 
 @end
 
