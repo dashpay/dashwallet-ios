@@ -17,7 +17,7 @@
 
 #import "DWUserProfileHeaderView.h"
 
-#import "DWBlueActionButton.h"
+#import "DWActionButton.h"
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
 #import "DWUserProfileModel.h"
@@ -33,7 +33,7 @@ static CGFloat const BUTTON_HEIGHT = 40.0;
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UILabel *detailsLabel;
 @property (readonly, nonatomic, strong) UIView *bottomContentView;
-@property (readonly, nonatomic, strong) DWBlueActionButton *actionButton;
+@property (readonly, nonatomic, strong) DWActionButton *actionButton;
 @property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @end
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_END
 #endif /* DEBUG */
         [bottomContentView addSubview:bottomGrayView];
 
-        DWBlueActionButton *actionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *actionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         [bottomContentView addSubview:actionButton];
         _actionButton = actionButton;

@@ -17,7 +17,7 @@
 
 #import "DWUsernamePendingViewController.h"
 
-#import "DWActionButton.h"
+#import "DWBaseActionButton.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWDashPayAnimationView.h"
 #import "DWUIKit.h"
@@ -155,7 +155,7 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWActionButton *actionButton = [[DWActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
+        DWBaseActionButton *actionButton = [[DWBaseActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         actionButton.layer.cornerRadius = 8;
         actionButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];

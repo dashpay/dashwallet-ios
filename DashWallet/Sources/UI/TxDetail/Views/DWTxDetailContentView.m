@@ -17,7 +17,7 @@
 
 #import "DWTxDetailContentView.h"
 
-#import "DWBlueActionButton.h"
+#import "DWActionButton.h"
 #import "DWTitleDetailCellView.h"
 #import "DWTxDetailHeaderView.h"
 #import "DWTxDetailListView.h"
@@ -69,7 +69,7 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
         [detailsScrollView addSubview:detailListView];
         _detailListView = detailListView;
 
-        DWBlueActionButton *closeButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *closeButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
         closeButton.usedOnDarkBackground = NO;
         closeButton.small = YES;
         [closeButton setTitle:NSLocalizedString(@"Close", nil) forState:UIControlStateNormal];

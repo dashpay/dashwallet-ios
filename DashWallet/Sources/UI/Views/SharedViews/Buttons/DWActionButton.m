@@ -17,141 +17,175 @@
 
 #import "DWActionButton.h"
 
+#import "DWUIKit.h"
+
 NS_ASSUME_NONNULL_BEGIN
-
-@interface DWActionButton ()
-
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, UIColor *> *backgroundColors;
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, UIColor *> *borderColors;
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, NSNumber *> *borderWidths;
-
-@end
 
 @implementation DWActionButton
 
-- (void)setEnabled:(BOOL)enabled {
-    [super setEnabled:enabled];
+@synthesize accentColor = _accentColor;
 
-    [self updateButtonHighlighted:self.highlighted selected:self.selected];
-}
-
-- (void)setHighlighted:(BOOL)highlighted {
-    [super setHighlighted:highlighted];
-
-    [self updateButtonHighlighted:highlighted selected:self.selected];
-}
-
-- (void)setSelected:(BOOL)selected {
-    [super setSelected:selected];
-
-    [self updateButtonHighlighted:self.highlighted selected:selected];
-}
-
-#pragma mark - Background color
-
-- (UIColor *)backgroundColorForState:(UIControlState)state {
-    return self.backgroundColors[@(state)];
-}
-
-- (void)setBackgroundColor:(UIColor *)color forState:(UIControlState)state {
-    if (color) {
-        self.backgroundColors[@(state)] = color;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setup_ActionButton];
     }
-    else {
-        [self.backgroundColors removeObjectForKey:@(state)];
-    }
-
-    [self updateButtonHighlighted:self.highlighted selected:self.selected];
+    return self;
 }
 
-#pragma mark - Border color
-
-- (UIColor *)borderColorForState:(UIControlState)state {
-    return self.borderColors[@(state)];
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setup_ActionButton];
+    }
+    return self;
 }
 
-- (void)setBorderColor:(UIColor *)color forState:(UIControlState)state {
-    if (color) {
-        self.borderColors[@(state)] = color;
-    }
-    else {
-        [self.borderColors removeObjectForKey:@(state)];
-    }
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
 
-    [self updateButtonHighlighted:self.highlighted selected:self.selected];
+    [self resetAppearance];
 }
 
-#pragma mark - Border width
+- (void)setUsedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    _usedOnDarkBackground = usedOnDarkBackground;
 
-- (CGFloat)borderWidthForState:(UIControlState)state {
-    return self.borderWidths[@(state)].doubleValue;
+    [self resetAppearance];
 }
 
-- (void)setBorderWidth:(CGFloat)width forState:(UIControlState)state {
-    if (width) {
-        self.borderWidths[@(state)] = @(width);
-    }
-    else {
-        [self.borderWidths removeObjectForKey:@(state)];
-    }
+- (void)setInverted:(BOOL)inverted {
+    _inverted = inverted;
 
-    [self updateButtonHighlighted:self.highlighted selected:self.selected];
+    [self resetAppearance];
+}
+
+- (void)setSmall:(BOOL)small {
+    _small = small;
+
+    [self resetAppearance];
+}
+
+- (UIColor *)accentColor {
+    if (_accentColor == nil) {
+        _accentColor = [UIColor dw_dashBlueColor];
+    }
+    return _accentColor;
+}
+
+- (void)setAccentColor:(nullable UIColor *)accentColor {
+    _accentColor = accentColor;
+
+    [self resetAppearance];
 }
 
 #pragma mark - Private
 
-- (NSMutableDictionary<NSNumber *, UIColor *> *)backgroundColors {
-    if (_backgroundColors == nil) {
-        _backgroundColors = [NSMutableDictionary dictionary];
-    }
-    return _backgroundColors;
+- (void)setup_ActionButton {
+    self.usedOnDarkBackground = NO;
+    self.inverted = NO;
 }
 
-- (NSMutableDictionary<NSNumber *, UIColor *> *)borderColors {
-    if (_borderColors == nil) {
-        _borderColors = [NSMutableDictionary dictionary];
+- (void)resetAppearance {
+    UIFontTextStyle textStyle = UIFontTextStyleSubheadline;
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:textStyle];
+
+    if (self.small) {
+        self.contentEdgeInsets = [self _smallButtonContentEdgeInsets];
     }
-    return _borderColors;
+
+    self.layer.cornerRadius = [self _cornerRadius];
+    self.layer.masksToBounds = YES;
+
+    BOOL dark = self.usedOnDarkBackground;
+    BOOL inverted = self.inverted;
+
+    UIColor *color = [self _backgroundColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBackgroundColor:color forState:UIControlStateNormal];
+
+    color = [self _highlightedBackgroundColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBackgroundColor:color forState:UIControlStateHighlighted];
+
+    color = [self _disabledBackgroundColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBackgroundColor:color forState:UIControlStateDisabled];
+
+    color = [self _textColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setTitleColor:color forState:UIControlStateNormal];
+
+    color = [self _highlightedTextColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setTitleColor:color forState:UIControlStateHighlighted];
+
+    color = [self _disabledTextColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setTitleColor:color forState:UIControlStateDisabled];
+
+    CGFloat width = [self _borderWidthForInverted:inverted usedOnDarkBackground:dark];
+    [self setBorderWidth:width forState:UIControlStateNormal];
+
+    color = [self _borderColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBorderColor:color forState:UIControlStateNormal];
+
+    color = [self _disabledBorderColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBorderColor:color forState:UIControlStateDisabled];
 }
 
-- (NSMutableDictionary<NSNumber *, NSNumber *> *)borderWidths {
-    if (_borderWidths == nil) {
-        _borderWidths = [NSMutableDictionary dictionary];
-    }
-    return _borderWidths;
+#pragma mark - Styles
+
+- (UIColor *)_backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return inverted ? [UIColor clearColor] : self.accentColor;
 }
 
-- (void)updateButtonHighlighted:(BOOL)highlighted selected:(BOOL)selected {
-    UIControlState state = self.enabled ? UIControlStateNormal : UIControlStateDisabled;
-    if (highlighted) {
-        state = UIControlStateHighlighted;
-    }
+- (UIColor *)_highlightedBackgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return [UIColor clearColor];
+}
 
-    NSNumber *fallbackStateKey = @(UIControlStateNormal);
+- (UIColor *)_disabledBackgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    if (usedOnDarkBackground) {
+        return inverted ? [UIColor clearColor] : [UIColor dw_disabledButtonColor];
+    }
+    else {
+        return inverted ? [UIColor whiteColor] : [UIColor dw_disabledButtonColor];
+    }
+}
 
-    UIColor *backgroundColor = self.backgroundColors[@(state)];
-    if (!backgroundColor) {
-        backgroundColor = self.backgroundColors[fallbackStateKey];
+- (UIColor *)_textColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    if (usedOnDarkBackground) {
+        return [UIColor dw_lightTitleColor];
     }
-    if (backgroundColor) {
-        self.backgroundColor = backgroundColor;
+    else {
+        return inverted ? self.accentColor : [UIColor dw_lightTitleColor];
     }
+}
 
-    UIColor *borderColor = self.borderColors[@(state)];
-    if (!borderColor) {
-        borderColor = self.borderColors[fallbackStateKey];
+- (UIColor *)_highlightedTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    if (usedOnDarkBackground) {
+        return inverted ? [[UIColor dw_lightTitleColor] colorWithAlphaComponent:0.5] : self.accentColor;
     }
-    if (borderColor) {
-        self.layer.borderColor = borderColor.CGColor;
+    else {
+        return inverted ? [self.accentColor colorWithAlphaComponent:0.5] : self.accentColor;
     }
+}
 
-    NSNumber *borderWidth = self.borderWidths[@(state)];
-    if (!borderWidth) {
-        borderWidth = self.borderWidths[fallbackStateKey];
-    }
-    if (borderWidth) {
-        self.layer.borderWidth = borderWidth.doubleValue;
-    }
+- (UIColor *)_disabledTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return inverted ? [UIColor dw_disabledButtonColor] : [UIColor dw_disabledButtonTextColor];
+}
+
+- (UIColor *)_borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return inverted ? [UIColor clearColor] : self.accentColor;
+}
+
+- (UIColor *)_disabledBorderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return inverted ? [UIColor clearColor] : [UIColor dw_disabledButtonColor];
+}
+
+- (CGFloat)_borderWidthForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return 2.0;
+}
+
+- (UIEdgeInsets)_smallButtonContentEdgeInsets {
+    return UIEdgeInsetsMake(0.0, 12.0, 0.0, 12.0);
+}
+
+- (CGFloat)_cornerRadius {
+    return 8.0;
 }
 
 @end
