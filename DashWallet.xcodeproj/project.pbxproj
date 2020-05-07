@@ -373,6 +373,7 @@
 		2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D6E2462D4AD001D7C0D /* DWUserProfileHeaderView.m */; };
 		2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m */; };
 		2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */; };
+		2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */; };
 		2ADF83FA23632D1C008459A7 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
 		2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
@@ -1263,6 +1264,8 @@
 		2ADC9D6E2462D4AD001D7C0D /* DWUserProfileHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileHeaderView.m; sourceTree = "<group>"; };
 		2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWStretchyHeaderCollectionViewFlowLayout.m; sourceTree = "<group>"; };
 		2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileNavigationTitleView.m; sourceTree = "<group>"; };
+		2ADC9D7424640A2B001D7C0D /* DWUserProfileModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileModel.h; sourceTree = "<group>"; };
+		2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileModel.m; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
 		2AE2F0F7245C16C8001DD722 /* DWUserProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileViewController.h; sourceTree = "<group>"; };
 		2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileViewController.m; sourceTree = "<group>"; };
@@ -2668,6 +2671,8 @@
 				2ADC9D6A2462D4AD001D7C0D /* Views */,
 				2AE2F0F7245C16C8001DD722 /* DWUserProfileViewController.h */,
 				2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */,
+				2ADC9D7424640A2B001D7C0D /* DWUserProfileModel.h */,
+				2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -4547,6 +4552,7 @@
 				2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
+				2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */,
 				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,

@@ -200,6 +200,9 @@
 "Connecting to payment server" = "Connecting to payment server";
 
 /* No comment provided by engineer. */
+"Contact Request Pending" = "Contact Request Pending";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Связаться с поддержкой";
 
 /* No comment provided by engineer. */
@@ -726,6 +729,9 @@
 
 /* Send by (scanning QR code) */
 "Send by" = "Оплатить по";
+
+/* No comment provided by engineer. */
+"Send Contact Request" = "Send Contact Request";
 
 /* No comment provided by engineer. */
 "Send to" = "Отправить";

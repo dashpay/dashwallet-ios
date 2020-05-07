@@ -17,17 +17,17 @@
 
 #import "DWUserProfileViewController.h"
 
-#import "DWEnvironment.h"
 #import "DWStretchyHeaderCollectionViewFlowLayout.h"
 #import "DWUIKit.h"
 #import "DWUserProfileHeaderView.h"
+#import "DWUserProfileModel.h"
 #import "DWUserProfileNavigationTitleView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserProfileViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 @property (nullable, nonatomic, weak) DWUserProfileHeaderView *headerView;
@@ -41,7 +41,8 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _model = [[DWUserProfileModel alloc] initWithBlockchainIdentity:blockchainIdentity];
+        [_model update];
 
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -58,7 +59,7 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWUserProfileNavigationTitleView *titleView = [[DWUserProfileNavigationTitleView alloc] initWithFrame:CGRectZero];
-    [titleView updateWithUsername:self.blockchainIdentity.currentUsername];
+    [titleView updateWithUsername:self.model.username];
     CGSize titleSize = [titleView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
     titleView.frame = CGRectMake(0, 0, titleSize.width, titleSize.height);
     self.navigationItem.titleView = titleView;
@@ -83,7 +84,7 @@ NS_ASSUME_NONNULL_END
         dequeueReusableSupplementaryViewOfKind:kind
                            withReuseIdentifier:DWUserProfileHeaderView.dw_reuseIdentifier
                                   forIndexPath:indexPath];
-    [headerView updateWithUsername:self.blockchainIdentity.currentUsername];
+    headerView.model = self.model;
     self.headerView = headerView;
     return headerView;
 }

@@ -20,6 +20,7 @@
 #import "DWBlueActionButton.h"
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
+#import "DWUserProfileModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,6 +34,7 @@ static CGFloat const BUTTON_HEIGHT = 40.0;
 @property (readonly, nonatomic, strong) UILabel *detailsLabel;
 @property (readonly, nonatomic, strong) UIView *bottomContentView;
 @property (readonly, nonatomic, strong) DWBlueActionButton *actionButton;
+@property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @end
 
@@ -104,6 +106,12 @@ NS_ASSUME_NONNULL_END
         [bottomContentView addSubview:actionButton];
         _actionButton = actionButton;
 
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+        activityIndicatorView.color = [UIColor dw_dashBlueColor];
+        [bottomContentView addSubview:activityIndicatorView];
+        _activityIndicatorView = activityIndicatorView;
+
         UILayoutGuide *guide = self.layoutMarginsGuide;
 
         const CGFloat overlap = BUTTON_HEIGHT / 2.0;
@@ -154,19 +162,23 @@ NS_ASSUME_NONNULL_END
                                                  constant:buttonPadding],
             [actionButton.heightAnchor constraintEqualToConstant:BUTTON_HEIGHT],
             [bottomContentView.bottomAnchor constraintEqualToAnchor:actionButton.bottomAnchor],
+
+            [activityIndicatorView.centerYAnchor constraintEqualToAnchor:actionButton.centerYAnchor],
+            [activityIndicatorView.centerXAnchor constraintEqualToAnchor:bottomContentView.centerXAnchor],
         ]];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.state)
+                      with:^(typeof(self) self, id value) {
+                          [self updateState:self.model.state];
+                      }];
     }
     return self;
 }
 
-- (void)updateWithUsername:(NSString *)username {
-    self.detailsLabel.text = username;
-    self.avatarView.username = username;
+- (void)setModel:(DWUserProfileModel *)model {
+    _model = model;
 
-    // TODO
-    [self.actionButton setTitle:@"Send Contact Request" forState:UIControlStateNormal];
-
-    [self setScrollingPercent:0.0];
+    [self updateUsername:model.username];
 }
 
 - (void)setScrollingPercent:(float)percent {
@@ -188,6 +200,70 @@ NS_ASSUME_NONNULL_END
         else {
             self.actionButton.alpha = 1.0;
         }
+    }
+}
+
+#pragma mark - Private
+
+- (void)updateState:(DWUserProfileModelState)state {
+    switch (state) {
+        case DWUserProfileModelState_None:
+        case DWUserProfileModelState_Error:
+            self.actionButton.hidden = YES;
+            [self.activityIndicatorView stopAnimating];
+
+            break;
+        case DWUserProfileModelState_Loading:
+            self.actionButton.hidden = YES;
+            [self.activityIndicatorView startAnimating];
+
+            break;
+        case DWUserProfileModelState_Done:
+            self.actionButton.hidden = NO;
+            [self.activityIndicatorView stopAnimating];
+            [self updateActions];
+
+            break;
+    }
+}
+
+- (void)updateUsername:(NSString *)username {
+    self.detailsLabel.text = username;
+    self.avatarView.username = username;
+
+    [self setScrollingPercent:0.0];
+}
+
+- (void)updateActions {
+    switch (self.model.friendshipStatus) {
+        case DSBlockchainIdentityFriendshipStatus_Unknown:
+            self.actionButton.hidden = YES;
+
+            break;
+        case DSBlockchainIdentityFriendshipStatus_None:
+            self.actionButton.hidden = NO;
+            self.actionButton.enabled = YES;
+            [self.actionButton setTitle:NSLocalizedString(@"Send Contact Request", nil) forState:UIControlStateNormal];
+
+            break;
+        case DSBlockchainIdentityFriendshipStatus_Outgoing:
+            self.actionButton.hidden = NO;
+            self.actionButton.enabled = NO;
+            [self.actionButton setTitle:NSLocalizedString(@"Contact Request Pending", nil) forState:UIControlStateNormal];
+
+            break;
+        case DSBlockchainIdentityFriendshipStatus_Incoming:
+            self.actionButton.hidden = NO;
+            self.actionButton.enabled = YES;
+            [self.actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
+
+            break;
+        case DSBlockchainIdentityFriendshipStatus_Friends:
+            self.actionButton.hidden = NO;
+            self.actionButton.enabled = YES;
+            [self.actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
+
+            break;
     }
 }
 
