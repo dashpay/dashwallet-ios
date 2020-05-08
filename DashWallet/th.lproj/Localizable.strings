@@ -331,6 +331,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "ไปยังเว็บไซต์";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "มีการควบคุมที่สมบูรณ์และกำหนดกระเป๋าเงินของคุณตามความต้องการของคุณ";
 

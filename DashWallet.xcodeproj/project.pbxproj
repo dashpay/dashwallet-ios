@@ -210,6 +210,7 @@
 		2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
 		2A858A13237EE8A80097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
 		2A858A14237EE8A80097A7B5 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
+		2A880FE924646A8A00994FD4 /* DWActivityCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A880FE824646A8A00994FD4 /* DWActivityCollectionViewCell.m */; };
 		2A885FC82449B66500B9F679 /* DWUserSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FC62449B66500B9F679 /* DWUserSearchStateViewController.m */; };
 		2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCB2449F08700B9F679 /* DWUserSearchResultViewController.m */; };
 		2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCF2449F37A00B9F679 /* DWUserSearchModel.m */; };
@@ -374,6 +375,7 @@
 		2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m */; };
 		2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */; };
 		2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */; };
+		2ADC9D7C24644E46001D7C0D /* DWUserProfileContactActionsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */; };
 		2ADF83FA23632D1C008459A7 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
 		2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
@@ -923,6 +925,8 @@
 		2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhoneWCSessionManager.m; sourceTree = "<group>"; };
 		2A858A0D237EE89B0097A7B5 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppleWatchTransactionData.m; sourceTree = "<group>"; };
+		2A880FE724646A8A00994FD4 /* DWActivityCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWActivityCollectionViewCell.h; sourceTree = "<group>"; };
+		2A880FE824646A8A00994FD4 /* DWActivityCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWActivityCollectionViewCell.m; sourceTree = "<group>"; };
 		2A885FC52449B66500B9F679 /* DWUserSearchStateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserSearchStateViewController.h; sourceTree = "<group>"; };
 		2A885FC62449B66500B9F679 /* DWUserSearchStateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchStateViewController.m; sourceTree = "<group>"; };
 		2A885FCA2449F08700B9F679 /* DWUserSearchResultViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserSearchResultViewController.h; sourceTree = "<group>"; };
@@ -1266,6 +1270,8 @@
 		2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileNavigationTitleView.m; sourceTree = "<group>"; };
 		2ADC9D7424640A2B001D7C0D /* DWUserProfileModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileModel.h; sourceTree = "<group>"; };
 		2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileModel.m; sourceTree = "<group>"; };
+		2ADC9D7A24644E46001D7C0D /* DWUserProfileContactActionsCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileContactActionsCell.h; sourceTree = "<group>"; };
+		2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileContactActionsCell.m; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
 		2AE2F0F7245C16C8001DD722 /* DWUserProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileViewController.h; sourceTree = "<group>"; };
 		2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileViewController.m; sourceTree = "<group>"; };
@@ -3305,6 +3311,10 @@
 				2ADC9D6E2462D4AD001D7C0D /* DWUserProfileHeaderView.m */,
 				2ADC9D6D2462D4AD001D7C0D /* DWUserProfileNavigationTitleView.h */,
 				2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */,
+				2ADC9D7A24644E46001D7C0D /* DWUserProfileContactActionsCell.h */,
+				2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */,
+				2A880FE724646A8A00994FD4 /* DWActivityCollectionViewCell.h */,
+				2A880FE824646A8A00994FD4 /* DWActivityCollectionViewCell.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4457,6 +4467,7 @@
 				2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */,
 				2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */,
 				2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */,
+				2A880FE924646A8A00994FD4 /* DWActivityCollectionViewCell.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,
 				2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */,
@@ -4574,6 +4585,7 @@
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				2A612AB724409D6E0060CC77 /* DWDashPayProfileView.m in Sources */,
 				2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */,
+				2ADC9D7C24644E46001D7C0D /* DWUserProfileContactActionsCell.m in Sources */,
 				2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,

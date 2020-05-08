@@ -331,6 +331,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Ir a la página web";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Tenga control completo y configure su billetera de acuerdo a sus necesidades";
 

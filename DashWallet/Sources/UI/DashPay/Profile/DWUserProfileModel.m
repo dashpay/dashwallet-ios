@@ -39,6 +39,12 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)setState:(DWUserProfileModelState)state {
+    _state = state;
+
+    [self.delegate userProfileModelDidUpdateState:self];
+}
+
 - (NSString *)username {
     return self.blockchainIdentity.currentUsername;
 }
@@ -47,7 +53,9 @@ NS_ASSUME_NONNULL_END
     self.state = DWUserProfileModelState_Loading;
 
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    [mineBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

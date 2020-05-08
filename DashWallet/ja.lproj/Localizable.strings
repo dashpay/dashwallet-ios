@@ -331,6 +331,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "ウェブサイトへ行く";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "自分のウォレットを完全に制御していて、ニーズに基づいてカスタマイズする";
 

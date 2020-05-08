@@ -29,12 +29,22 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
     DWUserProfileModelState_Done,
 };
 
+@class DWUserProfileModel;
+
+@protocol DWUserProfileModelDelegate <NSObject>
+
+- (void)userProfileModelDidUpdateState:(DWUserProfileModel *)model;
+
+@end
+
 @interface DWUserProfileModel : NSObject
 
 @property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 @property (readonly, nonatomic, assign) DWUserProfileModelState state;
 @property (readonly, nonatomic, copy) NSString *username;
 @property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
+
+@property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
 
 - (void)update;
 

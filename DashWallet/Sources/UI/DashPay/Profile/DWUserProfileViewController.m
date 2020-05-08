@@ -17,15 +17,21 @@
 
 #import "DWUserProfileViewController.h"
 
+#import "DWActivityCollectionViewCell.h"
 #import "DWStretchyHeaderCollectionViewFlowLayout.h"
 #import "DWUIKit.h"
+#import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
 #import "DWUserProfileModel.h"
 #import "DWUserProfileNavigationTitleView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserProfileViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
+@interface DWUserProfileViewController () <UICollectionViewDataSource,
+                                           UICollectionViewDelegate,
+                                           UICollectionViewDelegateFlowLayout,
+                                           DWUserProfileModelDelegate,
+                                           DWUserProfileHeaderViewDelegate>
 
 @property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
@@ -42,6 +48,7 @@ NS_ASSUME_NONNULL_END
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _model = [[DWUserProfileModel alloc] initWithBlockchainIdentity:blockchainIdentity];
+        _model.delegate = self;
         [_model update];
 
         self.hidesBottomBarWhenPushed = YES;
@@ -75,39 +82,76 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - UICollectionViewDataSource
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 2;
+}
+
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return 20;
+    if (section == 0) {
+        BOOL shouldDisplayActions = self.model.state == DWUserProfileModelState_Done &&
+                                    self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming;
+        return shouldDisplayActions ? 1 : 0;
+    }
+    else {
+        return 20;
+    }
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section != 0) {
+        return nil;
+    }
+
     DWUserProfileHeaderView *headerView = (DWUserProfileHeaderView *)[collectionView
         dequeueReusableSupplementaryViewOfKind:kind
                            withReuseIdentifier:DWUserProfileHeaderView.dw_reuseIdentifier
                                   forIndexPath:indexPath];
     headerView.model = self.model;
+    headerView.delegate = self;
     self.headerView = headerView;
     return headerView;
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
-    cell.backgroundColor = UIColor.whiteColor;
-    return cell;
+    if (indexPath.section == 0) {
+        DWUserProfileContactActionsCell *cell = [collectionView
+                                                 dequeueReusableCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier
+                                                 forIndexPath:indexPath];
+        cell.username = self.model.username;
+        [cell configureForIncomingStatus];
+        return cell;
+    }
+    else {
+        DWActivityCollectionViewCell *cell = [collectionView
+            dequeueReusableCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier
+                                      forIndexPath:indexPath];
+        cell.text = [NSString stringWithFormat:@"Placeholder %@ - %@", @(indexPath.section), @(indexPath.item)];
+        return cell;
+    }
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    // TODO: fix
-    return CGSizeMake(CGRectGetWidth(collectionView.bounds) - 20, 44);
-}
-
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if (section != 0) {
+        return CGSizeZero;
+    }
+
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
     UIView *headerView = [self collectionView:collectionView
             viewForSupplementaryElementOfKind:UICollectionElementKindSectionHeader
                                   atIndexPath:indexPath];
-    return [headerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+    const CGSize size = [headerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+    return size;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0) {
+        return CGSizeMake(collectionView.bounds.size.width, 100);
+    }
+    else {
+        return CGSizeMake(collectionView.bounds.size.width, 50);
+    }
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -130,11 +174,20 @@ NS_ASSUME_NONNULL_END
     [titleView setScrollingPercent:percent];
 }
 
+#pragma mark - DWUserProfileModelDelegate
+
+- (void)userProfileModelDidUpdateState:(DWUserProfileModel *)model {
+    [self.collectionView reloadData];
+}
+
+#pragma mark - DWUserProfileHeaderViewDelegate
+
 #pragma mark - Private
 
 - (UICollectionView *)collectionView {
     if (_collectionView == nil) {
         DWStretchyHeaderCollectionViewFlowLayout *layout = [[DWStretchyHeaderCollectionViewFlowLayout alloc] init];
+        layout.scrollDirection = UICollectionViewScrollDirectionVertical;
 
         UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
                                                               collectionViewLayout:layout];
@@ -142,9 +195,13 @@ NS_ASSUME_NONNULL_END
         collectionView.dataSource = self;
         collectionView.delegate = self;
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        collectionView.alwaysBounceVertical = YES;
 
-        // TODO: temp cell
-        [collectionView registerClass:UICollectionViewCell.class forCellWithReuseIdentifier:@"cell"];
+        [collectionView registerClass:DWActivityCollectionViewCell.class
+            forCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier];
+
+        [collectionView registerClass:DWUserProfileContactActionsCell.class
+            forCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier];
 
         [collectionView registerClass:DWUserProfileHeaderView.class
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader

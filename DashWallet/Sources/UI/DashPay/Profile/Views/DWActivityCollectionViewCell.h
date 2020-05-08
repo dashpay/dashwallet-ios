@@ -15,24 +15,15 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DSBlockchainIdentity.h>
-#import <KVO-MVVM/KVOUICollectionReusableView.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUserProfileModel;
-@class DWUserProfileHeaderView;
+@interface DWActivityCollectionViewCell : UICollectionViewCell
 
-@protocol DWUserProfileHeaderViewDelegate <NSObject>
+@property (readonly, nonatomic, strong) UIView *rootView;
 
-@end
-
-@interface DWUserProfileHeaderView : KVOUICollectionReusableView
-
-@property (nullable, nonatomic, strong) DWUserProfileModel *model;
-@property (nullable, nonatomic, weak) id<DWUserProfileHeaderViewDelegate> delegate;
-
-- (void)setScrollingPercent:(float)percent;
+@property (nullable, nonatomic, copy) NSString *text;
 
 @end
 

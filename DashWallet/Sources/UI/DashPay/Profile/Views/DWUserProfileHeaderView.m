@@ -160,8 +160,9 @@ NS_ASSUME_NONNULL_END
                                                        constant:buttonPadding],
             [guide.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor
                                                  constant:buttonPadding],
+            [bottomContentView.bottomAnchor constraintEqualToAnchor:actionButton.bottomAnchor
+                                                           constant:spacing],
             [actionButton.heightAnchor constraintEqualToConstant:BUTTON_HEIGHT],
-            [bottomContentView.bottomAnchor constraintEqualToAnchor:actionButton.bottomAnchor],
 
             [activityIndicatorView.centerYAnchor constraintEqualToAnchor:actionButton.centerYAnchor],
             [activityIndicatorView.centerXAnchor constraintEqualToAnchor:bottomContentView.centerXAnchor],
@@ -235,7 +236,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)updateActions {
-    switch (self.model.friendshipStatus) {
+    const DSBlockchainIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
+    switch (friendshipStatus) {
         case DSBlockchainIdentityFriendshipStatus_Unknown:
             self.actionButton.hidden = YES;
 
@@ -253,11 +255,6 @@ NS_ASSUME_NONNULL_END
 
             break;
         case DSBlockchainIdentityFriendshipStatus_Incoming:
-            self.actionButton.hidden = NO;
-            self.actionButton.enabled = YES;
-            [self.actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
-
-            break;
         case DSBlockchainIdentityFriendshipStatus_Friends:
             self.actionButton.hidden = NO;
             self.actionButton.enabled = YES;

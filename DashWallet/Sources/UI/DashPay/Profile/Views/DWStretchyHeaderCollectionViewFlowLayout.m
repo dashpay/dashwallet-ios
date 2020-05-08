@@ -20,20 +20,18 @@
 @implementation DWStretchyHeaderCollectionViewFlowLayout
 
 - (NSArray<__kindof UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
-    NSArray<__kindof UICollectionViewLayoutAttributes *> *layoutAttributes = [super layoutAttributesForElementsInRect:rect];
-
-    UICollectionView *collectionView = self.collectionView;
-    const CGFloat contentOffsetY = collectionView.contentOffset.y;
-    if (collectionView == nil || contentOffsetY > 0) {
-        return layoutAttributes;
-    }
+    NSArray<UICollectionViewLayoutAttributes *> *layoutAttributes = [[super layoutAttributesForElementsInRect:rect] copy];
 
     for (UICollectionViewLayoutAttributes *attributes in layoutAttributes) {
         if ([attributes.representedElementKind isEqualToString:UICollectionElementKindSectionHeader] &&
             attributes.indexPath.section == 0) {
-            const CGFloat width = CGRectGetWidth(collectionView.bounds);
-            const CGFloat height = CGRectGetHeight(attributes.frame) - contentOffsetY;
-            attributes.frame = CGRectMake(0, contentOffsetY, width, height);
+            UICollectionView *collectionView = self.collectionView;
+            const CGFloat contentOffsetY = collectionView.contentOffset.y;
+            if (collectionView != nil && contentOffsetY < 0) {
+                const CGFloat width = CGRectGetWidth(collectionView.bounds);
+                const CGFloat height = CGRectGetHeight(attributes.frame) - contentOffsetY;
+                attributes.frame = CGRectMake(0, contentOffsetY, width, height);
+            }
         }
     }
 

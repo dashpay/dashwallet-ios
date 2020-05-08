@@ -331,6 +331,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Έχετε τον πλήρη έλεγχο να προσαρμόσετε το πορτοφόλι σας ανάλογα με τις ανάγκες σας";
 
