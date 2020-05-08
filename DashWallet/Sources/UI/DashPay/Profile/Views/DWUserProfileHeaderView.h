@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWUserProfileHeaderViewDelegate <NSObject>
 
+- (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender;
+
 @end
 
 @interface DWUserProfileHeaderView : KVOUICollectionReusableView

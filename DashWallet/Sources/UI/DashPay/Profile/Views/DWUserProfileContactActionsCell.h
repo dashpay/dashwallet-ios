@@ -19,12 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWUserProfileContactActionsCell;
+
+@protocol DWUserProfileContactActionsCellDelegate <NSObject>
+
+- (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell mainButtonAction:(UIButton *)sender;
+- (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell secondaryButtonAction:(UIButton *)sender;
+
+@end
+
 @interface DWUserProfileContactActionsCell : UICollectionViewCell
 
 @property (nullable, nonatomic, copy) NSString *username;
-
-@property (readonly, nonatomic, strong) UIButton *mainButton;
-@property (readonly, nonatomic, strong) UIButton *secondaryButton;
+@property (nullable, nonatomic, weak) id<DWUserProfileContactActionsCellDelegate> delegate;
 
 - (void)configureForIncomingStatus;
 

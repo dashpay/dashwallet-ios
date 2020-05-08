@@ -52,9 +52,9 @@ NS_ASSUME_NONNULL_END
 - (void)update {
     self.state = DWUserProfileModelState_Loading;
 
-    __weak typeof(self) weakSelf = self;
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    __weak typeof(self) weakSelf = self;
     [mineBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -66,9 +66,49 @@ NS_ASSUME_NONNULL_END
 }
 
 - (DSBlockchainIdentityFriendshipStatus)friendshipStatus {
+    if (self.state != DWUserProfileModelState_Done) {
+        return DSBlockchainIdentityFriendshipStatus_Unknown;
+    }
+
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
     return [mineBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:self.blockchainIdentity];
+}
+
+- (void)sendContactRequest {
+    self.state = DWUserProfileModelState_Loading;
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:self.username];
+    __weak typeof(self) weakSelf = self;
+    [mineBlockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
+                                                        completion:
+                                                            ^(BOOL success, NSError *_Nonnull error) {
+                                                                __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                if (!strongSelf) {
+                                                                    return;
+                                                                }
+
+                                                                strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                            }];
+}
+
+- (void)acceptContactRequest {
+    self.state = DWUserProfileModelState_Loading;
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    __weak typeof(self) weakSelf = self;
+    [mineBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:self.blockchainIdentity
+                                                           completion:^(BOOL success, NSError *_Nonnull error) {
+                                                               __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                               if (!strongSelf) {
+                                                                   return;
+                                                               }
+
+                                                               strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                           }];
 }
 
 @end

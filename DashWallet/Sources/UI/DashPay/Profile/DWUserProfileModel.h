@@ -48,6 +48,9 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 
 - (void)update;
 
+- (void)sendContactRequest;
+- (void)acceptContactRequest;
+
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 - (instancetype)init NS_UNAVAILABLE;

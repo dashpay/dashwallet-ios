@@ -103,6 +103,7 @@ NS_ASSUME_NONNULL_END
 
         DWActionButton *actionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
+        [actionButton addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         [bottomContentView addSubview:actionButton];
         _actionButton = actionButton;
 
@@ -262,6 +263,10 @@ NS_ASSUME_NONNULL_END
 
             break;
     }
+}
+
+- (void)actionButtonAction:(UIButton *)sender {
+    [self.delegate userProfileHeaderView:self actionButtonAction:sender];
 }
 
 @end

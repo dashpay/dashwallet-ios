@@ -31,7 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
                                            UICollectionViewDelegate,
                                            UICollectionViewDelegateFlowLayout,
                                            DWUserProfileModelDelegate,
-                                           DWUserProfileHeaderViewDelegate>
+                                           DWUserProfileHeaderViewDelegate,
+                                           DWUserProfileContactActionsCellDelegate>
 
 @property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
@@ -115,9 +116,10 @@ NS_ASSUME_NONNULL_END
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         DWUserProfileContactActionsCell *cell = [collectionView
-                                                 dequeueReusableCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier
-                                                 forIndexPath:indexPath];
+            dequeueReusableCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier
+                                      forIndexPath:indexPath];
         cell.username = self.model.username;
+        cell.delegate = self;
         [cell configureForIncomingStatus];
         return cell;
     }
@@ -147,7 +149,7 @@ NS_ASSUME_NONNULL_END
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        return CGSizeMake(collectionView.bounds.size.width, 100);
+        return CGSizeMake(collectionView.bounds.size.width, 120);
     }
     else {
         return CGSizeMake(collectionView.bounds.size.width, 50);
@@ -181,6 +183,23 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - DWUserProfileHeaderViewDelegate
+
+- (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender {
+    if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None) {
+        [self.model sendContactRequest];
+    }
+}
+
+#pragma mark - DWUserProfileContactActionsCellDelegate
+
+- (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell mainButtonAction:(UIButton *)sender {
+    if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming) {
+        [self.model acceptContactRequest];
+    }
+}
+
+- (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell secondaryButtonAction:(UIButton *)sender {
+}
 
 #pragma mark - Private
 

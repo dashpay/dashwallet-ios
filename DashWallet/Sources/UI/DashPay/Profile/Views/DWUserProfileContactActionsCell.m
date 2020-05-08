@@ -27,6 +27,8 @@ static CGFloat const BUTTON_HEIGHT = 38.0;
 @interface DWUserProfileContactActionsCell ()
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
+@property (readonly, nonatomic, strong) UIButton *mainButton;
+@property (readonly, nonatomic, strong) UIButton *secondaryButton;
 
 @end
 
@@ -59,12 +61,14 @@ NS_ASSUME_NONNULL_END
         mainButton.translatesAutoresizingMaskIntoConstraints = NO;
         mainButton.accentColor = [UIColor dw_greenColor];
         mainButton.small = YES;
+        [mainButton addTarget:self action:@selector(mainButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _mainButton = mainButton;
 
         DWActionButton *secondaryButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
         secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
         secondaryButton.accentColor = [UIColor dw_quaternaryTextColor];
         secondaryButton.small = YES;
+        [mainButton addTarget:self action:@selector(secondaryButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _secondaryButton = secondaryButton;
 
         UIStackView *actionsStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ mainButton, secondaryButton ]];
@@ -145,6 +149,16 @@ NS_ASSUME_NONNULL_END
     self.secondaryButton.hidden = NO;
     [self.mainButton setTitle:NSLocalizedString(@"Accept", nil) forState:UIControlStateNormal];
     [self.secondaryButton setTitle:NSLocalizedString(@"Ignore", nil) forState:UIControlStateNormal];
+}
+
+#pragma mark - Private
+
+- (void)mainButtonAction:(UIButton *)sender {
+    [self.delegate userProfileContactActionsCell:self mainButtonAction:sender];
+}
+
+- (void)secondaryButtonAction:(UIButton *)sender {
+    [self.delegate userProfileContactActionsCell:self secondaryButtonAction:sender];
 }
 
 @end
