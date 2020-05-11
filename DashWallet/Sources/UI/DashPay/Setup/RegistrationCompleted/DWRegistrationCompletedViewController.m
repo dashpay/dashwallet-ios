@@ -17,8 +17,8 @@
 
 #import "DWRegistrationCompletedViewController.h"
 
+#import "DWActionButton.h"
 #import "DWBaseActionButtonViewController.h"
-#import "DWBlueActionButton.h"
 #import "DWUIKit.h"
 
 @interface DWRegistrationCompletedViewController ()
@@ -107,7 +107,7 @@
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWBlueActionButton *button = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
         button.translatesAutoresizingMaskIntoConstraints = NO;
         [button setTitle:NSLocalizedString(@"Continue", nil) forState:UIControlStateNormal];
         [button addTarget:self action:@selector(actionButtonAction) forControlEvents:UIControlEventTouchUpInside];

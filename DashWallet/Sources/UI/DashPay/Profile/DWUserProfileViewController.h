@@ -1,6 +1,6 @@
 //
-//  Created by Sam Westrich
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by Andrew Podkovyrin
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWActionButton.h"
+#import "DWNavigationChildViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBlueActionButton : DWActionButton
+@class DSBlockchainIdentity;
 
-@property (assign, nonatomic) IBInspectable BOOL usedOnDarkBackground;
-@property (assign, nonatomic) IBInspectable BOOL inverted;
-@property (assign, nonatomic) IBInspectable BOOL small;
+@interface DWUserProfileViewController : DWNavigationChildViewController
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

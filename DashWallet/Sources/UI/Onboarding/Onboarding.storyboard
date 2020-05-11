@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mfe-wo-u6J">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mfe-wo-u6J">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -19,18 +17,18 @@
             <objects>
                 <viewController id="mfe-wo-u6J" customClass="DWOnboardingViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="7uN-mz-x2B">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image_bg" translatesAutoresizingMaskIntoConstraints="NO" id="dxp-Sr-wRy">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                             </imageView>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TZ0-fC-5QE" userLabel="Mini View">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="hHh-RO-hDv">
-                                <rect key="frame" x="0.0" y="44" width="414" height="779"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="561"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="Ex7-yL-g6I">
                                     <size key="itemSize" width="414" height="788"/>
@@ -40,7 +38,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="DWOnboardingCollectionViewCell" id="ojA-AN-heX" customClass="DWOnboardingCollectionViewCell">
-                                        <rect key="frame" x="0.0" y="-4.5" width="414" height="788"/>
+                                        <rect key="frame" x="0.0" y="-113.5" width="414" height="788"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="xgz-jQ-vfd">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="788"/>
@@ -50,13 +48,13 @@
                                                     <rect key="frame" x="16" y="610" width="382" height="134"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="255" verticalCompressionResistancePriority="755" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Ui7-1w-y7K" userLabel="Title Label">
-                                                            <rect key="frame" x="0.0" y="0.0" width="382" height="41.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="382" height="40"/>
                                                             <fontDescription key="fontDescription" name="Montserrat-SemiBold" family="Montserrat" pointSize="34"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eOh-0X-BYV" userLabel="Detail Label">
-                                                            <rect key="frame" x="0.0" y="41.5" width="382" height="92.5"/>
+                                                            <rect key="frame" x="0.0" y="40" width="382" height="94"/>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -97,14 +95,14 @@
                                 </connections>
                             </collectionView>
                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="QG9-h2-t4z">
-                                <rect key="frame" x="187.5" y="778" width="39" height="37"/>
+                                <rect key="frame" x="280.5" y="516" width="39" height="37"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <connections>
                                     <action selector="pageValueChangedAction:" destination="mfe-wo-u6J" eventType="valueChanged" id="maf-Xk-VzB"/>
                                 </connections>
                             </pageControl>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="RB2-Fy-ILD" userLabel="Skip Button" customClass="DWBlueActionButton">
-                                <rect key="frame" x="107" y="823" width="200" height="39"/>
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="RB2-Fy-ILD" userLabel="Skip Button" customClass="DWActionButton">
+                                <rect key="frame" x="200" y="561" width="200" height="39"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="7G5-0Q-iyB"/>
                                 </constraints>
@@ -117,8 +115,8 @@
                                     <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="xlR-po-XgS"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="DWBlueActionButton">
-                                <rect key="frame" x="107" y="823" width="200" height="39"/>
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="DWActionButton">
+                                <rect key="frame" x="200" y="561" width="200" height="39"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="K1j-dE-2o4"/>

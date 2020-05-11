@@ -200,6 +200,9 @@
 "Connecting to payment server" = "Connecting to payment server";
 
 /* No comment provided by engineer. */
+"Contact Request Pending" = "Contact Request Pending";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Contato com o Suporte";
 
 /* No comment provided by engineer. */
@@ -327,6 +330,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "Ir para o site";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Tenha controle completo e customize sua carteira de acordo com suas necessidades";
@@ -726,6 +732,9 @@
 
 /* Send by (scanning QR code) */
 "Send by" = "Enviar por";
+
+/* No comment provided by engineer. */
+"Send Contact Request" = "Send Contact Request";
 
 /* No comment provided by engineer. */
 "Send to" = "Enviar para";

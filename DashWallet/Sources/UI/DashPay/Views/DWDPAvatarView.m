@@ -19,11 +19,15 @@
 
 #import "DWUIKit.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface DWDPAvatarView ()
 
 @property (readonly, nonatomic, strong) UILabel *letterLabel;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWDPAvatarView
 

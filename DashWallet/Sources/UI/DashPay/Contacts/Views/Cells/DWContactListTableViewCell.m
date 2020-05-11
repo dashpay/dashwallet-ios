@@ -19,7 +19,7 @@
 
 #import <DashSync/DSTransaction.h>
 
-#import "DWBlueActionButton.h"
+#import "DWActionButton.h"
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
 
@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (UIView *)createContactRequestActionsView {
-    DWBlueActionButton *acceptButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+    DWActionButton *acceptButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
     acceptButton.translatesAutoresizingMaskIntoConstraints = NO;
     acceptButton.small = YES;
     [acceptButton setTitle:NSLocalizedString(@"Accept", nil) forState:UIControlStateNormal];

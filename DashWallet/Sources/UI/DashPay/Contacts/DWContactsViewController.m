@@ -17,7 +17,6 @@
 
 #import "DWContactsViewController.h"
 
-#import "DWContactProfileViewController.h"
 #import "DWContactsContentView.h"
 #import "DWContactsModel.h"
 #import "DWUserSearchViewController.h"
@@ -81,8 +80,6 @@
 #pragma mark - DWContactsContentViewDelegate
 
 - (void)contactsContentView:(DWContactsContentView *)view didSelectContact:(id<DWContactItem>)contact {
-    DWContactProfileViewController *controller = [DWContactProfileViewController controllerWithContact:contact];
-    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)contactsContentView:(DWContactsContentView *)view didAcceptContact:(id<DWContactItem>)contact {

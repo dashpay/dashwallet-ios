@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,15 +15,20 @@
 //  limitations under the License.
 //
 
-#import "UITableViewCell+DWReuseHelper.h"
+#import "DWButton.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation UITableViewCell (DWReuseHelper)
+@interface DWBaseActionButton : DWButton
 
-+ (NSString *)dw_reuseIdentifier {
-    return NSStringFromClass(self);
-}
+- (UIColor *)backgroundColorForState:(UIControlState)state;
+- (void)setBackgroundColor:(UIColor *)color forState:(UIControlState)state;
+
+- (UIColor *)borderColorForState:(UIControlState)state;
+- (void)setBorderColor:(UIColor *)color forState:(UIControlState)state;
+
+- (CGFloat)borderWidthForState:(UIControlState)state;
+- (void)setBorderWidth:(CGFloat)width forState:(UIControlState)state;
 
 @end
 

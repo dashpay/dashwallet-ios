@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactObject : NSObject <DWContactItem>
 
+@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 - (instancetype)init NS_UNAVAILABLE;

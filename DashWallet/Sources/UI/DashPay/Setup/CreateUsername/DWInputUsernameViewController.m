@@ -19,9 +19,9 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DWActionButton.h"
 #import "DWAllowedCharactersUsernameValidationRule.h"
 #import "DWBaseActionButtonViewController.h"
-#import "DWBlueActionButton.h"
 #import "DWCheckExistenceUsernameValidationRule.h"
 #import "DWDashPayConstants.h"
 #import "DWMaxLengthUsernameValidationRule.h"
@@ -247,7 +247,7 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)registerButton {
     if (_registerButton == nil) {
-        _registerButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+        _registerButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
         _registerButton.translatesAutoresizingMaskIntoConstraints = NO;
         [_registerButton setTitle:NSLocalizedString(@"Register", @"Button title, Register (username)")
                          forState:UIControlStateNormal];

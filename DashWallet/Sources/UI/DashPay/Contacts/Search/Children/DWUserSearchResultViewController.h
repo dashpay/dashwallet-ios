@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                 willDisplayItemAtIndex:(NSInteger)index;
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                  didSelectItemAtIndex:(NSInteger)index;
 
 @end
 

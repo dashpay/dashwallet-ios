@@ -25,8 +25,7 @@
 #import "CALayer+DWShadow.h"
 #import "DevicesCompatibility.h"
 
-#import "UITableViewCell+DWReuseHelper.h"
-#import "UICollectionViewCell+DWReuseHelper.h"
+#import "UIView+DWReuseHelper.h"
 
 #import "UIViewController+DWEmbedding.h"
 

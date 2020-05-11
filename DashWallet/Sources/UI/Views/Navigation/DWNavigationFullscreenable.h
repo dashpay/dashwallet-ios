@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWNavigationFullscreenable <NSObject>
 
-- (BOOL)requiresNoNavigationBar;
+@property (readonly, nonatomic, assign) BOOL requiresNoNavigationBar;
 
 @end
 

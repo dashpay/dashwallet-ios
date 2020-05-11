@@ -15,11 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWNavigationChildViewController.h"
+
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserSearchViewController : UIViewController
+@interface DWUserSearchViewController : DWNavigationChildViewController <DWNavigationFullscreenable>
 
 @end
 

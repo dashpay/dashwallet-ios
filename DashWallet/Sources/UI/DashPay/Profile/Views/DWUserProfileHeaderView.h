@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,26 @@
 //  limitations under the License.
 //
 
-#import "UICollectionViewCell+DWReuseHelper.h"
+#import <DashSync/DSBlockchainIdentity.h>
+#import <KVO-MVVM/KVOUICollectionReusableView.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation UICollectionViewCell (DWReuseHelper)
+@class DWUserProfileModel;
+@class DWUserProfileHeaderView;
 
-+ (NSString *)dw_reuseIdentifier {
-    return NSStringFromClass(self);
-}
+@protocol DWUserProfileHeaderViewDelegate <NSObject>
+
+- (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender;
+
+@end
+
+@interface DWUserProfileHeaderView : KVOUICollectionReusableView
+
+@property (nullable, nonatomic, strong) DWUserProfileModel *model;
+@property (nullable, nonatomic, weak) id<DWUserProfileHeaderViewDelegate> delegate;
+
+- (void)setScrollingPercent:(float)percent;
 
 @end
 

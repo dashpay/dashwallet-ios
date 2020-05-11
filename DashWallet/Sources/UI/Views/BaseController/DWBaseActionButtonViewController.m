@@ -19,7 +19,7 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
-#import "DWBlueActionButton.h"
+#import "DWActionButton.h"
 #import "DWUIKit.h"
 #import "DevicesCompatibility.h"
 
@@ -118,8 +118,8 @@ CGFloat DWBottomButtonHeight(void) {
     NSString *actionButtonTitle = [self actionButtonTitle];
     NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
     if (![self.class isActionButtonInNavigationBar]) {
-        [(DWBlueActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
-        [(DWBlueActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
+        [(DWActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+        [(DWActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
     }
 }
 
@@ -173,7 +173,7 @@ CGFloat DWBottomButtonHeight(void) {
 
     NSMutableArray<__kindof UIView *> *arrangedSubviews = [NSMutableArray array];
 
-    DWBlueActionButton *bottomActionButton = nil;
+    DWActionButton *bottomActionButton = nil;
     if ([self.class showsActionButton]) {
         NSString *actionButtonTitle = [self actionButtonTitle];
         NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
@@ -190,7 +190,7 @@ CGFloat DWBottomButtonHeight(void) {
             self.barActionButton = barButtonItem;
         }
         else {
-            bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+            bottomActionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
             bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
             [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
             [bottomActionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];

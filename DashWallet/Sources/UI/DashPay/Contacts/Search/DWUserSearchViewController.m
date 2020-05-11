@@ -21,9 +21,11 @@
 
 #import "DWDashPayConstants.h"
 #import "DWUIKit.h"
+#import "DWUserProfileViewController.h"
 #import "DWUserSearchModel.h"
 #import "DWUserSearchResultViewController.h"
 #import "DWUserSearchStateViewController.h"
+#import "UISearchBar+DWAdditions.h"
 #import "UIView+DWFindConstraints.h"
 #import "UIView+DWRecursiveSubview.h"
 #import "UIViewController+DWEmbedding.h"
@@ -31,6 +33,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchViewController () <UISearchBarDelegate, DWUserSearchModelDelegate, DWUserSearchResultViewControllerDelegate>
+
+@property (nonatomic, assign) BOOL requiresNoNavigationBar;
 
 @property (null_resettable, nonatomic, strong) DWUserSearchModel *model;
 
@@ -40,11 +44,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) DWUserSearchStateViewController *stateController;
 @property (null_resettable, nonatomic, strong) DWUserSearchResultViewController *resultsController;
 
+@property (nonatomic, assign) BOOL searchBarIsFirstResponder;
+
 @end
 
 NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchViewController
+
+@synthesize requiresNoNavigationBar = _requiresNoNavigationBar;
+
+- (BOOL)requiresNoNavigationBar {
+    return _requiresNoNavigationBar;
+}
+
+- (void)setRequiresNoNavigationBar:(BOOL)requiresNoNavigationBar {
+    _requiresNoNavigationBar = requiresNoNavigationBar;
+
+    [self.navigationController setNavigationBarHidden:requiresNoNavigationBar animated:YES];
+    [self setNeedsStatusBarAppearanceUpdate];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -87,35 +106,42 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self.searchBar becomeFirstResponder];
+    // Activate Search Bar initially
+    if (!self.searchBarIsFirstResponder) {
+        [self.searchBar becomeFirstResponder];
+        self.searchBarIsFirstResponder = YES;
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.searchBar.isFirstResponder ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
+    return self.requiresNoNavigationBar ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
 }
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    // hide semi-transparent overlays above UITextField in UISearchBar to achive basic white color
-    UISearchBar *searchBar = self.searchBar;
-    UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
-    UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
-    [searchTextFieldBackground.subviews makeObjectsPerformSelector:@selector(setHidden:) withObject:@YES];
+    if ([NSProcessInfo processInfo].operatingSystemVersion.majorVersion >= 13) {
+        // hide semi-transparent overlays above UITextField in UISearchBar to achive basic white color
+        UISearchBar *searchBar = self.searchBar;
+        UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
+        UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
+        [searchTextFieldBackground.subviews makeObjectsPerformSelector:@selector(setHidden:) withObject:@YES];
+    }
 }
 
 #pragma mark - UISearchBarDelegate
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     [searchBar setShowsCancelButton:YES animated:YES];
-    [self.navigationController setNavigationBarHidden:YES animated:YES];
-    [self setNeedsStatusBarAppearanceUpdate];
+    self.requiresNoNavigationBar = YES;
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
-    [searchBar setShowsCancelButton:NO animated:YES];
-    [self.navigationController setNavigationBarHidden:NO animated:YES];
-    [self setNeedsStatusBarAppearanceUpdate];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (searchBar.showsCancelButton) {
+            [searchBar dw_enableCancelButton];
+        }
+    });
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
@@ -133,7 +159,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
+
+    self.requiresNoNavigationBar = NO;
 }
 
 - (BOOL)searchBar:(UISearchBar *)searchBar shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
@@ -170,8 +199,21 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWUserSearchResultViewControllerDelegate
 
-- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller willDisplayItemAtIndex:(NSInteger)index {
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                willDisplayItemAtIndex:(NSInteger)index {
     [self.model willDisplayItemAtIndex:index];
+}
+
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                  didSelectItemAtIndex:(NSInteger)index {
+    DSBlockchainIdentity *blockchainIdentity = [self.model blokchainIdentityAtIndex:index];
+    if (!blockchainIdentity) {
+        return;
+    }
+
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithBlockchainIdentity:blockchainIdentity];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 #pragma mark - Keyboard

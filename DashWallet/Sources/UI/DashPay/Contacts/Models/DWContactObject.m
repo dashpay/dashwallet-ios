@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
+        _blockchainIdentity = blockchainIdentity;
         _displayType = DWContactItemDisplayType_Search;
         _username = blockchainIdentity.currentUsername;
     }
