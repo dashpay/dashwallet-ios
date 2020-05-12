@@ -711,6 +711,9 @@
 "Spending Confirmation" = "支出の確認";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "残高が送金されました!";
 
 /* Translate it as short as possible! (24 symbols max) */
