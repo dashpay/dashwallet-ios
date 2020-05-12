@@ -17,7 +17,10 @@
 
 #import "DWPreviewSeedPhraseViewController+DWProtected.h"
 
+#import <DWAlertController/DWAlertController.h>
+
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWScreenshotWarningViewController.h"
 #import "DWSeedPhraseModel.h"
 #import "DWUIKit.h"
 
@@ -148,18 +151,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)userDidTakeScreenshotNotification:(NSNotification *)notification {
     [self.feedbackGenerator prepare];
 
-    NSString *title = NSLocalizedString(@"WARNING", nil);
-    NSString *message = NSLocalizedString(@"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.", nil);
+    DWScreenshotWarningViewController *warningController = [[DWScreenshotWarningViewController alloc] init];
 
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
-                                                                   message:message
-                                                            preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *okAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"OK", nil)
-                  style:UIAlertActionStyleCancel
-                handler:^(UIAlertAction *action) {
-                    [self screenshotAlertOKAction];
-                }];
+    DWAlertController *alert = [DWAlertController alertControllerWithContentController:warningController];
+    DWAlertAction *okAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                       style:DWAlertActionStyleCancel
+                                                     handler:^(DWAlertAction *_Nonnull action) {
+                                                         [self screenshotAlertOKAction];
+                                                     }];
     [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:nil];
 }
