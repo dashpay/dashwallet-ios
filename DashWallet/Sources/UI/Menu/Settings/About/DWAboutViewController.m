@@ -129,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)contactSupportButtonAction:(id)sender {
-    NSURL *url = [NSURL URLWithString:@"https://support.dash.org/en/support/solutions"];
+    NSURL *url = [DWAboutModel supportURL];
     [self displaySafariControllerWithURL:url];
 }
 

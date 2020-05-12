@@ -711,6 +711,9 @@
 "Spending Confirmation" = "승인 보내는 중";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* Translate it as short as possible! (24 symbols max) */
