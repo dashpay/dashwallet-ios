@@ -19,6 +19,7 @@
 
 #import <DWAlertController/DWAlertController.h>
 
+#import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWScreenshotWarningViewController.h"
 #import "DWSeedPhraseModel.h"
@@ -144,6 +145,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)previewSeedPhraseContentView:(DWPreviewSeedPhraseContentView *)view
                didChangeConfirmation:(BOOL)confirmed {
     self.actionButton.enabled = confirmed;
+}
+
+- (void)previewSeedPhraseContentViewShowScreenshotDescription:(DWPreviewSeedPhraseContentView *)view {
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWithoutAction];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - Notifications

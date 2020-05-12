@@ -79,6 +79,7 @@ NS_ASSUME_NONNULL_END
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
         _titleLabel.adjustsFontForContentSizeCategory = YES;
+        _titleLabel.textColor = [UIColor dw_darkTitleColor];
     }
     return _titleLabel;
 }
@@ -92,6 +93,7 @@ NS_ASSUME_NONNULL_END
         _descriptionLabel.textAlignment = NSTextAlignmentCenter;
         _descriptionLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
         _descriptionLabel.adjustsFontForContentSizeCategory = YES;
+        _descriptionLabel.textColor = [UIColor dw_darkTitleColor];
     }
     return _descriptionLabel;
 }
