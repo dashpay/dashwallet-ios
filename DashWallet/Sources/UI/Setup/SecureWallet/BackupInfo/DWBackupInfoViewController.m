@@ -29,6 +29,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 @interface DWBackupInfoViewController () <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) DWPreviewSeedPhraseModel *seedPhraseModel;
+@property (nonatomic, assign) BOOL controllerWithoutAction;
 
 @property (null_resettable, copy, nonatomic) NSArray<NSString *> *items;
 
@@ -46,6 +47,23 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     controller.seedPhraseModel = model;
 
     return controller;
+}
+
++ (instancetype)controllerWithoutAction {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"BackupInfo" bundle:nil];
+    DWBackupInfoViewController *controller = [storyboard instantiateInitialViewController];
+    controller.shouldCreateNewWalletOnScreenshot = NO;
+    controller.controllerWithoutAction = YES;
+
+    return controller;
+}
+
+- (void)setControllerWithoutAction:(BOOL)controllerWithoutAction {
+    _controllerWithoutAction = controllerWithoutAction;
+
+    if (self.isViewLoaded) {
+        self.showRecoveryPhraseButton.hidden = controllerWithoutAction;
+    }
 }
 
 - (void)viewDidLoad {
@@ -78,6 +96,11 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
             CGRect frame = headerView.frame;
             frame.size.height = size.height;
             headerView.frame = frame;
+
+            if ([headerView isKindOfClass:DWBackupInfoHeaderView.class]) {
+                DWBackupInfoHeaderView *backupInfoHeader = (DWBackupInfoHeaderView *)headerView;
+                backupInfoHeader.descriptionIsHidden = self.controllerWithoutAction;
+            }
 
             self.tableView.tableHeaderView = headerView;
         }
@@ -135,6 +158,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
     [self.showRecoveryPhraseButton setTitle:NSLocalizedString(@"Show Recovery Phrase", nil)
                                    forState:UIControlStateNormal];
+    self.showRecoveryPhraseButton.hidden = self.controllerWithoutAction;
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(contentSizeCategoryDidChangeNotification:)

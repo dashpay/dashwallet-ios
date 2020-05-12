@@ -31,6 +31,7 @@ typedef NS_ENUM(NSUInteger, DWSeedPhraseDisplayType) {
 
 - (void)previewSeedPhraseContentView:(DWPreviewSeedPhraseContentView *)view
                didChangeConfirmation:(BOOL)confirmed;
+- (void)previewSeedPhraseContentViewShowScreenshotDescription:(DWPreviewSeedPhraseContentView *)view;
 
 @end
 

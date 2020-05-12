@@ -17,20 +17,25 @@
 
 #import "DWPreviewSeedPhraseContentView.h"
 
+#import "DWBlueActionButton.h"
 #import "DWCheckbox.h"
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedUIConstants.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const CONFIRMATION_SHOW_DELAY = 2.0;
 static NSTimeInterval const ANIMATION_DURATION = 0.3;
 static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
+static CGFloat const PHRASE_WARNING_PADDING = 36.0;
 
 @interface DWPreviewSeedPhraseContentView ()
 
 @property (nonatomic, strong) DWSeedPhraseTitledView *seedPhraseView;
 @property (nonatomic, strong) DWCheckbox *confirmationCheckbox;
+@property (nonatomic, strong) UIStackView *screenshotWarningStackView;
+@property (nonatomic, strong) DWBlueActionButton *screenshotDescriptionButton;
 
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseTopConstraint;
 
@@ -58,6 +63,38 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
         [self addSubview:confirmationCheckbox];
         _confirmationCheckbox = confirmationCheckbox;
 
+        UIImageView *warningImageView = [[UIImageView alloc] init];
+        warningImageView.translatesAutoresizingMaskIntoConstraints = NO;
+        warningImageView.image = [UIImage imageNamed:@"icon_screenshot_warning"];
+
+        UILabel *warningLabel = [[UILabel alloc] init];
+        warningLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        warningLabel.numberOfLines = 0;
+        warningLabel.textAlignment = NSTextAlignmentCenter;
+        warningLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+        warningLabel.adjustsFontForContentSizeCategory = YES;
+        warningLabel.textColor = [UIColor dw_redColor];
+        warningLabel.text = [NSString stringWithFormat:@"%@\n%@",
+                                                       NSLocalizedString(@"WARNING", nil),
+                                                       NSLocalizedString(@"Do not take a screenshot", nil)];
+
+        UIStackView *screenshotWarningStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ warningImageView, warningLabel ]];
+        screenshotWarningStackView.translatesAutoresizingMaskIntoConstraints = NO;
+        screenshotWarningStackView.axis = UILayoutConstraintAxisVertical;
+        screenshotWarningStackView.alignment = UIStackViewAlignmentCenter;
+        screenshotWarningStackView.spacing = 16.0;
+        [self addSubview:screenshotWarningStackView];
+        _screenshotWarningStackView = screenshotWarningStackView;
+
+        DWBlueActionButton *screenshotDescriptionButton = [[DWBlueActionButton alloc] init];
+        screenshotDescriptionButton.translatesAutoresizingMaskIntoConstraints = NO;
+        screenshotDescriptionButton.inverted = YES;
+        screenshotDescriptionButton.small = YES;
+        [screenshotDescriptionButton setTitle:NSLocalizedString(@"Why I should not take a screenshot?", nil) forState:UIControlStateNormal];
+        [screenshotDescriptionButton addTarget:self action:@selector(screenshotDescriptionButtonAction) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:screenshotDescriptionButton];
+        _screenshotDescriptionButton = screenshotDescriptionButton;
+
 #if SNAPSHOT
         confirmationCheckbox.accessibilityIdentifier = @"seedphrase_checkbox";
 #endif /* SNAPSHOT */
@@ -70,14 +107,23 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
             [seedPhraseView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [seedPhraseView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
-            // top constraint on checkbox is not needed basically (since we calculate intrinsicContentSize)
-            // BUT in case of refactoring/updating layout code it will produce a warning
-            [confirmationCheckbox.topAnchor constraintGreaterThanOrEqualToAnchor:seedPhraseView.bottomAnchor],
+            [screenshotWarningStackView.topAnchor constraintEqualToAnchor:seedPhraseView.bottomAnchor
+                                                                 constant:PHRASE_WARNING_PADDING],
+            [screenshotWarningStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [self.trailingAnchor constraintEqualToAnchor:screenshotWarningStackView.trailingAnchor],
+
+
             [confirmationCheckbox.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
             [confirmationCheckbox.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
             [confirmationCheckbox.trailingAnchor constraintGreaterThanOrEqualToAnchor:self.trailingAnchor],
             [confirmationCheckbox.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
                                                               constant:-DW_BOTTOM_PADDING],
+
+            [screenshotDescriptionButton.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [self.trailingAnchor constraintEqualToAnchor:screenshotDescriptionButton.trailingAnchor],
+            [self.bottomAnchor constraintEqualToAnchor:screenshotDescriptionButton.bottomAnchor
+                                              constant:DW_BOTTOM_PADDING],
+            [screenshotDescriptionButton.heightAnchor constraintEqualToConstant:44.0],
         ]];
     }
     return self;
@@ -112,12 +158,16 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
     switch (displayType) {
         case DWSeedPhraseDisplayType_Backup: {
             self.confirmationCheckbox.hidden = NO;
+            self.screenshotDescriptionButton.hidden = YES;
+            self.screenshotWarningStackView.hidden = YES;
             self.seedPhraseView.title = NSLocalizedString(@"Please write it down", nil);
 
             break;
         }
         case DWSeedPhraseDisplayType_Preview: {
             self.confirmationCheckbox.hidden = YES;
+            self.screenshotDescriptionButton.hidden = NO;
+            self.screenshotWarningStackView.hidden = NO;
             self.seedPhraseView.title = @"";
 
             break;
@@ -172,10 +222,14 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
 }
 
 - (CGFloat)minimumContentHeightWithoutTopPadding {
-    const CGFloat contentHeight = self.seedPhraseView.intrinsicContentSize.height +
-                                  DW_TOP_COMPACT_PADDING +
-                                  self.confirmationCheckbox.intrinsicContentSize.height +
-                                  DW_BOTTOM_PADDING;
+    CGFloat contentHeight = self.seedPhraseView.intrinsicContentSize.height +
+                            DW_TOP_COMPACT_PADDING +
+                            self.confirmationCheckbox.intrinsicContentSize.height +
+                            DW_BOTTOM_PADDING;
+
+    if (!self.screenshotWarningStackView.hidden) {
+        contentHeight += self.screenshotWarningStackView.intrinsicContentSize.height;
+    }
 
     return contentHeight;
 }
@@ -184,6 +238,10 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
 
 - (void)confirmationCheckboxAction:(DWCheckbox *)sender {
     [self.delegate previewSeedPhraseContentView:self didChangeConfirmation:sender.isOn];
+}
+
+- (void)screenshotDescriptionButtonAction {
+    [self.delegate previewSeedPhraseContentViewShowScreenshotDescription:self];
 }
 
 #pragma mark - Private

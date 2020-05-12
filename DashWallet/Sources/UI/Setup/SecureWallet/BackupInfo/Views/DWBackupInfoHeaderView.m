@@ -52,6 +52,11 @@ static CGFloat DescriptionBottomPadding(void) {
     self.descriptionLabel.text = NSLocalizedString(@"We are about to show you the secret key to your wallet.", nil);
 }
 
+- (void)setDescriptionIsHidden:(BOOL)descriptionIsHidden {
+    _descriptionIsHidden = descriptionIsHidden;
+    self.descriptionLabel.hidden = descriptionIsHidden;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

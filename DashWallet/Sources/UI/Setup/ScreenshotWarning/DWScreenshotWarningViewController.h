@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
-#import "DWSecureWalletDelegate.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPreviewSeedPhraseModel;
-
-@interface DWBackupInfoViewController : DWBaseViewController
-
-@property (nonatomic, assign) BOOL shouldCreateNewWalletOnScreenshot;
-@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model;
-+ (instancetype)controllerWithoutAction;
+@interface DWScreenshotWarningViewController : UIViewController
 
 @end
 
