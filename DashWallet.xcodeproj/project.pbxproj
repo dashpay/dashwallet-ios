@@ -427,6 +427,7 @@
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
 		C3DAD26B246C3B670001624F /* DWContactTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD26A246C3B670001624F /* DWContactTableViewCell.m */; };
+		C3DAD26F246D46BF0001624F /* DWFetchedResultsDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -1397,6 +1398,8 @@
 		C3DAD269246C3B670001624F /* DWContactTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactTableViewCell.h; sourceTree = "<group>"; };
 		C3DAD26A246C3B670001624F /* DWContactTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactTableViewCell.m; sourceTree = "<group>"; };
 		C3DAD26C246D44DB0001624F /* DWUserDetails.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDetails.h; sourceTree = "<group>"; };
+		C3DAD26D246D46BF0001624F /* DWFetchedResultsDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFetchedResultsDataSource.h; sourceTree = "<group>"; };
+		C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFetchedResultsDataSource.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -3440,6 +3443,8 @@
 				2A885FD12449F7C600B9F679 /* DWContactObject.h */,
 				2A885FD22449F7C600B9F679 /* DWContactObject.m */,
 				C3DAD26C246D44DB0001624F /* DWUserDetails.h */,
+				C3DAD26D246D46BF0001624F /* DWFetchedResultsDataSource.h */,
+				C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -4573,6 +4578,7 @@
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
 				2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */,
 				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,
+				C3DAD26F246D46BF0001624F /* DWFetchedResultsDataSource.m in Sources */,
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
