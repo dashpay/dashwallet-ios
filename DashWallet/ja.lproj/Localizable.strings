@@ -167,7 +167,7 @@
 "Connected peers: %d" = "接続しているピア: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "支払い元に接続中";
 
 /* No comment provided by engineer. */
 "Contact Support" = "サポートへ連絡する";
@@ -326,7 +326,7 @@
 "Invalid" = "無効";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "無効な支払のリクエスト";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -452,7 +452,7 @@
 "Owner Keys" = "所有者の諸々のキー";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "支払う";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "簡単なお支払い手順で速やかに送金と入金";
@@ -494,7 +494,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "お待ちください";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "同期が完了するまでお待ちください";

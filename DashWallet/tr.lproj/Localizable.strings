@@ -167,7 +167,7 @@
 "Connected peers: %d" = "Bağlı dağıtıcılar: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Ödeme Sunucusuna Bağlanıyor";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Destekle İletişime Geçin";
@@ -326,10 +326,10 @@
 "Invalid" = "Geçersiz";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Geçersiz Ödeme Talebi";
 
 /* No comment provided by engineer. */
-"Invalid QR Code" = "Invalid QR Code";
+"Invalid QR Code" = "Geçersiz QR Kodu";
 
 /* No comment provided by engineer. */
 "It's Important" = "Bu önemli";
@@ -452,7 +452,7 @@
 "Owner Keys" = "Sahip Anahtarları";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Ödeme";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Kullanımı kolay ödeme akımlarıyla anında ödeme yapın ve alın";
@@ -461,16 +461,16 @@
 "Pay with Ease" = "Kolaylıkla öde";
 
 /* 1 out of 4 in the Paying Animation */
-"Paying" = "Paying";
+"Paying" = "Ödeniyor";
 
 /* 2 out of 4 in the Paying Animation */
-"Paying." = "Paying.";
+"Paying." = "Ödeniyor.";
 
 /* 3 out of 4 in the Paying Animation */
-"Paying.." = "Paying..";
+"Paying.." = "Ödeniyor..";
 
 /* 4 out of 4 in the Paying Animation */
-"Paying..." = "Paying...";
+"Paying..." = "Ödeniyor...";
 
 /* No comment provided by engineer. */
 "Payments" = "Ödemeler";
@@ -491,10 +491,10 @@
 "Please try again" = "Lütfen tekrar deneyin";
 
 /* No comment provided by engineer. */
-"Please try scanning again" = "Please try scanning again";
+"Please try scanning again" = "Lütfen tekrar taramayı deneyin";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Lütfen Bekleyin";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Lütfen senkronizasyonun tamamlanmasını bekleyin";

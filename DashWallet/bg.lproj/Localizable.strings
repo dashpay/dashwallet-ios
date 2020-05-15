@@ -167,7 +167,7 @@
 "Connected peers: %d" = "Свързани пиъри: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Свързване към сървъра за разплащане";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Връзка с поддръжката";
@@ -326,7 +326,7 @@
 "Invalid" = "Невалиден";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Невалидно искане за плащанеt";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -452,7 +452,7 @@
 "Owner Keys" = "Ключове на собственика";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Плати";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Платете и вземете плащане незабавно с лесни за използване потоци на плащане";
@@ -494,7 +494,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Моля изчакайте";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Моля изчакайте синхронизирането да приключи";

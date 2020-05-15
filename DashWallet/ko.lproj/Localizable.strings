@@ -167,7 +167,7 @@
 "Connected peers: %d" = "연결된 피어: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "지불 서버에 연결 중";
 
 /* No comment provided by engineer. */
 "Contact Support" = "고객 지원부에 문의하기";
@@ -320,13 +320,13 @@
 "Internal Transfer" = "내부 송금";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "다음에 내부적으로 이동";
 
 /* Invalid transaction */
 "Invalid" = "유효하지 않음";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "유효하지 않은 결제 요청";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -452,7 +452,7 @@
 "Owner Keys" = "소유자 키";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "지불";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "사용하기 쉬운 지불 플로우로 즉시 송금하고 송금 받으세요";
@@ -494,7 +494,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "기다려주십시오";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "동기화가 완료될 때까지 기다려주세요";
@@ -827,7 +827,7 @@
 "Very High" = "매우 높음";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "블록 탐색기에서 보기";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "비밀문구, 백업 지갑 보기....";

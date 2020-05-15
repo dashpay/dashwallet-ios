@@ -167,7 +167,7 @@
 "Connected peers: %d" = "Số kết nối ngang hàng: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Đang kết nối với máy chủ thanh toán";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Liên hệ hỗ trợ";
@@ -326,10 +326,10 @@
 "Invalid" = "Không hợp lệ";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Yêu cầu thanh toán không hợp lệ";
 
 /* No comment provided by engineer. */
-"Invalid QR Code" = "Invalid QR Code";
+"Invalid QR Code" = "Mã QR không hợp lệ";
 
 /* No comment provided by engineer. */
 "It's Important" = "Điều này là quan trọng";
@@ -452,7 +452,7 @@
 "Owner Keys" = "Khoá của chủ sở hữu";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "thanh toán";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Trả và nhận một cách tức thời một cách dễ dàng bằng cách sử dụng các quy trình thanh toán";
@@ -461,16 +461,16 @@
 "Pay with Ease" = "Giao dịch một cách đơn giản";
 
 /* 1 out of 4 in the Paying Animation */
-"Paying" = "Paying";
+"Paying" = "Đang gửi";
 
 /* 2 out of 4 in the Paying Animation */
-"Paying." = "Paying.";
+"Paying." = "Đang gửi.";
 
 /* 3 out of 4 in the Paying Animation */
-"Paying.." = "Paying..";
+"Paying.." = "Đang gửi..";
 
 /* 4 out of 4 in the Paying Animation */
-"Paying..." = "Paying...";
+"Paying..." = "Đang gửi...";
 
 /* No comment provided by engineer. */
 "Payments" = "Các giao dịch";
@@ -491,10 +491,10 @@
 "Please try again" = "Hãy thử lại";
 
 /* No comment provided by engineer. */
-"Please try scanning again" = "Please try scanning again";
+"Please try scanning again" = "Hãy thử quét lại lần nữa";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Vui lòng đợi";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Vui lòng đợi quá trình đồng bộ hoàn thành";
