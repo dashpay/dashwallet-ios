@@ -168,7 +168,7 @@
 "Connected peers: %d" = "Peers yang terhubung: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Mengghubungkan ke server pembayaran";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Hubungi Dukungan";
@@ -327,7 +327,7 @@
 "Invalid" = "Tidak valid";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Permintaan pembayaran tidak valid";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -453,7 +453,7 @@
 "Owner Keys" = "Kunci Pemilik";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Bayar";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Bayar dan dapatkan bayaran instan dengan aliran pembayaran yang mudah digunakan";
@@ -495,7 +495,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Silahkan tunggu";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Harap tunggu sampai sinkronisasi selesai";

@@ -168,7 +168,7 @@
 "Connected peers: %d" = "Pairs connectés : %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Connexion au serveur de paiement";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Contacter le service d'aide";
@@ -327,7 +327,7 @@
 "Invalid" = "Invalide";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Demande de paiement invalide";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -453,7 +453,7 @@
 "Owner Keys" = "Clés de propriétaire";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Payer";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Payez et soyez payé instantanément avec des flux de paiement simples à utiliser";
@@ -495,7 +495,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Veuillez patienter";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Veuillez attendre la fin de la synchronisation";

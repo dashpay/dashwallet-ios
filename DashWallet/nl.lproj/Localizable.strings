@@ -168,7 +168,7 @@
 "Connected peers: %d" = "Verbonden peers %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Verbinding maken met betalingsserver";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Contacteer ondersteuning";
@@ -327,7 +327,7 @@
 "Invalid" = "Ongeldig";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Ongeldig betalingsverzoek";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -453,7 +453,7 @@
 "Owner Keys" = "Eigenaar sleutels";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Betaal";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Betaal en word betaald met eenvoudig te gebruiken betaalverkeer";
@@ -495,7 +495,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Even wachten aub";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Wacht tot de synchronisatie is voltooid";

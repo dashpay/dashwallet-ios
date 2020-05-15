@@ -126,7 +126,7 @@
 "Cancel" = "Ακύρωση";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "αλλαγή";
+"Change" = "Αλλαγή";
 
 /* No comment provided by engineer. */
 "Change payment amount?" = "Αλλαγή του ποσού πληρωμής?";
@@ -168,7 +168,7 @@
 "Connected peers: %d" = "Συνδεδεμένοι χρήστες: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Σύνδεση με το διακομιστή πληρωμών";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Επικοινωνήστε με την υποστήριξη";
@@ -327,7 +327,7 @@
 "Invalid" = "Μη έγκυρο";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -453,7 +453,7 @@
 "Owner Keys" = "Κλειδιά Κατόχου";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "πληρώστε";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Πληρώστε και πληρωθείτε άμεσα με εύκολες στην χρήση πληρωμές";
@@ -495,13 +495,13 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Παρακαλώ περιμένετε";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Περιμένετε να ολοκληρωθεί ο συγχρονισμός";
 
 /* No comment provided by engineer. */
-"Please write it down" = "παρακαλώ να το γράψετε";
+"Please write it down" = "Παρακαλώ να το γράψετε";
 
 /* No comment provided by engineer. */
 "Previously used at IP address" = "Χρησιμοποιήθηκε προηγουμένως στη διεύθυνση IP";
