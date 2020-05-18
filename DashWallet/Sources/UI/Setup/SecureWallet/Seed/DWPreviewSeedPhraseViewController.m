@@ -161,10 +161,12 @@ NS_ASSUME_NONNULL_BEGIN
     DWScreenshotWarningViewController *warningController = [[DWScreenshotWarningViewController alloc] init];
 
     DWAlertController *alert = [DWAlertController alertControllerWithContentController:warningController];
+    __weak typeof(alert) weakAlert = alert;
     DWAlertAction *okAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:DWAlertActionStyleCancel
                                                      handler:^(DWAlertAction *_Nonnull action) {
                                                          [self screenshotAlertOKAction];
+                                                         [weakAlert dismissViewControllerAnimated:YES completion:nil];
                                                      }];
     [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:nil];
