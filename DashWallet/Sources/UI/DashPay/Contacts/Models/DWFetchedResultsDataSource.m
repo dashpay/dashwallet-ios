@@ -75,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWFetchedResultsDataSource ()
 
 @property (nullable, nonatomic, strong) DWFetchedResultsDataSourceDiffUpdate *diffUpdate;
+@property (nonatomic, assign) BOOL subscribedToNotifications;
 
 @end
 
@@ -99,7 +100,9 @@ NS_ASSUME_NONNULL_END
     NSParameterAssert(self.sortDescriptors);
     // invertedPredicate is not mandatory
 
-    if (self.shouldSubscribeToNotifications) {
+    if (self.shouldSubscribeToNotifications && !self.subscribedToNotifications) {
+        self.subscribedToNotifications = YES;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(backgroundManagedObjectContextDidSaveNotification:)
                                                      name:NSManagedObjectContextDidSaveNotification
@@ -112,14 +115,24 @@ NS_ASSUME_NONNULL_END
 - (void)stop {
     self.fetchedResultsController = nil;
 
-    if (self.shouldSubscribeToNotifications) {
+    if (self.shouldSubscribeToNotifications && self.subscribedToNotifications) {
+        self.subscribedToNotifications = NO;
+
         [[NSNotificationCenter defaultCenter] removeObserver:self
                                                         name:NSManagedObjectContextDidSaveNotification
                                                       object:self.context];
     }
 }
 
-#pragma mark - Private
+- (NSIndexPath *_Nonnull (^)(NSIndexPath *_Nonnull))indexPathTransformation {
+    if (_indexPathTransformation == nil) {
+        _indexPathTransformation = ^NSIndexPath *_Nonnull(NSIndexPath *_Nonnull indexPath) {
+            return indexPath;
+        };
+    }
+
+    return _indexPathTransformation;
+}
 
 - (NSFetchedResultsController *)fetchedResultsController {
     if (_fetchedResultsController != nil) {
@@ -151,6 +164,8 @@ NS_ASSUME_NONNULL_END
 
     return _fetchedResultsController;
 }
+
+#pragma mark - Private
 
 - (NSPredicate *)classPredicate {
     return [NSPredicate predicateWithFormat:@"self isKindOfClass: %@", NSClassFromString(self.entityName)];
@@ -233,19 +248,22 @@ NS_ASSUME_NONNULL_END
        newIndexPath:(nullable NSIndexPath *)newIndexPath {
     switch (type) {
         case NSFetchedResultsChangeInsert: {
-            [self.diffUpdate.mutableInserts addObject:newIndexPath];
+            [self.diffUpdate.mutableInserts addObject:self.indexPathTransformation(newIndexPath)];
             break;
         }
         case NSFetchedResultsChangeDelete: {
-            [self.diffUpdate.mutableDeletes addObject:indexPath];
+            [self.diffUpdate.mutableDeletes addObject:self.indexPathTransformation(indexPath)];
             break;
         }
         case NSFetchedResultsChangeMove: {
-            [self.diffUpdate.mutableMoves addObject:@[ indexPath, newIndexPath ]];
+            [self.diffUpdate.mutableMoves addObject:@[
+                self.indexPathTransformation(indexPath),
+                self.indexPathTransformation(newIndexPath),
+            ]];
             break;
         }
         case NSFetchedResultsChangeUpdate: {
-            [self.diffUpdate.mutableUpdates addObject:indexPath];
+            [self.diffUpdate.mutableUpdates addObject:self.indexPathTransformation(indexPath)];
             break;
         }
     }

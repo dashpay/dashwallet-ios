@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWContactListTableViewCell.h"
+#import "DWUserDetailsCell.h"
 
 #import <DashSync/DSTransaction.h>
 
@@ -25,7 +25,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactListTableViewCell ()
+@interface DWUserDetailsCell ()
 
 @property (strong, nonatomic) IBOutlet DWDPAvatarView *avatarView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
@@ -35,7 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation DWContactListTableViewCell
+NS_ASSUME_NONNULL_END
+
+@implementation DWUserDetailsCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
@@ -51,40 +53,34 @@ NS_ASSUME_NONNULL_BEGIN
     [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }
 
-- (void)setContact:(nullable id<DWContactItem>)contact {
-    _contact = contact;
+- (void)setUserDetails:(id<DWUserDetails>)userDetails {
+    _userDetails = userDetails;
 
     [self.actionView removeFromSuperview];
 
-    self.avatarView.username = contact.username;
-    self.titleLabel.text = contact.username;
+    self.avatarView.username = userDetails.username;
+    self.titleLabel.text = userDetails.username;
 
     UIView *actionView = nil;
-    switch (contact.displayType) {
-        case DWContactItemDisplayType_Search: {
+    switch (userDetails.displayingType) {
+        case DWUserDetailsDisplayingType_FromSearch: {
             self.subtitleLabel.text = nil;
 
             break;
         }
-        case DWContactItemDisplayType_Contact: {
-            self.subtitleLabel.text = contact.tagline;
+        case DWUserDetailsDisplayingType_Contact: {
+            NSAssert(NO, @"DWUserDetailsDisplayingType_Contact is not supported");
 
             break;
         }
-        case DWContactItemDisplayType_IncomingRequest: {
-            self.subtitleLabel.text = contact.dateString;
-
-            // TODO: this is less performant, refactor into separate cell class
+        case DWUserDetailsDisplayingType_IncomingRequest: {
             actionView = [self createContactRequestActionsView];
             [self.rightActionView addSubview:actionView];
             self.actionView = actionView;
 
             break;
         }
-        case DWContactItemDisplayType_OutgoingRequest: {
-            self.subtitleLabel.text = contact.dateString;
-
-            // TODO: this is less performant, refactor into separate cell class
+        case DWUserDetailsDisplayingType_OutgoingRequest: {
             actionView = [self createContactRequestStatusView];
             [self.rightActionView addSubview:actionView];
             self.actionView = actionView;
@@ -107,11 +103,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (void)acceptButtonAction {
-    [self.delegate contactListTableViewCell:self didAcceptContact:self.contact];
+    [self.delegate userDetailsCell:self didAcceptContact:self.userDetails];
 }
 
 - (void)declineButtonAction {
-    [self.delegate contactListTableViewCell:self didDeclineContact:self.contact];
+    [self.delegate userDetailsCell:self didDeclineContact:self.userDetails];
 }
 
 #pragma mark - Private
@@ -163,5 +159,3 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 @end
-
-NS_ASSUME_NONNULL_END

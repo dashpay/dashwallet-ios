@@ -17,20 +17,25 @@
 
 #import "DWContactsContentView.h"
 
-#import "DWContactListTableViewCell.h"
 #import "DWContactsModel.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
+#import "DWUserDetailsCell.h"
+#import "DWUserDetailsContactCell.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsContentView () <UITableViewDataSource,
                                      UITableViewDelegate,
-                                     DWContactListTableViewCellDelegate>
+                                     DWUserDetailsCellDelegate>
 
 @property (readonly, nonatomic, strong) UITableView *tableView;
 
 @property (nonatomic, strong) id<DWContactsDataSource> currentDataSource;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWContactsContentView
 
@@ -52,13 +57,15 @@
         _tableView = tableView;
 
         NSArray<NSString *> *cellIds = @[
-            DWContactListTableViewCell.dw_reuseIdentifier,
+            DWUserDetailsCell.dw_reuseIdentifier,
         ];
         for (NSString *cellId in cellIds) {
             UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
             NSParameterAssert(nib);
             [tableView registerNib:nib forCellReuseIdentifier:cellId];
         }
+        [tableView registerClass:DWUserDetailsContactCell.class
+            forCellReuseIdentifier:DWUserDetailsContactCell.dw_reuseIdentifier];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(setNeedsLayout)
@@ -71,7 +78,7 @@
 - (void)setModel:(DWContactsModel *)model {
     _model = model;
 
-    self.currentDataSource = model.contactsDataSource;
+    //    self.currentDataSource = model.contactsDataSource;
 }
 
 - (void)setCurrentDataSource:(id<DWContactsDataSource>)currentDataSource {
@@ -107,19 +114,17 @@
         return;
     }
 
-    id<DWContactItem> contact = [self.currentDataSource contactAtIndexPath:indexPath];
-    [self.delegate contactsContentView:self didSelectContact:contact];
+    id<DWUserDetails> item = [self.currentDataSource userDetailsAtIndexPath:indexPath];
+    [self.delegate contactsContentView:self didSelectUserDetails:item];
 }
 
-#pragma mark - DWContactListTableViewCellDelegate
+#pragma mark - DWUserDetailsCellDelegate
 
-- (void)contactListTableViewCell:(DWContactListTableViewCell *)cell
-                didAcceptContact:(id<DWContactItem>)contact {
+- (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact {
     [self.delegate contactsContentView:self didAcceptContact:contact];
 }
 
-- (void)contactListTableViewCell:(DWContactListTableViewCell *)cell
-               didDeclineContact:(id<DWContactItem>)contact {
+- (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact {
     [self.delegate contactsContentView:self didDeclineContact:contact];
 }
 

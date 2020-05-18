@@ -17,12 +17,12 @@
 
 #import "DWUserSearchResultViewController.h"
 
-#import "DWContactListTableViewCell.h"
 #import "DWUIKit.h"
+#import "DWUserDetailsCell.h"
 
 @implementation DWUserSearchResultViewController
 
-- (void)setItems:(NSArray<id<DWContactItem>> *)items {
+- (void)setItems:(NSArray<DWUserSearchItem *> *)items {
     _items = [items copy];
 
     [self.tableView reloadData];
@@ -32,7 +32,7 @@
     [super viewDidLoad];
 
     NSArray<NSString *> *cellIds = @[
-        DWContactListTableViewCell.dw_reuseIdentifier,
+        DWUserDetailsCell.dw_reuseIdentifier,
     ];
     for (NSString *cellId in cellIds) {
         UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -50,11 +50,11 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *cellId = DWContactListTableViewCell.dw_reuseIdentifier;
-    DWContactListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                                                       forIndexPath:indexPath];
-    id<DWContactItem> contact = self.items[indexPath.row];
-    cell.contact = contact;
+    NSString *cellId = DWUserDetailsCell.dw_reuseIdentifier;
+    DWUserDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                              forIndexPath:indexPath];
+    id<DWUserDetails> item = self.items[indexPath.row];
+    cell.userDetails = item;
     cell.delegate = self.contactsDelegate;
     return cell;
 }

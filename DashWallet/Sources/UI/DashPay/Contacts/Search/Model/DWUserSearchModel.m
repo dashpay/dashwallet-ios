@@ -17,9 +17,9 @@
 
 #import "DWUserSearchModel.h"
 
-#import "DWContactObject.h"
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+#import "DWUserSearchItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign) uint32_t offset;
-@property (nullable, nonatomic, copy) NSArray<DWContactObject *> *items;
+@property (nullable, nonatomic, copy) NSArray<DWUserSearchItem *> *items;
 @property (nonatomic, assign) BOOL requestInProgress;
 @property (nonatomic, assign) BOOL hasNextPage;
 
@@ -106,8 +106,8 @@ NS_ASSUME_NONNULL_END
         return nil;
     }
 
-    DWContactObject *contactObject = self.searchRequest.items[index];
-    return contactObject.blockchainIdentity;
+    DWUserSearchItem *item = self.searchRequest.items[index];
+    return item.blockchainIdentity;
 }
 
 #pragma mark Private
@@ -155,10 +155,10 @@ NS_ASSUME_NONNULL_END
                               [strongSelf.delegate userSearchModel:strongSelf completedWithError:error];
                           }
                           else {
-                              NSMutableArray<DWContactObject *> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                              NSMutableArray<DWUserSearchItem *> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
                               for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                                  DWContactObject *contact = [[DWContactObject alloc] initWithBlockchainIdentity:blockchainIdentity];
-                                  [items addObject:contact];
+                                  DWUserSearchItem *item = [[DWUserSearchItem alloc] initWithBlockchainIdentity:blockchainIdentity];
+                                  [items addObject:item];
                               }
 
                               strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;

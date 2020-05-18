@@ -17,17 +17,17 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWContactItem.h"
+#import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DSDashpayUserEntity;
 
-@interface DWContactObject : NSObject <DWContactItem>
+@interface DWContactObject : NSObject <DWUserDetails>
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nonatomic, strong) DSDashpayUserEntity *userEntity;
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

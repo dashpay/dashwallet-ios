@@ -15,14 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUserDetails <NSObject>
+@interface DWUserDetailsContactCell : UITableViewCell
 
-@property (nullable, readonly, nonatomic) NSString *displayName;
-@property (nullable, readonly, nonatomic) NSString *username;
+@property (nullable, nonatomic, strong) id<DWUserDetails> userDetails;
 
 @end
 

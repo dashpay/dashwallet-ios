@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,21 +15,22 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-#import "DWContactsDataSource.h"
+#import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsModel : NSObject
+@class DSBlockchainIdentity;
 
-@property (nonatomic, strong) id<DWContactsDataSource> dataSource;
+@interface DWUserSearchItem : NSObject <DWUserDetails>
 
-- (void)rebuildDataSources;
+@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
-- (void)start;
-- (void)stop;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWContactItem.h"
+#import "DWUserSearchItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWUserSearchModelDelegate <NSObject>
 
 - (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model;
-- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWContactItem>> *)items;
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<DWUserSearchItem *> *)items;
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error;
 
 @end

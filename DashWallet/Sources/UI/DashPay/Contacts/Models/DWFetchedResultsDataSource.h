@@ -52,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) NSPredicate *invertedPredicate;
 @property (nullable, nonatomic, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
 
+@property (null_resettable, nonatomic, copy) NSIndexPath * (^indexPathTransformation)(NSIndexPath *indexPath);
+
 @property (null_resettable, nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 
 @property (nullable, nonatomic, strong) id<DWFetchedResultsDataSourceDelegate> delegate;

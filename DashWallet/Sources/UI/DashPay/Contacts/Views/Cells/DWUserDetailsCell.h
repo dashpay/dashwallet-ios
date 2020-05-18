@@ -17,25 +17,23 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWContactItem.h"
+#import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWContactListTableViewCell;
+@class DWUserDetailsCell;
 
-@protocol DWContactListTableViewCellDelegate <NSObject>
+@protocol DWUserDetailsCellDelegate <NSObject>
 
-- (void)contactListTableViewCell:(DWContactListTableViewCell *)cell
-                didAcceptContact:(id<DWContactItem>)contact;
-- (void)contactListTableViewCell:(DWContactListTableViewCell *)cell
-               didDeclineContact:(id<DWContactItem>)contact;
+- (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact;
+- (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact;
 
 @end
 
-@interface DWContactListTableViewCell : UITableViewCell
+@interface DWUserDetailsCell : UITableViewCell
 
-@property (nullable, nonatomic, strong) id<DWContactItem> contact;
-@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> delegate;
+@property (nullable, nonatomic, strong) id<DWUserDetails> userDetails;
+@property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> delegate;
 
 @end
 

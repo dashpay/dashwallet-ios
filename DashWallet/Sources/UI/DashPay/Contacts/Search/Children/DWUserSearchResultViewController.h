@@ -17,11 +17,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWContactItem.h"
+#import "DWUserSearchItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWContactListTableViewCellDelegate;
+@protocol DWUserDetailsCellDelegate;
 @class DWUserSearchResultViewController;
 
 @protocol DWUserSearchResultViewControllerDelegate <NSObject>
@@ -35,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchResultViewController : UITableViewController
 
-@property (nullable, nonatomic, copy) NSArray<id<DWContactItem>> *items;
-@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> contactsDelegate;
+@property (nullable, nonatomic, copy) NSArray<DWUserSearchItem *> *items;
+@property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> contactsDelegate;
 @property (nullable, nonatomic, weak) id<DWUserSearchResultViewControllerDelegate> delegate;
 
 @end

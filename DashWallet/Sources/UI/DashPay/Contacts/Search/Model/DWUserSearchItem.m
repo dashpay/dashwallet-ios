@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,33 +15,29 @@
 //  limitations under the License.
 //
 
-#import "DWContactObject.h"
+#import "DWUserSearchItem.h"
 
 #import <DashSync/DashSync.h>
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DWUserSearchItem
 
-@interface DWContactObject ()
-
-@property (nonatomic, assign) DWContactItemDisplayType displayType;
-@property (nonatomic, copy) NSString *username;
-@property (nullable, nonatomic, copy) NSString *tagline;
-@property (nullable, nonatomic, copy) NSString *dateString;
-
-@end
-
-NS_ASSUME_NONNULL_END
-
-@implementation DWContactObject
+@synthesize username = _username;
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
         _blockchainIdentity = blockchainIdentity;
-        _displayType = DWContactItemDisplayType_Search;
         _username = blockchainIdentity.currentUsername;
     }
     return self;
+}
+
+- (DWUserDetailsDisplayingType)displayingType {
+    return DWUserDetailsDisplayingType_FromSearch;
+}
+
+- (NSString *)displayName {
+    return nil;
 }
 
 @end

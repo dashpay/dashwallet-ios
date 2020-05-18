@@ -15,14 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWContactItem.h"
 #import "DWContactsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsDataSourceObject : NSObject <DWContactsDataSource>
-
-- (instancetype)initWithItems:(NSArray<id<DWContactItem>> *)items;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

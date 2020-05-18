@@ -17,18 +17,18 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWContactItem.h"
+#import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWContactListTableViewCellDelegate;
+@protocol DWUserDetailsCellDelegate;
 
 @protocol DWContactsDataSource <UITableViewDataSource>
 
 @property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> contactsDelegate;
+@property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> contactsDelegate;
 
-- (id<DWContactItem>)contactAtIndexPath:(NSIndexPath *)indexPath;
+- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

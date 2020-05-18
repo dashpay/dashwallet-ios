@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -19,21 +19,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWContactItemDisplayType) {
-    DWContactItemDisplayType_Search,
-    DWContactItemDisplayType_Contact,
-    DWContactItemDisplayType_IncomingRequest,
-    DWContactItemDisplayType_OutgoingRequest,
+typedef NS_ENUM(NSUInteger, DWUserDetailsDisplayingType) {
+    DWUserDetailsDisplayingType_FromSearch,
+    DWUserDetailsDisplayingType_IncomingRequest,
+    DWUserDetailsDisplayingType_OutgoingRequest,
+    DWUserDetailsDisplayingType_Contact,
 };
 
-@protocol DWContactItem <NSObject>
+@protocol DWUserDetails <NSObject>
 
-// TODO: avatar
-
-@property (readonly, nonatomic, assign) DWContactItemDisplayType displayType;
-@property (readonly, nonatomic, copy) NSString *username;
-@property (readonly, nullable, nonatomic, copy) NSString *tagline;
-@property (readonly, nullable, nonatomic, copy) NSString *dateString;
+@property (readonly, nonatomic) DWUserDetailsDisplayingType displayingType;
+@property (nullable, readonly, nonatomic) NSString *displayName;
+@property (nullable, readonly, nonatomic) NSString *username;
 
 @end
 

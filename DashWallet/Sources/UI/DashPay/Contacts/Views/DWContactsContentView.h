@@ -17,17 +17,18 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWUserDetails.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWContactItem;
 @class DWContactsContentView;
 @class DWContactsModel;
 
 @protocol DWContactsContentViewDelegate <NSObject>
 
-- (void)contactsContentView:(DWContactsContentView *)view didSelectContact:(id<DWContactItem>)contact;
-- (void)contactsContentView:(DWContactsContentView *)view didAcceptContact:(id<DWContactItem>)contact;
-- (void)contactsContentView:(DWContactsContentView *)view didDeclineContact:(id<DWContactItem>)contact;
+- (void)contactsContentView:(DWContactsContentView *)view didSelectUserDetails:(id<DWUserDetails>)userDetails;
+- (void)contactsContentView:(DWContactsContentView *)view didAcceptContact:(id<DWUserDetails>)contact;
+- (void)contactsContentView:(DWContactsContentView *)view didDeclineContact:(id<DWUserDetails>)contact;
 
 @end
 

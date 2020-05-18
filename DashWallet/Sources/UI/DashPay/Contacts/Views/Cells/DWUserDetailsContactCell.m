@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWContactTableViewCell.h"
+#import "DWUserDetailsContactCell.h"
 
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const AVATAR_SIZE = 36.0;
 
-@interface DWContactTableViewCell ()
+@interface DWUserDetailsContactCell ()
 
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
@@ -34,7 +34,7 @@ static CGFloat const AVATAR_SIZE = 36.0;
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWContactTableViewCell
+@implementation DWUserDetailsContactCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
@@ -100,6 +100,9 @@ NS_ASSUME_NONNULL_END
 
 - (void)setUserDetails:(id<DWUserDetails>)userDetails {
     _userDetails = userDetails;
+
+    NSAssert(userDetails.displayingType == DWUserDetailsDisplayingType_Contact,
+             @"Displaying type other than contact is not supported");
 
     if (userDetails.displayName) {
         self.titleLabel.text = userDetails.displayName;

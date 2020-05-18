@@ -15,15 +15,22 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 #import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactTableViewCell : UITableViewCell
+@class DSFriendRequestEntity;
 
-@property (nullable, nonatomic, strong) id<DWUserDetails> userDetails;
+@interface DWIncomingContactObject : NSObject <DWUserDetails>
+
+@property (readonly, strong, nonatomic) DSFriendRequestEntity *friendRequestEntity;
+
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

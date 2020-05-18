@@ -17,48 +17,49 @@
 
 #import "DWContactsDataSourceObject.h"
 
-#import "DWContactListTableViewCell.h"
 #import "DWUIKit.h"
+#import "DWUserDetailsCell.h"
+#import "DWUserDetailsContactCell.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsDataSourceObject ()
 
-@property (nonatomic, copy) NSArray<id<DWContactItem>> *items;
-
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWContactsDataSourceObject
 
 @synthesize contactsDelegate;
 
-- (instancetype)initWithItems:(NSArray<id<DWContactItem>> *)items {
-    self = [super init];
-    if (self) {
-        _items = [items copy];
-    }
-    return self;
-}
-
 - (BOOL)isEmpty {
-    return (self.items.count == 0);
+    return YES;
 }
 
-- (id<DWContactItem>)contactAtIndexPath:(NSIndexPath *)indexPath {
-    id<DWContactItem> contact = self.items[indexPath.row];
-    return contact;
+- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath {
+    return nil;
 }
 
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.items.count;
+    return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *cellId = DWContactListTableViewCell.dw_reuseIdentifier;
-    DWContactListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                                                       forIndexPath:indexPath];
-    id<DWContactItem> contact = [self contactAtIndexPath:indexPath];
-    cell.contact = contact;
+    id<DWUserDetails> item = [self userDetailsAtIndexPath:indexPath];
+    NSString *cellId = nil;
+    if (item.displayingType == DWUserDetailsDisplayingType_Contact) {
+        cellId = DWUserDetailsContactCell.dw_reuseIdentifier;
+    }
+    else {
+        cellId = DWUserDetailsCell.dw_reuseIdentifier;
+    }
+
+    DWUserDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                              forIndexPath:indexPath];
+    cell.userDetails = item;
     cell.delegate = self.contactsDelegate;
 
     return cell;
