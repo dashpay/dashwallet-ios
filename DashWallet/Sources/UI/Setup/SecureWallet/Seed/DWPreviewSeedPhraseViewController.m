@@ -165,8 +165,10 @@ NS_ASSUME_NONNULL_BEGIN
     DWAlertAction *okAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:DWAlertActionStyleCancel
                                                      handler:^(DWAlertAction *_Nonnull action) {
-                                                         [self screenshotAlertOKAction];
-                                                         [weakAlert dismissViewControllerAnimated:YES completion:nil];
+                                                         [weakAlert dismissViewControllerAnimated:YES
+                                                                                       completion:^{
+                                                                                           [self screenshotAlertOKAction];
+                                                                                       }];
                                                      }];
     [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:nil];
