@@ -27,8 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWContactsContentViewDelegate <NSObject>
 
 - (void)contactsContentView:(DWContactsContentView *)view didSelectUserDetails:(id<DWUserDetails>)userDetails;
-- (void)contactsContentView:(DWContactsContentView *)view didAcceptContact:(id<DWUserDetails>)contact;
-- (void)contactsContentView:(DWContactsContentView *)view didDeclineContact:(id<DWUserDetails>)contact;
 
 @end
 

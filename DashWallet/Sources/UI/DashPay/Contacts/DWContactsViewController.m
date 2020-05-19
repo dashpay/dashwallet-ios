@@ -92,12 +92,4 @@
 - (void)contactsContentView:(DWContactsContentView *)view didSelectUserDetails:(id<DWUserDetails>)userDetails {
 }
 
-- (void)contactsContentView:(DWContactsContentView *)view didAcceptContact:(id<DWUserDetails>)contact {
-    NSLog(@"accept");
-}
-
-- (void)contactsContentView:(DWContactsContentView *)view didDeclineContact:(id<DWUserDetails>)contact {
-    NSLog(@"decline");
-}
-
 @end

@@ -111,11 +111,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserDetailsCellDelegate
 
 - (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact {
-    [self.delegate contactsContentView:self didAcceptContact:contact];
+    [self.model acceptContactRequest:contact];
 }
 
 - (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact {
-    [self.delegate contactsContentView:self didDeclineContact:contact];
+    NSLog(@"DWDP: ignore contact request");
 }
 
 @end

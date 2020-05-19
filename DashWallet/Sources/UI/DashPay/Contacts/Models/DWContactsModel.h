@@ -29,6 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 - (void)stop;
 
+- (void)reloadData;
+
+- (void)acceptContactRequest:(id<DWUserDetails>)userDetails;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -72,11 +72,14 @@ NS_ASSUME_NONNULL_END
         [subtitleLabel setContentHuggingPriority:UILayoutPriorityRequired - 1 forAxis:UILayoutConstraintAxisVertical];
 
         UILayoutGuide *guide = self.contentView.layoutMarginsGuide;
-        const CGFloat padding = 16.0;
+        const CGFloat padding = 16.0 + 5.0;
         const CGFloat spacing = 10.0;
+        const CGFloat avatarPadding = 15.0;
+        const CGFloat rightPadding = 16.0;
 
         [NSLayoutConstraint activateConstraints:@[
-            [avatarView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
+            [avatarView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
+                                                     constant:avatarPadding],
             [avatarView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
             [avatarView.widthAnchor constraintEqualToConstant:AVATAR_SIZE],
             [avatarView.heightAnchor constraintEqualToConstant:AVATAR_SIZE],
@@ -85,12 +88,14 @@ NS_ASSUME_NONNULL_END
                                                  constant:padding],
             [titleLabel.leadingAnchor constraintEqualToAnchor:avatarView.trailingAnchor
                                                      constant:spacing],
-            [guide.trailingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor],
+            [guide.trailingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor
+                                                 constant:rightPadding],
 
             [subtitleLabel.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor],
             [subtitleLabel.leadingAnchor constraintEqualToAnchor:avatarView.trailingAnchor
                                                         constant:spacing],
-            [guide.trailingAnchor constraintEqualToAnchor:subtitleLabel.trailingAnchor],
+            [guide.trailingAnchor constraintEqualToAnchor:subtitleLabel.trailingAnchor
+                                                 constant:rightPadding],
             [self.contentView.bottomAnchor constraintEqualToAnchor:subtitleLabel.bottomAnchor
                                                           constant:padding],
         ]];

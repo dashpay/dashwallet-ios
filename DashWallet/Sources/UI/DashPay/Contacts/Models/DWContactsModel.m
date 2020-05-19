@@ -17,10 +17,10 @@
 
 #import "DWContactsModel.h"
 
-#import "DWContactItem.h"
 #import "DWContactsDataSourceObject.h"
 #import "DWEnvironment.h"
 #import "DWFetchedResultsDataSource.h"
+#import "DWIncomingContactItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -118,6 +118,20 @@ NS_ASSUME_NONNULL_END
 
         DSLogVerbose(@"DWDP: Fetch contact requests %@: %@", success ? @"Succeeded" : @"Failed", errors);
     }];
+}
+
+- (void)acceptContactRequest:(id<DWUserDetails>)userDetails {
+    NSAssert([userDetails isKindOfClass:DWIncomingContactItem.class], @"Inconsistent state");
+    if ([userDetails isKindOfClass:DWIncomingContactItem.class]) {
+        DWIncomingContactItem *contact = (DWIncomingContactItem *)userDetails;
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+        __weak typeof(self) weakSelf = self;
+        [mineBlockchainIdentity acceptFriendRequest:contact.friendRequestEntity
+                                         completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                                             DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+                                         }];
+    }
 }
 
 #pragma mark - DWFetchedResultsDataSourceDelegate
