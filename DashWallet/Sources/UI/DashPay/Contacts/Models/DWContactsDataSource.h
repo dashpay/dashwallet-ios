@@ -25,8 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWContactsDataSource <UITableViewDataSource>
 
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> contactsDelegate;
+- (void)setupWithTableView:(UITableView *)tableView
+       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate
+           emptyDataSource:(id<UITableViewDataSource>)emptyDataSource;
 
 - (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath;
 

@@ -70,6 +70,16 @@
     return UIStatusBarStyleLightContent;
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.view viewWillAppear];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.view viewWillDisappear];
+}
+
 #pragma mark - Actions
 
 - (void)addContactButtonAction {

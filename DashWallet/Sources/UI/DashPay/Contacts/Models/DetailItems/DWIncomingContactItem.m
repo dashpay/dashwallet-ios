@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,39 +15,37 @@
 //  limitations under the License.
 //
 
-#import "DWContactObject.h"
+#import "DWIncomingContactItem.h"
 
 #import <DashSync/DashSync.h>
 
-@implementation DWContactObject
+@implementation DWIncomingContactItem
 
 @synthesize username = _username;
-@synthesize displayName = _displayName;
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity {
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity {
     self = [super init];
     if (self) {
-        _userEntity = userEntity;
+        _friendRequestEntity = friendRequestEntity;
     }
     return self;
 }
 
 - (NSString *)username {
     if (_username == nil) {
-        _username = [self.userEntity.username copy];
+        DSBlockchainIdentityEntity *blockchainIdentity = self.friendRequestEntity.sourceContact.associatedBlockchainIdentity;
+        DSBlockchainIdentityUsernameEntity *username = blockchainIdentity.usernames.anyObject;
+        _username = [username.stringValue copy];
     }
     return _username;
 }
 
 - (NSString *)displayName {
-    if (_displayName == nil) {
-        _displayName = [self.userEntity.displayName copy];
-    }
-    return _displayName;
+    return nil;
 }
 
 - (DWUserDetailsDisplayingType)displayingType {
-    return DWUserDetailsDisplayingType_Contact;
+    return DWUserDetailsDisplayingType_IncomingRequest;
 }
 
 @end

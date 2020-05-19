@@ -31,8 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) UITableView *tableView;
 
-@property (nonatomic, strong) id<DWContactsDataSource> currentDataSource;
-
 @end
 
 NS_ASSUME_NONNULL_END
@@ -77,21 +75,17 @@ NS_ASSUME_NONNULL_END
 
 - (void)setModel:(DWContactsModel *)model {
     _model = model;
-
-    //    self.currentDataSource = model.contactsDataSource;
+    [model.dataSource setupWithTableView:self.tableView
+                     userDetailsDelegate:self
+                         emptyDataSource:self];
 }
 
-- (void)setCurrentDataSource:(id<DWContactsDataSource>)currentDataSource {
-    _currentDataSource = currentDataSource;
+- (void)viewWillAppear {
+    [self.model start];
+}
 
-    if (currentDataSource.isEmpty) {
-        self.tableView.dataSource = self;
-    }
-    else {
-        self.tableView.dataSource = currentDataSource;
-        currentDataSource.contactsDelegate = self;
-    }
-    [self.tableView reloadData];
+- (void)viewWillDisappear {
+    [self.model stop];
 }
 
 #pragma mark - UITableViewDataSource
@@ -110,11 +104,7 @@ NS_ASSUME_NONNULL_END
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    if (self.currentDataSource.isEmpty) {
-        return;
-    }
-
-    id<DWUserDetails> item = [self.currentDataSource userDetailsAtIndexPath:indexPath];
+    id<DWUserDetails> item = [self.model.dataSource userDetailsAtIndexPath:indexPath];
     [self.delegate contactsContentView:self didSelectUserDetails:item];
 }
 

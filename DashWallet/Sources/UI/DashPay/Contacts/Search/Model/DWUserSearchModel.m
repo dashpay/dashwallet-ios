@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_END
         searchIdentitiesByNamePrefix:query
                               offset:offset
                                limit:LIMIT
-                      withCompletion:^(NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSError *_Nullable error) {
+                      withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *errors) {
                           __strong typeof(weakSelf) strongSelf = weakSelf;
                           if (!strongSelf) {
                               return;
@@ -150,11 +150,7 @@ NS_ASSUME_NONNULL_END
 
                           strongSelf.searchRequest.requestInProgress = NO;
 
-                          if (error) {
-                              strongSelf.searchRequest.hasNextPage = NO;
-                              [strongSelf.delegate userSearchModel:strongSelf completedWithError:error];
-                          }
-                          else {
+                          if (success) {
                               NSMutableArray<DWUserSearchItem *> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
                               for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
                                   DWUserSearchItem *item = [[DWUserSearchItem alloc] initWithBlockchainIdentity:blockchainIdentity];
@@ -164,6 +160,10 @@ NS_ASSUME_NONNULL_END
                               strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
                               strongSelf.searchRequest.items = items;
                               [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
+                          }
+                          else {
+                              strongSelf.searchRequest.hasNextPage = NO;
+                              [strongSelf.delegate userSearchModel:strongSelf completedWithError:errors.firstObject];
                           }
                       }];
 }

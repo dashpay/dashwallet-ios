@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -21,13 +21,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSDashpayUserEntity;
+@class DSFriendRequestEntity;
 
-@interface DWContactObject : NSObject <DWUserDetails>
+@interface DWIncomingContactItem : NSObject <DWUserDetails>
 
-@property (readonly, nonatomic, strong) DSDashpayUserEntity *userEntity;
+@property (readonly, strong, nonatomic) DSFriendRequestEntity *friendRequestEntity;
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity;
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

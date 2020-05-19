@@ -17,12 +17,17 @@
 
 #import "DWContactsDataSource.h"
 
+#import <DashSync/DashSync.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsDataSourceObject : NSObject <DWContactsDataSource>
 
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)beginReloading;
+- (void)endReloading;
+
+- (void)reloadIncomingContactRequests:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc;
+- (void)reloadContacts:(NSFetchedResultsController<DSDashpayUserEntity *> *)frc;
 
 @end
 

@@ -22,27 +22,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWFetchedResultsDataSource;
 
-@interface DWFetchedResultsDataSourceDiffUpdate : NSObject
-
-@property (readonly, nonatomic, copy) NSArray<NSIndexPath *> *inserts;
-@property (readonly, nonatomic, copy) NSArray<NSIndexPath *> *deletes;
-@property (readonly, nonatomic, copy) NSArray<NSIndexPath *> *updates;
-@property (readonly, nonatomic, copy) NSArray<NSArray<NSIndexPath *> *> *moves;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-
-@end
-
 @protocol DWFetchedResultsDataSourceDelegate <NSObject>
 
 - (void)fetchedResultsDataSourceDidUpdate:(DWFetchedResultsDataSource *)fetchedResultsDataSource;
-- (void)fetchedResultsDataSource:(DWFetchedResultsDataSource *)fetchedResultsDataSource
-                   didDiffUpdate:(DWFetchedResultsDataSourceDiffUpdate *)diffUpdate;
 
 @end
 
-@interface DWFetchedResultsDataSource : NSObject <NSFetchedResultsControllerDelegate>
+@interface DWFetchedResultsDataSource : NSObject
 
 @property (readonly, nonatomic, strong) NSManagedObjectContext *context;
 @property (readonly, nonatomic, copy) NSString *entityName;
@@ -51,8 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) NSPredicate *predicate;
 @property (nullable, nonatomic, strong) NSPredicate *invertedPredicate;
 @property (nullable, nonatomic, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
-
-@property (null_resettable, nonatomic, copy) NSIndexPath * (^indexPathTransformation)(NSIndexPath *indexPath);
 
 @property (null_resettable, nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 

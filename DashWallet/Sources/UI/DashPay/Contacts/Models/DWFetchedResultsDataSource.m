@@ -22,59 +22,10 @@
 
 static NSUInteger const FETCH_BATCH_SIZE = 20;
 
-#pragma mark - Diff
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWFetchedResultsDataSourceDiffUpdate ()
-
-@property (readonly, nonatomic, strong) NSMutableArray<NSIndexPath *> *mutableInserts;
-@property (readonly, nonatomic, strong) NSMutableArray<NSIndexPath *> *mutableDeletes;
-@property (readonly, nonatomic, strong) NSMutableArray<NSIndexPath *> *mutableUpdates;
-@property (readonly, nonatomic, strong) NSMutableArray<NSArray<NSIndexPath *> *> *mutableMoves;
-
-@end
-
-NS_ASSUME_NONNULL_END
-
-@implementation DWFetchedResultsDataSourceDiffUpdate
-
-- (instancetype)initPrivate {
-    self = [super init];
-    if (self) {
-        _mutableInserts = [NSMutableArray array];
-        _mutableDeletes = [NSMutableArray array];
-        _mutableUpdates = [NSMutableArray array];
-        _mutableMoves = [NSMutableArray array];
-    }
-    return self;
-}
-
-- (NSArray<NSIndexPath *> *)inserts {
-    return [self.mutableInserts copy];
-}
-
-- (NSArray<NSIndexPath *> *)deletes {
-    return [self.mutableDeletes copy];
-}
-
-- (NSArray<NSIndexPath *> *)updates {
-    return [self.mutableUpdates copy];
-}
-
-- (NSArray<NSArray<NSIndexPath *> *> *)moves {
-    return [self.mutableMoves copy];
-}
-
-@end
-
-#pragma mark - DataSource
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWFetchedResultsDataSource ()
 
-@property (nullable, nonatomic, strong) DWFetchedResultsDataSourceDiffUpdate *diffUpdate;
 @property (nonatomic, assign) BOOL subscribedToNotifications;
 
 @end
@@ -124,16 +75,6 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (NSIndexPath *_Nonnull (^)(NSIndexPath *_Nonnull))indexPathTransformation {
-    if (_indexPathTransformation == nil) {
-        _indexPathTransformation = ^NSIndexPath *_Nonnull(NSIndexPath *_Nonnull indexPath) {
-            return indexPath;
-        };
-    }
-
-    return _indexPathTransformation;
-}
-
 - (NSFetchedResultsController *)fetchedResultsController {
     if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
@@ -153,7 +94,6 @@ NS_ASSUME_NONNULL_END
                                               sectionNameKeyPath:nil
                                                        cacheName:nil];
     _fetchedResultsController = fetchedResultsController;
-    fetchedResultsController.delegate = self;
     NSError *error = nil;
     if (![fetchedResultsController performFetch:&error]) {
         // Replace this implementation with code to handle the error appropriately.
@@ -233,46 +173,6 @@ NS_ASSUME_NONNULL_END
             });
         }
     }
-}
-
-#pragma mark NSFetchedResultsControllerDelegate
-
-- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    self.diffUpdate = [[DWFetchedResultsDataSourceDiffUpdate alloc] initPrivate];
-}
-
-- (void)controller:(NSFetchedResultsController *)controller
-    didChangeObject:(id)anObject
-        atIndexPath:(nullable NSIndexPath *)indexPath
-      forChangeType:(NSFetchedResultsChangeType)type
-       newIndexPath:(nullable NSIndexPath *)newIndexPath {
-    switch (type) {
-        case NSFetchedResultsChangeInsert: {
-            [self.diffUpdate.mutableInserts addObject:self.indexPathTransformation(newIndexPath)];
-            break;
-        }
-        case NSFetchedResultsChangeDelete: {
-            [self.diffUpdate.mutableDeletes addObject:self.indexPathTransformation(indexPath)];
-            break;
-        }
-        case NSFetchedResultsChangeMove: {
-            [self.diffUpdate.mutableMoves addObject:@[
-                self.indexPathTransformation(indexPath),
-                self.indexPathTransformation(newIndexPath),
-            ]];
-            break;
-        }
-        case NSFetchedResultsChangeUpdate: {
-            [self.diffUpdate.mutableUpdates addObject:self.indexPathTransformation(indexPath)];
-            break;
-        }
-    }
-}
-
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-    [self.delegate fetchedResultsDataSource:self didDiffUpdate:self.diffUpdate];
-    self.diffUpdate = nil;
 }
 
 @end

@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_END
     [super awakeFromNib];
 
     self.avatarView.small = YES;
+    self.avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     self.subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
 }
@@ -60,12 +61,11 @@ NS_ASSUME_NONNULL_END
 
     self.avatarView.username = userDetails.username;
     self.titleLabel.text = userDetails.username;
+    self.subtitleLabel.text = userDetails.displayName;
 
     UIView *actionView = nil;
     switch (userDetails.displayingType) {
         case DWUserDetailsDisplayingType_FromSearch: {
-            self.subtitleLabel.text = nil;
-
             break;
         }
         case DWUserDetailsDisplayingType_Contact: {

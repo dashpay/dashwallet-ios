@@ -26,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) id<DWContactsDataSource> dataSource;
 
-- (void)rebuildDataSources;
-
 - (void)start;
 - (void)stop;
 

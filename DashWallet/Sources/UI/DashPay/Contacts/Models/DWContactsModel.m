@@ -17,7 +17,7 @@
 
 #import "DWContactsModel.h"
 
-#import "DWContactObject.h"
+#import "DWContactItem.h"
 #import "DWContactsDataSourceObject.h"
 #import "DWEnvironment.h"
 #import "DWFetchedResultsDataSource.h"
@@ -25,6 +25,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsModel () <DWFetchedResultsDataSourceDelegate>
+
+@property (readonly, nonatomic, strong) DWContactsDataSourceObject *aggregateDataSource;
 
 @property (nonatomic, strong) DWFetchedResultsDataSource *incomingDataSource;
 @property (nonatomic, strong) DWFetchedResultsDataSource *contactsDataSource;
@@ -38,9 +40,14 @@ NS_ASSUME_NONNULL_END
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _aggregateDataSource = [[DWContactsDataSourceObject alloc] init];
         [self rebuildDataSources];
     }
     return self;
+}
+
+- (id<DWContactsDataSource>)dataSource {
+    return self.aggregateDataSource;
 }
 
 - (void)rebuildDataSources {
@@ -49,7 +56,7 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    NSManagedObjectContext *context = [NSManagedObject context];
+    NSManagedObjectContext *context = [NSManagedObject mainContext];
 
     _incomingDataSource = [[DWFetchedResultsDataSource alloc]
                        initWithContext:context
@@ -80,14 +87,18 @@ NS_ASSUME_NONNULL_END
             [blockchainIdentity matchingDashpayUserInContext:context]];
     NSSortDescriptor *contactsSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"associatedBlockchainIdentity.dashpayUsername.stringValue" ascending:YES];
     _contactsDataSource.sortDescriptors = @[ contactsSortDescriptor ];
-    _contactsDataSource.indexPathTransformation = ^NSIndexPath *_Nonnull(NSIndexPath *_Nonnull indexPath) {
-        return [NSIndexPath indexPathForRow:indexPath.row inSection:1];
-    };
 }
 
 - (void)start {
     [self.incomingDataSource start];
     [self.contactsDataSource start];
+
+    [self.aggregateDataSource beginReloading];
+    [self.aggregateDataSource reloadIncomingContactRequests:self.incomingDataSource.fetchedResultsController];
+    [self.aggregateDataSource reloadContacts:self.contactsDataSource.fetchedResultsController];
+    [self.aggregateDataSource endReloading];
+
+    [self reloadData];
 }
 
 - (void)stop {
@@ -95,13 +106,29 @@ NS_ASSUME_NONNULL_END
     [self.contactsDataSource stop];
 }
 
+- (void)reloadData {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    __weak typeof(self) weakSelf = self;
+    [mineBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@", success ? @"Succeeded" : @"Failed", errors);
+    }];
+}
+
 #pragma mark - DWFetchedResultsDataSourceDelegate
 
 - (void)fetchedResultsDataSourceDidUpdate:(DWFetchedResultsDataSource *)fetchedResultsDataSource {
-}
-
-- (void)fetchedResultsDataSource:(DWFetchedResultsDataSource *)fetchedResultsDataSource
-                   didDiffUpdate:(DWFetchedResultsDataSourceDiffUpdate *)diffUpdate {
+    if (fetchedResultsDataSource == self.incomingDataSource) {
+        [self.aggregateDataSource reloadIncomingContactRequests:fetchedResultsDataSource.fetchedResultsController];
+    }
+    else {
+        [self.aggregateDataSource reloadContacts:fetchedResultsDataSource.fetchedResultsController];
+    }
 }
 
 @end

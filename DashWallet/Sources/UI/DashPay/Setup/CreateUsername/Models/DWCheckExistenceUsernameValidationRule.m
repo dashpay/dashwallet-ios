@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_END
     __weak typeof(self) weakSelf = self;
     self.request = [manager
         searchIdentityByName:username
-              withCompletion:^(DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
+              withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
                   __strong typeof(weakSelf) strongSelf = weakSelf;
                   if (!strongSelf) {
                       return;
@@ -104,16 +104,16 @@ NS_ASSUME_NONNULL_END
                       return;
                   }
 
-                  if (error) {
-                      strongSelf.validationResult = DWUsernameValidationRuleResultError;
-                  }
-                  else {
+                  if (succeess) {
                       if (blockchainIdentity != nil) {
                           strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
                       }
                       else {
                           strongSelf.validationResult = DWUsernameValidationRuleResultValid;
                       }
+                  }
+                  else {
+                      strongSelf.validationResult = DWUsernameValidationRuleResultError;
                   }
               }];
 }
