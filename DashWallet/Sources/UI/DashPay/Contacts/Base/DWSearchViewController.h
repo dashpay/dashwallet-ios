@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,11 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWSearchViewController.h"
+#import "DWNavigationChildViewController.h"
+
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserSearchViewController : DWSearchViewController
+@interface DWSearchViewController : DWNavigationChildViewController <DWNavigationFullscreenable, UISearchBarDelegate>
+
+@property (readonly, nonatomic, strong) UISearchBar *searchBar;
+@property (readonly, nonatomic, strong) UIView *contentView;
+
+- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
+                               animationDuration:(NSTimeInterval)animationDuration
+                                  animationCurve:(UIViewAnimationCurve)animationCurve;
 
 @end
 

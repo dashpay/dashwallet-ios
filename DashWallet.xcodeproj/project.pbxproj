@@ -430,6 +430,7 @@
 		C3DAD26F246D46BF0001624F /* DWFetchedResultsDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */; };
 		C3DAD2B62472D1860001624F /* DWIncomingContactItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2B52472D1860001624F /* DWIncomingContactItem.m */; };
 		C3DAD2B92472D34C0001624F /* DWUserSearchItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2B82472D34C0001624F /* DWUserSearchItem.m */; };
+		C3DAD2C024747F580001624F /* DWSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2BF24747F580001624F /* DWSearchViewController.m */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -1405,6 +1406,8 @@
 		C3DAD2B82472D34C0001624F /* DWUserSearchItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchItem.m; sourceTree = "<group>"; };
 		C3DAD2BB247327D90001624F /* DWContactsDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsDataSource.h; sourceTree = "<group>"; };
 		C3DAD2BC2473289D0001624F /* DWContactsDataSourceObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsDataSourceObject.h; sourceTree = "<group>"; };
+		C3DAD2BE24747F580001624F /* DWSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSearchViewController.h; sourceTree = "<group>"; };
+		C3DAD2BF24747F580001624F /* DWSearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSearchViewController.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -3419,6 +3422,7 @@
 		2AE9549A23D0C4DC003612B3 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
+				C3DAD2BD24747F2D0001624F /* Base */,
 				2AB2373524488D8E0081B62C /* Search */,
 				2AE954A223D0C621003612B3 /* Models */,
 				2AE9549E23D0C519003612B3 /* Views */,
@@ -3631,6 +3635,15 @@
 				C3DAD26C246D44DB0001624F /* DWUserDetails.h */,
 			);
 			path = DetailItems;
+			sourceTree = "<group>";
+		};
+		C3DAD2BD24747F2D0001624F /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				C3DAD2BE24747F580001624F /* DWSearchViewController.h */,
+				C3DAD2BF24747F580001624F /* DWSearchViewController.m */,
+			);
+			path = Base;
 			sourceTree = "<group>";
 		};
 		EBFC2EA47915CD4F5BA81564 /* Pods */ = {
@@ -4498,6 +4511,7 @@
 				2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */,
 				2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */,
 				2A880FE924646A8A00994FD4 /* DWActivityCollectionViewCell.m in Sources */,
+				C3DAD2C024747F580001624F /* DWSearchViewController.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,
 				2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */,
