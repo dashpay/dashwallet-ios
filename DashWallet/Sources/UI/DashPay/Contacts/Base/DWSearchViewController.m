@@ -1,5 +1,5 @@
 //
-//  Created by administrator
+//  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSearchViewController ()
 
 @property (nonatomic, assign) BOOL requiresNoNavigationBar;
-@property (nonatomic, assign) BOOL searchBarIsFirstResponder;
 
 @end
 
@@ -90,9 +89,9 @@ NS_ASSUME_NONNULL_END
     [super viewDidAppear:animated];
 
     // Activate Search Bar initially
-    if (!self.searchBarIsFirstResponder) {
+    if (!self.disableSearchBarBecomesFirstResponderOnFirstAppearance) {
         [self.searchBar becomeFirstResponder];
-        self.searchBarIsFirstResponder = YES;
+        self.disableSearchBarBecomesFirstResponderOnFirstAppearance = YES;
     }
 }
 

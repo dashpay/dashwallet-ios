@@ -1,5 +1,5 @@
 //
-//  Created by administrator
+//  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) UISearchBar *searchBar;
 @property (readonly, nonatomic, strong) UIView *contentView;
+
+@property (nonatomic, assign) BOOL disableSearchBarBecomesFirstResponderOnFirstAppearance;
 
 - (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
                                animationDuration:(NSTimeInterval)animationDuration

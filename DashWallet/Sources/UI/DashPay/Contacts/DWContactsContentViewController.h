@@ -21,22 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWContactsContentView;
 @class DWContactsModel;
 
-@protocol DWContactsContentViewDelegate <NSObject>
-
-- (void)contactsContentView:(DWContactsContentView *)view didSelectUserDetails:(id<DWUserDetails>)userDetails;
-
-@end
-
-@interface DWContactsContentView : UIView
+@interface DWContactsContentViewController : UITableViewController
 
 @property (nonatomic, strong) DWContactsModel *model;
-@property (nullable, nonatomic, weak) id<DWContactsContentViewDelegate> delegate;
-
-- (void)viewWillAppear;
-- (void)viewWillDisappear;
 
 @end
 
