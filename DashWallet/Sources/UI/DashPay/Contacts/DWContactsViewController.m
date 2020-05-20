@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController () <UITableViewDelegate>
+@interface DWContactsViewController () <DWContactsContentViewControllerDelegate>
 
 @property (nonatomic, strong) DWContactsModel *model;
 @property (null_resettable, nonatomic, strong) DWContactsContentViewController *contentController;
@@ -70,19 +70,17 @@ NS_ASSUME_NONNULL_END
     [self.model stop];
 }
 
+#pragma mark - DWContactsContentViewControllerDelegate
+
+- (void)contactsContentViewController:(DWContactsContentViewController *)controller
+                 didSelectUserDetails:(id<DWUserDetails>)userDetails {
+}
+
 #pragma mark - Actions
 
 - (void)addContactButtonAction {
     DWUserSearchViewController *controller = [[DWUserSearchViewController alloc] init];
     [self.navigationController pushViewController:controller animated:YES];
-}
-
-#pragma mark - UITableViewDelegate
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-
-    id<DWUserDetails> item = [self.model.dataSource userDetailsAtIndexPath:indexPath];
 }
 
 #pragma mark - Private
@@ -98,7 +96,7 @@ NS_ASSUME_NONNULL_END
     if (_contentController == nil) {
         DWContactsContentViewController *controller = [[DWContactsContentViewController alloc] initWithStyle:UITableViewStylePlain];
         controller.model = self.model;
-        controller.tableView.delegate = self;
+        controller.delegate = self;
         _contentController = controller;
     }
     return _contentController;

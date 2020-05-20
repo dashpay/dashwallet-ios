@@ -485,6 +485,12 @@
 "Moved to Address" = "Déplacé vers l'adresse";
 
 /* No comment provided by engineer. */
+"My Contacts" = "My Contacts";
+
+/* No comment provided by engineer. */
+"Name" = "Name";
+
+/* No comment provided by engineer. */
 "Network" = "Réseau";
 
 /* No comment provided by engineer. */
@@ -804,6 +810,12 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Il y a eu un problème";
+
+/* No comment provided by engineer. */
+"Sort by" = "Sort by";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sort Contacts";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Indiquez le montant";

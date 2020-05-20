@@ -19,10 +19,11 @@
 #import <Foundation/Foundation.h>
 
 #import "DWContactsDataSource.h"
+#import "DWContactsSortModeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsModel : NSObject
+@interface DWContactsModel : NSObject <DWContactsSortModeProtocol>
 
 @property (nonatomic, strong) id<DWContactsDataSource> dataSource;
 

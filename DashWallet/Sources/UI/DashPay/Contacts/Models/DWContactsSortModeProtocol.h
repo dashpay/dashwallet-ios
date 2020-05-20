@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,26 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWUserDetails.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWContactsModel;
-@class DWContactsContentViewController;
+typedef NS_ENUM(NSUInteger, DWContactsSortMode) {
+    DWContactsSortMode_ByUsername,
+};
 
-@protocol DWContactsContentViewControllerDelegate <NSObject>
+@protocol DWContactsSortModeProtocol <NSObject>
 
-- (void)contactsContentViewController:(DWContactsContentViewController *)controller
-                 didSelectUserDetails:(id<DWUserDetails>)userDetails;
-
-@end
-
-@interface DWContactsContentViewController : UITableViewController
-
-@property (nonatomic, strong) DWContactsModel *model;
-@property (nullable, nonatomic, weak) id<DWContactsContentViewControllerDelegate> delegate;
+@property (nonatomic, assign) DWContactsSortMode sortMode;
 
 @end
 

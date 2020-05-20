@@ -29,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWFilterHeaderView : UIView
 
-@property (readonly, strong, nonatomic) IBOutlet UILabel *titleLabel;
-@property (readonly, strong, nonatomic) IBOutlet UIButton *filterButton;
+@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
+@property (strong, nonatomic) IBOutlet UIButton *filterButton;
 
 @property (nullable, nonatomic, weak) id<DWFilterHeaderViewDelegate> delegate;
 

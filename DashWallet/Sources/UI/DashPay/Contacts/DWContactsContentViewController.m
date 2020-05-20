@@ -18,6 +18,7 @@
 #import "DWContactsContentViewController.h"
 
 #import "DWContactsModel.h"
+#import "DWFilterHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "DWUserDetailsCell.h"
@@ -25,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController () <DWUserDetailsCellDelegate>
+@interface DWContactsContentViewController () <DWUserDetailsCellDelegate, DWFilterHeaderViewDelegate>
 
 @end
 
@@ -74,6 +75,57 @@ NS_ASSUME_NONNULL_END
     return [UITableViewCell new];
 }
 
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    id<DWUserDetails> item = [self.model.dataSource userDetailsAtIndexPath:indexPath];
+    [self.delegate contactsContentViewController:self didSelectUserDetails:item];
+}
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if (section == 0) {
+        return nil;
+    }
+    else {
+        DWFilterHeaderView *headerView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
+        headerView.titleLabel.text = NSLocalizedString(@"My Contacts", nil);
+        headerView.delegate = self;
+
+        UIButton *button = headerView.filterButton;
+        NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+        [result beginEditing];
+        NSAttributedString *prefix =
+            [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Sort by", nil)
+                                            attributes:@{
+                                                NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
+                                                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1],
+                                            }];
+        [result appendAttributedString:prefix];
+
+        [result appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+        NSString *optionValue = nil;
+        switch (self.model.sortMode) {
+            case DWContactsSortMode_ByUsername: {
+                optionValue = NSLocalizedString(@"Name", nil);
+                break;
+            }
+        }
+        NSAttributedString *option =
+            [[NSAttributedString alloc] initWithString:optionValue
+                                            attributes:@{
+                                                NSForegroundColorAttributeName : [UIColor dw_dashBlueColor],
+                                                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
+                                            }];
+        [result appendAttributedString:option];
+        [result endEditing];
+        [button setAttributedTitle:result forState:UIControlStateNormal];
+
+        return headerView;
+    }
+}
+
 #pragma mark - DWUserDetailsCellDelegate
 
 - (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact {
@@ -82,6 +134,40 @@ NS_ASSUME_NONNULL_END
 
 - (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact {
     NSLog(@"DWDP: ignore contact request");
+}
+
+#pragma mark - DWFilterHeaderViewDelegate
+
+- (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
+    NSString *title = NSLocalizedString(@"Sort Contacts", nil);
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Name", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.sortMode = DWContactsSortMode_ByUsername;
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:action];
+    }
+
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        alert.popoverPresentationController.sourceView = sender;
+        alert.popoverPresentationController.sourceRect = sender.bounds;
+    }
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

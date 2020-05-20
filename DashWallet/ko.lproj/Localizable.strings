@@ -485,6 +485,12 @@
 "Moved to Address" = "주소로 이동";
 
 /* No comment provided by engineer. */
+"My Contacts" = "My Contacts";
+
+/* No comment provided by engineer. */
+"Name" = "Name";
+
+/* No comment provided by engineer. */
 "Network" = "네트워크";
 
 /* No comment provided by engineer. */
@@ -804,6 +810,12 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "뭔가 잘못되었습니다";
+
+/* No comment provided by engineer. */
+"Sort by" = "Sort by";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sort Contacts";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "금액 특정하기";

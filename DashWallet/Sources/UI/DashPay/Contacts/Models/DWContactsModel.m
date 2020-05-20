@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWContactsModel
 
+@synthesize sortMode;
+
 - (instancetype)init {
     self = [super init];
     if (self) {
