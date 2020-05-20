@@ -20,13 +20,14 @@
 #import "DWContactsModel.h"
 #import "DWFilterHeaderView.h"
 #import "DWSharedUIConstants.h"
+#import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
 #import "DWUserDetailsCell.h"
 #import "DWUserDetailsContactCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController () <DWUserDetailsCellDelegate, DWFilterHeaderViewDelegate>
+@interface DWContactsContentViewController () <DWUserDetailsCellDelegate, DWFilterHeaderViewDelegate, DWTitleActionHeaderViewDelegate>
 
 @end
 
@@ -86,7 +87,11 @@ NS_ASSUME_NONNULL_END
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     if (section == 0) {
-        return nil;
+        DWTitleActionHeaderView *headerView = [[DWTitleActionHeaderView alloc] initWithFrame:CGRectZero];
+        headerView.titleLabel.text = NSLocalizedString(@"Contact Requests", nil);
+        headerView.delegate = self;
+        [headerView.actionButton setTitle:NSLocalizedString(@"View All", nil) forState:UIControlStateNormal];
+        return headerView;
     }
     else {
         DWFilterHeaderView *headerView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
@@ -168,6 +173,11 @@ NS_ASSUME_NONNULL_END
     }
 
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - DWTitleActionHeaderViewDelegate
+
+- (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender {
 }
 
 @end

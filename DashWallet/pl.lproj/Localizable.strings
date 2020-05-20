@@ -203,6 +203,9 @@
 "Contact Request Pending" = "Contact Request Pending";
 
 /* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Skontaktuj się z pomocą techniczną";
 
 /* No comment provided by engineer. */
@@ -954,6 +957,9 @@
 
 /* adjective, security level */
 "Very High" = "Bardzo Wysoki";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobacz na eksplorerze bloków";

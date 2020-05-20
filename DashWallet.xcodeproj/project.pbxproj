@@ -431,6 +431,8 @@
 		C3DAD2B92472D34C0001624F /* DWUserSearchItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2B82472D34C0001624F /* DWUserSearchItem.m */; };
 		C3DAD2C024747F580001624F /* DWSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2BF24747F580001624F /* DWSearchViewController.m */; };
 		C3DAD2C3247512BA0001624F /* DWContactsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2C2247512BA0001624F /* DWContactsContentViewController.m */; };
+		C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2C5247538A90001624F /* DWTitleActionHeaderView.m */; };
+		C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C3DAD2C7247538AA0001624F /* DWTitleActionHeaderView.xib */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -1409,6 +1411,9 @@
 		C3DAD2C1247512BA0001624F /* DWContactsContentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsContentViewController.h; sourceTree = "<group>"; };
 		C3DAD2C2247512BA0001624F /* DWContactsContentViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsContentViewController.m; sourceTree = "<group>"; };
 		C3DAD2C4247534820001624F /* DWContactsSortModeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSortModeProtocol.h; sourceTree = "<group>"; };
+		C3DAD2C5247538A90001624F /* DWTitleActionHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTitleActionHeaderView.m; sourceTree = "<group>"; };
+		C3DAD2C6247538A90001624F /* DWTitleActionHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTitleActionHeaderView.h; sourceTree = "<group>"; };
+		C3DAD2C7247538AA0001624F /* DWTitleActionHeaderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWTitleActionHeaderView.xib; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -3439,6 +3444,9 @@
 			isa = PBXGroup;
 			children = (
 				2A00AB1423D100AA00DC4745 /* Cells */,
+				C3DAD2C6247538A90001624F /* DWTitleActionHeaderView.h */,
+				C3DAD2C5247538A90001624F /* DWTitleActionHeaderView.m */,
+				C3DAD2C7247538AA0001624F /* DWTitleActionHeaderView.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3976,6 +3984,7 @@
 				2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */,
 				2ACCD86323193C1E00A96B62 /* DWReceiveContentView.xib in Resources */,
 				2A307CB822E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib in Resources */,
+				C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */,
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
@@ -4531,6 +4540,7 @@
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
+				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
 				2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */,

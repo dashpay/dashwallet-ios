@@ -203,6 +203,9 @@
 "Contact Request Pending" = "Contact Request Pending";
 
 /* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Επικοινωνήστε με την υποστήριξη";
 
 /* No comment provided by engineer. */
@@ -954,6 +957,9 @@
 
 /* adjective, security level */
 "Very High" = "Πολύ Υψηλά";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Προβολή στον Explorer των Block";

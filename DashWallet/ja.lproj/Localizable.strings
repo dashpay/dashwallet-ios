@@ -203,6 +203,9 @@
 "Contact Request Pending" = "Contact Request Pending";
 
 /* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "サポートへ連絡する";
 
 /* No comment provided by engineer. */
@@ -954,6 +957,9 @@
 
 /* adjective, security level */
 "Very High" = " 非常に高い";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ブロックエクスプローラーで見る";

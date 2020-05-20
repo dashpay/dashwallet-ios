@@ -203,6 +203,9 @@
 "Contact Request Pending" = "Contact Request Pending";
 
 /* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Liên hệ hỗ trợ";
 
 /* No comment provided by engineer. */
@@ -954,6 +957,9 @@
 
 /* adjective, security level */
 "Very High" = "Rất cao";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Xem trên công cụ khám phá khối";

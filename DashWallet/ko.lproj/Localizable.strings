@@ -203,6 +203,9 @@
 "Contact Request Pending" = "Contact Request Pending";
 
 /* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "고객 지원부에 문의하기";
 
 /* No comment provided by engineer. */
@@ -954,6 +957,9 @@
 
 /* adjective, security level */
 "Very High" = "매우 높음";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "View in Block Explorer";
