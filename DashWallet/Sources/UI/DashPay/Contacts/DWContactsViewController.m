@@ -17,7 +17,6 @@
 
 #import "DWContactsViewController.h"
 
-#import "DWContactsContentView.h"
 #import "DWContactsContentViewController.h"
 #import "DWContactsModel.h"
 #import "DWUserSearchViewController.h"

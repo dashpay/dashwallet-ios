@@ -17,22 +17,22 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWTxDisplayModeProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTxListHeaderView;
+@class DWFilterHeaderView;
 
-@protocol DWTxListHeaderViewDelegate <NSObject>
+@protocol DWFilterHeaderViewDelegate <NSObject>
 
-- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender;
+- (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender;
 
 @end
 
-@interface DWTxListHeaderView : UIView
+@interface DWFilterHeaderView : UIView
 
-@property (nullable, strong, nonatomic) id<DWTxDisplayModeProtocol> model;
-@property (nullable, nonatomic, weak) id<DWTxListHeaderViewDelegate> delegate;
+@property (readonly, strong, nonatomic) IBOutlet UILabel *titleLabel;
+@property (readonly, strong, nonatomic) IBOutlet UIButton *filterButton;
+
+@property (nullable, nonatomic, weak) id<DWFilterHeaderViewDelegate> delegate;
 
 @end
 

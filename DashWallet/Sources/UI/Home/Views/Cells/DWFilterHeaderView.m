@@ -15,21 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWTxListHeaderView.h"
+#import "DWFilterHeaderView.h"
 
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWTxListHeaderView ()
+@interface DWFilterHeaderView ()
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
-@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
-@property (strong, nonatomic) IBOutlet UIButton *filterButton;
 
 @end
 
-@implementation DWTxListHeaderView
+@implementation DWFilterHeaderView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -62,33 +60,11 @@ NS_ASSUME_NONNULL_BEGIN
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
-    self.titleLabel.text = NSLocalizedString(@"History", nil);
-
     self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
 }
 
-- (void)setModel:(nullable id<DWTxDisplayModeProtocol>)model {
-    _model = model;
-
-    UIButton *button = self.filterButton;
-    switch (self.model.displayMode) {
-        case DWHomeTxDisplayMode_All:
-            [button setTitle:NSLocalizedString(@"All", nil) forState:UIControlStateNormal];
-            break;
-        case DWHomeTxDisplayMode_Received:
-            [button setTitle:NSLocalizedString(@"Received", nil) forState:UIControlStateNormal];
-            break;
-        case DWHomeTxDisplayMode_Sent:
-            [button setTitle:NSLocalizedString(@"Sent", nil) forState:UIControlStateNormal];
-            break;
-        case DWHomeTxDisplayMode_Rewards:
-            [button setTitle:NSLocalizedString(@"Rewards", nil) forState:UIControlStateNormal];
-            break;
-    }
-}
-
 - (IBAction)filterButtonAction:(UIButton *)sender {
-    [self.delegate txListHeaderView:self filterButtonAction:sender];
+    [self.delegate filterHeaderView:self filterButtonAction:sender];
 }
 
 @end

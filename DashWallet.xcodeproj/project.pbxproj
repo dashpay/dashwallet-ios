@@ -144,8 +144,8 @@
 		2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */; };
 		2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */; };
 		2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */; };
-		2A4E534B22F03A9E00E5168A /* DWTxListHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534A22F03A9E00E5168A /* DWTxListHeaderView.m */; };
-		2A4E534D22F03AAC00E5168A /* DWTxListHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E534C22F03AAC00E5168A /* DWTxListHeaderView.xib */; };
+		2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534A22F03A9E00E5168A /* DWFilterHeaderView.m */; };
+		2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */; };
 		2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534F22F19BE300E5168A /* DWSyncModel.m */; };
 		2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535222F1D0D900E5168A /* DWTxListTableViewCell.m */; };
 		2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */; };
@@ -800,9 +800,9 @@
 		2A4E534222F02BC300E5168A /* UIView+DWReuseHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWReuseHelper.h"; sourceTree = "<group>"; };
 		2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWReuseHelper.m"; sourceTree = "<group>"; };
 		2A4E534522F02C6000E5168A /* DWUIKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUIKit.h; sourceTree = "<group>"; };
-		2A4E534922F03A9E00E5168A /* DWTxListHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxListHeaderView.h; sourceTree = "<group>"; };
-		2A4E534A22F03A9E00E5168A /* DWTxListHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxListHeaderView.m; sourceTree = "<group>"; };
-		2A4E534C22F03AAC00E5168A /* DWTxListHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxListHeaderView.xib; sourceTree = "<group>"; };
+		2A4E534922F03A9E00E5168A /* DWFilterHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFilterHeaderView.h; sourceTree = "<group>"; };
+		2A4E534A22F03A9E00E5168A /* DWFilterHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFilterHeaderView.m; sourceTree = "<group>"; };
+		2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWFilterHeaderView.xib; sourceTree = "<group>"; };
 		2A4E534E22F19BE300E5168A /* DWSyncModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncModel.h; sourceTree = "<group>"; };
 		2A4E534F22F19BE300E5168A /* DWSyncModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncModel.m; sourceTree = "<group>"; };
 		2A4E535122F1D0D900E5168A /* DWTxListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxListTableViewCell.h; sourceTree = "<group>"; };
@@ -2168,9 +2168,9 @@
 				2A4E533D22F025FE00E5168A /* DWTxListEmptyTableViewCell.h */,
 				2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */,
 				2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */,
-				2A4E534922F03A9E00E5168A /* DWTxListHeaderView.h */,
-				2A4E534A22F03A9E00E5168A /* DWTxListHeaderView.m */,
-				2A4E534C22F03AAC00E5168A /* DWTxListHeaderView.xib */,
+				2A4E534922F03A9E00E5168A /* DWFilterHeaderView.h */,
+				2A4E534A22F03A9E00E5168A /* DWFilterHeaderView.m */,
+				2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */,
 				2A4E535122F1D0D900E5168A /* DWTxListTableViewCell.h */,
 				2A4E535222F1D0D900E5168A /* DWTxListTableViewCell.m */,
 				2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */,
@@ -3951,7 +3951,7 @@
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
 				2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */,
-				2A4E534D22F03AAC00E5168A /* DWTxListHeaderView.xib in Resources */,
+				2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
@@ -4640,7 +4640,7 @@
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
-				2A4E534B22F03A9E00E5168A /* DWTxListHeaderView.m in Sources */,
+				2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */,
 				2A951CE423D1B92C00602824 /* DWContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */,

@@ -22,11 +22,11 @@
 #import "DWDPRegistrationStatus.h"
 #import "DWDPRegistrationStatusTableViewCell.h"
 #import "DWDashPayProtocol.h"
+#import "DWFilterHeaderView.h"
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
-#import "DWTxListHeaderView.h"
 #import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
                           UITableViewDataSource,
                           UITableViewDelegate,
                           DWHomeModelUpdatesObserver,
-                          DWTxListHeaderViewDelegate,
+                          DWFilterHeaderViewDelegate,
                           DWDPRegistrationErrorRetryDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
@@ -171,9 +171,24 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UITableViewDelegate
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    DWTxListHeaderView *headerView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
-    headerView.model = self.model;
+    DWFilterHeaderView *headerView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
+    headerView.titleLabel.text = NSLocalizedString(@"History", nil);
     headerView.delegate = self;
+    UIButton *button = headerView.filterButton;
+    switch (self.model.displayMode) {
+        case DWHomeTxDisplayMode_All:
+            [button setTitle:NSLocalizedString(@"All", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Received:
+            [button setTitle:NSLocalizedString(@"Received", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Sent:
+            [button setTitle:NSLocalizedString(@"Sent", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Rewards:
+            [button setTitle:NSLocalizedString(@"Rewards", nil) forState:UIControlStateNormal];
+            break;
+    }
     return headerView;
 }
 
@@ -199,9 +214,9 @@ NS_ASSUME_NONNULL_BEGIN
     [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
-#pragma mark - DWTxListHeaderViewDelegate
+#pragma mark - DWFilterHeaderViewDelegate
 
-- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender {
+- (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
     [self.delegate homeView:self showTxFilter:sender];
 }
 
