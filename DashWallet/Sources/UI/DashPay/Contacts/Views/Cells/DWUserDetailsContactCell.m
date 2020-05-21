@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_END
         DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:CGRectZero];
         avatarView.translatesAutoresizingMaskIntoConstraints = NO;
         avatarView.small = YES;
+        avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
         [self.contentView addSubview:avatarView];
         _avatarView = avatarView;
 

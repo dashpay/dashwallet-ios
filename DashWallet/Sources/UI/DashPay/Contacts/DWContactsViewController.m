@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Some sane limit to prevent breaking layout
 static NSInteger const MAX_SEARCH_LENGTH = 100;
 
-@interface DWContactsViewController () <DWContactsContentViewControllerDelegate, DWContactsModelDelegate>
+@interface DWContactsViewController () <DWContactsContentViewControllerDelegate, DWContactsModelDelegate, DWSearchStateViewControllerDelegate>
 
 @property (null_resettable, nonatomic, strong) DWContactsModel *model;
 @property (null_resettable, nonatomic, strong) DWSearchStateViewController *stateController;
@@ -115,6 +115,12 @@ NS_ASSUME_NONNULL_END
     return resultText.length <= MAX_SEARCH_LENGTH;
 }
 
+#pragma mark - DWSearchStateViewControllerDelegate
+
+- (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender {
+    [self addContactButtonAction];
+}
+
 #pragma mark - Keyboard
 
 - (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
@@ -145,6 +151,7 @@ NS_ASSUME_NONNULL_END
 - (DWSearchStateViewController *)stateController {
     if (_stateController == nil) {
         _stateController = [[DWSearchStateViewController alloc] init];
+        _stateController.delegate = self;
     }
     return _stateController;
 }
