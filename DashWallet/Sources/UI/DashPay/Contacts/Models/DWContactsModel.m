@@ -101,26 +101,13 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)start {
-    if (!self.incomingDataSource) {
-        [self rebuildDataSources];
-    }
-
-    [self.incomingDataSource start];
-    [self.contactsDataSource start];
-
-    [self.aggregateDataSource beginReloading];
-    [self.aggregateDataSource reloadIncomingContactRequests:self.incomingDataSource.fetchedResultsController];
-    [self.aggregateDataSource reloadContacts:self.contactsDataSource.fetchedResultsController];
-    [self.aggregateDataSource endReloading];
-
     [self fetchData];
 
-    [self.delegate contactsModelDidUpdate:self];
+    [self activateFRCs];
 }
 
 - (void)stop {
-    [self.incomingDataSource stop];
-    [self.contactsDataSource stop];
+    [self resetFRCs];
 }
 
 - (void)fetchData {
@@ -134,6 +121,10 @@ NS_ASSUME_NONNULL_END
         }
 
         DSLogVerbose(@"DWDP: Fetch contact requests %@: %@", success ? @"Succeeded" : @"Failed", errors);
+
+        // TODO: temp workaround to force reload contact list
+        [strongSelf resetFRCs];
+        [strongSelf activateFRCs];
     }];
 }
 
@@ -146,7 +137,15 @@ NS_ASSUME_NONNULL_END
         __weak typeof(self) weakSelf = self;
         [mineBlockchainIdentity acceptFriendRequest:contact.friendRequestEntity
                                          completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                                             if (!strongSelf) {
+                                                 return;
+                                             }
+
                                              DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+
+                                             // TODO: temp workaround to update and force reload contact list
+                                             [strongSelf fetchData];
                                          }];
     }
 }
@@ -170,6 +169,29 @@ NS_ASSUME_NONNULL_END
     }
 
     [self.delegate contactsModelDidUpdate:self];
+}
+
+#pragma mark - Private
+
+- (void)activateFRCs {
+    if (!self.incomingDataSource) {
+        [self rebuildDataSources];
+    }
+
+    [self.incomingDataSource start];
+    [self.contactsDataSource start];
+
+    [self.aggregateDataSource beginReloading];
+    [self.aggregateDataSource reloadIncomingContactRequests:self.incomingDataSource.fetchedResultsController];
+    [self.aggregateDataSource reloadContacts:self.contactsDataSource.fetchedResultsController];
+    [self.aggregateDataSource endReloading];
+
+    [self.delegate contactsModelDidUpdate:self];
+}
+
+- (void)resetFRCs {
+    [self.incomingDataSource stop];
+    [self.contactsDataSource stop];
 }
 
 @end
