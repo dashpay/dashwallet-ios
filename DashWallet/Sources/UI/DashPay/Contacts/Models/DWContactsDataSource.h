@@ -17,18 +17,24 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWContactItem.h"
+#import "DWUserDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWContactListTableViewCellDelegate;
+@protocol DWUserDetailsCellDelegate;
 
 @protocol DWContactsDataSource <UITableViewDataSource>
 
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> contactsDelegate;
+@property (readonly, nullable, nonatomic, copy) NSString *trimmedQuery;
+@property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
+@property (readonly, nonatomic, assign) NSUInteger contactRequestsCount;
 
-- (id<DWContactItem>)contactAtIndexPath:(NSIndexPath *)indexPath;
+- (void)setupWithTableView:(UITableView *)tableView
+       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate;
+
+- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath;
+
+- (void)searchWithQuery:(NSString *)searchQuery;
 
 @end
 

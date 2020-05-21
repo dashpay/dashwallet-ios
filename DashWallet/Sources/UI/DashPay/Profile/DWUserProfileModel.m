@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_END
     __weak typeof(self) weakSelf = self;
     [mineBlockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
                                                         completion:
-                                                            ^(BOOL success, NSError *_Nonnull error) {
+                                                            ^(BOOL success, NSArray<NSError *> *_Nullable errors) {
                                                                 __strong typeof(weakSelf) strongSelf = weakSelf;
                                                                 if (!strongSelf) {
                                                                     return;
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_END
     DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
     __weak typeof(self) weakSelf = self;
     [mineBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:self.blockchainIdentity
-                                                           completion:^(BOOL success, NSError *_Nonnull error) {
+                                                           completion:^(BOOL success, NSArray<NSError *> *errors) {
                                                                __strong typeof(weakSelf) strongSelf = weakSelf;
                                                                if (!strongSelf) {
                                                                    return;

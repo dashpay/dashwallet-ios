@@ -15,17 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DWContactItem.h"
 #import "DWContactsDataSource.h"
+
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsDataSourceObject : NSObject <DWContactsDataSource>
 
-- (instancetype)initWithItems:(NSArray<id<DWContactItem>> *)items;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
 
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)beginReloading;
+- (void)endReloading;
+
+- (void)reloadIncomingContactRequests:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc;
+- (void)reloadContacts:(NSFetchedResultsController<DSDashpayUserEntity *> *)frc;
 
 @end
 

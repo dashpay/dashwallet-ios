@@ -288,9 +288,11 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     }
 
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
-    DSAccountEntity *accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:currentAccount.wallet.uniqueIDString
-                                                                               index:currentAccount.accountNumber
-                                                                             onChain:[DWEnvironment sharedInstance].currentChain];
+    DSAccountEntity *accountEntity = [DSAccountEntity
+        accountEntityForWalletUniqueID:currentAccount.wallet.uniqueIDString
+                                 index:currentAccount.accountNumber
+                               onChain:[DWEnvironment sharedInstance].currentChain
+                             inContext:[NSManagedObject context]];
 
     NSManagedObjectContext *writeContext = [NSManagedObject context];
 
@@ -422,10 +424,14 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
 
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSFundsDerivationPath *bip32DerivationPath = currentAccount.bip32DerivationPath;
-    DSDerivationPathEntity *bip32DerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:bip32DerivationPath];
+    DSDerivationPathEntity *bip32DerivationPathEntity = [DSDerivationPathEntity
+        derivationPathEntityMatchingDerivationPath:bip32DerivationPath
+                                         inContext:[NSManagedObject context]];
 
     DSFundsDerivationPath *bip44DerivationPath = currentAccount.bip44DerivationPath;
-    DSDerivationPathEntity *bip44DerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:bip44DerivationPath];
+    DSDerivationPathEntity *bip44DerivationPathEntity = [DSDerivationPathEntity
+        derivationPathEntityMatchingDerivationPath:bip44DerivationPath
+                                         inContext:[NSManagedObject context]];
 
     NSMutableDictionary<NSString *, DSAddressEntity *> *addresses = [NSMutableDictionary dictionary];
 

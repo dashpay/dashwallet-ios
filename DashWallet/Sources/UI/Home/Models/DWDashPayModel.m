@@ -21,6 +21,7 @@
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -58,6 +59,8 @@ NS_ASSUME_NONNULL_END
                 _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:failed username:username];
             }
         }
+
+        DSLogVerbose(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
     }
     return self;
 }

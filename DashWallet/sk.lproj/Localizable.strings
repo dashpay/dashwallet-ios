@@ -203,6 +203,9 @@
 "Contact Request Pending" = "Contact Request Pending";
 
 /* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Kontaktovať Podporu";
 
 /* No comment provided by engineer. */
@@ -485,6 +488,12 @@
 "Moved to Address" = "Presunuté k adrese";
 
 /* No comment provided by engineer. */
+"My Contacts" = "My Contacts";
+
+/* No comment provided by engineer. */
+"Name" = "Name";
+
+/* No comment provided by engineer. */
 "Network" = "Sieť";
 
 /* No comment provided by engineer. */
@@ -704,7 +713,16 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Snímky obrazovky sú viditeľné pre iné aplikácie a zariadenia. Vytvorte novú frázu obnovenia a držte ju v tajnosti.";
 
 /* No comment provided by engineer. */
+"Search for a contact" = "Search for a contact";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+
+/* No comment provided by engineer. */
 "Search for a username" = "Search for a username";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Search results for \"";
 
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
@@ -803,6 +821,12 @@
 "Something went wrong" = "Niečo sa pokazilo";
 
 /* No comment provided by engineer. */
+"Sort by" = "Sort by";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sort Contacts";
+
+/* No comment provided by engineer. */
 "Specify Amount" = "Zadať množstvo";
 
 /* No comment provided by engineer. */
@@ -840,6 +864,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that matches with the name %@" = "There are no users that matches with the name %@";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@ in your contacts" = "There are no users that matches with the name %@ in your contacts";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Táto aplikácia má otvorený zdrojový kód:";
@@ -939,6 +966,9 @@
 
 /* adjective, security level */
 "Very High" = "Veľmi vysoké";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobraziť v prehliadači blokov";
