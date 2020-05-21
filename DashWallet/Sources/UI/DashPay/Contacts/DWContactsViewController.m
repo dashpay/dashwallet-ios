@@ -78,11 +78,13 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWContactsModelDelegate
 
 - (void)contactsModelDidUpdate:(DWContactsModel *)model {
+    self.searchBar.hidden = NO;
     if (self.model.isEmpty) {
         if (self.model.isSearching) {
             [self.stateController setNoResultsLocalStateWithQuery:self.model.dataSource.trimmedQuery];
         }
         else {
+            self.searchBar.hidden = YES;
             [self.stateController setPlaceholderLocalState];
         }
         [self.contentController dw_detachFromParent];

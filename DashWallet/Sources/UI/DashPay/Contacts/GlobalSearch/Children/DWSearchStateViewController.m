@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_END
     verticalStackView.translatesAutoresizingMaskIntoConstraints = NO;
     verticalStackView.axis = UILayoutConstraintAxisVertical;
     verticalStackView.alignment = UIStackViewAlignmentCenter;
-    [verticalStackView setCustomSpacing:24.0 afterView:self.iconImageView];
+    verticalStackView.spacing = 24.0;
 
     UIStackView *horizontalStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ verticalStackView ]];
     horizontalStackView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -121,6 +121,7 @@ NS_ASSUME_NONNULL_END
         [horizontalStackView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
         [guide.trailingAnchor constraintEqualToAnchor:horizontalStackView.trailingAnchor],
         [self.view.bottomAnchor constraintEqualToAnchor:horizontalStackView.bottomAnchor],
+        [self.actionButton.heightAnchor constraintEqualToConstant:44.0],
     ]];
 
     [self reloadData];
@@ -159,6 +160,7 @@ NS_ASSUME_NONNULL_END
         button.translatesAutoresizingMaskIntoConstraints = NO;
         button.small = YES;
         button.inverted = YES;
+        button.usedOnDarkBackground = NO;
         [button addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _actionButton = button;
     }
@@ -368,7 +370,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configureActionButtonForSearchUsers {
-    [self.actionButton setImage:[UIImage imageNamed:@"dp_add_contact"] forState:UIControlStateNormal];
+    self.actionButton.hidden = NO;
+    self.actionButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, -8.0, 0.0, 0.0);
+    [self.actionButton setImage:[UIImage imageNamed:@"dp_search_add_contact"] forState:UIControlStateNormal];
     [self.actionButton setTitle:NSLocalizedString(@"Search for a User on the Dash Network", nil)
                        forState:UIControlStateNormal];
 }

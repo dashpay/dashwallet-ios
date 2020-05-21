@@ -101,6 +101,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)start {
+    if (!self.incomingDataSource) {
+        [self rebuildDataSources];
+    }
+
     [self.incomingDataSource start];
     [self.contactsDataSource start];
 
