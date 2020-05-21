@@ -77,6 +77,14 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWContactsDataSource
 
+- (NSUInteger)maxVisibleContactRequestsCount {
+    return 3;
+}
+
+- (NSUInteger)contactRequestsCount {
+    return self.incomingFRC.sections.firstObject.numberOfObjects;
+}
+
 - (void)setupWithTableView:(UITableView *)tableView
        userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate {
     self.tableView = tableView;
@@ -154,7 +162,8 @@ NS_ASSUME_NONNULL_END
             return self.searchDataSource.filteredFirstSection.count;
         }
         else {
-            return self.incomingFRC.sections.firstObject.numberOfObjects;
+            return MIN(self.incomingFRC.sections.firstObject.numberOfObjects,
+                       self.maxVisibleContactRequestsCount);
         }
     }
     else {

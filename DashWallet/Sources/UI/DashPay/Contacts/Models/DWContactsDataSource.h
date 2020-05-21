@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWContactsDataSource <UITableViewDataSource>
 
 @property (readonly, nullable, nonatomic, copy) NSString *trimmedQuery;
+@property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
+@property (readonly, nonatomic, assign) NSUInteger contactRequestsCount;
 
 - (void)setupWithTableView:(UITableView *)tableView
        userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate;

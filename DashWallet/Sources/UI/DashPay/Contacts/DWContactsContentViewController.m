@@ -74,10 +74,30 @@ NS_ASSUME_NONNULL_END
 }
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    id<DWContactsDataSource> dataSource = self.model.dataSource;
+    if ([dataSource tableView:tableView numberOfRowsInSection:section] == 0) {
+        return [[UIView alloc] init];
+    }
+
     if (section == 0) {
+        const NSUInteger contactRequestsCount = dataSource.contactRequestsCount;
+        const BOOL isSearching = self.model.isSearching;
+        const BOOL hasMore = contactRequestsCount > dataSource.maxVisibleContactRequestsCount;
+        const BOOL shouldHideViewAll = isSearching || !hasMore;
+        NSString *title = nil;
+        if (shouldHideViewAll) {
+            title = NSLocalizedString(@"Contact Requests", nil);
+        }
+        else {
+            title = [NSString stringWithFormat:@"%@ (%ld)",
+                                               NSLocalizedString(@"Contact Requests", nil),
+                                               contactRequestsCount];
+        }
+
         DWTitleActionHeaderView *headerView = [[DWTitleActionHeaderView alloc] initWithFrame:CGRectZero];
-        headerView.titleLabel.text = NSLocalizedString(@"Contact Requests", nil);
+        headerView.titleLabel.text = title;
         headerView.delegate = self;
+        headerView.actionButton.hidden = shouldHideViewAll;
         [headerView.actionButton setTitle:NSLocalizedString(@"View All", nil) forState:UIControlStateNormal];
         return headerView;
     }
@@ -117,6 +137,15 @@ NS_ASSUME_NONNULL_END
 
         return headerView;
     }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    id<DWContactsDataSource> dataSource = self.model.dataSource;
+    if ([dataSource tableView:tableView numberOfRowsInSection:section] == 0) {
+        return 0.0;
+    }
+
+    return UITableViewAutomaticDimension;
 }
 
 #pragma mark - DWUserDetailsCellDelegate
