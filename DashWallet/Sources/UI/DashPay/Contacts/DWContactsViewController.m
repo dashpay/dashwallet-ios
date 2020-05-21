@@ -19,14 +19,17 @@
 
 #import "DWContactsContentViewController.h"
 #import "DWContactsModel.h"
+#import "DWSearchStateViewController.h"
 #import "DWUserSearchViewController.h"
+#import "UIView+DWFindConstraints.h"
 #import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController () <DWContactsContentViewControllerDelegate>
+@interface DWContactsViewController () <DWContactsContentViewControllerDelegate, DWContactsModelDelegate>
 
-@property (nonatomic, strong) DWContactsModel *model;
+@property (null_resettable, nonatomic, strong) DWContactsModel *model;
+@property (null_resettable, nonatomic, strong) DWSearchStateViewController *stateController;
 @property (null_resettable, nonatomic, strong) DWContactsContentViewController *contentController;
 
 @end
@@ -54,9 +57,8 @@ NS_ASSUME_NONNULL_END
                                                               action:@selector(addContactButtonAction)];
     self.navigationItem.rightBarButtonItem = button;
 
-    [self dw_embedChild:self.contentController inContainer:self.contentView];
+    [self dw_embedChild:self.stateController inContainer:self.contentView];
 }
-
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
@@ -70,10 +72,45 @@ NS_ASSUME_NONNULL_END
     [self.model stop];
 }
 
+#pragma mark - DWContactsModelDelegate
+
+- (void)contactsModelDidUpdate:(DWContactsModel *)model {
+    if (self.model.isEmpty) {
+        if (self.model.isSearching) {
+            [self.stateController setNoResultsLocalStateWithQuery:self.model.dataSource.trimmedQuery];
+        }
+        else {
+            [self.stateController setPlaceholderLocalState];
+        }
+        [self.contentController dw_detachFromParent];
+    }
+    else {
+        if (self.contentController.parentViewController == nil) {
+            [self dw_embedChild:self.contentController inContainer:self.contentView];
+        }
+    }
+}
+
 #pragma mark - DWContactsContentViewControllerDelegate
 
 - (void)contactsContentViewController:(DWContactsContentViewController *)controller
                  didSelectUserDetails:(id<DWUserDetails>)userDetails {
+}
+
+#pragma mark - UISearchBarDelegate
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    [self.model searchWithQuery:self.searchBar.text];
+}
+
+#pragma mark - Keyboard
+
+- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
+                               animationDuration:(NSTimeInterval)animationDuration
+                                  animationCurve:(UIViewAnimationCurve)animationCurve {
+    NSLayoutConstraint *constraint = [self.stateController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
+    constraint.constant = height;
+    [self.view layoutIfNeeded];
 }
 
 #pragma mark - Actions
@@ -88,8 +125,16 @@ NS_ASSUME_NONNULL_END
 - (DWContactsModel *)model {
     if (!_model) {
         _model = [[DWContactsModel alloc] init];
+        _model.delegate = self;
     }
     return _model;
+}
+
+- (DWSearchStateViewController *)stateController {
+    if (_stateController == nil) {
+        _stateController = [[DWSearchStateViewController alloc] init];
+    }
+    return _stateController;
 }
 
 - (DWContactsContentViewController *)contentController {

@@ -211,7 +211,7 @@
 		2A858A13237EE8A80097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
 		2A858A14237EE8A80097A7B5 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
 		2A880FE924646A8A00994FD4 /* DWActivityCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A880FE824646A8A00994FD4 /* DWActivityCollectionViewCell.m */; };
-		2A885FC82449B66500B9F679 /* DWUserSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FC62449B66500B9F679 /* DWUserSearchStateViewController.m */; };
+		2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FC62449B66500B9F679 /* DWSearchStateViewController.m */; };
 		2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCB2449F08700B9F679 /* DWUserSearchResultViewController.m */; };
 		2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCF2449F37A00B9F679 /* DWUserSearchModel.m */; };
 		2A885FD32449F7C600B9F679 /* DWContactIem.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FD22449F7C600B9F679 /* DWContactIem.m */; };
@@ -433,6 +433,9 @@
 		C3DAD2C3247512BA0001624F /* DWContactsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2C2247512BA0001624F /* DWContactsContentViewController.m */; };
 		C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2C5247538A90001624F /* DWTitleActionHeaderView.m */; };
 		C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C3DAD2C7247538AA0001624F /* DWTitleActionHeaderView.xib */; };
+		C3DAD2CC24757A210001624F /* DWContactsSearchDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CB24757A210001624F /* DWContactsSearchDataSource.m */; };
+		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
+		C3DAD2D22476688E0001624F /* DWUserDetailsConvertible.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D12476688E0001624F /* DWUserDetailsConvertible.m */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -932,8 +935,8 @@
 		2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppleWatchTransactionData.m; sourceTree = "<group>"; };
 		2A880FE724646A8A00994FD4 /* DWActivityCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWActivityCollectionViewCell.h; sourceTree = "<group>"; };
 		2A880FE824646A8A00994FD4 /* DWActivityCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWActivityCollectionViewCell.m; sourceTree = "<group>"; };
-		2A885FC52449B66500B9F679 /* DWUserSearchStateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserSearchStateViewController.h; sourceTree = "<group>"; };
-		2A885FC62449B66500B9F679 /* DWUserSearchStateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchStateViewController.m; sourceTree = "<group>"; };
+		2A885FC52449B66500B9F679 /* DWSearchStateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSearchStateViewController.h; sourceTree = "<group>"; };
+		2A885FC62449B66500B9F679 /* DWSearchStateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSearchStateViewController.m; sourceTree = "<group>"; };
 		2A885FCA2449F08700B9F679 /* DWUserSearchResultViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserSearchResultViewController.h; sourceTree = "<group>"; };
 		2A885FCB2449F08700B9F679 /* DWUserSearchResultViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchResultViewController.m; sourceTree = "<group>"; };
 		2A885FCE2449F37A00B9F679 /* DWUserSearchModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserSearchModel.h; sourceTree = "<group>"; };
@@ -1414,6 +1417,12 @@
 		C3DAD2C5247538A90001624F /* DWTitleActionHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTitleActionHeaderView.m; sourceTree = "<group>"; };
 		C3DAD2C6247538A90001624F /* DWTitleActionHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTitleActionHeaderView.h; sourceTree = "<group>"; };
 		C3DAD2C7247538AA0001624F /* DWTitleActionHeaderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWTitleActionHeaderView.xib; sourceTree = "<group>"; };
+		C3DAD2CA24757A210001624F /* DWContactsSearchDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchDataSource.h; sourceTree = "<group>"; };
+		C3DAD2CB24757A210001624F /* DWContactsSearchDataSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchDataSource.m; sourceTree = "<group>"; };
+		C3DAD2CD247585C10001624F /* NSPredicate+DWFullTextSearch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSPredicate+DWFullTextSearch.h"; sourceTree = "<group>"; };
+		C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate+DWFullTextSearch.m"; sourceTree = "<group>"; };
+		C3DAD2D02476688E0001624F /* DWUserDetailsConvertible.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDetailsConvertible.h; sourceTree = "<group>"; };
+		C3DAD2D12476688E0001624F /* DWUserDetailsConvertible.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserDetailsConvertible.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -2443,8 +2452,8 @@
 		2A885FC12449B56000B9F679 /* Children */ = {
 			isa = PBXGroup;
 			children = (
-				2A885FC52449B66500B9F679 /* DWUserSearchStateViewController.h */,
-				2A885FC62449B66500B9F679 /* DWUserSearchStateViewController.m */,
+				2A885FC52449B66500B9F679 /* DWSearchStateViewController.h */,
+				2A885FC62449B66500B9F679 /* DWSearchStateViewController.m */,
 				2A885FCA2449F08700B9F679 /* DWUserSearchResultViewController.h */,
 				2A885FCB2449F08700B9F679 /* DWUserSearchResultViewController.m */,
 			);
@@ -3267,6 +3276,8 @@
 				2ADB396B242615C200A6F898 /* CALayer+MBAnimationPersistence.m */,
 				2A885FD4244DFEF100B9F679 /* UIView+DWFindConstraints.h */,
 				2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */,
+				C3DAD2CD247585C10001624F /* NSPredicate+DWFullTextSearch.h */,
+				C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -3460,9 +3471,11 @@
 				2A00AB2023D10A7D00DC4745 /* DWContactsDataSourceObject.m */,
 				2A951CE223D1B92C00602824 /* DWContactsModel.h */,
 				2A951CE323D1B92C00602824 /* DWContactsModel.m */,
+				C3DAD2CA24757A210001624F /* DWContactsSearchDataSource.h */,
+				C3DAD2CB24757A210001624F /* DWContactsSearchDataSource.m */,
+				C3DAD2C4247534820001624F /* DWContactsSortModeProtocol.h */,
 				C3DAD26D246D46BF0001624F /* DWFetchedResultsDataSource.h */,
 				C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */,
-				C3DAD2C4247534820001624F /* DWContactsSortModeProtocol.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -3643,6 +3656,8 @@
 				C3DAD2B42472D1860001624F /* DWIncomingContactItem.h */,
 				C3DAD2B52472D1860001624F /* DWIncomingContactItem.m */,
 				C3DAD26C246D44DB0001624F /* DWUserDetails.h */,
+				C3DAD2D02476688E0001624F /* DWUserDetailsConvertible.h */,
+				C3DAD2D12476688E0001624F /* DWUserDetailsConvertible.m */,
 			);
 			path = DetailItems;
 			sourceTree = "<group>";
@@ -4387,6 +4402,7 @@
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				2ADC9D10245FF852001D7C0D /* DWNavigationChildViewController.m in Sources */,
+				C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */,
 				C3DAD2B62472D1860001624F /* DWIncomingContactItem.m in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
@@ -4436,6 +4452,7 @@
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */,
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
+				C3DAD2D22476688E0001624F /* DWUserDetailsConvertible.m in Sources */,
 				2AB66E02235711FA007BE825 /* DWWalletKeysOverviewModel.m in Sources */,
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
@@ -4625,6 +4642,7 @@
 				C3DAD26F246D46BF0001624F /* DWFetchedResultsDataSource.m in Sources */,
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,
+				C3DAD2CC24757A210001624F /* DWContactsSearchDataSource.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
@@ -4632,7 +4650,7 @@
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
-				2A885FC82449B66500B9F679 /* DWUserSearchStateViewController.m in Sources */,
+				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
 				2A885FD32449F7C600B9F679 /* DWContactIem.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,

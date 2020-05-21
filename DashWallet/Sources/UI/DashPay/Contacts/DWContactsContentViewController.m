@@ -37,9 +37,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)setModel:(DWContactsModel *)model {
     _model = model;
-    [model.dataSource setupWithTableView:self.tableView
-                     userDetailsDelegate:self
-                         emptyDataSource:self];
+    [model.dataSource setupWithTableView:self.tableView userDetailsDelegate:self];
+    self.tableView.dataSource = model.dataSource;
 }
 
 - (void)viewDidLoad {
@@ -63,17 +62,6 @@ NS_ASSUME_NONNULL_END
     }
     [self.tableView registerClass:DWUserDetailsContactCell.class
            forCellReuseIdentifier:DWUserDetailsContactCell.dw_reuseIdentifier];
-}
-
-#pragma mark - UITableViewDataSource
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 0;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    // TODO: return empty state cell
-    return [UITableViewCell new];
 }
 
 #pragma mark - UITableViewDelegate

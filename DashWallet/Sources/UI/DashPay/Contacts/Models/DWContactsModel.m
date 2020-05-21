@@ -21,6 +21,7 @@
 #import "DWEnvironment.h"
 #import "DWFetchedResultsDataSource.h"
 #import "DWIncomingContactItem.h"
+#import "UIView+DWFindConstraints.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,6 +47,14 @@ NS_ASSUME_NONNULL_END
         [self rebuildDataSources];
     }
     return self;
+}
+
+- (BOOL)isEmpty {
+    return self.aggregateDataSource.isEmpty;
+}
+
+- (BOOL)isSearching {
+    return self.aggregateDataSource.isSearching;
 }
 
 - (id<DWContactsDataSource>)dataSource {
@@ -100,7 +109,9 @@ NS_ASSUME_NONNULL_END
     [self.aggregateDataSource reloadContacts:self.contactsDataSource.fetchedResultsController];
     [self.aggregateDataSource endReloading];
 
-    [self reloadData];
+    [self fetchData];
+
+    [self.delegate contactsModelDidUpdate:self];
 }
 
 - (void)stop {
@@ -108,7 +119,7 @@ NS_ASSUME_NONNULL_END
     [self.contactsDataSource stop];
 }
 
-- (void)reloadData {
+- (void)fetchData {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
     __weak typeof(self) weakSelf = self;
@@ -136,15 +147,25 @@ NS_ASSUME_NONNULL_END
     }
 }
 
+- (void)searchWithQuery:(NSString *)searchQuery {
+    [self.dataSource searchWithQuery:searchQuery];
+
+    [self.delegate contactsModelDidUpdate:self];
+}
+
 #pragma mark - DWFetchedResultsDataSourceDelegate
 
 - (void)fetchedResultsDataSourceDidUpdate:(DWFetchedResultsDataSource *)fetchedResultsDataSource {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
     if (fetchedResultsDataSource == self.incomingDataSource) {
         [self.aggregateDataSource reloadIncomingContactRequests:fetchedResultsDataSource.fetchedResultsController];
     }
     else {
         [self.aggregateDataSource reloadContacts:fetchedResultsDataSource.fetchedResultsController];
     }
+
+    [self.delegate contactsModelDidUpdate:self];
 }
 
 @end

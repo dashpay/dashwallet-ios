@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,25 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWUserDetailsConvertible.h"
 
-#import "DWUserDetails.h"
+#import "DWContactItem.h"
+#import "DWIncomingContactItem.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSFriendRequestEntity (DSFriendRequestEntity_DWUserDetailsConvertible)
 
-@protocol DWUserDetailsCellDelegate;
-
-@protocol DWContactsDataSource <UITableViewDataSource>
-
-@property (readonly, nullable, nonatomic, copy) NSString *trimmedQuery;
-
-- (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate;
-
-- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath;
-
-- (void)searchWithQuery:(NSString *)searchQuery;
+- (id<DWUserDetails>)asUserDetails {
+    return [[DWIncomingContactItem alloc] initWithFriendRequestEntity:self];
+}
 
 @end
 
-NS_ASSUME_NONNULL_END
+@implementation DSDashpayUserEntity (DSDashpayUserEntity_DWUserDetailsConvertible)
+
+- (id<DWUserDetails>)asUserDetails {
+    return [[DWContactItem alloc] initWithDashpayUserEntity:self];
+}
+
+@end

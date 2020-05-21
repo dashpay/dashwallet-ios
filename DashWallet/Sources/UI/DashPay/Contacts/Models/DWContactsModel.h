@@ -23,16 +23,29 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWContactsModel;
+
+@protocol DWContactsModelDelegate <NSObject>
+
+- (void)contactsModelDidUpdate:(DWContactsModel *)model;
+
+@end
+
 @interface DWContactsModel : NSObject <DWContactsSortModeProtocol>
 
-@property (nonatomic, strong) id<DWContactsDataSource> dataSource;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
+@property (readonly, nonatomic, strong) id<DWContactsDataSource> dataSource;
+@property (nullable, nonatomic, weak) id<DWContactsModelDelegate> delegate;
 
 - (void)start;
 - (void)stop;
 
-- (void)reloadData;
+- (void)fetchData;
 
 - (void)acceptContactRequest:(id<DWUserDetails>)userDetails;
+
+- (void)searchWithQuery:(NSString *)searchQuery;
 
 @end
 

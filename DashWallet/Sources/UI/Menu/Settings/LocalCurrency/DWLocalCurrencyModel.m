@@ -22,6 +22,7 @@
 #import <objc/runtime.h>
 
 #import "DWWeakContainer.h"
+#import "NSPredicate+DWFullTextSearch.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -138,7 +139,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *trimmedQuery = [query stringByTrimmingCharactersInSet:whitespaces];
     self.trimmedQuery = trimmedQuery;
 
-    NSPredicate *predicate = [self searchPredicateForTrimmedQuery:trimmedQuery];
+    id<DWCurrencyItem> item = nil;
+    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, code), DW_KEYPATH(item, name) ];
+    NSPredicate *predicate = [NSPredicate dw_searchPredicateForTrimmedQuery:trimmedQuery
+                                                             searchKeyPaths:searchKeyPaths];
     self.filteredItems = [self.allItems filteredArrayUsingPredicate:predicate];
 }
 
@@ -150,47 +154,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return [self.numberFormatter stringFromNumber:price];
-}
-
-#pragma mark - Private
-
-- (NSCompoundPredicate *)searchPredicateForTrimmedQuery:(NSString *)trimmedQuery {
-    NSArray<NSString *> *searchItems = [trimmedQuery componentsSeparatedByString:@" "];
-
-    NSMutableArray<NSPredicate *> *searchItemsPredicate = [NSMutableArray array];
-    for (NSString *searchString in searchItems) {
-        NSCompoundPredicate *orPredicate = [self findMatchesForString:searchString];
-        [searchItemsPredicate addObject:orPredicate];
-    }
-
-    NSCompoundPredicate *andPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:searchItemsPredicate];
-
-    return andPredicate;
-}
-
-- (NSCompoundPredicate *)findMatchesForString:(NSString *)searchString {
-    NSMutableArray<NSPredicate *> *searchItemsPredicate = [NSMutableArray array];
-
-    id<DWCurrencyItem> item = nil;
-    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, code), DW_KEYPATH(item, name) ];
-
-    for (NSString *keyPath in searchKeyPaths) {
-        NSExpression *leftExpression = [NSExpression expressionForKeyPath:keyPath];
-        NSExpression *rightExpression = [NSExpression expressionForConstantValue:searchString];
-        NSComparisonPredicateOptions options =
-            NSCaseInsensitivePredicateOption | NSDiacriticInsensitivePredicateOption;
-        NSComparisonPredicate *comparisonPredicate =
-            [NSComparisonPredicate predicateWithLeftExpression:leftExpression
-                                               rightExpression:rightExpression
-                                                      modifier:NSDirectPredicateModifier
-                                                          type:NSContainsPredicateOperatorType
-                                                       options:options];
-        [searchItemsPredicate addObject:comparisonPredicate];
-    }
-
-    NSCompoundPredicate *orPredicate = [NSCompoundPredicate orPredicateWithSubpredicates:searchItemsPredicate];
-
-    return orPredicate;
 }
 
 @end

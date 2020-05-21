@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,24 +15,14 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWUserDetails.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUserDetailsCellDelegate;
+@interface NSPredicate (DWFullTextSearch)
 
-@protocol DWContactsDataSource <UITableViewDataSource>
-
-@property (readonly, nullable, nonatomic, copy) NSString *trimmedQuery;
-
-- (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate;
-
-- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath;
-
-- (void)searchWithQuery:(NSString *)searchQuery;
++ (NSCompoundPredicate *)dw_searchPredicateForTrimmedQuery:(NSString *)trimmedQuery
+                                            searchKeyPaths:(NSArray<NSString *> *)searchKeyPaths;
 
 @end
 

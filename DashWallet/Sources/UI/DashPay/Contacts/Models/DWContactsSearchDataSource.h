@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,22 +15,25 @@
 //  limitations under the License.
 //
 
-#import "DWContactsDataSource.h"
-
 #import <DashSync/DashSync.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsDataSourceObject : NSObject <DWContactsDataSource>
+@protocol DWUserDetails;
 
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
+@interface DWContactsSearchDataSource : NSObject
 
-- (void)beginReloading;
-- (void)endReloading;
+@property (readonly, nullable, nonatomic, copy) NSArray<id<DWUserDetails>> *filteredFirstSection;
+@property (readonly, nullable, nonatomic, copy) NSArray<id<DWUserDetails>> *filteredSecondSection;
 
-- (void)reloadIncomingContactRequests:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc;
-- (void)reloadContacts:(NSFetchedResultsController<DSDashpayUserEntity *> *)frc;
+- (void)filterWithTrimmedQuery:(NSString *)trimmedQuery;
+
+- (instancetype)initWithIncomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
+                        contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

@@ -19,11 +19,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserSearchStateViewController : UIViewController
+@class DWSearchStateViewController;
 
-- (void)setPlaceholderState;
+@protocol DWSearchStateViewControllerDelegate <NSObject>
+
+- (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender;
+
+@end
+
+@interface DWSearchStateViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWSearchStateViewControllerDelegate> delegate;
+
+- (void)setPlaceholderGlobalState;
+- (void)setPlaceholderLocalState;
 - (void)setSearchingStateWithQuery:(NSString *)query;
-- (void)setNoResultsStateWithQuery:(NSString *)query;
+- (void)setNoResultsGlobalStateWithQuery:(NSString *)query;
+- (void)setNoResultsLocalStateWithQuery:(NSString *)query;
 - (void)setErrorStateWithError:(NSError *)error;
 
 @end

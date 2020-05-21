@@ -18,10 +18,12 @@
 #import "DWContactsDataSourceObject.h"
 
 #import "DWContactItem.h"
+#import "DWContactsSearchDataSource.h"
 #import "DWIncomingContactItem.h"
 #import "DWUIKit.h"
 #import "DWUserDetailsCell.h"
 #import "DWUserDetailsContactCell.h"
+#import "DWUserDetailsConvertible.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,12 +31,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) UITableView *tableView;
 @property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> userDetailsDelegate;
-@property (nullable, nonatomic, weak) id<UITableViewDataSource> emptyDataSource;
 
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
 @property (nonatomic, assign) BOOL batchReloading;
 @property (nullable, nonatomic, strong) NSFetchedResultsController<DSFriendRequestEntity *> *incomingFRC;
 @property (nullable, nonatomic, strong) NSFetchedResultsController<DSDashpayUserEntity *> *contactsFRC;
+
+@property (nullable, nonatomic, copy) NSString *trimmedQuery;
+@property (null_resettable, nonatomic, strong) DWContactsSearchDataSource *searchDataSource;
 
 @end
 
@@ -49,7 +52,7 @@ NS_ASSUME_NONNULL_END
 - (void)endReloading {
     self.batchReloading = NO;
     [self.tableView reloadData];
-    [self checkIfEmpty];
+    [self updateSearchIfNeeded];
 }
 
 - (void)reloadIncomingContactRequests:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc {
@@ -58,7 +61,7 @@ NS_ASSUME_NONNULL_END
 
     if (!self.batchReloading) {
         [self.tableView reloadData];
-        [self checkIfEmpty];
+        [self updateSearchIfNeeded];
     }
 }
 
@@ -68,18 +71,16 @@ NS_ASSUME_NONNULL_END
 
     if (!self.batchReloading) {
         [self.tableView reloadData];
-        [self checkIfEmpty];
+        [self updateSearchIfNeeded];
     }
 }
 
 #pragma mark - DWContactsDataSource
 
 - (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate
-           emptyDataSource:(id<UITableViewDataSource>)emptyDataSource {
+       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate {
     self.tableView = tableView;
     self.userDetailsDelegate = userDetailsDelegate;
-    self.emptyDataSource = emptyDataSource;
 }
 
 - (BOOL)isEmpty {
@@ -87,23 +88,58 @@ NS_ASSUME_NONNULL_END
         return YES;
     }
 
-    const NSInteger count = self.incomingFRC.sections.firstObject.numberOfObjects +
-                            self.contactsFRC.sections.firstObject.numberOfObjects;
-    return count == 0;
+    if (self.searching) {
+        const NSUInteger count = self.searchDataSource.filteredFirstSection.count +
+                                 self.searchDataSource.filteredSecondSection.count;
+        return count == 0;
+    }
+    else {
+        const NSInteger count = self.incomingFRC.sections.firstObject.numberOfObjects +
+                                self.contactsFRC.sections.firstObject.numberOfObjects;
+        return count == 0;
+    }
+}
+
+- (BOOL)isSearching {
+    return self.trimmedQuery.length > 0;
 }
 
 - (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        DSFriendRequestEntity *entity = [self.incomingFRC objectAtIndexPath:indexPath];
-        DWIncomingContactItem *item = [[DWIncomingContactItem alloc] initWithFriendRequestEntity:entity];
-        return item;
+        if (self.searching) {
+            return self.searchDataSource.filteredFirstSection[indexPath.row];
+        }
+        else {
+            DSFriendRequestEntity *entity = [self.incomingFRC objectAtIndexPath:indexPath];
+            return [entity asUserDetails];
+        }
     }
     else {
-        NSIndexPath *transformedIndexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
-        DSDashpayUserEntity *entity = [self.contactsFRC objectAtIndexPath:transformedIndexPath];
-        DWContactItem *item = [[DWContactItem alloc] initWithDashpayUserEntity:entity];
-        return item;
+        if (self.searching) {
+            return self.searchDataSource.filteredSecondSection[indexPath.row];
+        }
+        else {
+            NSIndexPath *transformedIndexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
+            DSDashpayUserEntity *entity = [self.contactsFRC objectAtIndexPath:transformedIndexPath];
+            return [entity asUserDetails];
+        }
     }
+}
+
+- (void)searchWithQuery:(NSString *)searchQuery {
+    NSCharacterSet *whitespaces = [NSCharacterSet whitespaceCharacterSet];
+    NSString *trimmedQuery = [searchQuery stringByTrimmingCharactersInSet:whitespaces] ?: @"";
+    if ([self.trimmedQuery isEqualToString:trimmedQuery]) {
+        return;
+    }
+
+    self.trimmedQuery = trimmedQuery;
+
+    if (self.searching) {
+        [self.searchDataSource filterWithTrimmedQuery:trimmedQuery];
+    }
+
+    [self.tableView reloadData];
 }
 
 #pragma mark - UITableViewDataSource
@@ -114,10 +150,20 @@ NS_ASSUME_NONNULL_END
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0) {
-        return self.incomingFRC.sections.firstObject.numberOfObjects;
+        if (self.searching) {
+            return self.searchDataSource.filteredFirstSection.count;
+        }
+        else {
+            return self.incomingFRC.sections.firstObject.numberOfObjects;
+        }
     }
     else {
-        return self.contactsFRC.sections.firstObject.numberOfObjects;
+        if (self.searching) {
+            return self.searchDataSource.filteredSecondSection.count;
+        }
+        else {
+            return self.contactsFRC.sections.firstObject.numberOfObjects;
+        }
     }
 }
 
@@ -144,6 +190,11 @@ NS_ASSUME_NONNULL_END
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (self.isSearching) {
+        return;
+    }
+
     [self.tableView beginUpdates];
 }
 
@@ -153,6 +204,10 @@ NS_ASSUME_NONNULL_END
       forChangeType:(NSFetchedResultsChangeType)type
        newIndexPath:(nullable NSIndexPath *)newIndexPath {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (self.isSearching) {
+        return;
+    }
 
     UITableView *tableView = self.tableView;
 
@@ -188,12 +243,24 @@ NS_ASSUME_NONNULL_END
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    [self.tableView endUpdates];
-
-    [self checkIfEmpty];
+    if (self.isSearching) {
+        [self updateSearchIfNeeded];
+    }
+    else {
+        [self.tableView endUpdates];
+    }
 }
 
 #pragma mark - Private
+
+- (void)updateSearchIfNeeded {
+    self.searchDataSource = nil;
+
+    if (self.searching) {
+        [self.searchDataSource filterWithTrimmedQuery:self.trimmedQuery];
+        [self.tableView reloadData];
+    }
+}
 
 - (NSIndexPath *)transformIndexPath:(NSIndexPath *)indexPath controller:(NSFetchedResultsController *)controller {
     if (controller == self.incomingFRC) {
@@ -209,18 +276,12 @@ NS_ASSUME_NONNULL_END
     cell.userDetails = userDetails;
 }
 
-- (void)checkIfEmpty {
-    id<UITableViewDataSource> oldDataSource = self.tableView.dataSource;
-    if (self.isEmpty) {
-        self.tableView.dataSource = self.emptyDataSource;
+- (DWContactsSearchDataSource *)searchDataSource {
+    if (_searchDataSource == nil) {
+        _searchDataSource = [[DWContactsSearchDataSource alloc] initWithIncomingFRC:self.incomingFRC
+                                                                        contactsFRC:self.contactsFRC];
     }
-    else {
-        self.tableView.dataSource = self;
-    }
-
-    if (oldDataSource != self.tableView.dataSource) {
-        [self.tableView reloadData];
-    }
+    return _searchDataSource;
 }
 
 @end

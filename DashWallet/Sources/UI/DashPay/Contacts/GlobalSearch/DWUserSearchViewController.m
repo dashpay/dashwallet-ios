@@ -18,13 +18,12 @@
 #import "DWUserSearchViewController.h"
 
 #import "DWDashPayConstants.h"
+#import "DWSearchStateViewController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "DWUserSearchModel.h"
 #import "DWUserSearchResultViewController.h"
-#import "DWUserSearchStateViewController.h"
 #import "UIView+DWFindConstraints.h"
-#import "UIView+DWRecursiveSubview.h"
 #import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (null_resettable, nonatomic, strong) DWUserSearchModel *model;
 
-@property (null_resettable, nonatomic, strong) DWUserSearchStateViewController *stateController;
+@property (null_resettable, nonatomic, strong) DWSearchStateViewController *stateController;
 @property (null_resettable, nonatomic, strong) DWUserSearchResultViewController *resultsController;
 
 @end
@@ -49,7 +48,7 @@ NS_ASSUME_NONNULL_END
 
     self.searchBar.placeholder = NSLocalizedString(@"Search for a username", nil);
 
-    [self.stateController setPlaceholderState];
+    [self.stateController setPlaceholderGlobalState];
     [self dw_embedChild:self.stateController inContainer:self.contentView];
 }
 
@@ -59,7 +58,7 @@ NS_ASSUME_NONNULL_END
     [self.model searchWithQuery:self.searchBar.text];
 
     if (self.model.trimmedQuery.length == 0) {
-        [self.stateController setPlaceholderState];
+        [self.stateController setPlaceholderGlobalState];
     }
 
     [self.resultsController dw_detachFromParent];
@@ -74,7 +73,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model {
     if (self.model.trimmedQuery.length == 0) {
-        [self.stateController setPlaceholderState];
+        [self.stateController setPlaceholderGlobalState];
     }
     else {
         [self.stateController setSearchingStateWithQuery:self.model.trimmedQuery];
@@ -88,7 +87,7 @@ NS_ASSUME_NONNULL_END
     }
     else {
         [self.resultsController dw_detachFromParent];
-        [self.stateController setNoResultsStateWithQuery:self.model.trimmedQuery];
+        [self.stateController setNoResultsGlobalStateWithQuery:self.model.trimmedQuery];
     }
 }
 
@@ -137,9 +136,9 @@ NS_ASSUME_NONNULL_END
     return _model;
 }
 
-- (DWUserSearchStateViewController *)stateController {
+- (DWSearchStateViewController *)stateController {
     if (_stateController == nil) {
-        _stateController = [[DWUserSearchStateViewController alloc] init];
+        _stateController = [[DWSearchStateViewController alloc] init];
     }
     return _stateController;
 }
