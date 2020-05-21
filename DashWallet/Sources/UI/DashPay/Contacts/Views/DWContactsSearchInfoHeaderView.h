@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -17,26 +17,15 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWUserDetails.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWContactsModel;
-@class DWContactsContentViewController;
+@interface DWContactsSearchInfoHeaderView : UIView
 
-@protocol DWContactsContentViewControllerDelegate <NSObject>
+@property (readonly, nonatomic, strong) UILabel *titleLabel;
 
-- (void)contactsContentViewController:(DWContactsContentViewController *)controller
-                 didSelectUserDetails:(id<DWUserDetails>)userDetails;
-
-@end
-
-@interface DWContactsContentViewController : UITableViewController
-
-@property (nonatomic, strong) DWContactsModel *model;
-@property (nullable, nonatomic, weak) id<DWContactsContentViewControllerDelegate> delegate;
-
-- (void)updateSearchingState;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

@@ -721,6 +721,9 @@
 /* No comment provided by engineer. */
 "Search for a username" = "Search for a username";
 
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Search results for \"";
+
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
 

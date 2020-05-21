@@ -436,6 +436,7 @@
 		C3DAD2CC24757A210001624F /* DWContactsSearchDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CB24757A210001624F /* DWContactsSearchDataSource.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C3DAD2D22476688E0001624F /* DWUserDetailsConvertible.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D12476688E0001624F /* DWUserDetailsConvertible.m */; };
+		C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -1423,6 +1424,8 @@
 		C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate+DWFullTextSearch.m"; sourceTree = "<group>"; };
 		C3DAD2D02476688E0001624F /* DWUserDetailsConvertible.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDetailsConvertible.h; sourceTree = "<group>"; };
 		C3DAD2D12476688E0001624F /* DWUserDetailsConvertible.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserDetailsConvertible.m; sourceTree = "<group>"; };
+		C3DAD2D32476886D0001624F /* DWContactsSearchInfoHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchInfoHeaderView.h; sourceTree = "<group>"; };
+		C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchInfoHeaderView.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -3458,6 +3461,8 @@
 				C3DAD2C6247538A90001624F /* DWTitleActionHeaderView.h */,
 				C3DAD2C5247538A90001624F /* DWTitleActionHeaderView.m */,
 				C3DAD2C7247538AA0001624F /* DWTitleActionHeaderView.xib */,
+				C3DAD2D32476886D0001624F /* DWContactsSearchInfoHeaderView.h */,
+				C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4388,6 +4393,7 @@
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
+				C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */,
 				2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,

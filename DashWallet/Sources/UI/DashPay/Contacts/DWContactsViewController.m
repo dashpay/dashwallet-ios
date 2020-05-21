@@ -26,6 +26,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// Some sane limit to prevent breaking layout
+static NSInteger const MAX_SEARCH_LENGTH = 100;
+
 @interface DWContactsViewController () <DWContactsContentViewControllerDelegate, DWContactsModelDelegate>
 
 @property (null_resettable, nonatomic, strong) DWContactsModel *model;
@@ -85,6 +88,8 @@ NS_ASSUME_NONNULL_END
         [self.contentController dw_detachFromParent];
     }
     else {
+        [self.contentController updateSearchingState];
+
         if (self.contentController.parentViewController == nil) {
             [self dw_embedChild:self.contentController inContainer:self.contentView];
         }
@@ -101,6 +106,11 @@ NS_ASSUME_NONNULL_END
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     [self.model searchWithQuery:self.searchBar.text];
+}
+
+- (BOOL)searchBar:(UISearchBar *)searchBar shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+    NSString *resultText = [searchBar.text stringByReplacingCharactersInRange:range withString:text];
+    return resultText.length <= MAX_SEARCH_LENGTH;
 }
 
 #pragma mark - Keyboard

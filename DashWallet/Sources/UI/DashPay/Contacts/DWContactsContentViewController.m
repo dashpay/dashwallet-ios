@@ -18,6 +18,7 @@
 #import "DWContactsContentViewController.h"
 
 #import "DWContactsModel.h"
+#import "DWContactsSearchInfoHeaderView.h"
 #import "DWFilterHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWTitleActionHeaderView.h"
@@ -29,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsContentViewController () <DWUserDetailsCellDelegate, DWFilterHeaderViewDelegate, DWTitleActionHeaderViewDelegate>
 
+@property (null_resettable, nonatomic, strong) DWContactsSearchInfoHeaderView *searchHeaderView;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -39,6 +42,45 @@ NS_ASSUME_NONNULL_END
     _model = model;
     [model.dataSource setupWithTableView:self.tableView userDetailsDelegate:self];
     self.tableView.dataSource = model.dataSource;
+}
+
+- (void)updateSearchingState {
+    NSString *query = self.model.dataSource.trimmedQuery;
+    if (query.length == 0) {
+        self.tableView.tableHeaderView = nil;
+    }
+    else {
+        NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+        [result beginEditing];
+        NSDictionary<NSAttributedStringKey, id> *plainAttributes = @{
+            NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
+        };
+        NSAttributedString *prefix =
+            [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Search results for \"", @"Search results for \"John Doe\"")
+                                            attributes:plainAttributes];
+        [result appendAttributedString:prefix];
+        NSAttributedString *queryString =
+            [[NSAttributedString alloc] initWithString:query
+                                            attributes:@{
+                                                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline],
+                                            }];
+        [result appendAttributedString:queryString];
+        NSAttributedString *suffix = [[NSAttributedString alloc] initWithString:@"\"" attributes:plainAttributes];
+        [result appendAttributedString:suffix];
+        [result endEditing];
+
+        self.searchHeaderView.titleLabel.attributedText = result;
+
+        // For very first search header apperance we have to do layout cycle twice.
+        if (self.tableView.tableHeaderView == nil) {
+            self.tableView.tableHeaderView = self.searchHeaderView;
+            [self.view setNeedsLayout];
+            [self.view layoutIfNeeded];
+        }
+
+        self.tableView.tableHeaderView = self.searchHeaderView;
+        [self.view setNeedsLayout];
+    }
 }
 
 - (void)viewDidLoad {
@@ -62,6 +104,21 @@ NS_ASSUME_NONNULL_END
     }
     [self.tableView registerClass:DWUserDetailsContactCell.class
            forCellReuseIdentifier:DWUserDetailsContactCell.dw_reuseIdentifier];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+
+    UIView *tableHeaderView = self.tableView.tableHeaderView;
+    if (tableHeaderView) {
+        CGSize fittingSize = CGSizeMake(CGRectGetWidth(self.tableView.bounds), UILayoutFittingCompressedSize.height);
+        CGSize headerSize = [tableHeaderView systemLayoutSizeFittingSize:fittingSize];
+        if (CGRectGetHeight(tableHeaderView.frame) != headerSize.height) {
+            tableHeaderView.frame = CGRectMake(0.0, 0.0, headerSize.width, headerSize.height);
+            self.tableView.tableHeaderView = nil;
+            self.tableView.tableHeaderView = tableHeaderView;
+        }
+    }
 }
 
 #pragma mark - UITableViewDelegate
@@ -195,6 +252,16 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWTitleActionHeaderViewDelegate
 
 - (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender {
+}
+
+#pragma mark - Private
+
+- (DWContactsSearchInfoHeaderView *)searchHeaderView {
+    if (_searchHeaderView == nil) {
+        _searchHeaderView = [[DWContactsSearchInfoHeaderView alloc] initWithFrame:CGRectZero];
+        _searchHeaderView.preservesSuperviewLayoutMargins = YES;
+    }
+    return _searchHeaderView;
 }
 
 @end
