@@ -42,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DSBlockchainIdentity *)blokchainIdentityAtIndex:(NSInteger)index;
 
+- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
 @end
 
 NS_ASSUME_NONNULL_END

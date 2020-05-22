@@ -104,9 +104,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                  didSelectItemAtIndex:(NSInteger)index {
+                  didSelectItemAtIndex:(NSInteger)index
+                                  cell:(UITableViewCell *)cell {
     DSBlockchainIdentity *blockchainIdentity = [self.model blokchainIdentityAtIndex:index];
     if (!blockchainIdentity) {
+        return;
+    }
+
+    if (![self.model canOpenBlockchainIdentity:blockchainIdentity]) {
+        [cell dw_shakeView];
         return;
     }
 

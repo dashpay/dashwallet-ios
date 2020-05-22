@@ -66,7 +66,8 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row];
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row cell:cell];
 }
 
 @end
