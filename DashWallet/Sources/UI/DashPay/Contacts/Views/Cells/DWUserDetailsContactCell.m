@@ -19,6 +19,7 @@
 
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
+#import "NSAttributedString+DWHighlightText.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,6 +30,9 @@ static CGFloat const AVATAR_SIZE = 36.0;
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UILabel *subtitleLabel;
+
+@property (nullable, nonatomic, strong) id<DWUserDetails> userDetails;
+@property (nullable, nonatomic, copy) NSString *highlightedText;
 
 @end
 
@@ -100,26 +104,63 @@ NS_ASSUME_NONNULL_END
             [self.contentView.bottomAnchor constraintEqualToAnchor:subtitleLabel.bottomAnchor
                                                           constant:padding],
         ]];
+
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(contentSizeCategoryDidChangeNotification)
+                                   name:UIContentSizeCategoryDidChangeNotification
+                                 object:nil];
     }
     return self;
 }
 
-- (void)setUserDetails:(id<DWUserDetails>)userDetails {
-    _userDetails = userDetails;
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
+}
+
+- (void)setUserDetails:(id<DWUserDetails>)userDetails highlightedText:(nullable NSString *)highlightedText {
+    self.userDetails = userDetails;
+    self.highlightedText = highlightedText;
 
     NSAssert(userDetails.displayingType == DWUserDetailsDisplayingType_Contact,
              @"Displaying type other than contact is not supported");
 
-    if (userDetails.displayName) {
-        self.titleLabel.text = userDetails.displayName;
-        self.subtitleLabel.text = userDetails.username;
+    self.avatarView.username = userDetails.username;
+
+    [self reloadAttributedData];
+}
+
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification {
+    [self reloadAttributedData];
+}
+
+#pragma mark - Private
+
+- (void)reloadAttributedData {
+    UIColor *highlightedTextColor = [UIColor dw_darkBlueColor];
+    NSAttributedString *usernameAttributedString = [NSAttributedString
+              attributedText:self.userDetails.username
+                        font:[UIFont dw_fontForTextStyle:UIFontTextStyleCaption1]
+                   textColor:[UIColor dw_darkTitleColor]
+             highlightedText:self.highlightedText
+        highlightedTextColor:highlightedTextColor];
+    if (self.userDetails.displayName.length > 0) {
+        self.titleLabel.attributedText = [NSAttributedString
+                  attributedText:self.userDetails.displayName
+                            font:[UIFont dw_fontForTextStyle:UIFontTextStyleCaption2]
+                       textColor:[UIColor dw_tertiaryTextColor]
+                 highlightedText:self.highlightedText
+            highlightedTextColor:highlightedTextColor];
+        self.subtitleLabel.attributedText = usernameAttributedString;
     }
     else {
-        self.titleLabel.text = userDetails.username;
-        self.subtitleLabel.text = nil;
+        self.titleLabel.attributedText = usernameAttributedString;
+        self.subtitleLabel.attributedText = nil;
     }
-
-    self.avatarView.username = userDetails.username;
 }
 
 @end

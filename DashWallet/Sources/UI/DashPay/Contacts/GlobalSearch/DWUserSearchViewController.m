@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<DWUserSearchItem *> *)items {
     if (items.count > 0) {
+        self.resultsController.searchQuery = model.trimmedQuery;
         self.resultsController.items = items;
         [self dw_embedChild:self.resultsController inContainer:self.contentView];
     }

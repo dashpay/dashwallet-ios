@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchResultViewController : UITableViewController
 
+@property (nullable, nonatomic, copy) NSString *searchQuery;
 @property (nullable, nonatomic, copy) NSArray<DWUserSearchItem *> *items;
 @property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> contactsDelegate;
 @property (nullable, nonatomic, weak) id<DWUserSearchResultViewControllerDelegate> delegate;

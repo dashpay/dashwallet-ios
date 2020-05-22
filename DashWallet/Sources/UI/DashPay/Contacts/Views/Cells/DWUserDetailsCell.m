@@ -22,6 +22,7 @@
 #import "DWActionButton.h"
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
+#import "NSAttributedString+DWHighlightText.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *subtitleLabel;
 @property (strong, nonatomic) IBOutlet UIView *rightActionView;
 @property (nullable, nonatomic, weak) UIView *actionView;
+
+@property (nullable, nonatomic, strong) id<DWUserDetails> userDetails;
+@property (nullable, nonatomic, copy) NSString *highlightedText;
 
 @end
 
@@ -46,6 +50,12 @@ NS_ASSUME_NONNULL_END
     self.avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     self.subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(contentSizeCategoryDidChangeNotification)
+                               name:UIContentSizeCategoryDidChangeNotification
+                             object:nil];
 }
 
 - (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
@@ -54,15 +64,20 @@ NS_ASSUME_NONNULL_END
     [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }
 
-- (void)setUserDetails:(id<DWUserDetails>)userDetails {
-    _userDetails = userDetails;
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
 
-    [self.actionView removeFromSuperview];
+    [self reloadAttributedData];
+}
+
+- (void)setUserDetails:(id<DWUserDetails>)userDetails highlightedText:(nullable NSString *)highlightedText {
+    self.userDetails = userDetails;
+    self.highlightedText = highlightedText;
 
     self.avatarView.username = userDetails.username;
-    self.titleLabel.text = userDetails.username;
-    self.subtitleLabel.text = userDetails.displayName;
+    [self reloadAttributedData];
 
+    [self.actionView removeFromSuperview];
     UIView *actionView = nil;
     switch (userDetails.displayingType) {
         case DWUserDetailsDisplayingType_FromSearch: {
@@ -88,7 +103,6 @@ NS_ASSUME_NONNULL_END
             break;
         }
     }
-    self.subtitleLabel.hidden = (self.subtitleLabel.text.length == 0);
 
     if (actionView) {
         [NSLayoutConstraint activateConstraints:@[
@@ -110,7 +124,36 @@ NS_ASSUME_NONNULL_END
     [self.delegate userDetailsCell:self didDeclineContact:self.userDetails];
 }
 
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification {
+    [self reloadAttributedData];
+}
+
 #pragma mark - Private
+
+- (void)reloadAttributedData {
+    UIColor *highlightedTextColor = [UIColor dw_darkBlueColor];
+    self.titleLabel.attributedText = [NSAttributedString
+              attributedText:self.userDetails.username
+                        font:[UIFont dw_fontForTextStyle:UIFontTextStyleCaption1]
+                   textColor:[UIColor dw_darkTitleColor]
+             highlightedText:self.highlightedText
+        highlightedTextColor:highlightedTextColor];
+    if (self.userDetails.displayName.length > 0) {
+        self.subtitleLabel.hidden = NO;
+        self.subtitleLabel.attributedText = [NSAttributedString
+                  attributedText:self.userDetails.displayName
+                            font:[UIFont dw_fontForTextStyle:UIFontTextStyleCaption2]
+                       textColor:[UIColor dw_tertiaryTextColor]
+                 highlightedText:self.highlightedText
+            highlightedTextColor:highlightedTextColor];
+    }
+    else {
+        self.subtitleLabel.hidden = YES;
+        self.subtitleLabel.attributedText = nil;
+    }
+}
 
 - (UIView *)createContactRequestActionsView {
     DWActionButton *acceptButton = [[DWActionButton alloc] initWithFrame:CGRectZero];

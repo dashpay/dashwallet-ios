@@ -54,7 +54,7 @@
     DWUserDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                               forIndexPath:indexPath];
     id<DWUserDetails> item = self.items[indexPath.row];
-    cell.userDetails = item;
+    [cell setUserDetails:item highlightedText:self.searchQuery];
     cell.delegate = self.contactsDelegate;
     return cell;
 }

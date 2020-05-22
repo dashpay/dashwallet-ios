@@ -282,7 +282,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)configureCell:(DWUserDetailsCell *)cell atIndexPath:(NSIndexPath *)indexPath {
     id<DWUserDetails> userDetails = [self userDetailsAtIndexPath:indexPath];
-    cell.userDetails = userDetails;
+    [cell setUserDetails:userDetails highlightedText:self.trimmedQuery];
 }
 
 - (DWContactsSearchDataSource *)searchDataSource {
