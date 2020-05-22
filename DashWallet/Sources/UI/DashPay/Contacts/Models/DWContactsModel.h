@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsModel : NSObject <DWContactsSortModeProtocol>
 
+@property (readonly, nonatomic, assign) BOOL hasBlockchainIdentity;
 @property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
 @property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
 @property (readonly, nonatomic, strong) id<DWContactsDataSource> dataSource;

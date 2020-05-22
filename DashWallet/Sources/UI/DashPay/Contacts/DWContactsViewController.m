@@ -134,6 +134,10 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Actions
 
 - (void)addContactButtonAction {
+    if (!self.model.hasBlockchainIdentity) {
+        return;
+    }
+
     DWUserSearchViewController *controller = [[DWUserSearchViewController alloc] init];
     [self.navigationController pushViewController:controller animated:YES];
 }
