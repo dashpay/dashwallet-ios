@@ -110,6 +110,12 @@ NS_ASSUME_NONNULL_END
     return item.blockchainIdentity;
 }
 
+- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    return !uint256_eq(mineBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+}
+
 #pragma mark Private
 
 - (void)performInitialSearch {

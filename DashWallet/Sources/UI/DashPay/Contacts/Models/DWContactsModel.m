@@ -61,6 +61,12 @@ NS_ASSUME_NONNULL_END
     return self.aggregateDataSource;
 }
 
+- (BOOL)hasBlockchainIdentity {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    return mineBlockchainIdentity != nil;
+}
+
 - (void)rebuildDataSources {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     if (!blockchainIdentity) {

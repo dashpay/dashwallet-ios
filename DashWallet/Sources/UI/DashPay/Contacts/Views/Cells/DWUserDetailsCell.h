@@ -32,8 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserDetailsCell : UITableViewCell
 
-@property (nullable, nonatomic, strong) id<DWUserDetails> userDetails;
+@property (readonly, nullable, nonatomic, strong) id<DWUserDetails> userDetails;
 @property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> delegate;
+
+- (void)setUserDetails:(id<DWUserDetails>)userDetails highlightedText:(nullable NSString *)highlightedText;
 
 @end
 

@@ -54,7 +54,7 @@
     DWUserDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                               forIndexPath:indexPath];
     id<DWUserDetails> item = self.items[indexPath.row];
-    cell.userDetails = item;
+    [cell setUserDetails:item highlightedText:self.searchQuery];
     cell.delegate = self.contactsDelegate;
     return cell;
 }
@@ -66,7 +66,8 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row];
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row cell:cell];
 }
 
 @end

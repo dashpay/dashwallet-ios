@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<DWUserSearchItem *> *)items {
     if (items.count > 0) {
+        self.resultsController.searchQuery = model.trimmedQuery;
         self.resultsController.items = items;
         [self dw_embedChild:self.resultsController inContainer:self.contentView];
     }
@@ -104,9 +105,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                  didSelectItemAtIndex:(NSInteger)index {
+                  didSelectItemAtIndex:(NSInteger)index
+                                  cell:(UITableViewCell *)cell {
     DSBlockchainIdentity *blockchainIdentity = [self.model blokchainIdentityAtIndex:index];
     if (!blockchainIdentity) {
+        return;
+    }
+
+    if (![self.model canOpenBlockchainIdentity:blockchainIdentity]) {
+        [cell dw_shakeView];
         return;
     }
 

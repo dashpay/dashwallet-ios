@@ -29,12 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                 willDisplayItemAtIndex:(NSInteger)index;
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                  didSelectItemAtIndex:(NSInteger)index;
+                  didSelectItemAtIndex:(NSInteger)index
+                                  cell:(UITableViewCell *)cell;
 
 @end
 
 @interface DWUserSearchResultViewController : UITableViewController
 
+@property (nullable, nonatomic, copy) NSString *searchQuery;
 @property (nullable, nonatomic, copy) NSArray<DWUserSearchItem *> *items;
 @property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> contactsDelegate;
 @property (nullable, nonatomic, weak) id<DWUserSearchResultViewControllerDelegate> delegate;
