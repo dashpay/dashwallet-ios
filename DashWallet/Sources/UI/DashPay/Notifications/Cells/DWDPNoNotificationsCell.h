@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by administrator
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -19,11 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayProfileView : UIControl
-
-@property (nullable, nonatomic, copy) NSString *username;
-
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+@interface DWDPNoNotificationsCell : UITableViewCell
 
 @end
 

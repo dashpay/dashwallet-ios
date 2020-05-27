@@ -265,6 +265,9 @@
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Λήψη ομότιμου: %@";
 
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Earlier";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
 
@@ -499,6 +502,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Τέλος δικτύου";
 
+/* (List of) New (notifications) */
+"New" = "New";
+
 /* No comment provided by engineer. */
 "NFC device" = "Συσκευή NFC";
 
@@ -525,6 +531,9 @@
 
 /* No comment provided by engineer. */
 "Not yet used" = "Δεν έχουν χρησιμοποιηθεί ακόμη";
+
+/* No comment provided by engineer. */
+"Notifications" = "Notifications";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -858,6 +867,9 @@
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Πατήστε για να αποκαλύψετε το υπόλοιπο";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Δεν υπάρχουν συναλλαγές για προβολή";

@@ -265,6 +265,9 @@
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "피어 다운로드: %@";
 
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Earlier";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
 
@@ -499,6 +502,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "네트워크 비용";
 
+/* (List of) New (notifications) */
+"New" = "New";
+
 /* No comment provided by engineer. */
 "NFC device" = "NFC 장치";
 
@@ -525,6 +531,9 @@
 
 /* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
+
+/* No comment provided by engineer. */
+"Notifications" = "Notifications";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -858,6 +867,9 @@
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "잔고를 확인하시려면 탭하세요";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "표시할 거래가 없습니다";

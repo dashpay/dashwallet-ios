@@ -18,6 +18,7 @@
 #import "DWHomeViewController.h"
 
 #import "DWBalanceDisplayOptionsProtocol.h"
+#import "DWDPNotificationsViewController.h"
 #import "DWEnvironment.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
@@ -97,6 +98,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender {
     [self.delegate homeViewController:self receiveButtonAction:sender];
+}
+
+- (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
+    DWDPNotificationsViewController *controller = [[DWDPNotificationsViewController alloc] initWithStyle:UITableViewStylePlain];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {

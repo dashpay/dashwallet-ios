@@ -47,6 +47,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
     if (self) {
         DWDashPayProfileView *profileView = [[DWDashPayProfileView alloc] initWithFrame:CGRectZero];
         profileView.translatesAutoresizingMaskIntoConstraints = NO;
+        [profileView addTarget:self action:@selector(profileViewAction:) forControlEvents:UIControlEventTouchUpInside];
         _profileView = profileView;
 
         DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
@@ -165,6 +166,10 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 }
 
 #pragma mark - Private
+
+- (void)profileViewAction:(UIControl *)sender {
+    [self.delegate homeHeaderView:self profileButtonAction:sender];
+}
 
 - (void)updateProfileView {
     DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
