@@ -18,12 +18,16 @@
 #import "DWNotificationsViewController.h"
 
 #import "DWNoNotificationsCell.h"
+#import "DWNotificationsModel.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
+#import "DWUserDetailsCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsViewController ()
+@interface DWNotificationsViewController () <DWUserDetailsCellDelegate>
+
+@property (null_resettable, nonatomic, strong) DWNotificationsModel *model;
 
 @end
 
@@ -53,6 +57,9 @@ NS_ASSUME_NONNULL_END
 
     [self.tableView registerClass:DWNoNotificationsCell.class
            forCellReuseIdentifier:DWNoNotificationsCell.dw_reuseIdentifier];
+
+    [self.model.dataSource setupWithTableView:self.tableView userDetailsDelegate:self];
+    self.tableView.dataSource = self.model.dataSource;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -88,7 +95,24 @@ NS_ASSUME_NONNULL_END
     return view;
 }
 
+#pragma mark - DWUserDetailsCellDelegate
+
+- (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact {
+    //    [self.model acceptContactRequest:contact];
+}
+
+- (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact {
+    NSLog(@"DWDP: ignore contact request");
+}
+
 #pragma mark - Private
+
+- (DWNotificationsModel *)model {
+    if (!_model) {
+        _model = [[DWNotificationsModel alloc] init];
+    }
+    return _model;
+}
 
 - (void)updateTitle {
     self.title = NSLocalizedString(@"Notifications", nil);
