@@ -30,13 +30,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWFetchedResultsDataSource : NSObject
 
+@property (nonatomic, assign) BOOL shouldSubscribeToNotifications;
+
 @property (readonly, nonatomic, strong) NSManagedObjectContext *context;
 @property (readonly, nonatomic, copy) NSString *entityName;
-@property (readonly, nonatomic, assign) BOOL shouldSubscribeToNotifications;
-
-@property (nullable, nonatomic, strong) NSPredicate *predicate;
-@property (nullable, nonatomic, strong) NSPredicate *invertedPredicate;
-@property (nullable, nonatomic, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
+@property (readonly, nonatomic, strong) NSPredicate *predicate;
+@property (nullable, readonly, nonatomic, strong) NSPredicate *invertedPredicate;
+@property (nullable, readonly, nonatomic, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
 
 @property (null_resettable, nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 
@@ -45,9 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 - (void)stop;
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context
-                        entityName:(NSString *)entityName
-    shouldSubscribeToNotifications:(BOOL)shouldSubscribeToNotifications;
+- (instancetype)initWithContext:(NSManagedObjectContext *)context NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

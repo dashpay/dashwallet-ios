@@ -201,6 +201,8 @@
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
+		2A7AF3152480DA51001D74F9 /* DWIncomingFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7AF3142480DA51001D74F9 /* DWIncomingFetchedDataSource.m */; };
+		2A7AF3182480E35A001D74F9 /* DWContactsFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7AF3172480E35A001D74F9 /* DWContactsFetchedDataSource.m */; };
 		2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */; };
 		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
 		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
@@ -920,6 +922,10 @@
 		2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyModel.m; sourceTree = "<group>"; };
 		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyTableViewCell.m; sourceTree = "<group>"; };
+		2A7AF3132480DA51001D74F9 /* DWIncomingFetchedDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWIncomingFetchedDataSource.h; sourceTree = "<group>"; };
+		2A7AF3142480DA51001D74F9 /* DWIncomingFetchedDataSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWIncomingFetchedDataSource.m; sourceTree = "<group>"; };
+		2A7AF3162480E35A001D74F9 /* DWContactsFetchedDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsFetchedDataSource.h; sourceTree = "<group>"; };
+		2A7AF3172480E35A001D74F9 /* DWContactsFetchedDataSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsFetchedDataSource.m; sourceTree = "<group>"; };
 		2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityViewController.h; sourceTree = "<group>"; };
 		2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityViewController.m; sourceTree = "<group>"; };
 		2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityStatusView.h; sourceTree = "<group>"; };
@@ -3488,6 +3494,10 @@
 				C3DAD2C4247534820001624F /* DWContactsSortModeProtocol.h */,
 				C3DAD26D246D46BF0001624F /* DWFetchedResultsDataSource.h */,
 				C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */,
+				2A7AF3132480DA51001D74F9 /* DWIncomingFetchedDataSource.h */,
+				2A7AF3142480DA51001D74F9 /* DWIncomingFetchedDataSource.m */,
+				2A7AF3162480E35A001D74F9 /* DWContactsFetchedDataSource.h */,
+				2A7AF3172480E35A001D74F9 /* DWContactsFetchedDataSource.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -4416,6 +4426,7 @@
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
+				2A7AF3182480E35A001D74F9 /* DWContactsFetchedDataSource.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
@@ -4434,6 +4445,7 @@
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
+				2A7AF3152480DA51001D74F9 /* DWIncomingFetchedDataSource.m in Sources */,
 				2ADC9D10245FF852001D7C0D /* DWNavigationChildViewController.m in Sources */,
 				C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */,
 				C3DAD2B62472D1860001624F /* DWIncomingContactItem.m in Sources */,

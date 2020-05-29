@@ -34,16 +34,30 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWFetchedResultsDataSource
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context
-                        entityName:(NSString *)entityName
-    shouldSubscribeToNotifications:(BOOL)shouldSubscribeToNotifications {
+- (instancetype)initWithContext:(NSManagedObjectContext *)context {
     self = [super init];
     if (self) {
         _context = context;
-        _entityName = entityName;
-        _shouldSubscribeToNotifications = shouldSubscribeToNotifications;
     }
     return self;
+}
+
+- (NSString *)entityName {
+    NSAssert(NO, @"Must be overriden");
+    return nil;
+}
+
+- (NSPredicate *)predicate {
+    NSAssert(NO, @"Must be overriden");
+    return [NSPredicate predicateWithValue:YES];
+}
+
+- (NSPredicate *)invertedPredicate {
+    return nil;
+}
+
+- (NSArray<NSSortDescriptor *> *)sortDescriptors {
+    return nil;
 }
 
 - (void)start {

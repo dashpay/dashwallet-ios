@@ -18,9 +18,10 @@
 #import "DWContactsModel.h"
 
 #import "DWContactsDataSourceObject.h"
+#import "DWContactsFetchedDataSource.h"
 #import "DWEnvironment.h"
-#import "DWFetchedResultsDataSource.h"
 #import "DWIncomingContactItem.h"
+#import "DWIncomingFetchedDataSource.h"
 #import "UIView+DWFindConstraints.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -75,35 +76,13 @@ NS_ASSUME_NONNULL_END
 
     NSManagedObjectContext *context = [NSManagedObject mainContext];
 
-    _incomingDataSource = [[DWFetchedResultsDataSource alloc]
-                       initWithContext:context
-                            entityName:NSStringFromClass(DSFriendRequestEntity.class)
-        shouldSubscribeToNotifications:YES];
+    _incomingDataSource = [[DWIncomingFetchedDataSource alloc] initWithContext:context blockchainIdentity:blockchainIdentity];
+    _incomingDataSource.shouldSubscribeToNotifications = YES;
     _incomingDataSource.delegate = self;
-    _incomingDataSource.predicate = [NSPredicate
-        predicateWithFormat:
-            @"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",
-            [blockchainIdentity matchingDashpayUserInContext:context]];
-    _incomingDataSource.invertedPredicate = [NSPredicate
-        predicateWithFormat:
-            @"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count > 0)",
-            [blockchainIdentity matchingDashpayUserInContext:context]];
-    NSSortDescriptor *incomingSortDescriptor = [[NSSortDescriptor alloc]
-        initWithKey:@"sourceContact.associatedBlockchainIdentity.dashpayUsername.stringValue"
-          ascending:YES];
-    _incomingDataSource.sortDescriptors = @[ incomingSortDescriptor ];
 
-    _contactsDataSource = [[DWFetchedResultsDataSource alloc]
-                       initWithContext:context
-                            entityName:NSStringFromClass(DSDashpayUserEntity.class)
-        shouldSubscribeToNotifications:YES];
+    _contactsDataSource = [[DWContactsFetchedDataSource alloc] initWithContext:context blockchainIdentity:blockchainIdentity];
+    _contactsDataSource.shouldSubscribeToNotifications = YES;
     _contactsDataSource.delegate = self;
-    _contactsDataSource.predicate = [NSPredicate
-        predicateWithFormat:
-            @"ANY friends == %@",
-            [blockchainIdentity matchingDashpayUserInContext:context]];
-    NSSortDescriptor *contactsSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"associatedBlockchainIdentity.dashpayUsername.stringValue" ascending:YES];
-    _contactsDataSource.sortDescriptors = @[ contactsSortDescriptor ];
 }
 
 - (void)start {
