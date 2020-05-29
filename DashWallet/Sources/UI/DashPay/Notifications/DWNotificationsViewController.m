@@ -1,5 +1,5 @@
 //
-//  Created by administrator
+//  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,21 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DWDPNotificationsViewController.h"
+#import "DWNotificationsViewController.h"
 
-#import "DWDPNoNotificationsCell.h"
+#import "DWNoNotificationsCell.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPNotificationsViewController ()
+@interface DWNotificationsViewController ()
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWDPNotificationsViewController
+@implementation DWNotificationsViewController
 
 - (instancetype)initWithStyle:(UITableViewStyle)style {
     self = [super initWithStyle:style];
@@ -51,8 +51,8 @@ NS_ASSUME_NONNULL_END
     self.tableView.estimatedRowHeight = 74.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 
-    [self.tableView registerClass:DWDPNoNotificationsCell.class
-           forCellReuseIdentifier:DWDPNoNotificationsCell.dw_reuseIdentifier];
+    [self.tableView registerClass:DWNoNotificationsCell.class
+           forCellReuseIdentifier:DWNoNotificationsCell.dw_reuseIdentifier];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -66,8 +66,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DWDPNoNotificationsCell *cell = [tableView dequeueReusableCellWithIdentifier:DWDPNoNotificationsCell.dw_reuseIdentifier
-                                                                    forIndexPath:indexPath];
+    DWNoNotificationsCell *cell = [tableView dequeueReusableCellWithIdentifier:DWNoNotificationsCell.dw_reuseIdentifier
+                                                                  forIndexPath:indexPath];
     return cell;
 }
 

@@ -1,5 +1,5 @@
 //
-//  Created by administrator
+//  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");

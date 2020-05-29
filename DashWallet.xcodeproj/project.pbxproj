@@ -427,8 +427,8 @@
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
-		C3CA202C247E4AF300158074 /* DWDPNotificationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CA202B247E4AF300158074 /* DWDPNotificationsViewController.m */; };
-		C3CA2030247E54C400158074 /* DWDPNoNotificationsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CA202F247E54C400158074 /* DWDPNoNotificationsCell.m */; };
+		C3CA202C247E4AF300158074 /* DWNotificationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CA202B247E4AF300158074 /* DWNotificationsViewController.m */; };
+		C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CA202F247E54C400158074 /* DWNoNotificationsCell.m */; };
 		C3DAD26B246C3B670001624F /* DWUserDetailsContactCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD26A246C3B670001624F /* DWUserDetailsContactCell.m */; };
 		C3DAD26F246D46BF0001624F /* DWFetchedResultsDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD26E246D46BF0001624F /* DWFetchedResultsDataSource.m */; };
 		C3DAD2B62472D1860001624F /* DWIncomingContactItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2B52472D1860001624F /* DWIncomingContactItem.m */; };
@@ -1407,10 +1407,10 @@
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTodayViewController.m; sourceTree = "<group>"; };
 		BEAE29AA65F429DD9EF1A1A7 /* libPods-DashWalletTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		C3CA202A247E4AF300158074 /* DWDPNotificationsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNotificationsViewController.h; sourceTree = "<group>"; };
-		C3CA202B247E4AF300158074 /* DWDPNotificationsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPNotificationsViewController.m; sourceTree = "<group>"; };
-		C3CA202E247E54C400158074 /* DWDPNoNotificationsCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNoNotificationsCell.h; sourceTree = "<group>"; };
-		C3CA202F247E54C400158074 /* DWDPNoNotificationsCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPNoNotificationsCell.m; sourceTree = "<group>"; };
+		C3CA202A247E4AF300158074 /* DWNotificationsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNotificationsViewController.h; sourceTree = "<group>"; };
+		C3CA202B247E4AF300158074 /* DWNotificationsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsViewController.m; sourceTree = "<group>"; };
+		C3CA202E247E54C400158074 /* DWNoNotificationsCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNoNotificationsCell.h; sourceTree = "<group>"; };
+		C3CA202F247E54C400158074 /* DWNoNotificationsCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNoNotificationsCell.m; sourceTree = "<group>"; };
 		C3DAD269246C3B670001624F /* DWUserDetailsContactCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDetailsContactCell.h; sourceTree = "<group>"; };
 		C3DAD26A246C3B670001624F /* DWUserDetailsContactCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserDetailsContactCell.m; sourceTree = "<group>"; };
 		C3DAD26C246D44DB0001624F /* DWUserDetails.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDetails.h; sourceTree = "<group>"; };
@@ -2416,6 +2416,13 @@
 				2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		2A7AF3192480E619001D74F9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		2A7F3B18238C643D00DEA3EF /* Advanced Security */ = {
@@ -3673,9 +3680,10 @@
 		C3CA2029247E4AC300158074 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
+				2A7AF3192480E619001D74F9 /* Models */,
 				C3CA202D247E549B00158074 /* Cells */,
-				C3CA202A247E4AF300158074 /* DWDPNotificationsViewController.h */,
-				C3CA202B247E4AF300158074 /* DWDPNotificationsViewController.m */,
+				C3CA202A247E4AF300158074 /* DWNotificationsViewController.h */,
+				C3CA202B247E4AF300158074 /* DWNotificationsViewController.m */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -3683,8 +3691,8 @@
 		C3CA202D247E549B00158074 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				C3CA202E247E54C400158074 /* DWDPNoNotificationsCell.h */,
-				C3CA202F247E54C400158074 /* DWDPNoNotificationsCell.m */,
+				C3CA202E247E54C400158074 /* DWNoNotificationsCell.h */,
+				C3CA202F247E54C400158074 /* DWNoNotificationsCell.m */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -4405,7 +4413,7 @@
 				2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				2A7A7BDD2348DC0A00451078 /* DWToolsMenuModel.m in Sources */,
-				C3CA202C247E4AF300158074 /* DWDPNotificationsViewController.m in Sources */,
+				C3CA202C247E4AF300158074 /* DWNotificationsViewController.m in Sources */,
 				2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
@@ -4692,7 +4700,7 @@
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
-				C3CA2030247E54C400158074 /* DWDPNoNotificationsCell.m in Sources */,
+				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,

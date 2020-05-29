@@ -18,7 +18,6 @@
 #import "DWHomeViewController.h"
 
 #import "DWBalanceDisplayOptionsProtocol.h"
-#import "DWDPNotificationsViewController.h"
 #import "DWEnvironment.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
@@ -26,6 +25,7 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWHomeViewController+DWTxFilter.h"
 #import "DWNavigationController.h"
+#import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWWindow.h"
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
-    DWDPNotificationsViewController *controller = [[DWDPNotificationsViewController alloc] initWithStyle:UITableViewStylePlain];
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithStyle:UITableViewStylePlain];
     [self.navigationController pushViewController:controller animated:YES];
 }
 

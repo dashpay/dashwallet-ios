@@ -1,5 +1,5 @@
 //
-//  Created by administrator
+//  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWDPNoNotificationsCell.h"
+#import "DWNoNotificationsCell.h"
 
 #import "DWUIKit.h"
 
-@implementation DWDPNoNotificationsCell
+@implementation DWNoNotificationsCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
