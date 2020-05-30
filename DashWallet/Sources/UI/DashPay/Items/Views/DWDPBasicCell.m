@@ -163,9 +163,17 @@ NS_ASSUME_NONNULL_END
     if (titleString && subtitleString) {
         NSMutableAttributedString *mutableResultString = [[NSMutableAttributedString alloc] init];
         [mutableResultString beginEditing];
+
         [mutableResultString appendAttributedString:titleString];
-        [mutableResultString appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+
+        NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
+        style.maximumLineHeight = 4.0;
+        NSAttributedString *spacingString = [[NSAttributedString alloc] initWithString:@"\n\n"
+                                                                            attributes:@{NSParagraphStyleAttributeName : style}];
+        [mutableResultString appendAttributedString:spacingString];
+
         [mutableResultString appendAttributedString:subtitleString];
+
         [mutableResultString endEditing];
         resultString = [mutableResultString copy];
     }

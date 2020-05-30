@@ -15,13 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWDPIgnoredRequestObject.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIgnoredRequestNotificationObject : DWDPIgnoredRequestObject
+@interface DWDateFormatter : NSObject
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
+- (NSString *)shortStringFromDate:(NSDate *)date;
+- (NSString *)longStringFromDate:(NSDate *)date;
+
++ (instancetype)sharedInstance;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

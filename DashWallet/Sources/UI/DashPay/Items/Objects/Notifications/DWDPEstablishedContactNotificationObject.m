@@ -19,11 +19,12 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWDateFormatter.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPEstablishedContactNotificationObject ()
 
-@property (readonly, nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (readonly, nonatomic, strong) NSDate *date;
 
 @end
@@ -34,11 +35,9 @@ NS_ASSUME_NONNULL_END
 
 @synthesize subtitle = _subtitle;
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity
-                            dateFormatter:(NSDateFormatter *)dateFormatter {
+- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity {
     self = [super initWithDashpayUserEntity:userEntity];
     if (self) {
-        _dateFormatter = dateFormatter;
         // TODO: get from entity
         _date = [NSDate date];
     }
@@ -47,7 +46,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSString *)subtitle {
     if (_subtitle == nil) {
-        _subtitle = [self.dateFormatter stringFromDate:self.date];
+        _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:self.date];
     }
     return _subtitle;
 }

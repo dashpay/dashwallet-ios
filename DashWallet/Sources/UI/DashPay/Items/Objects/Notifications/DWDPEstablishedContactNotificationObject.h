@@ -21,11 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPEstablishedContactNotificationObject : DWDPEstablishedContactObject
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity
-                            dateFormatter:(NSDateFormatter *)dateFormatter NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity NS_UNAVAILABLE;
-
 @end
 
 NS_ASSUME_NONNULL_END

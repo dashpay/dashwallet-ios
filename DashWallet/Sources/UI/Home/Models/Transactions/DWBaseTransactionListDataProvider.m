@@ -17,18 +17,12 @@
 
 #import "DWBaseTransactionListDataProvider.h"
 
+#import "DWDateFormatter.h"
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItem.h"
 #import "NSAttributedString+DWBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface DWBaseTransactionListDataProvider ()
-
-@property (readonly, nonatomic, strong) NSDateFormatter *shortDateFormatter;
-@property (readonly, nonatomic, strong) NSDateFormatter *longDateFormatter;
-
-@end
 
 @implementation DWBaseTransactionListDataProvider
 
@@ -36,16 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _txDates = [NSMutableDictionary dictionary];
-
-        NSLocale *locale = [NSLocale currentLocale];
-        _shortDateFormatter = [[NSDateFormatter alloc] init];
-        _shortDateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMdjmma"
-                                                                         options:0
-                                                                          locale:locale];
-        _longDateFormatter = [[NSDateFormatter alloc] init];
-        _longDateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"yyyyMMMdjmma"
-                                                                        options:0
-                                                                         locale:locale];
     }
     return self;
 }
@@ -60,16 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)formattedShortTxDate:(NSDate *)date {
-    NSCalendar *calendar = [NSCalendar currentCalendar];
-    NSInteger nowYear = [calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
-    NSInteger txYear = [calendar component:NSCalendarUnitYear fromDate:date];
-
-    NSDateFormatter *desiredFormatter = (nowYear == txYear) ? self.shortDateFormatter : self.longDateFormatter;
-    return [desiredFormatter stringFromDate:date];
+    return [[DWDateFormatter sharedInstance] shortStringFromDate:date];
 }
 
 - (NSString *)formattedLongTxDate:(NSDate *)date {
-    return [self.longDateFormatter stringFromDate:date];
+    return [[DWDateFormatter sharedInstance] longStringFromDate:date];
 }
 
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData

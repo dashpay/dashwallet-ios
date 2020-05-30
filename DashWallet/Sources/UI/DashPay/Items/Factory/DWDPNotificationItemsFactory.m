@@ -21,42 +21,21 @@
 #import "DWDPIgnoredRequestNotificationObject.h"
 #import "DWDPIncomingRequestNotificationObject.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWDPNotificationItemsFactory ()
-
-@property (readonly, nonatomic, strong) NSDateFormatter *dateFormatter;
-
-@end
-
-NS_ASSUME_NONNULL_END
-
 @implementation DWDPNotificationItemsFactory
-
-- (instancetype)initWithDateFormatter:(NSDateFormatter *)dateFormatter {
-    self = [super init];
-    if (self) {
-        _dateFormatter = dateFormatter;
-    }
-    return self;
-}
 
 - (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
     // TODO: impl
     const BOOL isIgnored = arc4random() % 2 == 0;
     if (isIgnored) {
-        return [[DWDPIgnoredRequestNotificationObject alloc] initWithFriendRequestEntity:entity
-                                                                           dateFormatter:self.dateFormatter];
+        return [[DWDPIgnoredRequestNotificationObject alloc] initWithFriendRequestEntity:entity];
     }
     else {
-        return [[DWDPIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:entity
-                                                                            dateFormatter:self.dateFormatter];
+        return [[DWDPIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:entity];
     }
 }
 
 - (id<DWDPBasicItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity {
-    return [[DWDPEstablishedContactNotificationObject alloc] initWithDashpayUserEntity:entity
-                                                                         dateFormatter:self.dateFormatter];
+    return [[DWDPEstablishedContactNotificationObject alloc] initWithDashpayUserEntity:entity];
 }
 
 @end

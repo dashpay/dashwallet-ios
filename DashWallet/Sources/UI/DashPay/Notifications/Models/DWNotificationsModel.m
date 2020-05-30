@@ -47,8 +47,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)init {
     self = [super init];
     if (self) {
-        NSDateFormatter *dateFormatter = [NSDateFormatter new];
-        _itemsFactory = [[DWDPNotificationItemsFactory alloc] initWithDateFormatter:dateFormatter];
+        _itemsFactory = [[DWDPNotificationItemsFactory alloc] init];
         _aggregateDataSource = [[DWNotificationsDataSourceObject alloc] init];
 
         [self rebuildFetchedDataSources];

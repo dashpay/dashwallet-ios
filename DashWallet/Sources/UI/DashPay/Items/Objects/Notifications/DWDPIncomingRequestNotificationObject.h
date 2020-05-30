@@ -21,10 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPIncomingRequestNotificationObject : DWDPIncomingRequestObject
 
-- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                              dateFormatter:(NSDateFormatter *)dateFormatter NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity NS_UNAVAILABLE;
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end
