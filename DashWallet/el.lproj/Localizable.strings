@@ -575,6 +575,9 @@
 "Payments" = "Πληρωμές";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
 
 /* No comment provided by engineer. */

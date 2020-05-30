@@ -17,8 +17,6 @@
 
 #import "DWNotificationsDataSource.h"
 
-#import <DashSync/DashSync.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWNotificationsSection;

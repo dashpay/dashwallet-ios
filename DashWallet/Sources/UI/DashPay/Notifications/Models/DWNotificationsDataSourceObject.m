@@ -17,19 +17,18 @@
 
 #import "DWNotificationsDataSourceObject.h"
 
+#import "DWDPBasicCell.h"
 #import "DWEnvironment.h"
 #import "DWNotificationsSection.h"
 #import "DWUIKit.h"
-#import "DWUserDetailsCell.h"
-#import "DWUserDetailsContactCell.h"
-#import "DWUserDetailsConvertible.h"
+#import "UITableView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWNotificationsDataSourceObject ()
 
 @property (nullable, nonatomic, weak) UITableView *tableView;
-@property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> userDetailsDelegate;
+@property (nullable, nonatomic, weak) id<DWDPIncomingRequestItemDelegate> itemsDelegate;
 
 @property (nonatomic, copy) NSArray<DWNotificationsSection *> *sections;
 
@@ -44,15 +43,14 @@ NS_ASSUME_NONNULL_END
     [self.tableView reloadData];
 }
 
-- (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate {
+- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate {
     self.tableView = tableView;
-    self.userDetailsDelegate = userDetailsDelegate;
+    self.itemsDelegate = itemsDelegate;
 }
 
-- (id<DWNotificationDetails>)notificationDetailsAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     DWNotificationsSection *section = self.sections[indexPath.section];
-    return [section notificationDetailsAtIndex:indexPath.row];
+    return [section itemAtIndex:indexPath.row];
 }
 
 #pragma mark - UITableViewDataSource
@@ -67,29 +65,13 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DWUserDetailsCell *cell = nil;
-    if (indexPath.section == 0) {
-        NSString *cellId = DWUserDetailsCell.dw_reuseIdentifier;
-        cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                               forIndexPath:indexPath];
-        cell.delegate = self.userDetailsDelegate;
-    }
-    else {
-        NSString *cellId = DWUserDetailsContactCell.dw_reuseIdentifier;
-        cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                               forIndexPath:indexPath];
-    }
+    id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
 
-    [self configureCell:cell atIndexPath:indexPath];
-
+    DWDPBasicCell *cell = [tableView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+    cell.displayItemBackgroundView = indexPath.section == 0;
+    cell.delegate = self.itemsDelegate;
+    cell.item = item;
     return cell;
-}
-
-#pragma mark - Private
-
-- (void)configureCell:(DWUserDetailsCell *)cell atIndexPath:(NSIndexPath *)indexPath {
-    id<DWNotificationDetails> details = [self notificationDetailsAtIndexPath:indexPath];
-    //    [cell setUserDetails:userDetails highlightedText:nil];
 }
 
 @end

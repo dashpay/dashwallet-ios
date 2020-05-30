@@ -575,6 +575,9 @@
 "Payments" = "การชำระเงิน";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ต้องระบุ PIN ทุกครั้งเพื่อชำระเงิน";
 
 /* No comment provided by engineer. */

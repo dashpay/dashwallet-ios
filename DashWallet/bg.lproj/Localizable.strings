@@ -575,6 +575,9 @@
 "Payments" = "Плащания";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ПИН се изисква винаги при правене на плащания";
 
 /* No comment provided by engineer. */

@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWUserSearchItem.h"
+#import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWUserSearchModelDelegate <NSObject>
 
 - (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model;
-- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<DWUserSearchItem *> *)items;
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicItem>> *)items;
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error;
 
 @end
@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable DSBlockchainIdentity *)blokchainIdentityAtIndex:(NSInteger)index;
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+- (void)acceptContactRequest:(id<DWDPBasicItem>)item;
 
 @end
 

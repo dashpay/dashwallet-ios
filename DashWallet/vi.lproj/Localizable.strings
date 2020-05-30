@@ -575,6 +575,9 @@
 "Payments" = "Các giao dịch";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Mã PIN luôn được cần đến khi thực hiện giao dịch";
 
 /* No comment provided by engineer. */

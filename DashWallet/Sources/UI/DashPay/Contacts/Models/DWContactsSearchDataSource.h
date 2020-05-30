@@ -18,19 +18,22 @@
 #import <DashSync/DashSync.h>
 #import <Foundation/Foundation.h>
 
+#import "DWDPBasicItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUserDetails;
+@class DWDPContactsItemsFactory;
 
 @interface DWContactsSearchDataSource : NSObject
 
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWUserDetails>> *filteredFirstSection;
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWUserDetails>> *filteredSecondSection;
+@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredFirstSection;
+@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredSecondSection;
 
 - (void)filterWithTrimmedQuery:(NSString *)trimmedQuery;
 
-- (instancetype)initWithIncomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
-                        contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC;
+- (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
+                    incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
+                    contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

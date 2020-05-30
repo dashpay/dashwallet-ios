@@ -17,11 +17,14 @@
 
 #import "DWNotificationsSection.h"
 
+#import "DWNotificationItemConvertible.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWNotificationsSection ()
 
-@property (readonly, nonatomic, copy) NSArray<id<DWNotificationDetailsConvertible>> *items;
+@property (readonly, nonatomic, strong) DWDPNotificationItemsFactory *itemsFactory;
+@property (readonly, nonatomic, copy) NSArray<id<DWNotificationItemConvertible>> *items;
 
 @end
 
@@ -29,14 +32,16 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWNotificationsSection
 
-- (instancetype)initWithIncomingFRC:(NSFetchedResultsController *)incomingFRC
-                         ignoredFRC:(NSFetchedResultsController *)ignoredFRC
-                        contactsFRC:(NSFetchedResultsController *)contactsFRC {
+- (instancetype)initWithFactory:(DWDPNotificationItemsFactory *)factory
+                    incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
+                     ignoredFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)ignoredFRC
+                    contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC {
     self = [super init];
     if (self) {
-        // TODO: merge these three FRC results and sort by date
+        _itemsFactory = factory;
 
-        NSMutableArray<id<DWNotificationDetailsConvertible>> *items = [NSMutableArray array];
+        // TODO: merge these three FRC results and sort by date
+        NSMutableArray<id<DWNotificationItemConvertible>> *items = [NSMutableArray array];
         [items addObjectsFromArray:incomingFRC.fetchedObjects];
         [items addObjectsFromArray:ignoredFRC.fetchedObjects];
         [items addObjectsFromArray:contactsFRC.fetchedObjects];
@@ -50,9 +55,9 @@ NS_ASSUME_NONNULL_END
     return self.items.count;
 }
 
-- (id<DWNotificationDetails>)notificationDetailsAtIndex:(NSInteger)index {
-    id<DWNotificationDetailsConvertible> rawItem = self.items[index];
-    return [rawItem asNotificationDetails];
+- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index {
+    id<DWNotificationItemConvertible> rawItem = self.items[index];
+    return [rawItem asNotificationItemWithFactory:self.itemsFactory];
 }
 
 @end

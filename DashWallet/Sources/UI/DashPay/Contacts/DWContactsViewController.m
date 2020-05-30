@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWContactsContentViewControllerDelegate
 
 - (void)contactsContentViewController:(DWContactsContentViewController *)controller
-                 didSelectUserDetails:(id<DWUserDetails>)userDetails {
+                        didSelectItem:(id<DWDPBasicItem>)item {
 }
 
 #pragma mark - UISearchBarDelegate

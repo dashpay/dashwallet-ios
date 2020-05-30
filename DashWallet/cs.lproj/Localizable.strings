@@ -575,6 +575,9 @@
 "Payments" = "Platby";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Pro platby je vždy vyžadován PIN";
 
 /* No comment provided by engineer. */

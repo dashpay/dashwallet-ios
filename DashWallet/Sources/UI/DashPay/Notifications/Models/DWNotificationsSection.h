@@ -18,19 +18,22 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-#import "DWNotificationDetailsConvertible.h"
+#import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class DWDPNotificationItemsFactory;
 
 @interface DWNotificationsSection : NSObject
 
 @property (readonly, nonatomic, assign) NSUInteger count;
 
-- (id<DWNotificationDetails>)notificationDetailsAtIndex:(NSInteger)index;
+- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index;
 
-- (instancetype)initWithIncomingFRC:(NSFetchedResultsController /* <id<DWNotificationDetailsConvertible>> */ *)incomingFRC
-                         ignoredFRC:(NSFetchedResultsController /* <id<DWNotificationDetailsConvertible>> */ *)ignoredFRC
-                        contactsFRC:(NSFetchedResultsController /* <id<DWNotificationDetailsConvertible>> */ *)contactsFRC;
+- (instancetype)initWithFactory:(DWDPNotificationItemsFactory *)factory
+                    incomingFRC:(NSFetchedResultsController *)incomingFRC
+                     ignoredFRC:(NSFetchedResultsController *)ignoredFRC
+                    contactsFRC:(NSFetchedResultsController *)contactsFRC;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

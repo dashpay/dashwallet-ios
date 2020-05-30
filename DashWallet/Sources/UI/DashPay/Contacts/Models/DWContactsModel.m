@@ -19,8 +19,8 @@
 
 #import "DWContactsDataSourceObject.h"
 #import "DWContactsFetchedDataSource.h"
+#import "DWDPContactRequestActions.h"
 #import "DWEnvironment.h"
-#import "DWIncomingContactItem.h"
 #import "DWIncomingFetchedDataSource.h"
 #import "UIView+DWFindConstraints.h"
 
@@ -113,26 +113,21 @@ NS_ASSUME_NONNULL_END
     }];
 }
 
-- (void)acceptContactRequest:(id<DWUserDetails>)userDetails {
-    NSAssert([userDetails isKindOfClass:DWIncomingContactItem.class], @"Inconsistent state");
-    if ([userDetails isKindOfClass:DWIncomingContactItem.class]) {
-        DWIncomingContactItem *contact = (DWIncomingContactItem *)userDetails;
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-        __weak typeof(self) weakSelf = self;
-        [mineBlockchainIdentity acceptFriendRequest:contact.friendRequestEntity
-                                         completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
-                                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                                             if (!strongSelf) {
-                                                 return;
-                                             }
+- (void)acceptContactRequest:(id<DWDPBasicItem>)item {
+    __weak typeof(self) weakSelf = self;
+    [DWDPContactRequestActions
+        acceptContactRequest:item
+                  completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                      if (!strongSelf) {
+                          return;
+                      }
 
-                                             DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+                      DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
 
-                                             // TODO: temp workaround to update and force reload contact list
-                                             [strongSelf fetchData];
-                                         }];
-    }
+                      // TODO: temp workaround to update and force reload contact list
+                      [strongSelf fetchData];
+                  }];
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {

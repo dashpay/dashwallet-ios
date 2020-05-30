@@ -17,9 +17,10 @@
 
 #import "DWUserSearchModel.h"
 
+#import "DWDPContactRequestActions.h"
+#import "DWDPSearchItemsFactory.h"
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
-#import "DWUserSearchItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign) uint32_t offset;
-@property (nullable, nonatomic, copy) NSArray<DWUserSearchItem *> *items;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>> *items;
 @property (nonatomic, assign) BOOL requestInProgress;
 @property (nonatomic, assign) BOOL hasNextPage;
 
@@ -59,12 +60,21 @@ static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
 
 @property (nullable, nonatomic, strong) DWUserSearchRequest *searchRequest;
 @property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
+@property (readonly, nonatomic, strong) DWDPSearchItemsFactory *itemsFactory;
 
 @end
 
 NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchModel
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _itemsFactory = [[DWDPSearchItemsFactory alloc] init];
+    }
+    return self;
+}
 
 - (NSString *)trimmedQuery {
     return self.searchRequest.trimmedQuery ?: @"";
@@ -106,7 +116,7 @@ NS_ASSUME_NONNULL_END
         return nil;
     }
 
-    DWUserSearchItem *item = self.searchRequest.items[index];
+    id<DWDPBlockchainIdentityBackedItem> item = self.searchRequest.items[index];
     return item.blockchainIdentity;
 }
 
@@ -114,6 +124,22 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
     return !uint256_eq(mineBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+}
+
+- (void)acceptContactRequest:(id<DWDPBasicItem>)item {
+    __weak typeof(self) weakSelf = self;
+    [DWDPContactRequestActions
+        acceptContactRequest:item
+                  completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                      if (!strongSelf) {
+                          return;
+                      }
+
+                      // TODO: DP update state more gently
+
+                      [strongSelf performSearchAndNotify:YES];
+                  }];
 }
 
 #pragma mark Private
@@ -157,9 +183,9 @@ NS_ASSUME_NONNULL_END
                           strongSelf.searchRequest.requestInProgress = NO;
 
                           if (success) {
-                              NSMutableArray<DWUserSearchItem *> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                              NSMutableArray<id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
                               for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                                  DWUserSearchItem *item = [[DWUserSearchItem alloc] initWithBlockchainIdentity:blockchainIdentity];
+                                  id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
                                   [items addObject:item];
                               }
 

@@ -17,8 +17,6 @@
 
 #import "NSAttributedString+DWHighlightText.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 @implementation NSAttributedString (DWHighlightText)
 
 + (NSAttributedString *)attributedText:(NSString *)text
@@ -27,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
                        highlightedText:(nullable NSString *)highlightedText
                   highlightedTextColor:(UIColor *)highlightedTextColor {
     if (text.length == 0) {
-        return [[NSAttributedString alloc] init];
+        return nil;
     }
 
     NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:text];
@@ -68,7 +66,51 @@ NS_ASSUME_NONNULL_BEGIN
     return [string copy];
 }
 
++ (NSAttributedString *)attributedText:(NSAttributedString *)text
+                             textColor:(UIColor *)textColor
+                       highlightedText:(nullable NSString *)highlightedText
+                  highlightedTextColor:(UIColor *)highlightedTextColor {
+    if (text.length == 0) {
+        return nil;
+    }
 
+    if (highlightedText.length == 0) {
+        return text;
+    }
+
+    NSMutableAttributedString *string = [text mutableCopy];
+
+    NSRange textRange = NSMakeRange(0, text.length);
+    NSDictionary<NSAttributedStringKey, id> *attributes = @{
+        NSForegroundColorAttributeName : textColor,
+    };
+    [string setAttributes:attributes range:textRange];
+
+    NSString *plainText = text.string;
+    NSArray<NSString *> *searchItems = [highlightedText componentsSeparatedByString:@" "];
+    for (NSString *searchItem in searchItems) {
+        NSRange searchRange = textRange;
+        NSRange foundRange;
+        while (searchRange.location < textRange.length) {
+            searchRange.length = text.length - searchRange.location;
+            foundRange = [plainText rangeOfString:searchItem
+                                          options:NSCaseInsensitiveSearch
+                                            range:searchRange];
+            if (foundRange.location != NSNotFound) {
+                NSDictionary<NSAttributedStringKey, id> *attributes = @{
+                    NSForegroundColorAttributeName : highlightedTextColor,
+                };
+                [string removeAttribute:NSForegroundColorAttributeName range:foundRange];
+                [string addAttributes:attributes range:foundRange];
+
+                searchRange.location = foundRange.location + foundRange.length;
+            }
+            else {
+                break;
+            }
+        }
+    }
+
+    return [string copy];
+}
 @end
-
-NS_ASSUME_NONNULL_END

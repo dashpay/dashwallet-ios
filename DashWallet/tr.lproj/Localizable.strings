@@ -575,6 +575,9 @@
 "Payments" = "Ödemeler";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ödeme yapmak için her zaman PIN gereklidir";
 
 /* No comment provided by engineer. */

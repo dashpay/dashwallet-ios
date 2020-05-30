@@ -575,6 +575,9 @@
 "Payments" = "Pagamenti";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Il PIN è sempre richiesto per effettuare un pagamento";
 
 /* No comment provided by engineer. */

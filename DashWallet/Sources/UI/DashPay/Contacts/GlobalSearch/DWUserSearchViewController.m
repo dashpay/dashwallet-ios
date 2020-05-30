@@ -80,7 +80,8 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<DWUserSearchItem *> *)items {
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicItem>> *)items;
+{
     if (items.count > 0) {
         self.resultsController.searchQuery = model.trimmedQuery;
         self.resultsController.items = items;
@@ -120,6 +121,16 @@ NS_ASSUME_NONNULL_END
     DWUserProfileViewController *profileController =
         [[DWUserProfileViewController alloc] initWithBlockchainIdentity:blockchainIdentity];
     [self.navigationController pushViewController:profileController animated:YES];
+}
+
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                  acceptContactRequest:(id<DWDPBasicItem>)item {
+    [self.model acceptContactRequest:item];
+}
+
+- (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
+                 declineContactRequest:(id<DWDPBasicItem>)item {
+    NSLog(@"DWDP: declineIncomingRequest");
 }
 
 #pragma mark - Keyboard

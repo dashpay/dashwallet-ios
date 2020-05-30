@@ -17,18 +17,16 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWNotificationDetails.h"
+#import "DWDPBasicItem.h"
+#import "DWDPIncomingRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUserDetailsCellDelegate;
-
 @protocol DWNotificationsDataSource <UITableViewDataSource>
 
-- (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate;
+- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate;
 
-- (id<DWNotificationDetails>)notificationDetailsAtIndexPath:(NSIndexPath *)indexPath;
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

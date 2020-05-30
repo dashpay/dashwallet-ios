@@ -17,6 +17,8 @@
 
 #import "DWNotificationsModel.h"
 
+#import "DWDPContactRequestActions.h"
+#import "DWDPNotificationItemsFactory.h"
 #import "DWEnvironment.h"
 #import "DWNotificationsContactFetchedDataSource.h"
 #import "DWNotificationsDataSourceObject.h"
@@ -27,6 +29,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWNotificationsModel () <DWFetchedResultsDataSourceDelegate>
+
+@property (readonly, nonatomic, strong) DWDPNotificationItemsFactory *itemsFactory;
 
 @property (readonly, nonatomic, strong) DWNotificationsDataSourceObject *aggregateDataSource;
 
@@ -43,6 +47,8 @@ NS_ASSUME_NONNULL_END
 - (instancetype)init {
     self = [super init];
     if (self) {
+        NSDateFormatter *dateFormatter = [NSDateFormatter new];
+        _itemsFactory = [[DWDPNotificationItemsFactory alloc] initWithDateFormatter:dateFormatter];
         _aggregateDataSource = [[DWNotificationsDataSourceObject alloc] init];
 
         [self rebuildFetchedDataSources];
@@ -103,27 +109,22 @@ NS_ASSUME_NONNULL_END
     }];
 }
 
-//- (void)acceptContactRequest:(id<DWUserDetails>)userDetails {
-//    NSAssert([userDetails isKindOfClass:DWIncomingContactItem.class], @"Inconsistent state");
-//    if ([userDetails isKindOfClass:DWIncomingContactItem.class]) {
-//        DWIncomingContactItem *contact = (DWIncomingContactItem *)userDetails;
-//        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-//        DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-//        __weak typeof(self) weakSelf = self;
-//        [mineBlockchainIdentity acceptFriendRequest:contact.friendRequestEntity
-//                                         completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
-//                                             __strong typeof(weakSelf) strongSelf = weakSelf;
-//                                             if (!strongSelf) {
-//                                                 return;
-//                                             }
-//
-//                                             DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
-//
-//                                             // TODO: temp workaround to update and force reload contact list
-//                                             [strongSelf fetchData];
-//                                         }];
-//    }
-//}
+- (void)acceptContactRequest:(id<DWDPBasicItem>)item {
+    __weak typeof(self) weakSelf = self;
+    [DWDPContactRequestActions
+        acceptContactRequest:item
+                  completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                      if (!strongSelf) {
+                          return;
+                      }
+
+                      DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+
+                      // TODO: temp workaround to update and force reload contact list
+                      [strongSelf fetchData];
+                  }];
+}
 
 #pragma mark - DWFetchedResultsDataSourceDelegate
 
@@ -143,9 +144,10 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    DWNotificationsSection *section = [[DWNotificationsSection alloc] initWithIncomingFRC:self.incomingDataSource.fetchedResultsController
-                                                                               ignoredFRC:self.ignoredDataSource.fetchedResultsController
-                                                                              contactsFRC:self.contactsDataSource.fetchedResultsController];
+    DWNotificationsSection *section = [[DWNotificationsSection alloc] initWithFactory:self.itemsFactory
+                                                                          incomingFRC:self.incomingDataSource.fetchedResultsController
+                                                                           ignoredFRC:self.ignoredDataSource.fetchedResultsController
+                                                                          contactsFRC:self.contactsDataSource.fetchedResultsController];
     // TODO: impl new / earlier sections
     [self.aggregateDataSource updateWithSections:@[ section, section ]];
 }

@@ -21,11 +21,11 @@
 #import "DWNotificationsModel.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
-#import "DWUserDetailsCell.h"
+#import "UITableView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsViewController () <DWUserDetailsCellDelegate>
+@interface DWNotificationsViewController () <DWDPIncomingRequestItemDelegate>
 
 @property (null_resettable, nonatomic, strong) DWNotificationsModel *model;
 
@@ -50,20 +50,33 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
-    self.tableView.estimatedRowHeight = 74.0;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-
+    [self.tableView dw_registerDPItemCells];
     [self.tableView registerClass:DWNoNotificationsCell.class
            forCellReuseIdentifier:DWNoNotificationsCell.dw_reuseIdentifier];
 
-    [self.model.dataSource setupWithTableView:self.tableView userDetailsDelegate:self];
+    self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedRowHeight = 72.0;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+
+    [self.model.dataSource setupWithTableView:self.tableView itemsDelegate:self];
     self.tableView.dataSource = self.model.dataSource;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.model start];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self.model stop];
 }
 
 #pragma mark - UITableViewDataSource
@@ -95,14 +108,14 @@ NS_ASSUME_NONNULL_END
     return view;
 }
 
-#pragma mark - DWUserDetailsCellDelegate
+#pragma mark - DWDPIncomingRequestItemDelegate
 
-- (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact {
-    //    [self.model acceptContactRequest:contact];
+- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+    [self.model acceptContactRequest:item];
 }
 
-- (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact {
-    NSLog(@"DWDP: ignore contact request");
+- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+    NSLog(@"DWDP: declineIncomingRequest");
 }
 
 #pragma mark - Private

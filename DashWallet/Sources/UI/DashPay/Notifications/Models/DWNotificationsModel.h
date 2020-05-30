@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)fetchData;
 
-//- (void)acceptContactRequest:(id<DWUserDetails>)userDetails;
+- (void)acceptContactRequest:(id<DWDPBasicItem>)item;
 
 
 @end
