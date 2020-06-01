@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)layoutSubviews {
     [super layoutSubviews];
 
-    if (self.spread == 0) {
+    if (self.spread == 0 || self.isHidden) {
         self.layer.shadowPath = nil;
     }
     else {

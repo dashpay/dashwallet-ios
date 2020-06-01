@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayProfileView : UIView
+@interface DWDashPayProfileView : UIControl
 
 @property (nullable, nonatomic, copy) NSString *username;
 

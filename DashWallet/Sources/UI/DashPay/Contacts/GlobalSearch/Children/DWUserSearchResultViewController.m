@@ -18,11 +18,21 @@
 #import "DWUserSearchResultViewController.h"
 
 #import "DWUIKit.h"
-#import "DWUserDetailsCell.h"
+
+#import "DWDPBasicCell.h"
+#import "DWDPIncomingRequestItem.h"
+#import "UITableView+DWDPItemDequeue.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWUserSearchResultViewController () <DWDPIncomingRequestItemDelegate>
+@end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchResultViewController
 
-- (void)setItems:(NSArray<DWUserSearchItem *> *)items {
+- (void)setItems:(NSArray<id<DWDPBasicItem>> *)items {
     _items = [items copy];
 
     [self.tableView reloadData];
@@ -31,16 +41,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    NSArray<NSString *> *cellIds = @[
-        DWUserDetailsCell.dw_reuseIdentifier,
-    ];
-    for (NSString *cellId in cellIds) {
-        UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
-        NSParameterAssert(nib);
-        [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
-    }
-
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+    [self.tableView dw_registerDPItemCells];
+    self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedRowHeight = 72.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
 }
@@ -50,12 +56,13 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *cellId = DWUserDetailsCell.dw_reuseIdentifier;
-    DWUserDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                                              forIndexPath:indexPath];
-    id<DWUserDetails> item = self.items[indexPath.row];
-    [cell setUserDetails:item highlightedText:self.searchQuery];
-    cell.delegate = self.contactsDelegate;
+    id<DWDPBasicItem> item = self.items[indexPath.row];
+
+    DWDPBasicCell *cell = [tableView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+    cell.displayItemBackgroundView = YES;
+    cell.delegate = self;
+    [cell setItem:item highlightedText:self.searchQuery];
+
     return cell;
 }
 
@@ -68,6 +75,16 @@
 
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row cell:cell];
+}
+
+#pragma mark - DWDPIncomingRequestItemDelegate
+
+- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+    [self.delegate userSearchResultViewController:self acceptContactRequest:item];
+}
+
+- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+    [self.delegate userSearchResultViewController:self declineContactRequest:item];
 }
 
 @end

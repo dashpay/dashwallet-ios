@@ -1,3 +1,6 @@
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ has sent you a contact request";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ n'est pas autorisé à accéder à Face ID";
 
@@ -265,6 +268,9 @@
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Pair de téléchargement : %@";
 
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Earlier";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
 
@@ -499,6 +505,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Frais de réseau";
 
+/* (List of) New (notifications) */
+"New" = "New";
+
 /* No comment provided by engineer. */
 "NFC device" = "Appareil NFC";
 
@@ -525,6 +534,9 @@
 
 /* No comment provided by engineer. */
 "Not yet used" = "Pas encore utilisé";
+
+/* No comment provided by engineer. */
+"Notifications" = "Notifications";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -561,6 +573,9 @@
 
 /* No comment provided by engineer. */
 "Payments" = "Paiements";
+
+/* No comment provided by engineer. */
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Le code PIN est toujours demandé pour faire un paiement";
@@ -858,6 +873,9 @@
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Touchez pour afficher le solde";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Il n'y a pas de transactions à afficher";

@@ -17,22 +17,22 @@
 
 #import "DWContactsDataSourceObject.h"
 
-#import "DWContactItem.h"
+
 #import "DWContactsSearchDataSource.h"
-#import "DWIncomingContactItem.h"
+#import "DWDPBasicCell.h"
+#import "DWDPContactsItemsFactory.h"
 #import "DWUIKit.h"
-#import "DWUserDetailsCell.h"
-#import "DWUserDetailsContactCell.h"
-#import "DWUserDetailsConvertible.h"
+#import "UITableView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsDataSourceObject () <NSFetchedResultsControllerDelegate>
 
 @property (nullable, nonatomic, weak) UITableView *tableView;
-@property (nullable, nonatomic, weak) id<DWUserDetailsCellDelegate> userDetailsDelegate;
+@property (nullable, nonatomic, weak) id<DWDPIncomingRequestItemDelegate> itemsDelegate;
 
 @property (nonatomic, assign) BOOL batchReloading;
+@property (readonly, nonatomic, strong) DWDPContactsItemsFactory *itemsFactory;
 @property (nullable, nonatomic, strong) NSFetchedResultsController<DSFriendRequestEntity *> *incomingFRC;
 @property (nullable, nonatomic, strong) NSFetchedResultsController<DSDashpayUserEntity *> *contactsFRC;
 
@@ -44,6 +44,14 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWContactsDataSourceObject
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _itemsFactory = [[DWDPContactsItemsFactory alloc] init];
+    }
+    return self;
+}
 
 - (void)beginReloading {
     self.batchReloading = YES;
@@ -85,10 +93,9 @@ NS_ASSUME_NONNULL_END
     return self.incomingFRC.sections.firstObject.numberOfObjects;
 }
 
-- (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate {
+- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate {
     self.tableView = tableView;
-    self.userDetailsDelegate = userDetailsDelegate;
+    self.itemsDelegate = itemsDelegate;
 }
 
 - (BOOL)isEmpty {
@@ -112,14 +119,15 @@ NS_ASSUME_NONNULL_END
     return self.trimmedQuery.length > 0;
 }
 
-- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         if (self.searching) {
             return self.searchDataSource.filteredFirstSection[indexPath.row];
         }
         else {
             DSFriendRequestEntity *entity = [self.incomingFRC objectAtIndexPath:indexPath];
-            return [entity asUserDetails];
+            id<DWDPBasicItem> item = [self.itemsFactory itemForFriendRequestEntity:entity];
+            return item;
         }
     }
     else {
@@ -129,7 +137,8 @@ NS_ASSUME_NONNULL_END
         else {
             NSIndexPath *transformedIndexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
             DSDashpayUserEntity *entity = [self.contactsFRC objectAtIndexPath:transformedIndexPath];
-            return [entity asUserDetails];
+            id<DWDPBasicItem> item = [self.itemsFactory itemForDashpayUserEntity:entity];
+            return item;
         }
     }
 }
@@ -177,21 +186,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DWUserDetailsCell *cell = nil;
-    if (indexPath.section == 0) {
-        NSString *cellId = DWUserDetailsCell.dw_reuseIdentifier;
-        cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                               forIndexPath:indexPath];
-        cell.delegate = self.userDetailsDelegate;
-    }
-    else {
-        NSString *cellId = DWUserDetailsContactCell.dw_reuseIdentifier;
-        cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                               forIndexPath:indexPath];
-    }
-
-    [self configureCell:cell atIndexPath:indexPath];
-
+    id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+    DWDPBasicCell *cell = [tableView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+    [self configureCell:cell atIndexPath:indexPath withItem:item];
     return cell;
 }
 
@@ -242,8 +239,10 @@ NS_ASSUME_NONNULL_END
         }
         case NSFetchedResultsChangeUpdate: {
             NSIndexPath *transformedIndexPath = [self transformIndexPath:indexPath controller:controller];
+            id<DWDPBasicItem> item = [self itemAtIndexPath:transformedIndexPath];
             [self configureCell:[tableView cellForRowAtIndexPath:transformedIndexPath]
-                    atIndexPath:indexPath];
+                    atIndexPath:indexPath
+                       withItem:item];
             break;
         }
     }
@@ -280,15 +279,17 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)configureCell:(DWUserDetailsCell *)cell atIndexPath:(NSIndexPath *)indexPath {
-    id<DWUserDetails> userDetails = [self userDetailsAtIndexPath:indexPath];
-    [cell setUserDetails:userDetails highlightedText:self.trimmedQuery];
+- (void)configureCell:(DWDPBasicCell *)cell atIndexPath:(NSIndexPath *)indexPath withItem:(id<DWDPBasicItem>)item {
+    cell.displayItemBackgroundView = indexPath.section == 0;
+    cell.delegate = self.itemsDelegate;
+    [cell setItem:item highlightedText:self.trimmedQuery];
 }
 
 - (DWContactsSearchDataSource *)searchDataSource {
     if (_searchDataSource == nil) {
-        _searchDataSource = [[DWContactsSearchDataSource alloc] initWithIncomingFRC:self.incomingFRC
-                                                                        contactsFRC:self.contactsFRC];
+        _searchDataSource = [[DWContactsSearchDataSource alloc] initWithFactory:self.itemsFactory
+                                                                    incomingFRC:self.incomingFRC
+                                                                    contactsFRC:self.contactsFRC];
     }
     return _searchDataSource;
 }

@@ -43,11 +43,13 @@ NS_ASSUME_NONNULL_END
         DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] init];
         avatarView.translatesAutoresizingMaskIntoConstraints = NO;
         avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
+        avatarView.userInteractionEnabled = NO;
         [self addSubview:avatarView];
         _avatarView = avatarView;
 
         UIImageView *bellImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_bell"]];
         bellImageView.translatesAutoresizingMaskIntoConstraints = NO;
+        bellImageView.userInteractionEnabled = NO;
         [self addSubview:bellImageView];
         _bellImageView = bellImageView;
 
@@ -63,6 +65,13 @@ NS_ASSUME_NONNULL_END
         ]];
     }
     return self;
+}
+
+
+- (void)setHighlighted:(BOOL)highlighted {
+    [super setHighlighted:highlighted];
+
+    [self dw_pressedAnimation:DWPressedAnimationStrength_Medium pressed:highlighted];
 }
 
 - (void)setUsername:(NSString *)username {

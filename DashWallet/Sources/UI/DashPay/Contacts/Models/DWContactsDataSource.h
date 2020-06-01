@@ -17,11 +17,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWUserDetails.h"
+#import "DWDPBasicItem.h"
+#import "DWDPIncomingRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@protocol DWUserDetailsCellDelegate;
 
 @protocol DWContactsDataSource <UITableViewDataSource>
 
@@ -29,10 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
 @property (readonly, nonatomic, assign) NSUInteger contactRequestsCount;
 
-- (void)setupWithTableView:(UITableView *)tableView
-       userDetailsDelegate:(id<DWUserDetailsCellDelegate>)userDetailsDelegate;
+- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate;
 
-- (id<DWUserDetails>)userDetailsAtIndexPath:(NSIndexPath *)indexPath;
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 
 - (void)searchWithQuery:(NSString *)searchQuery;
 

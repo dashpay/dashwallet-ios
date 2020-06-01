@@ -17,7 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWUserDetails.h"
+#import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWContactsContentViewControllerDelegate <NSObject>
 
 - (void)contactsContentViewController:(DWContactsContentViewController *)controller
-                 didSelectUserDetails:(id<DWUserDetails>)userDetails;
+                        didSelectItem:(id<DWDPBasicItem>)item;
 
 @end
 

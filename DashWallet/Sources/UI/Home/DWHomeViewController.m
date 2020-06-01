@@ -25,6 +25,7 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWHomeViewController+DWTxFilter.h"
 #import "DWNavigationController.h"
+#import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWWindow.h"
@@ -97,6 +98,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender {
     [self.delegate homeViewController:self receiveButtonAction:sender];
+}
+
+- (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithStyle:UITableViewStylePlain];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {

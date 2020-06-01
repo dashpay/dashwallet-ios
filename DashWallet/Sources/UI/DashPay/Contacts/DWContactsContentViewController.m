@@ -19,16 +19,16 @@
 
 #import "DWContactsModel.h"
 #import "DWContactsSearchInfoHeaderView.h"
+#import "DWDPIncomingRequestItem.h"
 #import "DWFilterHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
-#import "DWUserDetailsCell.h"
-#import "DWUserDetailsContactCell.h"
+#import "UITableView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController () <DWUserDetailsCellDelegate, DWFilterHeaderViewDelegate, DWTitleActionHeaderViewDelegate>
+@interface DWContactsContentViewController () <DWFilterHeaderViewDelegate, DWTitleActionHeaderViewDelegate, DWDPIncomingRequestItemDelegate>
 
 @property (null_resettable, nonatomic, strong) DWContactsSearchInfoHeaderView *searchHeaderView;
 
@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)setModel:(DWContactsModel *)model {
     _model = model;
-    [model.dataSource setupWithTableView:self.tableView userDetailsDelegate:self];
+    [model.dataSource setupWithTableView:self.tableView itemsDelegate:self];
     self.tableView.dataSource = model.dataSource;
 }
 
@@ -88,22 +88,12 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
+    [self.tableView dw_registerDPItemCells];
     self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     self.tableView.rowHeight = UITableViewAutomaticDimension;
-    self.tableView.estimatedRowHeight = 74.0;
+    self.tableView.estimatedRowHeight = 72.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.contentInset = UIEdgeInsetsMake(0.0, 0.0, DW_TABBAR_NOTCH, 0.0);
-
-    NSArray<NSString *> *cellIds = @[
-        DWUserDetailsCell.dw_reuseIdentifier,
-    ];
-    for (NSString *cellId in cellIds) {
-        UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
-        NSParameterAssert(nib);
-        [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
-    }
-    [self.tableView registerClass:DWUserDetailsContactCell.class
-           forCellReuseIdentifier:DWUserDetailsContactCell.dw_reuseIdentifier];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -126,8 +116,8 @@ NS_ASSUME_NONNULL_END
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    id<DWUserDetails> item = [self.model.dataSource userDetailsAtIndexPath:indexPath];
-    [self.delegate contactsContentViewController:self didSelectUserDetails:item];
+    id<DWDPBasicItem> item = [self.model.dataSource itemAtIndexPath:indexPath];
+    [self.delegate contactsContentViewController:self didSelectItem:item];
 }
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
@@ -205,14 +195,14 @@ NS_ASSUME_NONNULL_END
     return UITableViewAutomaticDimension;
 }
 
-#pragma mark - DWUserDetailsCellDelegate
+#pragma mark - DWDPIncomingRequestItemDelegate
 
-- (void)userDetailsCell:(DWUserDetailsCell *)cell didAcceptContact:(id<DWUserDetails>)contact {
-    [self.model acceptContactRequest:contact];
+- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+    [self.model acceptContactRequest:item];
 }
 
-- (void)userDetailsCell:(DWUserDetailsCell *)cell didDeclineContact:(id<DWUserDetails>)contact {
-    NSLog(@"DWDP: ignore contact request");
+- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+    NSLog(@"DWDP: declineIncomingRequest");
 }
 
 #pragma mark - DWFilterHeaderViewDelegate

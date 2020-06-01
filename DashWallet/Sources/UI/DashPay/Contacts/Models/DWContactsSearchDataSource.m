@@ -1,5 +1,5 @@
 //
-//  Created by administrator
+//  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -18,18 +18,18 @@
 #import "DWContactsSearchDataSource.h"
 
 #import "DWContactsDataSource.h"
-#import "DWUserDetailsConvertible.h"
+#import "DWDPContactsItemsFactory.h"
 #import "NSPredicate+DWFullTextSearch.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsSearchDataSource ()
 
-@property (readonly, nonatomic, copy) NSArray<id<DWUserDetails>> *firstSection;
-@property (readonly, nonatomic, copy) NSArray<id<DWUserDetails>> *secondSection;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *firstSection;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *secondSection;
 
-@property (nullable, nonatomic, copy) NSArray<id<DWUserDetails>> *filteredFirstSection;
-@property (nullable, nonatomic, copy) NSArray<id<DWUserDetails>> *filteredSecondSection;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredFirstSection;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredSecondSection;
 
 @end
 
@@ -37,20 +37,19 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWContactsSearchDataSource
 
-- (instancetype)initWithIncomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
-                        contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC {
+- (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
+                    incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
+                    contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC {
     self = [super init];
     if (self) {
-        _firstSection = [self.class allItemsFromFRC:
-                                        (NSFetchedResultsController<id<DWUserDetailsConvertible>> *)incomingFRC];
-        _secondSection = [self.class allItemsFromFRC:
-                                         (NSFetchedResultsController<id<DWUserDetailsConvertible>> *)contactsFRC];
+        _firstSection = [self.class itemsWithFactory:factory incomingFRC:incomingFRC];
+        _secondSection = [self.class itemsWithFactory:factory contactsFRC:contactsFRC];
     }
     return self;
 }
 
 - (void)filterWithTrimmedQuery:(NSString *)trimmedQuery {
-    id<DWUserDetails> item = nil;
+    id<DWDPBasicItem> item = nil;
     NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, username), DW_KEYPATH(item, displayName) ];
     NSPredicate *predicate = [NSPredicate dw_searchPredicateForTrimmedQuery:trimmedQuery
                                                              searchKeyPaths:searchKeyPaths];
@@ -60,10 +59,21 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
-+ (NSArray<id<DWUserDetails>> *)allItemsFromFRC:(NSFetchedResultsController<id<DWUserDetailsConvertible>> *)frc {
-    NSMutableArray<id<DWUserDetails>> *items = [NSMutableArray array];
-    for (id<DWUserDetailsConvertible> entity in frc.fetchedObjects) {
-        id<DWUserDetails> item = [entity asUserDetails];
++ (NSArray<id<DWDPBasicItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory
+                                     incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc {
+    NSMutableArray<id<DWDPBasicItem>> *items = [NSMutableArray array];
+    for (DSFriendRequestEntity *entity in frc.fetchedObjects) {
+        id<DWDPBasicItem> item = [factory itemForFriendRequestEntity:entity];
+        [items addObject:item];
+    }
+    return [items copy];
+}
+
++ (NSArray<id<DWDPBasicItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory
+                                     contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)frc {
+    NSMutableArray<id<DWDPBasicItem>> *items = [NSMutableArray array];
+    for (DSDashpayUserEntity *entity in frc.fetchedObjects) {
+        id<DWDPBasicItem> item = [factory itemForDashpayUserEntity:entity];
         [items addObject:item];
     }
     return [items copy];

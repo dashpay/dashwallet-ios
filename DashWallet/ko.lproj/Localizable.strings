@@ -1,3 +1,6 @@
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ has sent you a contact request";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@에 페이스 ID 접근 권한이 없습니다";
 
@@ -265,6 +268,9 @@
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "피어 다운로드: %@";
 
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Earlier";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
 
@@ -499,6 +505,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "네트워크 비용";
 
+/* (List of) New (notifications) */
+"New" = "New";
+
 /* No comment provided by engineer. */
 "NFC device" = "NFC 장치";
 
@@ -525,6 +534,9 @@
 
 /* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
+
+/* No comment provided by engineer. */
+"Notifications" = "Notifications";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -561,6 +573,9 @@
 
 /* No comment provided by engineer. */
 "Payments" = "지불";
+
+/* No comment provided by engineer. */
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
@@ -858,6 +873,9 @@
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "잔고를 확인하시려면 탭하세요";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "표시할 거래가 없습니다";

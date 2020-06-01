@@ -234,6 +234,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate homeView:self receiveButtonAction:sender];
 }
 
+- (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender {
+    [self.delegate homeView:self profileButtonAction:sender];
+}
+
 #pragma mark - DWDPRegistrationErrorRetryDelegate
 
 - (void)registrationErrorRetryAction {
