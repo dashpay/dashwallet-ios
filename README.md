@@ -38,6 +38,26 @@ Open `DashWallet.xcworkspace` in Xcode and run the project.
 - Xcode 11
 - Dependency manager [CocoaPods](https://cocoapods.org). Install via `gem install cocoapods`
 
+### DashPay Requirements
+
+Currently, DashPay wallet is under active development so it requires a few additional steps to make it work.
+
+1. Clone [DashSync](https://github.com/dashevo/dashsync-iOS) and [dapi-grpc](https://github.com/dashevo/dapi-grpc) repositories:
+`git clone https://github.com/dashevo/dashsync-iOS.git --branch develop DashSync`
+`git clone https://github.com/dashevo/dapi-grpc.git dapi-grpc`
+
+To simplify developing process we use local podspec dependencies and it's important to preserve the following folder structure:
+```
+../DashSync/
+../dapi-grpc/
+../dashwallet-ios/
+```
+
+2. Install protobuf and grpc:
+`brew install protobuf grpc`
+
+3. Run `pod install` in the wallet directory.
+
 ### Optional Requirements
 
 #### Objective-C Related
