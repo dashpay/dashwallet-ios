@@ -22,6 +22,7 @@
 #import "DWContactsFetchedDataSource.h"
 #import "DWEnvironment.h"
 #import "DWIncomingFetchedDataSource.h"
+#import "DWRequestsModel.h"
 
 @implementation DWContactsModel
 
@@ -36,6 +37,10 @@
         [self rebuildDataSources];
     }
     return self;
+}
+
+- (DWRequestsModel *)contactRequestsModel {
+    return [[DWRequestsModel alloc] initWithFirstSectionDataSource:self.firstSectionDataSource];
 }
 
 - (void)rebuildDataSources {

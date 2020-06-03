@@ -19,7 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWRequestsModel;
+
 @interface DWContactsModel : DWBaseContactsModel
+
+- (DWRequestsModel *)contactRequestsModel;
 
 @end
 

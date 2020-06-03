@@ -17,8 +17,8 @@
 
 #import "DWContactsContentViewController.h"
 
-#import "DWBaseContactsModel.h"
 #import "DWFilterHeaderView.h"
+#import "DWRequestsViewController.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
 
@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWContactsContentViewController
+
+@dynamic model;
 
 #pragma mark - UITableViewDelegate
 
@@ -146,6 +148,9 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWTitleActionHeaderViewDelegate
 
 - (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender {
+    DWRequestsModel *requestsModel = [self.model contactRequestsModel];
+    DWRequestsViewController *controller = [[DWRequestsViewController alloc] initWithModel:requestsModel];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 @end

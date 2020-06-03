@@ -19,7 +19,6 @@
 
 #import "DWBaseContactsViewController+DWProtected.h"
 #import "DWContactsContentViewController.h"
-#import "DWContactsModel.h"
 
 @implementation DWContactsViewController
 
@@ -43,7 +42,7 @@
 
 #pragma mark - Private
 
-- (DWBaseContactsModel *)model {
+- (DWContactsModel *)model {
     if (!_model) {
         _model = [[DWContactsModel alloc] init];
         _model.delegate = self;
