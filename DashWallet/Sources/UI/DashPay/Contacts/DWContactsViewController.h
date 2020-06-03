@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWSearchViewController.h"
+#import "DWBaseContactsViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController : DWSearchViewController
+@interface DWContactsViewController : DWBaseContactsViewController
 
 @end
 

@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsContentViewController.h"
+#import "DWBaseContactsDataSourceObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
+@interface DWContactsDataSourceObject : DWBaseContactsDataSourceObject
 
 @end
 

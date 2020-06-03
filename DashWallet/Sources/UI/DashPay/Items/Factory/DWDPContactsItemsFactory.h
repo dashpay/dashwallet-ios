@@ -15,21 +15,16 @@
 //  limitations under the License.
 //
 
+#import <DashSync/DashSync.h>
 #import <Foundation/Foundation.h>
 
 #import "DWDPBasicItem.h"
-#import "DWDPDashpayUserBackedItem.h"
-#import "DWDPFriendRequestBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSFriendRequestEntity;
-@class DSDashpayUserEntity;
-
 @interface DWDPContactsItemsFactory : NSObject
 
-- (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity;
-- (id<DWDPBasicItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity;
+- (id<DWDPBasicItem>)itemForEntity:(NSManagedObject *)entity;
 
 @end
 

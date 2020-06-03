@@ -38,12 +38,12 @@ NS_ASSUME_NONNULL_END
 @implementation DWContactsSearchDataSource
 
 - (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
-                    incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
-                    contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC {
+                       firstFRC:(NSFetchedResultsController *)firstFRC
+                      secondFRC:(NSFetchedResultsController *)secondFRC {
     self = [super init];
     if (self) {
-        _firstSection = [self.class itemsWithFactory:factory incomingFRC:incomingFRC];
-        _secondSection = [self.class itemsWithFactory:factory contactsFRC:contactsFRC];
+        _firstSection = [self.class itemsWithFactory:factory frc:firstFRC];
+        _secondSection = [self.class itemsWithFactory:factory frc:secondFRC];
     }
     return self;
 }
@@ -59,21 +59,10 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
-+ (NSArray<id<DWDPBasicItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory
-                                     incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc {
++ (NSArray<id<DWDPBasicItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory frc:(NSFetchedResultsController *)frc {
     NSMutableArray<id<DWDPBasicItem>> *items = [NSMutableArray array];
-    for (DSFriendRequestEntity *entity in frc.fetchedObjects) {
-        id<DWDPBasicItem> item = [factory itemForFriendRequestEntity:entity];
-        [items addObject:item];
-    }
-    return [items copy];
-}
-
-+ (NSArray<id<DWDPBasicItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory
-                                     contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)frc {
-    NSMutableArray<id<DWDPBasicItem>> *items = [NSMutableArray array];
-    for (DSDashpayUserEntity *entity in frc.fetchedObjects) {
-        id<DWDPBasicItem> item = [factory itemForDashpayUserEntity:entity];
+    for (NSManagedObject *entity in frc.fetchedObjects) {
+        id<DWDPBasicItem> item = [factory itemForEntity:entity];
         [items addObject:item];
     }
     return [items copy];

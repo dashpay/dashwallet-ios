@@ -15,11 +15,21 @@
 //  limitations under the License.
 //
 
+#import "DWBaseContactsViewController.h"
+
 #import "DWBaseContactsContentViewController.h"
+#import "DWBaseContactsModel.h"
+#import "DWSearchStateViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
+@interface DWBaseContactsViewController () <DWBaseContactsContentViewControllerDelegate, DWContactsModelDelegate, DWSearchStateViewControllerDelegate>
+
+@property (readonly, nonatomic, strong) DWBaseContactsModel *model;
+@property (readonly, nonatomic, strong) DWSearchStateViewController *stateController;
+@property (readonly, nonatomic, strong) DWBaseContactsContentViewController *contentController;
+
+- (void)addContactButtonAction;
 
 @end
 

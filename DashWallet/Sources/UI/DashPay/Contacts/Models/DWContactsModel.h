@@ -15,38 +15,11 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
-
-#import "DWContactsDataSource.h"
-#import "DWContactsSortModeProtocol.h"
+#import "DWBaseContactsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWContactsModel;
-
-@protocol DWContactsModelDelegate <NSObject>
-
-- (void)contactsModelDidUpdate:(DWContactsModel *)model;
-
-@end
-
-@interface DWContactsModel : NSObject <DWContactsSortModeProtocol>
-
-@property (readonly, nonatomic, assign) BOOL hasBlockchainIdentity;
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
-@property (readonly, nonatomic, strong) id<DWContactsDataSource> dataSource;
-@property (nullable, nonatomic, weak) id<DWContactsModelDelegate> delegate;
-
-- (void)start;
-- (void)stop;
-
-- (void)fetchData;
-
-- (void)acceptContactRequest:(id<DWDPBasicItem>)item;
-
-- (void)searchWithQuery:(NSString *)searchQuery;
+@interface DWContactsModel : DWBaseContactsModel
 
 @end
 
