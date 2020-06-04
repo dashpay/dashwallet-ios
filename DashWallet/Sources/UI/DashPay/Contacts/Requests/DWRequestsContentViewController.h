@@ -17,13 +17,9 @@
 
 #import "DWBaseContactsContentViewController.h"
 
-#import "DWContactsModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
-
-@property (nonatomic, strong) DWContactsModel *model;
+@interface DWRequestsContentViewController : DWBaseContactsContentViewController
 
 @end
 

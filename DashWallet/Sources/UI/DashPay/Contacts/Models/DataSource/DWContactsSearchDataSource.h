@@ -15,16 +15,28 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DashSync.h>
+#import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
 #import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPContactsItemsFactory : NSObject
+@class DWDPContactsItemsFactory;
 
-- (id<DWDPBasicItem>)itemForEntity:(NSManagedObject *)entity;
+@interface DWContactsSearchDataSource : NSObject
+
+@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredFirstSection;
+@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredSecondSection;
+
+- (void)filterWithTrimmedQuery:(NSString *)trimmedQuery;
+
+- (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
+                       firstFRC:(NSFetchedResultsController *)firstFRC
+                      secondFRC:(NSFetchedResultsController *)secondFRC;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

@@ -15,15 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsContentViewController.h"
+#import "DWBaseContactsModel.h"
 
-#import "DWContactsModel.h"
+#import "DWFetchedResultsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
+@class DWBaseContactsDataSourceObject;
 
-@property (nonatomic, strong) DWContactsModel *model;
+@interface DWBaseContactsModel () <DWFetchedResultsDataSourceDelegate>
+
+@property (readonly, nonatomic, strong) DWBaseContactsDataSourceObject *aggregateDataSource;
+
+@property (readonly, nonatomic, strong) DWFetchedResultsDataSource *firstSectionDataSource;
+@property (readonly, nonatomic, strong) DWFetchedResultsDataSource *secondSectionDataSource;
+
+- (void)rebuildDataSources;
 
 @end
 

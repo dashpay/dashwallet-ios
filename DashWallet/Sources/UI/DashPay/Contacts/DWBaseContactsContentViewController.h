@@ -15,15 +15,28 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsContentViewController.h"
+#import <UIKit/UIKit.h>
 
-#import "DWContactsModel.h"
+#import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
+@class DWBaseContactsModel;
+@class DWBaseContactsContentViewController;
 
-@property (nonatomic, strong) DWContactsModel *model;
+@protocol DWBaseContactsContentViewControllerDelegate <NSObject>
+
+- (void)contactsContentViewController:(DWBaseContactsContentViewController *)controller
+                        didSelectItem:(id<DWDPBasicItem>)item;
+
+@end
+
+@interface DWBaseContactsContentViewController : UITableViewController
+
+@property (nonatomic, strong) DWBaseContactsModel *model;
+@property (nullable, nonatomic, weak) id<DWBaseContactsContentViewControllerDelegate> delegate;
+
+- (void)updateSearchingState;
 
 @end
 

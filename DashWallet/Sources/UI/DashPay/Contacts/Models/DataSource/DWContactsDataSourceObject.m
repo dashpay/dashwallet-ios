@@ -15,16 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsContentViewController.h"
+#import "DWContactsDataSourceObject.h"
 
-#import "DWContactsModel.h"
+@implementation DWContactsDataSourceObject
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
-
-@property (nonatomic, strong) DWContactsModel *model;
+- (NSUInteger)maxVisibleContactRequestsCount {
+    return 3;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

@@ -15,26 +15,18 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DashSync.h>
-#import <Foundation/Foundation.h>
-
-#import "DWDPBasicItem.h"
+#import "DWBaseContactsViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWDPContactsItemsFactory;
+@class DWRequestsModel;
 
-@interface DWContactsSearchDataSource : NSObject
+@interface DWRequestsViewController : DWBaseContactsViewController
 
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredFirstSection;
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredSecondSection;
+- (instancetype)initWithModel:(DWRequestsModel *)model;
 
-- (void)filterWithTrimmedQuery:(NSString *)trimmedQuery;
-
-- (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
-                    incomingFRC:(NSFetchedResultsController<DSFriendRequestEntity *> *)incomingFRC
-                    contactsFRC:(NSFetchedResultsController<DSDashpayUserEntity *> *)contactsFRC;
-
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(nullable NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 

@@ -15,8 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWContactsDataSourceObject.h"
-
+#import "DWBaseContactsDataSourceObject.h"
 
 #import "DWContactsSearchDataSource.h"
 #import "DWDPBasicCell.h"
@@ -26,15 +25,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsDataSourceObject () <NSFetchedResultsControllerDelegate>
+@interface DWBaseContactsDataSourceObject () <NSFetchedResultsControllerDelegate>
 
 @property (nullable, nonatomic, weak) UITableView *tableView;
 @property (nullable, nonatomic, weak) id<DWDPIncomingRequestItemDelegate> itemsDelegate;
 
 @property (nonatomic, assign) BOOL batchReloading;
 @property (readonly, nonatomic, strong) DWDPContactsItemsFactory *itemsFactory;
-@property (nullable, nonatomic, strong) NSFetchedResultsController<DSFriendRequestEntity *> *incomingFRC;
-@property (nullable, nonatomic, strong) NSFetchedResultsController<DSDashpayUserEntity *> *contactsFRC;
+@property (nullable, nonatomic, strong) NSFetchedResultsController *firstFRC;
+@property (nullable, nonatomic, strong) NSFetchedResultsController *secondFRC;
 
 @property (nullable, nonatomic, copy) NSString *trimmedQuery;
 @property (null_resettable, nonatomic, strong) DWContactsSearchDataSource *searchDataSource;
@@ -43,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWContactsDataSourceObject
+@implementation DWBaseContactsDataSourceObject
 
 - (instancetype)init {
     self = [super init];
@@ -63,9 +62,9 @@ NS_ASSUME_NONNULL_END
     [self updateSearchIfNeeded];
 }
 
-- (void)reloadIncomingContactRequests:(NSFetchedResultsController<DSFriendRequestEntity *> *)frc {
-    self.incomingFRC = frc;
-    self.incomingFRC.delegate = self;
+- (void)reloadFirstFRC:(NSFetchedResultsController *)frc {
+    self.firstFRC = frc;
+    self.firstFRC.delegate = self;
 
     if (!self.batchReloading) {
         [self.tableView reloadData];
@@ -73,9 +72,9 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)reloadContacts:(NSFetchedResultsController<DSDashpayUserEntity *> *)frc {
-    self.contactsFRC = frc;
-    self.contactsFRC.delegate = self;
+- (void)reloadSecondFRC:(NSFetchedResultsController *)frc {
+    self.secondFRC = frc;
+    self.secondFRC.delegate = self;
 
     if (!self.batchReloading) {
         [self.tableView reloadData];
@@ -86,11 +85,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWContactsDataSource
 
 - (NSUInteger)maxVisibleContactRequestsCount {
-    return 3;
+    return NSUIntegerMax;
 }
 
 - (NSUInteger)contactRequestsCount {
-    return self.incomingFRC.sections.firstObject.numberOfObjects;
+    return self.firstFRC.sections.firstObject.numberOfObjects;
 }
 
 - (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate {
@@ -99,7 +98,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)isEmpty {
-    if (self.incomingFRC == nil && self.contactsFRC == nil) {
+    if (self.firstFRC == nil && self.secondFRC == nil) {
         return YES;
     }
 
@@ -109,8 +108,8 @@ NS_ASSUME_NONNULL_END
         return count == 0;
     }
     else {
-        const NSInteger count = self.incomingFRC.sections.firstObject.numberOfObjects +
-                                self.contactsFRC.sections.firstObject.numberOfObjects;
+        const NSInteger count = self.firstFRC.sections.firstObject.numberOfObjects +
+                                self.secondFRC.sections.firstObject.numberOfObjects;
         return count == 0;
     }
 }
@@ -125,8 +124,8 @@ NS_ASSUME_NONNULL_END
             return self.searchDataSource.filteredFirstSection[indexPath.row];
         }
         else {
-            DSFriendRequestEntity *entity = [self.incomingFRC objectAtIndexPath:indexPath];
-            id<DWDPBasicItem> item = [self.itemsFactory itemForFriendRequestEntity:entity];
+            NSManagedObject *entity = [self.firstFRC objectAtIndexPath:indexPath];
+            id<DWDPBasicItem> item = [self.itemsFactory itemForEntity:entity];
             return item;
         }
     }
@@ -136,8 +135,8 @@ NS_ASSUME_NONNULL_END
         }
         else {
             NSIndexPath *transformedIndexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
-            DSDashpayUserEntity *entity = [self.contactsFRC objectAtIndexPath:transformedIndexPath];
-            id<DWDPBasicItem> item = [self.itemsFactory itemForDashpayUserEntity:entity];
+            NSManagedObject *entity = [self.secondFRC objectAtIndexPath:transformedIndexPath];
+            id<DWDPBasicItem> item = [self.itemsFactory itemForEntity:entity];
             return item;
         }
     }
@@ -162,7 +161,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    return self.secondFRC ? 2 : 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -171,7 +170,7 @@ NS_ASSUME_NONNULL_END
             return self.searchDataSource.filteredFirstSection.count;
         }
         else {
-            return MIN(self.incomingFRC.sections.firstObject.numberOfObjects,
+            return MIN(self.firstFRC.sections.firstObject.numberOfObjects,
                        self.maxVisibleContactRequestsCount);
         }
     }
@@ -180,7 +179,7 @@ NS_ASSUME_NONNULL_END
             return self.searchDataSource.filteredSecondSection.count;
         }
         else {
-            return self.contactsFRC.sections.firstObject.numberOfObjects;
+            return self.secondFRC.sections.firstObject.numberOfObjects;
         }
     }
 }
@@ -271,7 +270,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSIndexPath *)transformIndexPath:(NSIndexPath *)indexPath controller:(NSFetchedResultsController *)controller {
-    if (controller == self.incomingFRC) {
+    if (controller == self.firstFRC) {
         return indexPath;
     }
     else {
@@ -288,8 +287,8 @@ NS_ASSUME_NONNULL_END
 - (DWContactsSearchDataSource *)searchDataSource {
     if (_searchDataSource == nil) {
         _searchDataSource = [[DWContactsSearchDataSource alloc] initWithFactory:self.itemsFactory
-                                                                    incomingFRC:self.incomingFRC
-                                                                    contactsFRC:self.contactsFRC];
+                                                                       firstFRC:self.firstFRC
+                                                                      secondFRC:self.secondFRC];
     }
     return _searchDataSource;
 }

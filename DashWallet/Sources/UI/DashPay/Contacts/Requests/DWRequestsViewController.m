@@ -15,40 +15,35 @@
 //  limitations under the License.
 //
 
-#import "DWContactsViewController.h"
+#import "DWRequestsViewController.h"
 
 #import "DWBaseContactsViewController+DWProtected.h"
-#import "DWContactsContentViewController.h"
+#import "DWRequestsContentViewController.h"
+#import "DWRequestsModel.h"
 
-@implementation DWContactsViewController
+@implementation DWRequestsViewController
 
 @synthesize model = _model;
 @synthesize stateController = _stateController;
 @synthesize contentController = _contentController;
 
+- (instancetype)initWithModel:(DWRequestsModel *)model {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _model = model;
+        _model.delegate = self;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Contacts", nil);
-    self.searchBar.placeholder = NSLocalizedString(@"Search for a contact", nil);
-
-    UIImage *image = [[UIImage imageNamed:@"dp_add_contact"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithImage:image
-                                                               style:UIBarButtonItemStylePlain
-                                                              target:self
-                                                              action:@selector(addContactButtonAction)];
-    self.navigationItem.rightBarButtonItem = button;
+    self.title = NSLocalizedString(@"Contact Requests", nil);
+    self.searchBar.placeholder = NSLocalizedString(@"Search for a contact request", nil);
 }
 
 #pragma mark - Private
-
-- (DWContactsModel *)model {
-    if (!_model) {
-        _model = [[DWContactsModel alloc] init];
-        _model.delegate = self;
-    }
-    return _model;
-}
 
 - (DWSearchStateViewController *)stateController {
     if (_stateController == nil) {
@@ -60,7 +55,7 @@
 
 - (DWBaseContactsContentViewController *)contentController {
     if (_contentController == nil) {
-        DWContactsContentViewController *controller = [[DWContactsContentViewController alloc] initWithStyle:UITableViewStylePlain];
+        DWRequestsContentViewController *controller = [[DWRequestsContentViewController alloc] initWithStyle:UITableViewStylePlain];
         controller.model = self.model;
         controller.delegate = self;
         _contentController = controller;

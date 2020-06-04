@@ -18,10 +18,26 @@
 #import "DWDPContactsItemsFactory.h"
 
 #import "DWDPContactObject.h"
+#import "DWDPDashpayUserBackedItem.h"
+#import "DWDPFriendRequestBackedItem.h"
 #import "DWDPIgnoredRequestObject.h"
 #import "DWDPIncomingRequestObject.h"
 
 @implementation DWDPContactsItemsFactory
+
+- (id<DWDPBasicItem>)itemForEntity:(NSManagedObject *)entity {
+    if ([entity isKindOfClass:DSFriendRequestEntity.class]) {
+        return [self itemForFriendRequestEntity:(DSFriendRequestEntity *)entity];
+    }
+    if ([entity isKindOfClass:DSDashpayUserEntity.class]) {
+        return [self itemForDashpayUserEntity:(DSDashpayUserEntity *)entity];
+    }
+
+    NSAssert(NO, @"Unsupported entity type");
+    return nil;
+}
+
+#pragma mark - Private
 
 - (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
     // TODO: impl case `if entity.isIgnored`

@@ -15,15 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsContentViewController.h"
+#import "DWContactsDataSource.h"
 
-#import "DWContactsModel.h"
+#import <CoreData/CoreData.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsContentViewController : DWBaseContactsContentViewController
+@interface DWBaseContactsDataSourceObject : NSObject <DWContactsDataSource>
 
-@property (nonatomic, strong) DWContactsModel *model;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
+
+- (NSUInteger)maxVisibleContactRequestsCount;
+
+- (void)beginReloading;
+- (void)endReloading;
+
+- (void)reloadFirstFRC:(NSFetchedResultsController *)frc;
+- (void)reloadSecondFRC:(NSFetchedResultsController *)frc;
 
 @end
 
