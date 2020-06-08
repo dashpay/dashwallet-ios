@@ -94,10 +94,9 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+    NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
     for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+        [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:chain inContext:context];
         [chain unregisterAllWallets];
     }
 

@@ -49,7 +49,7 @@
         return;
     }
 
-    NSManagedObjectContext *context = [NSManagedObject mainContext];
+    NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
     _firstSectionDataSource = [[DWIncomingFetchedDataSource alloc] initWithContext:context blockchainIdentity:blockchainIdentity];
     _firstSectionDataSource.shouldSubscribeToNotifications = YES;

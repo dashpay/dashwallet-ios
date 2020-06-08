@@ -84,7 +84,7 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainBlocksDidChangeNotification)
-                                   name:DSChainBlocksDidChangeNotification
+                                   name:DSChainChainSyncBlocksDidChangeNotification
                                  object:nil];
 
         if ([DWEnvironment sharedInstance].currentChainManager.peerManager.connected) {
