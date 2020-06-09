@@ -29,11 +29,11 @@
     const BOOL isFriendRequestBacked = [item conformsToProtocol:@protocol(DWDPFriendRequestBackedItem)];
     NSAssert(isBlockchainIdentityBacked || isFriendRequestBacked, @"Invalid item to accept contact request");
 
-    if (isBlockchainIdentityBacked) {
+    if (isBlockchainIdentityBacked && [(id<DWDPBlockchainIdentityBackedItem>)item blockchainIdentity] != nil) {
         id<DWDPBlockchainIdentityBackedItem> backedItem = (id<DWDPBlockchainIdentityBackedItem>)item;
         [self acceptContactRequestFromBlockchainIdentity:backedItem.blockchainIdentity completion:completion];
     }
-    else if (isFriendRequestBacked) {
+    else if (isFriendRequestBacked && [(id<DWDPFriendRequestBackedItem>)item friendRequestEntity] != nil) {
         id<DWDPFriendRequestBackedItem> backedItem = (id<DWDPFriendRequestBackedItem>)item;
         [self acceptContactRequestFromFriendRequest:backedItem.friendRequestEntity completion:completion];
     }
