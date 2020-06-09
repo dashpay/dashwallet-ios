@@ -166,7 +166,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
                                          dapiJRPCPort:3000
                                          dapiGRPCPort:3010
                                        dpnsContractID:@"ForwNrvKy8jdyoCNTYBK4gcV6o15n79DmFQio2gGac5p".base58ToData.UInt256
-                                    dashpayContractID:@"FW2BGfVdTLgGWGkJRjC838MPpEcL2cSfkNkwao8ooxm5".base58ToData.UInt256
+                                    dashpayContractID:@"2VkEDxMJESJ379oY14rm3DBLrmu58BW8KCtPcfWe1Wss".base58ToData.UInt256
                                       protocolVersion:70215
                                    minProtocolVersion:70215
                                          sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
