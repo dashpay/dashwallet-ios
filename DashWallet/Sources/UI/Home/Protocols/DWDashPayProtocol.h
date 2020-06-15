@@ -29,6 +29,7 @@ extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 @property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
 @property (readonly, nonatomic, assign) BOOL registrationCompleted;
+@property (readonly, nonatomic, assign) NSUInteger unreadNotificationsCount;
 
 - (void)createUsername:(NSString *)username;
 - (void)retry;

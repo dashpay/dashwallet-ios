@@ -19,12 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPayProfileView : UIControl
+@interface DWBadgeView : UIView
 
-@property (nullable, nonatomic, copy) NSString *username;
-@property (nonatomic, assign) NSUInteger unreadCount;
-
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+@property (nullable, nonatomic, copy) NSString *text;
+@property (nullable, nonatomic, strong) UIFont *font;
+@property (nullable, nonatomic, strong) UIColor *textColor;
 
 @end
 

@@ -279,6 +279,7 @@
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
 		2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
+		2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */; };
 		2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC623F6928C00CDA1EE /* DWTextField.m */; };
 		2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC923F6BD5200CDA1EE /* DWUsernameValidationView.m */; };
 		2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */; };
@@ -1120,6 +1121,8 @@
 		2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTabBarView.m; sourceTree = "<group>"; };
 		2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewController.h; sourceTree = "<group>"; };
 		2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeViewController.m; sourceTree = "<group>"; };
+		2A9D72A62497C52E00F79CD8 /* DWBadgeView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBadgeView.h; sourceTree = "<group>"; };
+		2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBadgeView.m; sourceTree = "<group>"; };
 		2A9E7DC523F6928C00CDA1EE /* DWTextField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTextField.h; sourceTree = "<group>"; };
 		2A9E7DC623F6928C00CDA1EE /* DWTextField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTextField.m; sourceTree = "<group>"; };
 		2A9E7DC823F6BD5200CDA1EE /* DWUsernameValidationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameValidationView.h; sourceTree = "<group>"; };
@@ -2078,6 +2081,8 @@
 				2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */,
 				2A0C69B12312E8A0001B8C90 /* DWWindow.h */,
 				2A0C69B22312E8A0001B8C90 /* DWWindow.m */,
+				2A9D72A62497C52E00F79CD8 /* DWBadgeView.h */,
+				2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */,
 			);
 			path = SharedViews;
 			sourceTree = "<group>";
@@ -4975,6 +4980,7 @@
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
+				2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 			);

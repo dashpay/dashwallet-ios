@@ -17,6 +17,7 @@
 
 #import "DWDashPayProfileView.h"
 
+#import "DWBadgeView.h"
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
 
@@ -28,6 +29,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UIImageView *bellImageView;
+@property (readonly, nonatomic, strong) DWBadgeView *badgeView;
 
 @end
 
@@ -53,6 +55,12 @@ NS_ASSUME_NONNULL_END
         [self addSubview:bellImageView];
         _bellImageView = bellImageView;
 
+        DWBadgeView *badgeView = [[DWBadgeView alloc] initWithFrame:CGRectZero];
+        badgeView.translatesAutoresizingMaskIntoConstraints = NO;
+        badgeView.hidden = YES;
+        [self addSubview:badgeView];
+        _badgeView = badgeView;
+
         [NSLayoutConstraint activateConstraints:@[
             [avatarView.topAnchor constraintEqualToAnchor:self.topAnchor],
             [avatarView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
@@ -62,6 +70,9 @@ NS_ASSUME_NONNULL_END
 
             [bellImageView.trailingAnchor constraintEqualToAnchor:avatarView.trailingAnchor],
             [bellImageView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+
+            [badgeView.centerXAnchor constraintEqualToAnchor:self.avatarView.trailingAnchor],
+            [badgeView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         ]];
     }
     return self;
@@ -78,6 +89,15 @@ NS_ASSUME_NONNULL_END
     _username = username;
 
     self.avatarView.username = username;
+}
+
+- (void)setUnreadCount:(NSUInteger)unreadCount {
+    _unreadCount = unreadCount;
+
+    self.badgeView.text = [NSString stringWithFormat:@"%ld", unreadCount];
+
+    self.bellImageView.hidden = unreadCount > 0;
+    self.badgeView.hidden = unreadCount == 0;
 }
 
 @end

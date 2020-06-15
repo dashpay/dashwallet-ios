@@ -19,6 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSNotificationName const DWNotificationsProviderWillUpdateNotification;
 extern NSNotificationName const DWNotificationsProviderDidUpdateNotification;
 
 @class DWNotificationsData;

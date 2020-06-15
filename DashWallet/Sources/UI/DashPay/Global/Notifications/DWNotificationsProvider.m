@@ -29,6 +29,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSNotificationName const DWNotificationsProviderWillUpdateNotification = @"org.dash.wallet.dp.notifications-will-update";
 NSNotificationName const DWNotificationsProviderDidUpdateNotification = @"org.dash.wallet.dp.notifications-did-update";
 
 @interface DWNotificationsProvider () <DWFetchedResultsDataSourceDelegate, NSFetchedResultsControllerDelegate>
@@ -83,11 +84,16 @@ NS_ASSUME_NONNULL_END
     self.data = [[DWNotificationsData alloc] initWithMostRecentNotificationDate:mostRecentNotificationDate
                                                                     unreadItems:@[]
                                                                        oldItems:items];
-    [[NSNotificationCenter defaultCenter] postNotificationName:DWNotificationsProviderDidUpdateNotification
-                                                        object:self];
 }
 
 #pragma mark - Private
+
+- (void)setData:(DWNotificationsData *)data {
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter postNotificationName:DWNotificationsProviderWillUpdateNotification object:self];
+    _data = data;
+    [notificationCenter postNotificationName:DWNotificationsProviderDidUpdateNotification object:self];
+}
 
 - (void)reload {
     NSArray<DSFriendRequestEntity *> *fetchedObjects = self.fetchedDataSource.fetchedResultsController.fetchedObjects;
@@ -157,9 +163,6 @@ NS_ASSUME_NONNULL_END
     self.data = [[DWNotificationsData alloc] initWithMostRecentNotificationDate:mostRecentNotificationDate
                                                                     unreadItems:newItems
                                                                        oldItems:oldItems];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:DWNotificationsProviderDidUpdateNotification
-                                                        object:self];
 }
 
 #pragma mark - DWFetchedResultsDataSourceDelegate
