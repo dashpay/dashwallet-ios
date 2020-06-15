@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWNotificationsData : NSObject <NSCopying>
 
 @property (readonly, nonatomic, assign) BOOL isEmpty;
-@property (nullable, readonly, nonatomic, assign) NSDate *mostRecentNotificationDate;
+@property (nullable, readonly, nonatomic, strong) NSDate *mostRecentNotificationDate;
 @property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *unreadItems;
 @property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *oldItems;
 
