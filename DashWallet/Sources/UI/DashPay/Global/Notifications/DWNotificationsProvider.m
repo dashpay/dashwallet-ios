@@ -67,13 +67,24 @@ NS_ASSUME_NONNULL_END
 
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    _fetchedDataSource = [[DWNotificationsFetchedDataSource alloc] initWithContext:context];
+    _fetchedDataSource = [[DWNotificationsFetchedDataSource alloc] initWithContext:context
+                                                                blockchainIdentity:blockchainIdentity];
     _fetchedDataSource.shouldSubscribeToNotifications = YES;
     _fetchedDataSource.delegate = self;
     [_fetchedDataSource start];
     _fetchedDataSource.fetchedResultsController.delegate = self;
 
     [self reload];
+}
+
+- (void)readNotifications {
+    NSDate *mostRecentNotificationDate = [DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate;
+    NSArray<id<DWDPBasicItem>> *items = [self.data.unreadItems arrayByAddingObjectsFromArray:self.data.oldItems];
+    self.data = [[DWNotificationsData alloc] initWithMostRecentNotificationDate:mostRecentNotificationDate
+                                                                    unreadItems:@[]
+                                                                       oldItems:items];
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWNotificationsProviderDidUpdateNotification
+                                                        object:self];
 }
 
 #pragma mark - Private
@@ -96,27 +107,31 @@ NS_ASSUME_NONNULL_END
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     NSManagedObjectID *userID = blockchainIdentity.matchingDashpayUser.objectID;
 
-    const NSTimeInterval mostRecentTimestamp = [[DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate
-                                                    timeIntervalSince1970];
+    const NSTimeInterval mostRecentViewedTimestamp = [[DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate
+                                                          timeIntervalSince1970];
     NSMutableArray<id<DWDPBasicItem>> *newItems = [NSMutableArray array];
     NSMutableArray<id<DWDPBasicItem>> *oldItems = [NSMutableArray array];
+
+    NSDate *mostRecentNotificationDate = nil;
 
     for (DSFriendRequestEntity *request in fetchedObjects) {
         NSManagedObjectID *sourceID = request.sourceContact.objectID;
         NSSet<NSManagedObjectID *> *destinationConnections = connections[request.destinationContact.objectID];
         const BOOL hasInvertedConnection = [destinationConnections containsObject:sourceID];
-        const BOOL isNew = request.timestamp > mostRecentTimestamp;
+        const BOOL isNew = request.timestamp > mostRecentViewedTimestamp;
         NSMutableArray<id<DWDPBasicItem>> *items = isNew ? newItems : oldItems;
 
-        NSString *from = request.sourceContact.username;
-        NSString *to = request.destinationContact.username;
+        if (mostRecentNotificationDate == nil) {
+            mostRecentNotificationDate = [NSDate dateWithTimeIntervalSince1970:request.timestamp];
+        }
 
         if ([sourceID isEqual:userID]) { // outoging
             // if it's a friendship (order of incoming / outgoing does not matter)
             if (hasInvertedConnection) {
                 DSBlockchainIdentity *blockchainIdentity = [request.destinationContact.associatedBlockchainIdentity blockchainIdentity];
-                DWDPOutgoingRequestNotificationObject *object = [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                                                                        blockchainIdentity:blockchainIdentity];
+                DWDPOutgoingRequestNotificationObject *object =
+                    [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                            blockchainIdentity:blockchainIdentity];
                 [items addObject:object];
             }
 
@@ -125,19 +140,23 @@ NS_ASSUME_NONNULL_END
         else { // incoming
             DSBlockchainIdentity *blockchainIdentity = [request.sourceContact.associatedBlockchainIdentity blockchainIdentity];
             if (hasInvertedConnection) {
-                DWDPIgnoredRequestNotificationObject *object = [[DWDPIgnoredRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                                                                      blockchainIdentity:blockchainIdentity];
+                DWDPIgnoredRequestNotificationObject *object =
+                    [[DWDPIgnoredRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                           blockchainIdentity:blockchainIdentity];
                 [items addObject:object];
             }
             else {
-                DWDPIncomingRequestNotificationObject *object = [[DWDPIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                                                                        blockchainIdentity:blockchainIdentity];
+                DWDPIncomingRequestNotificationObject *object =
+                    [[DWDPIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                            blockchainIdentity:blockchainIdentity];
                 [items addObject:object];
             }
         }
     }
 
-    self.data = [[DWNotificationsData alloc] initWithUnreadItems:newItems oldItems:oldItems];
+    self.data = [[DWNotificationsData alloc] initWithMostRecentNotificationDate:mostRecentNotificationDate
+                                                                    unreadItems:newItems
+                                                                       oldItems:oldItems];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:DWNotificationsProviderDidUpdateNotification
                                                         object:self];

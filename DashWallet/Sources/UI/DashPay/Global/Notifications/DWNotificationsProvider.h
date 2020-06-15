@@ -15,20 +15,26 @@
 //  limitations under the License.
 //
 
-#import "DWFetchedResultsDataSource.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+extern NSNotificationName const DWNotificationsProviderDidUpdateNotification;
 
-@interface DWNotificationsIncomingFetchedDataSource : DWFetchedResultsDataSource
+@class DWNotificationsData;
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@interface DWNotificationsProvider : NSObject
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context
-             blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
+@property (readonly, nonatomic, copy) DWNotificationsData *data;
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
+- (void)setupIfNeeded;
+
+- (void)readNotifications;
+
++ (instancetype)sharedInstance;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

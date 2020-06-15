@@ -21,12 +21,22 @@
 
 @implementation DWNotificationsFetchedDataSource
 
+- (instancetype)initWithContext:(NSManagedObjectContext *)context
+             blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self = [super initWithContext:context];
+    if (self) {
+        _blockchainIdentity = blockchainIdentity;
+    }
+    return self;
+}
+
 - (NSString *)entityName {
     return NSStringFromClass(DSFriendRequestEntity.class);
 }
 
 - (NSPredicate *)predicate {
-    return [NSPredicate predicateWithValue:YES];
+    DSDashpayUserEntity *dashPayUser = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ || sourceContact == %@", dashPayUser, dashPayUser];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {

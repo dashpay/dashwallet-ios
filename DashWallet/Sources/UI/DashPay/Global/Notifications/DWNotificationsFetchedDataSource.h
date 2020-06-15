@@ -15,21 +15,20 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
-
-#import "DWDPBasicItem.h"
+#import "DWFetchedResultsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsData : NSObject <NSCopying>
+@class DSBlockchainIdentity;
 
-@property (readonly, nonatomic, assign) BOOL isEmpty;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *unreadItems;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *oldItems;
+@interface DWNotificationsFetchedDataSource : DWFetchedResultsDataSource
 
-- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem>> *)unreadItems
-                           oldItems:(NSArray<id<DWDPBasicItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
+@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+
+- (instancetype)initWithContext:(NSManagedObjectContext *)context
+             blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
 
 @end
 

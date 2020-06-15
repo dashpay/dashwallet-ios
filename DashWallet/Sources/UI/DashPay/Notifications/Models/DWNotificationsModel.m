@@ -19,14 +19,14 @@
 
 #import "DWDashPayContactsActions.h"
 #import "DWEnvironment.h"
-#import "DWNotificationsDataSourceObject.h"
+#import "DWGlobalOptions.h"
 #import "DWNotificationsProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWNotificationsModel ()
 
-@property (readonly, nonatomic, strong) DWNotificationsDataSourceObject *aggregateDataSource;
+@property (nullable, nonatomic, copy) DWNotificationsData *data;
 
 @end
 
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _aggregateDataSource = [[DWNotificationsDataSourceObject alloc] init];
+        _data = [[DWNotificationsData alloc] init];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(notificationsDidUpdate)
@@ -48,17 +48,26 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (id<DWNotificationsDataSource>)dataSource {
-    return self.aggregateDataSource;
-}
-
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item {
     [DWDashPayContactsActions acceptContactRequest:item completion:nil];
 }
 
+- (void)markNotificationsAsViewed {
+    NSDate *date = self.data.mostRecentNotificationDate;
+    [DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate = date;
+}
+
+- (void)processUnreadNotifications {
+    [[DWNotificationsProvider sharedInstance] readNotifications];
+}
+
+#pragma mark - Private
+
 - (void)notificationsDidUpdate {
     DWNotificationsProvider *provider = [DWNotificationsProvider sharedInstance];
-    [self.aggregateDataSource updateWithData:provider.data];
+    self.data = provider.data;
+
+    [self.delegate notificationsModelDidUpdate:self];
 }
 
 @end

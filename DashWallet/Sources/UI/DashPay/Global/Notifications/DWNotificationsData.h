@@ -15,18 +15,23 @@
 //  limitations under the License.
 //
 
+#import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
 #import "DWDPBasicItem.h"
-#import "DWDPIncomingRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWNotificationsDataSource <UITableViewDataSource>
+@interface DWNotificationsData : NSObject <NSCopying>
 
-- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate;
+@property (readonly, nonatomic, assign) BOOL isEmpty;
+@property (nullable, readonly, nonatomic, assign) NSDate *mostRecentNotificationDate;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *unreadItems;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *oldItems;
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
+- (instancetype)initWithMostRecentNotificationDate:(nullable NSDate *)mostRecentNotificationDate
+                                       unreadItems:(NSArray<id<DWDPBasicItem>> *)unreadItems
+                                          oldItems:(NSArray<id<DWDPBasicItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
 
 @end
 
