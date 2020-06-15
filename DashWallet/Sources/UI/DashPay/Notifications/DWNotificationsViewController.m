@@ -45,6 +45,10 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -88,11 +92,26 @@ NS_ASSUME_NONNULL_END
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     DWNotificationsData *data = self.model.data;
-    NSArray<id<DWDPBasicItem>> *items = section == 0 ? data.unreadItems : data.oldItems;
-    return items.count;
+    if (section == 0) {
+        if (data.unreadItems.count == 0) {
+            return 1; // empty state
+        }
+        else {
+            return data.unreadItems.count;
+        }
+    }
+    else {
+        return data.oldItems.count;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0 && self.model.data.unreadItems.count == 0) {
+        DWNoNotificationsCell *cell = [tableView dequeueReusableCellWithIdentifier:DWNoNotificationsCell.dw_reuseIdentifier
+                                                                      forIndexPath:indexPath];
+        return cell;
+    }
+
     id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
 
     DWDPBasicCell *cell = [tableView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
@@ -101,12 +120,6 @@ NS_ASSUME_NONNULL_END
     cell.item = item;
     return cell;
 }
-
-//- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-//    DWNoNotificationsCell *cell = [tableView dequeueReusableCellWithIdentifier:DWNoNotificationsCell.dw_reuseIdentifier
-//                                                                  forIndexPath:indexPath];
-//    return cell;
-//}
 
 #pragma mark - UITableViewDelegate
 
