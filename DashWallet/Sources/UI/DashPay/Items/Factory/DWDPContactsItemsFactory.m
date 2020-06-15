@@ -40,8 +40,9 @@
 #pragma mark - Private
 
 - (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
-    // TODO: impl case `if entity.isIgnored`
-    return [[DWDPIncomingRequestObject alloc] initWithFriendRequestEntity:entity];
+    // TODO: DP impl case `if entity.isIgnored`
+    DSBlockchainIdentity *blockchainIdentity = [entity.sourceContact.associatedBlockchainIdentity blockchainIdentity];
+    return [[DWDPIncomingRequestObject alloc] initWithFriendRequestEntity:entity blockchainIdentity:blockchainIdentity];
 }
 
 - (id<DWDPBasicItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity {

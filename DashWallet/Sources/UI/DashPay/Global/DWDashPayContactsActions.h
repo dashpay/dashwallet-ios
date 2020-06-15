@@ -15,25 +15,16 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
-
 #import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWDPNotificationItemsFactory;
+@interface DWDashPayContactsActions : NSObject
 
-@interface DWNotificationsSection : NSObject
++ (void)acceptContactRequest:(id<DWDPBasicItem>)item
+                  completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
-@property (readonly, nonatomic, assign) NSUInteger count;
-
-- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index;
-
-- (instancetype)initWithFactory:(DWDPNotificationItemsFactory *)factory
-                    incomingFRC:(NSFetchedResultsController *)incomingFRC
-                     ignoredFRC:(NSFetchedResultsController *)ignoredFRC
-                    contactsFRC:(NSFetchedResultsController *)contactsFRC;
+// TODO: add hide (decline) contact request method
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

@@ -15,20 +15,23 @@
 //  limitations under the License.
 //
 
-#import "DWNotificationItemConvertible.h"
+#import "DWNotificationsFetchedDataSource.h"
 
-@implementation DSFriendRequestEntity (DSFriendRequestEntity_DWNotificationItemConvertible)
+#import "DWEnvironment.h"
 
-- (id<DWDPBasicItem>)asNotificationItemWithFactory:(DWDPNotificationItemsFactory *)factory {
-    return [factory itemForFriendRequestEntity:self];
+@implementation DWNotificationsFetchedDataSource
+
+- (NSString *)entityName {
+    return NSStringFromClass(DSFriendRequestEntity.class);
 }
 
-@end
+- (NSPredicate *)predicate {
+    return [NSPredicate predicateWithValue:YES];
+}
 
-@implementation DSDashpayUserEntity (DSDashpayUserEntity_DWNotificationItemConvertible)
-
-- (id<DWDPBasicItem>)asNotificationItemWithFactory:(DWDPNotificationItemsFactory *)factory {
-    return [factory itemForDashpayUserEntity:self];
+- (NSArray<NSSortDescriptor *> *)sortDescriptors {
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:NO];
+    return @[ sortDescriptor ];
 }
 
 @end

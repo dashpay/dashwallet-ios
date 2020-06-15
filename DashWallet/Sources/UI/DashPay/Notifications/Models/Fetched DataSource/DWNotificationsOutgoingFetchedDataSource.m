@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWNotificationsIncomingFetchedDataSource.h"
+#import "DWNotificationsOutgoingFetchedDataSource.h"
 
 #import "DWEnvironment.h"
 
-@implementation DWNotificationsIncomingFetchedDataSource
+@implementation DWNotificationsOutgoingFetchedDataSource
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context
              blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
@@ -36,13 +36,13 @@
 
 - (NSPredicate *)predicate {
     return [NSPredicate predicateWithFormat:
-                            @"destinationContact == %@",
+                            @"sourceContact == %@",
                             [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSPredicate *)invertedPredicate {
     return [NSPredicate predicateWithFormat:
-                            @"sourceContact == %@",
+                            @"destinationContact == %@",
                             [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
 }
 

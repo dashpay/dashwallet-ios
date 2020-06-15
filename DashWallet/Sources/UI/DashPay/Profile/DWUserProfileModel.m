@@ -17,6 +17,8 @@
 
 #import "DWUserProfileModel.h"
 
+#import "DWDashPayContactsActions.h"
+#import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -31,10 +33,10 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileModel
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item {
     self = [super init];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _item = item;
     }
     return self;
 }
@@ -46,16 +48,14 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)username {
-    return self.blockchainIdentity.currentUsername;
+    return self.item.username;
 }
 
 - (void)update {
     self.state = DWUserProfileModelState_Loading;
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
     __weak typeof(self) weakSelf = self;
-    [mineBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+    [[DWDashPayContactsUpdater sharedInstance] fetchWithCompletion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -72,7 +72,8 @@ NS_ASSUME_NONNULL_END
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return [mineBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:self.blockchainIdentity];
+    DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
+    return [mineBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
 }
 
 - (void)sendContactRequest {
@@ -97,18 +98,16 @@ NS_ASSUME_NONNULL_END
 - (void)acceptContactRequest {
     self.state = DWUserProfileModelState_Loading;
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
     __weak typeof(self) weakSelf = self;
-    [mineBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:self.blockchainIdentity
-                                                           completion:^(BOOL success, NSArray<NSError *> *errors) {
-                                                               __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                               if (!strongSelf) {
-                                                                   return;
-                                                               }
+    [DWDashPayContactsActions acceptContactRequest:self.item
+                                        completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+                                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                                            if (!strongSelf) {
+                                                return;
+                                            }
 
-                                                               strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
-                                                           }];
+                                            strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                        }];
 }
 
 @end

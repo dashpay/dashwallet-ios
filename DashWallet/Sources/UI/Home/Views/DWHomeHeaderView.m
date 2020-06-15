@@ -109,6 +109,11 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                       with:^(typeof(self) self, id value) {
                           [self updateProfileView];
                       }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.username)
+                      with:^(typeof(self) self, id value) {
+                          [self updateProfileView];
+                      }];
     }
     return self;
 }

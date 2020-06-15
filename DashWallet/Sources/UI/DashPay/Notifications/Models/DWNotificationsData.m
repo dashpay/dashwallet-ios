@@ -15,19 +15,31 @@
 //  limitations under the License.
 //
 
-#import "DWDPEstablishedContactObject.h"
+#import "DWNotificationsData.h"
 
-#import <DashSync/DashSync.h>
+@implementation DWNotificationsData
 
-@implementation DWDPEstablishedContactObject
-
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem>> *)unreadItems
+                           oldItems:(NSArray<id<DWDPBasicItem>> *)oldItems {
+    NSParameterAssert(unreadItems);
+    NSParameterAssert(oldItems);
     self = [super init];
     if (self) {
-        self.blockchainIdentity = blockchainIdentity;
-        self.username = blockchainIdentity.currentUsername;
+        _unreadItems = [unreadItems copy];
+        _oldItems = [oldItems copy];
+        _isEmpty = _unreadItems.count == 0 && _oldItems.count == 0;
     }
     return self;
+}
+
+- (instancetype)init {
+    return [self initWithUnreadItems:@[] oldItems:@[]];
+}
+
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(nullable NSZone *)zone {
+    return [[self.class alloc] initWithUnreadItems:self.unreadItems oldItems:self.oldItems];
 }
 
 @end

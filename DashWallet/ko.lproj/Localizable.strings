@@ -1046,6 +1046,9 @@
 "with Dash blockchain" = "대시 블록체인을 통해";
 
 /* No comment provided by engineer. */
+"You accepted the contact request from %@" = "You accepted the contact request from %@";
+
+/* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "당신은 곧 다른 대시 지갑으로부터 자금을 스위프하게됩니다.";
 
 /* No comment provided by engineer. */

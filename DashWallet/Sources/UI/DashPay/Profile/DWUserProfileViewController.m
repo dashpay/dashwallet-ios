@@ -45,10 +45,10 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileViewController
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _model = [[DWUserProfileModel alloc] initWithBlockchainIdentity:blockchainIdentity];
+        _model = [[DWUserProfileModel alloc] initWithItem:item];
         _model.delegate = self;
         [_model update];
 

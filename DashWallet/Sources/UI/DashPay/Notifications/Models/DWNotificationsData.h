@@ -15,19 +15,21 @@
 //  limitations under the License.
 //
 
+#import <CoreData/CoreData.h>
+#import <Foundation/Foundation.h>
+
 #import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPContactRequestActions : NSObject
+@interface DWNotificationsData : NSObject <NSCopying>
 
-+ (void)acceptContactRequest:(id<DWDPBasicItem>)item
-                  completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion;
+@property (readonly, nonatomic, assign) BOOL isEmpty;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *unreadItems;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *oldItems;
 
-// TODO: add hide (decline) contact request method
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem>> *)unreadItems
+                           oldItems:(NSArray<id<DWDPBasicItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
 
 @end
 

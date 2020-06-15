@@ -15,21 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
-#import "DWDPDashpayUserBackedItem.h"
+#import "DWFetchedResultsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSDashpayUserEntity;
+@class DSBlockchainIdentity;
 
-@interface DWDPContactObject : NSObject <DWDPBasicItem, DWDPDashpayUserBackedItem>
+@interface DWNotificationsOutgoingFetchedDataSource : DWFetchedResultsDataSource
 
-@property (readonly, nonatomic, strong) DSDashpayUserEntity *userEntity;
+@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
-@property (nonatomic, strong) NSString *username;
-@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+- (instancetype)initWithContext:(NSManagedObjectContext *)context
+             blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity;
+- (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
 
 @end
 

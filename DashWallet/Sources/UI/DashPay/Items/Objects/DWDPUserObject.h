@@ -16,17 +16,19 @@
 //
 
 #import "DWDPBasicItem.h"
-#import "DWDPBlockchainIdentityBackedItem.h"
+#import "DWDPFriendRequestBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DSFriendRequestEntity;
 
 /// User from search
-@interface DWDPUserObject : NSObject <DWDPBasicItem, DWDPBlockchainIdentityBackedItem>
+@interface DWDPUserObject : NSObject <DWDPBasicItem, DWDPFriendRequestBackedItem>
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nullable, strong, nonatomic) DSFriendRequestEntity *friendRequestEntity;
 
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

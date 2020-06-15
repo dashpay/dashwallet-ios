@@ -23,11 +23,14 @@
 
 @implementation DWDPIncomingRequestObject
 
+@synthesize blockchainIdentity = _blockchainIdentity;
 @synthesize username = _username;
 
-- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity {
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
+        _blockchainIdentity = blockchainIdentity;
         _friendRequestEntity = friendRequestEntity;
     }
     return self;
@@ -44,12 +47,9 @@
 
 - (NSString *)username {
     if (_username == nil) {
-        // When initialized with DSBlockchainIdentity _username set upon init
-        NSAssert(self.blockchainIdentity == nil, @"Inconsistent state");
-
-        DSBlockchainIdentityEntity *blockchainIdentity = self.friendRequestEntity.sourceContact.associatedBlockchainIdentity;
-        DSBlockchainIdentityUsernameEntity *username = blockchainIdentity.usernames.anyObject;
-        _username = [username.stringValue copy];
+        // incoming request, use source
+        DSDashpayUserEntity *contact = self.friendRequestEntity.sourceContact;
+        _username = [contact.username copy];
     }
     return _username;
 }

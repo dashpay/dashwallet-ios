@@ -25,13 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) id<DWNotificationsDataSource> dataSource;
 
-- (void)start;
-- (void)stop;
-
-- (void)fetchData;
-
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item;
-
 
 @end
 

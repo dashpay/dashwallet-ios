@@ -15,25 +15,11 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DashSync.h>
-#import <Foundation/Foundation.h>
-
-#import "DWDPBasicItem.h"
-#import "DWDPNotificationItemsFactory.h"
+#import "DWDPUserObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWNotificationItemConvertible <NSFetchRequestResult>
-
-- (id<DWDPBasicItem>)asNotificationItemWithFactory:(DWDPNotificationItemsFactory *)factory;
-
-@end
-
-@interface DSFriendRequestEntity (DSFriendRequestEntity_DWNotificationItemConvertible) <DWNotificationItemConvertible>
-
-@end
-
-@interface DSDashpayUserEntity (DSDashpayUserEntity_DWNotificationItemConvertible) <DWNotificationItemConvertible>
+@interface DWDPOutgoingRequestNotificationObject : DWDPUserObject
 
 @end
 

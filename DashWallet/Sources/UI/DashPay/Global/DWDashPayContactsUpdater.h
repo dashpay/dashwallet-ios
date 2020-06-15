@@ -17,19 +17,24 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicItem.h"
-#import "DWDPDashpayUserBackedItem.h"
-#import "DWDPFriendRequestBackedItem.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSFriendRequestEntity;
-@class DSDashpayUserEntity;
+@interface DWDashPayContactsUpdater : NSObject
 
-@interface DWDPNotificationItemsFactory : NSObject
+/// Subscribe to update contacts every 30 seconds
+- (void)beginUpdating;
+/// Unsubscribe from updating contacts
+- (void)endUpdating;
 
-- (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity;
-- (id<DWDPBasicItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity;
+/// Initiate update immediately
+- (void)fetch;
+/// Initiate update immediately
+- (void)fetchWithCompletion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
+
++ (instancetype)sharedInstance;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

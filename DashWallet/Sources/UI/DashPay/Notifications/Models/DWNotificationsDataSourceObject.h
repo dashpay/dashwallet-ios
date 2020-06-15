@@ -19,11 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWNotificationsSection;
+@class DWNotificationsData;
 
 @interface DWNotificationsDataSourceObject : NSObject <DWNotificationsDataSource>
 
-- (void)updateWithSections:(NSArray<DWNotificationsSection *> *)sections;
+- (void)updateWithData:(DWNotificationsData *)data;
 
 @end
 

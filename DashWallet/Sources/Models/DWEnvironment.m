@@ -20,6 +20,7 @@
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
+NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
 static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 @implementation DWEnvironment
@@ -93,6 +94,8 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 }
 
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWWillWipeWalletNotification object:self];
+
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
     NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {

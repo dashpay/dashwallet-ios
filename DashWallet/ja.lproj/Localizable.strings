@@ -1046,6 +1046,9 @@
 "with Dash blockchain" = "Dashのブロックチェーンで";
 
 /* No comment provided by engineer. */
+"You accepted the contact request from %@" = "You accepted the contact request from %@";
+
+/* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "これから他のDashウォレットから資金を一括送金します。";
 
 /* No comment provided by engineer. */

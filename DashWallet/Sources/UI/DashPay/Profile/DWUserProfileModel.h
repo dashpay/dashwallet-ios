@@ -20,6 +20,9 @@
 #import <CoreData/CoreData.h>
 #import <DashSync/DSBlockchainIdentity.h>
 
+#import "DWDPBasicItem.h"
+#import "DWDPBlockchainIdentityBackedItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
@@ -39,7 +42,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 
 @interface DWUserProfileModel : NSObject
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nonatomic, strong) id<DWDPBasicItem> item;
 @property (readonly, nonatomic, assign) DWUserProfileModelState state;
 @property (readonly, nonatomic, copy) NSString *username;
 @property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
@@ -51,7 +54,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 - (void)sendContactRequest;
 - (void)acceptContactRequest;
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

@@ -67,18 +67,6 @@ NS_ASSUME_NONNULL_END
     return UIStatusBarStyleLightContent;
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    [self.model start];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-
-    [self.model stop];
-}
-
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -94,6 +82,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - UITableViewDelegate
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    // hide Earlier section header if it's empty
+    if (section == 1 && [tableView numberOfRowsInSection:section] == 0) {
+        return [[UIView alloc] init];
+    }
+
     NSString *title = nil;
     if (section == 0) {
         title = NSLocalizedString(@"New", @"(List of) New (notifications)");
@@ -106,6 +99,15 @@ NS_ASSUME_NONNULL_END
     view.titleLabel.text = title;
     view.actionButton.hidden = YES;
     return view;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    // hide Earlier section header if it's empty
+    if (section == 1 && [tableView numberOfRowsInSection:section] == 0) {
+        return 0.0;
+    }
+
+    return UITableViewAutomaticDimension;
 }
 
 #pragma mark - DWDPIncomingRequestItemDelegate

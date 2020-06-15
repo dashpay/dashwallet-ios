@@ -22,6 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
+extern NSNotificationName const DWWillWipeWalletNotification;
 
 @interface DWEnvironment : NSObject
 

@@ -15,21 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
-#import "DWDPDashpayUserBackedItem.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSDashpayUserEntity;
+extern NSNotificationName const DWNotificationsProviderDidUpdateNotification;
 
-@interface DWDPContactObject : NSObject <DWDPBasicItem, DWDPDashpayUserBackedItem>
+@class DWNotificationsData;
 
-@property (readonly, nonatomic, strong) DSDashpayUserEntity *userEntity;
+@interface DWNotificationsProvider : NSObject
 
-@property (nonatomic, strong) NSString *username;
-@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nonatomic, copy) DWNotificationsData *data;
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity;
+- (void)setupIfNeeded;
+
++ (instancetype)sharedInstance;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

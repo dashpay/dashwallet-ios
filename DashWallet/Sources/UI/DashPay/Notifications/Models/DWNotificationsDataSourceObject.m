@@ -19,7 +19,7 @@
 
 #import "DWDPBasicCell.h"
 #import "DWEnvironment.h"
-#import "DWNotificationsSection.h"
+#import "DWNotificationsData.h"
 #import "DWUIKit.h"
 #import "UITableView+DWDPItemDequeue.h"
 
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) UITableView *tableView;
 @property (nullable, nonatomic, weak) id<DWDPIncomingRequestItemDelegate> itemsDelegate;
 
-@property (nonatomic, copy) NSArray<DWNotificationsSection *> *sections;
+@property (nonatomic, copy) DWNotificationsData *data;
 
 @end
 
@@ -38,8 +38,8 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWNotificationsDataSourceObject
 
-- (void)updateWithSections:(NSArray<DWNotificationsSection *> *)sections {
-    self.sections = sections;
+- (void)updateWithData:(DWNotificationsData *)data {
+    self.data = data;
     [self.tableView reloadData];
 }
 
@@ -49,19 +49,19 @@ NS_ASSUME_NONNULL_END
 }
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
-    DWNotificationsSection *section = self.sections[indexPath.section];
-    return [section itemAtIndex:indexPath.row];
+    NSArray<id<DWDPBasicItem>> *items = indexPath.section == 0 ? self.data.unreadItems : self.data.oldItems;
+    return items[indexPath.row];
 }
 
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.sections.count;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    DWNotificationsSection *notificationsSection = self.sections[section];
-    return notificationsSection.count;
+    NSArray<id<DWDPBasicItem>> *items = section == 0 ? self.data.unreadItems : self.data.oldItems;
+    return items.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

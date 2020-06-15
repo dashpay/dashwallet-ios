@@ -17,13 +17,13 @@
 
 #import "DWNavigationChildViewController.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#import "DWDPBasicItem.h"
 
-@class DSBlockchainIdentity;
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserProfileViewController : DWNavigationChildViewController
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

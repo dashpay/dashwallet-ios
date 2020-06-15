@@ -108,18 +108,18 @@ NS_ASSUME_NONNULL_END
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                   didSelectItemAtIndex:(NSInteger)index
                                   cell:(UITableViewCell *)cell {
-    DSBlockchainIdentity *blockchainIdentity = [self.model blokchainIdentityAtIndex:index];
-    if (!blockchainIdentity) {
+    id<DWDPBasicItem> item = [self.model itemAtIndex:index];
+    if (!item) {
         return;
     }
 
-    if (![self.model canOpenBlockchainIdentity:blockchainIdentity]) {
+    if (![self.model canOpenBlockchainIdentity:item.blockchainIdentity]) {
         [cell dw_shakeView];
         return;
     }
 
     DWUserProfileViewController *profileController =
-        [[DWUserProfileViewController alloc] initWithBlockchainIdentity:blockchainIdentity];
+        [[DWUserProfileViewController alloc] initWithItem:item];
     [self.navigationController pushViewController:profileController animated:YES];
 }
 

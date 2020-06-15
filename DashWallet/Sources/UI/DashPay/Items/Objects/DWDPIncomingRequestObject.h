@@ -15,21 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWDPBlockchainIdentityBackedItem.h"
 #import "DWDPFriendRequestBackedItem.h"
 #import "DWDPIncomingRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSFriendRequestEntity;
-@class DSBlockchainIdentity;
 
-@interface DWDPIncomingRequestObject : NSObject <DWDPIncomingRequestItem, DWDPBlockchainIdentityBackedItem, DWDPFriendRequestBackedItem>
+@interface DWDPIncomingRequestObject : NSObject <DWDPIncomingRequestItem, DWDPFriendRequestBackedItem>
 
 @property (readonly, nullable, strong, nonatomic) DSFriendRequestEntity *friendRequestEntity;
-@property (readonly, nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
-- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

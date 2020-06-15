@@ -18,7 +18,8 @@
 #import "DWBaseContactsModel+DWProtected.h"
 
 #import "DWBaseContactsDataSourceObject.h"
-#import "DWDPContactRequestActions.h"
+#import "DWDashPayContactsActions.h"
+#import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
 
 @implementation DWBaseContactsModel
@@ -47,7 +48,7 @@
 }
 
 - (void)start {
-    [self fetchData];
+    [[DWDashPayContactsUpdater sharedInstance] fetch];
 
     [self activateFRCs];
 }
@@ -56,39 +57,8 @@
     [self resetFRCs];
 }
 
-- (void)fetchData {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    __weak typeof(self) weakSelf = self;
-    [mineBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@", success ? @"Succeeded" : @"Failed", errors);
-
-        // TODO: temp workaround to force reload contact list
-        [strongSelf resetFRCs];
-        [strongSelf activateFRCs];
-    }];
-}
-
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item {
-    __weak typeof(self) weakSelf = self;
-    [DWDPContactRequestActions
-        acceptContactRequest:item
-                  completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
-                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                      if (!strongSelf) {
-                          return;
-                      }
-
-                      DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
-
-                      // TODO: temp workaround to update and force reload contact list
-                      [strongSelf fetchData];
-                  }];
+    [DWDashPayContactsActions acceptContactRequest:item completion:nil];
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {
