@@ -71,28 +71,28 @@ NS_ASSUME_NONNULL_END
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
-    return [mineBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
 }
 
 - (void)sendContactRequest {
     self.state = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:self.username];
     __weak typeof(self) weakSelf = self;
-    [mineBlockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
-                                                        completion:
-                                                            ^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                                __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                                if (!strongSelf) {
-                                                                    return;
-                                                                }
+    [myBlockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
+                                                      completion:
+                                                          ^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+                                                              __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                              if (!strongSelf) {
+                                                                  return;
+                                                              }
 
-                                                                strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
-                                                            }];
+                                                              strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                          }];
 }
 
 - (void)acceptContactRequest {

@@ -85,8 +85,8 @@ NS_ASSUME_NONNULL_END
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (mineBlockchainIdentity == nil) {
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    if (myBlockchainIdentity == nil) {
         return;
     }
 
@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_END
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
 
     __weak typeof(self) weakSelf = self;
-    [mineBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+    [myBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

@@ -40,8 +40,8 @@
 
 - (BOOL)hasBlockchainIdentity {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return mineBlockchainIdentity != nil;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    return myBlockchainIdentity != nil;
 }
 
 - (void)rebuildDataSources {

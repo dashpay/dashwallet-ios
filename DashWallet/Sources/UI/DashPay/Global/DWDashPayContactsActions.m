@@ -58,15 +58,15 @@
 + (void)acceptContactRequestFromBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
                                         completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [mineBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:blockchainIdentity completion:completion];
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    [myBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:blockchainIdentity completion:completion];
 }
 
 + (void)acceptContactRequestFromFriendRequest:(DSFriendRequestEntity *)friendRequest
                                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [mineBlockchainIdentity acceptFriendRequest:friendRequest completion:completion];
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    [myBlockchainIdentity acceptFriendRequest:friendRequest completion:completion];
 }
 
 @end

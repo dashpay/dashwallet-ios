@@ -121,8 +121,8 @@ NS_ASSUME_NONNULL_END
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return !uint256_eq(mineBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item {
