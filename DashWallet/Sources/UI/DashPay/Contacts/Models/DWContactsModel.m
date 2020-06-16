@@ -51,11 +51,11 @@
 
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    _firstSectionDataSource = [[DWIncomingFetchedDataSource alloc] initWithContext:context blockchainIdentity:blockchainIdentity];
+    _firstSectionDataSource = [[DWIncomingFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
     _firstSectionDataSource.shouldSubscribeToNotifications = YES;
     _firstSectionDataSource.delegate = self;
 
-    _secondSectionDataSource = [[DWContactsFetchedDataSource alloc] initWithContext:context blockchainIdentity:blockchainIdentity];
+    _secondSectionDataSource = [[DWContactsFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
     _secondSectionDataSource.shouldSubscribeToNotifications = YES;
     _secondSectionDataSource.delegate = self;
 }

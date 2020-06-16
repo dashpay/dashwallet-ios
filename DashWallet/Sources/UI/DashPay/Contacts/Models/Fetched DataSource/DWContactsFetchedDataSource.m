@@ -21,8 +21,8 @@
 
 @implementation DWContactsFetchedDataSource
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context
-             blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                 inContext:(NSManagedObjectContext *)context {
     self = [super initWithContext:context];
     if (self) {
         _blockchainIdentity = blockchainIdentity;

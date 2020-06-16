@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context
-             blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                 inContext:(NSManagedObjectContext *)context NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
 

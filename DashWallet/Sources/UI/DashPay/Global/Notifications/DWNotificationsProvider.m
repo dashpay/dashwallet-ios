@@ -68,8 +68,7 @@ NS_ASSUME_NONNULL_END
 
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    _fetchedDataSource = [[DWNotificationsFetchedDataSource alloc] initWithContext:context
-                                                                blockchainIdentity:blockchainIdentity];
+    _fetchedDataSource = [[DWNotificationsFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
     _fetchedDataSource.shouldSubscribeToNotifications = YES;
     _fetchedDataSource.delegate = self;
     [_fetchedDataSource start];
