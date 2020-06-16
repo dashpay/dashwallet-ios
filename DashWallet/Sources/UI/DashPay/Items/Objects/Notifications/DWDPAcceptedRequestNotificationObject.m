@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWDPOutgoingRequestNotificationObject.h"
+#import "DWDPAcceptedRequestNotificationObject.h"
 
 #import "DWDateFormatter.h"
 #import "DWEnvironment.h"
@@ -23,28 +23,27 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPOutgoingRequestNotificationObject ()
+@interface DWDPAcceptedRequestNotificationObject ()
 
 @property (readonly, nonatomic, strong) NSDate *date;
-@property (readonly, nonatomic, assign, getter=isInitiatedByMe) BOOL initiatedByMe;
+@property (readonly, nonatomic, assign, getter=isInitiatedByThem) BOOL initiatedByThem;
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-
-@implementation DWDPOutgoingRequestNotificationObject
+@implementation DWDPAcceptedRequestNotificationObject
 
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
                          blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                            isInitiatedByMe:(BOOL)isInitiatedByMe {
+                          isInitiatedByThem:(BOOL)isInitiatedByThem {
     self = [super initWithFriendRequestEntity:friendRequestEntity blockchainIdentity:blockchainIdentity];
     if (self) {
         _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
-        _initiatedByMe = isInitiatedByMe;
+        _initiatedByThem = isInitiatedByThem;
     }
     return self;
 }
@@ -52,9 +51,9 @@ NS_ASSUME_NONNULL_END
 - (NSAttributedString *)title {
     if (_title == nil) {
         NSString *name = self.displayName ?: self.username;
-        NSString *format = self.isInitiatedByMe
-                               ? NSLocalizedString(@"You sent the contact request to %@", nil)
-                               : NSLocalizedString(@"You accepted the contact request from %@", nil);
+        NSString *format = self.isInitiatedByThem
+                               ? NSLocalizedString(@"%@ has sent you a contact request", nil)
+                               : NSLocalizedString(@"%@ has accepted your contact request", nil);
         NSString *plainTitle = [NSString stringWithFormat:format, name];
 
         NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:plainTitle attributes:@{NSFontAttributeName : [UIFont dw_itemSubtitleFont]}];
@@ -75,6 +74,5 @@ NS_ASSUME_NONNULL_END
     }
     return _subtitle;
 }
-
 
 @end

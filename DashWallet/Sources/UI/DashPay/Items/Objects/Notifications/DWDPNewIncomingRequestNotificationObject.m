@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWDPIgnoredRequestNotificationObject.h"
+#import "DWDPNewIncomingRequestNotificationObject.h"
+
+#import <DashSync/DashSync.h>
 
 #import "DWDateFormatter.h"
-#import "DWEnvironment.h"
-#import "UIFont+DWDPItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIgnoredRequestNotificationObject ()
+@interface DWDPNewIncomingRequestNotificationObject ()
 
 @property (readonly, nonatomic, strong) NSDate *date;
 
@@ -31,9 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWDPIgnoredRequestNotificationObject
+@implementation DWDPNewIncomingRequestNotificationObject
 
-@synthesize title = _title;
 @synthesize subtitle = _subtitle;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
@@ -43,25 +42,6 @@ NS_ASSUME_NONNULL_END
         _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
     }
     return self;
-}
-
-- (NSAttributedString *)title {
-    if (_title == nil) {
-        NSString *name = self.displayName ?: self.username;
-        NSString *plainTitle = [NSString stringWithFormat:
-                                             NSLocalizedString(@"%@ has sent you a contact request", nil),
-                                             name];
-
-        NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:plainTitle attributes:@{NSFontAttributeName : [UIFont dw_itemSubtitleFont]}];
-
-        NSRange range = [plainTitle rangeOfString:name];
-        if (range.location != NSNotFound) {
-            [title setAttributes:@{NSFontAttributeName : [UIFont dw_itemTitleFont]} range:range];
-        }
-
-        _title = [title copy];
-    }
-    return _title;
 }
 
 - (NSString *)subtitle {

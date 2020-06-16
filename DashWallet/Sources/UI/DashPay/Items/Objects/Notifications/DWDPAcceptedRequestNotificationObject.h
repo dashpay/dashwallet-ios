@@ -15,12 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWDPIncomingRequestObject.h"
+#import "DWDPRespondedIncomingRequestObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIncomingRequestNotificationObject : DWDPIncomingRequestObject
+@interface DWDPAcceptedRequestNotificationObject : DWDPRespondedIncomingRequestObject
 
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                          isInitiatedByThem:(BOOL)isInitiatedByThem NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end

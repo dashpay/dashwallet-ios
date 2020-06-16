@@ -20,8 +20,8 @@
 #import "DWDPContactObject.h"
 #import "DWDPDashpayUserBackedItem.h"
 #import "DWDPFriendRequestBackedItem.h"
-#import "DWDPIgnoredRequestObject.h"
 #import "DWDPIncomingRequestObject.h"
+#import "DWDPRespondedIncomingRequestObject.h"
 
 @implementation DWDPContactsItemsFactory
 

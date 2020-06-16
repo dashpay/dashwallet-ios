@@ -21,7 +21,7 @@
 
 // supports displaying:
 #import "DWDPBasicItem.h"
-#import "DWDPIgnoredRequestItem.h"
+#import "DWDPRespondedRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

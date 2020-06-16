@@ -22,8 +22,8 @@
 #import "DWNotificationsData.h"
 #import "DWNotificationsFetchedDataSource.h"
 
-#import "DWDPIgnoredRequestNotificationObject.h"
-#import "DWDPIncomingRequestNotificationObject.h"
+#import "DWDPAcceptedRequestNotificationObject.h"
+#import "DWDPNewIncomingRequestNotificationObject.h"
 #import "DWDPOutgoingRequestNotificationObject.h"
 
 
@@ -95,6 +95,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)reload {
+    // fetched objects come in a reversed order (from old to new)
     NSArray<DSFriendRequestEntity *> *fetchedObjects = self.fetchedDataSource.fetchedResultsController.fetchedObjects;
 
     NSMutableDictionary<NSManagedObjectID *, NSMutableSet<NSManagedObjectID *> *> *connections =
@@ -118,50 +119,60 @@ NS_ASSUME_NONNULL_END
     NSMutableArray<id<DWDPBasicItem>> *oldItems = [NSMutableArray array];
 
     NSDate *mostRecentNotificationDate = nil;
+    NSMutableSet<NSManagedObjectID *> *processed = [NSMutableSet set];
 
     for (DSFriendRequestEntity *request in fetchedObjects) {
         NSManagedObjectID *sourceID = request.sourceContact.objectID;
-        NSSet<NSManagedObjectID *> *destinationConnections = connections[request.destinationContact.objectID];
+        NSManagedObjectID *destinationID = request.destinationContact.objectID;
+        NSSet<NSManagedObjectID *> *destinationConnections = connections[destinationID];
         const BOOL hasInvertedConnection = [destinationConnections containsObject:sourceID];
         const BOOL isNew = request.timestamp > mostRecentViewedTimestamp;
         NSMutableArray<id<DWDPBasicItem>> *items = isNew ? newItems : oldItems;
 
-        if (mostRecentNotificationDate == nil) {
-            mostRecentNotificationDate = [NSDate dateWithTimeIntervalSince1970:request.timestamp];
-        }
+        // date of the last item
+        mostRecentNotificationDate = [NSDate dateWithTimeIntervalSince1970:request.timestamp];
 
         if ([sourceID isEqual:userID]) { // outoging
+            const BOOL isInitiatedByMe = ![processed containsObject:destinationID];
+            [processed addObject:destinationID];
+
             // if it's a friendship (order of incoming / outgoing does not matter)
             if (hasInvertedConnection) {
                 DSBlockchainIdentity *blockchainIdentity = [request.destinationContact.associatedBlockchainIdentity blockchainIdentity];
                 DWDPOutgoingRequestNotificationObject *object =
                     [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                            blockchainIdentity:blockchainIdentity];
+                                                                            blockchainIdentity:blockchainIdentity
+                                                                               isInitiatedByMe:isInitiatedByMe];
                 [items addObject:object];
             }
 
             // outgoing requests with no response (pending) are not shown in notifications
         }
         else { // incoming
+            const BOOL isInitiatedByThem = ![processed containsObject:sourceID];
+            [processed addObject:sourceID];
+
             DSBlockchainIdentity *blockchainIdentity = [request.sourceContact.associatedBlockchainIdentity blockchainIdentity];
             if (hasInvertedConnection) {
-                DWDPIgnoredRequestNotificationObject *object =
-                    [[DWDPIgnoredRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                           blockchainIdentity:blockchainIdentity];
+                DWDPAcceptedRequestNotificationObject *object =
+                    [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                            blockchainIdentity:blockchainIdentity
+                                                                             isInitiatedByThem:isInitiatedByThem];
                 [items addObject:object];
             }
             else {
-                DWDPIncomingRequestNotificationObject *object =
-                    [[DWDPIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                            blockchainIdentity:blockchainIdentity];
+                DWDPNewIncomingRequestNotificationObject *object =
+                    [[DWDPNewIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                               blockchainIdentity:blockchainIdentity];
                 [items addObject:object];
             }
         }
     }
 
-    self.data = [[DWNotificationsData alloc] initWithMostRecentNotificationDate:mostRecentNotificationDate
-                                                                    unreadItems:newItems
-                                                                       oldItems:oldItems];
+    self.data = [[DWNotificationsData alloc]
+        initWithMostRecentNotificationDate:mostRecentNotificationDate
+                               unreadItems:[newItems reverseObjectEnumerator].allObjects
+                                  oldItems:[oldItems reverseObjectEnumerator].allObjects];
 }
 
 #pragma mark - DWFetchedResultsDataSourceDelegate

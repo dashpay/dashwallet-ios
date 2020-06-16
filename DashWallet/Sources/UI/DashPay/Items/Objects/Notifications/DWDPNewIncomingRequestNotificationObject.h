@@ -15,12 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWDPIgnoredRequestItem.h"
 #import "DWDPIncomingRequestObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIgnoredRequestObject : DWDPIncomingRequestObject <DWDPIgnoredRequestItem>
+@interface DWDPNewIncomingRequestNotificationObject : DWDPIncomingRequestObject
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end
 
