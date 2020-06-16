@@ -55,11 +55,7 @@ NS_ASSUME_NONNULL_END
 
             NSAssert(username != nil, @"Username is invalid");
 
-            if (![DWGlobalOptions sharedInstance].dashpayRegistrationCompleted) {
-                DWDPRegistrationState state = [self stateForCompletedSteps:blockchainIdentity.stepsCompleted];
-                const BOOL failed = state != DWDPRegistrationState_Done;
-                _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:failed username:username];
-            }
+            [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity username:username];
         }
 
         DSLogVerbose(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
@@ -138,8 +134,12 @@ NS_ASSUME_NONNULL_END
     NSString *key = DW_KEYPATH(self, username);
     [self willChangeValueForKey:key];
     if (blockchainIdentity) {
-        if (self.username == nil) {
-            [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentUsername;
+        NSString *username = blockchainIdentity.currentUsername;
+        DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+        if (options.dashpayUsername == nil && username != nil) {
+            options.dashpayUsername = username;
+            [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity
+                                                       username:username];
         }
     }
     [self didChangeValueForKey:key];
@@ -262,6 +262,19 @@ NS_ASSUME_NONNULL_END
     self.registrationStatus = nil;
 
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
+}
+
+- (void)updateRegistrationStatusForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                             username:(NSString *)username {
+    if (![DWGlobalOptions sharedInstance].dashpayRegistrationCompleted) {
+        DWDPRegistrationState state = [self stateForCompletedSteps:blockchainIdentity.stepsCompleted];
+        const BOOL isDone = state == DWDPRegistrationState_Done;
+        _registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:state failed:!isDone username:username];
+
+        if (isDone) {
+            [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
+        }
+    }
 }
 
 - (DWDPRegistrationState)stateForCompletedSteps:(DSBlockchainIdentityRegistrationStep)stepsCompleted {
