@@ -26,9 +26,11 @@
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWDashPayConstants.h"
+#import "DWDashPayContactsUpdater.h"
 #import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWNotificationsProvider.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
@@ -147,6 +149,10 @@ static BOOL IsJailbroken(void) {
         [notificationCenter addObserver:self
                                selector:@selector(dashPayRegistrationStatusUpdatedNotification)
                                    name:DWDashPayRegistrationStatusUpdatedNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(willWipeWalletNotification)
+                                   name:DWWillWipeWalletNotification
                                  object:nil];
 
         [self reloadTxDataSource];
@@ -360,6 +366,11 @@ static BOOL IsJailbroken(void) {
     BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
     if (isSynced) {
         [self.dashPayModel updateUsernameStatus];
+
+        if (self.dashPayModel.username != nil) {
+            [[DWNotificationsProvider sharedInstance] setupIfNeeded];
+            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+        }
     }
 }
 
@@ -373,6 +384,10 @@ static BOOL IsJailbroken(void) {
 
 - (void)dashPayRegistrationStatusUpdatedNotification {
     [self reloadTxDataSource];
+}
+
+- (void)willWipeWalletNotification {
+    [[DWDashPayContactsUpdater sharedInstance] endUpdating];
 }
 
 #pragma mark - Private

@@ -22,21 +22,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWDPNotificationItemsFactory;
+@interface DWNotificationsData : NSObject <NSCopying>
 
-@interface DWNotificationsSection : NSObject
+@property (readonly, nonatomic, assign) BOOL isEmpty;
+@property (nullable, readonly, nonatomic, strong) NSDate *mostRecentNotificationDate;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *unreadItems;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem>> *oldItems;
 
-@property (readonly, nonatomic, assign) NSUInteger count;
-
-- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index;
-
-- (instancetype)initWithFactory:(DWDPNotificationItemsFactory *)factory
-                    incomingFRC:(NSFetchedResultsController *)incomingFRC
-                     ignoredFRC:(NSFetchedResultsController *)ignoredFRC
-                    contactsFRC:(NSFetchedResultsController *)contactsFRC;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)initWithMostRecentNotificationDate:(nullable NSDate *)mostRecentNotificationDate
+                                       unreadItems:(NSArray<id<DWDPBasicItem>> *)unreadItems
+                                          oldItems:(NSArray<id<DWDPBasicItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
 
 @end
 

@@ -1046,6 +1046,9 @@
 "with Dash blockchain" = "с Dash блок верига";
 
 /* No comment provided by engineer. */
+"You accepted the contact request from %@" = "You accepted the contact request from %@";
+
+/* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "На път сте да усвоите средства от друг Dash Wallet.";
 
 /* No comment provided by engineer. */

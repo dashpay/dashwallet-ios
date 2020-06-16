@@ -29,6 +29,7 @@
     self = [super init];
     if (self) {
         _userEntity = userEntity;
+        _blockchainIdentity = [userEntity.associatedBlockchainIdentity blockchainIdentity];
     }
     return self;
 }

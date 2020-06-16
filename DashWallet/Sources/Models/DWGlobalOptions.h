@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, copy) NSString *dashpayUsername;
 @property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
+@property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
 
 // Non-dynamic
 

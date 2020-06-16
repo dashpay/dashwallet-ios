@@ -20,6 +20,7 @@
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
+NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
 static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 @implementation DWEnvironment
@@ -93,11 +94,12 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 }
 
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWWillWipeWalletNotification object:self];
+
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+    NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+        [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:chain inContext:context];
         [chain unregisterAllWallets];
     }
 
@@ -167,7 +169,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
                                          dapiJRPCPort:3000
                                          dapiGRPCPort:3010
                                        dpnsContractID:@"ForwNrvKy8jdyoCNTYBK4gcV6o15n79DmFQio2gGac5p".base58ToData.UInt256
-                                    dashpayContractID:@"FW2BGfVdTLgGWGkJRjC838MPpEcL2cSfkNkwao8ooxm5".base58ToData.UInt256
+                                    dashpayContractID:@"2VkEDxMJESJ379oY14rm3DBLrmu58BW8KCtPcfWe1Wss".base58ToData.UInt256
                                       protocolVersion:70215
                                    minProtocolVersion:70215
                                          sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"

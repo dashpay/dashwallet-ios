@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
                                                          [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
     NSString *blockString = [NSString stringWithFormat:NSLocalizedString(@"Block #%d of %d", nil),
-                                                       chain.lastBlockHeight,
+                                                       chain.lastSyncBlockHeight,
                                                        chain.estimatedBlockHeight];
     NSString *peersString = [NSString stringWithFormat:NSLocalizedString(@"Connected peers: %d", nil),
                                                        peerManager.connectedPeerCount];

@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWContactsFetchedDataSource.h"
+#import "DWNotificationsFetchedDataSource.h"
 
 #import "DWEnvironment.h"
 
-@implementation DWContactsFetchedDataSource
+@implementation DWNotificationsFetchedDataSource
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
                                  inContext:(NSManagedObjectContext *)context {
@@ -31,18 +31,16 @@
 }
 
 - (NSString *)entityName {
-    return NSStringFromClass(DSDashpayUserEntity.class);
+    return NSStringFromClass(DSFriendRequestEntity.class);
 }
 
 - (NSPredicate *)predicate {
-    return [NSPredicate
-        predicateWithFormat:
-            @"ANY friends == %@",
-            [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+    DSDashpayUserEntity *dashPayUser = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ || sourceContact == %@", dashPayUser, dashPayUser];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"associatedBlockchainIdentity.dashpayUsername.stringValue" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:NO];
     return @[ sortDescriptor ];
 }
 

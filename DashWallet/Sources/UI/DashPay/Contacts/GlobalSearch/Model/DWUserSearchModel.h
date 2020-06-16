@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)searchWithQuery:(NSString *)searchQuery;
 - (void)willDisplayItemAtIndex:(NSInteger)index;
 
-- (nullable DSBlockchainIdentity *)blokchainIdentityAtIndex:(NSInteger)index;
+- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index;
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 

@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
         _stubTxs = [DWTransactionStub stubs];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
-        _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: consider using stub
+        _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];

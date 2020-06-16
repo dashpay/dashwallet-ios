@@ -28,8 +28,8 @@
 
 - (id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentityFriendshipStatus friendshipStatus = [mineBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainIdentityFriendshipStatus friendshipStatus = [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
 
     switch (friendshipStatus) {
         case DSBlockchainIdentityFriendshipStatus_Unknown:

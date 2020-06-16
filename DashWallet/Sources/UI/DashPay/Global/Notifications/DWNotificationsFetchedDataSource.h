@@ -15,10 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DWNotificationsIgnoredFetchedDataSource.h"
+#import "DWFetchedResultsDataSource.h"
 
-@implementation DWNotificationsIgnoredFetchedDataSource
+NS_ASSUME_NONNULL_BEGIN
 
-// TODO: impl
+@class DSBlockchainIdentity;
+
+@interface DWNotificationsFetchedDataSource : DWFetchedResultsDataSource
+
+@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                 inContext:(NSManagedObjectContext *)context NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
 
 @end
+
+NS_ASSUME_NONNULL_END

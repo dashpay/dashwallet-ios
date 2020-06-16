@@ -15,10 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWNotificationsContactFetchedDataSource.h"
+#import <UIKit/UIKit.h>
 
-@implementation DWNotificationsContactFetchedDataSource
+NS_ASSUME_NONNULL_BEGIN
 
-// TODO: impl
+@interface DWBadgeView : UIView
+
+@property (nullable, nonatomic, copy) NSString *text;
+@property (nullable, nonatomic, strong) UIFont *font;
+@property (nullable, nonatomic, strong) UIColor *textColor;
 
 @end
+
+NS_ASSUME_NONNULL_END

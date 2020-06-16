@@ -21,6 +21,8 @@
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWNotificationsData.h"
+#import "DWNotificationsProvider.h"
 #import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -61,6 +63,16 @@ NS_ASSUME_NONNULL_END
         }
 
         DSLogVerbose(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
+
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(notificationsWillUpdate)
+                                   name:DWNotificationsProviderWillUpdateNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(notificationsDidUpdate)
+                                   name:DWNotificationsProviderDidUpdateNotification
+                                 object:nil];
     }
     return self;
 }
@@ -71,6 +83,10 @@ NS_ASSUME_NONNULL_END
 
 - (BOOL)registrationCompleted {
     return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
+}
+
+- (NSUInteger)unreadNotificationsCount {
+    return [DWNotificationsProvider sharedInstance].data.unreadItems.count;
 }
 
 - (void)createUsername:(NSString *)username {
@@ -119,13 +135,26 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
 
-    [self willChangeValueForKey:DW_KEYPATH(self, username)];
+    NSString *key = DW_KEYPATH(self, username);
+    [self willChangeValueForKey:key];
     if (blockchainIdentity) {
         if (self.username == nil) {
             [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentUsername;
         }
     }
-    [self didChangeValueForKey:DW_KEYPATH(self, username)];
+    [self didChangeValueForKey:key];
+}
+
+#pragma mark - Notifications
+
+- (void)notificationsWillUpdate {
+    NSString *key = DW_KEYPATH(self, unreadNotificationsCount);
+    [self willChangeValueForKey:key];
+}
+
+- (void)notificationsDidUpdate {
+    NSString *key = DW_KEYPATH(self, unreadNotificationsCount);
+    [self didChangeValueForKey:key];
 }
 
 #pragma mark - Private

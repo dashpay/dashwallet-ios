@@ -24,7 +24,7 @@
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        self.blockchainIdentity = blockchainIdentity;
         self.username = blockchainIdentity.currentUsername;
     }
     return self;

@@ -35,11 +35,11 @@ NS_ASSUME_NONNULL_END
 
 @synthesize subtitle = _subtitle;
 
-- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity {
-    self = [super initWithFriendRequestEntity:friendRequestEntity];
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self = [super initWithFriendRequestEntity:friendRequestEntity blockchainIdentity:blockchainIdentity];
     if (self) {
-        // TODO: get from entity
-        _date = [NSDate date];
+        _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
     }
     return self;
 }

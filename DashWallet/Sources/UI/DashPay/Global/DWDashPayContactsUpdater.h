@@ -15,25 +15,26 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DashSync.h>
 #import <Foundation/Foundation.h>
-
-#import "DWDPBasicItem.h"
-#import "DWDPNotificationItemsFactory.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWNotificationItemConvertible <NSFetchRequestResult>
+@interface DWDashPayContactsUpdater : NSObject
 
-- (id<DWDPBasicItem>)asNotificationItemWithFactory:(DWDPNotificationItemsFactory *)factory;
+/// Subscribe to update contacts every 30 seconds
+- (void)beginUpdating;
+/// Unsubscribe from updating contacts
+- (void)endUpdating;
 
-@end
+/// Initiate update immediately
+- (void)fetch;
+/// Initiate update immediately
+- (void)fetchWithCompletion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
-@interface DSFriendRequestEntity (DSFriendRequestEntity_DWNotificationItemConvertible) <DWNotificationItemConvertible>
++ (instancetype)sharedInstance;
 
-@end
-
-@interface DSDashpayUserEntity (DSDashpayUserEntity_DWNotificationItemConvertible) <DWNotificationItemConvertible>
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

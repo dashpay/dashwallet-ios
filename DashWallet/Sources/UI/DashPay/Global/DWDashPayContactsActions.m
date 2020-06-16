@@ -15,13 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWDPContactRequestActions.h"
+#import "DWDashPayContactsActions.h"
 
 #import "DWDPBlockchainIdentityBackedItem.h"
 #import "DWDPFriendRequestBackedItem.h"
+#import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
 
-@implementation DWDPContactRequestActions
+@implementation DWDashPayContactsActions
 
 + (void)acceptContactRequest:(id<DWDPBasicItem>)item
                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
@@ -29,13 +30,26 @@
     const BOOL isFriendRequestBacked = [item conformsToProtocol:@protocol(DWDPFriendRequestBackedItem)];
     NSAssert(isBlockchainIdentityBacked || isFriendRequestBacked, @"Invalid item to accept contact request");
 
-    if (isBlockchainIdentityBacked) {
-        id<DWDPBlockchainIdentityBackedItem> backedItem = (id<DWDPBlockchainIdentityBackedItem>)item;
-        [self acceptContactRequestFromBlockchainIdentity:backedItem.blockchainIdentity completion:completion];
-    }
-    else if (isFriendRequestBacked) {
+    void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
+        // TODO: DP temp workaround to update and force reload contact list
+        [[DWDashPayContactsUpdater sharedInstance] fetch];
+
+        DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+
+        if (completion) {
+            completion(success, errors);
+        }
+    };
+
+    // Accepting request from a DSFriendRequestEntity doesn't require searching for associated blockchain identity.
+    // Since all DWDPBasicItem has associated BI, check if it's a DSFriendRequestEntity first.
+    if (isFriendRequestBacked && [(id<DWDPFriendRequestBackedItem>)item friendRequestEntity] != nil) {
         id<DWDPFriendRequestBackedItem> backedItem = (id<DWDPFriendRequestBackedItem>)item;
-        [self acceptContactRequestFromFriendRequest:backedItem.friendRequestEntity completion:completion];
+        [self acceptContactRequestFromFriendRequest:backedItem.friendRequestEntity completion:resultCompletion];
+    }
+    else if (isBlockchainIdentityBacked && [(id<DWDPBlockchainIdentityBackedItem>)item blockchainIdentity] != nil) {
+        id<DWDPBlockchainIdentityBackedItem> backedItem = (id<DWDPBlockchainIdentityBackedItem>)item;
+        [self acceptContactRequestFromBlockchainIdentity:backedItem.blockchainIdentity completion:resultCompletion];
     }
 }
 
@@ -44,15 +58,15 @@
 + (void)acceptContactRequestFromBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
                                         completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [mineBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:blockchainIdentity completion:completion];
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    [myBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:blockchainIdentity completion:completion];
 }
 
 + (void)acceptContactRequestFromFriendRequest:(DSFriendRequestEntity *)friendRequest
                                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [mineBlockchainIdentity acceptFriendRequest:friendRequest completion:completion];
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    [myBlockchainIdentity acceptFriendRequest:friendRequest completion:completion];
 }
 
 @end

@@ -17,16 +17,25 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicItem.h"
-#import "DWDPIncomingRequestItem.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWNotificationsDataSource <UITableViewDataSource>
+extern NSNotificationName const DWNotificationsProviderWillUpdateNotification;
+extern NSNotificationName const DWNotificationsProviderDidUpdateNotification;
 
-- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate;
+@class DWNotificationsData;
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
+@interface DWNotificationsProvider : NSObject
+
+@property (readonly, nonatomic, copy) DWNotificationsData *data;
+
+- (void)setupIfNeeded;
+
+- (void)readNotifications;
+
++ (instancetype)sharedInstance;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

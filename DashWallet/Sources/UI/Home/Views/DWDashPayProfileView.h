@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWDashPayProfileView : UIControl
 
 @property (nullable, nonatomic, copy) NSString *username;
+@property (nonatomic, assign) NSUInteger unreadCount;
 
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 

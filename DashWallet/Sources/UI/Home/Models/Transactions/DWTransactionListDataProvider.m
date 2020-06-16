@@ -179,7 +179,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (uint32_t)blockHeight {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    const uint32_t lastHeight = chain.lastBlockHeight;
+    const uint32_t lastHeight = chain.lastTerminalBlockHeight;
 
     if (lastHeight > self.blockHeightValue) {
         self.blockHeightValue = lastHeight;

@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWIncomingFetchedDataSource.h"
+#import "DWDPUserObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsIncomingFetchedDataSource : DWIncomingFetchedDataSource
+@interface DWDPOutgoingRequestNotificationObject : DWDPUserObject
 
 @end
 

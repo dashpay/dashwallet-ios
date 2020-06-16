@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 - (void)migrate:(void (^)(BOOL completed))completion;
-- (void)destroyOldPersistentStore;
 
 @end
 

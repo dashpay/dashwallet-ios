@@ -17,9 +17,9 @@
 
 #import "DWUserSearchModel.h"
 
-#import "DWDPContactRequestActions.h"
 #import "DWDPSearchItemsFactory.h"
 #import "DWDashPayConstants.h"
+#import "DWDashPayContactsActions.h"
 #import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -110,25 +110,24 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (DSBlockchainIdentity *)blokchainIdentityAtIndex:(NSInteger)index {
+- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index {
     if (index < 0 || self.searchRequest.items.count < index) {
         NSAssert(NO, @"No blockchain identity for invalid index %ld", index);
         return nil;
     }
 
-    id<DWDPBlockchainIdentityBackedItem> item = self.searchRequest.items[index];
-    return item.blockchainIdentity;
+    return self.searchRequest.items[index];
 }
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *mineBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return !uint256_eq(mineBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item {
     __weak typeof(self) weakSelf = self;
-    [DWDPContactRequestActions
+    [DWDashPayContactsActions
         acceptContactRequest:item
                   completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
                       __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -137,7 +136,6 @@ NS_ASSUME_NONNULL_END
                       }
 
                       // TODO: DP update state more gently
-
                       [strongSelf performSearchAndNotify:YES];
                   }];
 }

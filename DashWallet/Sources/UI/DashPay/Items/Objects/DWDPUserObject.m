@@ -23,6 +23,7 @@
 
 @implementation DWDPUserObject
 
+@synthesize blockchainIdentity = _blockchainIdentity;
 @synthesize username = _username;
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
@@ -34,8 +35,27 @@
     return self;
 }
 
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self = [super init];
+    if (self) {
+        _blockchainIdentity = blockchainIdentity;
+        _friendRequestEntity = friendRequestEntity;
+    }
+    return self;
+}
+
 - (NSString *)displayName {
     return nil;
+}
+
+- (NSString *)username {
+    if (_username == nil) {
+        // outgoing request, use destination
+        DSDashpayUserEntity *contact = self.friendRequestEntity.destinationContact;
+        _username = [contact.username copy];
+    }
+    return _username;
 }
 
 - (NSAttributedString *)title {

@@ -19,10 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPContactRequestActions : NSObject
+@interface DWDashPayContactsActions : NSObject
 
 + (void)acceptContactRequest:(id<DWDPBasicItem>)item
-                  completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion;
+                  completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 // TODO: add hide (decline) contact request method
 

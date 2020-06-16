@@ -15,18 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWDPBlockchainIdentityBackedItem.h"
 #import "DWDPContactObject.h"
 #import "DWDPEstablishedContactItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
-
 /// Established contact may come from search or notifications
-@interface DWDPEstablishedContactObject : DWDPContactObject <DWDPEstablishedContactItem, DWDPBlockchainIdentityBackedItem>
-
-@property (readonly, nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@interface DWDPEstablishedContactObject : DWDPContactObject <DWDPEstablishedContactItem>
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 

@@ -94,6 +94,8 @@ NS_ASSUME_NONNULL_END
         return _fetchedResultsController;
     }
 
+    DDLogVerbose(@"DWDP: Constructing FRC for %@", self.entityName);
+
     NSManagedObjectContext *context = self.context;
 
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];

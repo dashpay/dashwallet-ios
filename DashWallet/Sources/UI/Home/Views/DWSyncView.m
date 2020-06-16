@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
             DWEnvironment *environment = [DWEnvironment sharedInstance];
             DSChain *chain = environment.currentChain;
             self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                                                                    chain.lastBlockHeight,
+                                                                    chain.lastSyncBlockHeight,
                                                                     chain.estimatedBlockHeight];
         }
         else {

@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWDPIgnoredRequestNotificationObject.h"
+#import "DWDPOutgoingRequestNotificationObject.h"
 
 #import "DWDateFormatter.h"
 #import "DWEnvironment.h"
@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIgnoredRequestNotificationObject ()
+@interface DWDPOutgoingRequestNotificationObject ()
 
 @property (readonly, nonatomic, strong) NSDate *date;
 
@@ -31,7 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWDPIgnoredRequestNotificationObject
+
+@implementation DWDPOutgoingRequestNotificationObject
 
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
@@ -49,7 +50,7 @@ NS_ASSUME_NONNULL_END
     if (_title == nil) {
         NSString *name = self.displayName ?: self.username;
         NSString *plainTitle = [NSString stringWithFormat:
-                                             NSLocalizedString(@"%@ has sent you a contact request", nil),
+                                             NSLocalizedString(@"You accepted the contact request from %@", nil),
                                              name];
 
         NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:plainTitle attributes:@{NSFontAttributeName : [UIFont dw_itemSubtitleFont]}];
@@ -70,5 +71,6 @@ NS_ASSUME_NONNULL_END
     }
     return _subtitle;
 }
+
 
 @end
