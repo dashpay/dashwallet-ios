@@ -17,6 +17,7 @@
 
 #import "DWNotificationsProvider.h"
 
+#import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWNotificationsData.h"
@@ -56,6 +57,11 @@ NS_ASSUME_NONNULL_END
     self = [super init];
     if (self) {
         _data = [[DWNotificationsData alloc] init];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didUpdateContacts)
+                                                     name:DWDashPayContactsDidUpdateNotification
+                                                   object:nil];
     }
     return self;
 }
@@ -191,6 +197,14 @@ NS_ASSUME_NONNULL_END
     DSDLog(@"DWDP: Notification provider's FRC did update");
 
     [self reload];
+}
+
+#pragma mark - Notifications
+
+- (void)didUpdateContacts {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    [self reset];
 }
 
 @end

@@ -40,6 +40,7 @@
         newRequestItem.requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
 
         // TODO: DP temp workaround to update and force reload contact list
+        // This will trigger DWNotificationsProvider to reset
         [[DWDashPayContactsUpdater sharedInstance] fetch];
 
         DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
@@ -71,7 +72,7 @@
     newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        newRequestItem.requestState = DWDPNewIncomingRequestItemState_Declined;
+        newRequestItem.requestState = DWDPNewIncomingRequestItemState_Failed;
     });
 }
 

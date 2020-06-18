@@ -21,6 +21,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSNotificationName const DWDashPayContactsDidUpdateNotification = @"org.dash.wallet.dp.contacts-did-update";
+
 static NSTimeInterval const UPDATE_INTERVAL = 30;
 
 @interface DWDashPayContactsUpdater ()
@@ -127,6 +129,8 @@ NS_ASSUME_NONNULL_END
             strongSelf.fetchCompletion(success, errors);
             strongSelf.fetchCompletion = nil;
         }
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayContactsDidUpdateNotification object:nil];
 
         [strongSelf performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
     }];
