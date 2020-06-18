@@ -20,7 +20,7 @@
 #import "DWDPContactObject.h"
 #import "DWDPDashpayUserBackedItem.h"
 #import "DWDPFriendRequestBackedItem.h"
-#import "DWDPIncomingRequestObject.h"
+#import "DWDPNewIncomingRequestObject.h"
 #import "DWDPRespondedIncomingRequestObject.h"
 
 @implementation DWDPContactsItemsFactory
@@ -42,7 +42,7 @@
 - (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
     // TODO: DP impl case `if entity.isIgnored`
     DSBlockchainIdentity *blockchainIdentity = [entity.sourceContact.associatedBlockchainIdentity blockchainIdentity];
-    return [[DWDPIncomingRequestObject alloc] initWithFriendRequestEntity:entity blockchainIdentity:blockchainIdentity];
+    return [[DWDPNewIncomingRequestObject alloc] initWithFriendRequestEntity:entity blockchainIdentity:blockchainIdentity];
 }
 
 - (id<DWDPBasicItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity {

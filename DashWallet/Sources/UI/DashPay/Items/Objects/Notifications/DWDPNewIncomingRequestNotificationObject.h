@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWDPIncomingRequestObject.h"
+#import "DWDPNewIncomingRequestObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPNewIncomingRequestNotificationObject : DWDPIncomingRequestObject
+@interface DWDPNewIncomingRequestNotificationObject : DWDPNewIncomingRequestObject
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 

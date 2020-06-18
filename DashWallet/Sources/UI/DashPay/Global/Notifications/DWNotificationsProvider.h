@@ -28,7 +28,7 @@ extern NSNotificationName const DWNotificationsProviderDidUpdateNotification;
 
 @property (readonly, nonatomic, copy) DWNotificationsData *data;
 
-- (void)setupIfNeeded;
+- (void)reset;
 
 - (void)readNotifications;
 

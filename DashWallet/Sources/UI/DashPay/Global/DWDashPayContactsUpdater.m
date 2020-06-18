@@ -48,6 +48,12 @@ NS_ASSUME_NONNULL_END
 - (void)beginUpdating {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    if (myBlockchainIdentity == nil) {
+        return;
+    }
+
     if (self.isUpdating) {
         return;
     }

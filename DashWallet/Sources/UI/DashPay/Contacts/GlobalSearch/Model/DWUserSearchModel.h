@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item;
+- (void)declineContactRequest:(id<DWDPBasicItem>)item;
 
 @end
 

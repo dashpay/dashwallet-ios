@@ -20,7 +20,7 @@
 #import "DWEnvironment.h"
 
 #import "DWDPEstablishedContactObject.h"
-#import "DWDPIncomingRequestObject.h"
+#import "DWDPNewIncomingRequestObject.h"
 #import "DWDPPendingRequestObject.h"
 #import "DWDPUserObject.h"
 
@@ -38,7 +38,7 @@
         case DSBlockchainIdentityFriendshipStatus_Outgoing:
             return [[DWDPPendingRequestObject alloc] initWithBlockchainIdentity:blockchainIdentity];
         case DSBlockchainIdentityFriendshipStatus_Incoming:
-            return [[DWDPIncomingRequestObject alloc] initWithBlockchainIdentity:blockchainIdentity];
+            return [[DWDPNewIncomingRequestObject alloc] initWithBlockchainIdentity:blockchainIdentity];
         case DSBlockchainIdentityFriendshipStatus_Friends:
             return [[DWDPEstablishedContactObject alloc] initWithBlockchainIdentity:blockchainIdentity];
     }

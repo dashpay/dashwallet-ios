@@ -61,6 +61,10 @@
     [DWDashPayContactsActions acceptContactRequest:item completion:nil];
 }
 
+- (void)declineContactRequest:(id<DWDPBasicItem>)item {
+    [DWDashPayContactsActions declineContactRequest:item completion:nil];
+}
+
 - (void)searchWithQuery:(NSString *)searchQuery {
     [self.dataSource searchWithQuery:searchQuery];
 

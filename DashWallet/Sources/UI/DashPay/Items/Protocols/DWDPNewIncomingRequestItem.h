@@ -15,15 +15,28 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicCell.h"
-
-#import "DWDPNewIncomingRequestItem.h"
+#import "DWDPIncomingRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIncomingRequestCell : DWDPBasicCell
+@protocol DWDPNewIncomingRequestItemDelegate <DWDPItemCellDelegate>
 
-@property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> delegate;
+- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item;
+- (void)declineIncomingRequest:(id<DWDPBasicItem>)item;
+
+@end
+
+typedef NS_ENUM(NSUInteger, DWDPNewIncomingRequestItemState) {
+    DWDPNewIncomingRequestItemState_Ready,
+    DWDPNewIncomingRequestItemState_Processing,
+    DWDPNewIncomingRequestItemState_Accepted, // succeeded
+    DWDPNewIncomingRequestItemState_Declined, // succeeded
+    DWDPNewIncomingRequestItemState_Failed,
+};
+
+@protocol DWDPNewIncomingRequestItem <DWDPIncomingRequestItem>
+
+@property (nonatomic, assign) DWDPNewIncomingRequestItemState requestState;
 
 @end
 

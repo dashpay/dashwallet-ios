@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (void)setupIfNeeded {
+- (void)reset {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     if (!blockchainIdentity) {
         return;

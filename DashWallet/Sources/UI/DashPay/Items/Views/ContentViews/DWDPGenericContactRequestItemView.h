@@ -17,12 +17,16 @@
 
 #import "DWDPGenericItemView.h"
 
+#import "DWDPNewIncomingRequestItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPGenericContactRequestItemView : DWDPGenericItemView
 
 @property (readonly, nonatomic, strong) UIButton *acceptButton;
 @property (readonly, nonatomic, strong) UIButton *declineButton;
+
+@property (nonatomic, assign) DWDPNewIncomingRequestItemState requestState;
 
 @end
 

@@ -280,6 +280,7 @@
 		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
 		2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
 		2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */; };
+		2A9D72AC249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9D72AB249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m */; };
 		2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC623F6928C00CDA1EE /* DWTextField.m */; };
 		2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC923F6BD5200CDA1EE /* DWUsernameValidationView.m */; };
 		2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */; };
@@ -1123,6 +1124,9 @@
 		2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeViewController.m; sourceTree = "<group>"; };
 		2A9D72A62497C52E00F79CD8 /* DWBadgeView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBadgeView.h; sourceTree = "<group>"; };
 		2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBadgeView.m; sourceTree = "<group>"; };
+		2A9D72A9249A0E7800F79CD8 /* DWDPNewIncomingRequestItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestItem.h; sourceTree = "<group>"; };
+		2A9D72AA249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestObject.h; sourceTree = "<group>"; };
+		2A9D72AB249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPNewIncomingRequestObject.m; sourceTree = "<group>"; };
 		2A9E7DC523F6928C00CDA1EE /* DWTextField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTextField.h; sourceTree = "<group>"; };
 		2A9E7DC623F6928C00CDA1EE /* DWTextField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTextField.m; sourceTree = "<group>"; };
 		2A9E7DC823F6BD5200CDA1EE /* DWUsernameValidationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameValidationView.h; sourceTree = "<group>"; };
@@ -2528,10 +2532,11 @@
 			children = (
 				2A7AF3902482D98C001D74F9 /* Items Associated Data */,
 				2A7AF35B2482577B001D74F9 /* DWDPBasicItem.h */,
-				2A7AF35C24825860001D74F9 /* DWDPIncomingRequestItem.h */,
-				2A7AF35D248258C9001D74F9 /* DWDPRespondedRequestItem.h */,
-				2A7AF35E2482592F001D74F9 /* DWDPPendingRequestItem.h */,
 				2A7AF35F24825991001D74F9 /* DWDPEstablishedContactItem.h */,
+				2A7AF35C24825860001D74F9 /* DWDPIncomingRequestItem.h */,
+				2A9D72A9249A0E7800F79CD8 /* DWDPNewIncomingRequestItem.h */,
+				2A7AF35E2482592F001D74F9 /* DWDPPendingRequestItem.h */,
+				2A7AF35D248258C9001D74F9 /* DWDPRespondedRequestItem.h */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -2544,12 +2549,14 @@
 				2A7AF36E24826737001D74F9 /* DWDPContactObject.m */,
 				2A7AF36A248266FB001D74F9 /* DWDPEstablishedContactObject.h */,
 				2A7AF36B248266FB001D74F9 /* DWDPEstablishedContactObject.m */,
-				2A7AF36724826681001D74F9 /* DWDPRespondedIncomingRequestObject.h */,
-				2A7AF36824826681001D74F9 /* DWDPRespondedIncomingRequestObject.m */,
 				2A7AF3642482666C001D74F9 /* DWDPIncomingRequestObject.h */,
 				2A7AF3652482666C001D74F9 /* DWDPIncomingRequestObject.m */,
+				2A9D72AA249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.h */,
+				2A9D72AB249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m */,
 				2A7AF3792482756D001D74F9 /* DWDPPendingRequestObject.h */,
 				2A7AF37A2482756D001D74F9 /* DWDPPendingRequestObject.m */,
+				2A7AF36724826681001D74F9 /* DWDPRespondedIncomingRequestObject.h */,
+				2A7AF36824826681001D74F9 /* DWDPRespondedIncomingRequestObject.m */,
 				2A7AF36124825A0C001D74F9 /* DWDPUserObject.h */,
 				2A7AF36224825A0C001D74F9 /* DWDPUserObject.m */,
 			);
@@ -2559,10 +2566,10 @@
 		2A7AF37C2482759F001D74F9 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				2A7AF376248270A4001D74F9 /* DWDPEstablishedContactNotificationObject.h */,
-				2A7AF377248270A4001D74F9 /* DWDPEstablishedContactNotificationObject.m */,
 				2A7AF37024826CDF001D74F9 /* DWDPAcceptedRequestNotificationObject.h */,
 				2A7AF37124826CDF001D74F9 /* DWDPAcceptedRequestNotificationObject.m */,
+				2A7AF376248270A4001D74F9 /* DWDPEstablishedContactNotificationObject.h */,
+				2A7AF377248270A4001D74F9 /* DWDPEstablishedContactNotificationObject.m */,
 				2A7AF3732482703C001D74F9 /* DWDPNewIncomingRequestNotificationObject.h */,
 				2A7AF3742482703C001D74F9 /* DWDPNewIncomingRequestNotificationObject.m */,
 				2AEC5CBC24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.h */,
@@ -4634,6 +4641,7 @@
 				2A2CD71B22F99EAC008C7BC9 /* DWShortcutsModel.m in Sources */,
 				2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
+				2A9D72AC249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m in Sources */,
 				2A7A7BDD2348DC0A00451078 /* DWToolsMenuModel.m in Sources */,
 				C3CA202C247E4AF300158074 /* DWNotificationsViewController.m in Sources */,
 				2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,

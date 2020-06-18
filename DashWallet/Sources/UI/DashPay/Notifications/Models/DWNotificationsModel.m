@@ -52,6 +52,10 @@ NS_ASSUME_NONNULL_END
     [DWDashPayContactsActions acceptContactRequest:item completion:nil];
 }
 
+- (void)declineContactRequest:(id<DWDPBasicItem>)item {
+    [DWDashPayContactsActions declineContactRequest:item completion:nil];
+}
+
 - (void)markNotificationsAsViewed {
     NSDate *date = self.data.mostRecentNotificationDate;
     [DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate = date;

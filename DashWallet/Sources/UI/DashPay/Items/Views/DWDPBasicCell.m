@@ -127,7 +127,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setItem:(id<DWDPBasicItem>)item highlightedText:(NSString *)highlightedText {
+    NSString *key = DW_KEYPATH(self, item);
+    [self willChangeValueForKey:key];
     _item = item;
+    [self didChangeValueForKey:key];
+
     self.highlightedText = highlightedText;
 
     self.itemView.avatarView.username = item.username;

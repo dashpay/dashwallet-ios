@@ -19,6 +19,8 @@
 
 #import "DWDPGenericContactRequestItemView.h"
 
+#import "DWDPNewIncomingRequestObject.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPIncomingRequestCell ()
@@ -43,6 +45,11 @@ NS_ASSUME_NONNULL_END
     if (self) {
         [self.itemView.acceptButton addTarget:self action:@selector(acceptButtonAction) forControlEvents:UIControlEventTouchUpInside];
         [self.itemView.declineButton addTarget:self action:@selector(declineButtonAction) forControlEvents:UIControlEventTouchUpInside];
+
+        [self mvvm_observe:@"item.requestState"
+                      with:^(typeof(self) self, id value) {
+                          [self updateItemRequestState];
+                      }];
     }
     return self;
 }
@@ -55,6 +62,13 @@ NS_ASSUME_NONNULL_END
 
 - (void)declineButtonAction {
     [self.delegate declineIncomingRequest:self.item];
+}
+
+#pragma mark - Private
+
+- (void)updateItemRequestState {
+    id<DWDPNewIncomingRequestItem> requestItem = (id<DWDPNewIncomingRequestItem>)self.item;
+    self.itemView.requestState = requestItem.requestState;
 }
 
 @end

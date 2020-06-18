@@ -15,16 +15,10 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicCell.h"
+#import "DWDPNewIncomingRequestObject.h"
 
-#import "DWDPNewIncomingRequestItem.h"
+@implementation DWDPNewIncomingRequestObject
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWDPIncomingRequestCell : DWDPBasicCell
-
-@property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> delegate;
+@synthesize requestState;
 
 @end
-
-NS_ASSUME_NONNULL_END

@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWBaseContactsDataSourceObject () <NSFetchedResultsControllerDelegate>
 
 @property (nullable, nonatomic, weak) UITableView *tableView;
-@property (nullable, nonatomic, weak) id<DWDPIncomingRequestItemDelegate> itemsDelegate;
+@property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> itemsDelegate;
 
 @property (nonatomic, assign) BOOL batchReloading;
 @property (readonly, nonatomic, strong) DWDPContactsItemsFactory *itemsFactory;
@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_END
     return self.firstFRC.sections.firstObject.numberOfObjects;
 }
 
-- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate {
+- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPNewIncomingRequestItemDelegate>)itemsDelegate {
     self.tableView = tableView;
     self.itemsDelegate = itemsDelegate;
 }

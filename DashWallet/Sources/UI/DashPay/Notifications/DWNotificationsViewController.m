@@ -18,7 +18,7 @@
 #import "DWNotificationsViewController.h"
 
 #import "DWDPBasicCell.h"
-#import "DWDPIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 #import "DWNoNotificationsCell.h"
 #import "DWNotificationsModel.h"
 #import "DWTitleActionHeaderView.h"
@@ -27,7 +27,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPIncomingRequestItemDelegate>
+@interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPNewIncomingRequestItemDelegate>
 
 @property (null_resettable, nonatomic, strong) DWNotificationsModel *model;
 
@@ -159,14 +159,14 @@ NS_ASSUME_NONNULL_END
     [self updateTitle];
 }
 
-#pragma mark - DWDPIncomingRequestItemDelegate
+#pragma mark - DWDPNewIncomingRequestItemDelegate
 
 - (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
     [self.model acceptContactRequest:item];
 }
 
 - (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
-    NSLog(@"DWDP: declineIncomingRequest");
+    [self.model declineContactRequest:item];
 }
 
 #pragma mark - Private

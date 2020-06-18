@@ -20,7 +20,7 @@
 #import "DWUIKit.h"
 
 #import "DWDPEstablishedContactItem.h"
-#import "DWDPIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
 
@@ -50,7 +50,7 @@
     else if ([item conformsToProtocol:@protocol(DWDPRespondedRequestItem)]) {
         cellID = DWDPBasicCell.dw_reuseIdentifier;
     }
-    else if ([item conformsToProtocol:@protocol(DWDPIncomingRequestItem)]) {
+    else if ([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)]) {
         cellID = DWDPIncomingRequestCell.dw_reuseIdentifier;
     }
     else { // any DWDPBasicItem

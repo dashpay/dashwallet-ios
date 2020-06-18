@@ -19,13 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWDPIncomingRequestItemDelegate <DWDPItemCellDelegate>
-
-- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item;
-- (void)declineIncomingRequest:(id<DWDPBasicItem>)item;
-
-@end
-
 @protocol DWDPIncomingRequestItem <DWDPBasicItem>
 
 @end

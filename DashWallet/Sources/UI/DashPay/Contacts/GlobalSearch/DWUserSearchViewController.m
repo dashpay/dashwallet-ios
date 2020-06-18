@@ -130,7 +130,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                  declineContactRequest:(id<DWDPBasicItem>)item {
-    NSLog(@"DWDP: declineIncomingRequest");
+    [self.model declineContactRequest:item];
 }
 
 #pragma mark - Keyboard
