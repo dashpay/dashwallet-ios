@@ -15,17 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUITableViewCell.h>
 
 #import "DWDPGenericItemView.h"
 
 // supports displaying:
 #import "DWDPBasicItem.h"
-#import "DWDPIgnoredRequestItem.h"
+#import "DWDPRespondedRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPBasicCell : UITableViewCell
+@interface DWDPBasicCell : KVOUITableViewCell
 
 @property (readonly, class, nonatomic) Class itemViewClass;
 

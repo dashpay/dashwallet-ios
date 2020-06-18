@@ -15,10 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWDPIgnoredRequestObject.h"
+#import <Foundation/Foundation.h>
 
-#import <DashSync/DashSync.h>
+NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWDPIgnoredRequestObject
+@protocol DWDPNotificationItem <NSObject>
+
+@property (readonly, nonatomic, strong) NSDate *date;
 
 @end
+
+NS_ASSUME_NONNULL_END

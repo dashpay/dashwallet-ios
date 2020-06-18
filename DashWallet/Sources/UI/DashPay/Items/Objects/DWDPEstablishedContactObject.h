@@ -23,7 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Established contact may come from search or notifications
 @interface DWDPEstablishedContactObject : DWDPContactObject <DWDPEstablishedContactItem>
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity NS_UNAVAILABLE;
 
 @end
 

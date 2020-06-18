@@ -15,11 +15,20 @@
 //  limitations under the License.
 //
 
+#import "DWDPNotificationItem.h"
 #import "DWDPUserObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPOutgoingRequestNotificationObject : DWDPUserObject
+@interface DWDPOutgoingRequestNotificationObject : DWDPUserObject <DWDPNotificationItem>
+
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                            isInitiatedByMe:(BOOL)isInitiatedByMe NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end
 

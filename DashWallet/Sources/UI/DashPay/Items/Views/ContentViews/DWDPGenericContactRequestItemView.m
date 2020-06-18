@@ -20,6 +20,17 @@
 #import "DWActionButton.h"
 #import "DWUIKit.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWDPGenericContactRequestItemView ()
+
+@property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
+@property (readonly, nonatomic, strong) UIImageView *statusImageView;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation DWDPGenericContactRequestItemView
 
 @synthesize acceptButton = _acceptButton;
@@ -56,8 +67,24 @@
     [self.accessoryView addSubview:declineButton];
     _declineButton = declineButton;
 
+    UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+    activityIndicatorView.color = [UIColor dw_tertiaryTextColor];
+    [self.accessoryView addSubview:activityIndicatorView];
+    _activityIndicatorView = activityIndicatorView;
+
+    UIImageView *statusImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    statusImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    statusImageView.contentMode = UIViewContentModeCenter;
+    statusImageView.image = [UIImage imageNamed:@"dp_established_contact"];
+    [self.accessoryView addSubview:statusImageView];
+    _statusImageView = statusImageView;
+
     const CGFloat buttonHeight = 30.0;
     const CGFloat spacing = 10.0;
+
+    [statusImageView setContentCompressionResistancePriority:UILayoutPriorityRequired - 10 forAxis:UILayoutConstraintAxisHorizontal];
+    [statusImageView setContentCompressionResistancePriority:UILayoutPriorityRequired - 10 forAxis:UILayoutConstraintAxisVertical];
 
     [NSLayoutConstraint activateConstraints:@[
         [acceptButton.topAnchor constraintGreaterThanOrEqualToAnchor:self.accessoryView.topAnchor],
@@ -74,7 +101,73 @@
         [declineButton.centerYAnchor constraintEqualToAnchor:self.accessoryView.centerYAnchor],
         [declineButton.heightAnchor constraintEqualToConstant:buttonHeight],
         [declineButton.widthAnchor constraintEqualToConstant:buttonHeight],
+
+        [self.accessoryView.trailingAnchor constraintEqualToAnchor:activityIndicatorView.trailingAnchor],
+        [activityIndicatorView.centerYAnchor constraintEqualToAnchor:self.accessoryView.centerYAnchor],
+
+        [statusImageView.topAnchor constraintEqualToAnchor:self.accessoryView.topAnchor],
+        [self.accessoryView.trailingAnchor constraintEqualToAnchor:statusImageView.trailingAnchor],
+        [self.accessoryView.bottomAnchor constraintEqualToAnchor:statusImageView.bottomAnchor],
     ]];
+}
+
+- (void)setRequestState:(DWDPNewIncomingRequestItemState)requestState {
+    _requestState = requestState;
+
+    switch (requestState) {
+        case DWDPNewIncomingRequestItemState_Ready:
+            [self setReadyState];
+            break;
+        case DWDPNewIncomingRequestItemState_Processing:
+            [self setProcessingState];
+            break;
+        case DWDPNewIncomingRequestItemState_Accepted:
+            [self setAcceptedState];
+            break;
+        case DWDPNewIncomingRequestItemState_Declined:
+            [self setDeclinedState];
+            break;
+        case DWDPNewIncomingRequestItemState_Failed:
+            [self setFailedState];
+            break;
+    }
+}
+
+- (void)setReadyState {
+    self.acceptButton.hidden = NO;
+    self.declineButton.hidden = NO;
+
+    self.statusImageView.hidden = YES;
+
+    [self.activityIndicatorView stopAnimating];
+}
+
+- (void)setProcessingState {
+    [self.activityIndicatorView startAnimating];
+
+    self.acceptButton.hidden = YES;
+    self.declineButton.hidden = YES;
+
+    self.statusImageView.hidden = YES;
+}
+
+- (void)setAcceptedState {
+    [self.activityIndicatorView stopAnimating];
+
+    self.acceptButton.hidden = YES;
+    self.declineButton.hidden = YES;
+
+    self.statusImageView.hidden = NO;
+}
+
+- (void)setDeclinedState {
+    // TODO: DP impl
+    [self setAcceptedState];
+}
+
+- (void)setFailedState {
+    // TODO: DP impl
+    [self setReadyState];
 }
 
 @end

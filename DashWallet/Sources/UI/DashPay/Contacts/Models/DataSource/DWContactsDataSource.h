@@ -18,7 +18,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWDPBasicItem.h"
-#import "DWDPIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
 @property (readonly, nonatomic, assign) NSUInteger contactRequestsCount;
 
-- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPIncomingRequestItemDelegate>)itemsDelegate;
+- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPNewIncomingRequestItemDelegate>)itemsDelegate;
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 

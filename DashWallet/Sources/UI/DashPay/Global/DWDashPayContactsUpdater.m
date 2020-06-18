@@ -21,6 +21,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSNotificationName const DWDashPayContactsDidUpdateNotification = @"org.dash.wallet.dp.contacts-did-update";
+
 static NSTimeInterval const UPDATE_INTERVAL = 30;
 
 @interface DWDashPayContactsUpdater ()
@@ -47,6 +49,12 @@ NS_ASSUME_NONNULL_END
 
 - (void)beginUpdating {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    if (myBlockchainIdentity == nil) {
+        return;
+    }
 
     if (self.isUpdating) {
         return;
@@ -115,12 +123,16 @@ NS_ASSUME_NONNULL_END
             return;
         }
 
-        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@", success ? @"Succeeded" : @"Failed", errors);
+        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@",
+                     success ? @"Succeeded" : @"Failed",
+                     errors.count == 0 ? @"" : errors);
 
         if (strongSelf.fetchCompletion) {
             strongSelf.fetchCompletion(success, errors);
             strongSelf.fetchCompletion = nil;
         }
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayContactsDidUpdateNotification object:nil];
 
         [strongSelf performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
     }];

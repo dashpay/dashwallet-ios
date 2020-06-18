@@ -15,13 +15,10 @@
 //  limitations under the License.
 //
 
-#import "DWDPIgnoredRequestItem.h"
-#import "DWDPIncomingRequestObject.h"
+#import "DWDPNewIncomingRequestObject.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DWDPNewIncomingRequestObject
 
-@interface DWDPIgnoredRequestObject : DWDPIncomingRequestObject <DWDPIgnoredRequestItem>
+@synthesize requestState;
 
 @end
-
-NS_ASSUME_NONNULL_END

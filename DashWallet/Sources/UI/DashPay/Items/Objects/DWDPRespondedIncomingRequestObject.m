@@ -15,12 +15,10 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWDPRespondedIncomingRequestObject.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#import <DashSync/DashSync.h>
 
-@protocol DWDPIgnoredRequestItem <DWDPBasicItem>
+@implementation DWDPRespondedIncomingRequestObject
 
 @end
-
-NS_ASSUME_NONNULL_END

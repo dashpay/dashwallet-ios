@@ -19,19 +19,39 @@
 
 #import "DWDPBlockchainIdentityBackedItem.h"
 #import "DWDPFriendRequestBackedItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWNotificationsProvider.h"
 
 @implementation DWDashPayContactsActions
 
 + (void)acceptContactRequest:(id<DWDPBasicItem>)item
                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+    NSAssert([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)], @"Incompatible item");
+
     const BOOL isBlockchainIdentityBacked = [item conformsToProtocol:@protocol(DWDPBlockchainIdentityBackedItem)];
     const BOOL isFriendRequestBacked = [item conformsToProtocol:@protocol(DWDPFriendRequestBackedItem)];
     NSAssert(isBlockchainIdentityBacked || isFriendRequestBacked, @"Invalid item to accept contact request");
 
+    NSManagedObjectID *acceptedRequestContactID = nil;
+    if (isFriendRequestBacked && [(id<DWDPFriendRequestBackedItem>)item friendRequestEntity] != nil) {
+        id<DWDPFriendRequestBackedItem> backedItem = (id<DWDPFriendRequestBackedItem>)item;
+        acceptedRequestContactID = backedItem.friendRequestEntity.sourceContact.objectID;
+    }
+
+    id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
+    newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
+
     void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
+        newRequestItem.requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
+
+        if (acceptedRequestContactID) {
+            [[DWNotificationsProvider sharedInstance] requestWasAcceptedFromContactID:acceptedRequestContactID];
+        }
+
         // TODO: DP temp workaround to update and force reload contact list
+        // This will trigger DWNotificationsProvider to reset
         [[DWDashPayContactsUpdater sharedInstance] fetch];
 
         DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
@@ -51,6 +71,20 @@
         id<DWDPBlockchainIdentityBackedItem> backedItem = (id<DWDPBlockchainIdentityBackedItem>)item;
         [self acceptContactRequestFromBlockchainIdentity:backedItem.blockchainIdentity completion:resultCompletion];
     }
+}
+
++ (void)declineContactRequest:(id<DWDPBasicItem>)item
+                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
+    // TODO: DP dummy method
+
+    NSAssert([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)], @"Incompatible item");
+
+    id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
+    newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        newRequestItem.requestState = DWDPNewIncomingRequestItemState_Failed;
+    });
 }
 
 #pragma mark - Private

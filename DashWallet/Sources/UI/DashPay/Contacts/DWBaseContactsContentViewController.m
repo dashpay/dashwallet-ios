@@ -19,14 +19,14 @@
 
 #import "DWBaseContactsModel.h"
 #import "DWContactsSearchInfoHeaderView.h"
-#import "DWDPIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "UITableView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseContactsContentViewController () <DWDPIncomingRequestItemDelegate>
+@interface DWBaseContactsContentViewController () <DWDPNewIncomingRequestItemDelegate>
 
 @property (null_resettable, nonatomic, strong) DWContactsSearchInfoHeaderView *searchHeaderView;
 
@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
-    NSLog(@"DWDP: declineIncomingRequest");
+    [self.model declineContactRequest:item];
 }
 
 #pragma mark - Private

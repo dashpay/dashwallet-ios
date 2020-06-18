@@ -15,15 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicCell.h"
-
-#import "DWDPNewIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestObject.h"
+#import "DWDPNotificationItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPIncomingRequestCell : DWDPBasicCell
+@interface DWDPNewIncomingRequestNotificationObject : DWDPNewIncomingRequestObject <DWDPNotificationItem>
 
-@property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> delegate;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end
 

@@ -23,14 +23,19 @@ extern NSNotificationName const DWNotificationsProviderWillUpdateNotification;
 extern NSNotificationName const DWNotificationsProviderDidUpdateNotification;
 
 @class DWNotificationsData;
+@class NSManagedObjectID;
 
 @interface DWNotificationsProvider : NSObject
 
 @property (readonly, nonatomic, copy) DWNotificationsData *data;
 
-- (void)setupIfNeeded;
+// While the on the Notifications screen we don't show immediate response notifications when accepting requests
+// and retain incoming-request-was-accepted status for accepted (declined) notifications
 
-- (void)readNotifications;
+- (void)beginIgnoringOutboundEvents;
+- (void)endIgnoringOutboundEvents;
+
+- (void)requestWasAcceptedFromContactID:(NSManagedObjectID *)objectID;
 
 + (instancetype)sharedInstance;
 

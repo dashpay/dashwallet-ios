@@ -15,22 +15,20 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
-
-#import "DWDPBasicItem.h"
 #import "DWDPNotificationItem.h"
+#import "DWDPRespondedIncomingRequestObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsData : NSObject <NSCopying>
+@interface DWDPAcceptedRequestNotificationObject : DWDPRespondedIncomingRequestObject <DWDPNotificationItem>
 
-@property (readonly, nonatomic, assign) BOOL isEmpty;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *unreadItems;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *oldItems;
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                          isInitiatedByThem:(BOOL)isInitiatedByThem NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)unreadItems
-                           oldItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end
 

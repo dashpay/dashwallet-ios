@@ -16,10 +16,18 @@
 //
 
 #import "DWDPEstablishedContactObject.h"
+#import "DWDPNotificationItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPEstablishedContactNotificationObject : DWDPEstablishedContactObject
+@class DSFriendRequestEntity;
+
+@interface DWDPEstablishedContactNotificationObject : DWDPEstablishedContactObject <DWDPNotificationItem>
+
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
 
 @end
 

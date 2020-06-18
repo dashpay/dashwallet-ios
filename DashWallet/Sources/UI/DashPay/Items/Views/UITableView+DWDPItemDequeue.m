@@ -20,9 +20,9 @@
 #import "DWUIKit.h"
 
 #import "DWDPEstablishedContactItem.h"
-#import "DWDPIgnoredRequestItem.h"
-#import "DWDPIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
+#import "DWDPRespondedRequestItem.h"
 
 #import "DWDPBasicCell.h"
 #import "DWDPImageStatusCell.h"
@@ -39,7 +39,7 @@
 }
 
 - (__kindof UITableViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath {
-    // DWDPIgnoredRequestItem should come before DWDPIncomingRequestItem since the first one also conforms to DWDPIncomingRequestItem
+    // DWDPRespondedRequestItem should come before DWDPIncomingRequestItem since the first one also conforms to DWDPIncomingRequestItem
     NSString *cellID = nil;
     if ([item conformsToProtocol:@protocol(DWDPEstablishedContactItem)]) {
         cellID = DWDPImageStatusCell.dw_reuseIdentifier;
@@ -47,10 +47,10 @@
     else if ([item conformsToProtocol:@protocol(DWDPPendingRequestItem)]) {
         cellID = DWDPTextStatusCell.dw_reuseIdentifier;
     }
-    else if ([item conformsToProtocol:@protocol(DWDPIgnoredRequestItem)]) {
+    else if ([item conformsToProtocol:@protocol(DWDPRespondedRequestItem)]) {
         cellID = DWDPBasicCell.dw_reuseIdentifier;
     }
-    else if ([item conformsToProtocol:@protocol(DWDPIncomingRequestItem)]) {
+    else if ([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)]) {
         cellID = DWDPIncomingRequestCell.dw_reuseIdentifier;
     }
     else { // any DWDPBasicItem

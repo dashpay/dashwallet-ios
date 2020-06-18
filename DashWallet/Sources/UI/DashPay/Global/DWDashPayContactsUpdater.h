@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSNotificationName const DWDashPayContactsDidUpdateNotification;
+
 @interface DWDashPayContactsUpdater : NSObject
 
 /// Subscribe to update contacts every 30 seconds

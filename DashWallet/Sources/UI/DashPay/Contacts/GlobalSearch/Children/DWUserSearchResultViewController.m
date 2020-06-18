@@ -20,12 +20,12 @@
 #import "DWUIKit.h"
 
 #import "DWDPBasicCell.h"
-#import "DWDPIncomingRequestItem.h"
+#import "DWDPNewIncomingRequestItem.h"
 #import "UITableView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserSearchResultViewController () <DWDPIncomingRequestItemDelegate>
+@interface DWUserSearchResultViewController () <DWDPNewIncomingRequestItemDelegate>
 @end
 
 NS_ASSUME_NONNULL_END
@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_END
     [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row cell:cell];
 }
 
-#pragma mark - DWDPIncomingRequestItemDelegate
+#pragma mark - DWDPNewIncomingRequestItemDelegate
 
 - (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
     [self.delegate userSearchResultViewController:self acceptContactRequest:item];

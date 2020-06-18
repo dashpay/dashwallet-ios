@@ -23,8 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)acceptContactRequest:(id<DWDPBasicItem>)item
                   completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
-
-// TODO: add hide (decline) contact request method
++ (void)declineContactRequest:(id<DWDPBasicItem>)item
+                   completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

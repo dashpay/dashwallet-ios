@@ -26,7 +26,6 @@ static CGFloat const AVATAR_SIZE = 36.0;
 
 @synthesize avatarView = _avatarView;
 @synthesize textLabel = _textLabel;
-//@synthesize subtitleLabel = _subtitleLabel;
 @synthesize accessoryView = _accessoryView;
 
 - (instancetype)initWithFrame:(CGRect)frame {

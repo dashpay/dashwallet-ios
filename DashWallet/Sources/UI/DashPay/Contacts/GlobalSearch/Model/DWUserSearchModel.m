@@ -140,6 +140,10 @@ NS_ASSUME_NONNULL_END
                   }];
 }
 
+- (void)declineContactRequest:(id<DWDPBasicItem>)item {
+    [DWDashPayContactsActions declineContactRequest:item completion:nil];
+}
+
 #pragma mark Private
 
 - (void)performInitialSearch {

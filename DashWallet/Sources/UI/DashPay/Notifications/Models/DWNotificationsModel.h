@@ -36,9 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWNotificationsModelDelegate> delegate;
 
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item;
+- (void)declineContactRequest:(id<DWDPBasicItem>)item;
 
-- (void)markNotificationsAsViewed;
-- (void)processUnreadNotifications;
+- (void)markNotificationAsRead:(id<DWDPNotificationItem>)item;
 
 @end
 

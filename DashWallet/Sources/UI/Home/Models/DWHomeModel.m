@@ -30,7 +30,6 @@
 #import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
-#import "DWNotificationsProvider.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
@@ -368,7 +367,6 @@ static BOOL IsJailbroken(void) {
         [self.dashPayModel updateUsernameStatus];
 
         if (self.dashPayModel.username != nil) {
-            [[DWNotificationsProvider sharedInstance] setupIfNeeded];
             [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
         }
     }
@@ -384,6 +382,8 @@ static BOOL IsJailbroken(void) {
 
 - (void)dashPayRegistrationStatusUpdatedNotification {
     [self reloadTxDataSource];
+
+    [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
 }
 
 - (void)willWipeWalletNotification {
