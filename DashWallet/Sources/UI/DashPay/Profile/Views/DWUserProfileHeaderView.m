@@ -210,9 +210,14 @@ NS_ASSUME_NONNULL_END
 - (void)updateState:(DWUserProfileModelState)state {
     switch (state) {
         case DWUserProfileModelState_None:
-        case DWUserProfileModelState_Error:
             self.actionButton.hidden = YES;
             [self.activityIndicatorView stopAnimating];
+
+            break;
+        case DWUserProfileModelState_Error:
+            self.actionButton.hidden = NO;
+            [self.activityIndicatorView stopAnimating];
+            [self updateActions];
 
             break;
         case DWUserProfileModelState_Loading:

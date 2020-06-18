@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (DSBlockchainIdentityFriendshipStatus)friendshipStatus {
-    if (self.state != DWUserProfileModelState_Done) {
+    if (self.state == DWUserProfileModelState_None || self.state == DWUserProfileModelState_Loading) {
         return DSBlockchainIdentityFriendshipStatus_Unknown;
     }
 
