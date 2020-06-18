@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPOutgoingRequestNotificationObject ()
 
-@property (readonly, nonatomic, strong) NSDate *date;
 @property (readonly, nonatomic, assign, getter=isInitiatedByMe) BOOL initiatedByMe;
 
 @end
@@ -37,6 +36,7 @@ NS_ASSUME_NONNULL_END
 
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
+@synthesize date = _date;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
                          blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity

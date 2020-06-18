@@ -38,8 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item;
 - (void)declineContactRequest:(id<DWDPBasicItem>)item;
 
-- (void)markNotificationsAsViewed;
-- (void)processUnreadNotifications;
+- (void)markNotificationAsRead:(id<DWDPNotificationItem>)item;
 
 @end
 

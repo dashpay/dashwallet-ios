@@ -24,9 +24,9 @@
 #import "DWNotificationsFetchedDataSource.h"
 
 #import "DWDPAcceptedRequestNotificationObject.h"
+#import "DWDPEstablishedContactNotificationObject.h"
 #import "DWDPNewIncomingRequestNotificationObject.h"
 #import "DWDPOutgoingRequestNotificationObject.h"
-
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,6 +37,10 @@ NSNotificationName const DWNotificationsProviderDidUpdateNotification = @"org.da
 
 @property (nonatomic, strong) DWFetchedResultsDataSource *fetchedDataSource;
 @property (nonatomic, copy) DWNotificationsData *data;
+
+@property (nonatomic, assign, getter=isIgnoringOutboundEvents) BOOL ignoringOutboundEvents;
+/// Contains objectIDs of DSFriendRequestEntity.sourceContact which were accepted during ignoring outbound events
+@property (nonatomic, strong) NSMutableSet<NSManagedObjectID *> *acceptedRequestContactIDs;
 
 @end
 
@@ -58,13 +62,54 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _data = [[DWNotificationsData alloc] init];
 
+        _acceptedRequestContactIDs = [NSMutableSet set];
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(didUpdateContacts)
                                                      name:DWDashPayContactsDidUpdateNotification
                                                    object:nil];
+
+        // Defer initial reset of notifications because it would lead to a deadlock
+        // (since DWNotificationsProvider is a singleton and reset would produce a notification)
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self reset];
+        });
     }
     return self;
 }
+
+- (void)beginIgnoringOutboundEvents {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    self.ignoringOutboundEvents = YES;
+}
+
+- (void)endIgnoringOutboundEvents {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    self.ignoringOutboundEvents = NO;
+
+    self.acceptedRequestContactIDs = [NSMutableSet set];
+
+    [self reset];
+}
+
+- (void)requestWasAcceptedFromContactID:(NSManagedObjectID *)objectID {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (!self.isIgnoringOutboundEvents) {
+        return;
+    }
+
+    NSParameterAssert(objectID);
+    if (!objectID) {
+        return;
+    }
+
+    [self.acceptedRequestContactIDs addObject:objectID];
+}
+
+#pragma mark - Private
 
 - (void)reset {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
@@ -82,16 +127,6 @@ NS_ASSUME_NONNULL_END
 
     [self reload];
 }
-
-- (void)readNotifications {
-    NSDate *mostRecentNotificationDate = [DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate;
-    NSArray<id<DWDPBasicItem>> *items = [self.data.unreadItems arrayByAddingObjectsFromArray:self.data.oldItems];
-    self.data = [[DWNotificationsData alloc] initWithMostRecentNotificationDate:mostRecentNotificationDate
-                                                                    unreadItems:@[]
-                                                                       oldItems:items];
-}
-
-#pragma mark - Private
 
 - (void)setData:(DWNotificationsData *)data {
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -119,31 +154,35 @@ NS_ASSUME_NONNULL_END
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     NSManagedObjectID *userID = blockchainIdentity.matchingDashpayUser.objectID;
 
-    const NSTimeInterval mostRecentViewedTimestamp = [[DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate
-                                                          timeIntervalSince1970];
-    NSMutableArray<id<DWDPBasicItem>> *newItems = [NSMutableArray array];
-    NSMutableArray<id<DWDPBasicItem>> *oldItems = [NSMutableArray array];
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    const NSTimeInterval mostRecentViewedTimestamp = [options.mostRecentViewedNotificationDate timeIntervalSince1970];
 
-    NSDate *mostRecentNotificationDate = nil;
+    NSMutableArray<id<DWDPBasicItem, DWDPNotificationItem>> *newItems = [NSMutableArray array];
+    NSMutableArray<id<DWDPBasicItem, DWDPNotificationItem>> *oldItems = [NSMutableArray array];
+
     NSMutableSet<NSManagedObjectID *> *processed = [NSMutableSet set];
 
     for (DSFriendRequestEntity *request in fetchedObjects) {
         NSManagedObjectID *sourceID = request.sourceContact.objectID;
         NSManagedObjectID *destinationID = request.destinationContact.objectID;
         NSSet<NSManagedObjectID *> *destinationConnections = connections[destinationID];
-        const BOOL hasInvertedConnection = [destinationConnections containsObject:sourceID];
+        const BOOL isFriendship = [destinationConnections containsObject:sourceID];
         const BOOL isNew = request.timestamp > mostRecentViewedTimestamp;
-        NSMutableArray<id<DWDPBasicItem>> *items = isNew ? newItems : oldItems;
-
-        // date of the last item
-        mostRecentNotificationDate = [NSDate dateWithTimeIntervalSince1970:request.timestamp];
+        NSMutableArray<id<DWDPBasicItem, DWDPNotificationItem>> *items = isNew ? newItems : oldItems;
 
         if ([sourceID isEqual:userID]) { // outoging
             const BOOL isInitiatedByMe = ![processed containsObject:destinationID];
             [processed addObject:destinationID];
 
-            // if it's a friendship (order of incoming / outgoing does not matter)
-            if (hasInvertedConnection) {
+            if (self.isIgnoringOutboundEvents && !isInitiatedByMe && [self.acceptedRequestContactIDs containsObject:destinationID]) {
+                // Mark it as viewed since it was accepted while ignoring outbound events and don't add to the list.
+                // `mostRecentViewedTimestamp` var remains the same because we need to filter other requests
+                options.mostRecentViewedNotificationDate = [NSDate dateWithTimeIntervalSince1970:request.timestamp];
+
+                continue;
+            }
+
+            if (isFriendship) {
                 DSBlockchainIdentity *blockchainIdentity = [request.destinationContact.associatedBlockchainIdentity blockchainIdentity];
                 DWDPOutgoingRequestNotificationObject *object =
                     [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:request
@@ -159,12 +198,20 @@ NS_ASSUME_NONNULL_END
             [processed addObject:sourceID];
 
             DSBlockchainIdentity *blockchainIdentity = [request.sourceContact.associatedBlockchainIdentity blockchainIdentity];
-            if (hasInvertedConnection) {
-                DWDPAcceptedRequestNotificationObject *object =
-                    [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                            blockchainIdentity:blockchainIdentity
-                                                                             isInitiatedByThem:isInitiatedByThem];
-                [items addObject:object];
+            if (isFriendship) {
+                if (self.isIgnoringOutboundEvents && isInitiatedByThem && [self.acceptedRequestContactIDs containsObject:sourceID]) {
+                    DWDPEstablishedContactNotificationObject *object =
+                        [[DWDPEstablishedContactNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                                   blockchainIdentity:blockchainIdentity];
+                    [items addObject:object];
+                }
+                else {
+                    DWDPAcceptedRequestNotificationObject *object =
+                        [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                                blockchainIdentity:blockchainIdentity
+                                                                                 isInitiatedByThem:isInitiatedByThem];
+                    [items addObject:object];
+                }
             }
             else {
                 DWDPNewIncomingRequestNotificationObject *object =
@@ -175,10 +222,8 @@ NS_ASSUME_NONNULL_END
         }
     }
 
-    self.data = [[DWNotificationsData alloc]
-        initWithMostRecentNotificationDate:mostRecentNotificationDate
-                               unreadItems:[newItems reverseObjectEnumerator].allObjects
-                                  oldItems:[oldItems reverseObjectEnumerator].allObjects];
+    self.data = [[DWNotificationsData alloc] initWithUnreadItems:[newItems reverseObjectEnumerator].allObjects
+                                                        oldItems:[oldItems reverseObjectEnumerator].allObjects];
 }
 
 #pragma mark - DWFetchedResultsDataSourceDelegate

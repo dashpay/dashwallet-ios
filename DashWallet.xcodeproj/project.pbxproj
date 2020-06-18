@@ -1378,6 +1378,7 @@
 		2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileViewController.m; sourceTree = "<group>"; };
 		2AE47369241BC5E300804DD4 /* UIViewController+DWDisplayError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWDisplayError.h"; sourceTree = "<group>"; };
 		2AE4736A241BC5E300804DD4 /* UIViewController+DWDisplayError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+DWDisplayError.m"; sourceTree = "<group>"; };
+		2AE56473249B675500CC2E80 /* DWDPNotificationItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNotificationItem.h; sourceTree = "<group>"; };
 		2AE8B63F23CDB98A0016F221 /* DWCreateUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateUsernameViewController.h; sourceTree = "<group>"; };
 		2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateUsernameViewController.m; sourceTree = "<group>"; };
 		2AE8B64223CDC0F40016F221 /* DWInputUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInputUsernameViewController.h; sourceTree = "<group>"; };
@@ -2535,6 +2536,7 @@
 				2A7AF35F24825991001D74F9 /* DWDPEstablishedContactItem.h */,
 				2A7AF35C24825860001D74F9 /* DWDPIncomingRequestItem.h */,
 				2A9D72A9249A0E7800F79CD8 /* DWDPNewIncomingRequestItem.h */,
+				2AE56473249B675500CC2E80 /* DWDPNotificationItem.h */,
 				2A7AF35E2482592F001D74F9 /* DWDPPendingRequestItem.h */,
 				2A7AF35D248258C9001D74F9 /* DWDPRespondedRequestItem.h */,
 			);

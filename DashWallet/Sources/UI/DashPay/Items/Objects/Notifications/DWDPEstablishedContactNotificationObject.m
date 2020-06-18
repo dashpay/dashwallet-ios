@@ -20,28 +20,39 @@
 #import <DashSync/DashSync.h>
 
 #import "DWDateFormatter.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWDPEstablishedContactNotificationObject ()
-
-@property (readonly, nonatomic, strong) NSDate *date;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#import "UIFont+DWDPItem.h"
 
 @implementation DWDPEstablishedContactNotificationObject
 
+@synthesize title = _title;
 @synthesize subtitle = _subtitle;
+@synthesize date = _date;
 
-- (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity {
-    self = [super initWithDashpayUserEntity:userEntity];
+- (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
+                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self = [super initWithBlockchainIdentity:blockchainIdentity];
     if (self) {
-        // TODO: get from entity
-        _date = [NSDate date];
+        _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
     }
     return self;
+}
+
+- (NSAttributedString *)title {
+    if (_title == nil) {
+        NSString *name = self.displayName ?: self.username;
+        NSString *format = NSLocalizedString(@"%@ has sent you a contact request", nil);
+        NSString *plainTitle = [NSString stringWithFormat:format, name];
+
+        NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:plainTitle attributes:@{NSFontAttributeName : [UIFont dw_itemSubtitleFont]}];
+
+        NSRange range = [plainTitle rangeOfString:name];
+        if (range.location != NSNotFound) {
+            [title setAttributes:@{NSFontAttributeName : [UIFont dw_itemTitleFont]} range:range];
+        }
+
+        _title = [title copy];
+    }
+    return _title;
 }
 
 - (NSString *)subtitle {

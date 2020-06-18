@@ -15,22 +15,13 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
-
-#import "DWDPBasicItem.h"
-#import "DWDPNotificationItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsData : NSObject <NSCopying>
+@protocol DWDPNotificationItem <NSObject>
 
-@property (readonly, nonatomic, assign) BOOL isEmpty;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *unreadItems;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *oldItems;
-
-- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)unreadItems
-                           oldItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
+@property (readonly, nonatomic, strong) NSDate *date;
 
 @end
 

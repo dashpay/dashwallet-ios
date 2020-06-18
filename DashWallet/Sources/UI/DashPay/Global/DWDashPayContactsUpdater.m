@@ -123,7 +123,9 @@ NS_ASSUME_NONNULL_END
             return;
         }
 
-        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@", success ? @"Succeeded" : @"Failed", errors);
+        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@",
+                     success ? @"Succeeded" : @"Failed",
+                     errors.count == 0 ? @"" : errors);
 
         if (strongSelf.fetchCompletion) {
             strongSelf.fetchCompletion(success, errors);

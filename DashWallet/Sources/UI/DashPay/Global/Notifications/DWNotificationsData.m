@@ -19,14 +19,12 @@
 
 @implementation DWNotificationsData
 
-- (instancetype)initWithMostRecentNotificationDate:(NSDate *)mostRecentNotificationDate
-                                       unreadItems:(NSArray<id<DWDPBasicItem>> *)unreadItems
-                                          oldItems:(NSArray<id<DWDPBasicItem>> *)oldItems {
+- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)unreadItems
+                           oldItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)oldItems {
     NSParameterAssert(unreadItems);
     NSParameterAssert(oldItems);
     self = [super init];
     if (self) {
-        _mostRecentNotificationDate = mostRecentNotificationDate;
         _unreadItems = [unreadItems copy];
         _oldItems = [oldItems copy];
         _isEmpty = _unreadItems.count == 0 && _oldItems.count == 0;
@@ -35,15 +33,13 @@
 }
 
 - (instancetype)init {
-    return [self initWithMostRecentNotificationDate:nil unreadItems:@[] oldItems:@[]];
+    return [self initWithUnreadItems:@[] oldItems:@[]];
 }
 
 #pragma mark - NSCopying
 
 - (id)copyWithZone:(nullable NSZone *)zone {
-    return [[self.class alloc] initWithMostRecentNotificationDate:self.mostRecentNotificationDate
-                                                      unreadItems:self.unreadItems
-                                                         oldItems:self.oldItems];
+    return [[self.class alloc] initWithUnreadItems:self.unreadItems oldItems:self.oldItems];
 }
 
 @end

@@ -21,19 +21,10 @@
 
 #import "DWDateFormatter.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWDPNewIncomingRequestNotificationObject ()
-
-@property (readonly, nonatomic, strong) NSDate *date;
-
-@end
-
-NS_ASSUME_NONNULL_END
-
 @implementation DWDPNewIncomingRequestNotificationObject
 
 @synthesize subtitle = _subtitle;
+@synthesize date = _date;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
                          blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {

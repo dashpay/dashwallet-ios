@@ -22,6 +22,7 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWNotificationsProvider.h"
 
 @implementation DWDashPayContactsActions
 
@@ -33,11 +34,21 @@
     const BOOL isFriendRequestBacked = [item conformsToProtocol:@protocol(DWDPFriendRequestBackedItem)];
     NSAssert(isBlockchainIdentityBacked || isFriendRequestBacked, @"Invalid item to accept contact request");
 
+    NSManagedObjectID *acceptedRequestContactID = nil;
+    if (isFriendRequestBacked && [(id<DWDPFriendRequestBackedItem>)item friendRequestEntity] != nil) {
+        id<DWDPFriendRequestBackedItem> backedItem = (id<DWDPFriendRequestBackedItem>)item;
+        acceptedRequestContactID = backedItem.friendRequestEntity.sourceContact.objectID;
+    }
+
     id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
     newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
 
     void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
         newRequestItem.requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
+
+        if (acceptedRequestContactID) {
+            [[DWNotificationsProvider sharedInstance] requestWasAcceptedFromContactID:acceptedRequestContactID];
+        }
 
         // TODO: DP temp workaround to update and force reload contact list
         // This will trigger DWNotificationsProvider to reset

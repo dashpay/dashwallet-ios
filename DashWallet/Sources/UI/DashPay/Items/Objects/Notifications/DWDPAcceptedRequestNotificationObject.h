@@ -15,11 +15,12 @@
 //  limitations under the License.
 //
 
+#import "DWDPNotificationItem.h"
 #import "DWDPRespondedIncomingRequestObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPAcceptedRequestNotificationObject : DWDPRespondedIncomingRequestObject
+@interface DWDPAcceptedRequestNotificationObject : DWDPRespondedIncomingRequestObject <DWDPNotificationItem>
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
                          blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity

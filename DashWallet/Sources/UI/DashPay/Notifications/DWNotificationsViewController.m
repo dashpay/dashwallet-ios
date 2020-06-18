@@ -70,20 +70,6 @@ NS_ASSUME_NONNULL_END
     return UIStatusBarStyleLightContent;
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-
-    [self.model markNotificationsAsViewed];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-
-    if (self.isMovingFromParentViewController) {
-        [self.model processUnreadNotifications];
-    }
-}
-
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -152,6 +138,15 @@ NS_ASSUME_NONNULL_END
     return UITableViewAutomaticDimension;
 }
 
+- (void)tableView:(UITableView *)tableView
+      willDisplayCell:(UITableViewCell *)cell
+    forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0 && self.model.data.unreadItems.count > 0) { // unread items
+        id<DWDPNotificationItem> item = [self itemAtIndexPath:indexPath];
+        [self.model markNotificationAsRead:item];
+    }
+}
+
 #pragma mark - DWNotificationsModelDelegate
 
 - (void)notificationsModelDidUpdate:(DWNotificationsModel *)model {
@@ -190,9 +185,9 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicItem, DWDPNotificationItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     DWNotificationsData *data = self.model.data;
-    NSArray<id<DWDPBasicItem>> *items = indexPath.section == 0 ? data.unreadItems : data.oldItems;
+    NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *items = indexPath.section == 0 ? data.unreadItems : data.oldItems;
     return items[indexPath.row];
 }
 

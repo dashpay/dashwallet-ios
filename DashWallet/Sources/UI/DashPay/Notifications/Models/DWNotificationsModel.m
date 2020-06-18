@@ -44,8 +44,14 @@ NS_ASSUME_NONNULL_END
                                                      name:DWNotificationsProviderDidUpdateNotification
                                                    object:nil];
         [self notificationsDidUpdate]; // initial update (when notification was missed)
+
+        [[DWNotificationsProvider sharedInstance] beginIgnoringOutboundEvents];
     }
     return self;
+}
+
+- (void)dealloc {
+    [[DWNotificationsProvider sharedInstance] endIgnoringOutboundEvents];
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item {
@@ -56,13 +62,12 @@ NS_ASSUME_NONNULL_END
     [DWDashPayContactsActions declineContactRequest:item completion:nil];
 }
 
-- (void)markNotificationsAsViewed {
-    NSDate *date = self.data.mostRecentNotificationDate;
-    [DWGlobalOptions sharedInstance].mostRecentViewedNotificationDate = date;
-}
-
-- (void)processUnreadNotifications {
-    [[DWNotificationsProvider sharedInstance] readNotifications];
+- (void)markNotificationAsRead:(id<DWDPNotificationItem>)item {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    if (options.mostRecentViewedNotificationDate == nil ||
+        [item.date compare:options.mostRecentViewedNotificationDate] == NSOrderedDescending) {
+        options.mostRecentViewedNotificationDate = item.date;
+    }
 }
 
 #pragma mark - Private
