@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Yeni Cüzdan Oluştur";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash ödemesi %@ altında olamaz";
 
 /* No comment provided by engineer. */

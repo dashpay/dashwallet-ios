@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Tạo một ví mới";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Số Dash cho giao dịch không thể nhỏ hơn %@";
 
 /* No comment provided by engineer. */

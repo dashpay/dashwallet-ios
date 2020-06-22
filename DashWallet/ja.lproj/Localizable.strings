@@ -245,6 +245,9 @@
 "Create a New Wallet" = "新しいウォレットを作成する";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
 
 /* No comment provided by engineer. */

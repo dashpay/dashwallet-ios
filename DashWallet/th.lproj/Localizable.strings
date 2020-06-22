@@ -245,6 +245,9 @@
 "Create a New Wallet" = "สร้าง wallet ใหม่";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
 
 /* No comment provided by engineer. */

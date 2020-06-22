@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Buat Dompet Baru";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "pembayaran dash tidak boleh kurang dari %@";
 
 /* No comment provided by engineer. */

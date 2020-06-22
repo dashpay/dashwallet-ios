@@ -245,6 +245,9 @@
 "Create a New Wallet" = "새로운 지갑 생성";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
 
 /* No comment provided by engineer. */

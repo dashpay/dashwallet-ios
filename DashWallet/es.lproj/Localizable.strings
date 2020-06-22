@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Crear una Nueva Billetera";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Los pagos en Dash no pueden ser inferiores a %@";
 
 /* No comment provided by engineer. */

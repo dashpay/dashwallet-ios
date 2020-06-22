@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Создать новый кошелек";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Платежи Dash не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */

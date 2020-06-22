@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Δημιουργία Νέου Πορτοφολιού";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Οι Dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
