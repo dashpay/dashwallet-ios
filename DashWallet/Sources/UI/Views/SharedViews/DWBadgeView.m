@@ -91,6 +91,8 @@ NS_ASSUME_NONNULL_END
 
     self.layer.masksToBounds = YES;
 
+    self.userInteractionEnabled = NO;
+
     UILabel *label = [[UILabel alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.backgroundColor = self.backgroundColor;
