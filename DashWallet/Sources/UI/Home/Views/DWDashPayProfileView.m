@@ -27,6 +27,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
 @interface DWDashPayProfileView ()
 
+@property (readonly, nonatomic, strong) UIView *contentView;
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UIImageView *bellImageView;
 @property (readonly, nonatomic, strong) DWBadgeView *badgeView;
@@ -42,37 +43,49 @@ NS_ASSUME_NONNULL_END
     if (self) {
         self.backgroundColor = [UIColor dw_dashBlueColor];
 
+        UIView *contentView = [[UIView alloc] init];
+        contentView.translatesAutoresizingMaskIntoConstraints = NO;
+        contentView.backgroundColor = self.backgroundColor;
+        contentView.userInteractionEnabled = NO;
+        [self addSubview:contentView];
+        _contentView = contentView;
+
         DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] init];
         avatarView.translatesAutoresizingMaskIntoConstraints = NO;
         avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
         avatarView.userInteractionEnabled = NO;
-        [self addSubview:avatarView];
+        [contentView addSubview:avatarView];
         _avatarView = avatarView;
 
         UIImageView *bellImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_bell"]];
         bellImageView.translatesAutoresizingMaskIntoConstraints = NO;
         bellImageView.userInteractionEnabled = NO;
-        [self addSubview:bellImageView];
+        [contentView addSubview:bellImageView];
         _bellImageView = bellImageView;
 
         DWBadgeView *badgeView = [[DWBadgeView alloc] initWithFrame:CGRectZero];
         badgeView.translatesAutoresizingMaskIntoConstraints = NO;
         badgeView.hidden = YES;
-        [self addSubview:badgeView];
+        [contentView addSubview:badgeView];
         _badgeView = badgeView;
 
         [NSLayoutConstraint activateConstraints:@[
-            [avatarView.topAnchor constraintEqualToAnchor:self.topAnchor],
-            [avatarView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-            [avatarView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+            [contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
+            [contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+
+            [avatarView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
+            [avatarView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+            [avatarView.centerXAnchor constraintEqualToAnchor:contentView.centerXAnchor],
             [avatarView.widthAnchor constraintEqualToConstant:AVATAR_SIZE.width],
             [avatarView.heightAnchor constraintEqualToConstant:AVATAR_SIZE.height],
 
             [bellImageView.trailingAnchor constraintEqualToAnchor:avatarView.trailingAnchor],
-            [bellImageView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+            [bellImageView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
 
-            [badgeView.centerXAnchor constraintEqualToAnchor:self.avatarView.trailingAnchor],
-            [badgeView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+            [badgeView.centerXAnchor constraintEqualToAnchor:avatarView.trailingAnchor],
+            [badgeView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
         ]];
     }
     return self;
@@ -82,7 +95,7 @@ NS_ASSUME_NONNULL_END
 - (void)setHighlighted:(BOOL)highlighted {
     [super setHighlighted:highlighted];
 
-    [self dw_pressedAnimation:DWPressedAnimationStrength_Medium pressed:highlighted];
+    [self.contentView dw_pressedAnimation:DWPressedAnimationStrength_Medium pressed:highlighted];
 }
 
 - (void)setUsername:(NSString *)username {
