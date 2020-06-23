@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Neue Wallet erstellen";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash-Zahlungen können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */

@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Vytvoriť novú peňaženku";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash platby nemôžu byť menšie ako %@";
 
 /* No comment provided by engineer. */

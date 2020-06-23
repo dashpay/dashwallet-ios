@@ -245,6 +245,9 @@
 "Create a New Wallet" = "Създай нов портфейл";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash плащанията не могат да бъдат по-малки от %@";
 
 /* No comment provided by engineer. */
