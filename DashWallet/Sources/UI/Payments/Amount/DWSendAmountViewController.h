@@ -17,6 +17,8 @@
 
 #import "DWAmountViewController.h"
 
+#import "DWDPBasicItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSPaymentProtocolDetails;
@@ -33,10 +35,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWSendAmountViewControllerDelegate> delegate;
 
-+ (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
-                               paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
-
 - (void)insufficientFundsErrorWasShown;
+
+- (instancetype)initWithDestination:(NSString *)sendingDestination
+                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
+                        contactItem:(nullable id<DWDPBasicItem>)contactItem NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithModel:(DWAmountModel *)model NS_UNAVAILABLE;
 
 @end
 

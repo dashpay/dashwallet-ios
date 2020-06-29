@@ -45,12 +45,29 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileViewController
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item {
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+                    payModel:(id<DWPayModelProtocol>)payModel
+                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO];
+}
+
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+                    payModel:(id<DWPayModelProtocol>)payModel
+                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _model = [[DWUserProfileModel alloc] initWithItem:item];
         _model.delegate = self;
-        [_model update];
+        if (shouldSkipUpdating) {
+            [_model skipUpdating];
+        }
+        else {
+            [_model update];
+        }
+
+        self.payModel = payModel;
+        self.dataProvider = dataProvider;
 
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -79,6 +96,10 @@ NS_ASSUME_NONNULL_END
     [super viewDidAppear:animated];
 
     [self.collectionView flashScrollIndicators];
+}
+
+- (id<DWDPBasicItem>)contactItem {
+    return self.model.item;
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -187,6 +208,10 @@ NS_ASSUME_NONNULL_END
 - (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender {
     if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None) {
         [self.model sendContactRequest];
+    }
+    else if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
+             self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends) {
+        [self performPayToUser:self.model.item];
     }
 }
 

@@ -17,7 +17,9 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDPBasicItem.h"
 #import "DWDemoDelegate.h"
+#import "DWNavigationChildViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
 
-@interface DWBasePayViewController : UIViewController
+@interface DWBasePayViewController : DWNavigationChildViewController
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
@@ -38,11 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+- (void)performPayToUser:(id<DWDPBasicItem>)userItem;
 
 - (void)handleFile:(NSData *)file;
 
 /// This method is called after presentation of payment result controller.
 - (void)payViewControllerDidShowPaymentResult;
+
+- (id<DWDPBasicItem>)contactItem;
 
 @end
 

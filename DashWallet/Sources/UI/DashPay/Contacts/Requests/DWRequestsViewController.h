@@ -23,7 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRequestsViewController : DWBaseContactsViewController
 
-- (instancetype)initWithModel:(DWRequestsModel *)model;
+- (instancetype)initWithModel:(DWRequestsModel *)model
+                     payModel:(id<DWPayModelProtocol>)payModel
+                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(nullable NSCoder *)coder NS_UNAVAILABLE;

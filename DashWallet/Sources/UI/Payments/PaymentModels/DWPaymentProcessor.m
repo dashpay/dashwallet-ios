@@ -116,6 +116,10 @@ static NSString *sanitizeString(NSString *s) {
         self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmProtocolRequest:paymentInput.protocolRequest];
     }
+    else if (paymentInput.source == DWPaymentInputSource_BlockchainUser) {
+        self.canChangeAmount = paymentInput.canChangeAmount;
+        [self confirmRequest:paymentInput.request];
+    }
 }
 
 - (void)processFile:(NSData *)file {

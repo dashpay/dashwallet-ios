@@ -25,15 +25,12 @@
     return DWNavigationBarAppearanceDefault;
 }
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    NSAssert(self.navigationController,
-             @"DWNavigationChildViewController is intended to use within UINavigationController hierarchy");
-}
-
 - (void)willMoveToParentViewController:(UIViewController *)parent {
     [super willMoveToParentViewController:parent];
+
+    if (self.navigationController == nil) {
+        return;
+    }
 
     NSArray<UIViewController *> *viewControllers = self.navigationController.viewControllers;
     UIViewController *last = viewControllers.lastObject;
@@ -54,6 +51,10 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
+    if (self.navigationController == nil) {
+        return;
+    }
+
     UIViewController *previous = self.navigationController.viewControllers.lastObject;
     if ([previous isKindOfClass:DWNavigationChildViewController.class]) {
         [(DWNavigationChildViewController *)previous animateNavigationBarAppearance];
@@ -72,6 +73,10 @@
 }
 
 - (void)setNavigationBarAppearance {
+    if (self.navigationController == nil) {
+        return;
+    }
+
     UINavigationBar *navigationBar = self.navigationController.navigationBar;
     switch (self.navigationBarAppearance) {
         case DWNavigationBarAppearanceDefault:

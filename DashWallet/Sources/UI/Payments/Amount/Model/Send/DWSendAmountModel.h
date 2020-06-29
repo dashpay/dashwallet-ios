@@ -29,7 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL insufficientFundsErrorWasShown;
 
 - (instancetype)initWithSendingDestination:(nullable NSString *)sendingDestination
-                            paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
+                            paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
+                               contactItem:(nullable id<DWDPBasicItem>)contactItem;
 
 - (instancetype)init NS_UNAVAILABLE;
 

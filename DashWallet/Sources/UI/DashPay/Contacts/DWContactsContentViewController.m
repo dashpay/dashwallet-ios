@@ -21,10 +21,14 @@
 #import "DWRequestsViewController.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
+#import "DWUserProfileViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsContentViewController () <DWTitleActionHeaderViewDelegate, DWFilterHeaderViewDelegate>
+
+@property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
+@property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @end
 
@@ -33,6 +37,16 @@ NS_ASSUME_NONNULL_END
 @implementation DWContactsContentViewController
 
 @dynamic model;
+
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithStyle:UITableViewStylePlain];
+    if (self) {
+        _payModel = payModel;
+        _dataProvider = dataProvider;
+    }
+    return self;
+}
 
 #pragma mark - UITableViewDelegate
 
@@ -111,6 +125,18 @@ NS_ASSUME_NONNULL_END
     return UITableViewAutomaticDimension;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    id<DWDPBasicItem> item = [self.model.dataSource itemAtIndexPath:indexPath];
+    DWUserProfileViewController *controller =
+        [[DWUserProfileViewController alloc] initWithItem:item
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider
+                                       shouldSkipUpdating:YES];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
 #pragma mark - DWFilterHeaderViewDelegate
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
@@ -149,7 +175,9 @@ NS_ASSUME_NONNULL_END
 
 - (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender {
     DWRequestsModel *requestsModel = [self.model contactRequestsModel];
-    DWRequestsViewController *controller = [[DWRequestsViewController alloc] initWithModel:requestsModel];
+    DWRequestsViewController *controller = [[DWRequestsViewController alloc] initWithModel:requestsModel
+                                                                                  payModel:self.payModel
+                                                                              dataProvider:self.dataProvider];
     [self.navigationController pushViewController:controller animated:YES];
 }
 

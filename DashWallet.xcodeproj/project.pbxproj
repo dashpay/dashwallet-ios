@@ -274,6 +274,8 @@
 		2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */; };
 		2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */; };
 		2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EB523A7E145006A2A59 /* DWTransactionStub.m */; };
+		2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */; };
+		2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */; };
 		2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */; };
 		2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
@@ -340,7 +342,6 @@
 		2AB7F7E923846F6000C173AD /* DWMainInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7E823846F6000C173AD /* DWMainInterfaceController.swift */; };
 		2AB7F7EB2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7EA2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift */; };
 		2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */; };
-		2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */; };
 		2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */; };
 		2ABCA9182357A61B00092C09 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
 		2AC52AD6241BB5FC00D9A829 /* DWDashPaySetupFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC52AD5241BB5FC00D9A829 /* DWDashPaySetupFlowController.m */; };
@@ -1111,6 +1112,10 @@
 		2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A913EB423A7E145006A2A59 /* DWTransactionStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionStub.h; sourceTree = "<group>"; };
 		2A913EB523A7E145006A2A59 /* DWTransactionStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionStub.m; sourceTree = "<group>"; };
+		2A919F9A24A4DCAD0018C9A3 /* DWDPSmallContactView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPSmallContactView.h; sourceTree = "<group>"; };
+		2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPSmallContactView.m; sourceTree = "<group>"; };
+		2A919F9D24A65CE00018C9A3 /* DWDPAmountContactView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPAmountContactView.h; sourceTree = "<group>"; };
+		2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPAmountContactView.m; sourceTree = "<group>"; };
 		2A951CE223D1B92C00602824 /* DWBaseContactsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsModel.h; sourceTree = "<group>"; };
 		2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsModel.m; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
@@ -1249,7 +1254,6 @@
 		2AB7F7EA2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWTxInfoDisplayableInterfaceController.swift; sourceTree = "<group>"; };
 		2AB8CDDD220D880100A3D1DB /* DWNumberKeyboardButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboardButton.h; sourceTree = "<group>"; };
 		2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberKeyboardButton.m; sourceTree = "<group>"; };
-		2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AmountStoryboard.storyboard; sourceTree = "<group>"; };
 		2AB8CDE2220DCA7D00A3D1DB /* DWNumberKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboard.h; sourceTree = "<group>"; };
 		2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberKeyboard.m; sourceTree = "<group>"; };
 		2ABCA9172357A61B00092C09 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -3351,7 +3355,6 @@
 				2ACED2A2230E6905003CB498 /* Model */,
 				2A9FFF3622357F2900956D5F /* Validation */,
 				2AB8CDDC220D87E300A3D1DB /* Views */,
-				2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */,
 				2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */,
 				2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */,
 				2A0C69A423114BA7001B8C90 /* DWSendAmountViewController.h */,
@@ -3372,6 +3375,8 @@
 				2AF26F40230C1F9D007F9228 /* DWAmountView.m */,
 				2A0C699723103952001B8C90 /* DWMaxButton.h */,
 				2A0C699823103952001B8C90 /* DWMaxButton.m */,
+				2A919F9D24A65CE00018C9A3 /* DWDPAmountContactView.h */,
+				2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3578,6 +3583,8 @@
 				2ADB396824223D9B00A6F898 /* DWDashPayAnimationView.m */,
 				2A3CCEFA242BB1DD00300AF8 /* DWDPAvatarView.h */,
 				2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */,
+				2A919F9A24A4DCAD0018C9A3 /* DWDPSmallContactView.h */,
+				2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4274,7 +4281,6 @@
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
-				2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */,
 				2A4E531A22EA382B00E5168A /* DWSyncView.xib in Resources */,
 				2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */,
 				2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */,
@@ -4899,6 +4905,7 @@
 				2ACCD8E2231E507900A96B62 /* DWPinInputStepView.m in Sources */,
 				2AC52AD6241BB5FC00D9A829 /* DWDashPaySetupFlowController.m in Sources */,
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
+				2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */,
 				2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
 				2AFCB9C123BE766D00FF59A6 /* DWUpholdConfirmViewController.m in Sources */,
@@ -4925,6 +4932,7 @@
 				2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */,
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
+				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
 				2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */,

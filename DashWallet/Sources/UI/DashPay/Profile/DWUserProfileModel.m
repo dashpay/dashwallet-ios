@@ -41,6 +41,10 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)skipUpdating {
+    self.state = DWUserProfileModelState_Done;
+}
+
 - (void)setState:(DWUserProfileModelState)state {
     _state = state;
 

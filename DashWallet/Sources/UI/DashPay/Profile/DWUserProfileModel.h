@@ -49,6 +49,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 
 @property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
 
+- (void)skipUpdating;
 - (void)update;
 
 - (void)sendContactRequest;

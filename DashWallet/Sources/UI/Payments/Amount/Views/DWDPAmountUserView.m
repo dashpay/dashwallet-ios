@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,24 +15,28 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWDPAmountContactView.h"
 
-#import "DWPaymentInput.h"
+#import "DWDPSmallContactView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPaymentInputBuilder : NSObject
+@interface DWDPAmountContactView ()
 
-- (DWPaymentInput *)emptyPaymentInputWithSource:(DWPaymentInputSource)source;
-
-- (void)payFirstFromArray:(NSArray<NSString *> *)array
-                   source:(DWPaymentInputSource)source
-               completion:(void (^)(DWPaymentInput *paymentInput))completion;
-
-- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
-
-- (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicItem>)userItem;
+@property (readonly, nonatomic, strong) DWDPSmallContactView *contactView;
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+@implementation DWDPAmountContactView
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

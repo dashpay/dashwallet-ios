@@ -94,6 +94,12 @@ static CALayer *SeparatorLineLayer(void) {
     [self invalidateIntrinsicContentSize];
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    self.topLineLayer.backgroundColor = [UIColor dw_separatorLineColor].CGColor;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

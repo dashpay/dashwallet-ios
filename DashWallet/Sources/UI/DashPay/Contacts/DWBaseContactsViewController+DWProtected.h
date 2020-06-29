@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBaseContactsViewController () <DWBaseContactsContentViewControllerDelegate, DWContactsModelDelegate, DWSearchStateViewControllerDelegate>
 
+@property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
+@property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
+
 @property (readonly, nonatomic, strong) DWBaseContactsModel *model;
 @property (readonly, nonatomic, strong) DWSearchStateViewController *stateController;
 @property (readonly, nonatomic, strong) DWBaseContactsContentViewController *contentController;

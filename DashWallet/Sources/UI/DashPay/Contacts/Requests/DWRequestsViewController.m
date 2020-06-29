@@ -27,8 +27,10 @@
 @synthesize stateController = _stateController;
 @synthesize contentController = _contentController;
 
-- (instancetype)initWithModel:(DWRequestsModel *)model {
-    self = [super initWithNibName:nil bundle:nil];
+- (instancetype)initWithModel:(DWRequestsModel *)model
+                     payModel:(id<DWPayModelProtocol>)payModel
+                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithPayModel:payModel dataProvider:dataProvider];
     if (self) {
         _model = model;
         _model.delegate = self;

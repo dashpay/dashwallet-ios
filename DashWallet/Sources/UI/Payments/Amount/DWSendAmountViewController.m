@@ -29,14 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSendAmountViewController
 
-+ (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
-                               paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
+- (instancetype)initWithDestination:(NSString *)sendingDestination
+                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
+                        contactItem:(nullable id<DWDPBasicItem>)contactItem {
     DWSendAmountModel *model = [[DWSendAmountModel alloc] initWithSendingDestination:sendingDestination
-                                                                      paymentDetails:paymentDetails];
-
-    DWSendAmountViewController *controller = [[DWSendAmountViewController alloc] initWithModel:model];
-
-    return controller;
+                                                                      paymentDetails:paymentDetails
+                                                                         contactItem:contactItem];
+    self = [super initWithModel:model];
+    return self;
 }
 
 - (DWSendAmountModel *)sendAmountModel {

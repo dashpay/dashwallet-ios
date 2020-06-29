@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchViewController () <DWUserSearchModelDelegate, DWUserSearchResultViewControllerDelegate>
 
+@property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
+@property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
+
 @property (null_resettable, nonatomic, strong) DWUserSearchModel *model;
 
 @property (null_resettable, nonatomic, strong) DWSearchStateViewController *stateController;
@@ -40,6 +43,16 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchViewController
+
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _payModel = payModel;
+        _dataProvider = dataProvider;
+    }
+    return self;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -119,7 +132,9 @@ NS_ASSUME_NONNULL_END
     }
 
     DWUserProfileViewController *profileController =
-        [[DWUserProfileViewController alloc] initWithItem:item];
+        [[DWUserProfileViewController alloc] initWithItem:item
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider];
     [self.navigationController pushViewController:profileController animated:YES];
 }
 

@@ -20,6 +20,7 @@
 #import "DWAmountDescriptionView.h"
 #import "DWAmountInputControl.h"
 #import "DWAmountModel.h"
+#import "DWDPAmountContactView.h"
 #import "DWMaxButton.h"
 #import "DWNumberKeyboard.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
@@ -39,6 +40,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 @property (readonly, nonatomic, strong) DWAmountInputControl *inputControl;
 @property (readonly, nonatomic, strong) UIButton *maxButton;
 @property (readonly, nonatomic, strong) UITextField *textField;
+@property (readonly, nonatomic, strong) DWDPAmountContactView *contactView;
 @property (readonly, nonatomic, strong) DWAmountDescriptionView *descriptionView;
 @property (readonly, nonatomic, strong) DWNumberKeyboard *numberKeyboard;
 
@@ -106,12 +108,17 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         [self addSubview:textField];
         _textField = textField;
 
+        DWDPAmountContactView *contactView = [[DWDPAmountContactView alloc] initWithFrame:CGRectZero];
+        contactView.translatesAutoresizingMaskIntoConstraints = NO;
+        contactView.hidden = YES;
+        _contactView = contactView;
+
         DWAmountDescriptionView *descriptionView = [[DWAmountDescriptionView alloc] initWithFrame:CGRectZero];
         descriptionView.translatesAutoresizingMaskIntoConstraints = NO;
         _descriptionView = descriptionView;
 
         UIStackView *contentStackView = [[UIStackView alloc]
-            initWithArrangedSubviews:@[ alignmentStackView, descriptionView ]];
+            initWithArrangedSubviews:@[ alignmentStackView, contactView, descriptionView ]];
         contentStackView.translatesAutoresizingMaskIntoConstraints = NO;
         contentStackView.axis = UILayoutConstraintAxisVertical;
         contentStackView.alignment = UIStackViewAlignmentCenter;
@@ -136,6 +143,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
         [NSLayoutConstraint activateConstraints:@[
             [descriptionView.widthAnchor constraintEqualToAnchor:contentStackView.widthAnchor],
+            [contactView.widthAnchor constraintEqualToAnchor:contentStackView.widthAnchor],
 
             [contentStackView.topAnchor constraintEqualToAnchor:self.topAnchor],
             [contentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
@@ -170,6 +178,12 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                                                  (value.text == nil && value.attributedText == nil));
                           self.descriptionView.hidden = isHidden;
                           self.descriptionView.model = self.model.descriptionModel;
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.contactItem)
+                      with:^(typeof(self) self, id<DWDPBasicItem> value) {
+                          self.contactView.hidden = value == nil;
+                          self.contactView.item = value;
                       }];
     }
     return self;

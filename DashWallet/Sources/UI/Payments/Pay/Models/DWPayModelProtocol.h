@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWPayOptionModel;
 @class DWPaymentInput;
+@protocol DWDPBasicItem;
 
 @protocol DWPayModelProtocol <NSObject>
 
@@ -36,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
+- (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicItem>)userItem;
 
 @end
 

@@ -101,6 +101,25 @@ NS_ASSUME_NONNULL_BEGIN
     return paymentInput;
 }
 
+- (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicItem>)userItem {
+    DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
+    NSParameterAssert(friendRequest);
+
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    DSIncomingFundsDerivationPath *derivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+    NSAssert(derivationPath.extendedPublicKeyData, @"Extended public key must exist already");
+    NSString *address = derivationPath.receiveAddress;
+
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:address onChain:chain];
+
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_BlockchainUser];
+    paymentInput.userItem = userItem;
+    paymentInput.canChangeAmount = YES;
+    paymentInput.request = paymentRequest;
+
+    return paymentInput;
+}
 
 @end
 

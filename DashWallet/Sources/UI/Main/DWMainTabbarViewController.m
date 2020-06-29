@@ -216,7 +216,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (DWNavigationController *)contactsNavigationController {
     if (!_contactsNavigationController) {
-        DWContactsViewController *contactsController = [[DWContactsViewController alloc] init];
+        DWContactsViewController *contactsController = [[DWContactsViewController alloc] initWithPayModel:self.homeModel.payModel dataProvider:self.homeModel.getDataProvider];
 
         _contactsNavigationController = [[DWNavigationController alloc] initWithRootViewController:contactsController];
         _contactsNavigationController.delegate = self;

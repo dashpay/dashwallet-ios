@@ -15,15 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DWNavigationChildViewController.h"
+#import "DWBasePayViewController.h"
 
 #import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserProfileViewController : DWNavigationChildViewController
+@interface DWUserProfileViewController : DWBasePayViewController
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item;
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+                    payModel:(id<DWPayModelProtocol>)payModel
+                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+
+- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+                    payModel:(id<DWPayModelProtocol>)payModel
+                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
