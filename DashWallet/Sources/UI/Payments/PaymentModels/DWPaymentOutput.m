@@ -29,7 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
                       name:(NSString *_Nullable)name
                       memo:(NSString *_Nullable)memo
                   isSecure:(BOOL)isSecure
-             localCurrency:(NSString *_Nullable)localCurrency {
+             localCurrency:(NSString *_Nullable)localCurrency
+                  userItem:(id<DWDPBasicItem>)userItem {
     self = [super init];
     if (self) {
         _tx = tx;
@@ -41,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
         _memo = memo;
         _isSecure = isSecure;
         _localCurrency = localCurrency;
+        _userItem = userItem;
     }
     return self;
 }

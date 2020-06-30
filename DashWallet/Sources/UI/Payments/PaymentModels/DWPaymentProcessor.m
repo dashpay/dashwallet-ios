@@ -39,7 +39,7 @@ static NSString *sanitizeString(NSString *s) {
 
 @property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
 
-@property (readonly, nullable, nonatomic, strong) DWPaymentInput *paymentInput;
+@property (nullable, nonatomic, strong) DWPaymentInput *paymentInput;
 
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, assign) BOOL canChangeAmount;
@@ -105,6 +105,8 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
+
+    self.paymentInput = paymentInput;
 
     self.shouldClearPasteboard = paymentInput.source == DWPaymentInputSource_Pasteboard;
 
@@ -469,7 +471,8 @@ static NSString *sanitizeString(NSString *s) {
                                                                     name:name
                                                                     memo:memo
                                                                 isSecure:isSecure
-                                                           localCurrency:localCurrency];
+                                                           localCurrency:localCurrency
+                                                                userItem:self.paymentInput.userItem];
     [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
 }
 
@@ -634,6 +637,7 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (void)reset {
+    self.paymentInput = nil;
     self.request = nil;
     if (self.shouldClearPasteboard) {
         UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];

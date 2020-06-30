@@ -17,6 +17,7 @@
 
 #import "DWTitleDetailCellView.h"
 
+#import "DWDPSmallContactView.h"
 #import "DWUIKit.h"
 #import <DashSync/UIView+DSFindConstraint.h>
 
@@ -30,6 +31,7 @@ static CGFloat const SMALL_PADDING = 12.0;
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UILabel *detailLabel;
+@property (readonly, nonatomic, strong) DWDPSmallContactView *contactView;
 @property (readonly, nonatomic, strong) UIStackView *stackView;
 @property (readonly, nonatomic, strong) CALayer *separatorLayer;
 
@@ -82,7 +84,11 @@ static CGFloat const SMALL_PADDING = 12.0;
     detailLabel.textColor = [UIColor dw_secondaryTextColor];
     _detailLabel = detailLabel;
 
-    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, detailLabel ]];
+    DWDPSmallContactView *contactView = [[DWDPSmallContactView alloc] initWithFrame:CGRectZero];
+    contactView.translatesAutoresizingMaskIntoConstraints = NO;
+    _contactView = contactView;
+
+    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, detailLabel, contactView ]];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     stackView.axis = UILayoutConstraintAxisHorizontal;
     stackView.alignment = UIStackViewAlignmentCenter;
@@ -124,18 +130,21 @@ static CGFloat const SMALL_PADDING = 12.0;
     _model = model;
 
     switch (model.style) {
-        case DWTitleDetailItem_Default: {
+        case DWTitleDetailItemStyle_Default: {
             self.detailLabel.adjustsFontSizeToFitWidth = YES;
             self.detailLabel.lineBreakMode = NSLineBreakByTruncatingTail;
             self.detailLabel.numberOfLines = 0;
 
             break;
         }
-        case DWTitleDetailItem_TruncatedSingleLine: {
+        case DWTitleDetailItemStyle_TruncatedSingleLine: {
             self.detailLabel.adjustsFontSizeToFitWidth = NO;
             self.detailLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
             self.detailLabel.numberOfLines = 1;
 
+            break;
+        }
+        case DWTitleDetailItemStyle_User: {
             break;
         }
     }
@@ -158,6 +167,14 @@ static CGFloat const SMALL_PADDING = 12.0;
     }
     else {
         self.detailLabel.hidden = YES;
+    }
+
+    if (model.userItem) {
+        self.contactView.hidden = NO;
+        self.contactView.item = model.userItem;
+    }
+    else {
+        self.contactView.hidden = YES;
     }
 
     self.detailLabel.textAlignment = model.detailAlignment;

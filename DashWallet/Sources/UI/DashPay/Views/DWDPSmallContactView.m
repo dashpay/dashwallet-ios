@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_END
     const CGFloat avatarSize = 30.0;
 
     [NSLayoutConstraint activateConstraints:@[
-        [avatarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        [avatarView.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
         [avatarView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor],
         [self.bottomAnchor constraintGreaterThanOrEqualToAnchor:avatarView.bottomAnchor],
         [avatarView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],

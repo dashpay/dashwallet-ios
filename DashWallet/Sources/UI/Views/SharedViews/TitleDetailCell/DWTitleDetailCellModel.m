@@ -24,9 +24,23 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize style = _style;
 @synthesize title = _title;
 @synthesize plainDetail = _plainDetail;
+@synthesize userItem = _userItem;
 @synthesize attributedDetail = _attributedDetail;
 @synthesize copyableData = _copyableData;
 @synthesize detailAlignment = _detailAlignment;
+
+- (instancetype)initWithTitle:(nullable NSString *)title
+                     userItem:(id<DWDPBasicItem>)userItem
+                 copyableData:(nullable NSString *)copyableData {
+    self = [super init];
+    if (self) {
+        _style = DWTitleDetailItemStyle_User;
+        _title = [title copy];
+        _userItem = userItem;
+        _copyableData = [copyableData copy];
+    }
+    return self;
+}
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style plainCenteredDetail:(NSString *)plainDetail {
     return [self initWithStyle:style
