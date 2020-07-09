@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DWShadowView *shadowView;
 
 @property (nullable, nonatomic, copy) NSString *highlightedText;
+@property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
 
 @end
 
@@ -40,10 +41,9 @@ NS_ASSUME_NONNULL_END
     return DWDPGenericItemView.class;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     if (self) {
-        self.selectionStyle = UITableViewCellSelectionStyleNone;
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         self.contentView.backgroundColor = self.backgroundColor;
 
@@ -92,6 +92,7 @@ NS_ASSUME_NONNULL_END
                                                  constant:itemHorizontalPadding],
             [self.contentView.bottomAnchor constraintEqualToAnchor:itemView.bottomAnchor
                                                           constant:itemVerticalPadding],
+            (_contentWidthConstraint = [self.contentView.widthAnchor constraintEqualToConstant:200]),
         ]];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -110,8 +111,16 @@ NS_ASSUME_NONNULL_END
     self.itemView.backgroundColor = displayItemBackgroundView ? [UIColor dw_backgroundColor] : [UIColor dw_secondaryBackgroundColor];
 }
 
-- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-    [super setHighlighted:highlighted animated:animated];
+- (CGFloat)contentWidth {
+    return self.contentWidthConstraint.constant;
+}
+
+- (void)setContentWidth:(CGFloat)contentWidth {
+    self.contentWidthConstraint.constant = contentWidth;
+}
+
+- (void)setHighlighted:(BOOL)highlighted {
+    [super setHighlighted:highlighted];
 
     [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }

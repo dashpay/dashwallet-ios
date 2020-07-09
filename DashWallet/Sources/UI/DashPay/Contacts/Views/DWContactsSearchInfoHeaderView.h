@@ -19,13 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsSearchInfoHeaderView : UIView
+@interface DWContactsSearchInfoHeaderView : UICollectionReusableView
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
-
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

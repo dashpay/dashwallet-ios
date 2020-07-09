@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, DWContactsSortMode) {
 
 @protocol DWContactsSortModeProtocol <NSObject>
 
-@property (nonatomic, assign) DWContactsSortMode sortMode;
+@property (readonly, nonatomic, assign) DWContactsSortMode sortMode;
 
 @end
 

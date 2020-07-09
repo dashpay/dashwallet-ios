@@ -19,17 +19,20 @@
 
 #import "DWDPBasicCell.h"
 #import "DWDPNewIncomingRequestItem.h"
+#import "DWListCollectionLayout.h"
 #import "DWNoNotificationsCell.h"
 #import "DWNotificationsModel.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
-#import "UITableView+DWDPItemDequeue.h"
+#import "UICollectionView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPNewIncomingRequestItemDelegate>
+@interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPNewIncomingRequestItemDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
 @property (null_resettable, nonatomic, strong) DWNotificationsModel *model;
+@property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
+@property (null_resettable, nonatomic, strong) DWTitleActionHeaderView *measuringHeaderView;
 
 @end
 
@@ -37,8 +40,8 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWNotificationsViewController
 
-- (instancetype)initWithStyle:(UITableViewStyle)style {
-    self = [super initWithStyle:style];
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -56,27 +59,20 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    [self.tableView dw_registerDPItemCells];
-    [self.tableView registerClass:DWNoNotificationsCell.class
-           forCellReuseIdentifier:DWNoNotificationsCell.dw_reuseIdentifier];
-
-    self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
-    self.tableView.estimatedRowHeight = 72.0;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:self.collectionView];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
 }
 
-#pragma mark - UITableViewDataSource
+#pragma mark - UICollectionViewDataSource
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return 2;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     DWNotificationsData *data = self.model.data;
     if (section == 0) {
         if (data.unreadItems.count == 0) {
@@ -91,66 +87,78 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
     if (indexPath.section == 0 && self.model.data.unreadItems.count == 0) {
-        DWNoNotificationsCell *cell = [tableView dequeueReusableCellWithIdentifier:DWNoNotificationsCell.dw_reuseIdentifier
-                                                                      forIndexPath:indexPath];
+        DWNoNotificationsCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:DWNoNotificationsCell.dw_reuseIdentifier
+                                                                                forIndexPath:indexPath];
+        cell.contentWidth = contentWidth;
         return cell;
     }
 
     id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
 
-    DWDPBasicCell *cell = [tableView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+    DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
     cell.displayItemBackgroundView = indexPath.section == 0;
+    cell.contentWidth = contentWidth;
     cell.delegate = self;
     cell.item = item;
     return cell;
 }
 
-#pragma mark - UITableViewDelegate
+#pragma mark - UICollectionViewDelegate
 
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    const NSInteger section = indexPath.section;
     // hide Earlier section header if it's empty
-    if (section == 1 && [tableView numberOfRowsInSection:section] == 0) {
-        return [[UIView alloc] init];
+    if (section == 1 && [collectionView numberOfItemsInSection:section] == 0) {
+        return [[UICollectionReusableView alloc] init];
     }
 
-    NSString *title = nil;
-    if (section == 0) {
-        title = NSLocalizedString(@"New", @"(List of) New (notifications)");
-    }
-    else {
-        title = NSLocalizedString(@"Earlier", @"(List of notifications happened) Earlier (some time ago)");
-    }
-
-    DWTitleActionHeaderView *view = [[DWTitleActionHeaderView alloc] initWithFrame:CGRectZero];
-    view.titleLabel.text = title;
+    DWTitleActionHeaderView *view = (DWTitleActionHeaderView *)[collectionView
+        dequeueReusableSupplementaryViewOfKind:kind
+                           withReuseIdentifier:DWTitleActionHeaderView.dw_reuseIdentifier
+                                  forIndexPath:indexPath];
+    view.titleLabel.text = [self titleForSection:section];
     view.actionButton.hidden = YES;
     return view;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    // hide Earlier section header if it's empty
-    if (section == 1 && [tableView numberOfRowsInSection:section] == 0) {
-        return 0.0;
-    }
-
-    return UITableViewAutomaticDimension;
-}
-
-- (void)tableView:(UITableView *)tableView
-      willDisplayCell:(UITableViewCell *)cell
-    forRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0 && self.model.data.unreadItems.count > 0) { // unread items
         id<DWDPNotificationItem> item = [self itemAtIndexPath:indexPath];
         [self.model markNotificationAsRead:item];
     }
 }
 
+#pragma mark - UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    // hide Earlier section header if it's empty
+    if (section == 1 && [collectionView numberOfItemsInSection:section] == 0) {
+        return CGSizeZero;
+    }
+
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
+    self.measuringHeaderView.titleLabel.text = [self titleForSection:section];
+    self.measuringHeaderView.frame = CGRectMake(0, 0, contentWidth, 300);
+    CGSize size = [self.measuringHeaderView systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingExpandedSize.height)
+                                          withHorizontalFittingPriority:UILayoutPriorityRequired
+                                                verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
+    return size;
+}
+
 #pragma mark - DWNotificationsModelDelegate
 
 - (void)notificationsModelDidUpdate:(DWNotificationsModel *)model {
-    [self.tableView reloadData];
+    [self.collectionView reloadData];
     [self updateTitle];
 }
 
@@ -166,12 +174,45 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
+- (UICollectionView *)collectionView {
+    if (_collectionView == nil) {
+        DWListCollectionLayout *layout = [[DWListCollectionLayout alloc] init];
+
+        UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
+                                                              collectionViewLayout:layout];
+        collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        collectionView.delegate = self;
+        collectionView.dataSource = self;
+        collectionView.alwaysBounceVertical = YES;
+        [collectionView dw_registerDPItemCells];
+        [collectionView registerClass:DWNoNotificationsCell.class
+            forCellWithReuseIdentifier:DWNoNotificationsCell.dw_reuseIdentifier];
+        [collectionView registerClass:DWTitleActionHeaderView.class
+            forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                   withReuseIdentifier:DWTitleActionHeaderView.dw_reuseIdentifier];
+
+        _collectionView = collectionView;
+    }
+    return _collectionView;
+}
+
 - (DWNotificationsModel *)model {
     if (!_model) {
         _model = [[DWNotificationsModel alloc] init];
         _model.delegate = self;
     }
     return _model;
+}
+
+- (DWTitleActionHeaderView *)measuringHeaderView {
+    if (_measuringHeaderView == nil) {
+        DWTitleActionHeaderView *view = [[DWTitleActionHeaderView alloc] initWithFrame:CGRectZero];
+        view.translatesAutoresizingMaskIntoConstraints = NO;
+        view.actionButton.hidden = YES;
+        _measuringHeaderView = view;
+    }
+    return _measuringHeaderView;
 }
 
 - (void)updateTitle {
@@ -189,6 +230,15 @@ NS_ASSUME_NONNULL_END
     DWNotificationsData *data = self.model.data;
     NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *items = indexPath.section == 0 ? data.unreadItems : data.oldItems;
     return items[indexPath.row];
+}
+
+- (NSString *)titleForSection:(NSInteger)section {
+    if (section == 0) {
+        return NSLocalizedString(@"New", @"(List of) New (notifications)");
+    }
+    else {
+        return NSLocalizedString(@"Earlier", @"(List of notifications happened) Earlier (some time ago)");
+    }
 }
 
 @end

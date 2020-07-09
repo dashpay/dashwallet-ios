@@ -17,10 +17,75 @@
 
 #import "DWContactsDataSourceObject.h"
 
+#import "DWDPContactsItemsFactory.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWContactsDataSourceObject ()
+
+@property (nullable, readonly, nonatomic, strong) NSFetchedResultsController *requestsFRC;
+@property (nullable, readonly, nonatomic, strong) NSFetchedResultsController *contactsFRC;
+@property (readonly, nonatomic, strong) DWDPContactsItemsFactory *itemsFactory;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation DWContactsDataSourceObject
 
-- (NSUInteger)maxVisibleContactRequestsCount {
-    return 3;
+@synthesize sortMode = _sortMode;
+
+- (instancetype)initWithRequestsFRC:(NSFetchedResultsController *)requestsFRC
+                        contactsFRC:(NSFetchedResultsController *)contactsFRC
+                       itemsFactory:(DWDPContactsItemsFactory *)itemsFactory
+                           sortMode:(DWContactsSortMode)sortMode {
+    self = [super init];
+    if (self) {
+        _requestsFRC = requestsFRC;
+        _contactsFRC = contactsFRC;
+        _itemsFactory = itemsFactory;
+        _sortMode = sortMode;
+    }
+    return self;
+}
+
+- (BOOL)isEmpty {
+    if (self.requestsFRC == nil && self.contactsFRC == nil) {
+        return YES;
+    }
+
+    const NSInteger count = self.requestsCount + self.contactsCount;
+    return count == 0;
+}
+
+- (BOOL)isSearching {
+    return NO;
+}
+
+- (NSString *)trimmedQuery {
+    return nil;
+}
+
+- (NSUInteger)requestsCount {
+    return self.requestsFRC.sections.firstObject.numberOfObjects;
+}
+
+- (NSUInteger)contactsCount {
+    return self.contactsFRC.sections.firstObject.numberOfObjects;
+}
+
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0) {
+        NSManagedObject *entity = [self.requestsFRC objectAtIndexPath:indexPath];
+        id<DWDPBasicItem> item = [self.itemsFactory itemForEntity:entity];
+        return item;
+    }
+    else {
+        NSIndexPath *transformedIndexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
+        NSManagedObject *entity = [self.contactsFRC objectAtIndexPath:transformedIndexPath];
+        id<DWDPBasicItem> item = [self.itemsFactory itemForEntity:entity];
+        return item;
+    }
 }
 
 @end

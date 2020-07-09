@@ -72,13 +72,21 @@ static CGFloat const AVATAR_SIZE = 36.0;
     [textLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1 forAxis:UILayoutConstraintAxisHorizontal];
     [accessoryView setContentHuggingPriority:UILayoutPriorityDefaultLow + 1 forAxis:UILayoutConstraintAxisHorizontal];
 
+    [textLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 3 forAxis:UILayoutConstraintAxisHorizontal];
+    [accessoryView setContentCompressionResistancePriority:UILayoutPriorityRequired - 2 forAxis:UILayoutConstraintAxisHorizontal];
+
     const CGFloat spacing = 10.0;
+
+    NSLayoutConstraint *avatarTopConstraint = [avatarView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor];
+    avatarTopConstraint.priority = UILayoutPriorityRequired - 10;
+    NSLayoutConstraint *avatarBottomConstraint = [self.bottomAnchor constraintGreaterThanOrEqualToAnchor:avatarView.bottomAnchor];
+    avatarBottomConstraint.priority = UILayoutPriorityRequired - 11;
 
     [NSLayoutConstraint activateConstraints:@[
         [avatarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [avatarView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-        [avatarView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor],
-        [self.bottomAnchor constraintGreaterThanOrEqualToAnchor:avatarView.bottomAnchor],
+        avatarTopConstraint,
+        avatarBottomConstraint,
         [avatarView.widthAnchor constraintEqualToConstant:AVATAR_SIZE],
         [avatarView.heightAnchor constraintEqualToConstant:AVATAR_SIZE],
 

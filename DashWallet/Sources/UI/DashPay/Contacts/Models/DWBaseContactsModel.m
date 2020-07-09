@@ -17,7 +17,9 @@
 
 #import "DWBaseContactsModel+DWProtected.h"
 
-#import "DWBaseContactsDataSourceObject.h"
+#import "DWContactsDataSourceObject.h"
+#import "DWContactsSearchDataSourceObject.h"
+#import "DWDPContactsItemsFactory.h"
 #import "DWDashPayContactsActions.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
@@ -26,16 +28,12 @@
 
 @synthesize sortMode;
 
-- (BOOL)isEmpty {
-    return self.aggregateDataSource.isEmpty;
-}
-
-- (BOOL)isSearching {
-    return self.aggregateDataSource.isSearching;
-}
-
-- (id<DWContactsDataSource>)dataSource {
-    return self.aggregateDataSource;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _itemsFactory = [[DWDPContactsItemsFactory alloc] init];
+    }
+    return self;
 }
 
 - (BOOL)hasBlockchainIdentity {
@@ -44,17 +42,37 @@
     return myBlockchainIdentity != nil;
 }
 
-- (void)rebuildDataSources {
+- (id<DWContactsDataSource>)dataSource {
+    return [self isSearching] ? self.searchDataSource : self.allDataSource;
+}
+
+- (void)rebuildFRCDataSources {
+    // to be overriden
+    // create FRC-backed datasources here
+}
+
+- (BOOL)shouldFetchData {
+    return YES;
 }
 
 - (void)start {
-    [[DWDashPayContactsUpdater sharedInstance] fetch];
+    if ([self shouldFetchData]) {
+        [[DWDashPayContactsUpdater sharedInstance] fetch];
+    }
 
-    [self activateFRCs];
+    if (!self.requestsDataSource) {
+        [self rebuildFRCDataSources];
+    }
+
+    [self.requestsDataSource start];
+    [self.contactsDataSource start];
+
+    [self updateForced:YES];
 }
 
 - (void)stop {
-    [self resetFRCs];
+    [self.requestsDataSource stop];
+    [self.contactsDataSource stop];
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicItem>)item {
@@ -66,9 +84,15 @@
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {
-    [self.dataSource searchWithQuery:searchQuery];
+    NSCharacterSet *whitespaces = [NSCharacterSet whitespaceCharacterSet];
+    NSString *trimmedQuery = [searchQuery stringByTrimmingCharactersInSet:whitespaces] ?: @"";
+    if ([self.trimmedQuery isEqualToString:trimmedQuery]) {
+        return;
+    }
 
-    [self.delegate contactsModelDidUpdate:self];
+    self.trimmedQuery = trimmedQuery;
+
+    [self updateForced:NO];
 }
 
 #pragma mark - DWFetchedResultsDataSourceDelegate
@@ -76,37 +100,48 @@
 - (void)fetchedResultsDataSourceDidUpdate:(DWFetchedResultsDataSource *)fetchedResultsDataSource {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    if (fetchedResultsDataSource == self.firstSectionDataSource) {
-        [self.aggregateDataSource reloadFirstFRC:fetchedResultsDataSource.fetchedResultsController];
-    }
-    else {
-        [self.aggregateDataSource reloadSecondFRC:fetchedResultsDataSource.fetchedResultsController];
-    }
+    [self updateForced:YES];
+}
 
-    [self.delegate contactsModelDidUpdate:self];
+#pragma mark - NSFetchedResultsControllerDelegate
+
+- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    [self updateForced:YES];
 }
 
 #pragma mark - Private
 
-- (void)activateFRCs {
-    if (!self.firstSectionDataSource) {
-        [self rebuildDataSources];
+- (void)updateForced:(BOOL)forced {
+    NSFetchedResultsController *requestsFRC = self.requestsDataSource.fetchedResultsController;
+    requestsFRC.delegate = self;
+    NSFetchedResultsController *contactsFRC = self.contactsDataSource.fetchedResultsController;
+    contactsFRC.delegate = self;
+
+    if (forced) {
+        self.allDataSource = [[DWContactsDataSourceObject alloc] initWithRequestsFRC:requestsFRC
+                                                                         contactsFRC:contactsFRC
+                                                                        itemsFactory:self.itemsFactory
+                                                                            sortMode:self.sortMode];
     }
 
-    [self.firstSectionDataSource start];
-    [self.secondSectionDataSource start];
+    if (self.isSearching) {
+        self.searchDataSource = [[DWContactsSearchDataSourceObject alloc] initWithContactRequestsFRC:requestsFRC
+                                                                                         contactsFRC:contactsFRC
+                                                                                        itemsFactory:self.itemsFactory
+                                                                                        trimmedQuery:self.trimmedQuery];
+    }
+    else {
+        self.searchDataSource = nil;
+    }
 
-    [self.aggregateDataSource beginReloading];
-    [self.aggregateDataSource reloadFirstFRC:self.firstSectionDataSource.fetchedResultsController];
-    [self.aggregateDataSource reloadSecondFRC:self.secondSectionDataSource.fetchedResultsController];
-    [self.aggregateDataSource endReloading];
-
+    NSParameterAssert(self.delegate);
     [self.delegate contactsModelDidUpdate:self];
 }
 
-- (void)resetFRCs {
-    [self.firstSectionDataSource stop];
-    [self.secondSectionDataSource stop];
+- (BOOL)isSearching {
+    return self.trimmedQuery.length > 0;
 }
 
 @end

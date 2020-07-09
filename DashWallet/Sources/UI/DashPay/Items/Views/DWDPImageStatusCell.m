@@ -37,8 +37,8 @@ NS_ASSUME_NONNULL_END
     return DWDPGenericImageItemView.class;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     if (self) {
         UIImage *image = [UIImage imageNamed:@"dp_established_contact"];
         self.itemView.imageView.image = image;

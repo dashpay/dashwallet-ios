@@ -57,9 +57,11 @@
 
 - (DWBaseContactsContentViewController *)contentController {
     if (_contentController == nil) {
-        DWRequestsContentViewController *controller = [[DWRequestsContentViewController alloc] initWithStyle:UITableViewStylePlain];
-        controller.model = self.model;
-        controller.delegate = self;
+        DWRequestsContentViewController *controller =
+            [[DWRequestsContentViewController alloc] initWithPayModel:self.payModel
+                                                         dataProvider:self.dataProvider];
+        controller.itemsDelegate = self;
+        controller.dataSource = self.model.dataSource;
         _contentController = controller;
     }
     return _contentController;

@@ -160,6 +160,8 @@ NS_ASSUME_NONNULL_END
         return CGSizeZero;
     }
 
+    // TODO: COL use property instead of dequeueing
+
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
     UIView *headerView = [self collectionView:collectionView
             viewForSupplementaryElementOfKind:UICollectionElementKindSectionHeader
@@ -255,4 +257,5 @@ NS_ASSUME_NONNULL_END
     }
     return _collectionView;
 }
+
 @end

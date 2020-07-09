@@ -26,24 +26,22 @@
 
 @implementation DWContactsModel
 
-@synthesize aggregateDataSource = _aggregateDataSource;
-@synthesize firstSectionDataSource = _firstSectionDataSource;
-@synthesize secondSectionDataSource = _secondSectionDataSource;
+@synthesize requestsDataSource = _requestsDataSource;
+@synthesize contactsDataSource = _contactsDataSource;
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _aggregateDataSource = [[DWContactsDataSourceObject alloc] init];
-        [self rebuildDataSources];
+        [self rebuildFRCDataSources];
     }
     return self;
 }
 
 - (DWRequestsModel *)contactRequestsModel {
-    return [[DWRequestsModel alloc] initWithFirstSectionDataSource:self.firstSectionDataSource];
+    return [[DWRequestsModel alloc] initWithRequestsDataSource:self.requestsDataSource];
 }
 
-- (void)rebuildDataSources {
+- (void)rebuildFRCDataSources {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     if (!blockchainIdentity) {
         return;
@@ -51,13 +49,13 @@
 
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    _firstSectionDataSource = [[DWIncomingFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
-    _firstSectionDataSource.shouldSubscribeToNotifications = YES;
-    _firstSectionDataSource.delegate = self;
+    _requestsDataSource = [[DWIncomingFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
+    _requestsDataSource.shouldSubscribeToNotifications = YES;
+    _requestsDataSource.delegate = self;
 
-    _secondSectionDataSource = [[DWContactsFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
-    _secondSectionDataSource.shouldSubscribeToNotifications = YES;
-    _secondSectionDataSource.delegate = self;
+    _contactsDataSource = [[DWContactsFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
+    _contactsDataSource.shouldSubscribeToNotifications = YES;
+    _contactsDataSource.delegate = self;
 }
 
 @end

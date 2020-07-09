@@ -18,27 +18,26 @@
 #import "DWRequestsModel.h"
 
 #import "DWBaseContactsModel+DWProtected.h"
-#import "DWRequestsDataSourceObject.h"
 
 @implementation DWRequestsModel
 
-@synthesize aggregateDataSource = _aggregateDataSource;
-@synthesize firstSectionDataSource = _firstSectionDataSource;
+@synthesize requestsDataSource = _requestsDataSource;
 
-- (instancetype)initWithFirstSectionDataSource:(DWFetchedResultsDataSource *)firstSectionDataSource {
+- (instancetype)initWithRequestsDataSource:(DWFetchedResultsDataSource *)requestsDataSource {
     self = [super init];
     if (self) {
-        _firstSectionDataSource = firstSectionDataSource;
-        _aggregateDataSource = [[DWRequestsDataSourceObject alloc] init];
+        _requestsDataSource = requestsDataSource;
     }
     return self;
 }
 
-- (DWFetchedResultsDataSource *)secondSectionDataSource {
+- (DWFetchedResultsDataSource *)contactsDataSource {
     // Ignored requests are not implemented
     return nil;
 }
 
-// TODO: don't re-start DWFetchedResultsDataSource's
+- (BOOL)shouldFetchData {
+    return NO;
+}
 
 @end

@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRequestsModel : DWBaseContactsModel
 
-- (instancetype)initWithFirstSectionDataSource:(DWFetchedResultsDataSource *)firstSectionDataSource NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithRequestsDataSource:(DWFetchedResultsDataSource *)requestsDataSource NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

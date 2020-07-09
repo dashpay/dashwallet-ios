@@ -15,28 +15,16 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWDPContactsItemsFactory;
+@interface UICollectionView (DWDPItemDequeue)
 
-@interface DWContactsSearchDataSource : NSObject
-
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredFirstSection;
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredSecondSection;
-
-- (void)filterWithTrimmedQuery:(NSString *)trimmedQuery;
-
-- (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
-                       firstFRC:(NSFetchedResultsController *)firstFRC
-                      secondFRC:(NSFetchedResultsController *)secondFRC;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)dw_registerDPItemCells;
+- (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

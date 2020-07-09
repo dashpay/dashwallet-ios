@@ -15,22 +15,30 @@
 //  limitations under the License.
 //
 
+#import <CoreData/CoreData.h>
+
 #import "DWBaseContactsModel.h"
 
 #import "DWFetchedResultsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWBaseContactsDataSourceObject;
+@class DWDPContactsItemsFactory;
 
-@interface DWBaseContactsModel () <DWFetchedResultsDataSourceDelegate>
+@interface DWBaseContactsModel () <DWFetchedResultsDataSourceDelegate, NSFetchedResultsControllerDelegate>
 
-@property (readonly, nonatomic, strong) DWBaseContactsDataSourceObject *aggregateDataSource;
+@property (readonly, nonatomic, strong) DWFetchedResultsDataSource *requestsDataSource;
+@property (readonly, nonatomic, strong) DWFetchedResultsDataSource *contactsDataSource;
 
-@property (readonly, nonatomic, strong) DWFetchedResultsDataSource *firstSectionDataSource;
-@property (readonly, nonatomic, strong) DWFetchedResultsDataSource *secondSectionDataSource;
+@property (nullable, nonatomic, strong) id<DWContactsDataSource> allDataSource;
+@property (nullable, nonatomic, strong) id<DWContactsDataSource> searchDataSource;
 
-- (void)rebuildDataSources;
+@property (readonly, nonatomic, strong) DWDPContactsItemsFactory *itemsFactory;
+@property (nullable, nonatomic, copy) NSString *trimmedQuery;
+
+- (void)rebuildFRCDataSources;
+
+- (BOOL)shouldFetchData;
 
 @end
 

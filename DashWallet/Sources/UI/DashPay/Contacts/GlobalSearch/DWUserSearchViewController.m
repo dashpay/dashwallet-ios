@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                   didSelectItemAtIndex:(NSInteger)index
-                                  cell:(UITableViewCell *)cell {
+                                  cell:(UICollectionViewCell *)cell {
     id<DWDPBasicItem> item = [self.model itemAtIndex:index];
     if (!item) {
         return;

@@ -15,11 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsDataSourceObject.h"
+#import <Foundation/Foundation.h>
+
+#import "DWContactsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRequestsDataSourceObject : DWBaseContactsDataSourceObject
+@class DWDPContactsItemsFactory;
+@class NSFetchedResultsController;
+
+@interface DWContactsSearchDataSourceObject : NSObject <DWContactsDataSource>
+
+- (instancetype)initWithContactRequestsFRC:(NSFetchedResultsController *)contactRequestsFRC
+                               contactsFRC:(NSFetchedResultsController *)contactsFRC
+                              itemsFactory:(DWDPContactsItemsFactory *)itemsFactory
+                              trimmedQuery:(NSString *)trimmedQuery;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

@@ -15,24 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWContactsDataSource.h"
-
-#import <CoreData/CoreData.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseContactsDataSourceObject : NSObject <DWContactsDataSource>
+/// UITableView-like collection layout.
+@interface DWListCollectionLayout : UICollectionViewFlowLayout
 
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
-
-- (NSUInteger)maxVisibleContactRequestsCount;
-
-- (void)beginReloading;
-- (void)endReloading;
-
-- (void)reloadFirstFRC:(NSFetchedResultsController *)frc;
-- (void)reloadSecondFRC:(NSFetchedResultsController *)frc;
+@property (readonly, nonatomic, assign) CGFloat contentWidth;
 
 @end
 
