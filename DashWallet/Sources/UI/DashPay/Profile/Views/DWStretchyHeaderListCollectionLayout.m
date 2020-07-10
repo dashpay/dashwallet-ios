@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DWStretchyHeaderCollectionViewFlowLayout.h"
+#import "DWStretchyHeaderListCollectionLayout.h"
 
-@implementation DWStretchyHeaderCollectionViewFlowLayout
+@implementation DWStretchyHeaderListCollectionLayout
 
 - (NSArray<__kindof UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
     NSArray<UICollectionViewLayoutAttributes *> *layoutAttributes = [[super layoutAttributesForElementsInRect:rect] copy];
@@ -39,7 +39,11 @@
 }
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-    return YES;
+    const CGRect oldBounds = self.collectionView.bounds;
+    if (CGRectGetWidth(newBounds) != CGRectGetWidth(oldBounds)) {
+        return YES;
+    }
+    return NO;
 }
 
 @end

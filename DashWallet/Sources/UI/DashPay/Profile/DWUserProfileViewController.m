@@ -18,7 +18,7 @@
 #import "DWUserProfileViewController.h"
 
 #import "DWActivityCollectionViewCell.h"
-#import "DWStretchyHeaderCollectionViewFlowLayout.h"
+#import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 @property (nullable, nonatomic, weak) DWUserProfileHeaderView *headerView;
+
+@property (null_resettable, nonatomic, strong) DWUserProfileHeaderView *measuringHeaderView;
 
 @end
 
@@ -121,7 +123,7 @@ NS_ASSUME_NONNULL_END
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section != 0) {
-        return nil;
+        return [[UICollectionReusableView alloc] initWithFrame:CGRectZero];
     }
 
     DWUserProfileHeaderView *headerView = (DWUserProfileHeaderView *)[collectionView
@@ -160,22 +162,29 @@ NS_ASSUME_NONNULL_END
         return CGSizeZero;
     }
 
-    // TODO: COL use property instead of dequeueing
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
 
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
-    UIView *headerView = [self collectionView:collectionView
-            viewForSupplementaryElementOfKind:UICollectionElementKindSectionHeader
-                                  atIndexPath:indexPath];
-    const CGSize size = [headerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+    UIView *measuringView = self.measuringHeaderView;
+    measuringView.frame = CGRectMake(0, 0, contentWidth, 300);
+    CGSize size = [measuringView systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingCompressedSize.height)
+                               withHorizontalFittingPriority:UILayoutPriorityRequired
+                                     verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
     return size;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
     if (indexPath.section == 0) {
-        return CGSizeMake(collectionView.bounds.size.width, 120);
+        return CGSizeMake(contentWidth, 120);
     }
     else {
-        return CGSizeMake(collectionView.bounds.size.width, 50);
+        return CGSizeMake(contentWidth, 50);
     }
 }
 
@@ -232,8 +241,7 @@ NS_ASSUME_NONNULL_END
 
 - (UICollectionView *)collectionView {
     if (_collectionView == nil) {
-        DWStretchyHeaderCollectionViewFlowLayout *layout = [[DWStretchyHeaderCollectionViewFlowLayout alloc] init];
-        layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+        DWStretchyHeaderListCollectionLayout *layout = [[DWStretchyHeaderListCollectionLayout alloc] init];
 
         UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
                                                               collectionViewLayout:layout];
@@ -241,7 +249,6 @@ NS_ASSUME_NONNULL_END
         collectionView.dataSource = self;
         collectionView.delegate = self;
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-        collectionView.alwaysBounceVertical = YES;
 
         [collectionView registerClass:DWActivityCollectionViewCell.class
             forCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier];
@@ -256,6 +263,14 @@ NS_ASSUME_NONNULL_END
         _collectionView = collectionView;
     }
     return _collectionView;
+}
+
+- (DWUserProfileHeaderView *)measuringHeaderView {
+    if (_measuringHeaderView == nil) {
+        _measuringHeaderView = [[DWUserProfileHeaderView alloc] initWithFrame:CGRectZero];
+    }
+    _measuringHeaderView.model = self.model;
+    return _measuringHeaderView;
 }
 
 @end

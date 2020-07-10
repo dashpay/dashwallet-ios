@@ -398,7 +398,7 @@
 		2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D12245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m */; };
 		2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */; };
 		2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D6E2462D4AD001D7C0D /* DWUserProfileHeaderView.m */; };
-		2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m */; };
+		2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m */; };
 		2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */; };
 		2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */; };
 		2ADC9D7C24644E46001D7C0D /* DWUserProfileContactActionsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */; };
@@ -1366,11 +1366,11 @@
 		2ADC9D12245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UINavigationBar+DWAppearance.m"; sourceTree = "<group>"; };
 		2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISearchBar+DWAdditions.h"; sourceTree = "<group>"; };
 		2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISearchBar+DWAdditions.m"; sourceTree = "<group>"; };
-		2ADC9D6B2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWStretchyHeaderCollectionViewFlowLayout.h; sourceTree = "<group>"; };
+		2ADC9D6B2462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWStretchyHeaderListCollectionLayout.h; sourceTree = "<group>"; };
 		2ADC9D6C2462D4AD001D7C0D /* DWUserProfileHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileHeaderView.h; sourceTree = "<group>"; };
 		2ADC9D6D2462D4AD001D7C0D /* DWUserProfileNavigationTitleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileNavigationTitleView.h; sourceTree = "<group>"; };
 		2ADC9D6E2462D4AD001D7C0D /* DWUserProfileHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileHeaderView.m; sourceTree = "<group>"; };
-		2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWStretchyHeaderCollectionViewFlowLayout.m; sourceTree = "<group>"; };
+		2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWStretchyHeaderListCollectionLayout.m; sourceTree = "<group>"; };
 		2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileNavigationTitleView.m; sourceTree = "<group>"; };
 		2ADC9D7424640A2B001D7C0D /* DWUserProfileModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileModel.h; sourceTree = "<group>"; };
 		2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileModel.m; sourceTree = "<group>"; };
@@ -3586,8 +3586,8 @@
 		2ADC9D6A2462D4AD001D7C0D /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2ADC9D6B2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.h */,
-				2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m */,
+				2ADC9D6B2462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.h */,
+				2ADC9D6F2462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m */,
 				2ADC9D6C2462D4AD001D7C0D /* DWUserProfileHeaderView.h */,
 				2ADC9D6E2462D4AD001D7C0D /* DWUserProfileHeaderView.m */,
 				2ADC9D6D2462D4AD001D7C0D /* DWUserProfileNavigationTitleView.h */,
@@ -4789,7 +4789,7 @@
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
-				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderCollectionViewFlowLayout.m in Sources */,
+				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */,
 				2A1B7DA123239C8700BA8C6A /* DWTxDetailModel.m in Sources */,
