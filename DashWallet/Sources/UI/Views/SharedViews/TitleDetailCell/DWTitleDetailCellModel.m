@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize detailAlignment = _detailAlignment;
 
 - (instancetype)initWithTitle:(nullable NSString *)title
-                     userItem:(id<DWDPBasicItem>)userItem
+                     userItem:(id<DWDPBasicUserItem>)userItem
                  copyableData:(nullable NSString *)copyableData {
     self = [super init];
     if (self) {

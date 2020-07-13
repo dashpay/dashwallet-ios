@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithSendingDestination:(nullable NSString *)sendingDestination
                             paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
-                               contactItem:(nullable id<DWDPBasicItem>)contactItem;
+                               contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
 - (instancetype)init NS_UNAVAILABLE;
 

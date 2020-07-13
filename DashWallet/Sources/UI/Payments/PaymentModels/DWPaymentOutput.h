@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSTransaction;
 @class DSPaymentProtocolRequest;
-@protocol DWDPBasicItem;
+@protocol DWDPBasicUserItem;
 
 @interface DWPaymentOutput : NSObject
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, nonatomic, copy) NSString *memo;
 @property (readonly, nonatomic, assign) BOOL isSecure;
 @property (readonly, nullable, nonatomic, copy) NSString *localCurrency;
-@property (readonly, nullable, nonatomic, strong) id<DWDPBasicItem> userItem;
+@property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
 - (instancetype)init NS_UNAVAILABLE;
 

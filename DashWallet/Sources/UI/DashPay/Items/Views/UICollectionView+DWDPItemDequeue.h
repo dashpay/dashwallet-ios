@@ -17,14 +17,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UICollectionView (DWDPItemDequeue)
 
 - (void)dw_registerDPItemCells;
-- (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath;
+- (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicUserItem>)item atIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

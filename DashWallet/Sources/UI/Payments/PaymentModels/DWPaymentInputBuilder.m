@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
     return paymentInput;
 }
 
-- (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicItem>)userItem {
+- (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicUserItem>)userItem {
     DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
     NSParameterAssert(friendRequest);
 

@@ -42,8 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 - (void)stop;
 
-- (void)acceptContactRequest:(id<DWDPBasicItem>)item;
-- (void)declineContactRequest:(id<DWDPBasicItem>)item;
+- (void)acceptContactRequest:(id<DWDPBasicUserItem>)item;
+- (void)declineContactRequest:(id<DWDPBasicUserItem>)item;
 
 - (void)searchWithQuery:(NSString *)searchQuery;
 

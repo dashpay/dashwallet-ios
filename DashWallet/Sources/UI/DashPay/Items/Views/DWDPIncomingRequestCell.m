@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDPIncomingRequestCell
 
+@dynamic item;
 @dynamic itemView;
 @dynamic delegate;
 

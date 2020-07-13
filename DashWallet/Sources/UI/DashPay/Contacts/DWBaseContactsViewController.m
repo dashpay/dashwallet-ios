@@ -107,11 +107,11 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWDPNewIncomingRequestItemDelegate
 
-- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)acceptIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.model acceptContactRequest:item];
 }
 
-- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)declineIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.model declineContactRequest:item];
 }
 

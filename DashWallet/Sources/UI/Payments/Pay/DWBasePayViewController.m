@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.paymentProcessor processPaymentInput:paymentInput];
 }
 
-- (void)performPayToUser:(id<DWDPBasicItem>)userItem {
+- (void)performPayToUser:(id<DWDPBasicUserItem>)userItem {
     DWPaymentInput *paymentInput = [self.payModel paymentInputWithUser:userItem];
 
     self.paymentProcessor = nil;
@@ -121,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
     // to be overriden
 }
 
-- (id<DWDPBasicItem>)contactItem {
+- (id<DWDPBasicUserItem>)contactItem {
     return nil; // to be overriden
 }
 

@@ -17,13 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPAmountContactView : UIView
 
-@property (nullable, nonatomic, strong) id<DWDPBasicItem> item;
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> item;
 
 @end
 

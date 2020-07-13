@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign) uint32_t offset;
-@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>> *items;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items;
 @property (nonatomic, assign) BOOL requestInProgress;
 @property (nonatomic, assign) BOOL hasNextPage;
 
@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (id<DWDPBasicItem>)itemAtIndex:(NSInteger)index {
+- (id<DWDPBasicUserItem>)itemAtIndex:(NSInteger)index {
     if (index < 0 || self.searchRequest.items.count < index) {
         NSAssert(NO, @"No blockchain identity for invalid index %ld", index);
         return nil;
@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_END
     return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
 }
 
-- (void)acceptContactRequest:(id<DWDPBasicItem>)item {
+- (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
     __weak typeof(self) weakSelf = self;
     [DWDashPayContactsActions
         acceptContactRequest:item
@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_END
                   }];
 }
 
-- (void)declineContactRequest:(id<DWDPBasicItem>)item {
+- (void)declineContactRequest:(id<DWDPBasicUserItem>)item {
     [DWDashPayContactsActions declineContactRequest:item completion:nil];
 }
 
@@ -185,9 +185,9 @@ NS_ASSUME_NONNULL_END
                           strongSelf.searchRequest.requestInProgress = NO;
 
                           if (success) {
-                              NSMutableArray<id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                              NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
                               for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                                  id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
+                                  id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
                                   [items addObject:item];
                               }
 

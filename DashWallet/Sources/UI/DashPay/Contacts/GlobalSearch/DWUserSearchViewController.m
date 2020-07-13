@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicItem>> *)items;
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicUserItem>> *)items;
 {
     if (items.count > 0) {
         self.resultsController.searchQuery = model.trimmedQuery;
@@ -121,7 +121,7 @@ NS_ASSUME_NONNULL_END
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                   didSelectItemAtIndex:(NSInteger)index
                                   cell:(UICollectionViewCell *)cell {
-    id<DWDPBasicItem> item = [self.model itemAtIndex:index];
+    id<DWDPBasicUserItem> item = [self.model itemAtIndex:index];
     if (!item) {
         return;
     }
@@ -139,12 +139,12 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                  acceptContactRequest:(id<DWDPBasicItem>)item {
+                  acceptContactRequest:(id<DWDPBasicUserItem>)item {
     [self.model acceptContactRequest:item];
 }
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                 declineContactRequest:(id<DWDPBasicItem>)item {
+                 declineContactRequest:(id<DWDPBasicUserItem>)item {
     [self.model declineContactRequest:item];
 }
 

@@ -17,7 +17,7 @@
 
 #import "DWAmountViewController.h"
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDestination:(NSString *)sendingDestination
                      paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
-                        contactItem:(nullable id<DWDPBasicItem>)contactItem NS_DESIGNATED_INITIALIZER;
+                        contactItem:(nullable id<DWDPBasicUserItem>)contactItem NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithModel:(DWAmountModel *)model NS_UNAVAILABLE;
 

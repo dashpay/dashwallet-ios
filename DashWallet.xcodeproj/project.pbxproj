@@ -157,6 +157,7 @@
 		2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300442328D07500827825 /* DWLockPinInputView.m */; };
 		2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300482328EA8900827825 /* DWLockActionButton.m */; };
 		2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
+		2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */; };
 		2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */; };
 		2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A741DC123639A9700840ADF /* TodayExtension.storyboard */; };
 		2A741DC323639C7E00840ADF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -861,6 +862,9 @@
 		2A6300482328EA8900827825 /* DWLockActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockActionButton.m; sourceTree = "<group>"; };
 		2A63004C2328F37C00827825 /* DWLockScreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLockScreenViewController.h; sourceTree = "<group>"; };
 		2A63004D2328F37C00827825 /* DWLockScreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockScreenViewController.m; sourceTree = "<group>"; };
+		2A6688FA24BCB3AC008E10F0 /* DWDPBasicItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPBasicItem.h; sourceTree = "<group>"; };
+		2A6688FB24BCB739008E10F0 /* DWDPTxItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTxItemView.h; sourceTree = "<group>"; };
+		2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPTxItemView.m; sourceTree = "<group>"; };
 		2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptions.h; sourceTree = "<group>"; };
 		2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptions.m; sourceTree = "<group>"; };
 		2A741DC02363993600840ADF /* DWTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTodayViewController.h; sourceTree = "<group>"; };
@@ -950,7 +954,7 @@
 		2A7AF35524824F97001D74F9 /* DWDPImageStatusCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPImageStatusCell.m; sourceTree = "<group>"; };
 		2A7AF35724824FEB001D74F9 /* DWDPTextStatusCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTextStatusCell.h; sourceTree = "<group>"; };
 		2A7AF35824824FEB001D74F9 /* DWDPTextStatusCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPTextStatusCell.m; sourceTree = "<group>"; };
-		2A7AF35B2482577B001D74F9 /* DWDPBasicItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPBasicItem.h; sourceTree = "<group>"; };
+		2A7AF35B2482577B001D74F9 /* DWDPBasicUserItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPBasicUserItem.h; sourceTree = "<group>"; };
 		2A7AF35C24825860001D74F9 /* DWDPIncomingRequestItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPIncomingRequestItem.h; sourceTree = "<group>"; };
 		2A7AF35D248258C9001D74F9 /* DWDPRespondedRequestItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRespondedRequestItem.h; sourceTree = "<group>"; };
 		2A7AF35E2482592F001D74F9 /* DWDPPendingRequestItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPPendingRequestItem.h; sourceTree = "<group>"; };
@@ -2526,6 +2530,8 @@
 				2A7AF34824823167001D74F9 /* DWDPGenericImageItemView.m */,
 				2A7AF34A24823315001D74F9 /* DWDPGenericStatusItemView.h */,
 				2A7AF34B24823315001D74F9 /* DWDPGenericStatusItemView.m */,
+				2A6688FB24BCB739008E10F0 /* DWDPTxItemView.h */,
+				2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */,
 			);
 			path = ContentViews;
 			sourceTree = "<group>";
@@ -2534,7 +2540,8 @@
 			isa = PBXGroup;
 			children = (
 				2A7AF3902482D98C001D74F9 /* Items Associated Data */,
-				2A7AF35B2482577B001D74F9 /* DWDPBasicItem.h */,
+				2A6688FA24BCB3AC008E10F0 /* DWDPBasicItem.h */,
+				2A7AF35B2482577B001D74F9 /* DWDPBasicUserItem.h */,
 				2A7AF35F24825991001D74F9 /* DWDPEstablishedContactItem.h */,
 				2A7AF35C24825860001D74F9 /* DWDPIncomingRequestItem.h */,
 				2A9D72A9249A0E7800F79CD8 /* DWDPNewIncomingRequestItem.h */,
@@ -4758,6 +4765,7 @@
 				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */,
 				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */,
+				2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
 				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,

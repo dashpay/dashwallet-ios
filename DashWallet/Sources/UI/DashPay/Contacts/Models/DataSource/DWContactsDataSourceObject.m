@@ -74,16 +74,16 @@ NS_ASSUME_NONNULL_END
     return self.contactsFRC.sections.firstObject.numberOfObjects;
 }
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicUserItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         NSManagedObject *entity = [self.requestsFRC objectAtIndexPath:indexPath];
-        id<DWDPBasicItem> item = [self.itemsFactory itemForEntity:entity];
+        id<DWDPBasicUserItem> item = [self.itemsFactory itemForEntity:entity];
         return item;
     }
     else {
         NSIndexPath *transformedIndexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
         NSManagedObject *entity = [self.contactsFRC objectAtIndexPath:transformedIndexPath];
-        id<DWDPBasicItem> item = [self.itemsFactory itemForEntity:entity];
+        id<DWDPBasicUserItem> item = [self.itemsFactory itemForEntity:entity];
         return item;
     }
 }

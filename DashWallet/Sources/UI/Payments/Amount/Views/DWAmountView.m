@@ -181,7 +181,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.contactItem)
-                      with:^(typeof(self) self, id<DWDPBasicItem> value) {
+                      with:^(typeof(self) self, id<DWDPBasicUserItem> value) {
                           self.contactView.hidden = value == nil;
                           self.contactView.item = value;
                       }];

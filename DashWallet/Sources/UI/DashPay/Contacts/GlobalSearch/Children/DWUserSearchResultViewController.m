@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchResultViewController
 
-- (void)setItems:(NSArray<id<DWDPBasicItem>> *)items {
+- (void)setItems:(NSArray<id<DWDPBasicUserItem>> *)items {
     _items = [items copy];
 
     [self.collectionView reloadData];
@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_END
     NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
     const CGFloat contentWidth = layout.contentWidth;
 
-    id<DWDPBasicItem> item = self.items[indexPath.row];
+    id<DWDPBasicUserItem> item = self.items[indexPath.row];
 
     DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
     cell.contentWidth = contentWidth;
@@ -87,11 +87,11 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWDPNewIncomingRequestItemDelegate
 
-- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)acceptIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.delegate userSearchResultViewController:self acceptContactRequest:item];
 }
 
-- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)declineIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.delegate userSearchResultViewController:self declineContactRequest:item];
 }
 

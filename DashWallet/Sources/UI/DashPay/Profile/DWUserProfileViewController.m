@@ -47,13 +47,13 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileViewController
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO];
 }
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
           shouldSkipUpdating:(BOOL)shouldSkipUpdating {
@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_END
     [self.collectionView flashScrollIndicators];
 }
 
-- (id<DWDPBasicItem>)contactItem {
+- (id<DWDPBasicUserItem>)contactItem {
     return self.model.item;
 }
 

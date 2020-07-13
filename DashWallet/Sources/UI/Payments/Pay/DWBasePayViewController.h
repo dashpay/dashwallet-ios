@@ -17,7 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDemoDelegate.h"
 #import "DWNavigationChildViewController.h"
 
@@ -40,14 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
-- (void)performPayToUser:(id<DWDPBasicItem>)userItem;
+- (void)performPayToUser:(id<DWDPBasicUserItem>)userItem;
 
 - (void)handleFile:(NSData *)file;
 
 /// This method is called after presentation of payment result controller.
 - (void)payViewControllerDidShowPaymentResult;
 
-- (id<DWDPBasicItem>)contactItem;
+- (id<DWDPBasicUserItem>)contactItem;
 
 @end
 

@@ -75,11 +75,11 @@
     [self.contactsDataSource stop];
 }
 
-- (void)acceptContactRequest:(id<DWDPBasicItem>)item {
+- (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
     [DWDashPayContactsActions acceptContactRequest:item completion:nil];
 }
 
-- (void)declineContactRequest:(id<DWDPBasicItem>)item {
+- (void)declineContactRequest:(id<DWDPBasicUserItem>)item {
     [DWDashPayContactsActions declineContactRequest:item completion:nil];
 }
 

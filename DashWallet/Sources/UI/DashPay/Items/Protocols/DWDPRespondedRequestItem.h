@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWDPRespondedRequestItem <DWDPBasicItem>
+@protocol DWDPRespondedRequestItem <DWDPBasicUserItem>
 
 @end
 

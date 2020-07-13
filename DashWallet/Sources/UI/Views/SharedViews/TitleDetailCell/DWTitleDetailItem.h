@@ -32,7 +32,7 @@ typedef NS_ENUM(NSUInteger, DWTitleDetailItemStyle) {
     DWTitleDetailItemStyle_User,
 };
 
-@protocol DWDPBasicItem;
+@protocol DWDPBasicUserItem;
 
 @protocol DWTitleDetailItem <NSObject>
 
@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, DWTitleDetailItemStyle) {
 @property (nullable, readonly, nonatomic) NSString *title;
 @property (nullable, readonly, nonatomic) NSString *plainDetail;
 @property (nullable, readonly, nonatomic) NSAttributedString *attributedDetail;
-@property (nullable, readonly, nonatomic) id<DWDPBasicItem> userItem;
+@property (nullable, readonly, nonatomic) id<DWDPBasicUserItem> userItem;
 @property (nullable, readonly, nonatomic) NSString *copyableData;
 @property (assign, nonatomic) NSTextAlignment detailAlignment;
 

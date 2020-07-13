@@ -25,7 +25,7 @@
 
 @implementation DWDPContactsItemsFactory
 
-- (id<DWDPBasicItem>)itemForEntity:(NSManagedObject *)entity {
+- (id<DWDPBasicUserItem>)itemForEntity:(NSManagedObject *)entity {
     if ([entity isKindOfClass:DSFriendRequestEntity.class]) {
         return [self itemForFriendRequestEntity:(DSFriendRequestEntity *)entity];
     }
@@ -39,13 +39,13 @@
 
 #pragma mark - Private
 
-- (id<DWDPBasicItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
+- (id<DWDPBasicUserItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
     // TODO: DP impl case `if entity.isIgnored`
     DSBlockchainIdentity *blockchainIdentity = [entity.sourceContact.associatedBlockchainIdentity blockchainIdentity];
     return [[DWDPNewIncomingRequestObject alloc] initWithFriendRequestEntity:entity blockchainIdentity:blockchainIdentity];
 }
 
-- (id<DWDPBasicItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity {
+- (id<DWDPBasicUserItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity {
     return [[DWDPContactObject alloc] initWithDashpayUserEntity:entity];
 }
 

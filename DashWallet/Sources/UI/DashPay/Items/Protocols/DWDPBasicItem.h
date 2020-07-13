@@ -17,23 +17,17 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBlockchainIdentityBackedItem.h"
-
 NS_ASSUME_NONNULL_BEGIN
-
-@class DSFriendRequestEntity;
 
 @protocol DWDPItemCellDelegate <NSObject>
 @end
 
-@protocol DWDPBasicItem <DWDPBlockchainIdentityBackedItem>
+@protocol DWDPBasicItem <NSObject>
 
 @property (readonly, nonatomic) NSString *username;
 @property (nullable, readonly, nonatomic) NSString *displayName;
 @property (nullable, readonly, nonatomic) NSAttributedString *title;
 @property (nullable, readonly, nonatomic) NSString *subtitle;
-
-- (nullable DSFriendRequestEntity *)friendRequestToPay;
 
 @end
 

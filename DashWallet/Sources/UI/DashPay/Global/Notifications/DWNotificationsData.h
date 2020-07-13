@@ -18,7 +18,7 @@
 #import <CoreData/CoreData.h>
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDPNotificationItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -26,11 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWNotificationsData : NSObject <NSCopying>
 
 @property (readonly, nonatomic, assign) BOOL isEmpty;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *unreadItems;
-@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *oldItems;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *unreadItems;
+@property (readonly, nonatomic, copy) NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *oldItems;
 
-- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)unreadItems
-                           oldItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *)unreadItems
+                           oldItems:(NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *)oldItems NS_DESIGNATED_INITIALIZER;
 
 @end
 

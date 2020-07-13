@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAmountModel
 
-- (instancetype)initWithContactItem:(nullable id<DWDPBasicItem>)contactItem {
+- (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem {
     self = [super init];
     if (self) {
         _contactItem = contactItem;

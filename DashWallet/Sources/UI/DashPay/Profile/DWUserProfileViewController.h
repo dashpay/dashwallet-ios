@@ -17,17 +17,17 @@
 
 #import "DWBasePayViewController.h"
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserProfileViewController : DWBasePayViewController
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
           shouldSkipUpdating:(BOOL)shouldSkipUpdating NS_DESIGNATED_INITIALIZER;

@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSpecifyAmountViewController
 
-- (instancetype)initWithContactItem:(nullable id<DWDPBasicItem>)contactItem {
+- (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem {
     DWReceiveAmountModel *model = [[DWReceiveAmountModel alloc] initWithContactItem:contactItem];
     self = [super initWithModel:model];
     return self;

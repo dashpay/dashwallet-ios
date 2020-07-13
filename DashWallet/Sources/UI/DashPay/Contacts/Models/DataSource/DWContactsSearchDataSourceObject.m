@@ -27,8 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWContactsSearchDataSourceObject ()
 
-@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredContactRequest;
-@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredContacts;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem>> *filteredContactRequest;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem>> *filteredContacts;
 
 @end
 
@@ -44,8 +44,8 @@ NS_ASSUME_NONNULL_END
                               trimmedQuery:(NSString *)trimmedQuery {
     self = [super init];
     if (self) {
-        NSArray<id<DWDPBasicItem>> *contactRequests = [self.class itemsWithFactory:itemsFactory frc:contactRequestsFRC];
-        NSArray<id<DWDPBasicItem>> *contacts = [self.class itemsWithFactory:itemsFactory frc:contactsFRC];
+        NSArray<id<DWDPBasicUserItem>> *contactRequests = [self.class itemsWithFactory:itemsFactory frc:contactRequestsFRC];
+        NSArray<id<DWDPBasicUserItem>> *contacts = [self.class itemsWithFactory:itemsFactory frc:contactsFRC];
         _filteredContactRequest = [self.class filterItems:contactRequests trimmedQuery:trimmedQuery];
         _filteredContacts = [self.class filterItems:contacts trimmedQuery:trimmedQuery];
         _trimmedQuery = [trimmedQuery copy];
@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_END
     return self.filteredContacts.count;
 }
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicUserItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         return self.filteredContactRequest[indexPath.row];
     }
@@ -85,18 +85,18 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
-+ (NSArray<id<DWDPBasicItem>> *)filterItems:(NSArray<id<DWDPBasicItem>> *)items trimmedQuery:(NSString *)trimmedQuery {
-    id<DWDPBasicItem> item = nil;
++ (NSArray<id<DWDPBasicUserItem>> *)filterItems:(NSArray<id<DWDPBasicUserItem>> *)items trimmedQuery:(NSString *)trimmedQuery {
+    id<DWDPBasicUserItem> item = nil;
     NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, username), DW_KEYPATH(item, displayName) ];
     NSPredicate *predicate = [NSPredicate dw_searchPredicateForTrimmedQuery:trimmedQuery
                                                              searchKeyPaths:searchKeyPaths];
     return [items filteredArrayUsingPredicate:predicate];
 }
 
-+ (NSArray<id<DWDPBasicItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory frc:(NSFetchedResultsController *)frc {
-    NSMutableArray<id<DWDPBasicItem>> *items = [NSMutableArray array];
++ (NSArray<id<DWDPBasicUserItem>> *)itemsWithFactory:(DWDPContactsItemsFactory *)factory frc:(NSFetchedResultsController *)frc {
+    NSMutableArray<id<DWDPBasicUserItem>> *items = [NSMutableArray array];
     for (NSManagedObject *entity in frc.fetchedObjects) {
-        id<DWDPBasicItem> item = [factory itemForEntity:entity];
+        id<DWDPBasicUserItem> item = [factory itemForEntity:entity];
         [items addObject:item];
     }
     return [items copy];

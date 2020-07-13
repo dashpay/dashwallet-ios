@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +37,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 @property (readonly, nonatomic, assign) DWPaymentInputSource source;
 @property (nullable, readonly, nonatomic, strong) DSPaymentRequest *request;
 @property (nullable, readonly, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
-@property (nullable, readonly, nonatomic, strong) id<DWDPBasicItem> userItem;
+@property (nullable, readonly, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 @property (nonatomic, assign) BOOL canChangeAmount;
 
 @property (nullable, readonly, nonatomic) NSString *userDetails;

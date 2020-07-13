@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_END
         return cell;
     }
 
-    id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+    id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
 
     DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
     cell.displayItemBackgroundView = indexPath.section == 0;
@@ -164,11 +164,11 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWDPNewIncomingRequestItemDelegate
 
-- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)acceptIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.model acceptContactRequest:item];
 }
 
-- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)declineIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.model declineContactRequest:item];
 }
 
@@ -226,9 +226,9 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (id<DWDPBasicItem, DWDPNotificationItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicUserItem, DWDPNotificationItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     DWNotificationsData *data = self.model.data;
-    NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *items = indexPath.section == 0 ? data.unreadItems : data.oldItems;
+    NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *items = indexPath.section == 0 ? data.unreadItems : data.oldItems;
     return items[indexPath.row];
 }
 

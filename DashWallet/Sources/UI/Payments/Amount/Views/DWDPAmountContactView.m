@@ -51,11 +51,11 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (id<DWDPBasicItem>)item {
+- (id<DWDPBasicUserItem>)item {
     return self.contactView.item;
 }
 
-- (void)setItem:(id<DWDPBasicItem>)item {
+- (void)setItem:(id<DWDPBasicUserItem>)item {
     self.contactView.item = item;
 }
 

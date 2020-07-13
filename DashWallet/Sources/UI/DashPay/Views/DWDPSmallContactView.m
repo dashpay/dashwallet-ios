@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_END
     ]];
 }
 
-- (void)setItem:(id<DWDPBasicItem>)item {
+- (void)setItem:(id<DWDPBasicUserItem>)item {
     _item = item;
 
     self.avatarView.username = item.username;

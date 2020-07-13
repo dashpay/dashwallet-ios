@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileModel
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item {
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item {
     self = [super init];
     if (self) {
         _item = item;

@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDestination:(NSString *)sendingDestination
                      paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
-                        contactItem:(nullable id<DWDPBasicItem>)contactItem {
+                        contactItem:(nullable id<DWDPBasicUserItem>)contactItem {
     DWSendAmountModel *model = [[DWSendAmountModel alloc] initWithSendingDestination:sendingDestination
                                                                       paymentDetails:paymentDetails
                                                                          contactItem:contactItem];

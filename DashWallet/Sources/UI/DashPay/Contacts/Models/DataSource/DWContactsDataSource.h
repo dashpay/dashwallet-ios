@@ -18,7 +18,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWContactsSortModeProtocol.h"
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Second section
 @property (readonly, nonatomic, assign) NSUInteger contactsCount;
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
+- (id<DWDPBasicUserItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

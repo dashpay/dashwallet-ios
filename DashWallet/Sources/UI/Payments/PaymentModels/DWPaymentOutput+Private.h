@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
                       memo:(NSString *_Nullable)memo
                   isSecure:(BOOL)isSecure
              localCurrency:(NSString *_Nullable)localCurrency
-                  userItem:(id<DWDPBasicItem>)userItem;
+                  userItem:(id<DWDPBasicUserItem>)userItem;
 
 @end
 

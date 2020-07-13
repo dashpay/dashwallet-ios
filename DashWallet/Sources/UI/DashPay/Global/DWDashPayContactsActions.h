@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDashPayContactsActions : NSObject
 
-+ (void)acceptContactRequest:(id<DWDPBasicItem>)item
++ (void)acceptContactRequest:(id<DWDPBasicUserItem>)item
                   completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
-+ (void)declineContactRequest:(id<DWDPBasicItem>)item
++ (void)declineContactRequest:(id<DWDPBasicUserItem>)item
                    completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (instancetype)init NS_UNAVAILABLE;

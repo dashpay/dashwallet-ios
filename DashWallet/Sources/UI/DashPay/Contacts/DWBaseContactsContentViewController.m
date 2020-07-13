@@ -89,7 +89,7 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
     const CGFloat contentWidth = layout.contentWidth;
 
-    id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+    id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
     DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
     cell.contentWidth = contentWidth;
     cell.displayItemBackgroundView = indexPath.section == DWContactsContentSectionRequests;
@@ -141,7 +141,7 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
 
-    id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+    id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
 
     DWUserProfileViewController *controller =
         [[DWUserProfileViewController alloc] initWithItem:item
@@ -194,10 +194,10 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
 
 #pragma mark - Private
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+- (id<DWDPBasicUserItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     NSAssert(indexPath.section > 0, @"Section 0 is empty and should not have any data items");
     NSIndexPath *dataIndexPath = [NSIndexPath indexPathForItem:indexPath.item inSection:indexPath.section - 1];
-    id<DWDPBasicItem> item = [self.dataSource itemAtIndexPath:dataIndexPath];
+    id<DWDPBasicUserItem> item = [self.dataSource itemAtIndexPath:dataIndexPath];
     return item;
 }
 

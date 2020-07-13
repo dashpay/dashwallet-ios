@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2020 Dash Core Group. All rights reserved.
 //
@@ -15,30 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWNotificationsData.h"
+#import "DWDPGenericItemView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWNotificationsModel;
+@interface DWDPTxItemView : DWDPGenericItemView
 
-@protocol DWNotificationsModelDelegate <NSObject>
-
-- (void)notificationsModelDidUpdate:(DWNotificationsModel *)model;
-
-@end
-
-@interface DWNotificationsModel : NSObject
-
-@property (readonly, nonatomic, copy) DWNotificationsData *data;
-
-@property (nullable, nonatomic, weak) id<DWNotificationsModelDelegate> delegate;
-
-- (void)acceptContactRequest:(id<DWDPBasicUserItem>)item;
-- (void)declineContactRequest:(id<DWDPBasicUserItem>)item;
-
-- (void)markNotificationAsRead:(id<DWDPNotificationItem>)item;
+@property (readonly, nonatomic, strong) UILabel *amountLabel;
 
 @end
 

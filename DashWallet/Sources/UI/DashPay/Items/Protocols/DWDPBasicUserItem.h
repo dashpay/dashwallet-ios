@@ -17,28 +17,16 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWNotificationsData.h"
+#import "DWDPBasicItem.h"
+#import "DWDPBlockchainIdentityBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWNotificationsModel;
+@class DSFriendRequestEntity;
 
-@protocol DWNotificationsModelDelegate <NSObject>
+@protocol DWDPBasicUserItem <DWDPBasicItem, DWDPBlockchainIdentityBackedItem>
 
-- (void)notificationsModelDidUpdate:(DWNotificationsModel *)model;
-
-@end
-
-@interface DWNotificationsModel : NSObject
-
-@property (readonly, nonatomic, copy) DWNotificationsData *data;
-
-@property (nullable, nonatomic, weak) id<DWNotificationsModelDelegate> delegate;
-
-- (void)acceptContactRequest:(id<DWDPBasicUserItem>)item;
-- (void)declineContactRequest:(id<DWDPBasicUserItem>)item;
-
-- (void)markNotificationAsRead:(id<DWDPNotificationItem>)item;
+- (nullable DSFriendRequestEntity *)friendRequestToPay;
 
 @end
 

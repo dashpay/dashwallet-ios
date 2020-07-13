@@ -18,7 +18,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWContactsDataSource.h"
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWPayModelProtocol.h"
 #import "DWTransactionListDataProviderProtocol.h"
