@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWNotificationsModel ()
 
 @property (nullable, nonatomic, copy) DWNotificationsData *data;
+@property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
 
 @end
 
@@ -63,10 +64,21 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)markNotificationAsRead:(id<DWDPNotificationItem>)item {
+    if (self.mostRecentViewedNotificationDate == nil ||
+        [item.date compare:self.mostRecentViewedNotificationDate] == NSOrderedDescending) {
+        self.mostRecentViewedNotificationDate = item.date;
+    }
+}
+
+- (void)saveMostRecentViewedNotificationDate {
+    if (self.mostRecentViewedNotificationDate == nil) {
+        return;
+    }
+
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
     if (options.mostRecentViewedNotificationDate == nil ||
-        [item.date compare:options.mostRecentViewedNotificationDate] == NSOrderedDescending) {
-        options.mostRecentViewedNotificationDate = item.date;
+        [self.mostRecentViewedNotificationDate compare:options.mostRecentViewedNotificationDate] == NSOrderedDescending) {
+        options.mostRecentViewedNotificationDate = self.mostRecentViewedNotificationDate;
     }
 }
 
