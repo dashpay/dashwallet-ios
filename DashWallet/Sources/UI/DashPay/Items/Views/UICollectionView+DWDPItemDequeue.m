@@ -23,11 +23,13 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
+#import "DWDPTxItem.h"
 
 #import "DWDPBasicCell.h"
 #import "DWDPImageStatusCell.h"
 #import "DWDPIncomingRequestCell.h"
 #import "DWDPTextStatusCell.h"
+#import "DWDPTxListCell.h"
 
 @implementation UICollectionView (DWDPItemDequeue)
 
@@ -36,6 +38,7 @@
     [self registerClass:DWDPIncomingRequestCell.class forCellWithReuseIdentifier:DWDPIncomingRequestCell.dw_reuseIdentifier];
     [self registerClass:DWDPImageStatusCell.class forCellWithReuseIdentifier:DWDPImageStatusCell.dw_reuseIdentifier];
     [self registerClass:DWDPTextStatusCell.class forCellWithReuseIdentifier:DWDPTextStatusCell.dw_reuseIdentifier];
+    [self registerClass:DWDPTxListCell.class forCellWithReuseIdentifier:DWDPTxListCell.dw_reuseIdentifier];
 }
 
 - (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicUserItem>)item atIndexPath:(NSIndexPath *)indexPath {
@@ -52,6 +55,9 @@
     }
     else if ([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)]) {
         cellID = DWDPIncomingRequestCell.dw_reuseIdentifier;
+    }
+    else if ([item conformsToProtocol:@protocol(DWDPTxItem)]) {
+        cellID = DWDPTxListCell.dw_reuseIdentifier;
     }
     else { // any DWDPBasicUserItem
         cellID = DWDPBasicCell.dw_reuseIdentifier;

@@ -349,6 +349,7 @@
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */; };
+		2ACCA3A824BE0C7D00DB32DE /* DWDPTxListCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCA3A724BE0C7D00DB32DE /* DWDPTxListCell.m */; };
 		2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD84C23180E7E00A96B62 /* DWPaymentOutput.m */; };
 		2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD85423191C8500A96B62 /* DWBasePayViewController.m */; };
 		2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8582319399100A96B62 /* DWRequestAmountViewController.m */; };
@@ -1270,6 +1271,9 @@
 		2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanView.m; sourceTree = "<group>"; };
 		2AC92C881FEB0B8B008CAEE0 /* DWQRScanModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanModel.h; sourceTree = "<group>"; };
 		2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanModel.m; sourceTree = "<group>"; };
+		2ACCA3A624BE0C7D00DB32DE /* DWDPTxListCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTxListCell.h; sourceTree = "<group>"; };
+		2ACCA3A724BE0C7D00DB32DE /* DWDPTxListCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPTxListCell.m; sourceTree = "<group>"; };
+		2ACCA3A924BE0D3600DB32DE /* DWDPTxItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTxItem.h; sourceTree = "<group>"; };
 		2ACCD84B23180E7E00A96B62 /* DWPaymentOutput.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentOutput.h; sourceTree = "<group>"; };
 		2ACCD84C23180E7E00A96B62 /* DWPaymentOutput.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentOutput.m; sourceTree = "<group>"; };
 		2ACCD84E23181CA800A96B62 /* DWPaymentOutput+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWPaymentOutput+Private.h"; sourceTree = "<group>"; };
@@ -2511,6 +2515,8 @@
 				2A7AF35524824F97001D74F9 /* DWDPImageStatusCell.m */,
 				2A7AF35724824FEB001D74F9 /* DWDPTextStatusCell.h */,
 				2A7AF35824824FEB001D74F9 /* DWDPTextStatusCell.m */,
+				2ACCA3A624BE0C7D00DB32DE /* DWDPTxListCell.h */,
+				2ACCA3A724BE0C7D00DB32DE /* DWDPTxListCell.m */,
 				2A7AF38724829AF2001D74F9 /* UICollectionView+DWDPItemDequeue.h */,
 				2A7AF38824829AF2001D74F9 /* UICollectionView+DWDPItemDequeue.m */,
 				2A7AF38D2482BDF1001D74F9 /* UIFont+DWDPItem.h */,
@@ -2548,6 +2554,7 @@
 				2AE56473249B675500CC2E80 /* DWDPNotificationItem.h */,
 				2A7AF35E2482592F001D74F9 /* DWDPPendingRequestItem.h */,
 				2A7AF35D248258C9001D74F9 /* DWDPRespondedRequestItem.h */,
+				2ACCA3A924BE0D3600DB32DE /* DWDPTxItem.h */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -4971,6 +4978,7 @@
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
 				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
+				2ACCA3A824BE0C7D00DB32DE /* DWDPTxListCell.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
