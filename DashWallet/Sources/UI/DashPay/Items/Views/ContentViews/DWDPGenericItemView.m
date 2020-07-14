@@ -21,6 +21,13 @@
 #import "UIFont+DWDPItem.h"
 
 static CGFloat const AVATAR_SIZE = 36.0;
+static CGFloat const SPACING = 10.0;
+
+@interface DWDPGenericItemView ()
+
+@property (readonly, nonatomic, strong) NSLayoutConstraint *textLabelLeadingConstraint;
+
+@end
 
 @implementation DWDPGenericItemView
 
@@ -75,12 +82,12 @@ static CGFloat const AVATAR_SIZE = 36.0;
     [textLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 3 forAxis:UILayoutConstraintAxisHorizontal];
     [accessoryView setContentCompressionResistancePriority:UILayoutPriorityRequired - 2 forAxis:UILayoutConstraintAxisHorizontal];
 
-    const CGFloat spacing = 10.0;
-
     NSLayoutConstraint *avatarTopConstraint = [avatarView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor];
     avatarTopConstraint.priority = UILayoutPriorityRequired - 10;
     NSLayoutConstraint *avatarBottomConstraint = [self.bottomAnchor constraintGreaterThanOrEqualToAnchor:avatarView.bottomAnchor];
     avatarBottomConstraint.priority = UILayoutPriorityRequired - 11;
+
+    _textLabelLeadingConstraint = [textLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:AVATAR_SIZE + SPACING];
 
     [NSLayoutConstraint activateConstraints:@[
         [avatarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
@@ -91,13 +98,12 @@ static CGFloat const AVATAR_SIZE = 36.0;
         [avatarView.heightAnchor constraintEqualToConstant:AVATAR_SIZE],
 
         [textLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [textLabel.leadingAnchor constraintEqualToAnchor:avatarView.trailingAnchor
-                                                constant:spacing],
+        _textLabelLeadingConstraint,
         [self.bottomAnchor constraintEqualToAnchor:textLabel.bottomAnchor],
 
         [accessoryView.topAnchor constraintEqualToAnchor:self.topAnchor],
         [accessoryView.leadingAnchor constraintEqualToAnchor:textLabel.trailingAnchor
-                                                    constant:spacing],
+                                                    constant:SPACING],
         [self.trailingAnchor constraintEqualToAnchor:accessoryView.trailingAnchor],
         [self.bottomAnchor constraintEqualToAnchor:accessoryView.bottomAnchor],
     ]];
@@ -108,6 +114,18 @@ static CGFloat const AVATAR_SIZE = 36.0;
 
     self.textLabel.backgroundColor = backgroundColor;
     self.accessoryView.backgroundColor = backgroundColor;
+}
+
+- (void)setAvatarHidden:(BOOL)avatarHidden {
+    _avatarHidden = avatarHidden;
+
+    self.avatarView.hidden = avatarHidden;
+    if (avatarHidden) {
+        self.textLabelLeadingConstraint.constant = 0.0;
+    }
+    else {
+        self.textLabelLeadingConstraint.constant = AVATAR_SIZE + SPACING;
+    }
 }
 
 @end
