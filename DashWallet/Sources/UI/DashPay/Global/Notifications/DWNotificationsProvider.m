@@ -188,7 +188,8 @@ NS_ASSUME_NONNULL_END
                     [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:request
                                                                             blockchainIdentity:blockchainIdentity
                                                                                isInitiatedByMe:isInitiatedByMe];
-                [items addObject:object];
+                // all outgoing events should be in the Earlier section
+                [oldItems addObject:object];
             }
 
             // outgoing requests with no response (pending) are not shown in notifications
