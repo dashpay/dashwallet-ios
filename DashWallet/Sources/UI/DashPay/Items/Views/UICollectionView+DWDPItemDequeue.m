@@ -41,7 +41,7 @@
     [self registerClass:DWDPTxListCell.class forCellWithReuseIdentifier:DWDPTxListCell.dw_reuseIdentifier];
 }
 
-- (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicUserItem>)item atIndexPath:(NSIndexPath *)indexPath {
+- (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath {
     // DWDPRespondedRequestItem should come before DWDPIncomingRequestItem since the first one also conforms to DWDPIncomingRequestItem
     NSString *cellID = nil;
     if ([item conformsToProtocol:@protocol(DWDPEstablishedContactItem)]) {

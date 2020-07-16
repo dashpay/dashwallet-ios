@@ -20,12 +20,17 @@
 #import "DWDashPayContactsActions.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWProfileTxsFetchedDataSource.h"
+#import "DWUserProfileDataSourceObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserProfileModel ()
 
 @property (nonatomic, assign) DWUserProfileModelState state;
+@property (nullable, nonatomic, strong) DWProfileTxsFetchedDataSource *txsFetchedDataSource;
+@property (nonatomic, strong) id<DWUserProfileDataSource> dataSource;
+@property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
 
 @end
 
@@ -33,22 +38,28 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileModel
 
-- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item {
+@synthesize displayMode = _displayMode;
+
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
+              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider {
     self = [super init];
     if (self) {
         _item = item;
+        _txDataProvider = txDataProvider;
+        _dataSource = [[DWUserProfileDataSourceObject alloc] init];
     }
     return self;
 }
 
 - (void)skipUpdating {
+    [self updateDataSource];
     self.state = DWUserProfileModelState_Done;
 }
 
 - (void)setState:(DWUserProfileModelState)state {
     _state = state;
 
-    [self.delegate userProfileModelDidUpdateState:self];
+    [self.delegate userProfileModelDidUpdate:self];
 }
 
 - (NSString *)username {
@@ -65,6 +76,7 @@ NS_ASSUME_NONNULL_END
             return;
         }
 
+        [strongSelf updateDataSource];
         strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
     }];
 }
@@ -112,6 +124,35 @@ NS_ASSUME_NONNULL_END
 
                                             strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                         }];
+}
+
+#pragma mark - Private
+
+- (void)updateDataSource {
+    NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
+    DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
+    DSDashpayUserEntity *friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
+
+    DSFriendRequestEntity *meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", friend]] anyObject];
+    DSFriendRequestEntity *friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+
+    self.txsFetchedDataSource = [[DWProfileTxsFetchedDataSource alloc] initWithMeToFriendRequest:meToFriend
+                                                                               friendToMeRequest:friendToMe
+                                                                                       inContext:context];
+    [self.txsFetchedDataSource start];
+
+    self.dataSource = [[DWUserProfileDataSourceObject alloc] initWithTxFRC:self.txsFetchedDataSource.fetchedResultsController
+                                                            txDataProvider:self.txDataProvider
+                                                         friendToMeRequest:friendToMe
+                                                         meToFriendRequest:meToFriend
+                                                  friendBlockchainIdentity:friendBlockchainIdentity
+                                                      myBlockchainIdentity:myBlockchainIdentity];
+
+    [self.delegate userProfileModelDidUpdate:self];
 }
 
 @end

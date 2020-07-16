@@ -15,15 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWActivityCollectionViewCell : UICollectionViewCell
+@protocol DWUserProfileDataSource <NSObject>
 
-@property (readonly, nonatomic, strong) UIView *rootView;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
 
-@property (nullable, nonatomic, copy) NSString *text;
+@property (readonly, nonatomic, assign) NSUInteger count;
+
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

@@ -15,14 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWDPTxItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWDPTxItem <DWDPBasicItem>
+@class DSTransaction;
+@protocol DWTransactionListDataProviderProtocol;
 
-/// Contains both Dash and fiat amounts
-@property (readonly, nonatomic, copy) NSAttributedString *amountString;
+@interface DWDPTxObject : NSObject <DWDPTxItem>
+
+- (instancetype)initWithTransaction:(DSTransaction *)tx
+                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
+                           username:(NSString *)username NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

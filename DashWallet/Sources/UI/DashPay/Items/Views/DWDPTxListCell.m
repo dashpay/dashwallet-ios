@@ -17,6 +17,7 @@
 
 #import "DWDPTxListCell.h"
 
+#import "DWDPTxItem.h"
 #import "DWDPTxItemView.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,6 +36,14 @@ NS_ASSUME_NONNULL_END
 
 + (Class)itemViewClass {
     return DWDPTxItemView.class;
+}
+
+- (void)reloadAttributedData {
+    [super reloadAttributedData];
+
+    id<DWDPTxItem> txItem = (id<DWDPTxItem>)self.item;
+    NSAssert([txItem conformsToProtocol:@protocol(DWDPTxItem)], @"Invalid item type");
+    self.itemView.amountLabel.attributedText = txItem.amountString;
 }
 
 @end

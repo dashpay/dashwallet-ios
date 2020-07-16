@@ -15,14 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWFetchedResultsDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWDPTxItem <DWDPBasicItem>
+@class DSFriendRequestEntity;
 
-/// Contains both Dash and fiat amounts
-@property (readonly, nonatomic, copy) NSAttributedString *amountString;
+@interface DWProfileTxsFetchedDataSource : DWFetchedResultsDataSource
+
+- (instancetype)initWithMeToFriendRequest:(nullable DSFriendRequestEntity *)meToFriend
+                        friendToMeRequest:(nullable DSFriendRequestEntity *)friendToMe
+                                inContext:(NSManagedObjectContext *)context NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
 
 @end
 

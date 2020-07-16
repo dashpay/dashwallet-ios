@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUserProfileContactActionsCell : UICollectionViewCell
 
 @property (nullable, nonatomic, copy) NSString *username;
+@property (nonatomic, assign) CGFloat contentWidth;
 @property (nullable, nonatomic, weak) id<DWUserProfileContactActionsCellDelegate> delegate;
 
 - (void)configureForIncomingStatus;

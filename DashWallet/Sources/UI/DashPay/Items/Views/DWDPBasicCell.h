@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) id<DWDPBasicItem> item;
 - (void)setItem:(id<DWDPBasicItem>)item highlightedText:(nullable NSString *)highlightedText NS_REQUIRES_SUPER;
 
+- (void)reloadAttributedData;
+
 @end
 
 NS_ASSUME_NONNULL_END

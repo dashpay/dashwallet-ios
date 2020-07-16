@@ -17,13 +17,14 @@
 
 #import "DWUserProfileViewController.h"
 
-#import "DWActivityCollectionViewCell.h"
+#import "DWDPBasicCell.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
 #import "DWUserProfileModel.h"
 #import "DWUserProfileNavigationTitleView.h"
+#import "UICollectionView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,7 +60,7 @@ NS_ASSUME_NONNULL_END
           shouldSkipUpdating:(BOOL)shouldSkipUpdating {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _model = [[DWUserProfileModel alloc] initWithItem:item];
+        _model = [[DWUserProfileModel alloc] initWithItem:item txDataProvider:dataProvider];
         _model.delegate = self;
         if (shouldSkipUpdating) {
             [_model skipUpdating];
@@ -117,7 +118,7 @@ NS_ASSUME_NONNULL_END
         return shouldDisplayActions ? 1 : 0;
     }
     else {
-        return 20;
+        return self.model.dataSource.count;
     }
 }
 
@@ -137,20 +138,28 @@ NS_ASSUME_NONNULL_END
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
     if (indexPath.section == 0) {
         DWUserProfileContactActionsCell *cell = [collectionView
             dequeueReusableCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier
                                       forIndexPath:indexPath];
+        cell.contentWidth = contentWidth;
         cell.username = self.model.username;
         cell.delegate = self;
         [cell configureForIncomingStatus];
         return cell;
     }
     else {
-        DWActivityCollectionViewCell *cell = [collectionView
-            dequeueReusableCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier
-                                      forIndexPath:indexPath];
-        cell.text = [NSString stringWithFormat:@"Placeholder %@ - %@", @(indexPath.section), @(indexPath.item)];
+        id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+
+        DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+        cell.contentWidth = contentWidth;
+        cell.itemView.avatarHidden = YES;
+        cell.displayItemBackgroundView = NO;
+        cell.item = item;
         return cell;
     }
 }
@@ -175,19 +184,6 @@ NS_ASSUME_NONNULL_END
     return size;
 }
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
-    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
-    const CGFloat contentWidth = layout.contentWidth;
-
-    if (indexPath.section == 0) {
-        return CGSizeMake(contentWidth, 120);
-    }
-    else {
-        return CGSizeMake(contentWidth, 50);
-    }
-}
-
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -210,7 +206,7 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWUserProfileModelDelegate
 
-- (void)userProfileModelDidUpdateState:(DWUserProfileModel *)model {
+- (void)userProfileModelDidUpdate:(DWUserProfileModel *)model {
     [self.collectionView reloadData];
 }
 
@@ -239,6 +235,13 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+    NSAssert(indexPath.section > 0, @"Section 0 is empty and should not have any data items");
+    NSIndexPath *dataIndexPath = [NSIndexPath indexPathForItem:indexPath.item inSection:0];
+    id<DWDPBasicItem> item = [self.model.dataSource itemAtIndexPath:dataIndexPath];
+    return item;
+}
+
 - (UICollectionView *)collectionView {
     if (_collectionView == nil) {
         DWStretchyHeaderListCollectionLayout *layout = [[DWStretchyHeaderListCollectionLayout alloc] init];
@@ -250,8 +253,7 @@ NS_ASSUME_NONNULL_END
         collectionView.delegate = self;
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-        [collectionView registerClass:DWActivityCollectionViewCell.class
-            forCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier];
+        [collectionView dw_registerDPItemCells];
 
         [collectionView registerClass:DWUserProfileContactActionsCell.class
             forCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier];
