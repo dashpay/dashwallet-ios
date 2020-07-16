@@ -65,6 +65,11 @@ NS_ASSUME_NONNULL_END
 
     NSAttributedString *dashAmountString = [self.dataProvider dashAmountStringFrom:self.dataItem font:titleFont];
 
+    NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
+    style.maximumLineHeight = 4.0;
+    NSAttributedString *spacingString = [[NSAttributedString alloc] initWithString:@"\n\n"
+                                                                        attributes:@{NSParagraphStyleAttributeName : style}];
+
     NSAttributedString *fiatString = [[NSAttributedString alloc] initWithString:self.dataItem.fiatAmount
                                                                      attributes:@{
                                                                          NSFontAttributeName : subtitleFont,
@@ -74,7 +79,7 @@ NS_ASSUME_NONNULL_END
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
     [result appendAttributedString:dashAmountString];
-    [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+    [result appendAttributedString:spacingString];
     [result appendAttributedString:fiatString];
     [result endEditing];
     return [result copy];
