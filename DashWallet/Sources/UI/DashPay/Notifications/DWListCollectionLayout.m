@@ -36,29 +36,4 @@ static UIEdgeInsets const INSETS = {0.0, 10.0, 0.0, 10.0};
     return ceil(CGRectGetWidth(self.collectionView.safeAreaLayoutGuide.layoutFrame) - self.sectionInset.left - self.sectionInset.right);
 }
 
-- (NSArray<__kindof UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
-    NSArray<UICollectionViewLayoutAttributes *> *layoutAttributes = [[super layoutAttributesForElementsInRect:rect] copy];
-
-    for (UICollectionViewLayoutAttributes *attributes in layoutAttributes) {
-        if (attributes.representedElementCategory == UICollectionElementCategoryCell) {
-            UICollectionViewLayoutAttributes *newAttributes = [self layoutAttributesForItemAtIndexPath:attributes.indexPath];
-            if (newAttributes) {
-                const CGRect frame = newAttributes.frame;
-                attributes.frame = frame;
-            }
-        }
-    }
-
-    return layoutAttributes;
-}
-
-- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewLayoutAttributes *attributes = [[super layoutAttributesForItemAtIndexPath:indexPath] copy];
-    CGRect frame = attributes.frame;
-    frame.origin.x = self.sectionInset.left;
-    frame.size.width = self.contentWidth;
-    attributes.frame = frame;
-    return attributes;
-}
-
 @end
