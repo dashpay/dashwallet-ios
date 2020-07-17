@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) NSMutableArray<id<DWDPBasicItem>> *items;
 @property (nullable, readonly, nonatomic, strong) DWDPAcceptedRequestNotificationObject *incomingNotification;
 @property (nullable, readonly, nonatomic, strong) DWDPOutgoingRequestNotificationObject *outgoingNotification;
+@property (nonatomic, assign) BOOL incomingNotificationAdded;
+@property (nonatomic, assign) BOOL outgoingNotificationAdded;
 
 @end
 
@@ -70,12 +72,20 @@ NS_ASSUME_NONNULL_END
                                                                         blockchainIdentity:friendBlockchainIdentity
                                                                          isInitiatedByThem:isFriendInitiated];
         }
+        else {
+            // mark it as added to the list to skip
+            _incomingNotificationAdded = YES;
+        }
 
         if (meToFriend) {
             _outgoingNotification =
                 [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:meToFriend
                                                                         blockchainIdentity:myBlockchainIdentity
                                                                            isInitiatedByMe:!isFriendInitiated];
+        }
+        else {
+            // mark it as added to the list to skip
+            _outgoingNotificationAdded = YES;
         }
     }
     return self;
@@ -91,30 +101,105 @@ NS_ASSUME_NONNULL_END
     }
 
     NSUInteger count = self.frc.sections.firstObject.numberOfObjects;
-    //    if (self.incomingNotification) {
-    //        count += 1;
-    //    }
-    //    if (self.outgoingNotification) {
-    //        count += 1;
-    //    }
+    if (self.incomingNotification) {
+        count += 1;
+    }
+    if (self.outgoingNotification) {
+        count += 1;
+    }
     return count;
 }
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     if (self.frc == nil) {
+        NSAssert(NO, @"Invalid data source usage. Check if `count` first.");
         return nil;
     }
 
     if (self.items.count == indexPath.item) {
-        DSTxOutputEntity *txOutputEntity = [self.frc objectAtIndexPath:indexPath];
-        DSTransaction *transaction = [txOutputEntity.transaction transaction];
-        DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
-                                                              dataProvider:self.txDataProvider
-                                                                  username:self.friendBlockchainIdentity.currentUsername];
-        [self.items addObject:txObject];
+        NSInteger item = indexPath.item;
+        if (self.incomingNotification && self.incomingNotificationAdded) {
+            item -= 1;
+        }
+        if (self.outgoingNotification && self.outgoingNotificationAdded) {
+            item -= 1;
+        }
+        NSAssert(item >= 0, @"Inconsistent data source state: item index is out of bounds");
+
+        const NSUInteger count = self.frc.sections.firstObject.numberOfObjects;
+        if (item < count) {
+            NSIndexPath *txIndexPath = [NSIndexPath indexPathForItem:item inSection:0];
+            DSTxOutputEntity *txOutputEntity = [self.frc objectAtIndexPath:txIndexPath];
+            DSTransaction *transaction = [txOutputEntity.transaction transaction];
+            NSDate *txDate = [self.txDataProvider dateForTransaction:transaction];
+
+            DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
+                                                                  dataProvider:self.txDataProvider
+                                                                      username:self.friendBlockchainIdentity.currentUsername];
+
+            if (self.incomingNotificationAdded == NO && [self isNotificationNewerThan:self.incomingNotification txDate:txDate]) {
+                [self.items addObject:self.incomingNotification];
+                self.incomingNotificationAdded = YES;
+
+                // optimization: since we already have constructed DSTransaction add it to the list
+                [self.items addObject:txObject];
+            }
+            if (self.outgoingNotificationAdded == NO && [self isNotificationNewerThan:self.outgoingNotification txDate:txDate]) {
+                [self.items addObject:self.outgoingNotification];
+                self.outgoingNotificationAdded = YES;
+
+                // optimization: since we already have constructed DSTransaction add it to the list
+                [self.items addObject:txObject];
+            }
+            else {
+                [self.items addObject:txObject];
+            }
+        }
+        else {
+            [self appendAnyNotificationToTheItems];
+        }
     }
 
     return self.items[indexPath.item];
+}
+
+- (void)appendAnyNotificationToTheItems {
+    if (self.incomingNotification && self.outgoingNotification) {
+        // incoming.date > outgoing.date
+        const BOOL isIncomingNewer = ([self.incomingNotification.date compare:self.outgoingNotification.date] == NSOrderedDescending);
+        // list is sorted by the most recent date, add one which is newer
+        if (self.incomingNotificationAdded == NO && (isIncomingNewer || self.outgoingNotificationAdded == YES)) {
+            [self.items addObject:self.incomingNotification];
+            self.incomingNotificationAdded = YES;
+        }
+        else {
+            NSAssert(self.outgoingNotificationAdded == NO, @"Outgoing notification has already been handled");
+            [self.items addObject:self.outgoingNotification];
+            self.outgoingNotificationAdded = YES;
+        }
+    }
+    else if (self.incomingNotificationAdded == NO) {
+        [self.items addObject:self.incomingNotification];
+        self.incomingNotificationAdded = YES;
+    }
+    else if (self.outgoingNotificationAdded == NO) {
+        [self.items addObject:self.outgoingNotification];
+        self.outgoingNotificationAdded = YES;
+    }
+    else {
+        NSAssert(NO, @"Inconsistent data source state. We should be able to add any of notifications.");
+    }
+}
+
+- (BOOL)isNotificationNewerThan:(id<DWDPNotificationItem>)notification txDate:(NSDate *)txDate {
+    NSParameterAssert(notification);
+    NSParameterAssert(txDate);
+
+    if (notification == nil) {
+        return NO;
+    }
+
+    return ([notification.date compare:txDate] == NSOrderedDescending);
 }
 
 @end

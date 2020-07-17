@@ -252,6 +252,7 @@ NS_ASSUME_NONNULL_END
         collectionView.dataSource = self;
         collectionView.delegate = self;
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        collectionView.alwaysBounceVertical = YES;
 
         [collectionView dw_registerDPItemCells];
 
