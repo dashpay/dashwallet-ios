@@ -25,7 +25,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserProfileModel ()
+@interface DWUserProfileModel () <DWFetchedResultsDataSourceDelegate, NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, assign) DWUserProfileModelState state;
 @property (nullable, nonatomic, strong) DWProfileTxsFetchedDataSource *txsFetchedDataSource;
@@ -47,6 +47,13 @@ NS_ASSUME_NONNULL_END
         _item = item;
         _txDataProvider = txDataProvider;
         _dataSource = [[DWUserProfileDataSourceObject alloc] init]; // empty data source
+
+        // TODO: DP global notification is used temporary. Remove its usage once FRC delegate issue is resolved
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(transactionManagerTransactionStatusDidChangeNotification)
+                                   name:DSTransactionManagerTransactionStatusDidChangeNotification
+                                 object:nil];
     }
     return self;
 }
@@ -128,6 +135,34 @@ NS_ASSUME_NONNULL_END
                                         }];
 }
 
+#pragma mark - DWFetchedResultsDataSourceDelegate
+
+- (void)fetchedResultsDataSourceDidUpdate:(DWFetchedResultsDataSource *)fetchedResultsDataSource {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    // TODO: DP fix me, not firing
+    // global txs notifications was used instead to workaround this issue
+
+    [self updateDataSource];
+}
+
+#pragma mark - NSFetchedResultsControllerDelegate
+
+- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    // TODO: DP fix me, not firing
+    // global txs notifications was used instead to workaround this issue
+
+    [self updateDataSource];
+}
+
+#pragma mark - Notifications
+
+- (void)transactionManagerTransactionStatusDidChangeNotification {
+    [self updateDataSource];
+}
+
 #pragma mark - Private
 
 - (void)updateDataSource {
@@ -157,7 +192,9 @@ NS_ASSUME_NONNULL_END
         self.txsFetchedDataSource = [[DWProfileTxsFetchedDataSource alloc] initWithMeToFriendRequest:meToFriend
                                                                                    friendToMeRequest:friendToMe
                                                                                            inContext:context];
+        self.txsFetchedDataSource.delegate = self;
         [self.txsFetchedDataSource start];
+        self.txsFetchedDataSource.fetchedResultsController.delegate = self;
     }
     else {
         self.txsFetchedDataSource = nil;

@@ -73,10 +73,13 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc]
+    NSSortDescriptor *sortDescriptor1 = [[NSSortDescriptor alloc]
         initWithKey:@"transaction.transactionHash.blockHeight"
-          ascending:YES];
-    return @[ sortDescriptor ];
+          ascending:NO];
+    NSSortDescriptor *sortDescriptor2 = [[NSSortDescriptor alloc]
+        initWithKey:@"transaction.transactionHash.timestamp"
+          ascending:NO];
+    return @[ sortDescriptor1, sortDescriptor2 ];
 }
 
 @end
