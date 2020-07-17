@@ -107,6 +107,7 @@ NS_ASSUME_NONNULL_END
                                                                   return;
                                                               }
 
+                                                              [strongSelf updateDataSource];
                                                               strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                                           }];
 }
@@ -122,6 +123,7 @@ NS_ASSUME_NONNULL_END
                                                 return;
                                             }
 
+                                            [strongSelf updateDataSource];
                                             strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                         }];
 }
