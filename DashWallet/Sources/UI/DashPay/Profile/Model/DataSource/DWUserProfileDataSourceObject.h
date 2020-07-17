@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
      friendBlockchainIdentity:(DSBlockchainIdentity *)friendBlockchainIdentity
          myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity;
 
+/// Initialize as empty
+- (instancetype)init;
+
 @end
 
 NS_ASSUME_NONNULL_END

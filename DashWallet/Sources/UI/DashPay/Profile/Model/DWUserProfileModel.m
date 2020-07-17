@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _item = item;
         _txDataProvider = txDataProvider;
-        _dataSource = [[DWUserProfileDataSourceObject alloc] init];
+        _dataSource = [[DWUserProfileDataSourceObject alloc] init]; // empty data source
     }
     return self;
 }
@@ -134,16 +134,32 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
+    NSAssert(myBlockchainIdentity.matchingDashpayUser, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
     DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
-    DSDashpayUserEntity *friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
+    DSDashpayUserEntity *friend = nil;
+    if (friendBlockchainIdentity.matchingDashpayUser) {
+        friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
+    }
 
-    DSFriendRequestEntity *meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", friend]] anyObject];
-    DSFriendRequestEntity *friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+    DSFriendRequestEntity *meToFriend = nil;
+    if (friend != nil) {
+        meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", friend]] anyObject];
+    }
 
-    self.txsFetchedDataSource = [[DWProfileTxsFetchedDataSource alloc] initWithMeToFriendRequest:meToFriend
-                                                                               friendToMeRequest:friendToMe
-                                                                                       inContext:context];
-    [self.txsFetchedDataSource start];
+    DSFriendRequestEntity *friendToMe = nil;
+    if (friend != nil) {
+        friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+    }
+
+    if (meToFriend || friendToMe) {
+        self.txsFetchedDataSource = [[DWProfileTxsFetchedDataSource alloc] initWithMeToFriendRequest:meToFriend
+                                                                                   friendToMeRequest:friendToMe
+                                                                                           inContext:context];
+        [self.txsFetchedDataSource start];
+    }
+    else {
+        self.txsFetchedDataSource = nil;
+    }
 
     self.dataSource = [[DWUserProfileDataSourceObject alloc] initWithTxFRC:self.txsFetchedDataSource.fetchedResultsController
                                                             txDataProvider:self.txDataProvider

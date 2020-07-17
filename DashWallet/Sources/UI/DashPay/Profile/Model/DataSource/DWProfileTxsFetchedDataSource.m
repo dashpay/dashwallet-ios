@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithMeToFriendRequest:(DSFriendRequestEntity *)meToFriend
                         friendToMeRequest:(DSFriendRequestEntity *)friendToMe
                                 inContext:(NSManagedObjectContext *)context {
+    NSAssert(meToFriend || friendToMe, @"Either of requests should exist"); // otherwise FRC would return all DSTxOutputEntity due to empty predicate
     self = [super initWithContext:context];
     if (self) {
         _meToFriend = meToFriend;

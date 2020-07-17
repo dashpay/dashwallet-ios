@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserProfileDataSourceObject ()
 
+@property (readonly, nonatomic, assign) BOOL hasDataToShow;
 @property (nullable, readonly, nonatomic, strong) NSFetchedResultsController *frc;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
 @property (readonly, nonatomic, strong) DSBlockchainIdentity *friendBlockchainIdentity;
@@ -54,6 +55,7 @@ NS_ASSUME_NONNULL_END
         _txDataProvider = txDataProvider;
         _friendBlockchainIdentity = friendBlockchainIdentity;
         _items = [NSMutableArray array];
+        _hasDataToShow = (frc != nil) || (friendToMe != nil) || (meToFriend != nil);
 
         BOOL isFriendInitiated;
         if (friendToMe && meToFriend) {
@@ -91,12 +93,20 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        // empty, _hasDataToShow == NO
+    }
+    return self;
+}
+
 - (BOOL)isEmpty {
     return self.count == 0;
 }
 
 - (NSUInteger)count {
-    if (self.frc == nil) {
+    if (self.hasDataToShow == NO) {
         return 0;
     }
 
@@ -111,8 +121,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.frc == nil) {
-        NSAssert(NO, @"Invalid data source usage. Check if `count` first.");
+    if (self.hasDataToShow == NO) {
+        NSAssert(NO, @"Invalid data source usage. Check `count` or `isEmpty` first.");
         return nil;
     }
 
