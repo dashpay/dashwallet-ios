@@ -93,12 +93,10 @@ NS_ASSUME_NONNULL_END
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
 
     if (blockchainIdentity) {
-        blockchainIdentity.type = DSBlockchainIdentityType_User;
         [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity isNew:NO];
     }
     else {
-        blockchainIdentity = [wallet createBlockchainIdentityOfType:DSBlockchainIdentityType_User
-                                                        forUsername:username];
+        blockchainIdentity = [wallet createBlockchainIdentityForUsername:username];
 
         // TODO: fix prompt
         [blockchainIdentity

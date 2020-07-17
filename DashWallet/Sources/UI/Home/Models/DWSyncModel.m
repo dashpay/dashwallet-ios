@@ -265,7 +265,7 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
 }
 
 - (double)chainSyncProgress {
-    const double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
+    const double progress = [DWEnvironment sharedInstance].currentChainManager.combinedSyncProgress;
 
     return progress;
 }
