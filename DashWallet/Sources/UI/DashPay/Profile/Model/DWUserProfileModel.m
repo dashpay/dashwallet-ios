@@ -104,19 +104,17 @@ NS_ASSUME_NONNULL_END
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:self.username];
     __weak typeof(self) weakSelf = self;
-    [myBlockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact
-                                                      completion:
-                                                          ^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                              __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                              if (!strongSelf) {
-                                                                  return;
-                                                              }
+    [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:self.item.blockchainIdentity
+                                                        completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+                                                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                            if (!strongSelf) {
+                                                                return;
+                                                            }
 
-                                                              [strongSelf updateDataSource];
-                                                              strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
-                                                          }];
+                                                            [strongSelf updateDataSource];
+                                                            strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                        }];
 }
 
 - (void)acceptContactRequest {
@@ -170,6 +168,10 @@ NS_ASSUME_NONNULL_END
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    if (myBlockchainIdentity == nil) {
+        return;
+    }
+
     DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
     NSAssert(myBlockchainIdentity.matchingDashpayUser, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
     DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
