@@ -241,7 +241,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWDPRegistrationErrorRetryDelegate
 
 - (void)registrationErrorRetryAction {
-    [self.model.dashPayModel retry];
+    if ([self.model.dashPayModel canRetry]) {
+        [self.model.dashPayModel retry];
+    }
+    else {
+        [self.delegate homeViewShowDashPayRegistrationFlow:self];
+    }
 }
 
 @end

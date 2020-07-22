@@ -243,9 +243,14 @@ NS_ASSUME_NONNULL_END
 
 - (void)createUsernameViewController:(DWCreateUsernameViewController *)controller
                     registerUsername:(NSString *)username {
-    DWConfirmUsernameViewController *confirmController = [[DWConfirmUsernameViewController alloc] initWithUsername:username];
-    confirmController.delegate = self;
-    [self presentViewController:confirmController animated:YES completion:nil];
+    if ([self.dashPayModel shouldPresentRegistrationPaymentConfirmation]) {
+        DWConfirmUsernameViewController *confirmController = [[DWConfirmUsernameViewController alloc] initWithUsername:username];
+        confirmController.delegate = self;
+        [self presentViewController:confirmController animated:YES completion:nil];
+    }
+    else {
+        [self createUsername:username];
+    }
 }
 
 #pragma mark - DWConfirmUsernameViewControllerDelegate

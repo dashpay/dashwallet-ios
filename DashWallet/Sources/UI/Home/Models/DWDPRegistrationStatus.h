@@ -30,12 +30,14 @@ typedef NS_ENUM(NSUInteger, DWDPRegistrationState) {
 
 @property (readonly, nonatomic, assign) DWDPRegistrationState state;
 @property (readonly, nonatomic, assign) BOOL failed;
-@property (readonly, nonatomic, copy) NSString *username;
+@property (nullable, readonly, nonatomic, copy) NSString *username;
 
 - (NSString *)stateDescription;
 - (float)progress;
 
-- (instancetype)initWithState:(DWDPRegistrationState)state failed:(BOOL)failed username:(NSString *)username;
+- (instancetype)initWithState:(DWDPRegistrationState)state
+                       failed:(BOOL)failed
+                     username:(nullable NSString *)username;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
