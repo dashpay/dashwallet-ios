@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSFriendRequestEntity;
 
+// TODO: DP consider removing this notification type
+
 @interface DWDPEstablishedContactNotificationObject : DWDPEstablishedContactObject <DWDPNotificationItem>
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity

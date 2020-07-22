@@ -200,17 +200,15 @@ NS_ASSUME_NONNULL_END
 
             DSBlockchainIdentity *blockchainIdentity = [request.sourceContact.associatedBlockchainIdentity blockchainIdentity];
             if (isFriendship) {
-                if (self.isIgnoringOutboundEvents && isInitiatedByThem && [self.acceptedRequestContactIDs containsObject:sourceID]) {
-                    DWDPEstablishedContactNotificationObject *object =
-                        [[DWDPEstablishedContactNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                                   blockchainIdentity:blockchainIdentity];
-                    [items addObject:object];
+                DWDPAcceptedRequestNotificationObject *object =
+                    [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:request
+                                                                            blockchainIdentity:blockchainIdentity
+                                                                             isInitiatedByThem:isInitiatedByThem];
+                // Don't add notifications about MY responses to the New section
+                if (isInitiatedByThem) {
+                    [oldItems addObject:object];
                 }
                 else {
-                    DWDPAcceptedRequestNotificationObject *object =
-                        [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                                blockchainIdentity:blockchainIdentity
-                                                                                 isInitiatedByThem:isInitiatedByThem];
                     [items addObject:object];
                 }
             }
