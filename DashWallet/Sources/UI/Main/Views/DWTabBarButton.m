@@ -51,6 +51,9 @@ static UIColor *InactiveButtonColor(void) {
             case DWTabBarButtonType_Contacts:
                 image = [UIImage imageNamed:@"tabbar_contacts_icon"];
                 break;
+            case DWTabBarButtonType_Discover:
+                image = [UIImage imageNamed:@"tabbar_discover_icon"];
+                break;
             case DWTabBarButtonType_Others:
                 image = [UIImage imageNamed:@"tabbar_other_icon"];
                 break;

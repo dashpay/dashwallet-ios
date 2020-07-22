@@ -113,8 +113,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         }
 
         {
-            // TODO: fix me
-            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Contacts];
+            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Discover];
             [button addTarget:self
                           action:@selector(tabBarButtonAction:)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -233,7 +232,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             type = DWTabBarViewButtonType_Others;
         }
         else if (sender == self.discoverButton) {
-            // TODO: fix me
+            // TODO: DP fix me
             type = DWTabBarViewButtonType_Contacts;
         }
         else {
