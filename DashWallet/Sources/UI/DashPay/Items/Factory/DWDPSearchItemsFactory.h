@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDPBlockchainIdentityBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPSearchItemsFactory : NSObject
 
-- (id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

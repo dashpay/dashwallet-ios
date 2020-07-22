@@ -116,6 +116,10 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.inputBuilder paymentInputWithURL:url];
 }
 
+- (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicUserItem>)userItem {
+    return [self.inputBuilder paymentInputWithUserItem:userItem];
+}
+
 #pragma mark - Notifications
 
 - (void)pasteboardObserverNotification {

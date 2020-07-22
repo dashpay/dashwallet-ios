@@ -21,4 +21,8 @@
 
 @implementation DWDPPendingRequestObject
 
+- (DSFriendRequestEntity *)friendRequestToPay {
+    return nil;
+}
+
 @end

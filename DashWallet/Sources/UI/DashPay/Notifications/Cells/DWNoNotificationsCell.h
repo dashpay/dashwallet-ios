@@ -19,7 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNoNotificationsCell : UITableViewCell
+@interface DWNoNotificationsCell : UICollectionViewCell
+
+@property (nonatomic, assign) CGFloat contentWidth;
 
 @end
 

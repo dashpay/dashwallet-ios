@@ -26,7 +26,7 @@
 
 @implementation DWDashPayContactsActions
 
-+ (void)acceptContactRequest:(id<DWDPBasicItem>)item
++ (void)acceptContactRequest:(id<DWDPBasicUserItem>)item
                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     NSAssert([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)], @"Incompatible item");
 
@@ -62,7 +62,7 @@
     };
 
     // Accepting request from a DSFriendRequestEntity doesn't require searching for associated blockchain identity.
-    // Since all DWDPBasicItem has associated BI, check if it's a DSFriendRequestEntity first.
+    // Since all DWDPBasicUserItem has associated BI, check if it's a DSFriendRequestEntity first.
     if (isFriendRequestBacked && [(id<DWDPFriendRequestBackedItem>)item friendRequestEntity] != nil) {
         id<DWDPFriendRequestBackedItem> backedItem = (id<DWDPFriendRequestBackedItem>)item;
         [self acceptContactRequestFromFriendRequest:backedItem.friendRequestEntity completion:resultCompletion];
@@ -73,7 +73,7 @@
     }
 }
 
-+ (void)declineContactRequest:(id<DWDPBasicItem>)item
++ (void)declineContactRequest:(id<DWDPBasicUserItem>)item
                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     // TODO: DP dummy method
 

@@ -15,17 +15,28 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWDPAmountContactView.h"
 
-#import "DWDPBasicItem.h"
+#import "DWDPSmallContactView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UITableView (DWDPItemDequeue)
+@interface DWDPAmountContactView ()
 
-- (void)dw_registerDPItemCells;
-- (__kindof UITableViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath;
+@property (readonly, nonatomic, strong) DWDPSmallContactView *contactView;
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+@implementation DWDPAmountContactView
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

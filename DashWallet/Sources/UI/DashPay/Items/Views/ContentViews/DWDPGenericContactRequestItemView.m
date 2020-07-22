@@ -86,18 +86,27 @@ NS_ASSUME_NONNULL_END
     [statusImageView setContentCompressionResistancePriority:UILayoutPriorityRequired - 10 forAxis:UILayoutConstraintAxisHorizontal];
     [statusImageView setContentCompressionResistancePriority:UILayoutPriorityRequired - 10 forAxis:UILayoutConstraintAxisVertical];
 
+    NSLayoutConstraint *acceptTopConstraint = [acceptButton.topAnchor constraintGreaterThanOrEqualToAnchor:self.accessoryView.topAnchor];
+    acceptTopConstraint.priority = UILayoutPriorityRequired - 20;
+    NSLayoutConstraint *acceptBottomConstraint = [self.accessoryView.bottomAnchor constraintGreaterThanOrEqualToAnchor:acceptButton.bottomAnchor];
+    acceptBottomConstraint.priority = UILayoutPriorityRequired - 19;
+    NSLayoutConstraint *declineTopConstraint = [declineButton.topAnchor constraintGreaterThanOrEqualToAnchor:self.accessoryView.topAnchor];
+    declineTopConstraint.priority = UILayoutPriorityRequired - 18;
+    NSLayoutConstraint *declineBottomConstraint = [self.accessoryView.bottomAnchor constraintGreaterThanOrEqualToAnchor:declineButton.bottomAnchor];
+    declineBottomConstraint.priority = UILayoutPriorityRequired - 17;
+
     [NSLayoutConstraint activateConstraints:@[
-        [acceptButton.topAnchor constraintGreaterThanOrEqualToAnchor:self.accessoryView.topAnchor],
+        acceptTopConstraint,
         [acceptButton.leadingAnchor constraintEqualToAnchor:self.accessoryView.leadingAnchor],
-        [self.accessoryView.bottomAnchor constraintGreaterThanOrEqualToAnchor:acceptButton.bottomAnchor],
+        acceptBottomConstraint,
         [acceptButton.centerYAnchor constraintEqualToAnchor:self.accessoryView.centerYAnchor],
         [acceptButton.heightAnchor constraintEqualToConstant:buttonHeight],
 
-        [declineButton.topAnchor constraintGreaterThanOrEqualToAnchor:self.accessoryView.topAnchor],
+        declineTopConstraint,
         [declineButton.leadingAnchor constraintEqualToAnchor:acceptButton.trailingAnchor
                                                     constant:spacing],
         [self.accessoryView.trailingAnchor constraintEqualToAnchor:declineButton.trailingAnchor],
-        [self.accessoryView.bottomAnchor constraintGreaterThanOrEqualToAnchor:declineButton.bottomAnchor],
+        declineBottomConstraint,
         [declineButton.centerYAnchor constraintEqualToAnchor:self.accessoryView.centerYAnchor],
         [declineButton.heightAnchor constraintEqualToConstant:buttonHeight],
         [declineButton.widthAnchor constraintEqualToConstant:buttonHeight],

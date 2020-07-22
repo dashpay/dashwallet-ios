@@ -21,21 +21,25 @@
 
 #import "DWDPBasicCell.h"
 #import "DWDPNewIncomingRequestItem.h"
-#import "UITableView+DWDPItemDequeue.h"
+#import "DWListCollectionLayout.h"
+#import "UICollectionView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserSearchResultViewController () <DWDPNewIncomingRequestItemDelegate>
+@interface DWUserSearchResultViewController () <DWDPNewIncomingRequestItemDelegate, UICollectionViewDataSource, UICollectionViewDelegate>
+
+@property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
+
 @end
 
 NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchResultViewController
 
-- (void)setItems:(NSArray<id<DWDPBasicItem>> *)items {
+- (void)setItems:(NSArray<id<DWDPBasicUserItem>> *)items {
     _items = [items copy];
 
-    [self.tableView reloadData];
+    [self.collectionView reloadData];
 }
 
 - (void)viewDidLoad {
@@ -43,22 +47,24 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    [self.tableView dw_registerDPItemCells];
-    self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
-    self.tableView.estimatedRowHeight = 72.0;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+    [self.view addSubview:self.collectionView];
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+#pragma mark - UICollectionViewDataSource
+
+- (NSInteger)collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return self.items.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    id<DWDPBasicItem> item = self.items[indexPath.row];
+- (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
 
-    DWDPBasicCell *cell = [tableView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+    id<DWDPBasicUserItem> item = self.items[indexPath.row];
+
+    DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+    cell.contentWidth = contentWidth;
     cell.displayItemBackgroundView = YES;
     cell.delegate = self;
     [cell setItem:item highlightedText:self.searchQuery];
@@ -66,25 +72,47 @@ NS_ASSUME_NONNULL_END
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+#pragma mark - UICollectionViewDelegate
+
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
     [self.delegate userSearchResultViewController:self willDisplayItemAtIndex:indexPath.row];
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    [self.collectionView deselectItemAtIndexPath:indexPath animated:YES];
 
-    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
     [self.delegate userSearchResultViewController:self didSelectItemAtIndex:indexPath.row cell:cell];
 }
 
 #pragma mark - DWDPNewIncomingRequestItemDelegate
 
-- (void)acceptIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)acceptIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.delegate userSearchResultViewController:self acceptContactRequest:item];
 }
 
-- (void)declineIncomingRequest:(id<DWDPBasicItem>)item {
+- (void)declineIncomingRequest:(id<DWDPBasicUserItem>)item {
     [self.delegate userSearchResultViewController:self declineContactRequest:item];
+}
+
+#pragma mark - Private
+
+- (UICollectionView *)collectionView {
+    if (_collectionView == nil) {
+        DWListCollectionLayout *layout = [[DWListCollectionLayout alloc] init];
+
+        UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
+                                                              collectionViewLayout:layout];
+        collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        collectionView.delegate = self;
+        collectionView.dataSource = self;
+        collectionView.alwaysBounceVertical = YES;
+        [collectionView dw_registerDPItemCells];
+
+        _collectionView = collectionView;
+    }
+    return _collectionView;
 }
 
 @end

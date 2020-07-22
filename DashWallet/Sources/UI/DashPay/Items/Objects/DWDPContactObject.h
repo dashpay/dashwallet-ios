@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDPDashpayUserBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSDashpayUserEntity;
 
-@interface DWDPContactObject : NSObject <DWDPBasicItem, DWDPDashpayUserBackedItem>
+@interface DWDPContactObject : NSObject <DWDPBasicUserItem, DWDPDashpayUserBackedItem>
 
 @property (readonly, nonatomic, strong) DSDashpayUserEntity *userEntity;
 

@@ -17,9 +17,20 @@
 
 #import "DWSearchViewController.h"
 
+#import "DWPayModelProtocol.h"
+#import "DWTransactionListDataProviderProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchViewController : DWSearchViewController
+
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

@@ -17,13 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDPBasicUserItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWActivityCollectionViewCell : UICollectionViewCell
+@interface DWDPSmallContactView : UIView
 
-@property (readonly, nonatomic, strong) UIView *rootView;
-
-@property (nullable, nonatomic, copy) NSString *text;
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> item;
 
 @end
 

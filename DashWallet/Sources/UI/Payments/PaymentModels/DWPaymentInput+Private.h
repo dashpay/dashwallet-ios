@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, strong) DSPaymentRequest *request;
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
 - (instancetype)initWithSource:(DWPaymentInputSource)source;
 

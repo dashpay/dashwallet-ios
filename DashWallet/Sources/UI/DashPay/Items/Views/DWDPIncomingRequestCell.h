@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPIncomingRequestCell : DWDPBasicCell
 
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> item;
 @property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> delegate;
 
 @end

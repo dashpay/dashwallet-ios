@@ -17,22 +17,24 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicItem.h"
-#import "DWDPNewIncomingRequestItem.h"
+#import "DWContactsSortModeProtocol.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWContactsDataSource <UITableViewDataSource>
+@protocol DWContactsDataSource <DWContactsSortModeProtocol>
 
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+
+@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
 @property (readonly, nullable, nonatomic, copy) NSString *trimmedQuery;
-@property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
-@property (readonly, nonatomic, assign) NSUInteger contactRequestsCount;
 
-- (void)setupWithTableView:(UITableView *)tableView itemsDelegate:(id<DWDPNewIncomingRequestItemDelegate>)itemsDelegate;
+/// First section
+@property (readonly, nonatomic, assign) NSUInteger requestsCount;
+/// Second section
+@property (readonly, nonatomic, assign) NSUInteger contactsCount;
 
-- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
-
-- (void)searchWithQuery:(NSString *)searchQuery;
+- (id<DWDPBasicUserItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

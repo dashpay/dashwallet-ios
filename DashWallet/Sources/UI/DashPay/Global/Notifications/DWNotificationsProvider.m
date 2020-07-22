@@ -157,8 +157,8 @@ NS_ASSUME_NONNULL_END
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
     const NSTimeInterval mostRecentViewedTimestamp = [options.mostRecentViewedNotificationDate timeIntervalSince1970];
 
-    NSMutableArray<id<DWDPBasicItem, DWDPNotificationItem>> *newItems = [NSMutableArray array];
-    NSMutableArray<id<DWDPBasicItem, DWDPNotificationItem>> *oldItems = [NSMutableArray array];
+    NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *newItems = [NSMutableArray array];
+    NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *oldItems = [NSMutableArray array];
 
     NSMutableSet<NSManagedObjectID *> *processed = [NSMutableSet set];
 
@@ -168,7 +168,7 @@ NS_ASSUME_NONNULL_END
         NSSet<NSManagedObjectID *> *destinationConnections = connections[destinationID];
         const BOOL isFriendship = [destinationConnections containsObject:sourceID];
         const BOOL isNew = request.timestamp > mostRecentViewedTimestamp;
-        NSMutableArray<id<DWDPBasicItem, DWDPNotificationItem>> *items = isNew ? newItems : oldItems;
+        NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *items = isNew ? newItems : oldItems;
 
         if ([sourceID isEqual:userID]) { // outoging
             const BOOL isInitiatedByMe = ![processed containsObject:destinationID];

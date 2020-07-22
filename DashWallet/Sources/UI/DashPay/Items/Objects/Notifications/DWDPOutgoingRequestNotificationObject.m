@@ -76,5 +76,8 @@ NS_ASSUME_NONNULL_END
     return _subtitle;
 }
 
+- (DSFriendRequestEntity *)friendRequestToPay {
+    return nil;
+}
 
 @end

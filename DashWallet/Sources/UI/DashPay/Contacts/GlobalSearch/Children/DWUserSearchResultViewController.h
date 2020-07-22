@@ -17,7 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,19 +30,19 @@ NS_ASSUME_NONNULL_BEGIN
                 willDisplayItemAtIndex:(NSInteger)index;
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                   didSelectItemAtIndex:(NSInteger)index
-                                  cell:(UITableViewCell *)cell;
+                                  cell:(UICollectionViewCell *)cell;
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                  acceptContactRequest:(id<DWDPBasicItem>)item;
+                  acceptContactRequest:(id<DWDPBasicUserItem>)item;
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                 declineContactRequest:(id<DWDPBasicItem>)item;
+                 declineContactRequest:(id<DWDPBasicUserItem>)item;
 
 @end
 
-@interface DWUserSearchResultViewController : UITableViewController
+@interface DWUserSearchResultViewController : UIViewController
 
 @property (nullable, nonatomic, copy) NSString *searchQuery;
-@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *items;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem>> *items;
 @property (nullable, nonatomic, weak) id<DWUserSearchResultViewControllerDelegate> delegate;
 
 @end

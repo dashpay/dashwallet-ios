@@ -19,14 +19,23 @@
 
 #import "DWUIKit.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWNoNotificationsCell ()
+
+@property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation DWNoNotificationsCell
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         self.contentView.backgroundColor = self.backgroundColor;
-        self.selectionStyle = UITableViewCellSelectionStyleNone;
 
         UIImage *image = [UIImage imageNamed:@"dp_no_notifications"];
         UIImageView *iconImageView = [[UIImageView alloc] initWithImage:image];
@@ -53,20 +62,33 @@
         const CGFloat spacing = 30.0;
         UILayoutGuide *guide = self.contentView.layoutMarginsGuide;
 
+        NSLayoutConstraint *labelIconConstraint = [label.topAnchor constraintGreaterThanOrEqualToAnchor:iconImageView.bottomAnchor
+                                                                                               constant:spacing];
+        labelIconConstraint.priority = UILayoutPriorityRequired - 2;
+
         [NSLayoutConstraint activateConstraints:@[
             [iconImageView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
                                                     constant:spacing],
             [iconImageView.centerXAnchor constraintEqualToAnchor:self.contentView.centerXAnchor],
 
-            [label.topAnchor constraintEqualToAnchor:iconImageView.bottomAnchor
-                                            constant:spacing],
+            labelIconConstraint,
             [label.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
             [guide.bottomAnchor constraintEqualToAnchor:label.bottomAnchor
                                                constant:spacing],
             [guide.trailingAnchor constraintEqualToAnchor:label.trailingAnchor],
+
+            (_contentWidthConstraint = [self.contentView.widthAnchor constraintEqualToConstant:200]),
         ]];
     }
     return self;
+}
+
+- (CGFloat)contentWidth {
+    return self.contentWidthConstraint.constant;
+}
+
+- (void)setContentWidth:(CGFloat)contentWidth {
+    self.contentWidthConstraint.constant = contentWidth;
 }
 
 @end

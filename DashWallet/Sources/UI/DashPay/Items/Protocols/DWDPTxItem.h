@@ -15,11 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWBaseContactsDataSourceObject.h"
+#import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRequestsDataSourceObject : DWBaseContactsDataSourceObject
+@protocol DWDPTxItem <DWDPBasicItem>
+
+/// Contains both Dash and fiat amounts
+@property (readonly, nonatomic, copy) NSAttributedString *amountString;
 
 @end
 

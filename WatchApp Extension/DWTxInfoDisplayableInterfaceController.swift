@@ -63,7 +63,7 @@ extension WKInterfaceController: DWTxInfoDisplayableInterfaceController {
                                         style: .cancel,
                                         handler: {
                                             self.dismiss()
-        })
+                                        })
         presentAlert(withTitle: noteString,
                      message: nil,
                      preferredStyle: .alert,

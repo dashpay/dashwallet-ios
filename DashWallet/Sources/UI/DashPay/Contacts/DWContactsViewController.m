@@ -19,6 +19,15 @@
 
 #import "DWBaseContactsViewController+DWProtected.h"
 #import "DWContactsContentViewController.h"
+#import "DWRequestsViewController.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWContactsViewController () <DWContactsContentControllerDelegate>
+
+@end
+
+NS_ASSUME_NONNULL_END
 
 @implementation DWContactsViewController
 
@@ -60,12 +69,60 @@
 
 - (DWBaseContactsContentViewController *)contentController {
     if (_contentController == nil) {
-        DWContactsContentViewController *controller = [[DWContactsContentViewController alloc] initWithStyle:UITableViewStylePlain];
-        controller.model = self.model;
+        DWContactsContentViewController *controller =
+            [[DWContactsContentViewController alloc] initWithPayModel:self.payModel
+                                                         dataProvider:self.dataProvider];
+        controller.dataSource = self.model.dataSource;
+        controller.itemsDelegate = self;
         controller.delegate = self;
         _contentController = controller;
     }
     return _contentController;
+}
+
+#pragma mark -  DWContactsContentControllerDelegate
+
+- (void)contactsContentController:(DWContactsContentViewController *)controller
+       contactsFilterButtonAction:(UIButton *)sender {
+    NSString *title = NSLocalizedString(@"Sort Contacts", nil);
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Name", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.sortMode = DWContactsSortMode_ByUsername;
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:action];
+    }
+
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        alert.popoverPresentationController.sourceView = sender;
+        alert.popoverPresentationController.sourceRect = sender.bounds;
+    }
+
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)contactsContentController:(DWContactsContentViewController *)controller
+      contactRequestsButtonAction:(UIButton *)sender {
+    DWRequestsModel *requestsModel = [self.model contactRequestsModel];
+    DWRequestsViewController *requestsController =
+        [[DWRequestsViewController alloc] initWithModel:requestsModel
+                                               payModel:self.payModel
+                                           dataProvider:self.dataProvider];
+    [self.navigationController pushViewController:requestsController animated:YES];
 }
 
 @end

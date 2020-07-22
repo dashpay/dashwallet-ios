@@ -22,6 +22,16 @@
 #import "DWDateFormatter.h"
 #import "UIFont+DWDPItem.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DWDPEstablishedContactNotificationObject ()
+
+@property (readonly, nonatomic, strong) DSFriendRequestEntity *friendRequestEntity;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation DWDPEstablishedContactNotificationObject
 
 @synthesize title = _title;
@@ -32,6 +42,7 @@
                          blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super initWithBlockchainIdentity:blockchainIdentity];
     if (self) {
+        _friendRequestEntity = friendRequestEntity;
         _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
     }
     return self;
@@ -60,6 +71,10 @@
         _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:self.date];
     }
     return _subtitle;
+}
+
+- (DSFriendRequestEntity *)friendRequestToPay {
+    return self.friendRequestEntity;
 }
 
 @end

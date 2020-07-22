@@ -21,7 +21,7 @@
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
-static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
+static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
 
 @implementation DWEnvironment
 
@@ -128,9 +128,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
 
 - (NSOrderedSet *)evonetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"34.222.170.127"];
-    [serviceLocations addObject:@"34.217.61.209"];
-    [serviceLocations addObject:@"54.214.177.132"];
+    [serviceLocations addObject:@"54.244.216.56"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -162,18 +160,20 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile";
             destinationChain = [DSChain devnetWithIdentifier:identifier];
             if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
                 // TODO: provide valid `dpnsContractID` and `dashpayContractID`
+
                 destinationChain = [[DSChainsManager sharedInstance]
                     registerDevnetChainWithIdentifier:identifier
                                   forServiceLocations:[self evonetServiceLocation]
+                          withMinimumDifficultyBlocks:UINT32_MAX
                                          standardPort:20001
                                          dapiJRPCPort:3000
                                          dapiGRPCPort:3010
-                                       dpnsContractID:@"ForwNrvKy8jdyoCNTYBK4gcV6o15n79DmFQio2gGac5p".base58ToData.UInt256
-                                    dashpayContractID:@"2VkEDxMJESJ379oY14rm3DBLrmu58BW8KCtPcfWe1Wss".base58ToData.UInt256
-                                      protocolVersion:70215
-                                   minProtocolVersion:70215
-                                         sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
-                                      sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
+                                       dpnsContractID:@"HKVmkmqFtR9go3Mo5qTeKdV6wbfExjiSfootpyqTvJYQ".base58ToData.UInt256
+                                    dashpayContractID:@"CDPKMRuH6Y1a3dQN8ZjK8b9rz7WYPt12vx1myKkN3K6S".base58ToData.UInt256
+                                      protocolVersion:70216
+                                   minProtocolVersion:70216
+                                         sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
+                                      sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }
             break;

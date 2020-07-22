@@ -793,6 +793,9 @@
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "送金中";
 
+/* No comment provided by engineer. */
+"Sending to" = "Sending to";
+
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "送金中.";
 

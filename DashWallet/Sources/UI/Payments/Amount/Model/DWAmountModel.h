@@ -20,6 +20,7 @@
 #import "DWAmountDescriptionViewModel.h"
 #import "DWAmountInputControlSource.h"
 #import "DWAmountObject.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL showsMaxButton;
 @property (readonly, assign, nonatomic) DWAmountType activeType;
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
+@property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> contactItem;
 @property (readonly, nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
 
 - (BOOL)amountIsValidForProceeding NS_REQUIRES_SUPER;
@@ -42,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)minimumOutputAmountFormattedString;
 
 - (void)reloadAttributedData;
+
+- (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

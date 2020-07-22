@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWFilterHeaderView : UIView
+@interface DWFilterHeaderView : UICollectionReusableView
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *filterButton;

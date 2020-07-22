@@ -67,4 +67,8 @@
     return self.displayName ? self.username : nil;
 }
 
+- (DSFriendRequestEntity *)friendRequestToPay {
+    return self.friendRequestEntity;
+}
+
 @end

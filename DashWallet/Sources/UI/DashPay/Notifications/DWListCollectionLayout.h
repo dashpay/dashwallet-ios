@@ -15,8 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWRequestsDataSourceObject.h"
+#import <UIKit/UIKit.h>
 
-@implementation DWRequestsDataSourceObject
+NS_ASSUME_NONNULL_BEGIN
+
+/// UITableView-like collection layout.
+@interface DWListCollectionLayout : UICollectionViewFlowLayout
+
+@property (readonly, nonatomic, assign) CGFloat contentWidth;
 
 @end
+
+NS_ASSUME_NONNULL_END

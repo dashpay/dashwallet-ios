@@ -17,26 +17,29 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicItem.h"
+#import "DWContactsDataSource.h"
+#import "DWDPBasicUserItem.h"
+#import "DWDPNewIncomingRequestItem.h"
+#import "DWPayModelProtocol.h"
+#import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWBaseContactsModel;
-@class DWBaseContactsContentViewController;
+@interface DWBaseContactsContentViewController : UIViewController
 
-@protocol DWBaseContactsContentViewControllerDelegate <NSObject>
+@property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
 
-- (void)contactsContentViewController:(DWBaseContactsContentViewController *)controller
-                        didSelectItem:(id<DWDPBasicItem>)item;
+@property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> itemsDelegate;
+@property (nonatomic, strong) id<DWContactsDataSource> dataSource;
 
-@end
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;
 
-@interface DWBaseContactsContentViewController : UITableViewController
-
-@property (nonatomic, strong) DWBaseContactsModel *model;
-@property (nullable, nonatomic, weak) id<DWBaseContactsContentViewControllerDelegate> delegate;
-
-- (void)updateSearchingState;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

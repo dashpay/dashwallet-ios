@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDPIncomingRequestCell
 
+@dynamic item;
 @dynamic itemView;
 @dynamic delegate;
 
@@ -40,8 +41,8 @@ NS_ASSUME_NONNULL_END
     return DWDPGenericContactRequestItemView.class;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     if (self) {
         [self.itemView.acceptButton addTarget:self action:@selector(acceptButtonAction) forControlEvents:UIControlEventTouchUpInside];
         [self.itemView.declineButton addTarget:self action:@selector(declineButtonAction) forControlEvents:UIControlEventTouchUpInside];

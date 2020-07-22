@@ -19,8 +19,8 @@
 
 @implementation DWNotificationsData
 
-- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)unreadItems
-                           oldItems:(NSArray<id<DWDPBasicItem, DWDPNotificationItem>> *)oldItems {
+- (instancetype)initWithUnreadItems:(NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *)unreadItems
+                           oldItems:(NSArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *)oldItems {
     NSParameterAssert(unreadItems);
     NSParameterAssert(oldItems);
     self = [super init];

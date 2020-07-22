@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPGenericItemView : UIView
 
+@property (nonatomic, assign, getter=isAvatarHidden) BOOL avatarHidden;
+
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UILabel *textLabel;
 @property (readonly, nonatomic, strong) UIView *accessoryView;

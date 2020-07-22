@@ -49,7 +49,7 @@ static NSString *sanitizeString(NSString *s) {
     }
 
     DWTitleDetailCellModel *model =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                   plainCenteredDetail:name];
 
     return model;
@@ -62,7 +62,7 @@ static NSString *sanitizeString(NSString *s) {
     }
 
     DWTitleDetailCellModel *model =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                plainLeftAlignedDetail:detail];
 
     return model;
@@ -75,13 +75,22 @@ static NSString *sanitizeString(NSString *s) {
     }
     else {
         NSString *title = NSLocalizedString(@"Send to", nil);
-        NSString *address = self.address;
-        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];
-        DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                    title:title
-                                         attributedDetail:detail];
-        return model;
+        if (self.userItem) {
+            DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithTitle:title
+                                                                                 userItem:self.userItem
+                                                                             copyableData:self.address];
+            return model;
+        }
+        else {
+            NSString *address = self.address;
+            NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];
+            DWTitleDetailCellModel *model =
+                [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
+                                                        title:title
+                                             attributedDetail:detail
+                                                 copyableData:address];
+            return model;
+        }
     }
 }
 
@@ -96,7 +105,7 @@ static NSString *sanitizeString(NSString *s) {
                                                                                     font:font];
 
     DWTitleDetailCellModel *fee =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                 title:NSLocalizedString(@"Network fee", nil)
                                      attributedDetail:feeString];
 
@@ -108,7 +117,7 @@ static NSString *sanitizeString(NSString *s) {
                                                                             tintColor:tintColor
                                                                                  font:font];
     DWTitleDetailCellModel *total =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                 title:NSLocalizedString(@"Total", nil)
                                      attributedDetail:detail];
     return total;

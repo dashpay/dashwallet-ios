@@ -20,8 +20,10 @@
 #import <CoreData/CoreData.h>
 #import <DashSync/DSBlockchainIdentity.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDPBlockchainIdentityBackedItem.h"
+#import "DWTxDisplayModeProtocol.h"
+#import "DWUserProfileDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,28 +35,32 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 };
 
 @class DWUserProfileModel;
+@protocol DWTransactionListDataProviderProtocol;
 
 @protocol DWUserProfileModelDelegate <NSObject>
 
-- (void)userProfileModelDidUpdateState:(DWUserProfileModel *)model;
+- (void)userProfileModelDidUpdate:(DWUserProfileModel *)model;
 
 @end
 
-@interface DWUserProfileModel : NSObject
+@interface DWUserProfileModel : NSObject <DWTxDisplayModeProtocol>
 
-@property (readonly, nonatomic, strong) id<DWDPBasicItem> item;
+@property (readonly, nonatomic, strong) id<DWDPBasicUserItem> item;
 @property (readonly, nonatomic, assign) DWUserProfileModelState state;
 @property (readonly, nonatomic, copy) NSString *username;
 @property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
+@property (readonly, nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 
 @property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
 
+- (void)skipUpdating;
 - (void)update;
 
 - (void)sendContactRequest;
 - (void)acceptContactRequest;
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item;
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
+              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

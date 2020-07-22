@@ -26,7 +26,7 @@
 
 @implementation DWDPSearchItemsFactory
 
-- (id<DWDPBasicItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     DSBlockchainIdentityFriendshipStatus friendshipStatus = [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];

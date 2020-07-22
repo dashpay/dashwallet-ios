@@ -30,6 +30,16 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWBaseContactsViewController
 
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _payModel = payModel;
+        _dataProvider = dataProvider;
+    }
+    return self;
+}
+
 - (void)dealloc {
     DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
@@ -58,9 +68,10 @@ NS_ASSUME_NONNULL_END
 
 - (void)contactsModelDidUpdate:(DWBaseContactsModel *)model {
     self.searchBar.hidden = NO;
-    if (self.model.isEmpty) {
-        if (self.model.isSearching) {
-            [self.stateController setNoResultsLocalStateWithQuery:self.model.dataSource.trimmedQuery];
+    id<DWContactsDataSource> dataSource = model.dataSource;
+    if (dataSource.isEmpty) {
+        if (dataSource.isSearching) {
+            [self.stateController setNoResultsLocalStateWithQuery:dataSource.trimmedQuery];
         }
         else {
             self.searchBar.hidden = YES;
@@ -69,18 +80,12 @@ NS_ASSUME_NONNULL_END
         [self.contentController dw_detachFromParent];
     }
     else {
-        [self.contentController updateSearchingState];
+        self.contentController.dataSource = dataSource;
 
         if (self.contentController.parentViewController == nil) {
             [self dw_embedChild:self.contentController inContainer:self.contentView];
         }
     }
-}
-
-#pragma mark - DWBaseContactsContentViewControllerDelegate
-
-- (void)contactsContentViewController:(DWBaseContactsContentViewController *)controller
-                        didSelectItem:(id<DWDPBasicItem>)item {
 }
 
 #pragma mark - UISearchBarDelegate
@@ -100,6 +105,16 @@ NS_ASSUME_NONNULL_END
     [self addContactButtonAction];
 }
 
+#pragma mark - DWDPNewIncomingRequestItemDelegate
+
+- (void)acceptIncomingRequest:(id<DWDPBasicUserItem>)item {
+    [self.model acceptContactRequest:item];
+}
+
+- (void)declineIncomingRequest:(id<DWDPBasicUserItem>)item {
+    [self.model declineContactRequest:item];
+}
+
 #pragma mark - Keyboard
 
 - (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
@@ -117,7 +132,9 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    DWUserSearchViewController *controller = [[DWUserSearchViewController alloc] init];
+    DWUserSearchViewController *controller =
+        [[DWUserSearchViewController alloc] initWithPayModel:self.payModel
+                                                dataProvider:self.dataProvider];
     [self.navigationController pushViewController:controller animated:YES];
 }
 

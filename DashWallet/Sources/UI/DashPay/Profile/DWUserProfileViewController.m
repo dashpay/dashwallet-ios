@@ -17,13 +17,14 @@
 
 #import "DWUserProfileViewController.h"
 
-#import "DWActivityCollectionViewCell.h"
-#import "DWStretchyHeaderCollectionViewFlowLayout.h"
+#import "DWDPBasicCell.h"
+#import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
 #import "DWUserProfileModel.h"
 #import "DWUserProfileNavigationTitleView.h"
+#import "UICollectionView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,18 +40,37 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 @property (nullable, nonatomic, weak) DWUserProfileHeaderView *headerView;
 
+@property (null_resettable, nonatomic, strong) DWUserProfileHeaderView *measuringHeaderView;
+
 @end
 
 NS_ASSUME_NONNULL_END
 
 @implementation DWUserProfileViewController
 
-- (instancetype)initWithItem:(id<DWDPBasicItem>)item {
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
+                    payModel:(id<DWPayModelProtocol>)payModel
+                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO];
+}
+
+- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
+                    payModel:(id<DWPayModelProtocol>)payModel
+                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _model = [[DWUserProfileModel alloc] initWithItem:item];
+        _model = [[DWUserProfileModel alloc] initWithItem:item txDataProvider:dataProvider];
         _model.delegate = self;
-        [_model update];
+        if (shouldSkipUpdating) {
+            [_model skipUpdating];
+        }
+        else {
+            [_model update];
+        }
+
+        self.payModel = payModel;
+        self.dataProvider = dataProvider;
 
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -81,6 +101,10 @@ NS_ASSUME_NONNULL_END
     [self.collectionView flashScrollIndicators];
 }
 
+- (id<DWDPBasicUserItem>)contactItem {
+    return self.model.item;
+}
+
 #pragma mark - UICollectionViewDataSource
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
@@ -94,13 +118,13 @@ NS_ASSUME_NONNULL_END
         return shouldDisplayActions ? 1 : 0;
     }
     else {
-        return 20;
+        return self.model.dataSource.count;
     }
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section != 0) {
-        return nil;
+        return [[UICollectionReusableView alloc] initWithFrame:CGRectZero];
     }
 
     DWUserProfileHeaderView *headerView = (DWUserProfileHeaderView *)[collectionView
@@ -114,20 +138,28 @@ NS_ASSUME_NONNULL_END
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
     if (indexPath.section == 0) {
         DWUserProfileContactActionsCell *cell = [collectionView
             dequeueReusableCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier
                                       forIndexPath:indexPath];
+        cell.contentWidth = contentWidth;
         cell.username = self.model.username;
         cell.delegate = self;
         [cell configureForIncomingStatus];
         return cell;
     }
     else {
-        DWActivityCollectionViewCell *cell = [collectionView
-            dequeueReusableCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier
-                                      forIndexPath:indexPath];
-        cell.text = [NSString stringWithFormat:@"Placeholder %@ - %@", @(indexPath.section), @(indexPath.item)];
+        id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+
+        DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
+        cell.contentWidth = contentWidth;
+        cell.itemView.avatarHidden = YES;
+        cell.displayItemBackgroundView = NO;
+        cell.item = item;
         return cell;
     }
 }
@@ -139,21 +171,17 @@ NS_ASSUME_NONNULL_END
         return CGSizeZero;
     }
 
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
-    UIView *headerView = [self collectionView:collectionView
-            viewForSupplementaryElementOfKind:UICollectionElementKindSectionHeader
-                                  atIndexPath:indexPath];
-    const CGSize size = [headerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
-    return size;
-}
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0) {
-        return CGSizeMake(collectionView.bounds.size.width, 120);
-    }
-    else {
-        return CGSizeMake(collectionView.bounds.size.width, 50);
-    }
+    UIView *measuringView = self.measuringHeaderView;
+    measuringView.frame = CGRectMake(0, 0, contentWidth, 300);
+    CGSize size = [measuringView systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingCompressedSize.height)
+                               withHorizontalFittingPriority:UILayoutPriorityRequired
+                                     verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
+    return size;
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -178,7 +206,7 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWUserProfileModelDelegate
 
-- (void)userProfileModelDidUpdateState:(DWUserProfileModel *)model {
+- (void)userProfileModelDidUpdate:(DWUserProfileModel *)model {
     [self.collectionView reloadData];
 }
 
@@ -187,6 +215,10 @@ NS_ASSUME_NONNULL_END
 - (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender {
     if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None) {
         [self.model sendContactRequest];
+    }
+    else if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
+             self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends) {
+        [self performPayToUser:self.model.item];
     }
 }
 
@@ -203,10 +235,16 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
+    NSAssert(indexPath.section > 0, @"Section 0 is empty and should not have any data items");
+    NSIndexPath *dataIndexPath = [NSIndexPath indexPathForItem:indexPath.item inSection:0];
+    id<DWDPBasicItem> item = [self.model.dataSource itemAtIndexPath:dataIndexPath];
+    return item;
+}
+
 - (UICollectionView *)collectionView {
     if (_collectionView == nil) {
-        DWStretchyHeaderCollectionViewFlowLayout *layout = [[DWStretchyHeaderCollectionViewFlowLayout alloc] init];
-        layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+        DWStretchyHeaderListCollectionLayout *layout = [[DWStretchyHeaderListCollectionLayout alloc] init];
 
         UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
                                                               collectionViewLayout:layout];
@@ -216,8 +254,7 @@ NS_ASSUME_NONNULL_END
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         collectionView.alwaysBounceVertical = YES;
 
-        [collectionView registerClass:DWActivityCollectionViewCell.class
-            forCellWithReuseIdentifier:DWActivityCollectionViewCell.dw_reuseIdentifier];
+        [collectionView dw_registerDPItemCells];
 
         [collectionView registerClass:DWUserProfileContactActionsCell.class
             forCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier];
@@ -230,4 +267,13 @@ NS_ASSUME_NONNULL_END
     }
     return _collectionView;
 }
+
+- (DWUserProfileHeaderView *)measuringHeaderView {
+    if (_measuringHeaderView == nil) {
+        _measuringHeaderView = [[DWUserProfileHeaderView alloc] initWithFrame:CGRectZero];
+    }
+    _measuringHeaderView.model = self.model;
+    return _measuringHeaderView;
+}
+
 @end

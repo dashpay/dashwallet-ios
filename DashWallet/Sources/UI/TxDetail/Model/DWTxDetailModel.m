@@ -131,7 +131,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                                    withFont:font];
             const BOOL hasTitle = address == firstAddress;
             DWTitleDetailCellModel *model =
-                [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
                                                         title:hasTitle ? title : @""
                                              attributedDetail:detail
                                                  copyableData:address];
@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                                withFont:font];
         const BOOL hasTitle = address == firstAddress;
         DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
                                                     title:hasTitle ? title : @""
                                          attributedDetail:detail
                                              copyableData:address];
@@ -202,7 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
                 break;
         }
         DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
                                                     title:title
                                          attributedDetail:detail
                                              copyableData:address];
@@ -223,7 +223,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                             tintColor:tintColor
                                                                                  font:font];
 
-    DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+    DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                                             title:title
                                                                  attributedDetail:detail];
     return model;
@@ -232,7 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<DWTitleDetailItem>)date {
     NSString *title = NSLocalizedString(@"Date", nil);
     NSString *detail = [self.dataProvider longDateStringForTransaction:self.transaction];
-    DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+    DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                                             title:title
                                                                       plainDetail:detail];
     return model;

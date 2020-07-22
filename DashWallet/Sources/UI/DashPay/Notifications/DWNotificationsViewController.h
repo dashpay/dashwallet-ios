@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWNotificationsViewController : UITableViewController
+@interface DWNotificationsViewController : UIViewController
 
 @end
 

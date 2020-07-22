@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 #import "DWDPFriendRequestBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DSFriendRequestEntity;
 
 /// User from search
-@interface DWDPUserObject : NSObject <DWDPBasicItem, DWDPFriendRequestBackedItem>
+@interface DWDPUserObject : NSObject <DWDPBasicUserItem, DWDPFriendRequestBackedItem>
 
 @property (readonly, nullable, strong, nonatomic) DSFriendRequestEntity *friendRequestEntity;
 

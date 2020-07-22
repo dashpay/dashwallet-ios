@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "UITableView+DWDPItemDequeue.h"
+#import "UICollectionView+DWDPItemDequeue.h"
 
 #import "DWUIKit.h"
 
@@ -23,22 +23,25 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
+#import "DWDPTxItem.h"
 
 #import "DWDPBasicCell.h"
 #import "DWDPImageStatusCell.h"
 #import "DWDPIncomingRequestCell.h"
 #import "DWDPTextStatusCell.h"
+#import "DWDPTxListCell.h"
 
-@implementation UITableView (DWDPItemDequeue)
+@implementation UICollectionView (DWDPItemDequeue)
 
 - (void)dw_registerDPItemCells {
-    [self registerClass:DWDPBasicCell.class forCellReuseIdentifier:DWDPBasicCell.dw_reuseIdentifier];
-    [self registerClass:DWDPIncomingRequestCell.class forCellReuseIdentifier:DWDPIncomingRequestCell.dw_reuseIdentifier];
-    [self registerClass:DWDPImageStatusCell.class forCellReuseIdentifier:DWDPImageStatusCell.dw_reuseIdentifier];
-    [self registerClass:DWDPTextStatusCell.class forCellReuseIdentifier:DWDPTextStatusCell.dw_reuseIdentifier];
+    [self registerClass:DWDPBasicCell.class forCellWithReuseIdentifier:DWDPBasicCell.dw_reuseIdentifier];
+    [self registerClass:DWDPIncomingRequestCell.class forCellWithReuseIdentifier:DWDPIncomingRequestCell.dw_reuseIdentifier];
+    [self registerClass:DWDPImageStatusCell.class forCellWithReuseIdentifier:DWDPImageStatusCell.dw_reuseIdentifier];
+    [self registerClass:DWDPTextStatusCell.class forCellWithReuseIdentifier:DWDPTextStatusCell.dw_reuseIdentifier];
+    [self registerClass:DWDPTxListCell.class forCellWithReuseIdentifier:DWDPTxListCell.dw_reuseIdentifier];
 }
 
-- (__kindof UITableViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath {
+- (__kindof UICollectionViewCell *)dw_dequeueReusableCellForItem:(id<DWDPBasicItem>)item atIndexPath:(NSIndexPath *)indexPath {
     // DWDPRespondedRequestItem should come before DWDPIncomingRequestItem since the first one also conforms to DWDPIncomingRequestItem
     NSString *cellID = nil;
     if ([item conformsToProtocol:@protocol(DWDPEstablishedContactItem)]) {
@@ -53,11 +56,14 @@
     else if ([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)]) {
         cellID = DWDPIncomingRequestCell.dw_reuseIdentifier;
     }
-    else { // any DWDPBasicItem
+    else if ([item conformsToProtocol:@protocol(DWDPTxItem)]) {
+        cellID = DWDPTxListCell.dw_reuseIdentifier;
+    }
+    else { // any DWDPBasicUserItem
         cellID = DWDPBasicCell.dw_reuseIdentifier;
     }
 
-    return [self dequeueReusableCellWithIdentifier:cellID forIndexPath:indexPath];
+    return [self dequeueReusableCellWithReuseIdentifier:cellID forIndexPath:indexPath];
 }
 
 @end

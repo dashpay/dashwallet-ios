@@ -78,7 +78,7 @@ static CGFloat TopPadding(void) {
 #pragma mark - DWReceiveContentViewDelegate
 
 - (void)receiveContentView:(DWReceiveContentView *)view specifyAmountButtonAction:(UIButton *)sender {
-    DWSpecifyAmountViewController *controller = [DWSpecifyAmountViewController controller];
+    DWSpecifyAmountViewController *controller = [[DWSpecifyAmountViewController alloc] init];
     controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }

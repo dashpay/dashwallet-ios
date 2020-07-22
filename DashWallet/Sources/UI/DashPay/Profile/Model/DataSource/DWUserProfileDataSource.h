@@ -15,28 +15,17 @@
 //  limitations under the License.
 //
 
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
-
 #import "DWDPBasicItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWDPContactsItemsFactory;
+@protocol DWUserProfileDataSource <NSObject>
 
-@interface DWContactsSearchDataSource : NSObject
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
 
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredFirstSection;
-@property (readonly, nullable, nonatomic, copy) NSArray<id<DWDPBasicItem>> *filteredSecondSection;
+@property (readonly, nonatomic, assign) NSUInteger count;
 
-- (void)filterWithTrimmedQuery:(NSString *)trimmedQuery;
-
-- (instancetype)initWithFactory:(DWDPContactsItemsFactory *)factory
-                       firstFRC:(NSFetchedResultsController *)firstFRC
-                      secondFRC:(NSFetchedResultsController *)secondFRC;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

@@ -105,6 +105,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self.paymentProcessor processPaymentInput:paymentInput];
 }
 
+- (void)performPayToUser:(id<DWDPBasicUserItem>)userItem {
+    DWPaymentInput *paymentInput = [self.payModel paymentInputWithUser:userItem];
+
+    self.paymentProcessor = nil;
+    [self.paymentProcessor processPaymentInput:paymentInput];
+}
+
 - (void)handleFile:(NSData *)file {
     self.paymentProcessor = nil;
     [self.paymentProcessor processFile:file];
@@ -112,6 +119,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)payViewControllerDidShowPaymentResult {
     // to be overriden
+}
+
+- (id<DWDPBasicUserItem>)contactItem {
+    return nil; // to be overriden
 }
 
 #pragma mark - DWPaymentProcessorDelegate
@@ -122,8 +133,9 @@ NS_ASSUME_NONNULL_BEGIN
     requestAmountWithDestination:(NSString *)sendingDestination
                          details:(nullable DSPaymentProtocolDetails *)details {
     DWSendAmountViewController *controller =
-        [DWSendAmountViewController sendControllerWithDestination:sendingDestination
-                                                   paymentDetails:nil];
+        [[DWSendAmountViewController alloc] initWithDestination:sendingDestination
+                                                 paymentDetails:nil
+                                                    contactItem:[self contactItem]];
     controller.delegate = self;
     controller.demoMode = self.demoMode;
     [self.navigationController pushViewController:controller animated:YES];

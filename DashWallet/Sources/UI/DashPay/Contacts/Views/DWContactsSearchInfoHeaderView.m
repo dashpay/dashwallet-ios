@@ -36,15 +36,17 @@
 
         [label setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
 
-        UILayoutGuide *guide = self.layoutMarginsGuide;
         const CGFloat spacing = 10.0;
+        const CGFloat margin = 16.0;
         [NSLayoutConstraint activateConstraints:@[
             [label.topAnchor constraintEqualToAnchor:self.topAnchor
                                             constant:spacing],
-            [label.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
-            [guide.trailingAnchor constraintEqualToAnchor:label.trailingAnchor],
-            [guide.bottomAnchor constraintEqualToAnchor:label.bottomAnchor
-                                               constant:spacing],
+            [label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
+                                                constant:margin],
+            [self.trailingAnchor constraintEqualToAnchor:label.trailingAnchor
+                                                constant:margin],
+            [self.bottomAnchor constraintEqualToAnchor:label.bottomAnchor
+                                              constant:spacing],
         ]];
     }
     return self;

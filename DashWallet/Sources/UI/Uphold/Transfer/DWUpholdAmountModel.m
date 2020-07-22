@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_END
 @implementation DWUpholdAmountModel
 
 - (instancetype)initWithCard:(DWUpholdCardObject *)card {
-    self = [super init];
+    self = [super initWithContactItem:nil];
     if (self) {
         _card = card;
 

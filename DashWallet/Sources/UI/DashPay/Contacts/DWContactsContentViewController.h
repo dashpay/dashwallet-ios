@@ -18,12 +18,25 @@
 #import "DWBaseContactsContentViewController.h"
 
 #import "DWContactsModel.h"
+#import "DWPayModelProtocol.h"
+#import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWContactsContentViewController;
+
+@protocol DWContactsContentControllerDelegate <NSObject>
+
+- (void)contactsContentController:(DWContactsContentViewController *)controller
+       contactsFilterButtonAction:(UIView *)sender;
+- (void)contactsContentController:(DWContactsContentViewController *)controller
+      contactRequestsButtonAction:(UIView *)sender;
+
+@end
+
 @interface DWContactsContentViewController : DWBaseContactsContentViewController
 
-@property (nonatomic, strong) DWContactsModel *model;
+@property (nullable, nonatomic, weak) id<DWContactsContentControllerDelegate> delegate;
 
 @end
 

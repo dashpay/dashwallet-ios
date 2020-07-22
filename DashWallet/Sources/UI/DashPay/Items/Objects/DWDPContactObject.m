@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWEnvironment.h"
 #import "UIFont+DWDPItem.h"
 
 @implementation DWDPContactObject
@@ -55,6 +56,16 @@
 
 - (NSString *)subtitle {
     return self.displayName ? self.username : nil;
+}
+
+- (DSFriendRequestEntity *)friendRequestToPay {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:
+                                              @"destinationContact.associatedBlockchainIdentity.uniqueID == %@",
+                                              myBlockchainIdentity.uniqueIDData];
+    DSFriendRequestEntity *friendRequest = [[self.userEntity.outgoingRequests filteredSetUsingPredicate:predicate] anyObject];
+    return friendRequest;
 }
 
 @end

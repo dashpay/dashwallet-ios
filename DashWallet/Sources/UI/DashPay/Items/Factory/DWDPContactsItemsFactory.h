@@ -18,13 +18,13 @@
 #import <DashSync/DashSync.h>
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicItem.h"
+#import "DWDPBasicUserItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPContactsItemsFactory : NSObject
 
-- (id<DWDPBasicItem>)itemForEntity:(NSManagedObject *)entity;
+- (id<DWDPBasicUserItem>)itemForEntity:(NSManagedObject *)entity;
 
 @end
 

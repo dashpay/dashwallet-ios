@@ -37,8 +37,8 @@ NS_ASSUME_NONNULL_END
     return DWDPGenericStatusItemView.class;
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     if (self) {
         NSString *text = NSLocalizedString(@"Pending", nil);
         self.itemView.statusLabel.text = text;

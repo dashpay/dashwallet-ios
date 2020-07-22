@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUITableViewCell.h>
+#import <KVO-MVVM/KVOUICollectionViewCell.h>
 
 #import "DWDPGenericItemView.h"
 
@@ -25,17 +25,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDPBasicCell : KVOUITableViewCell
+@interface DWDPBasicCell : KVOUICollectionViewCell
 
 @property (readonly, class, nonatomic) Class itemViewClass;
 
 @property (readonly, nonatomic, strong) DWDPGenericItemView *itemView;
 @property (nonatomic, assign) BOOL displayItemBackgroundView;
+@property (nonatomic, assign) CGFloat contentWidth;
 
 @property (nullable, nonatomic, weak) id<DWDPItemCellDelegate> delegate;
 
 @property (nullable, nonatomic, strong) id<DWDPBasicItem> item;
 - (void)setItem:(id<DWDPBasicItem>)item highlightedText:(nullable NSString *)highlightedText NS_REQUIRES_SUPER;
+
+- (void)reloadAttributedData;
 
 @end
 

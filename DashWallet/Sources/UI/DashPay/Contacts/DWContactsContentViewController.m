@@ -17,140 +17,26 @@
 
 #import "DWContactsContentViewController.h"
 
-#import "DWFilterHeaderView.h"
-#import "DWRequestsViewController.h"
-#import "DWTitleActionHeaderView.h"
+#import "DWBaseContactsContentViewController+DWProtected.h"
+
 #import "DWUIKit.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWContactsContentViewController () <DWTitleActionHeaderViewDelegate, DWFilterHeaderViewDelegate>
-
-@end
-
-NS_ASSUME_NONNULL_END
 
 @implementation DWContactsContentViewController
 
-@dynamic model;
-
-#pragma mark - UITableViewDelegate
-
-- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    id<DWContactsDataSource> dataSource = self.model.dataSource;
-    if ([dataSource tableView:tableView numberOfRowsInSection:section] == 0) {
-        return [[UIView alloc] init];
-    }
-
-    if (section == 0) {
-        const NSUInteger contactRequestsCount = dataSource.contactRequestsCount;
-        const BOOL isSearching = self.model.isSearching;
-        const BOOL hasMore = contactRequestsCount > dataSource.maxVisibleContactRequestsCount;
-        const BOOL shouldHideViewAll = isSearching || !hasMore;
-        NSString *title = nil;
-        if (shouldHideViewAll) {
-            title = NSLocalizedString(@"Contact Requests", nil);
-        }
-        else {
-            title = [NSString stringWithFormat:@"%@ (%ld)",
-                                               NSLocalizedString(@"Contact Requests", nil),
-                                               contactRequestsCount];
-        }
-
-        DWTitleActionHeaderView *headerView = [[DWTitleActionHeaderView alloc] initWithFrame:CGRectZero];
-        headerView.titleLabel.text = title;
-        headerView.delegate = self;
-        headerView.actionButton.hidden = shouldHideViewAll;
-        [headerView.actionButton setTitle:NSLocalizedString(@"View All", nil) forState:UIControlStateNormal];
-        return headerView;
-    }
-    else {
-        DWFilterHeaderView *headerView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
-        headerView.titleLabel.text = NSLocalizedString(@"My Contacts", nil);
-        headerView.delegate = self;
-
-        UIButton *button = headerView.filterButton;
-        NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
-        [result beginEditing];
-        NSAttributedString *prefix =
-            [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Sort by", nil)
-                                            attributes:@{
-                                                NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
-                                                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1],
-                                            }];
-        [result appendAttributedString:prefix];
-
-        [result appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-        NSString *optionValue = nil;
-        switch (self.model.sortMode) {
-            case DWContactsSortMode_ByUsername: {
-                optionValue = NSLocalizedString(@"Name", nil);
-                break;
-            }
-        }
-        NSAttributedString *option =
-            [[NSAttributedString alloc] initWithString:optionValue
-                                            attributes:@{
-                                                NSForegroundColorAttributeName : [UIColor dw_dashBlueColor],
-                                                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
-                                            }];
-        [result appendAttributedString:option];
-        [result endEditing];
-        [button setAttributedTitle:result forState:UIControlStateNormal];
-
-        return headerView;
-    }
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    id<DWContactsDataSource> dataSource = self.model.dataSource;
-    if ([dataSource tableView:tableView numberOfRowsInSection:section] == 0) {
-        return 0.0;
-    }
-
-    return UITableViewAutomaticDimension;
+- (NSUInteger)maxVisibleContactRequestsCount {
+    return 3;
 }
 
 #pragma mark - DWFilterHeaderViewDelegate
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
-    NSString *title = NSLocalizedString(@"Sort Contacts", nil);
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:title
-                         message:nil
-                  preferredStyle:UIAlertControllerStyleActionSheet];
-    {
-        UIAlertAction *action = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Name", nil)
-                      style:UIAlertActionStyleDefault
-                    handler:^(UIAlertAction *_Nonnull action) {
-                        self.model.sortMode = DWContactsSortMode_ByUsername;
-                    }];
-        [alert addAction:action];
-    }
-
-    {
-        UIAlertAction *action = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                      style:UIAlertActionStyleCancel
-                    handler:nil];
-        [alert addAction:action];
-    }
-
-    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-        alert.popoverPresentationController.sourceView = sender;
-        alert.popoverPresentationController.sourceRect = sender.bounds;
-    }
-
-    [self presentViewController:alert animated:YES completion:nil];
+    [self.delegate contactsContentController:self contactsFilterButtonAction:sender];
 }
 
 #pragma mark - DWTitleActionHeaderViewDelegate
 
 - (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender {
-    DWRequestsModel *requestsModel = [self.model contactRequestsModel];
-    DWRequestsViewController *controller = [[DWRequestsViewController alloc] initWithModel:requestsModel];
-    [self.navigationController pushViewController:controller animated:YES];
+    [self.delegate contactsContentController:self contactRequestsButtonAction:sender];
 }
 
 @end

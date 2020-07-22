@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWTitleActionHeaderView : UIView
+@interface DWTitleActionHeaderView : UICollectionReusableView
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *actionButton;

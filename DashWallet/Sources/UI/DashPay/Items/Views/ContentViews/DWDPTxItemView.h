@@ -15,11 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWDPGenericItemView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWStretchyHeaderCollectionViewFlowLayout : UICollectionViewFlowLayout
+@interface DWDPTxItemView : DWDPGenericItemView
+
+@property (readonly, nonatomic, strong) UILabel *amountLabel;
 
 @end
 

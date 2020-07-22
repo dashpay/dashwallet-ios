@@ -30,6 +30,8 @@ static CGFloat const BUTTON_HEIGHT = 38.0;
 @property (readonly, nonatomic, strong) UIButton *mainButton;
 @property (readonly, nonatomic, strong) UIButton *secondaryButton;
 
+@property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -77,7 +79,6 @@ NS_ASSUME_NONNULL_END
         actionsStackView.spacing = 10.0;
         actionsStackView.alignment = UIStackViewAlignmentCenter;
 
-
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ actionsStackView ]];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
@@ -95,8 +96,8 @@ NS_ASSUME_NONNULL_END
 
         [NSLayoutConstraint activateConstraints:@[
             [contentView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
-            [contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [self.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+            [contentView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
+            [self.contentView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
             [self.contentView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
 
             [titleLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
@@ -118,9 +119,19 @@ NS_ASSUME_NONNULL_END
             [guide.trailingAnchor constraintEqualToAnchor:separatorView.trailingAnchor],
             [separatorView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
             [separatorView.heightAnchor constraintEqualToConstant:1.0],
+
+            (_contentWidthConstraint = [self.contentView.widthAnchor constraintEqualToConstant:200]),
         ]];
     }
     return self;
+}
+
+- (CGFloat)contentWidth {
+    return self.contentWidthConstraint.constant;
+}
+
+- (void)setContentWidth:(CGFloat)contentWidth {
+    self.contentWidthConstraint.constant = contentWidth;
 }
 
 - (void)configureForIncomingStatus {

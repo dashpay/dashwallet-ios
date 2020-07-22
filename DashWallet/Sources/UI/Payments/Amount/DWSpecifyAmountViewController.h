@@ -17,6 +17,8 @@
 
 #import "DWAmountViewController.h"
 
+#import "DWDPBasicUserItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWSpecifyAmountViewController;
@@ -32,7 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWSpecifyAmountViewControllerDelegate> delegate;
 
-+ (instancetype)controller;
+- (instancetype)init;
+- (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithModel:(DWAmountModel *)model NS_UNAVAILABLE;
 
 @end
 

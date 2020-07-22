@@ -27,8 +27,10 @@
 @synthesize stateController = _stateController;
 @synthesize contentController = _contentController;
 
-- (instancetype)initWithModel:(DWRequestsModel *)model {
-    self = [super initWithNibName:nil bundle:nil];
+- (instancetype)initWithModel:(DWRequestsModel *)model
+                     payModel:(id<DWPayModelProtocol>)payModel
+                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithPayModel:payModel dataProvider:dataProvider];
     if (self) {
         _model = model;
         _model.delegate = self;
@@ -55,9 +57,11 @@
 
 - (DWBaseContactsContentViewController *)contentController {
     if (_contentController == nil) {
-        DWRequestsContentViewController *controller = [[DWRequestsContentViewController alloc] initWithStyle:UITableViewStylePlain];
-        controller.model = self.model;
-        controller.delegate = self;
+        DWRequestsContentViewController *controller =
+            [[DWRequestsContentViewController alloc] initWithPayModel:self.payModel
+                                                         dataProvider:self.dataProvider];
+        controller.itemsDelegate = self;
+        controller.dataSource = self.model.dataSource;
         _contentController = controller;
     }
     return _contentController;

@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchViewController () <DWUserSearchModelDelegate, DWUserSearchResultViewControllerDelegate>
 
+@property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
+@property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
+
 @property (null_resettable, nonatomic, strong) DWUserSearchModel *model;
 
 @property (null_resettable, nonatomic, strong) DWSearchStateViewController *stateController;
@@ -40,6 +43,16 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWUserSearchViewController
+
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _payModel = payModel;
+        _dataProvider = dataProvider;
+    }
+    return self;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -80,7 +93,7 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicItem>> *)items;
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicUserItem>> *)items;
 {
     if (items.count > 0) {
         self.resultsController.searchQuery = model.trimmedQuery;
@@ -107,8 +120,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
                   didSelectItemAtIndex:(NSInteger)index
-                                  cell:(UITableViewCell *)cell {
-    id<DWDPBasicItem> item = [self.model itemAtIndex:index];
+                                  cell:(UICollectionViewCell *)cell {
+    id<DWDPBasicUserItem> item = [self.model itemAtIndex:index];
     if (!item) {
         return;
     }
@@ -119,17 +132,19 @@ NS_ASSUME_NONNULL_END
     }
 
     DWUserProfileViewController *profileController =
-        [[DWUserProfileViewController alloc] initWithItem:item];
+        [[DWUserProfileViewController alloc] initWithItem:item
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider];
     [self.navigationController pushViewController:profileController animated:YES];
 }
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                  acceptContactRequest:(id<DWDPBasicItem>)item {
+                  acceptContactRequest:(id<DWDPBasicUserItem>)item {
     [self.model acceptContactRequest:item];
 }
 
 - (void)userSearchResultViewController:(DWUserSearchResultViewController *)controller
-                 declineContactRequest:(id<DWDPBasicItem>)item {
+                 declineContactRequest:(id<DWDPBasicUserItem>)item {
     [self.model declineContactRequest:item];
 }
 

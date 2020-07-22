@@ -34,16 +34,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWBaseContactsModel : NSObject <DWContactsSortModeProtocol>
 
 @property (readonly, nonatomic, assign) BOOL hasBlockchainIdentity;
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
-@property (readonly, nonatomic, assign, getter=isSearching) BOOL searching;
 @property (readonly, nonatomic, strong) id<DWContactsDataSource> dataSource;
 @property (nullable, nonatomic, weak) id<DWContactsModelDelegate> delegate;
+
+@property (nonatomic, assign) DWContactsSortMode sortMode;
 
 - (void)start;
 - (void)stop;
 
-- (void)acceptContactRequest:(id<DWDPBasicItem>)item;
-- (void)declineContactRequest:(id<DWDPBasicItem>)item;
+- (void)acceptContactRequest:(id<DWDPBasicUserItem>)item;
+- (void)declineContactRequest:(id<DWDPBasicUserItem>)item;
 
 - (void)searchWithQuery:(NSString *)searchQuery;
 
