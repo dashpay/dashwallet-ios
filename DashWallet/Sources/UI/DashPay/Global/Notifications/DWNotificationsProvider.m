@@ -38,10 +38,6 @@ NSNotificationName const DWNotificationsProviderDidUpdateNotification = @"org.da
 @property (nonatomic, strong) DWFetchedResultsDataSource *fetchedDataSource;
 @property (nonatomic, copy) DWNotificationsData *data;
 
-@property (nonatomic, assign, getter=isIgnoringOutboundEvents) BOOL ignoringOutboundEvents;
-/// Contains objectIDs of DSFriendRequestEntity.sourceContact which were accepted during ignoring outbound events
-@property (nonatomic, strong) NSMutableSet<NSManagedObjectID *> *acceptedRequestContactIDs;
-
 @end
 
 NS_ASSUME_NONNULL_END
@@ -62,8 +58,6 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _data = [[DWNotificationsData alloc] init];
 
-        _acceptedRequestContactIDs = [NSMutableSet set];
-
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(didUpdateContacts)
                                                      name:DWDashPayContactsDidUpdateNotification
@@ -76,37 +70,6 @@ NS_ASSUME_NONNULL_END
         });
     }
     return self;
-}
-
-- (void)beginIgnoringOutboundEvents {
-    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-
-    self.ignoringOutboundEvents = YES;
-}
-
-- (void)endIgnoringOutboundEvents {
-    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-
-    self.ignoringOutboundEvents = NO;
-
-    self.acceptedRequestContactIDs = [NSMutableSet set];
-
-    [self reset];
-}
-
-- (void)requestWasAcceptedFromContactID:(NSManagedObjectID *)objectID {
-    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-
-    if (!self.isIgnoringOutboundEvents) {
-        return;
-    }
-
-    NSParameterAssert(objectID);
-    if (!objectID) {
-        return;
-    }
-
-    [self.acceptedRequestContactIDs addObject:objectID];
 }
 
 #pragma mark - Private
@@ -173,14 +136,6 @@ NS_ASSUME_NONNULL_END
         if ([sourceID isEqual:userID]) { // outoging
             const BOOL isInitiatedByMe = ![processed containsObject:destinationID];
             [processed addObject:destinationID];
-
-            if (self.isIgnoringOutboundEvents && !isInitiatedByMe && [self.acceptedRequestContactIDs containsObject:destinationID]) {
-                // Mark it as viewed since it was accepted while ignoring outbound events and don't add to the list.
-                // `mostRecentViewedTimestamp` var remains the same because we need to filter other requests
-                options.mostRecentViewedNotificationDate = [NSDate dateWithTimeIntervalSince1970:request.timestamp];
-
-                continue;
-            }
 
             if (isFriendship) {
                 DSBlockchainIdentity *blockchainIdentity = [request.destinationContact.associatedBlockchainIdentity blockchainIdentity];
