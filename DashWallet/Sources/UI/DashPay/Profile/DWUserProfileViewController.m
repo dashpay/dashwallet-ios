@@ -18,7 +18,9 @@
 #import "DWUserProfileViewController.h"
 
 #import "DWDPBasicCell.h"
+#import "DWDPTxItem.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
+#import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
@@ -188,6 +190,22 @@ NS_ASSUME_NONNULL_END
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+
+    if (indexPath.section != 1) {
+        return;
+    }
+
+    id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+    if (![item conformsToProtocol:@protocol(DWDPTxItem)]) {
+        return;
+    }
+
+    DSTransaction *transaction = ((id<DWDPTxItem>)item).transaction;
+    id<DWTransactionListDataProviderProtocol> dataProvider = self.dataProvider;
+    DWTxDetailPopupViewController *controller =
+        [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
+                                                      dataProvider:dataProvider];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - UIScrollViewDelegate
