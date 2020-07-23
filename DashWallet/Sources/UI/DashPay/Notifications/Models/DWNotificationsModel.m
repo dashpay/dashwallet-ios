@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)dealloc {
+    [[DWNotificationsProvider sharedInstance] forceUpdate];
+}
+
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
     [DWDashPayContactsActions acceptContactRequest:item completion:nil];
 }
