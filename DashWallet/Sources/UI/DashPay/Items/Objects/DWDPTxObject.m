@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPTxObject ()
 
-@property (readonly, nonatomic, strong) DSTransaction *tx;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataItem> dataItem;
 
@@ -38,13 +37,14 @@ NS_ASSUME_NONNULL_END
 @synthesize displayName = _displayName;
 @synthesize subtitle = _subtitle;
 @synthesize username = _username;
+@synthesize transaction = _transaction;
 
 - (instancetype)initWithTransaction:(DSTransaction *)tx
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
                            username:(NSString *)username {
     self = [super init];
     if (self) {
-        _tx = tx;
+        _transaction = tx;
         _dataProvider = dataProvider;
         _username = username;
         // TODO: DP provide Display Name

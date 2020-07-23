@@ -66,15 +66,13 @@ NS_ASSUME_NONNULL_END
         // Defer initial reset of notifications because it would lead to a deadlock
         // (since DWNotificationsProvider is a singleton and reset would produce a notification)
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self reset];
+            [self forceUpdate];
         });
     }
     return self;
 }
 
-#pragma mark - Private
-
-- (void)reset {
+- (void)forceUpdate {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     if (!blockchainIdentity) {
         return;
@@ -90,6 +88,8 @@ NS_ASSUME_NONNULL_END
 
     [self reload];
 }
+
+#pragma mark - Private
 
 - (void)setData:(DWNotificationsData *)data {
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -203,7 +203,7 @@ NS_ASSUME_NONNULL_END
 - (void)didUpdateContacts {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    [self reset];
+    [self forceUpdate];
 }
 
 @end

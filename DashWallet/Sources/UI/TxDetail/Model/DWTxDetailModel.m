@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTransactionListDataSource+DWProtected.h"
@@ -106,7 +107,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<id<DWTitleDetailItem>> *)inputAddressesWithFont:(UIFont *)font {
-    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
     NSString *title;
     switch (self.dataItem.direction) {
         case DSTransactionDirection_Sent:
@@ -124,26 +124,23 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if ([self shouldDisplayInputAddresses]) {
-        NSSet<NSString *> *addresses = [NSSet setWithArray:self.dataItem.inputSendAddresses];
-        NSString *firstAddress = addresses.anyObject;
-        for (NSString *address in addresses) {
-            NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                                   withFont:font];
-            const BOOL hasTitle = address == firstAddress;
-            DWTitleDetailCellModel *model =
-                [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
-                                                        title:hasTitle ? title : @""
-                                             attributedDetail:detail
-                                                 copyableData:address];
-            [models addObject:model];
+        if ([self hasSourceUser]) {
+            // Don't show item "Sent from <my username>
+            if (self.dataItem.direction == DSTransactionDirection_Sent) {
+                return @[];
+            }
+            return [self sourceUsersWithTitle:title font:font];
+        }
+        else {
+            return [self plainInputAddressesWithTitle:title font:font];
         }
     }
-
-    return [models copy];
+    else {
+        return @[];
+    }
 }
 
 - (NSArray<id<DWTitleDetailItem>> *)outputAddressesWithFont:(UIFont *)font {
-    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
     NSString *title;
     switch (self.dataItem.direction) {
         case DSTransactionDirection_Sent:
@@ -160,21 +157,12 @@ NS_ASSUME_NONNULL_BEGIN
             break;
     }
 
-    NSArray<NSString *> *addresses = self.dataItem.outputReceiveAddresses;
-    NSString *firstAddress = addresses.firstObject;
-    for (NSString *address in addresses) {
-        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
-        const BOOL hasTitle = address == firstAddress;
-        DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
-                                                    title:hasTitle ? title : @""
-                                         attributedDetail:detail
-                                             copyableData:address];
-        [models addObject:model];
+    if ([self hasDestinationUser]) {
+        return [self destinationUsersWithTitle:title font:font];
     }
-
-    return [models copy];
+    else {
+        return [self plainOutputAddressesWithTitle:title font:font];
+    }
 }
 
 - (NSArray<id<DWTitleDetailItem>> *)specialInfoWithFont:(UIFont *)font {
@@ -265,6 +253,74 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
+
+- (NSArray<id<DWTitleDetailItem>> *)plainInputAddressesWithTitle:(NSString *)title font:(UIFont *)font {
+    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
+    NSSet<NSString *> *addresses = [NSSet setWithArray:self.dataItem.inputSendAddresses];
+    NSString *firstAddress = addresses.anyObject;
+    for (NSString *address in addresses) {
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                               withFont:font];
+        const BOOL hasTitle = address == firstAddress;
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
+                                                    title:hasTitle ? title : @""
+                                         attributedDetail:detail
+                                             copyableData:address];
+        [models addObject:model];
+    }
+    return [models copy];
+}
+
+- (NSArray *)plainOutputAddressesWithTitle:(NSString *)title font:(UIFont *)font {
+    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
+    NSArray<NSString *> *addresses = self.dataItem.outputReceiveAddresses;
+    NSString *firstAddress = addresses.firstObject;
+    for (NSString *address in addresses) {
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                               withFont:font];
+        const BOOL hasTitle = address == firstAddress;
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
+                                                    title:hasTitle ? title : @""
+                                         attributedDetail:detail
+                                             copyableData:address];
+        [models addObject:model];
+    }
+    return [models copy];
+}
+
+- (NSArray<id<DWTitleDetailItem>> *)sourceUsersWithTitle:(NSString *)title font:(UIFont *)font {
+    DSBlockchainIdentity *blockchainIdentity = self.transaction.sourceBlockchainIdentities.anyObject;
+    if (blockchainIdentity) {
+        DWDPUserObject *user = [[DWDPUserObject alloc] initWithBlockchainIdentity:blockchainIdentity];
+        DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithTitle:title userItem:user copyableData:nil];
+        return @[ model ];
+    }
+    else {
+        return @[];
+    }
+}
+
+- (NSArray<id<DWTitleDetailItem>> *)destinationUsersWithTitle:(NSString *)title font:(UIFont *)font {
+    DSBlockchainIdentity *blockchainIdentity = self.transaction.destinationBlockchainIdentities.anyObject;
+    if (blockchainIdentity) {
+        DWDPUserObject *user = [[DWDPUserObject alloc] initWithBlockchainIdentity:blockchainIdentity];
+        DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithTitle:title userItem:user copyableData:nil];
+        return @[ model ];
+    }
+    else {
+        return @[];
+    }
+}
+
+- (BOOL)hasSourceUser {
+    return self.transaction.sourceBlockchainIdentities.count > 0;
+}
+
+- (BOOL)hasDestinationUser {
+    return self.transaction.destinationBlockchainIdentities.count > 0;
+}
 
 - (BOOL)shouldDisplayInputAddresses {
     return [self.transaction isKindOfClass:[DSCoinbaseTransaction class]] || self.dataItem.direction != DSTransactionDirection_Received;

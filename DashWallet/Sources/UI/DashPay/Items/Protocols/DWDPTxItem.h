@@ -19,10 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSTransaction;
+
 @protocol DWDPTxItem <DWDPBasicItem>
 
 /// Contains both Dash and fiat amounts
 @property (readonly, nonatomic, copy) NSAttributedString *amountString;
+@property (readonly, nonatomic, strong) DSTransaction *transaction;
 
 @end
 
