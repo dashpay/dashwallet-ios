@@ -51,6 +51,8 @@ NS_ASSUME_NONNULL_END
 - (void)setStatus:(DWDPRegistrationStatus *)status {
     _status = status;
 
+    NSParameterAssert(status.username);
+
     self.titleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Hello %@,", @"Hello username,"), status.username];
     self.descriptionLabel.text = [status stateDescription];
 }

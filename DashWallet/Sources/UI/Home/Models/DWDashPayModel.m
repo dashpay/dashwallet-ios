@@ -53,8 +53,7 @@ NS_ASSUME_NONNULL_END
                 username = blockchainIdentity.currentUsername;
             }
 
-            NSAssert(username != nil, @"Username is invalid");
-
+            // username can be nil at this point
             [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity username:username];
         }
 
@@ -85,6 +84,12 @@ NS_ASSUME_NONNULL_END
     return [DWNotificationsProvider sharedInstance].data.unreadItems.count;
 }
 
+- (BOOL)shouldPresentRegistrationPaymentConfirmation {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
+    return blockchainIdentity == nil;
+}
+
 - (void)createUsername:(NSString *)username {
     self.lastRegistrationError = nil;
     [DWGlobalOptions sharedInstance].dashpayUsername = username;
@@ -113,9 +118,11 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)retry {
-    NSAssert(self.username != nil, @"Username is invalid.");
+- (BOOL)canRetry {
+    return self.username != nil;
+}
 
+- (void)retry {
     [self createUsername:self.username];
 }
 

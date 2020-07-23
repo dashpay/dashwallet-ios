@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, DWTabBarButtonType) {
     DWTabBarButtonType_Home,
     DWTabBarButtonType_Contacts,
+    DWTabBarButtonType_Discover,
     DWTabBarButtonType_Others,
 };
 

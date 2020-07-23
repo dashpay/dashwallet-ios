@@ -19,12 +19,20 @@
 
 @implementation DWDPRegistrationStatus
 
-- (instancetype)initWithState:(DWDPRegistrationState)state failed:(BOOL)failed username:(NSString *)username {
+- (instancetype)initWithState:(DWDPRegistrationState)state
+                       failed:(BOOL)failed
+                     username:(nullable NSString *)username {
     self = [super init];
     if (self) {
         _state = state;
         _failed = failed;
         _username = [username copy];
+
+#ifdef DEBUG
+        if (username == nil) {
+            NSAssert(state != DWDPRegistrationState_Done, @"Inconsistent state");
+        }
+#endif /* DEBUG */
     }
     return self;
 }

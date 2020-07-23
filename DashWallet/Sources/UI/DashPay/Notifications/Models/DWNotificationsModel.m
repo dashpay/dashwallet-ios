@@ -45,14 +45,8 @@ NS_ASSUME_NONNULL_END
                                                      name:DWNotificationsProviderDidUpdateNotification
                                                    object:nil];
         [self notificationsDidUpdate]; // initial update (when notification was missed)
-
-        [[DWNotificationsProvider sharedInstance] beginIgnoringOutboundEvents];
     }
     return self;
-}
-
-- (void)dealloc {
-    [[DWNotificationsProvider sharedInstance] endIgnoringOutboundEvents];
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
