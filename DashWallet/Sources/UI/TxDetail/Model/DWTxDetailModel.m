@@ -74,7 +74,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSUInteger)inputAddressesCount {
     if ([self shouldDisplayInputAddresses]) {
-        return self.dataItem.inputSendAddresses.count;
+        if ([self hasSourceUser]) {
+            return 1;
+        }
+        else {
+            return self.dataItem.inputSendAddresses.count;
+        }
     }
     else {
         return 0;
@@ -82,7 +87,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSUInteger)outputAddressesCount {
-    return self.dataItem.outputReceiveAddresses.count;
+    if ([self shouldDisplayOutputAddresses]) {
+        if ([self hasDestinationUser]) {
+            return 1;
+        }
+        else {
+            return self.dataItem.outputReceiveAddresses.count;
+        }
+    }
+    else {
+        return 0;
+    }
 }
 
 - (NSUInteger)specialInfoCount {
@@ -107,6 +122,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<id<DWTitleDetailItem>> *)inputAddressesWithFont:(UIFont *)font {
+    if (![self shouldDisplayInputAddresses]) {
+        return @[];
+    }
+
     NSString *title;
     switch (self.dataItem.direction) {
         case DSTransactionDirection_Sent:
@@ -123,20 +142,19 @@ NS_ASSUME_NONNULL_BEGIN
             break;
     }
 
-    if ([self shouldDisplayInputAddresses]) {
-        if ([self hasSourceUser]) {
-            return [self sourceUsersWithTitle:title font:font];
-        }
-        else {
-            return [self plainInputAddressesWithTitle:title font:font];
-        }
+    if ([self hasSourceUser]) {
+        return [self sourceUsersWithTitle:title font:font];
     }
     else {
-        return @[];
+        return [self plainInputAddressesWithTitle:title font:font];
     }
 }
 
 - (NSArray<id<DWTitleDetailItem>> *)outputAddressesWithFont:(UIFont *)font {
+    if (![self shouldDisplayOutputAddresses]) {
+        return @[];
+    }
+
     NSString *title;
     switch (self.dataItem.direction) {
         case DSTransactionDirection_Sent:
@@ -319,11 +337,23 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)shouldDisplayInputAddresses {
-    // Don't show item "Sent from <my username>
-    if ([self hasSourceUser] && self.dataItem.direction == DSTransactionDirection_Sent) {
-        return NO;
+    if ([self hasSourceUser]) {
+        // Don't show item "Sent from <my username>"
+        if (self.dataItem.direction == DSTransactionDirection_Sent) {
+            return NO;
+        }
+        else {
+            return YES;
+        }
     }
     return [self.transaction isKindOfClass:[DSCoinbaseTransaction class]] || self.dataItem.direction != DSTransactionDirection_Received;
+}
+
+- (BOOL)shouldDisplayOutputAddresses {
+    if (self.dataItem.direction == DSTransactionDirection_Received && [self hasDestinationUser]) {
+        return NO;
+    }
+    return YES;
 }
 
 @end
