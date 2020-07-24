@@ -40,7 +40,7 @@
     self = [super init];
     if (self) {
         _blockchainIdentity = blockchainIdentity;
-        _username = blockchainIdentity.currentUsername;
+        _username = blockchainIdentity.currentDashpayUsername;
     }
     return self;
 }

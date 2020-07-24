@@ -49,8 +49,8 @@ NS_ASSUME_NONNULL_END
 
         if (blockchainIdentity) {
             if (username == nil) {
-                [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentUsername;
-                username = blockchainIdentity.currentUsername;
+                [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentDashpayUsername;
+                username = blockchainIdentity.currentDashpayUsername;
             }
 
             // username can be nil at this point
@@ -139,7 +139,7 @@ NS_ASSUME_NONNULL_END
     NSString *key = DW_KEYPATH(self, username);
     [self willChangeValueForKey:key];
     if (blockchainIdentity) {
-        NSString *username = blockchainIdentity.currentUsername;
+        NSString *username = blockchainIdentity.currentDashpayUsername;
         DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
         if (options.dashpayUsername == nil && username != nil) {
             options.dashpayUsername = username;
