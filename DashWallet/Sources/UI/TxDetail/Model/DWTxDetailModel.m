@@ -125,10 +125,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     if ([self shouldDisplayInputAddresses]) {
         if ([self hasSourceUser]) {
-            // Don't show item "Sent from <my username>
-            if (self.dataItem.direction == DSTransactionDirection_Sent) {
-                return @[];
-            }
             return [self sourceUsersWithTitle:title font:font];
         }
         else {
@@ -323,6 +319,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)shouldDisplayInputAddresses {
+    // Don't show item "Sent from <my username>
+    if ([self hasSourceUser] && self.dataItem.direction == DSTransactionDirection_Sent) {
+        return NO;
+    }
     return [self.transaction isKindOfClass:[DSCoinbaseTransaction class]] || self.dataItem.direction != DSTransactionDirection_Received;
 }
 
