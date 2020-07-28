@@ -18,6 +18,7 @@
 #import "DWDPAvatarView.h"
 
 #import "DWUIKit.h"
+#import "UIColor+DWDashPay.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,10 +60,6 @@ NS_ASSUME_NONNULL_END
     _backgroundMode = backgroundMode;
 
     [self updateBackgroundColor];
-}
-
-- (NSString *)letter {
-    return self.letterLabel.text;
 }
 
 - (void)setUsername:(NSString *)username {
@@ -111,20 +108,7 @@ NS_ASSUME_NONNULL_END
             break;
 
         case DWDPAvatarBackgroundMode_Random: {
-            if (self.letter.length > 0) {
-                unichar charCode = [self.letter characterAtIndex:0];
-                CGFloat hue;
-                if (charCode <= 57) {             // is digit
-                    hue = (charCode - 48) / 36.0; // 48 == '0', 36 == total count of supported characters
-                }
-                else {
-                    hue = (charCode - 65 + 10) / 36.0; // 65 == 'A', 10 == count of digits
-                }
-                color = [UIColor colorWithHue:hue saturation:0.3 brightness:0.6 alpha:1.0];
-            }
-            else {
-                color = [UIColor blackColor];
-            }
+            color = [UIColor dw_colorWithUsername:self.letterLabel.text];
             break;
         }
     }

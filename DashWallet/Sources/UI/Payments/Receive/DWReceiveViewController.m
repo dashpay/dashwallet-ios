@@ -17,6 +17,7 @@
 
 #import "DWReceiveViewController.h"
 
+#import "DWGlobalOptions.h"
 #import "DWReceiveContentView.h"
 #import "DWReceiveModel.h"
 #import "DWRequestAmountViewController.h"
@@ -135,6 +136,37 @@ static CGFloat TopPadding(void) {
     contentView.viewType = self.viewType;
     [self.view addSubview:contentView];
     self.contentView = contentView;
+
+    NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    if (username != nil) {
+        NSString *displayName = nil; // TODO: DP provide display name
+
+        NSString *firstLine = displayName ?: username;
+        NSAttributedString *attributedFirstLine = [[NSAttributedString alloc] initWithString:firstLine
+                                                                                  attributes:@{
+                                                                                      NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2],
+                                                                                      NSForegroundColorAttributeName : [UIColor dw_darkTitleColor]
+                                                                                  }];
+        NSAttributedString *attributedSecondLine = nil;
+        if (firstLine != username) {
+            attributedSecondLine = [[NSAttributedString alloc] initWithString:username
+                                                                   attributes:@{
+                                                                       NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
+                                                                       NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
+                                                                   }];
+        }
+
+        NSMutableAttributedString *string = [[NSMutableAttributedString alloc] init];
+        [string beginEditing];
+        [string appendAttributedString:attributedFirstLine];
+        if (attributedSecondLine) {
+            [string appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+            [string appendAttributedString:attributedSecondLine];
+        }
+        [string endEditing];
+
+        [self.contentView setUsernameAttributedText:string];
+    }
 
     UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
     [NSLayoutConstraint activateConstraints:@[

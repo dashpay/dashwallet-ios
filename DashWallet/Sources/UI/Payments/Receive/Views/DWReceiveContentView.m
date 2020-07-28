@@ -37,6 +37,7 @@ static CGFloat ActionButtonsTopPadding(void) {
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
+@property (weak, nonatomic) IBOutlet UILabel *usernameLabel;
 @property (strong, nonatomic) IBOutlet UIButton *addressButton;
 @property (strong, nonatomic) IBOutlet UIButton *specifyAmountButton;
 @property (weak, nonatomic) IBOutlet UIStackView *actionButtonsStackView;
@@ -70,6 +71,7 @@ static CGFloat ActionButtonsTopPadding(void) {
             [self.qrCodeButton.heightAnchor constraintEqualToConstant:qrSize.height],
         ]];
 
+        self.usernameLabel.hidden = YES;
         self.addressButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
         [self.specifyAmountButton setTitle:NSLocalizedString(@"Specify Amount", nil) forState:UIControlStateNormal];
@@ -137,6 +139,11 @@ static CGFloat ActionButtonsTopPadding(void) {
     else {
         NSAssert(NO, @"unused");
     }
+}
+
+- (void)setUsernameAttributedText:(NSAttributedString *)string {
+    self.usernameLabel.attributedText = string;
+    self.usernameLabel.hidden = NO;
 }
 
 #pragma mark - Actions
