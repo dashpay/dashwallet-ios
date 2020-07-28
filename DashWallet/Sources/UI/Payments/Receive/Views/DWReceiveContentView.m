@@ -39,6 +39,7 @@ static CGFloat ActionButtonsTopPadding(void) {
 @property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
 @property (strong, nonatomic) IBOutlet UIButton *addressButton;
 @property (strong, nonatomic) IBOutlet UIButton *specifyAmountButton;
+@property (weak, nonatomic) IBOutlet UIStackView *actionButtonsStackView;
 @property (strong, nonatomic) IBOutlet UIButton *secondButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *actionButtonsTopPadding;
 
@@ -103,17 +104,15 @@ static CGFloat ActionButtonsTopPadding(void) {
     _viewType = viewType;
 
     NSString *title = nil;
-    UIColor *backgroundColor = nil;
+    UIColor *backgroundColor = [UIColor clearColor];
     switch (viewType) {
         case DWReceiveViewType_Default: {
             title = NSLocalizedString(@"Share", nil);
-            backgroundColor = [UIColor dw_backgroundColor];
 
             break;
         }
         case DWReceiveViewType_QuickReceive: {
             title = NSLocalizedString(@"Exit", nil);
-            backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
             break;
         }
@@ -129,6 +128,15 @@ static CGFloat ActionButtonsTopPadding(void) {
 
 - (void)setSpecifyAmountButtonHidden:(BOOL)hidden {
     self.specifyAmountButton.hidden = hidden;
+
+    if (hidden) {
+        self.actionButtonsStackView.axis = UILayoutConstraintAxisVertical;
+        self.actionButtonsStackView.alignment = UIStackViewAlignmentCenter;
+        [self.secondButton.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:0.5].active = YES;
+    }
+    else {
+        NSAssert(NO, @"unused");
+    }
 }
 
 #pragma mark - Actions

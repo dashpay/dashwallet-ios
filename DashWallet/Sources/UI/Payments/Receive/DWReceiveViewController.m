@@ -32,7 +32,7 @@ static CGFloat TopPadding(void) {
         return 8.0;
     }
     else {
-        return 44.0;
+        return 24.0;
     }
 }
 
@@ -127,20 +127,7 @@ static CGFloat TopPadding(void) {
 #pragma mark - Private
 
 - (void)setupView {
-    UIColor *backgroundColor = nil;
-    switch (self.viewType) {
-        case DWReceiveViewType_Default: {
-            backgroundColor = [UIColor dw_backgroundColor];
-
-            break;
-        }
-        case DWReceiveViewType_QuickReceive: {
-            backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
-            break;
-        }
-    }
-    self.view.backgroundColor = backgroundColor;
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWReceiveContentView *contentView = [[DWReceiveContentView alloc] initWithModel:self.model];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -155,11 +142,8 @@ static CGFloat TopPadding(void) {
                                               constant:TopPadding()],
         [contentView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [contentView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
+        [contentView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor],
     ]];
-
-    if (self.viewType == DWReceiveViewType_QuickReceive) {
-        [contentView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor].active = YES;
-    }
 }
 
 @end

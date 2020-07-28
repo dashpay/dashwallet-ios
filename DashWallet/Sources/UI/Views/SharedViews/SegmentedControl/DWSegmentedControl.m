@@ -44,10 +44,10 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 
             NSCAssert(overlapIndex == 0 || overlapIndex == 1, @"Invalid state");
             if (overlapIndex == 0) {
-                label.textColor = [UIColor dw_lightTitleColor];
+                label.textColor = [UIColor dw_darkTitleColor];
             }
             else {
-                label.textColor = [UIColor dw_dashBlueColor];
+                label.textColor = [UIColor dw_tertiaryTextColor];
             }
 
             return label;
@@ -87,17 +87,15 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 - (void)segmentedControl_setup {
     self.shouldAnimateSelection = YES;
 
-    self.backgroundColor = [UIColor dw_backgroundColor];
+    self.backgroundColor = [UIColor dw_tabbarBorderColor];
 
-    self.layer.cornerRadius = 4.0;
-    self.layer.borderWidth = 1.0;
-    self.layer.borderColor = [UIColor dw_dashBlueColor].CGColor;
+    self.layer.cornerRadius = 8.0;
     self.layer.masksToBounds = YES;
 
     _buttons = [NSMutableArray array];
 
     UIView *selectionView = [[UIView alloc] init];
-    selectionView.backgroundColor = [UIColor dw_dashBlueColor];
+    selectionView.backgroundColor = [UIColor dw_backgroundColor];
     [self addSubview:selectionView];
     _selectionView = selectionView;
 
