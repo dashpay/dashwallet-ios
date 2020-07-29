@@ -37,8 +37,10 @@ static CGFloat ActionButtonsTopPadding(void) {
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
+@property (weak, nonatomic) IBOutlet UILabel *usernameLabel;
 @property (strong, nonatomic) IBOutlet UIButton *addressButton;
 @property (strong, nonatomic) IBOutlet UIButton *specifyAmountButton;
+@property (weak, nonatomic) IBOutlet UIStackView *actionButtonsStackView;
 @property (strong, nonatomic) IBOutlet UIButton *secondButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *actionButtonsTopPadding;
 
@@ -69,6 +71,7 @@ static CGFloat ActionButtonsTopPadding(void) {
             [self.qrCodeButton.heightAnchor constraintEqualToConstant:qrSize.height],
         ]];
 
+        self.usernameLabel.hidden = YES;
         self.addressButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
         [self.specifyAmountButton setTitle:NSLocalizedString(@"Specify Amount", nil) forState:UIControlStateNormal];
@@ -103,17 +106,15 @@ static CGFloat ActionButtonsTopPadding(void) {
     _viewType = viewType;
 
     NSString *title = nil;
-    UIColor *backgroundColor = nil;
+    UIColor *backgroundColor = [UIColor clearColor];
     switch (viewType) {
         case DWReceiveViewType_Default: {
             title = NSLocalizedString(@"Share", nil);
-            backgroundColor = [UIColor dw_backgroundColor];
 
             break;
         }
         case DWReceiveViewType_QuickReceive: {
             title = NSLocalizedString(@"Exit", nil);
-            backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
             break;
         }
@@ -129,6 +130,20 @@ static CGFloat ActionButtonsTopPadding(void) {
 
 - (void)setSpecifyAmountButtonHidden:(BOOL)hidden {
     self.specifyAmountButton.hidden = hidden;
+
+    if (hidden) {
+        self.actionButtonsStackView.axis = UILayoutConstraintAxisVertical;
+        self.actionButtonsStackView.alignment = UIStackViewAlignmentCenter;
+        [self.secondButton.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:0.5].active = YES;
+    }
+    else {
+        NSAssert(NO, @"unused");
+    }
+}
+
+- (void)setUsernameAttributedText:(NSAttributedString *)string {
+    self.usernameLabel.attributedText = string;
+    self.usernameLabel.hidden = NO;
 }
 
 #pragma mark - Actions

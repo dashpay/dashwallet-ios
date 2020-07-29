@@ -17,6 +17,7 @@
 
 #import "DWReceiveViewController.h"
 
+#import "DWGlobalOptions.h"
 #import "DWReceiveContentView.h"
 #import "DWReceiveModel.h"
 #import "DWRequestAmountViewController.h"
@@ -32,7 +33,7 @@ static CGFloat TopPadding(void) {
         return 8.0;
     }
     else {
-        return 44.0;
+        return 24.0;
     }
 }
 
@@ -127,20 +128,7 @@ static CGFloat TopPadding(void) {
 #pragma mark - Private
 
 - (void)setupView {
-    UIColor *backgroundColor = nil;
-    switch (self.viewType) {
-        case DWReceiveViewType_Default: {
-            backgroundColor = [UIColor dw_backgroundColor];
-
-            break;
-        }
-        case DWReceiveViewType_QuickReceive: {
-            backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
-            break;
-        }
-    }
-    self.view.backgroundColor = backgroundColor;
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWReceiveContentView *contentView = [[DWReceiveContentView alloc] initWithModel:self.model];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -149,17 +137,45 @@ static CGFloat TopPadding(void) {
     [self.view addSubview:contentView];
     self.contentView = contentView;
 
+    NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    if (username != nil) {
+        NSString *displayName = nil; // TODO: DP provide display name
+
+        NSString *firstLine = displayName ?: username;
+        NSAttributedString *attributedFirstLine = [[NSAttributedString alloc] initWithString:firstLine
+                                                                                  attributes:@{
+                                                                                      NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2],
+                                                                                      NSForegroundColorAttributeName : [UIColor dw_darkTitleColor]
+                                                                                  }];
+        NSAttributedString *attributedSecondLine = nil;
+        if (firstLine != username) {
+            attributedSecondLine = [[NSAttributedString alloc] initWithString:username
+                                                                   attributes:@{
+                                                                       NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
+                                                                       NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
+                                                                   }];
+        }
+
+        NSMutableAttributedString *string = [[NSMutableAttributedString alloc] init];
+        [string beginEditing];
+        [string appendAttributedString:attributedFirstLine];
+        if (attributedSecondLine) {
+            [string appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+            [string appendAttributedString:attributedSecondLine];
+        }
+        [string endEditing];
+
+        [self.contentView setUsernameAttributedText:string];
+    }
+
     UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
     [NSLayoutConstraint activateConstraints:@[
         [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor
                                               constant:TopPadding()],
         [contentView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [contentView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
+        [contentView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor],
     ]];
-
-    if (self.viewType == DWReceiveViewType_QuickReceive) {
-        [contentView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor].active = YES;
-    }
 }
 
 @end
