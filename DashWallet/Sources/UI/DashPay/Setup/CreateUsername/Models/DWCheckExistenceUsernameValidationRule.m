@@ -90,32 +90,32 @@ NS_ASSUME_NONNULL_END
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
     self.request = [manager
-        searchIdentityByName:username
-              withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-                  __strong typeof(weakSelf) strongSelf = weakSelf;
-                  if (!strongSelf) {
-                      return;
-                  }
+        searchIdentityByDashpayUsername:username
+                         withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
+                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                             if (!strongSelf) {
+                                 return;
+                             }
 
-                  NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+                             NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-                  // search query was changed before results arrive, ignore results
-                  if (![strongSelf.username isEqualToString:username]) {
-                      return;
-                  }
+                             // search query was changed before results arrive, ignore results
+                             if (![strongSelf.username isEqualToString:username]) {
+                                 return;
+                             }
 
-                  if (succeess) {
-                      if (blockchainIdentity != nil) {
-                          strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
-                      }
-                      else {
-                          strongSelf.validationResult = DWUsernameValidationRuleResultValid;
-                      }
-                  }
-                  else {
-                      strongSelf.validationResult = DWUsernameValidationRuleResultError;
-                  }
-              }];
+                             if (succeess) {
+                                 if (blockchainIdentity != nil) {
+                                     strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
+                                 }
+                                 else {
+                                     strongSelf.validationResult = DWUsernameValidationRuleResultValid;
+                                 }
+                             }
+                             else {
+                                 strongSelf.validationResult = DWUsernameValidationRuleResultError;
+                             }
+                         }];
 }
 
 @end

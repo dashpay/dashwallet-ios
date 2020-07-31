@@ -201,7 +201,7 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)confirmRequest:(DSPaymentRequest *)request {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (!request.isValid) {
+    if (!request.isValidAsNonDashpayPaymentRequest) {
         if ([request.paymentAddress isValidDashPrivateKeyOnChain:chain] ||
             [request.paymentAddress isValidDashBIP38Key]) {
             [self confirmSweep:request];
