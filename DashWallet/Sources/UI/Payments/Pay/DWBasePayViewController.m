@@ -131,11 +131,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestAmountWithDestination:(NSString *)sendingDestination
-                         details:(nullable DSPaymentProtocolDetails *)details {
+                         details:(nullable DSPaymentProtocolDetails *)details
+                     contactItem:(id<DWDPBasicUserItem>)contactItem {
     DWSendAmountViewController *controller =
         [[DWSendAmountViewController alloc] initWithDestination:sendingDestination
                                                  paymentDetails:nil
-                                                    contactItem:[self contactItem]];
+                                                    contactItem:contactItem ?: [self contactItem]];
     controller.delegate = self;
     controller.demoMode = self.demoMode;
     [self.navigationController pushViewController:controller animated:YES];

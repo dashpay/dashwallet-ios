@@ -17,9 +17,11 @@
 
 #import "DWPaymentProcessor.h"
 
+#import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPaymentInput.h"
+#import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -105,6 +107,35 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
+
+
+    // re-build input if it's DashPay-compatible
+    NSString *requestUsername = paymentInput.request.dashpayUsername;
+    if (requestUsername) {
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+
+        if (myBlockchainIdentity) {
+            NSManagedObjectContext *context = NSManagedObjectContext.viewContext;
+            DSDashpayUserEntity *dashpayUserEntity = [myBlockchainIdentity matchingDashpayUserInContext:context];
+            DSBlockchainIdentity *requestIdentity = nil;
+            for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
+                if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:requestUsername]) {
+                    requestIdentity = [friendRequest.sourceContact.associatedBlockchainIdentity blockchainIdentity];
+                    break;
+                }
+            }
+
+            DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
+            if (requestIdentity && [paymentInput.request isValidAsDashpayPaymentRequestForBlockchainIdentity:requestIdentity
+                                                                                                   onAccount:currentAccount
+                                                                                                   inContext:context]) {
+                DWPaymentInputBuilder *inputBuilder = [[DWPaymentInputBuilder alloc] init];
+                DWDPUserObject *userObject = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
+                paymentInput = [inputBuilder paymentInputWithUserItem:userObject];
+            }
+        }
+    }
 
     self.paymentInput = paymentInput;
 
@@ -501,7 +532,8 @@ static NSString *sanitizeString(NSString *s) {
 
     [self.delegate paymentProcessor:self
         requestAmountWithDestination:sendingDestination
-                             details:request.details];
+                             details:request.details
+                         contactItem:self.paymentInput.userItem];
 }
 
 - (void)requestUserActionTitle:(nullable NSString *)title
