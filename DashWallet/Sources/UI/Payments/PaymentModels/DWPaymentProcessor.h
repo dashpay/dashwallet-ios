@@ -60,7 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
           didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
-             transaction:(DSTransaction *)transaction;
+             transaction:(DSTransaction *)transaction
+             contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
          didSweepRequest:(DSPaymentRequest *)protocolRequest

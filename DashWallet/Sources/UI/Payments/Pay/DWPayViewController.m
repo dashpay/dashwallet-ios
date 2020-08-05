@@ -78,8 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self.payModel stopPasteboardIntervalObserving];
 }
 
-- (void)payViewControllerDidShowPaymentResult {
-    [self.delegate payViewControllerDidFinishPayment:self];
+- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
+    [self.delegate payViewControllerDidFinishPayment:self contact:contact];
 }
 
 #pragma mark - UITableViewDataSource

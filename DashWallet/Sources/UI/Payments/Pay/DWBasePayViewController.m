@@ -38,7 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWBasePayViewController () <DWPaymentProcessorDelegate,
                                        DWSendAmountViewControllerDelegate,
                                        DWQRScanModelDelegate,
-                                       DWConfirmPaymentViewControllerDelegate>
+                                       DWConfirmPaymentViewControllerDelegate,
+                                       DWTxDetailFullscreenViewControllerDelegate>
 
 @property (nullable, nonatomic, weak) DWSendAmountViewController *amountViewController;
 @property (nullable, nonatomic, weak) DWConfirmSendPaymentViewController *confirmViewController;
@@ -117,7 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.paymentProcessor processFile:file];
 }
 
-- (void)payViewControllerDidShowPaymentResult {
+- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
     // to be overriden
 }
 
@@ -234,7 +235,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
           didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
-             transaction:(DSTransaction *)transaction {
+             transaction:(DSTransaction *)transaction
+             contactItem:(nullable id<DWDPBasicUserItem>)contactItem {
     [self.navigationController.view dw_hideProgressHUD];
 
     if (self.confirmViewController) {
@@ -253,11 +255,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWTxDetailFullscreenViewController *controller = [[DWTxDetailFullscreenViewController alloc] initWithTransaction:transaction
                                                                                                         dataProvider:self.dataProvider];
+    controller.contactItem = contactItem;
+    controller.delegate = self;
     [self presentViewController:controller
                        animated:YES
-                     completion:^{
-                         [self payViewControllerDidShowPaymentResult];
-                     }];
+                     completion:nil];
 }
 
 - (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor
@@ -305,6 +307,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)confirmPaymentViewControllerDidConfirm:(DWConfirmSendPaymentViewController *)controller {
     [self.paymentProcessor confirmPaymentOutput:controller.paymentOutput];
+}
+
+#pragma mark - DWTxDetailFullscreenViewControllerDelegate
+
+- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailFullscreenViewController *)controller {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       // report `contact` context only if current screen is general-purpose payments screen
+                                       // and not a user profile screen with the defined context
+                                       id<DWDPBasicUserItem> contact = [self contactItem] == nil ? controller.contactItem : nil;
+                                       [self payViewControllerDidHidePaymentResultToContact:contact];
+                                   }];
 }
 
 #pragma mark -  DWQRScanModelDelegate

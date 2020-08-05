@@ -460,7 +460,7 @@ static NSString *sanitizeString(NSString *s) {
                                 sent:(BOOL)sent
                                   tx:(DSTransaction *_Nonnull)tx {
     if (sent) {
-        [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx];
+        [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx contactItem:self.paymentInput.userItem];
 
         self.didSendRequestDelegateNotified = YES;
 
@@ -476,7 +476,7 @@ static NSString *sanitizeString(NSString *s) {
                                      tx:(DSTransaction *_Nonnull)tx {
     if (relayedToServer) {
         if (!self.didSendRequestDelegateNotified) {
-            [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx];
+            [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx contactItem:self.paymentInput.userItem];
         }
 
         [self handleCallbackSchemeIfNeeded:protocolRequest address:address tx:tx];

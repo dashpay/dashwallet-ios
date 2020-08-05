@@ -69,6 +69,7 @@ disabled_rules:
   - block_based_kvo
   - file_length
   - notification_center_detachment
+  - opening_brace
 
 custom_rules:
   no_objcMembers:
