@@ -173,10 +173,10 @@ NS_ASSUME_NONNULL_END
     }
 
     DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
-    NSAssert(myBlockchainIdentity.matchingDashpayUser, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
+    NSAssert(myBlockchainIdentity.matchingDashpayUserInViewContext, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
     DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
     DSDashpayUserEntity *friend = nil;
-    if (friendBlockchainIdentity.matchingDashpayUser) {
+    if (friendBlockchainIdentity.matchingDashpayUserInViewContext) {
         friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
     }
 
