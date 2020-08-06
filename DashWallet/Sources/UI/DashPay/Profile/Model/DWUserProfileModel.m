@@ -69,6 +69,12 @@ NS_ASSUME_NONNULL_END
     [self.delegate userProfileModelDidUpdate:self];
 }
 
+- (void)setRequestState:(DWUserProfileModelState)requestState {
+    _requestState = requestState;
+
+    [self.delegate userProfileModelDidUpdate:self];
+}
+
 - (NSString *)username {
     return self.item.username;
 }
@@ -100,7 +106,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendContactRequest {
-    self.state = DWUserProfileModelState_Loading;
+    self.requestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
@@ -113,12 +119,12 @@ NS_ASSUME_NONNULL_END
                                                             }
 
                                                             [strongSelf updateDataSource];
-                                                            strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                            strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                                         }];
 }
 
 - (void)acceptContactRequest {
-    self.state = DWUserProfileModelState_Loading;
+    self.requestState = DWUserProfileModelState_Loading;
 
     __weak typeof(self) weakSelf = self;
     [DWDashPayContactsActions acceptContactRequest:self.item
@@ -129,7 +135,7 @@ NS_ASSUME_NONNULL_END
                                             }
 
                                             [strongSelf updateDataSource];
-                                            strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                            strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                         }];
 }
 

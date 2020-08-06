@@ -50,6 +50,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 @property (readonly, nonatomic, copy) NSString *username;
 @property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
 @property (readonly, nonatomic, strong) id<DWUserProfileDataSource> dataSource;
+@property (readonly, nonatomic, assign) DWUserProfileModelState requestState;
 
 @property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
 

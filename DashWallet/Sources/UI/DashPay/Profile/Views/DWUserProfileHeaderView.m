@@ -33,6 +33,7 @@ static CGFloat const BUTTON_HEIGHT = 40.0;
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UILabel *detailsLabel;
 @property (readonly, nonatomic, strong) UIView *bottomContentView;
+@property (readonly, nonatomic, strong) UILabel *pendingLabel;
 @property (readonly, nonatomic, strong) DWActionButton *actionButton;
 @property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
@@ -101,9 +102,23 @@ NS_ASSUME_NONNULL_END
 #endif /* DEBUG */
         [bottomContentView addSubview:bottomGrayView];
 
+        UILabel *pendingLabel = [[UILabel alloc] init];
+        pendingLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        pendingLabel.attributedText = [self.class pendingInfo];
+        pendingLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+        pendingLabel.textAlignment = NSTextAlignmentCenter;
+        pendingLabel.textColor = [UIColor dw_orangeColor];
+        _pendingLabel = pendingLabel;
+
+        UIStackView *pendingStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ pendingLabel ]];
+        pendingStackView.translatesAutoresizingMaskIntoConstraints = NO;
+        pendingStackView.axis = UILayoutConstraintAxisVertical;
+        [bottomContentView addSubview:pendingStackView];
+
         DWActionButton *actionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         [actionButton addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
         [bottomContentView addSubview:actionButton];
         _actionButton = actionButton;
 
@@ -115,7 +130,6 @@ NS_ASSUME_NONNULL_END
 
         UILayoutGuide *guide = self.layoutMarginsGuide;
 
-        const CGFloat overlap = BUTTON_HEIGHT / 2.0;
         const CGFloat buttonPadding = 16.0;
         const CGFloat spacing = 20.0;
 
@@ -150,13 +164,19 @@ NS_ASSUME_NONNULL_END
             [centerContentView.trailingAnchor constraintEqualToAnchor:detailsLabel.trailingAnchor],
             [centerContentView.bottomAnchor constraintEqualToAnchor:detailsLabel.bottomAnchor],
 
-            [bottomGrayView.topAnchor constraintEqualToAnchor:bottomContentView.topAnchor
-                                                     constant:overlap],
+            [bottomGrayView.topAnchor constraintEqualToAnchor:actionButton.centerYAnchor],
             [bottomGrayView.leadingAnchor constraintEqualToAnchor:bottomContentView.leadingAnchor],
             [bottomContentView.trailingAnchor constraintEqualToAnchor:bottomGrayView.trailingAnchor],
             [bottomContentView.bottomAnchor constraintEqualToAnchor:bottomGrayView.bottomAnchor],
 
-            [actionButton.topAnchor constraintEqualToAnchor:bottomContentView.topAnchor],
+            [pendingStackView.topAnchor constraintEqualToAnchor:bottomContentView.topAnchor],
+            [pendingStackView.leadingAnchor constraintEqualToAnchor:bottomContentView.leadingAnchor
+                                                           constant:buttonPadding],
+            [bottomContentView.trailingAnchor constraintEqualToAnchor:pendingStackView.trailingAnchor
+                                                             constant:buttonPadding],
+
+            [actionButton.topAnchor constraintEqualToAnchor:pendingStackView.bottomAnchor
+                                                   constant:spacing],
             [actionButton.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
                                                        constant:buttonPadding],
             [guide.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor
@@ -211,25 +231,24 @@ NS_ASSUME_NONNULL_END
     switch (state) {
         case DWUserProfileModelState_None:
             self.actionButton.hidden = YES;
+            self.pendingLabel.hidden = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;
         case DWUserProfileModelState_Error:
-            self.actionButton.hidden = NO;
             [self.activityIndicatorView stopAnimating];
             [self updateActions];
 
             break;
         case DWUserProfileModelState_Loading:
             self.actionButton.hidden = YES;
+            self.pendingLabel.hidden = YES;
             [self.activityIndicatorView startAnimating];
 
             break;
         case DWUserProfileModelState_Done:
-            self.actionButton.hidden = NO;
             [self.activityIndicatorView stopAnimating];
             [self updateActions];
-
             break;
     }
 }
@@ -245,26 +264,20 @@ NS_ASSUME_NONNULL_END
     const DSBlockchainIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
     switch (friendshipStatus) {
         case DSBlockchainIdentityFriendshipStatus_Unknown:
-            self.actionButton.hidden = YES;
-
-            break;
         case DSBlockchainIdentityFriendshipStatus_None:
-            self.actionButton.hidden = NO;
-            self.actionButton.enabled = YES;
-            [self.actionButton setTitle:NSLocalizedString(@"Send Contact Request", nil) forState:UIControlStateNormal];
+            self.actionButton.hidden = YES;
+            self.pendingLabel.hidden = YES;
 
             break;
         case DSBlockchainIdentityFriendshipStatus_Outgoing:
-            self.actionButton.hidden = NO;
-            self.actionButton.enabled = NO;
-            [self.actionButton setTitle:NSLocalizedString(@"Contact Request Pending", nil) forState:UIControlStateNormal];
+            self.actionButton.hidden = YES;
+            self.pendingLabel.hidden = NO;
 
             break;
         case DSBlockchainIdentityFriendshipStatus_Incoming:
         case DSBlockchainIdentityFriendshipStatus_Friends:
             self.actionButton.hidden = NO;
-            self.actionButton.enabled = YES;
-            [self.actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
+            self.pendingLabel.hidden = YES;
 
             break;
     }
@@ -272,6 +285,23 @@ NS_ASSUME_NONNULL_END
 
 - (void)actionButtonAction:(UIButton *)sender {
     [self.delegate userProfileHeaderView:self actionButtonAction:sender];
+}
+
++ (NSAttributedString *)pendingInfo {
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+
+    UIImage *image = [UIImage imageNamed:@"dp_pending_contact"];
+    NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
+    textAttachment.image = image;
+    textAttachment.bounds = CGRectMake(-3.0, -2.0, image.size.width, image.size.height);
+
+    [result beginEditing];
+    [result appendAttributedString:[NSAttributedString attributedStringWithAttachment:textAttachment]];
+    [result appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+    [result appendAttributedString:[[NSAttributedString alloc] initWithString:NSLocalizedString(@"Contact Request Pending", nil)]];
+    [result endEditing];
+
+    return [result copy];
 }
 
 @end

@@ -19,6 +19,7 @@
 
 #import "DWActionButton.h"
 #import "DWUIKit.h"
+#import "DWUserProfileModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,6 +30,7 @@ static CGFloat const BUTTON_HEIGHT = 38.0;
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UIButton *mainButton;
 @property (readonly, nonatomic, strong) UIButton *secondaryButton;
+@property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
 
@@ -73,7 +75,14 @@ NS_ASSUME_NONNULL_END
         [mainButton addTarget:self action:@selector(secondaryButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _secondaryButton = secondaryButton;
 
-        UIStackView *actionsStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ mainButton, secondaryButton ]];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+        activityIndicatorView.color = [UIColor dw_dashBlueColor];
+        activityIndicatorView.hidesWhenStopped = NO;
+        [activityIndicatorView startAnimating];
+        _activityIndicatorView = activityIndicatorView;
+
+        UIStackView *actionsStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ mainButton, secondaryButton, activityIndicatorView ]];
         actionsStackView.translatesAutoresizingMaskIntoConstraints = NO;
         actionsStackView.axis = UILayoutConstraintAxisHorizontal;
         actionsStackView.spacing = 10.0;
@@ -134,12 +143,26 @@ NS_ASSUME_NONNULL_END
     self.contentWidthConstraint.constant = contentWidth;
 }
 
-- (void)configureForIncomingStatus {
-    NSParameterAssert(self.username);
+- (void)setModel:(DWUserProfileModel *)model {
+    _model = model;
 
+    [self configureForIncomingStatus];
+
+    [self updateState:self.model.requestState];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+
+    [self.activityIndicatorView startAnimating];
+}
+
+#pragma mark - Private
+
+- (void)configureForIncomingStatus {
     NSMutableAttributedString *mutableTitle = [[NSMutableAttributedString alloc] init];
 
-    NSAttributedString *username = [[NSAttributedString alloc] initWithString:self.username
+    NSAttributedString *username = [[NSAttributedString alloc] initWithString:self.model.username
                                                                    attributes:@{
                                                                        NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline],
                                                                    }];
@@ -156,13 +179,9 @@ NS_ASSUME_NONNULL_END
     [mutableTitle endEditing];
 
     self.titleLabel.attributedText = mutableTitle;
-    self.mainButton.hidden = NO;
-    self.secondaryButton.hidden = NO;
     [self.mainButton setTitle:NSLocalizedString(@"Accept", nil) forState:UIControlStateNormal];
     [self.secondaryButton setTitle:NSLocalizedString(@"Ignore", nil) forState:UIControlStateNormal];
 }
-
-#pragma mark - Private
 
 - (void)mainButtonAction:(UIButton *)sender {
     [self.delegate userProfileContactActionsCell:self mainButtonAction:sender];
@@ -170,6 +189,31 @@ NS_ASSUME_NONNULL_END
 
 - (void)secondaryButtonAction:(UIButton *)sender {
     [self.delegate userProfileContactActionsCell:self secondaryButtonAction:sender];
+}
+
+// request state is used
+- (void)updateState:(DWUserProfileModelState)state {
+    switch (state) {
+        case DWUserProfileModelState_None:
+        case DWUserProfileModelState_Error:
+            self.mainButton.hidden = NO;
+            self.secondaryButton.hidden = NO;
+            self.activityIndicatorView.hidden = YES;
+
+            break;
+        case DWUserProfileModelState_Loading:
+            self.mainButton.hidden = YES;
+            self.secondaryButton.hidden = YES;
+            self.activityIndicatorView.hidden = NO;
+
+            break;
+        case DWUserProfileModelState_Done:
+            self.mainButton.hidden = YES;
+            self.secondaryButton.hidden = YES;
+            self.activityIndicatorView.hidden = YES;
+
+            break;
+    }
 }
 
 @end

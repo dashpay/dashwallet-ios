@@ -20,21 +20,21 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUserProfileModel;
-@class DWUserProfileContactActionsCell;
+@class DWUserProfileSendRequestCell;
 
-@protocol DWUserProfileContactActionsCellDelegate <NSObject>
+@protocol DWUserProfileSendRequestCellDelegate <NSObject>
 
-- (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell mainButtonAction:(UIButton *)sender;
-- (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell secondaryButtonAction:(UIButton *)sender;
+- (void)userProfileSendRequestCell:(DWUserProfileSendRequestCell *)cell sendRequestButtonAction:(UIButton *)sender;
 
 @end
 
-@interface DWUserProfileContactActionsCell : UICollectionViewCell
+
+@interface DWUserProfileSendRequestCell : UICollectionViewCell
 
 @property (nonatomic, assign) CGFloat contentWidth;
 
 @property (nullable, nonatomic, strong) DWUserProfileModel *model;
-@property (nullable, nonatomic, weak) id<DWUserProfileContactActionsCellDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWUserProfileSendRequestCellDelegate> delegate;
 
 @end
 

@@ -58,6 +58,9 @@
 /* No comment provided by engineer. */
 "Accept" = "Accept";
 
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
@@ -547,6 +550,9 @@
 /* No comment provided by engineer. */
 "OK" = "OK";
 
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+
 /* No comment provided by engineer. */
 "Operator Keys" = "運用者の諸々のキー";
 
@@ -561,6 +567,9 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "簡単なお支払い手順で速やかに送金と入金";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Pay Directly to Username";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "簡単支払い";
@@ -693,6 +702,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "ウォレットをリセットする";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
 
 /* No comment provided by engineer. */
 "Retry" = "リトライ";

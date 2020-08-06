@@ -26,6 +26,7 @@
 #import "DWUserProfileHeaderView.h"
 #import "DWUserProfileModel.h"
 #import "DWUserProfileNavigationTitleView.h"
+#import "DWUserProfileSendRequestCell.h"
 #import "UICollectionView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,7 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
                                            UICollectionViewDelegateFlowLayout,
                                            DWUserProfileModelDelegate,
                                            DWUserProfileHeaderViewDelegate,
-                                           DWUserProfileContactActionsCellDelegate>
+                                           DWUserProfileContactActionsCellDelegate,
+                                           DWUserProfileSendRequestCellDelegate>
 
 @property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
@@ -115,8 +117,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (section == 0) {
-        BOOL shouldDisplayActions = self.model.state == DWUserProfileModelState_Done &&
-                                    self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming;
+        const BOOL shouldDisplayActions = [self shouldShowActions];
         return shouldDisplayActions ? 1 : 0;
     }
     else {
@@ -145,13 +146,21 @@ NS_ASSUME_NONNULL_END
     const CGFloat contentWidth = layout.contentWidth;
 
     if (indexPath.section == 0) {
+        if ([self shouldShowSendRequestAction]) {
+            DWUserProfileSendRequestCell *cell = [collectionView
+                dequeueReusableCellWithReuseIdentifier:DWUserProfileSendRequestCell.dw_reuseIdentifier
+                                          forIndexPath:indexPath];
+            cell.contentWidth = contentWidth;
+            cell.model = self.model;
+            cell.delegate = self;
+            return cell;
+        }
         DWUserProfileContactActionsCell *cell = [collectionView
             dequeueReusableCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier
                                       forIndexPath:indexPath];
         cell.contentWidth = contentWidth;
-        cell.username = self.model.username;
+        cell.model = self.model;
         cell.delegate = self;
-        [cell configureForIncomingStatus];
         return cell;
     }
     else {
@@ -231,27 +240,65 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserProfileHeaderViewDelegate
 
 - (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender {
-    if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None) {
-        [self.model sendContactRequest];
-    }
-    else if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
-             self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends) {
+    const BOOL canPay = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
+                        self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends;
+    NSParameterAssert(canPay);
+    if (canPay) {
         [self performPayToUser:self.model.item];
+    }
+}
+
+#pragma mark - DWUserProfileSendRequestCellDelegate
+
+- (void)userProfileSendRequestCell:(DWUserProfileSendRequestCell *)cell sendRequestButtonAction:(UIButton *)sender {
+    const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
+    NSParameterAssert(canSendRequest);
+    if (canSendRequest) {
+        [self.model sendContactRequest];
     }
 }
 
 #pragma mark - DWUserProfileContactActionsCellDelegate
 
 - (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell mainButtonAction:(UIButton *)sender {
-    if (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming) {
+    const BOOL canAcceptRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming;
+    NSParameterAssert(canAcceptRequest);
+    if (canAcceptRequest) {
         [self.model acceptContactRequest];
     }
 }
 
 - (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell secondaryButtonAction:(UIButton *)sender {
+    // TODO: DP decline request
 }
 
 #pragma mark - Private
+
+- (BOOL)shouldShowActions {
+    if (self.model.state != DWUserProfileModelState_Done) {
+        return NO;
+    }
+
+    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
+    return (status == DSBlockchainIdentityFriendshipStatus_Incoming ||
+            status == DSBlockchainIdentityFriendshipStatus_None ||
+            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
+}
+
+- (BOOL)shouldShowSendRequestAction {
+    NSParameterAssert(self.model.state == DWUserProfileModelState_Done);
+
+    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
+    return (status == DSBlockchainIdentityFriendshipStatus_None ||
+            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
+}
+
+- (BOOL)shouldShowAcceptDeclineRequestAction {
+    NSParameterAssert(self.model.state == DWUserProfileModelState_Done);
+
+    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
+    return status == DSBlockchainIdentityFriendshipStatus_Incoming;
+}
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
     NSAssert(indexPath.section > 0, @"Section 0 is empty and should not have any data items");
@@ -276,6 +323,8 @@ NS_ASSUME_NONNULL_END
 
         [collectionView registerClass:DWUserProfileContactActionsCell.class
             forCellWithReuseIdentifier:DWUserProfileContactActionsCell.dw_reuseIdentifier];
+        [collectionView registerClass:DWUserProfileSendRequestCell.class
+            forCellWithReuseIdentifier:DWUserProfileSendRequestCell.dw_reuseIdentifier];
 
         [collectionView registerClass:DWUserProfileHeaderView.class
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader

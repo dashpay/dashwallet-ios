@@ -222,6 +222,7 @@
 		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
 		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
 		2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A80F39424D86201003E3B1E /* DWModalUserProfileViewController.m */; };
+		2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */; };
 		2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A827B7124B5CA1800A42042 /* DWListCollectionLayout.m */; };
 		2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */; };
 		2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
@@ -1005,6 +1006,8 @@
 		2A7F3B22238C709100DEA3EF /* DWSecurityLevel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityLevel.h; sourceTree = "<group>"; };
 		2A80F39324D86201003E3B1E /* DWModalUserProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalUserProfileViewController.h; sourceTree = "<group>"; };
 		2A80F39424D86201003E3B1E /* DWModalUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalUserProfileViewController.m; sourceTree = "<group>"; };
+		2A80F3D724DC55CC003E3B1E /* DWUserProfileSendRequestCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileSendRequestCell.h; sourceTree = "<group>"; };
+		2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileSendRequestCell.m; sourceTree = "<group>"; };
 		2A827B7024B5CA1800A42042 /* DWListCollectionLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWListCollectionLayout.h; sourceTree = "<group>"; };
 		2A827B7124B5CA1800A42042 /* DWListCollectionLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWListCollectionLayout.m; sourceTree = "<group>"; };
 		2A827B7324B729C400A42042 /* DWBaseContactsContentViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsContentViewController+DWProtected.h"; sourceTree = "<group>"; };
@@ -3648,6 +3651,8 @@
 				2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */,
 				2ADC9D7A24644E46001D7C0D /* DWUserProfileContactActionsCell.h */,
 				2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */,
+				2A80F3D724DC55CC003E3B1E /* DWUserProfileSendRequestCell.h */,
+				2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4929,6 +4934,7 @@
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
+				2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */,
 				2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */,
 				2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */,
 				2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */,
