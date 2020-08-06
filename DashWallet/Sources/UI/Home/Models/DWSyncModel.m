@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define LOG_SYNCING 0
+#define LOG_SYNCING 1
 
 #if LOG_SYNCING
 #define DWSyncLog(frmt, ...) DSLogVerbose(frmt, ##__VA_ARGS__)
