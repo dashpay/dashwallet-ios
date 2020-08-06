@@ -21,9 +21,10 @@
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
-static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
+static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 @implementation DWEnvironment
+
 
 + (instancetype)sharedInstance {
     static id singleton = nil;
@@ -128,7 +129,16 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
 
 - (NSOrderedSet *)evonetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"54.244.216.56"];
+    [serviceLocations addObject:@"54.218.48.42"];
+    [serviceLocations addObject:@"34.212.55.24"];
+    [serviceLocations addObject:@"34.217.210.86"];
+    [serviceLocations addObject:@"34.222.214.130"];
+    [serviceLocations addObject:@"35.165.117.23"];
+    [serviceLocations addObject:@"34.217.109.240"];
+    [serviceLocations addObject:@"34.212.175.168"];
+    [serviceLocations addObject:@"34.212.127.218"];
+    [serviceLocations addObject:@"34.217.130.113"];
+    [serviceLocations addObject:@"34.222.113.168"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -160,7 +170,6 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
             destinationChain = [DSChain devnetWithIdentifier:identifier];
             if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
                 // TODO: provide valid `dpnsContractID` and `dashpayContractID`
-
                 destinationChain = [[DSChainsManager sharedInstance]
                     registerDevnetChainWithIdentifier:identifier
                                   forServiceLocations:[self evonetServiceLocation]
@@ -168,12 +177,12 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
                                          standardPort:20001
                                          dapiJRPCPort:3000
                                          dapiGRPCPort:3010
-                                       dpnsContractID:@"HKVmkmqFtR9go3Mo5qTeKdV6wbfExjiSfootpyqTvJYQ".base58ToData.UInt256
-                                    dashpayContractID:@"CDPKMRuH6Y1a3dQN8ZjK8b9rz7WYPt12vx1myKkN3K6S".base58ToData.UInt256
+                                       dpnsContractID:@"gegjGQL5HHbGMyUYL4yaoSfzhkF9isvGGYiCVRBiz4b".base58ToData.UInt256
+                                    dashpayContractID:@"Dp8ibxeTSN15tjL1PQuG3j8NkGJmzvt5eqoKoF6FhDAx".base58ToData.UInt256
                                       protocolVersion:70216
                                    minProtocolVersion:70216
-                                         sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
-                                      sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
+                                         sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
+                                      sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }
             break;
