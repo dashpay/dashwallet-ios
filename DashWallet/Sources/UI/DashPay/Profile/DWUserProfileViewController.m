@@ -19,6 +19,7 @@
 
 #import "DWDPBasicCell.h"
 #import "DWDPTxItem.h"
+#import "DWFilterHeaderView.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
@@ -28,8 +29,11 @@
 #import "DWUserProfileNavigationTitleView.h"
 #import "DWUserProfileSendRequestCell.h"
 #import "UICollectionView+DWDPItemDequeue.h"
+#import "UIViewController+DWTxFilter.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+static CGFloat const FILTER_PADDING = 15.0; // same as horizontal padding for itemView inside DWDPBasicCell
 
 @interface DWUserProfileViewController () <UICollectionViewDataSource,
                                            UICollectionViewDelegate,
@@ -37,14 +41,16 @@ NS_ASSUME_NONNULL_BEGIN
                                            DWUserProfileModelDelegate,
                                            DWUserProfileHeaderViewDelegate,
                                            DWUserProfileContactActionsCellDelegate,
-                                           DWUserProfileSendRequestCellDelegate>
+                                           DWUserProfileSendRequestCellDelegate,
+                                           DWFilterHeaderViewDelegate>
 
 @property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 @property (nullable, nonatomic, weak) DWUserProfileHeaderView *headerView;
 
-@property (null_resettable, nonatomic, strong) DWUserProfileHeaderView *measuringHeaderView;
+@property (null_resettable, nonatomic, strong) DWFilterHeaderView *measuringFilterHeaderView;
+@property (null_resettable, nonatomic, strong) DWUserProfileHeaderView *measuringProfileHeaderView;
 
 @end
 
@@ -126,18 +132,27 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section != 0) {
-        return [[UICollectionReusableView alloc] initWithFrame:CGRectZero];
+    if (indexPath.section == 0) {
+        DWUserProfileHeaderView *headerView = (DWUserProfileHeaderView *)[collectionView
+            dequeueReusableSupplementaryViewOfKind:kind
+                               withReuseIdentifier:DWUserProfileHeaderView.dw_reuseIdentifier
+                                      forIndexPath:indexPath];
+        headerView.model = self.model;
+        headerView.delegate = self;
+        self.headerView = headerView;
+        return headerView;
     }
-
-    DWUserProfileHeaderView *headerView = (DWUserProfileHeaderView *)[collectionView
-        dequeueReusableSupplementaryViewOfKind:kind
-                           withReuseIdentifier:DWUserProfileHeaderView.dw_reuseIdentifier
-                                  forIndexPath:indexPath];
-    headerView.model = self.model;
-    headerView.delegate = self;
-    self.headerView = headerView;
-    return headerView;
+    else {
+        DWFilterHeaderView *headerView = (DWFilterHeaderView *)[collectionView
+            dequeueReusableSupplementaryViewOfKind:kind
+                               withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier
+                                      forIndexPath:indexPath];
+        headerView.padding = FILTER_PADDING;
+        headerView.titleLabel.text = NSLocalizedString(@"Activity", nil);
+        headerView.delegate = self;
+        [headerView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
+        return headerView;
+    }
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -178,15 +193,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if (section != 0) {
-        return CGSizeZero;
-    }
-
     DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
     NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
     const CGFloat contentWidth = layout.contentWidth;
 
-    UIView *measuringView = self.measuringHeaderView;
+    UIView *measuringView = section == 0 ? self.measuringProfileHeaderView : self.measuringFilterHeaderView;
     measuringView.frame = CGRectMake(0, 0, contentWidth, 300);
     CGSize size = [measuringView systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingCompressedSize.height)
                                withHorizontalFittingPriority:UILayoutPriorityRequired
@@ -272,6 +283,12 @@ NS_ASSUME_NONNULL_END
     // TODO: DP decline request
 }
 
+#pragma mark - DWFilterHeaderViewDelegate
+
+- (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
+    [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:NO];
+}
+
 #pragma mark - Private
 
 - (BOOL)shouldShowActions {
@@ -329,18 +346,45 @@ NS_ASSUME_NONNULL_END
         [collectionView registerClass:DWUserProfileHeaderView.class
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                    withReuseIdentifier:DWUserProfileHeaderView.dw_reuseIdentifier];
+        [collectionView registerClass:DWFilterHeaderView.class
+            forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                   withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier];
 
         _collectionView = collectionView;
     }
     return _collectionView;
 }
 
-- (DWUserProfileHeaderView *)measuringHeaderView {
-    if (_measuringHeaderView == nil) {
-        _measuringHeaderView = [[DWUserProfileHeaderView alloc] initWithFrame:CGRectZero];
+- (DWUserProfileHeaderView *)measuringProfileHeaderView {
+    if (_measuringProfileHeaderView == nil) {
+        _measuringProfileHeaderView = [[DWUserProfileHeaderView alloc] initWithFrame:CGRectZero];
     }
-    _measuringHeaderView.model = self.model;
-    return _measuringHeaderView;
+    _measuringProfileHeaderView.model = self.model;
+    return _measuringProfileHeaderView;
+}
+
+- (DWFilterHeaderView *)measuringFilterHeaderView {
+    if (_measuringFilterHeaderView == nil) {
+        _measuringFilterHeaderView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
+        _measuringFilterHeaderView.padding = FILTER_PADDING;
+        _measuringFilterHeaderView.titleLabel.text = NSLocalizedString(@"Activity", nil);
+    }
+    [_measuringFilterHeaderView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
+    return _measuringFilterHeaderView;
+}
+
+- (NSString *)titleForFilterButton {
+    switch (self.model.displayMode) {
+        case DWHomeTxDisplayMode_All:
+            return NSLocalizedString(@"All", nil);
+        case DWHomeTxDisplayMode_Received:
+            return NSLocalizedString(@"Received", nil);
+        case DWHomeTxDisplayMode_Sent:
+            return NSLocalizedString(@"Sent", nil);
+        case DWHomeTxDisplayMode_Rewards:
+            NSAssert(NO, @"Not implemented here");
+            return nil;
+    }
 }
 
 @end

@@ -23,13 +23,13 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
-#import "DWHomeViewController+DWTxFilter.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWNavigationController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWWindow.h"
+#import "UIViewController+DWTxFilter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -90,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWHomeViewDelegate
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
-    [self showTxFilterWithSender:sender];
+    [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:YES];
 }
 
 - (void)homeView:(DWHomeView *)homeView payButtonAction:(UIButton *)sender {

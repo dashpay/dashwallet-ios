@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *filterButton;
 
+@property (assign, nonatomic) CGFloat padding;
+
 @property (nullable, nonatomic, weak) id<DWFilterHeaderViewDelegate> delegate;
 
 @end

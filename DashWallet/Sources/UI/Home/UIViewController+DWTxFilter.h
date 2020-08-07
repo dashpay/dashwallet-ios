@@ -15,13 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWHomeViewController.h"
+#import <UIKit/UIKit.h>
+
+#import "DWTxDisplayModeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController (DWTxFilter)
+@interface UIViewController (DWTxFilter)
 
-- (void)showTxFilterWithSender:(UIView *)sender;
+- (void)showTxFilterWithSender:(UIView *)sender
+           displayModeProvider:(id<DWTxDisplayModeProtocol>)displayModeProvider
+             shouldShowRewards:(BOOL)shouldShowRewards;
 
 @end
 

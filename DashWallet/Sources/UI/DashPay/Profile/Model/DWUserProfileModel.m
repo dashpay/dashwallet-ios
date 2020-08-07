@@ -58,6 +58,12 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
+    _displayMode = displayMode;
+
+    [self updateDataSource];
+}
+
 - (void)skipUpdating {
     [self updateDataSource];
     self.state = DWUserProfileModelState_Done;
@@ -196,6 +202,16 @@ NS_ASSUME_NONNULL_END
         friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
     }
 
+    BOOL shouldShowContactRequests = YES;
+    if (self.displayMode == DWHomeTxDisplayMode_Sent) {
+        meToFriend = nil;
+        shouldShowContactRequests = NO;
+    }
+    else if (self.displayMode == DWHomeTxDisplayMode_Received) {
+        friendToMe = nil;
+        shouldShowContactRequests = NO;
+    }
+
     if (meToFriend || friendToMe) {
         self.txsFetchedDataSource = [[DWProfileTxsFetchedDataSource alloc] initWithMeToFriendRequest:meToFriend
                                                                                    friendToMeRequest:friendToMe
@@ -210,8 +226,8 @@ NS_ASSUME_NONNULL_END
 
     self.dataSource = [[DWUserProfileDataSourceObject alloc] initWithTxFRC:self.txsFetchedDataSource.fetchedResultsController
                                                             txDataProvider:self.txDataProvider
-                                                         friendToMeRequest:friendToMe
-                                                         meToFriendRequest:meToFriend
+                                                         friendToMeRequest:shouldShowContactRequests ? friendToMe : nil
+                                                         meToFriendRequest:shouldShowContactRequests ? meToFriend : nil
                                                   friendBlockchainIdentity:friendBlockchainIdentity
                                                       myBlockchainIdentity:myBlockchainIdentity];
 

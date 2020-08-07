@@ -58,6 +58,9 @@
 /* No comment provided by engineer. */
 "Accept" = "Accept";
 
+/* No comment provided by engineer. */
+"Activity" = "Activity";
+
 /* Add <username> as your contact... */
 "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
 
