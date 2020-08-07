@@ -127,7 +127,7 @@ static NSString *sanitizeString(NSString *s) {
             }
 
             DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
-            if (requestIdentity && [paymentInput.request isValidAsDashpayPaymentRequestForBlockchainIdentity:requestIdentity
+            if (requestIdentity && [paymentInput.request isValidAsDashpayPaymentRequestForBlockchainIdentity:myBlockchainIdentity
                                                                                                    onAccount:currentAccount
                                                                                                    inContext:context]) {
                 DWPaymentInputBuilder *inputBuilder = [[DWPaymentInputBuilder alloc] init];
