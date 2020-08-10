@@ -197,6 +197,10 @@ NS_ASSUME_NONNULL_END
     NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
     const CGFloat contentWidth = layout.contentWidth;
 
+    if (section == 1 && self.model.dataSource.count == 0) {
+        return CGSizeZero;
+    }
+
     UIView *measuringView = section == 0 ? self.measuringProfileHeaderView : self.measuringFilterHeaderView;
     measuringView.frame = CGRectMake(0, 0, contentWidth, 300);
     CGSize size = [measuringView systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingCompressedSize.height)
