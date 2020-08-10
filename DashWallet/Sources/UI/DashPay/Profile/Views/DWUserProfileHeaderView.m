@@ -193,6 +193,13 @@ NS_ASSUME_NONNULL_END
                       with:^(typeof(self) self, id value) {
                           [self updateState:self.model.state];
                       }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.requestState)
+                      with:^(typeof(self) self, id value) {
+                          if (self.model.requestState == DWUserProfileModelState_Done) {
+                              [self updateActions];
+                          }
+                      }];
     }
     return self;
 }
