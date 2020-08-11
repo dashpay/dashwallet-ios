@@ -20,6 +20,7 @@
 #import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWPaymentInput+Private.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
@@ -126,13 +127,8 @@ static NSString *sanitizeString(NSString *s) {
                 }
             }
 
-            DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
-            if (requestIdentity && [paymentInput.request isValidAsDashpayPaymentRequestForBlockchainIdentity:myBlockchainIdentity
-                                                                                                   onAccount:currentAccount
-                                                                                                   inContext:context]) {
-                DWPaymentInputBuilder *inputBuilder = [[DWPaymentInputBuilder alloc] init];
-                DWDPUserObject *userObject = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
-                paymentInput = [inputBuilder paymentInputWithUserItem:userObject];
+            if (requestIdentity) {
+                paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
             }
         }
     }
@@ -269,7 +265,19 @@ static NSString *sanitizeString(NSString *s) {
             }];
     }
     else {
-        [self confirmProtocolRequest:request.protocolRequest];
+        // `request.protocolRequest` is a legacy method and shouldn't be used directly.
+        // `myBlockchainIdentity` can be nil.
+
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
+        DSPaymentProtocolRequest *protocolRequest =
+            [self.paymentInput.request protocolRequestForBlockchainIdentity:myBlockchainIdentity
+                                                                  onAccount:account
+                                                                  inContext:context];
+
+        [self confirmProtocolRequest:protocolRequest];
     }
 }
 
