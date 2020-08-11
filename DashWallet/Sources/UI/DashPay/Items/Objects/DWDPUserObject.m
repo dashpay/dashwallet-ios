@@ -74,7 +74,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:
                                               @"sourceContact.associatedBlockchainIdentity.uniqueID == %@",
                                               uint256_data(myBlockchainIdentity.uniqueID)];
-    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUser.incomingRequests filteredSetUsingPredicate:predicate] anyObject];
+    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:predicate] anyObject];
     return friendRequest;
 }
 

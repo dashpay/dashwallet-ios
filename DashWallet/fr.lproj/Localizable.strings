@@ -59,6 +59,12 @@
 "Accept" = "Accept";
 
 /* No comment provided by engineer. */
+"Activity" = "Activity";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+
+/* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -547,6 +553,9 @@
 /* No comment provided by engineer. */
 "OK" = "OK";
 
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+
 /* No comment provided by engineer. */
 "Operator Keys" = "Clés d'opérateur";
 
@@ -561,6 +570,9 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Payez et soyez payé instantanément avec des flux de paiement simples à utiliser";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Pay Directly to Username";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Payez facilement";
@@ -693,6 +705,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Réinitialiser le portefeuille";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
 
 /* No comment provided by engineer. */
 "Retry" = "Réessayer";

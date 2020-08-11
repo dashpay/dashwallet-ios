@@ -58,6 +58,12 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
+    _displayMode = displayMode;
+
+    [self updateDataSource];
+}
+
 - (void)skipUpdating {
     [self updateDataSource];
     self.state = DWUserProfileModelState_Done;
@@ -65,6 +71,12 @@ NS_ASSUME_NONNULL_END
 
 - (void)setState:(DWUserProfileModelState)state {
     _state = state;
+
+    [self.delegate userProfileModelDidUpdate:self];
+}
+
+- (void)setRequestState:(DWUserProfileModelState)requestState {
+    _requestState = requestState;
 
     [self.delegate userProfileModelDidUpdate:self];
 }
@@ -100,7 +112,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendContactRequest {
-    self.state = DWUserProfileModelState_Loading;
+    self.requestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
@@ -113,12 +125,12 @@ NS_ASSUME_NONNULL_END
                                                             }
 
                                                             [strongSelf updateDataSource];
-                                                            strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                            strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                                         }];
 }
 
 - (void)acceptContactRequest {
-    self.state = DWUserProfileModelState_Loading;
+    self.requestState = DWUserProfileModelState_Loading;
 
     __weak typeof(self) weakSelf = self;
     [DWDashPayContactsActions acceptContactRequest:self.item
@@ -129,7 +141,7 @@ NS_ASSUME_NONNULL_END
                                             }
 
                                             [strongSelf updateDataSource];
-                                            strongSelf.state = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                            strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                         }];
 }
 
@@ -173,10 +185,10 @@ NS_ASSUME_NONNULL_END
     }
 
     DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
-    NSAssert(myBlockchainIdentity.matchingDashpayUser, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
+    NSAssert(myBlockchainIdentity.matchingDashpayUserInViewContext, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
     DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
     DSDashpayUserEntity *friend = nil;
-    if (friendBlockchainIdentity.matchingDashpayUser) {
+    if (friendBlockchainIdentity.matchingDashpayUserInViewContext) {
         friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
     }
 
@@ -188,6 +200,16 @@ NS_ASSUME_NONNULL_END
     DSFriendRequestEntity *friendToMe = nil;
     if (friend != nil) {
         friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+    }
+
+    BOOL shouldShowContactRequests = YES;
+    if (self.displayMode == DWHomeTxDisplayMode_Sent) {
+        meToFriend = nil;
+        shouldShowContactRequests = NO;
+    }
+    else if (self.displayMode == DWHomeTxDisplayMode_Received) {
+        friendToMe = nil;
+        shouldShowContactRequests = NO;
     }
 
     if (meToFriend || friendToMe) {
@@ -204,8 +226,8 @@ NS_ASSUME_NONNULL_END
 
     self.dataSource = [[DWUserProfileDataSourceObject alloc] initWithTxFRC:self.txsFetchedDataSource.fetchedResultsController
                                                             txDataProvider:self.txDataProvider
-                                                         friendToMeRequest:friendToMe
-                                                         meToFriendRequest:meToFriend
+                                                         friendToMeRequest:shouldShowContactRequests ? friendToMe : nil
+                                                         meToFriendRequest:shouldShowContactRequests ? meToFriend : nil
                                                   friendBlockchainIdentity:friendBlockchainIdentity
                                                       myBlockchainIdentity:myBlockchainIdentity];
 

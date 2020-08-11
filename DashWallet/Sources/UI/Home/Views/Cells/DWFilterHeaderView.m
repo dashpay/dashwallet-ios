@@ -25,6 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
 
+@property (strong, nonatomic) NSLayoutConstraint *leadingContentConstraint;
+@property (strong, nonatomic) NSLayoutConstraint *trailingContentConstraint;
+@property (strong, nonatomic) NSLayoutConstraint *widthContentConstraint;
+
 @end
 
 @implementation DWFilterHeaderView
@@ -51,16 +55,24 @@ NS_ASSUME_NONNULL_BEGIN
     self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [self.contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [self.contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        (self.leadingContentConstraint = [self.contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor]),
         [self.contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [self.contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-        [self.contentView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+        (self.trailingContentConstraint = [self.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor]),
+        (self.widthContentConstraint = [self.contentView.widthAnchor constraintEqualToAnchor:self.widthAnchor]),
     ]];
 
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+}
+
+- (void)setPadding:(CGFloat)padding {
+    _padding = padding;
+
+    self.leadingContentConstraint.constant = padding;
+    self.trailingContentConstraint.constant = padding;
+    self.widthContentConstraint.constant = -padding * 2;
 }
 
 - (IBAction)filterButtonAction:(UIButton *)sender {

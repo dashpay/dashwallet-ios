@@ -23,12 +23,13 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
-#import "DWHomeViewController+DWTxFilter.h"
+#import "DWModalUserProfileViewController.h"
 #import "DWNavigationController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWWindow.h"
+#import "UIViewController+DWTxFilter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -89,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWHomeViewDelegate
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
-    [self showTxFilterWithSender:sender];
+    [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:YES];
 }
 
 - (void)homeView:(DWHomeView *)homeView payButtonAction:(UIButton *)sender {
@@ -125,6 +126,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
+
+- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
+    if (!contact) {
+        return;
+    }
+
+    DWModalUserProfileViewController *profile =
+        [[DWModalUserProfileViewController alloc] initWithItem:contact
+                                                      payModel:self.payModel
+                                                  dataProvider:self.dataProvider];
+    [self presentViewController:profile animated:YES completion:nil];
+}
 
 - (id<DWPayModelProtocol>)payModel {
     return self.model.payModel;

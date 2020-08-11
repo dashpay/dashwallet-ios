@@ -15,15 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWHomeViewController+DWTxFilter.h"
+#import "UIViewController+DWTxFilter.h"
 
 #import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWHomeViewController (DWTxFilter)
+@implementation UIViewController (DWTxFilter)
 
-- (void)showTxFilterWithSender:(UIView *)sender {
+- (void)showTxFilterWithSender:(UIView *)sender
+           displayModeProvider:(id<DWTxDisplayModeProtocol>)displayModeProvider
+             shouldShowRewards:(BOOL)shouldShowRewards {
     NSString *title = NSLocalizedString(@"Filter Transactions", nil);
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:title
@@ -34,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
             actionWithTitle:NSLocalizedString(@"All", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *_Nonnull action) {
-                        self.model.displayMode = DWHomeTxDisplayMode_All;
+                        displayModeProvider.displayMode = DWHomeTxDisplayMode_All;
                     }];
         [alert addAction:action];
     }
@@ -44,19 +46,19 @@ NS_ASSUME_NONNULL_BEGIN
             actionWithTitle:NSLocalizedString(@"Received", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *_Nonnull action) {
-                        self.model.displayMode = DWHomeTxDisplayMode_Received;
+                        displayModeProvider.displayMode = DWHomeTxDisplayMode_Received;
                     }];
         [alert addAction:action];
     }
 
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
-    if ([account hasCoinbaseTransaction]) {
+    if (shouldShowRewards && [account hasCoinbaseTransaction]) {
         UIAlertAction *action = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"Rewards", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *_Nonnull action) {
-                        self.model.displayMode = DWHomeTxDisplayMode_Rewards;
+                        displayModeProvider.displayMode = DWHomeTxDisplayMode_Rewards;
                     }];
         [alert addAction:action];
     }
@@ -66,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
             actionWithTitle:NSLocalizedString(@"Sent", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *_Nonnull action) {
-                        self.model.displayMode = DWHomeTxDisplayMode_Sent;
+                        displayModeProvider.displayMode = DWHomeTxDisplayMode_Sent;
                     }];
         [alert addAction:action];
     }

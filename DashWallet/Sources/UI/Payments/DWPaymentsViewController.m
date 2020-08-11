@@ -239,9 +239,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWPayViewControllerDelegate
 
-- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller {
+- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller contact:(nullable id<DWDPBasicUserItem>)contact {
     // hide payments controller after successful payment
-    [self.delegate paymentsViewControllerDidCancel:self];
+    [self.delegate paymentsViewControllerDidFinishPayment:self contact:contact];
 }
 
 #pragma mark - Private

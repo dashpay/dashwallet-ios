@@ -20,6 +20,7 @@
 #import "DWContactsViewController.h"
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
+#import "DWModalUserProfileViewController.h"
 #import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
@@ -138,7 +139,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
+    [self tabBarViewDidClosePayments:tabBarView completion:nil];
+}
+
+/// helper
+- (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
     if (!self.modalController) {
+        if (completion) {
+            completion();
+        }
+
         return;
     }
 
@@ -147,6 +157,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
     [self hideModalControllerCompletion:^{
         tabBarView.userInteractionEnabled = YES;
+        if (completion) {
+            completion();
+        }
     }];
 }
 
@@ -154,6 +167,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller {
     [self tabBarViewDidClosePayments:self.tabBarView];
+}
+
+- (void)paymentsViewControllerDidFinishPayment:(DWPaymentsViewController *)controller
+                                       contact:(nullable id<DWDPBasicUserItem>)contact {
+    [self tabBarViewDidClosePayments:self.tabBarView
+                          completion:^{
+                              if (!contact) {
+                                  return;
+                              }
+
+                              DWModalUserProfileViewController *profile =
+                                  [[DWModalUserProfileViewController alloc] initWithItem:contact
+                                                                                payModel:self.homeModel.payModel
+                                                                            dataProvider:self.homeModel.getDataProvider];
+                              [self presentViewController:profile animated:YES completion:nil];
+                          }];
 }
 
 #pragma mark - DWHomeViewControllerDelegate

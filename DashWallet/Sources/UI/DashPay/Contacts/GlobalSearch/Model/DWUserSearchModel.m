@@ -167,6 +167,7 @@ NS_ASSUME_NONNULL_END
     __weak typeof(self) weakSelf = self;
     self.request = [manager
         searchIdentitiesByNamePrefix:query
+                            inDomain:@"dash"
                               offset:offset
                                limit:LIMIT
                       withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *errors) {

@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWPaymentProcessor;
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
+@protocol DWDPBasicUserItem;
 
 @interface DWBasePayViewController : DWNavigationChildViewController
 
@@ -44,8 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)handleFile:(NSData *)file;
 
-/// This method is called after presentation of payment result controller.
-- (void)payViewControllerDidShowPaymentResult;
+/// This method is called after dismissal of payment result controller.
+- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact;
 
 - (id<DWDPBasicUserItem>)contactItem;
 

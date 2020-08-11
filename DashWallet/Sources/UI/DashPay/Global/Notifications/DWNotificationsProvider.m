@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_END
     }
 
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    NSManagedObjectID *userID = blockchainIdentity.matchingDashpayUser.objectID;
+    NSManagedObjectID *userID = blockchainIdentity.matchingDashpayUserInViewContext.objectID;
 
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
     const NSTimeInterval mostRecentViewedTimestamp = [options.mostRecentViewedNotificationDate timeIntervalSince1970];
