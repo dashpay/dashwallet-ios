@@ -17,6 +17,7 @@
 
 #import "DWRootModel.h"
 
+#import "DWAppGroupOptions.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
@@ -94,6 +95,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setupDidFinish {
     [self.homeModel.shortcutsModel reloadShortcuts];
+}
+
+- (void)wipeWallet {
+    [[DWEnvironment sharedInstance] clearAllWallets];
+
+    [[DWGlobalOptions sharedInstance] restoreToDefaults];
+    [[DWAppGroupOptions sharedInstance] restoreToDefaults];
 }
 
 #pragma mark - Notifications

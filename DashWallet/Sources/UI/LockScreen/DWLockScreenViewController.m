@@ -153,9 +153,22 @@ static CGFloat ActionButtonsHeight(void) {
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
     [self.model stopCheckingAuthState];
 
+    void (^wipeHandler)(void) = nil;
+    if ([self.model isAllowedToWipe]) {
+        __weak typeof(self) weakSelf = self;
+        wipeHandler = ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf.delegate lockScreenViewControllerDidWipe:strongSelf];
+        };
+    }
+
     __weak typeof(self) weakSelf = self;
     [[DSAuthenticationManager sharedInstance]
-        resetAllWalletsWithWipeHandler:nil
+        resetAllWalletsWithWipeHandler:wipeHandler
                             completion:^(BOOL success) {
                                 __strong typeof(weakSelf) strongSelf = weakSelf;
                                 if (!strongSelf) {
