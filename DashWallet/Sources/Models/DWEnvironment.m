@@ -71,6 +71,11 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
             break;
         case DSChainType_DevNet: //we will only have evonet
             self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
+            if (!self.currentChain) {
+                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+                self.currentChain = [DSChain mainnet];
+            }
             break;
         default:
             break;
@@ -211,7 +216,9 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     }
     else {
         NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-        [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        if (self.currentChain) {
+            [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        }
         [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
         [self reset];
         [self.currentChainManager.peerManager connect];
