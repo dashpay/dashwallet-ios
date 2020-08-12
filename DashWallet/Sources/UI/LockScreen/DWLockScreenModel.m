@@ -115,6 +115,18 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
     return message;
 }
 
+- (BOOL)isAllowedToWipe {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+
+    NSError *error = nil;
+    uint64_t failCount = [authManager getFailCount:&error];
+    if (error) {
+        return NO;
+    }
+
+    return failCount >= MAX_FAIL_COUNT;
+}
+
 #pragma mark - Private
 
 - (void)checkAuthState {

@@ -293,6 +293,19 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         }];
 }
 
+- (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller {
+    NSParameterAssert(self.displayedLockNavigationController);
+
+    [self hideAndRemoveOverlayImageView];
+
+    self.lockWindow.rootViewController = nil;
+    self.lockWindow.hidden = YES;
+    self.lockWindow.alpha = 1.0;
+
+    [self.model wipeWallet];
+    [self didWipeWallet];
+}
+
 #pragma mark - Notifications
 
 - (void)applicationDidBecomeActiveNotification {

@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stopCheckingAuthState;
 
 - (nullable NSString *)lockoutErrorMessage;
+- (BOOL)isAllowedToWipe;
 
 - (BOOL)checkPin:(NSString *)inputPin;
 

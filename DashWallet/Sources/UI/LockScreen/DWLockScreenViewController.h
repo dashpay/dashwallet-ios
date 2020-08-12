@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 @protocol DWLockScreenViewControllerDelegate <NSObject>
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller;
+- (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller;
 
 @end
 
