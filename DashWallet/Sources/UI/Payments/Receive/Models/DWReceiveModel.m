@@ -145,9 +145,6 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
         NSString *paymentAddress = account.receiveAddress;
-        if (self.paymentAddress && [self.paymentAddress isEqualToString:paymentAddress]) {
-            return;
-        }
 
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];
