@@ -88,15 +88,15 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             _homeButton = button;
         }
 
-        {
-            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Contacts];
-            [button addTarget:self
-                          action:@selector(tabBarButtonAction:)
-                forControlEvents:UIControlEventTouchUpInside];
-            [self addSubview:button];
-            [buttons addObject:button];
-            _contactsButton = button;
-        }
+        //        {
+        //            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Contacts];
+        //            [button addTarget:self
+        //                          action:@selector(tabBarButtonAction:)
+        //                forControlEvents:UIControlEventTouchUpInside];
+        //            [self addSubview:button];
+        //            [buttons addObject:button];
+        //            _contactsButton = button;
+        //        }
 
         {
             DWPaymentsButton *button = [[DWPaymentsButton alloc] initWithFrame:CGRectZero];
@@ -112,15 +112,15 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 #endif /* SNAPSHOT */
         }
 
-        {
-            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Discover];
-            [button addTarget:self
-                          action:@selector(tabBarButtonAction:)
-                forControlEvents:UIControlEventTouchUpInside];
-            [self addSubview:button];
-            [buttons addObject:button];
-            _discoverButton = button;
-        }
+        //        {
+        //            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Discover];
+        //            [button addTarget:self
+        //                          action:@selector(tabBarButtonAction:)
+        //                forControlEvents:UIControlEventTouchUpInside];
+        //            [self addSubview:button];
+        //            [buttons addObject:button];
+        //            _discoverButton = button;
+        //        }
 
         {
             DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Others];
