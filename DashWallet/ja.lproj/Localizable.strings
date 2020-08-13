@@ -209,7 +209,7 @@
 "Connected peers: %d" = "接続しているピア: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "支払い元に接続中";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -273,6 +273,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\nどの脱獄アプリからでも、他のあらゆるアプリのキーチェーンのデータへアクセスが可能です（そしてあなたのDashを簡単に盗めます）。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "Do not take a screenshot";
 
 /* No comment provided by engineer. */
 "Done" = "完了";
@@ -410,7 +413,7 @@
 "Invalid" = "無効";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "無効な支払のリクエスト";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -566,7 +569,7 @@
 "Owner Keys" = "所有者の諸々のキー";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "支払う";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "簡単なお支払い手順で速やかに送金と入金";
@@ -614,7 +617,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "お待ちください";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
@@ -875,6 +878,9 @@
 "Spending Confirmation" = "支出の確認";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "残高が送金されました!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1059,6 +1065,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "この取引が確定したら、他のウォレットは\n無価値となり、安全上の理由から再び\n使用しないようにしてください。";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
 "Wipe" = "削除する";

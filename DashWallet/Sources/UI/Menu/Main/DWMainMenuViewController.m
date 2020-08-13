@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWAboutModel.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
@@ -27,6 +28,7 @@
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
 #import "DWUpholdViewController.h"
+#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -109,6 +111,17 @@ NS_ASSUME_NONNULL_BEGIN
             controller.delegate = self;
             [self.navigationController pushViewController:controller animated:YES];
 
+            break;
+        }
+        case DWMainMenuItemType_Support: {
+            NSURL *url = [DWAboutModel supportURL];
+            NSParameterAssert(url);
+            if (!url) {
+                return;
+            }
+
+            SFSafariViewController *safariViewController = [SFSafariViewController dw_controllerWithURL:url];
+            [self presentViewController:safariViewController animated:YES completion:nil];
             break;
         }
     }

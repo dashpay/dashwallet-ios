@@ -209,7 +209,7 @@
 "Connected peers: %d" = "เชื่อมต่อเพื่อน: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "กำลังเชื่อมต่อกับเซิร์ฟเวอร์การชำระเงิน";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -273,6 +273,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )  ลบล้าง wallet นี้โดยทันทีและกู้คืนบนอุปกรณ์ที่ปลอดภัย";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "Do not take a screenshot";
 
 /* No comment provided by engineer. */
 "Done" = "เสร็จแล้ว";
@@ -410,7 +413,7 @@
 "Invalid" = "ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "คำขอการชำระเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -566,7 +569,7 @@
 "Owner Keys" = "เจ้าของ Keys";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "จ่ายเงิน";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "ชำระเงินและรับเงินทันทีด้วยกระบวนการชำระเงินที่ใช้งานง่าย";
@@ -614,7 +617,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "กรุณารอสักครู่";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
@@ -875,6 +878,9 @@
 "Spending Confirmation" = "การยืนยันการใช้จ่าย";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1059,6 +1065,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "เมื่อธุรกรรมถูกยืนยัน วอลเล็ทอื่นๆจะไม่มีจราคาและไม่ควรนำมาใช้อีกครั้งเพื่อความปลอดภัย";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
 "Wipe" = "ลบล้าง";

@@ -209,7 +209,7 @@
 "Connected peers: %d" = "Подключенные узлы: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Подключение к платёжному серверу";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -273,6 +273,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши Dash). Немедленно удалите этот кошелёк и восстановите его на доверенном устройстве.";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "Не делайте скриншот";
 
 /* No comment provided by engineer. */
 "Done" = "Готово";
@@ -410,10 +413,10 @@
 "Invalid" = "Некорректная";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Некорректный платёжный запрос";
 
 /* No comment provided by engineer. */
-"Invalid QR Code" = "Invalid QR Code";
+"Invalid QR Code" = "Некорректный QR-код";
 
 /* No comment provided by engineer. */
 "It's Important" = "Это важно";
@@ -566,7 +569,7 @@
 "Owner Keys" = "Ключи владельца";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Оплатить";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Платите и получайте переводы мгновенно с помощью простых в использовании механизмов платежей";
@@ -578,16 +581,16 @@
 "Pay with Ease" = "Платите с легкостью";
 
 /* 1 out of 4 in the Paying Animation */
-"Paying" = "Paying";
+"Paying" = "Оплата";
 
 /* 2 out of 4 in the Paying Animation */
-"Paying." = "Paying.";
+"Paying." = "Оплата.";
 
 /* 3 out of 4 in the Paying Animation */
-"Paying.." = "Paying..";
+"Paying.." = "Оплата..";
 
 /* 4 out of 4 in the Paying Animation */
-"Paying..." = "Paying...";
+"Paying..." = "Оплата...";
 
 /* No comment provided by engineer. */
 "Payments" = "Платежи";
@@ -611,10 +614,10 @@
 "Please try again" = "Попробуйте еще раз";
 
 /* No comment provided by engineer. */
-"Please try scanning again" = "Please try scanning again";
+"Please try scanning again" = "Попробуйте отсканировать еще раз";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Пожалуйста, подождите";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
@@ -875,6 +878,9 @@
 "Spending Confirmation" = "Подтверждения";
 
 /* No comment provided by engineer. */
+"Support" = "Поддержка";
+
+/* No comment provided by engineer. */
 "Swept!" = "Переведено!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1059,6 +1065,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = " Когда эта транзакция будет подтверждена, другой кошелёк будет бесполезен и не должен быть повторно использован в целях безопасности.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Почему нельзя делать скриншот?";
 
 /* No comment provided by engineer. */
 "Wipe" = "Удалить";

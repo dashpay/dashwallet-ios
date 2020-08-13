@@ -472,6 +472,7 @@
 		C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CB24757A210001624F /* DWContactsSearchDataSourceObject.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */; };
+		C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -1548,6 +1549,8 @@
 		C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate+DWFullTextSearch.m"; sourceTree = "<group>"; };
 		C3DAD2D32476886D0001624F /* DWContactsSearchInfoHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchInfoHeaderView.h; sourceTree = "<group>"; };
 		C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchInfoHeaderView.m; sourceTree = "<group>"; };
+		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
+		C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWScreenshotWarningViewController.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -2003,6 +2006,7 @@
 		2A4430E922CBB98D009BAF7F /* Setup */ = {
 			isa = PBXGroup;
 			children = (
+				C3DAD265246AA6CF0001624F /* ScreenshotWarning */,
 				2A74EFEA2305316A00C475EB /* RecoverWallet */,
 				2A9CEBA322E1C25700A50237 /* SecureWallet */,
 				2A44314422CF828E009BAF7F /* BiometricAuth */,
@@ -4014,6 +4018,15 @@
 			path = Base;
 			sourceTree = "<group>";
 		};
+		C3DAD265246AA6CF0001624F /* ScreenshotWarning */ = {
+			isa = PBXGroup;
+			children = (
+				C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */,
+				C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */,
+			);
+			path = ScreenshotWarning;
+			sourceTree = "<group>";
+		};
 		EBFC2EA47915CD4F5BA81564 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -4828,6 +4841,7 @@
 				2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */,
 				2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */,
 				2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */,
+				C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */,
 				2A0C699923103952001B8C90 /* DWMaxButton.m in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,

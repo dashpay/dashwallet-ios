@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 
 + (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model;
++ (instancetype)controllerWithoutAction;
 
 @end
 

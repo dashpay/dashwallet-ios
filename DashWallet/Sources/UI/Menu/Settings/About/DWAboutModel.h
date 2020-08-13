@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAboutModel : NSObject
 
++ (NSURL *)supportURL;
+
 - (NSString *)appVersion;
 - (NSString *)dashSyncVersion;
 - (NSString *)status;

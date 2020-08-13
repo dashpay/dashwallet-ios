@@ -161,7 +161,7 @@
 "Cancel" = "Ακύρωση";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "αλλαγή";
+"Change" = "Αλλαγή";
 
 /* No comment provided by engineer. */
 "Change payment amount?" = "Αλλαγή του ποσού πληρωμής?";
@@ -209,7 +209,7 @@
 "Connected peers: %d" = "Συνδεδεμένοι χρήστες: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Σύνδεση με το διακομιστή πληρωμών";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -273,6 +273,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "Do not take a screenshot";
 
 /* No comment provided by engineer. */
 "Done" = "Έγινε";
@@ -410,7 +413,7 @@
 "Invalid" = "Μη έγκυρο";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -566,7 +569,7 @@
 "Owner Keys" = "Κλειδιά Κατόχου";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "πληρώστε";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Πληρώστε και πληρωθείτε άμεσα με εύκολες στην χρήση πληρωμές";
@@ -614,7 +617,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Παρακαλώ περιμένετε";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
@@ -623,7 +626,7 @@
 "Please wait for the sync to complete" = "Περιμένετε να ολοκληρωθεί ο συγχρονισμός";
 
 /* No comment provided by engineer. */
-"Please write it down" = "παρακαλώ να το γράψετε";
+"Please write it down" = "Παρακαλώ να το γράψετε";
 
 /* No comment provided by engineer. */
 "Previously used at IP address" = "Χρησιμοποιήθηκε προηγουμένως στη διεύθυνση IP";
@@ -875,6 +878,9 @@
 "Spending Confirmation" = "Επιβεβαίωση Ξοδέματος";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Σαρώθηκε";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1059,6 +1065,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Όταν επιβεβαιωθεί η συναλλαγή, το άλλο πορτοφόλι θα είναι άχρηστο και δεν θα πρέπει να επαναχρησιμοποιηθεί για λόγους ασφαλείας.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
 "Wipe" = "εκκαθάριση";

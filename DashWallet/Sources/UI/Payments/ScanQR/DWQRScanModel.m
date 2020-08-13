@@ -194,6 +194,9 @@ NS_ASSUME_NONNULL_END
 
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if ([addr hasPrefix:@"pay:"]) {
+        addr = [addr stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
+    }
     DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
     if (request.isValidAsNonDashpayPaymentRequest || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
         if (request.r.length > 0) {                     // start fetching payment protocol request right away
@@ -281,7 +284,7 @@ NS_ASSUME_NONNULL_END
                     }
                     else {
                         NSString *errorMessage = nil;
-                        if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
+                        if ((([request.scheme isEqual:@"dash"] || [request.scheme isEqual:@"pay"]) && request.paymentAddress.length > 1) ||
                             [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
                             errorMessage =
                                 [NSString stringWithFormat:@"%@:\n%@",

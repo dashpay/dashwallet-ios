@@ -209,7 +209,7 @@
 "Connected peers: %d" = "Peers connessi: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Connessione al server di pagamento";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -273,6 +273,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi Dash). Elimina subito questo portafoglio e ripristina su un dispositivo sicuro.";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "Do not take a screenshot";
 
 /* No comment provided by engineer. */
 "Done" = "Fatto";
@@ -410,7 +413,7 @@
 "Invalid" = "Non valido";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Richiesta di pagamento invalida";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -566,7 +569,7 @@
 "Owner Keys" = "Chiavi proprietario";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Paga";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Paga e ricevi pagamenti istantaneamente in modo semplice e facile da usare";
@@ -614,7 +617,7 @@
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Attendere prego";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
@@ -875,6 +878,9 @@
 "Spending Confirmation" = "Conferma della spesa";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Pulito!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1059,6 +1065,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "A transazione confermata, il portafoglio di origine  sarà privo di valore e non dovrebbe essere riutilizzato per motivi di sicurezza.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
 "Wipe" = "Pulisci";

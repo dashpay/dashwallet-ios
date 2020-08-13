@@ -50,7 +50,7 @@
 "\ntry again in %@" = "\nintentar de nuevo en %@";
 
 /* No comment provided by engineer. */
-"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Es necesario que su dispositivo esté resguardado por una clave para proteger su billetera. Vaya a configuraciones y habilite una clave de acceso para continuar";
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Es necesario que tu dispositivo esté resguardado por una clave para proteger tu billetera. Ve a configuraciones y habilita una clave de acceso para continuar";
 
 /* No comment provided by engineer. */
 "About" = "Acerca de";
@@ -80,13 +80,13 @@
 "All" = "Todos";
 
 /* No comment provided by engineer. */
-"Allow camera access in Settings" = "Permita acceso a cámara en las Configuraciones";
+"Allow camera access in Settings" = "Permite acceso a cámara en las Configuraciones";
 
 /* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Permita acceso al Face ID en Configuraciones";
+"Allow Face ID access in Settings" = "Permite acceso al Face ID en Configuraciones";
 
 /* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Permita acceso al Touch ID en Configuraciones";
+"Allow Touch ID access in Settings" = "Permite acceso al Touch ID en Configuraciones";
 
 /* No comment provided by engineer. */
 "Amount Received" = "Monto Recibido";
@@ -155,7 +155,7 @@
 "Buy Dash with Uphold account" = "Comprar Dash con una cuenta de Uphold";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Al limpiar este dispositivo, ya no tendrá acceso a los fondos en este dispositivo. Esto solo debe hacerse si ya no tiene acceso a su contraseña y también ha olvidado su código PIN.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Al limpiar este dispositivo, ya no tendrás acceso a los fondos en este dispositivo. Esto solo debe hacerse si ya no tiense acceso a tu contraseña y también has olvidado tu código PIN.";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancelar";
@@ -170,7 +170,7 @@
 "Change PIN" = "Cambiar PIN";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Verifique su conección";
+"Check your connection" = "Verifique tu conección";
 
 /* Choose your Dash username */
 "Choose your" = "Choose your";
@@ -209,7 +209,7 @@
 "Connected peers: %d" = "Pares conectados: %d";
 
 /* No comment provided by engineer. */
-"Connecting to payment server" = "Connecting to payment server";
+"Connecting to payment server" = "Conectando al servidor de pago";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -275,6 +275,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación de 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus Dash). Borra inmediatamente esta cartera para restablecerla en un dispositivo seguro.";
 
 /* No comment provided by engineer. */
+"Do not take a screenshot" = "Do not take a screenshot";
+
+/* No comment provided by engineer. */
 "Done" = "Hecho";
 
 /* ex., Download peer: 127.0.0.1:9999 */
@@ -305,10 +308,10 @@
 "Enter Recovery Phrase" = "Ingresar Frase de Recuperación";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer" = "Ingresa la cantidad a transferir";
+"Enter the amount to transfer" = "Ingresar la cantidad a transferir";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Ingresa tu código 2FA debajo";
+"Enter your 2FA code below" = "Ingresar tu código 2FA debajo";
 
 /* No comment provided by engineer. */
 "Error" = "Error";
@@ -356,13 +359,13 @@
 "has requested to be your friend" = "has requested to be your friend";
 
 /* No comment provided by engineer. */
-"Have complete control and customize your wallet based on your needs" = "Tenga control completo y configure su billetera de acuerdo a sus necesidades";
+"Have complete control and customize your wallet based on your needs" = "Ten control completo y configura tu billetera de acuerdo a tus necesidades";
 
 /* Hello username, */
 "Hello %@," = "Hello %@,";
 
 /* No comment provided by engineer. */
-"Help us improve your experience" = "Ayúdanos a mejorar su experiencia";
+"Help us improve your experience" = "Ayúdanos a mejorar tu experiencia";
 
 /* adjective, security level */
 "High" = "Alto";
@@ -380,10 +383,10 @@
 "I wrote it down" = "Ya la escribí";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Si pierdes este dispositivo, podrás perder sus fondos. Obtenga su frase de recuperación para que puedas restaurar su billetera en otro dispositivo.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Si pierdes este dispositivo, podrás perder tus fondos. Obtén tu frase de recuperación para que puedas restaurar tu billetera en otro dispositivo.";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "Si aún desea limpiar por favor introduce: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Si aún deseas limpiar por favor introduce: \"%@\"";
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignora";
@@ -392,10 +395,10 @@
 "Immediately" = "Inmediatamente";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Import Private Key" = "Importar Llave Privada";
+"Import Private Key" = "Barrer billetera de papel";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Importar Llave Privada...";
+"Import private key…" = "Barrer billetera de papel...";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Fondos insuficientes";
@@ -410,7 +413,7 @@
 "Invalid" = "Inválido";
 
 /* No comment provided by engineer. */
-"Invalid Payment Request" = "Invalid Payment Request";
+"Invalid Payment Request" = "Solicitud de pago inválida";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
@@ -566,16 +569,16 @@
 "Owner Keys" = "Llaves del propietario";
 
 /* No comment provided by engineer. */
-"Pay" = "Pay";
+"Pay" = "Pagar";
 
 /* No comment provided by engineer. */
-"Pay and get paid instantly with easy to use payment flows" = "Pague y reciba instantáneamente con flujos de pagos fáciles de usar";
+"Pay and get paid instantly with easy to use payment flows" = "Paga y recibe instantáneamente con flujos de pagos fáciles de usar";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Pay Directly to Username";
 
 /* No comment provided by engineer. */
-"Pay with Ease" = "Pague con facilidad";
+"Pay with Ease" = "Paga con facilidad";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Paying";
@@ -605,16 +608,16 @@
 "Please place your phone near NFC device." = "Coloca tu teléfono cerca del dispositivo NFC.";
 
 /* No comment provided by engineer. */
-"Please tap on the words from your recovery phrase in the right order" = "Por favor toque las palabras de su frase de recuperación en el orden correcto";
+"Please tap on the words from your recovery phrase in the right order" = "Por favor escribe las palabras de tu frase de recuperación en el orden correcto";
 
 /* No comment provided by engineer. */
-"Please try again" = "Por favor, intente nuevamente";
+"Please try again" = "Por favor, intenta nuevamente";
 
 /* No comment provided by engineer. */
 "Please try scanning again" = "Please try scanning again";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Please Wait";
+"Please Wait" = "Por favor espera";
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
@@ -623,7 +626,7 @@
 "Please wait for the sync to complete" = "Por favor espere hasta que se complete la sincronización";
 
 /* No comment provided by engineer. */
-"Please write it down" = "Anótela, por favor";
+"Please write it down" = "Anótala, por favor";
 
 /* No comment provided by engineer. */
 "Previously used at IP address" = "Usado anteriormente en la dirección de IP";
@@ -782,10 +785,10 @@
 "See on Uphold" = "Ver en Uphold";
 
 /* No comment provided by engineer. */
-"Send" = "Envia";
+"Send" = "Enviar";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "¿Enviar %1$@ (%2$@) de esta clave privada a su cartera? La red Dash deducirá una tasa de %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "¿Enviar %1$@ (%2$@) de esta clave privada a tu cartera? La red Dash deducirá una tasa de %3$@ (%4$@).";
 
 /* Send by (scanning QR code) */
 "Send by" = "Enviado por";
@@ -833,7 +836,7 @@
 "Sent to" = "Enviado para";
 
 /* No comment provided by engineer. */
-"Set a trusted node" = "Configure un nodo de confianza";
+"Set a trusted node" = "Configura un nodo de confianza";
 
 /* No comment provided by engineer. */
 "Set PIN" = "Establecer PIN";
@@ -845,7 +848,7 @@
 "Setup Wallet" = "Configurar Billetera";
 
 /* No comment provided by engineer. */
-"Share" = "Comparti";
+"Share" = "Compartir";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Mostrar Llaves de Masternodo";
@@ -873,6 +876,9 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Confirmación de Gasto";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
 
 /* No comment provided by engineer. */
 "Swept!" = "¡Barrido!";
@@ -917,10 +923,10 @@
 "This app is open source:" = "Esta app es de código abierto:";
 
 /* No comment provided by engineer. */
-"This PIN will be required to unlock your app every time when you use it." = "Este PIN será requerido para desbloquear su app toda vez que la utilices.";
+"This PIN will be required to unlock your app every time when you use it." = "Este PIN será requerido para desbloquear tu app cada vez que la utilices.";
 
 /* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "Esta frase de recuperación es su acceso para los fondos en esta billetera.";
+"This recovery phrase is your access to the funds in this wallet." = "Esta frase de recuperación es tu acceso para los fondos en esta billetera.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Esta transacción puede tardar varios minutos en liquidarse.";
@@ -956,10 +962,10 @@
 "Transfer from Uphold" = "Transferencia desde Uphold";
 
 /* An action */
-"Try again" = "Intente nuevamente";
+"Try again" = "Intenta nuevamente";
 
 /* Alert title */
-"Turn device passcode on" = "Habilite la clave de acceso de su dispositivo";
+"Turn device passcode on" = "Habilita la clave de acceso de tu dispositivo";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "No fue posible conectarse";
@@ -1043,7 +1049,7 @@
 "WARNING" = "ADVERTENCIA";
 
 /* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "Estamos a punto de mostrar la frase de recuperación de su billetera.";
+"We are about to show you the secret key to your wallet." = "Estamos a punto de mostrar la frase de recuperación de tu billetera.";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "Nosotros no guardamos esta frase de recuperación.";
@@ -1059,6 +1065,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Cuando la transacción sea confirmada, la otra billetera será inútil y no deberá ser reutilizada por razones de seguridad.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
 "Wipe" = "Limpiar";
@@ -1091,7 +1100,7 @@
 "You must enter your PIN in order to enter Dash Wallet" = "Debe ingresar su PIN para ingresar a la Dash Wallet";
 
 /* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Recibiste Dash! Si pierdes este dispositivo, podrás perder sus fondos. Obtenga su frase de recuperación para que puedas restaurar su billetera en otro dispositivo.";
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Recibiste Dash! Si pierdes este dispositivo, podrás perder sus fondos. Obtén tu frase de recuperación para que puedas restaurar tu billetera en otro dispositivo.";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "You sent the contact request to %@";

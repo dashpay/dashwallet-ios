@@ -28,6 +28,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutModel
 
++ (NSURL *)supportURL {
+    NSURL *url = [NSURL URLWithString:@"https://support.dash.org/en/support/solutions"];
+    return url;
+}
+
 - (NSString *)appVersion {
     DWEnvironment *environment = [DWEnvironment sharedInstance];
     NSString *networkString = @"";
