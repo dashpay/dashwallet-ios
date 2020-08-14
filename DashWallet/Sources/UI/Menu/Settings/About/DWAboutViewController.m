@@ -170,6 +170,30 @@ NS_ASSUME_NONNULL_BEGIN
                 }];
     [alert addAction:setPeerAction];
 
+    //#warning Disable in Release
+    //    UIAlertAction *destructAction = [UIAlertAction
+    //        actionWithTitle:@"☠️ Exterminate!"
+    //                  style:UIAlertActionStyleDestructive
+    //                handler:^(UIAlertAction *_Nonnull action) {
+    //                    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+    //                    CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
+    //
+    //                    NSArray *secItemClasses = @[ (__bridge id)kSecClassGenericPassword,
+    //                                                 (__bridge id)kSecClassInternetPassword,
+    //                                                 (__bridge id)kSecClassCertificate,
+    //                                                 (__bridge id)kSecClassKey,
+    //                                                 (__bridge id)kSecClassIdentity ];
+    //                    for (id secItemClass in secItemClasses) {
+    //                        NSDictionary *spec = @{(__bridge id)kSecClass : secItemClass};
+    //                        SecItemDelete((__bridge CFDictionaryRef)spec);
+    //                    }
+    //
+    //                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    //                        exit(0);
+    //                    });
+    //                }];
+    //    [alert addAction:destructAction];
+
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:UIAlertActionStyleCancel
                                                      handler:nil];

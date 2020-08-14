@@ -59,12 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)cancelMigration {
-    [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
     self.state = DWStartModelStateDone;
 }
 
 - (void)cancelMigrationAndRescanBlockchain {
-    [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
     self.state = DWStartModelStateDoneAndRescan;
 }
 

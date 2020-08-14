@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWTransactionListDataSource (DWProtected)
 
 - (instancetype)initWithTransactions:(NSArray<DSTransaction *> *)transactions
+                  registrationStatus:(nullable DWDPRegistrationStatus *)registrationStatus
                         dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end

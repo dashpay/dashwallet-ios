@@ -17,12 +17,27 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWTxDetailViewController.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSTransaction;
+@protocol DWDPBasicUserItem;
 @protocol DWTransactionListDataProviderProtocol;
+@class DWTxDetailFullscreenViewController;
+
+@protocol DWTxDetailFullscreenViewControllerDelegate <NSObject>
+
+- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailFullscreenViewController *)controller;
+
+@end
 
 @interface DWTxDetailFullscreenViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWTxDetailFullscreenViewControllerDelegate> delegate;
+
+// passthrough context, not used internally
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> contactItem;
 
 - (instancetype)initWithTransaction:(DSTransaction *)transaction
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;

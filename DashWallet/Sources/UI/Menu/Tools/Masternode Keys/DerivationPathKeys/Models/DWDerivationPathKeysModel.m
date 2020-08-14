@@ -79,7 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                                       withPassphrase:nil];
                 DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
                 if ([key isKindOfClass:[DSECDSAKey class]]) {
-                    item.detail = [((DSECDSAKey *)key) privateKeyStringForChain:self.derivationPath.chain];
+#warning FIXME
+                    //                    item.detail = [((DSECDSAKey *)key) privateKeyStringForChain:self.derivationPath.chain];
                 }
                 else {
                     item.detail = key.secretKeyString;

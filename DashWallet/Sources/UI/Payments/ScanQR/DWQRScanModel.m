@@ -163,7 +163,7 @@ NS_ASSUME_NONNULL_END
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
-        if (request.isValid || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+        if (request.isValidAsNonDashpayPaymentRequest || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
             return codeObject;
         }
         else if (!anyObject) {
@@ -198,7 +198,7 @@ NS_ASSUME_NONNULL_END
         addr = [addr stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
     }
     DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
-    if (request.isValid || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+    if (request.isValidAsNonDashpayPaymentRequest || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
         if (request.r.length > 0) {                     // start fetching payment protocol request right away
             dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
                 QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
@@ -223,7 +223,7 @@ NS_ASSUME_NONNULL_END
                             request.r = nil;
                         }
 
-                        if (error && !request.isValid) {
+                        if (error && !request.isValidAsNonDashpayPaymentRequest) {
                             [strongSelf.qrCodeObject setPaymentRequestFailedWithErrorMessage:error.localizedDescription];
                             [strongSelf performSelector:@selector(resumeQRCodeSearch)
                                              withObject:nil

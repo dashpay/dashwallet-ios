@@ -19,11 +19,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol DWShortcutsModelDataSource <NSObject>
+
+- (BOOL)shouldShowCreateUserNameButton;
+
+@end
+
 @class DWShortcutAction;
 
 @interface DWShortcutsModel : NSObject
 
 @property (readonly, copy, nonatomic) NSArray<DWShortcutAction *> *items;
+
+- (instancetype)initWithDataSource:(id<DWShortcutsModelDataSource>)dataSource;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 - (void)reloadShortcuts;
 

@@ -19,6 +19,10 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
 #import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 
@@ -34,10 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (instancetype)initWithTransactions:(NSArray<DSTransaction *> *)transactions
+                  registrationStatus:(nullable DWDPRegistrationStatus *)registrationStatus
                         dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     self = [super init];
     if (self) {
         _items = [transactions copy];
+        _registrationStatus = registrationStatus;
         _dataProvider = dataProvider;
     }
     return self;
@@ -47,19 +53,70 @@ NS_ASSUME_NONNULL_BEGIN
     return (self.items.count == 0);
 }
 
+- (BOOL)showsRegistrationStatus {
+    return self.registrationStatus != nil;
+}
+
+- (nullable DSTransaction *)transactionForIndexPath:(NSIndexPath *)indexPath {
+    NSInteger index;
+    if (self.showsRegistrationStatus) {
+        if (indexPath.row == 0) {
+            return nil;
+        }
+
+        index = indexPath.row - 1;
+    }
+    else {
+        index = indexPath.row;
+    }
+    return self.items[index];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.items.count;
+    const NSInteger itemsCount = self.items.count;
+    if (self.showsRegistrationStatus) {
+        return 1 + itemsCount;
+    }
+    else {
+        return itemsCount;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *cellId = DWTxListTableViewCell.dw_reuseIdentifier;
-    DWTxListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                                                  forIndexPath:indexPath];
-    DSTransaction *transaction = self.items[indexPath.row];
-    [cell configureWithTransaction:transaction dataProvider:self.dataProvider];
-    return cell;
+    if (self.showsRegistrationStatus && indexPath.row == 0) {
+        if (self.registrationStatus.failed) {
+            NSString *cellID = DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier;
+            DWDPRegistrationErrorTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID
+                                                                                       forIndexPath:indexPath];
+            cell.status = self.registrationStatus;
+            cell.delegate = self.retryDelegate;
+            return cell;
+        }
+        if (self.registrationStatus.state == DWDPRegistrationState_Done) {
+            NSString *cellID = DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier;
+            DWDPRegistrationDoneTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID
+                                                                                      forIndexPath:indexPath];
+            cell.status = self.registrationStatus;
+            return cell;
+        }
+        else {
+            NSString *cellID = DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier;
+            DWDPRegistrationStatusTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID
+                                                                                        forIndexPath:indexPath];
+            cell.status = self.registrationStatus;
+            return cell;
+        }
+    }
+    else {
+        NSString *cellId = DWTxListTableViewCell.dw_reuseIdentifier;
+        DWTxListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                      forIndexPath:indexPath];
+        DSTransaction *transaction = [self transactionForIndexPath:indexPath];
+        [cell configureWithTransaction:transaction dataProvider:self.dataProvider];
+        return cell;
+    }
 }
 
 @end

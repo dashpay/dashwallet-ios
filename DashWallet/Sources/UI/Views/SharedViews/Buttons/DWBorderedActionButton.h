@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWActionButton.h"
+#import "DWBaseActionButton.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBorderedActionButton : DWActionButton
+@interface DWBorderedActionButton : DWBaseActionButton
 
 /// Defaults to Dash Blue color
 @property (nonatomic, strong) UIColor *accentColor;

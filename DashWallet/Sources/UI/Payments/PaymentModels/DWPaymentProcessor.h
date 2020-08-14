@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DSPaymentRequest;
 @class DSTransaction;
 @class DWPaymentOutput;
+@protocol DWDPBasicUserItem;
 
 @protocol DWPaymentProcessorDelegate <NSObject>
 
@@ -33,7 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestAmountWithDestination:(NSString *)sendingDestination
-                         details:(nullable DSPaymentProtocolDetails *)details;
+                         details:(nullable DSPaymentProtocolDetails *)details
+                     contactItem:(id<DWDPBasicUserItem>)contactItem;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestUserActionTitle:(nullable NSString *)title
@@ -58,7 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
           didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
-             transaction:(DSTransaction *)transaction;
+             transaction:(DSTransaction *)transaction
+             contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
          didSweepRequest:(DSPaymentRequest *)protocolRequest

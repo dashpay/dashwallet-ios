@@ -22,6 +22,7 @@
 #import <sys/socket.h>
 
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -83,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
                                                          [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
     NSString *blockString = [NSString stringWithFormat:NSLocalizedString(@"Block #%d of %d", nil),
-                                                       chain.lastBlockHeight,
+                                                       chain.lastSyncBlockHeight,
                                                        chain.estimatedBlockHeight];
     NSString *peersString = [NSString stringWithFormat:NSLocalizedString(@"Connected peers: %d", nil),
                                                        peerManager.connectedPeerCount];
@@ -93,7 +94,13 @@ NS_ASSUME_NONNULL_BEGIN
                                                          [currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
                                                          [currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
 
-    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString ];
+    NSString *usernameString = @"";
+    if ([DWGlobalOptions sharedInstance].dashpayUsername) {
+        usernameString = [NSString stringWithFormat:NSLocalizedString(@"Current user: %@", nil),
+                                                    [DWGlobalOptions sharedInstance].dashpayUsername];
+    }
+
+    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString, usernameString ];
 
     return [statusLines componentsJoinedByString:@"\n"];
 }

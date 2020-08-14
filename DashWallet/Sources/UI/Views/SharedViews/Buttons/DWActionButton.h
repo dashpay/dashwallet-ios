@@ -15,20 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWButton.h"
+#import "DWBaseActionButton.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWActionButton : DWButton
+@interface DWActionButton : DWBaseActionButton
 
-- (UIColor *)backgroundColorForState:(UIControlState)state;
-- (void)setBackgroundColor:(UIColor *)color forState:(UIControlState)state;
-
-- (UIColor *)borderColorForState:(UIControlState)state;
-- (void)setBorderColor:(UIColor *)color forState:(UIControlState)state;
-
-- (CGFloat)borderWidthForState:(UIControlState)state;
-- (void)setBorderWidth:(CGFloat)width forState:(UIControlState)state;
+@property (assign, nonatomic) IBInspectable BOOL usedOnDarkBackground;
+@property (assign, nonatomic) IBInspectable BOOL inverted;
+@property (assign, nonatomic) IBInspectable BOOL small;
+@property (null_resettable, nonatomic, strong) IBInspectable UIColor *accentColor;
 
 @end
 

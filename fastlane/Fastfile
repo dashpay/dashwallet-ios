@@ -26,25 +26,12 @@ platform :ios do
 
     increment_build_number
 
-    disable_automatic_code_signing(path: ENV["XCODE_PROJECT"])
-
     build_app(
       scheme: ENV["XCODE_SCHEME"],
       configuration: "Release",
       clean: true,
-
-      export_method: "app-store",
-      export_options: {
-        provisioningProfiles: { 
-          "org.dashfoundation.dash" => "TODO 1",
-          "org.dashfoundation.dash.TodayExtension" => "TODO 2",
-          "org.dashfoundation.dash.watchkitapp" => "TODO 3",
-          "org.dashfoundation.dash.watchkitapp.watchkitextension" => "TODO 4"
-        }
-      }
+      export_method: "app-store"
     )
-
-    enable_automatic_code_signing(path: ENV["XCODE_PROJECT"])
 
     upload_to_testflight(
       skip_submission: true,
@@ -53,18 +40,6 @@ platform :ios do
 
     # Make sure our directory is clean, except for changes Fastlane has made
     clean_build_artifacts
-
-    # Version number
-    version_number = get_version_number
-    build_number = Actions.lane_context[Actions::SharedValues::BUILD_NUMBER]
-    version_name = "v#{version_number} (#{build_number})"
-
-    # Tag release and push to GitHub
-    commit_version_bump(
-      message: "Deployed version #{version_name}",
-      xcodeproj: ENV["XCODE_PROJECT"]
-    )
-    push_to_git_remote(force: false)
   end
 
   desc "Run tests"

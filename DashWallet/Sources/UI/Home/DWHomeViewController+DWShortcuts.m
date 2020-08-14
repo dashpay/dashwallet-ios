@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWBackupInfoViewController.h"
+#import "DWDashPaySetupFlowController.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
@@ -90,6 +91,10 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ReportAnIssue: {
+            break;
+        }
+        case DWShortcutActionType_CreateUsername: {
+            [self showCreateUsername];
             break;
         }
         case DWShortcutActionType_AddShortcut: {
@@ -182,7 +187,27 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)showCreateUsername {
+    DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
+        initWithDashPayModel:self.model.dashPayModel];
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {
+    if (@available(iOS 13.0, *)) {
+        [self presentControllerModallyInNavigationController:controller
+                                      modalPresentationStyle:UIModalPresentationAutomatic];
+    }
+    else {
+        // TODO: check on the iPad
+        [self presentControllerModallyInNavigationController:controller
+                                      modalPresentationStyle:UIModalPresentationFullScreen];
+    }
+}
+
+- (void)presentControllerModallyInNavigationController:(UIViewController *)controller
+                                modalPresentationStyle:(UIModalPresentationStyle)modalPresentationStyle {
     UIBarButtonItem *cancelButton =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                       target:self
@@ -191,6 +216,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = modalPresentationStyle;
     [self presentViewController:navigationController animated:YES completion:nil];
 }
 

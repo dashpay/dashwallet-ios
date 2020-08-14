@@ -70,7 +70,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                                                                   object:nil
                                                                    queue:nil
                                                               usingBlock:^(NSNotification *_Nonnull note) {
-                                                                  if ([DWEnvironment sharedInstance].currentChainManager.syncProgress == 1.0)
+                                                                  if ([DWEnvironment sharedInstance].currentChainManager.combinedSyncProgress == 1.0)
                                                                       [self sendApplicationContext];
                                                               }];
 

@@ -17,11 +17,16 @@
 
 #import "DWHomeView.h"
 
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDashPayProtocol.h"
+#import "DWFilterHeaderView.h"
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
-#import "DWTxListHeaderView.h"
 #import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 
@@ -31,7 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
                           UITableViewDataSource,
                           UITableViewDelegate,
                           DWHomeModelUpdatesObserver,
-                          DWTxListHeaderViewDelegate>
+                          DWFilterHeaderViewDelegate,
+                          DWDPRegistrationErrorRetryDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
@@ -76,6 +82,9 @@ NS_ASSUME_NONNULL_BEGIN
         NSArray<NSString *> *cellIds = @[
             DWTxListEmptyTableViewCell.dw_reuseIdentifier,
             DWTxListTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
         ];
         for (NSString *cellId in cellIds) {
             UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -127,6 +136,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeModel:(id<DWHomeProtocol>)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
     self.currentDataSource = dataSource;
+    dataSource.retryDelegate = self;
 
     if (dataSource.isEmpty) {
         self.tableView.dataSource = self;
@@ -135,13 +145,15 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         self.tableView.dataSource = dataSource;
 
-        if (shouldAnimate) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-        else {
-            [self.tableView reloadData];
-        }
+        [self.tableView reloadData];
+
+        //        if (shouldAnimate && self.window) {
+        //            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+        //                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        //        }
+        //        else {
+        //            [self.tableView reloadData];
+        //        }
     }
 }
 
@@ -159,9 +171,24 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UITableViewDelegate
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    DWTxListHeaderView *headerView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
-    headerView.model = self.model;
+    DWFilterHeaderView *headerView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
+    headerView.titleLabel.text = NSLocalizedString(@"History", nil);
     headerView.delegate = self;
+    UIButton *button = headerView.filterButton;
+    switch (self.model.displayMode) {
+        case DWHomeTxDisplayMode_All:
+            [button setTitle:NSLocalizedString(@"All", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Received:
+            [button setTitle:NSLocalizedString(@"Received", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Sent:
+            [button setTitle:NSLocalizedString(@"Sent", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Rewards:
+            [button setTitle:NSLocalizedString(@"Rewards", nil) forState:UIControlStateNormal];
+            break;
+    }
     return headerView;
 }
 
@@ -172,8 +199,13 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSTransaction *transaction = self.currentDataSource.items[indexPath.row];
-    [self.delegate homeView:self didSelectTransaction:transaction];
+    DSTransaction *transaction = [self.currentDataSource transactionForIndexPath:indexPath];
+    if (transaction) {
+        [self.delegate homeView:self didSelectTransaction:transaction];
+    }
+    else { // registration status cell
+        [self.delegate homeViewShowDashPayRegistrationFlow:self];
+    }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -182,9 +214,9 @@ NS_ASSUME_NONNULL_BEGIN
     [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
-#pragma mark - DWTxListHeaderViewDelegate
+#pragma mark - DWFilterHeaderViewDelegate
 
-- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender {
+- (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
     [self.delegate homeView:self showTxFilter:sender];
 }
 
@@ -200,6 +232,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender {
     [self.delegate homeView:self receiveButtonAction:sender];
+}
+
+- (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender {
+    [self.delegate homeView:self profileButtonAction:sender];
+}
+
+#pragma mark - DWDPRegistrationErrorRetryDelegate
+
+- (void)registrationErrorRetryAction {
+    if ([self.model.dashPayModel canRetry]) {
+        [self.model.dashPayModel retry];
+    }
+    else {
+        [self.delegate homeViewShowDashPayRegistrationFlow:self];
+    }
 }
 
 @end

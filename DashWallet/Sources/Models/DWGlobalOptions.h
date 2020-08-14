@@ -46,6 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
 
+@property (nullable, nonatomic, copy) NSString *dashpayUsername;
+@property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
+@property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
+
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

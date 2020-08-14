@@ -48,10 +48,12 @@ NSInteger const DW_PHRASE_LENGTH = 12;
 - (BOOL)isWalletEmpty {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    const NSTimeInterval lastBlockTimestamp = [chain timestampForBlockHeight:chain.lastBlockHeight];
-    const NSTimeInterval delta = 60 * 2.5 * 5;
+    // make sure there's no block for 60 mins
+    const NSTimeInterval lastBlockTimestamp = chain.lastSyncBlockTimestamp;
+    const NSTimeInterval delta = HOUR_TIME_INTERVAL;
     const NSTimeInterval now = [NSDate timeIntervalSince1970];
-    return (wallet.balance == 0) && (lastBlockTimestamp + delta > now);
+    const BOOL isSyncedUp = (chain.lastSyncBlockHeight == chain.lastTerminalBlockHeight);
+    return (wallet.balance == 0) && (lastBlockTimestamp + delta > now) && isSyncedUp;
 }
 
 - (NSString *)cleanupPhrase:(NSString *)phrase {
@@ -93,11 +95,11 @@ NSInteger const DW_PHRASE_LENGTH = 12;
     DSAccount *testingAccount = [testingWallet accountWithNumber:0];
     DSAccount *ourAccount = [DWEnvironment sharedInstance].currentAccount;
 
-    NSData *testingExtended32Data = testingAccount.bip32DerivationPath.extendedPublicKey;
-    NSData *accountExtended32Data = ourAccount.bip32DerivationPath.extendedPublicKey;
+    NSData *testingExtended32Data = testingAccount.bip32DerivationPath.extendedPublicKey.publicKeyData;
+    NSData *accountExtended32Data = ourAccount.bip32DerivationPath.extendedPublicKey.publicKeyData;
 
-    NSData *testingExtended44Data = testingAccount.bip44DerivationPath.extendedPublicKey;
-    NSData *accountExtended44Data = ourAccount.bip44DerivationPath.extendedPublicKey;
+    NSData *testingExtended44Data = testingAccount.bip44DerivationPath.extendedPublicKey.publicKeyData;
+    NSData *accountExtended44Data = ourAccount.bip44DerivationPath.extendedPublicKey.publicKeyData;
 
     return ([testingExtended32Data isEqual:accountExtended32Data] ||
             [testingExtended44Data isEqual:accountExtended44Data] ||

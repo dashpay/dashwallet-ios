@@ -20,8 +20,11 @@
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
+NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
+static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 @implementation DWEnvironment
+
 
 + (instancetype)sharedInstance {
     static id singleton = nil;
@@ -46,6 +49,11 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
+    DSChain *evonet = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
+    if (evonet) {
+        [evonet setDevnetNetworkName:@"Evonet"];
+        [[DSChainsManager sharedInstance] chainManagerForChain:evonet];
+    }
     [self reset];
 
     return self;
@@ -61,6 +69,14 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
         case DSChainType_TestNet:
             self.currentChain = [DSChain testnet];
             break;
+        case DSChainType_DevNet: //we will only have evonet
+            self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
+            if (!self.currentChain) {
+                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+                self.currentChain = [DSChain mainnet];
+            }
+            break;
         default:
             break;
     }
@@ -71,7 +87,7 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
     return [[self.currentChain wallets] firstObject];
 }
 
-- (DSWallet *)currentAccount {
+- (DSAccount *)currentAccount {
     return [[self.currentWallet accounts] firstObject];
 }
 
@@ -84,11 +100,12 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
 }
 
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWWillWipeWalletNotification object:self];
+
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+    NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+        [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:chain inContext:context];
         [chain unregisterAllWallets];
     }
 
@@ -99,17 +116,45 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain mainnet]) {
-        [self switchToNetwork:DSChainType_MainNet withCompletion:completion];
+        [self switchToNetwork:DSChainType_MainNet withIdentifier:nil withCompletion:completion];
     }
 }
 
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain testnet]) {
-        [self switchToNetwork:DSChainType_TestNet withCompletion:completion];
+        [self switchToNetwork:DSChainType_TestNet withIdentifier:nil withCompletion:completion];
     }
 }
 
-- (void)switchToNetwork:(DSChainType)chainType withCompletion:(void (^)(BOOL success))completion {
+- (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
+    if (self.currentChain != [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier]) {
+        [self switchToNetwork:DSChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
+    }
+}
+
+- (NSOrderedSet *)evonetServiceLocation {
+    NSMutableArray *serviceLocations = [NSMutableArray array];
+    [serviceLocations addObject:@"54.218.48.42"];
+    [serviceLocations addObject:@"34.212.55.24"];
+    [serviceLocations addObject:@"34.217.210.86"];
+    [serviceLocations addObject:@"34.222.214.130"];
+    [serviceLocations addObject:@"35.165.117.23"];
+    [serviceLocations addObject:@"34.217.109.240"];
+    [serviceLocations addObject:@"34.212.175.168"];
+    [serviceLocations addObject:@"34.212.127.218"];
+    [serviceLocations addObject:@"34.217.130.113"];
+    [serviceLocations addObject:@"34.222.113.168"];
+    //shuffle them
+    NSUInteger count = [serviceLocations count];
+    for (NSUInteger i = 0; i < count - 1; ++i) {
+        NSInteger remainingCount = count - i;
+        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
+        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
+    }
+    return [NSOrderedSet orderedSetWithArray:serviceLocations];
+}
+
+- (void)switchToNetwork:(DSChainType)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     DSChainType originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     if (originalChainType == chainType) {
@@ -126,9 +171,31 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
         case DSChainType_TestNet:
             destinationChain = [DSChain testnet];
             break;
+        case DSChainType_DevNet:
+            destinationChain = [DSChain devnetWithIdentifier:identifier];
+            if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
+                // TODO: provide valid `dpnsContractID` and `dashpayContractID`
+                destinationChain = [[DSChainsManager sharedInstance]
+                    registerDevnetChainWithIdentifier:identifier
+                                  forServiceLocations:[self evonetServiceLocation]
+                          withMinimumDifficultyBlocks:UINT32_MAX
+                                         standardPort:20001
+                                         dapiJRPCPort:3000
+                                         dapiGRPCPort:3010
+                                       dpnsContractID:@"gegjGQL5HHbGMyUYL4yaoSfzhkF9isvGGYiCVRBiz4b".base58ToData.UInt256
+                                    dashpayContractID:@"Dp8ibxeTSN15tjL1PQuG3j8NkGJmzvt5eqoKoF6FhDAx".base58ToData.UInt256
+                                      protocolVersion:70216
+                                   minProtocolVersion:70216
+                                         sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
+                                      sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
+                [destinationChain setDevnetNetworkName:@"Evonet"];
+            }
+            break;
         default:
             break;
     }
+    if (!destinationChain)
+        return;
     if (![destinationChain hasAWallet]) {
         [wallet copyForChain:destinationChain
                   completion:^(DSWallet *_Nullable copiedWallet) {
@@ -149,7 +216,9 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
     }
     else {
         NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-        [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        if (self.currentChain) {
+            [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        }
         [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
         [self reset];
         [self.currentChainManager.peerManager connect];

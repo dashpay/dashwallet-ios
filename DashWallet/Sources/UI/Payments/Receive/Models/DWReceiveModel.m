@@ -21,6 +21,7 @@
 
 #import "DWAppGroupOptions.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "UIImage+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -144,9 +145,6 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
         NSString *paymentAddress = account.receiveAddress;
-        if (self.paymentAddress && [self.paymentAddress isEqualToString:paymentAddress]) {
-            return;
-        }
 
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];
@@ -165,6 +163,8 @@ NS_ASSUME_NONNULL_BEGIN
             paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
         }
 
+        paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
+
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
             NSData *qrImageData = appGroupOptions.receiveQRImageData;
@@ -181,7 +181,7 @@ NS_ASSUME_NONNULL_BEGIN
         UIImage *qrCodeImage = [self qrCodeImageWithRawQRImage:rawQRImage hasAmount:hasAmount];
 
         NSData *rawQRImageData = UIImagePNGRepresentation(rawQRImage);
-        if (paymentRequest && paymentRequest.isValid && rawQRImageData) {
+        if (paymentRequest && paymentRequest.isValidAsNonDashpayPaymentRequest && rawQRImageData) {
             if (!hasAmount) {
                 appGroupOptions.receiveQRImageData = rawQRImageData;
                 appGroupOptions.receiveAddress = paymentAddress;

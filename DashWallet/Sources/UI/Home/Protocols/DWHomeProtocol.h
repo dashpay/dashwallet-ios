@@ -18,6 +18,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DWBalanceProtocol.h"
+#import "DWDashPayProtocol.h"
 #import "DWShortcutsProtocol.h"
 #import "DWSyncContainerProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
@@ -44,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (readonly, nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
+@property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
 
@@ -60,6 +62,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)performOnSetupUpgrades;
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider;
+
+- (void)walletDidWipe;
 
 @end
 

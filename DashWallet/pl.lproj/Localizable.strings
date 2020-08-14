@@ -1,3 +1,8 @@
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ has accepted your contact request";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ has sent you a contact request";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ nie ma zezwolenia na dostęp do Face ID";
@@ -7,6 +12,24 @@
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ nie na zezwolenia na dostęp do Touch ID";
+
+/* No comment provided by engineer. */
+"(1/3) Processing Payment" = "(1/3) Processing Payment";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "(1/3) Unable to process payment";
+
+/* No comment provided by engineer. */
+"(2/3) Creating ID" = "(2/3) Creating ID";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create ID" = "(2/3) Unable to create ID";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "(3/3) Can't register username";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "(3/3) Registering Username";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 godzina";
@@ -31,6 +54,18 @@
 
 /* No comment provided by engineer. */
 "About" = "O aplikacji";
+
+/* No comment provided by engineer. */
+"Accept" = "Accept";
+
+/* No comment provided by engineer. */
+"Activity" = "Activity";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Add a New Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Dodaj skrót";
@@ -137,6 +172,9 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Sprawdź swoje połączenie";
 
+/* Choose your Dash username */
+"Choose your" = "Choose your";
+
 /* No comment provided by engineer. */
 "Clear" = "Wyczyść";
 
@@ -156,6 +194,9 @@
 "Confirm" = "Potwierdź";
 
 /* No comment provided by engineer. */
+"Confirm & Pay" = "Confirm & Pay";
+
+/* No comment provided by engineer. */
 "Confirm PIN" = "Potwierdź kod PIN";
 
 /* No comment provided by engineer. */
@@ -171,7 +212,16 @@
 "Connecting to payment server" = "Trwa łączenie z serwerem płatności";
 
 /* No comment provided by engineer. */
+"Contact Request Pending" = "Contact Request Pending";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Skontaktuj się z pomocą techniczną";
+
+/* No comment provided by engineer. */
+"Contacts" = "Contacts";
 
 /* No comment provided by engineer. */
 "Continue" = "Dalej";
@@ -201,7 +251,16 @@
 "Create a New Wallet" = "Stwórz Nowy Portfel";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Current user: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Płatności Dash nie mogą być mniejsze niż %@";
+
+/* No comment provided by engineer. */
+"Dash username" = "Dash username";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "DashPay Upgrade Fee";
 
 /* No comment provided by engineer. */
 "Date" = "Data";
@@ -223,6 +282,12 @@
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Pobierz peer %@";
+
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Earlier";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "eg: johndoe";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Włącz Face ID";
@@ -249,6 +314,12 @@
 "Enter your 2FA code below" = "Poniżej wpisz swój kod 2FA";
 
 /* No comment provided by engineer. */
+"Error" = "Error";
+
+/* No comment provided by engineer. */
+"Error Upgrading" = "Error Upgrading";
+
+/* No comment provided by engineer. */
 "Exit" = "Wyjdź";
 
 /* No comment provided by engineer. */
@@ -270,7 +341,13 @@
 "Filter Transactions" = "Filtruj Transakcje";
 
 /* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
+
+/* No comment provided by engineer. */
 "Forgot PIN?" = "Zapomniałeś kodu PIN?";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "Generate extended public keys?";
 
 /* No comment provided by engineer. */
 "Get Started" = "Zacznij";
@@ -278,8 +355,14 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Przejdź do strony internetowej";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Miej pełną kontrolę oraz dostosuj swój portfel w zależności od potrzeb";
+
+/* Hello username, */
+"Hello %@," = "Hello %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Pomóż nam poprawić Twoje wrażenia";
@@ -289,6 +372,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Historia";
+
+/* No comment provided by engineer. */
+"I Accept" = "I Accept";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptuję to, że stracę wszystkie moje monety jeśli nie będę miał frazy do odzyskiwania porfela";
@@ -336,7 +422,16 @@
 "It's Important" = "To Ważne";
 
 /* No comment provided by engineer. */
+"Join Evolution" = "Join Evolution";
+
+/* No comment provided by engineer. */
 "Keypair %ld" = "Para Kluczy %Id";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "Let me know when it’s done";
+
+/* Validation rule */
+"Letters and numbers only" = "Letters and numbers only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Podlinkuj konto Uphold";
@@ -392,8 +487,14 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Maximum %ld characters";
+
 /* adjective, security level */
 "Medium" = "Średni";
+
+/* Validation rule */
+"Minimum 3 characters" = "Minimum 3 characters";
 
 /* No comment provided by engineer. */
 "More" = "Więcej";
@@ -408,10 +509,19 @@
 "Moved to Address" = "Przeniesione na Adres";
 
 /* No comment provided by engineer. */
+"My Contacts" = "My Contacts";
+
+/* No comment provided by engineer. */
+"Name" = "Name";
+
+/* No comment provided by engineer. */
 "Network" = "Sieć";
 
 /* No comment provided by engineer. */
 "Network fee" = "Opłata sieci";
+
+/* (List of) New (notifications) */
+"New" = "New";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC urządzenie";
@@ -441,7 +551,13 @@
 "Not yet used" = "Jeszcze nie użyty";
 
 /* No comment provided by engineer. */
+"Notifications" = "Notifications";
+
+/* No comment provided by engineer. */
 "OK" = "OK";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Klucze operatora";
@@ -457,6 +573,9 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Płać i otrzymuj natychmiastowe płatności dzięki łatwym w użyciu przepływom płatności";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Pay Directly to Username";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Płać z Łatwością";
@@ -475,6 +594,9 @@
 
 /* No comment provided by engineer. */
 "Payments" = "Płatności";
+
+/* No comment provided by engineer. */
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN jest zawsze wymagany by dokonać płatności";
@@ -496,6 +618,9 @@
 
 /* No comment provided by engineer. */
 "Please Wait" = "Jedna chwila";
+
+/* No comment provided by engineer. */
+"Please wait" = "Please wait";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Proszę poczekaj aż synchronizacja się zakończy";
@@ -554,6 +679,12 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Fraza odzyskiwania danych musi mieć %d słowa";
 
+/* Button title, Register (username) */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register?" = "Register?";
+
 /* No comment provided by engineer. */
 "Registered from" = "Zarejestrowany z";
 
@@ -577,6 +708,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Resetuj portfel";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
 
 /* No comment provided by engineer. */
 "Retry" = "Ponów";
@@ -618,6 +752,24 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screeny są widoczne dla innych aplikacji i urządzeń. Wygeneruj nową frazę odzyskiwania danych i zachowaj ją w tajemnicy.";
 
 /* No comment provided by engineer. */
+"Search for a contact" = "Search for a contact";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Search for a contact request";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Search results for \"";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+
+/* No comment provided by engineer. */
 "Secure now" = "Zabezpiecz Teraz";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -642,6 +794,9 @@
 "Send by" = "Wyślij przez";
 
 /* No comment provided by engineer. */
+"Send Contact Request" = "Send Contact Request";
+
+/* No comment provided by engineer. */
 "Send to" = "Wyślij do";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -655,6 +810,9 @@
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Wysyłam";
+
+/* No comment provided by engineer. */
+"Sending to" = "Sending to";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Wysyłam.";
@@ -708,6 +866,12 @@
 "Something went wrong" = "Coś poszło nie tak";
 
 /* No comment provided by engineer. */
+"Sort by" = "Sort by";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sort Contacts";
+
+/* No comment provided by engineer. */
 "Specify Amount" = "Określ Kwotę";
 
 /* No comment provided by engineer. */
@@ -744,7 +908,16 @@
 "Tap to unhide balance" = "Stuknij by odkryć saldo";
 
 /* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
+
+/* No comment provided by engineer. */
 "There are no transactions to display" = "Brak transakcji do wyświetlenia";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@" = "There are no users that matches with the name %@";
+
+/* No comment provided by engineer. */
+"There are no users that matches with the name %@ in your contacts" = "There are no users that matches with the name %@ in your contacts";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ta aplikacja jest open source:";
@@ -810,6 +983,12 @@
 "Updated: %@" = "Zaktualizowany %@";
 
 /* No comment provided by engineer. */
+"Upgrade Fee" = "Upgrade Fee";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "Upgrading to DashPay";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
@@ -819,6 +998,18 @@
 "Used at IP address" = "Użyty w adresie IP";
 
 /* No comment provided by engineer. */
+"Username taken" = "Username taken";
+
+/* No comment provided by engineer. */
+"Validating username done" = "Validating username done";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Validating username failed";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Validating username…";
+
+/* No comment provided by engineer. */
 "Verified Successfully" = "Zweryfikowano Pomyślnie";
 
 /* No comment provided by engineer. */
@@ -826,6 +1017,9 @@
 
 /* adjective, security level */
 "Very High" = "Bardzo Wysoki";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobacz na eksplorerze bloków";
@@ -885,6 +1079,9 @@
 "with Dash blockchain" = "z łańcuchem bloków Dash";
 
 /* No comment provided by engineer. */
+"You accepted the contact request from %@" = "You accepted the contact request from %@";
+
+/* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "Masz zamiar wyciągnąć środki z innego portfela Dash.";
 
 /* No comment provided by engineer. */
@@ -897,10 +1094,16 @@
 "You can authenticate with Touch ID for payments below" = "Możesz dokonać uwierzytelnienia za pomocą Touch ID dla płatności poniżej";
 
 /* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Username cannot be changed once it's registered" = "You have chosen \"%@\" as your username. Username cannot be changed once it's registered";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Musisz podać swój PIN, aby wejść do Portfela Dash";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Otrzymałeś Dash! Jeśli zgubisz to urządzenie, stracisz swoje fundusze. Uzyskaj frazę odzyskiwania, aby móc przywrócić portfel na innym urządzeniu.";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "You sent the contact request to %@";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Potrzebujesz także wylogować się z przeglądarki na swoim koncie Uphold ";
@@ -909,10 +1112,19 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Fraza odzysku danych będzie potrzebna aby mieć dostęp do funduszy w wypadku utraty tego urządzenia lub jeśli Dash Wallet zostanie przypadkowo odinstalowany. ";
 
 /* No comment provided by engineer. */
+"Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Twoja transakcja została wysłana a ilość powinna pojawić się na Twoim koncie w kilka minut.";
 
 /* No comment provided by engineer. */
 "Your Uphold account Dash balance is" = "Stan Twojego konta Uphold w Dash to";
+
+/* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Twój portfel jest teraz zabezpieczony. Możesz użyć swojej frazy odzyskiwania w dowolnym momencie, aby odzyskać konto na innym urządzeniu.";

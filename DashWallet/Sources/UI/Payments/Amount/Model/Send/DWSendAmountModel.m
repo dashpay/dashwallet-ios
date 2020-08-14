@@ -25,8 +25,9 @@
 @implementation DWSendAmountModel
 
 - (instancetype)initWithSendingDestination:(nullable NSString *)sendingDestination
-                            paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
-    self = [super init];
+                            paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
+                               contactItem:(nullable id<DWDPBasicUserItem>)contactItem {
+    self = [super initWithContactItem:contactItem];
     if (self) {
         _sendingOptions = [[DWAmountSendingOptionsModel alloc]
             initWithSendingDestination:sendingDestination

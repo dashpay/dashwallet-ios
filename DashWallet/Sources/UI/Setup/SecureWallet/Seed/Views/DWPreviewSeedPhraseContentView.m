@@ -17,7 +17,7 @@
 
 #import "DWPreviewSeedPhraseContentView.h"
 
-#import "DWBlueActionButton.h"
+#import "DWActionButton.h"
 #import "DWCheckbox.h"
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedUIConstants.h"
@@ -35,7 +35,7 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
 @property (nonatomic, strong) DWSeedPhraseTitledView *seedPhraseView;
 @property (nonatomic, strong) DWCheckbox *confirmationCheckbox;
 @property (nonatomic, strong) UIStackView *screenshotWarningStackView;
-@property (nonatomic, strong) DWBlueActionButton *screenshotDescriptionButton;
+@property (nonatomic, strong) DWActionButton *screenshotDescriptionButton;
 
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseTopConstraint;
 
@@ -86,7 +86,7 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
         [self addSubview:screenshotWarningStackView];
         _screenshotWarningStackView = screenshotWarningStackView;
 
-        DWBlueActionButton *screenshotDescriptionButton = [[DWBlueActionButton alloc] init];
+        DWActionButton *screenshotDescriptionButton = [[DWActionButton alloc] init];
         screenshotDescriptionButton.translatesAutoresizingMaskIntoConstraints = NO;
         screenshotDescriptionButton.inverted = YES;
         screenshotDescriptionButton.small = YES;

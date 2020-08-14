@@ -18,16 +18,21 @@
 #import "DWHomeHeaderView.h"
 
 #import "DWBalancePayReceiveButtonsView.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDashPayProfileView.h"
 #import "DWShortcutAction.h"
 #import "DWShortcutsView.h"
 #import "DWSyncView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+static CGSize const AVATAR_SIZE = {72.0, 72.0};
+
 @interface DWHomeHeaderView () <DWBalancePayReceiveButtonsViewDelegate,
                                 DWShortcutsViewDelegate,
                                 DWSyncViewDelegate>
 
+@property (readonly, nonatomic, strong) DWDashPayProfileView *profileView;
 @property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
 @property (readonly, nonatomic, strong) DWShortcutsView *shortcutsView;
@@ -40,6 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
+        DWDashPayProfileView *profileView = [[DWDashPayProfileView alloc] initWithFrame:CGRectZero];
+        profileView.translatesAutoresizingMaskIntoConstraints = NO;
+        [profileView addTarget:self action:@selector(profileViewAction:) forControlEvents:UIControlEventTouchUpInside];
+        _profileView = profileView;
+
         DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
         balancePayReceiveButtonsView.delegate = self;
         _balancePayReceiveButtonsView = balancePayReceiveButtonsView;
@@ -52,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
         shortcutsView.delegate = self;
         _shortcutsView = shortcutsView;
 
-        NSArray<UIView *> *views = @[ balancePayReceiveButtonsView, syncView, shortcutsView ];
+        NSArray<UIView *> *views = @[ profileView, balancePayReceiveButtonsView, syncView, shortcutsView ];
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
@@ -94,15 +104,31 @@ NS_ASSUME_NONNULL_BEGIN
 
                           [self.syncView setProgress:self.model.syncModel.progress animated:YES];
                       }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.registrationStatus)
+                      with:^(typeof(self) self, id value) {
+                          [self updateProfileView];
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.username)
+                      with:^(typeof(self) self, id value) {
+                          [self updateProfileView];
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.unreadNotificationsCount)
+                      with:^(typeof(self) self, id value) {
+                          self.profileView.unreadCount = self.model.dashPayModel.unreadNotificationsCount;
+                      }];
     }
     return self;
 }
 
-- (void)setModel:(nullable id<DWBalanceProtocol, DWSyncContainerProtocol, DWShortcutsProtocol>)model {
+- (void)setModel:(nullable id<DWHomeProtocol>)model {
     _model = model;
 
     self.balancePayReceiveButtonsView.model = model;
     self.shortcutsView.model = model.shortcutsModel;
+    [self updateProfileView];
 }
 
 - (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
@@ -150,6 +176,23 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
+
+- (void)profileViewAction:(UIControl *)sender {
+    [self.delegate homeHeaderView:self profileButtonAction:sender];
+}
+
+- (void)updateProfileView {
+    DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
+    const BOOL completed = self.model.dashPayModel.registrationCompleted;
+    if (status.state == DWDPRegistrationState_Done || completed) {
+        self.profileView.username = self.model.dashPayModel.username;
+        self.profileView.hidden = NO;
+    }
+    else {
+        self.profileView.hidden = YES;
+    }
+    [self.delegate homeHeaderViewDidUpdateContents:self];
+}
 
 - (void)hideSyncView {
     self.syncView.hidden = YES;

@@ -17,10 +17,8 @@
 
 #import <KVO-MVVM/KVOUIView.h>
 
-#import "DWBalanceProtocol.h"
+#import "DWHomeProtocol.h"
 #import "DWShortcutsActionDelegate.h"
-#import "DWShortcutsProtocol.h"
-#import "DWSyncContainerProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,12 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view;
 - (void)homeHeaderView:(DWHomeHeaderView *)view payButtonAction:(UIButton *)sender;
 - (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender;
+- (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender;
 
 @end
 
 @interface DWHomeHeaderView : KVOUIView
 
-@property (nullable, nonatomic, strong) id<DWBalanceProtocol, DWSyncContainerProtocol, DWShortcutsProtocol> model;
+@property (nullable, nonatomic, strong) id<DWHomeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWHomeHeaderViewDelegate> delegate;
 @property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> shortcutsDelegate;
 
