@@ -23,6 +23,8 @@
 
 @implementation DWContactsContentViewController
 
+@dynamic delegate;
+
 - (NSUInteger)maxVisibleContactRequestsCount {
     return 3;
 }

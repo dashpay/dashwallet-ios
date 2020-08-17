@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Код-пароль необходим для защиты Вашего кошелька. Перейдите в Настройки и включите код-пароль, чтобы продолжить.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "О программе";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Вознаграждения";
 
 /* No comment provided by engineer. */
-"Scan" = "Скан.";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Сканировать приватный ключ";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Синхронизация";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Вкл.";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Нажмите, чтобы скрыть баланс";

@@ -61,6 +61,7 @@
             [[DWRequestsContentViewController alloc] initWithPayModel:self.payModel
                                                          dataProvider:self.dataProvider];
         controller.itemsDelegate = self;
+        controller.delegate = self.contentDelegate ?: self;
         controller.dataSource = self.model.dataSource;
         _contentController = controller;
     }

@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Необходима е парола на устройството за опазване на портфейла Ви. Отидете в настройки и включете използването на парола, за да продължите.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Относно";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Възнаграждения";
 
 /* No comment provided by engineer. */
-"Scan" = "Сканирай";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Сканирай частен ключ";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Синхронизиране";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Докосни";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Докоснете, за да скриете баланса";

@@ -23,6 +23,7 @@ typedef NS_ENUM(NSUInteger, DWPayOptionModelType) {
     DWPayOptionModelType_ScanQR,
     DWPayOptionModelType_Pasteboard,
     DWPayOptionModelType_NFC,
+    DWPayOptionModelType_DashPayUser,
 };
 
 @interface DWPayOptionModel : NSObject
@@ -32,7 +33,7 @@ typedef NS_ENUM(NSUInteger, DWPayOptionModelType) {
 /**
  Observable
  */
-@property (nullable, nonatomic, copy) NSString *details;
+@property (nullable, nonatomic, strong) id details;
 
 - (instancetype)initWithType:(DWPayOptionModelType)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

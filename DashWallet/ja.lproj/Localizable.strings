@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから次に進んでください。";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "報酬";
 
 /* No comment provided by engineer. */
-"Scan" = "スキャン";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "プライベートキーをスキャン";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "同期中";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "タップする";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "タップして残高を非表示にする";

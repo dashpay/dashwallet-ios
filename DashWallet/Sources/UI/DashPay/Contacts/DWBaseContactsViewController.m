@@ -17,6 +17,7 @@
 
 #import "DWBaseContactsViewController+DWProtected.h"
 
+#import "DWUserProfileViewController.h"
 #import "DWUserSearchViewController.h"
 #import "UIView+DWFindConstraints.h"
 #import "UIViewController+DWEmbedding.h"
@@ -103,6 +104,18 @@ NS_ASSUME_NONNULL_END
 
 - (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender {
     [self addContactButtonAction];
+}
+
+#pragma mark - DWBaseContactsContentViewController
+
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
+                                didSelect:(id<DWDPBasicUserItem>)item {
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithItem:item
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider
+                                       shouldSkipUpdating:YES];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 #pragma mark - DWDPNewIncomingRequestItemDelegate

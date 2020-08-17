@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Na zabezpečenie vašej peňaženky je potrebný prístupový kód zariadenia. Ak chcete pokračovať, prejdite na nastavenia a zapnite prístupový kód.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "O programe";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Odmeny";
 
 /* No comment provided by engineer. */
-"Scan" = "Skenovať";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Skenovať privátny kľúč";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Synchronizuje sa";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Klepnúť";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Klepnutím skryť zostatok";

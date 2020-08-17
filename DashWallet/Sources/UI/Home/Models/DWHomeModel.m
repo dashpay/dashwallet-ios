@@ -364,6 +364,7 @@ static BOOL IsJailbroken(void) {
         [self.dashPayModel updateUsernameStatus];
 
         if (self.dashPayModel.username != nil) {
+            [self.payModel updatePaymentOptions];
             [self.receiveModel updateReceivingInfo];
             [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
         }
@@ -383,6 +384,8 @@ static BOOL IsJailbroken(void) {
 
 - (void)dashPayRegistrationStatusUpdatedNotification {
     [self reloadTxDataSource];
+
+    [self.payModel updatePaymentOptions];
 
     [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
 }

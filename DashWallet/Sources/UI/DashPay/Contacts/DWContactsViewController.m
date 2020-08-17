@@ -80,6 +80,17 @@ NS_ASSUME_NONNULL_END
     return _contentController;
 }
 
+#pragma mark - DWBaseContactsContentViewControllerDelegate
+
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller didSelect:(id<DWDPBasicUserItem>)item {
+    if (self.intent == DWContactsControllerIntent_Default) {
+        [super baseContactsContentViewController:controller didSelect:item];
+    }
+    else {
+        [self.payDelegate contactsViewController:self payToItem:item];
+    }
+}
+
 #pragma mark -  DWContactsContentControllerDelegate
 
 - (void)contactsContentController:(DWContactsContentViewController *)controller
@@ -122,6 +133,9 @@ NS_ASSUME_NONNULL_END
         [[DWRequestsViewController alloc] initWithModel:requestsModel
                                                payModel:self.payModel
                                            dataProvider:self.dataProvider];
+    if (self.intent == DWContactsControllerIntent_PayToSelector) {
+        requestsController.contentDelegate = self;
+    }
     [self.navigationController pushViewController:requestsController animated:YES];
 }
 

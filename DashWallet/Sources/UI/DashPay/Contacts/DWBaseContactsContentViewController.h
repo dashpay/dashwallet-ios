@@ -25,10 +25,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBaseContactsContentViewController;
+
+@protocol DWBaseContactsContentViewControllerDelegate <NSObject>
+
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
+                                didSelect:(id<DWDPBasicUserItem>)item;
+
+@end
+
 @interface DWBaseContactsContentViewController : UIViewController
 
 @property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
 
+@property (nullable, nonatomic, weak) id<DWBaseContactsContentViewControllerDelegate> delegate;
 @property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> itemsDelegate;
 @property (nonatomic, strong) id<DWContactsDataSource> dataSource;
 

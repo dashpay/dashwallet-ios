@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Một mật khẩu cho thiết bị là cần thiết để bảo vệ ví của bạn. Hãy vào phần Settings và bật chế độ mật khẩu và tiếp tục.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Giới thiệu";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Phần thưởng";
 
 /* No comment provided by engineer. */
-"Scan" = "Quét";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Quét khoá riêng";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Đang đồng bộ";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Bấm";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Bấm để ẩn số dư";

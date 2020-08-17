@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRequestsViewController : DWBaseContactsViewController
 
+@property (nullable, nonatomic, weak) id<DWBaseContactsContentViewControllerDelegate> contentDelegate;
+
 - (instancetype)initWithModel:(DWRequestsModel *)model
                      payModel:(id<DWPayModelProtocol>)payModel
                  dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
