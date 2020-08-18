@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSArray<id<DWDPBasicUserItem>> *items;
 
+- (void)updateItems;
+
 @end
 
 NS_ASSUME_NONNULL_END

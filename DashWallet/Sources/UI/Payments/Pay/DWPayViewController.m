@@ -57,6 +57,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.payModel updateFrequentContacts];
+}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 

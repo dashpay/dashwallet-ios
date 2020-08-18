@@ -2702,6 +2702,15 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2A856D0224EBDAE70040BD61 /* FrequentContacts */ = {
+			isa = PBXGroup;
+			children = (
+				2A856CF124EB2F920040BD61 /* DWFrequentContactsDataSource.h */,
+				2A856CF224EB2F920040BD61 /* DWFrequentContactsDataSource.m */,
+			);
+			path = FrequentContacts;
+			sourceTree = "<group>";
+		};
 		2A858A04237EE89B0097A7B5 /* AppleWatch */ = {
 			isa = PBXGroup;
 			children = (
@@ -2809,6 +2818,7 @@
 		2A8B9E6923029C0D00FF8653 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2A856D0224EBDAE70040BD61 /* FrequentContacts */,
 				2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */,
 				2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */,
 				2A8B9E6322FFE43500FF8653 /* DWPayModel.h */,
@@ -2816,8 +2826,6 @@
 				2AB3415B23A81291004E37A7 /* DWPayModelProtocol.h */,
 				2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */,
 				2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */,
-				2A856CF124EB2F920040BD61 /* DWFrequentContactsDataSource.h */,
-				2A856CF224EB2F920040BD61 /* DWFrequentContactsDataSource.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";

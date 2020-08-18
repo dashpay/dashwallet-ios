@@ -93,6 +93,13 @@ NS_ASSUME_NONNULL_BEGIN
     _options = [options copy];
 }
 
+- (void)updateFrequentContacts {
+    DWFrequentContactsDataSource *dataSource = (DWFrequentContactsDataSource *)self.usersOption.details;
+    if (dataSource) {
+        [dataSource updateItems];
+    }
+}
+
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
     NSParameterAssert(completion);
 
