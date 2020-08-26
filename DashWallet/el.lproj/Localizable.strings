@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Ένας κωδικός φράσης για την συσκευή είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Σχετικά";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Ανταμοιβές";
 
 /* No comment provided by engineer. */
-"Scan" = "Ανίχνευση";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Σαρώστε το ιδιωτικό κλειδί";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Συγχρονισμός";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Πατήστε";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Πατήστε για να κρύψετε το υπόλοιπο";

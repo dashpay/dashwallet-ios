@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "การตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "เกี่ยวกับ";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "รางวัล";
 
 /* No comment provided by engineer. */
-"Scan" = "สแกน";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "สแกนคีย์ส่วนตัว";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "กำลังซิงค์";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "กด";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";

@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Es necesario que tu dispositivo esté resguardado por una clave para proteger tu billetera. Ve a configuraciones y habilita una clave de acceso para continuar";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Acerca de";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Recompensas";
 
 /* No comment provided by engineer. */
-"Scan" = "Escanear";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Escanear Llave Privada";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Sincronizando";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Toca";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tocar para ocultar saldo";

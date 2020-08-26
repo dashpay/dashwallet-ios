@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Cüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Hakkında";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Ödüller";
 
 /* No comment provided by engineer. */
-"Scan" = "Tara";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Özel Anahtarı Tara";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Senkronize ediliyor";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Dokun";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Bakiyeyi gizlemek için tıkla";

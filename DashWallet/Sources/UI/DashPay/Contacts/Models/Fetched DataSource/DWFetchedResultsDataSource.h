@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) NSManagedObjectContext *context;
 @property (readonly, nonatomic, copy) NSString *entityName;
 @property (readonly, nonatomic, strong) NSPredicate *predicate;
+@property (nullable, readonly, nonatomic, copy) NSString *sectionNameKeyPath;
 @property (nullable, readonly, nonatomic, strong) NSPredicate *invertedPredicate;
 @property (nullable, readonly, nonatomic, copy) NSArray<NSSortDescriptor *> *sortDescriptors;
 

@@ -18,6 +18,7 @@
 #import "DWPayViewController.h"
 
 #import "DWConfirmPaymentViewController.h"
+#import "DWContactsViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
 #import "DWPayTableViewCell.h"
@@ -27,16 +28,14 @@
 #import "DWQRScanViewController.h"
 #import "DWSendAmountViewController.h"
 #import "DWUIKit.h"
+#import "DWUserPayTableViewCell.h"
 #import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPayViewController () <UITableViewDataSource,
-                                   UITableViewDelegate,
-                                   DWPayTableViewCellDelegate>
+@interface DWPayViewController () <UITableViewDataSource, UITableViewDelegate, DWUserPayTableViewCellDelegate, DWContactsViewControllerPayDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
-@property (assign, nonatomic) CGFloat maxActionButtonWidth;
 
 @end
 
@@ -56,6 +55,12 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [self setupView];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.payModel updateFrequentContacts];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -89,33 +94,29 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *cellId = DWPayTableViewCell.dw_reuseIdentifier;
-    DWPayTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
+    DWPayOptionModel *option = self.payModel.options[indexPath.row];
+    if (option.type == DWPayOptionModelType_DashPayUser) {
+        DWUserPayTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DWUserPayTableViewCell.dw_reuseIdentifier
+                                                                       forIndexPath:indexPath];
+        cell.model = option;
+        cell.delegate = self;
+        return cell;
+    }
+    else {
+        DWPayTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DWPayTableViewCell.dw_reuseIdentifier
+                                                                   forIndexPath:indexPath];
+        cell.model = option;
+        return cell;
+    }
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
     DWPayOptionModel *option = self.payModel.options[indexPath.row];
-    cell.delegate = self;
-    cell.model = option;
-
-    return cell;
-}
-
-- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if ([cell isKindOfClass:DWPayTableViewCell.class]) {
-        DWPayTableViewCell *payCell = (DWPayTableViewCell *)cell;
-        payCell.preferredActionButtonWidth = self.maxActionButtonWidth;
-    }
-}
-
-#pragma mark - DWPayTableViewCellDelegate
-
-- (void)payTableViewCell:(DWPayTableViewCell *)cell action:(UIButton *)sender {
-    DWPayOptionModel *payOption = cell.model;
-    NSParameterAssert(payOption);
-    if (!payOption) {
-        return;
-    }
-
-    switch (payOption.type) {
+    switch (option.type) {
         case DWPayOptionModelType_ScanQR: {
             [self performScanQRCodeAction];
 
@@ -131,24 +132,45 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWPayOptionModelType_DashPayUser: {
+            DWContactsViewController *contactsController = [[DWContactsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
+            contactsController.intent = DWContactsControllerIntent_PayToSelector;
+            contactsController.payDelegate = self;
+            [self.navigationController pushViewController:contactsController animated:YES];
+
+            break;
+        }
     }
 }
 
-- (void)payTableViewCell:(DWPayTableViewCell *)cell didUpdateButtonWidth:(CGFloat)buttonWidth {
-    self.maxActionButtonWidth = MAX(self.maxActionButtonWidth, buttonWidth);
+#pragma mark - DWUserPayTableViewCellDelegate
+
+- (void)userPayTableViewCell:(DWUserPayTableViewCell *)cell didSelectUserItem:(id<DWDPBasicUserItem>)item {
+    [self performPayToUser:item];
+}
+
+#pragma mark - DWContactsViewControllerPayDelegate
+
+- (void)contactsViewController:(DWContactsViewController *)controller payToItem:(id<DWDPBasicUserItem>)item {
+    [self performPayToUser:item];
 }
 
 #pragma mark - Private
 
 - (void)setupView {
-    NSString *cellId = DWPayTableViewCell.dw_reuseIdentifier;
-    UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
-    NSParameterAssert(nib);
-    [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
+    NSString *cellId;
+    NSArray<NSString *> *cellIds = @[
+        DWPayTableViewCell.dw_reuseIdentifier,
+        DWUserPayTableViewCell.dw_reuseIdentifier,
+    ];
+    for (NSString *cellId in cellIds) {
+        UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
+        NSParameterAssert(nib);
+        [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
+    }
 
     self.tableView.tableFooterView = [[UIView alloc] init];
 }
-
 
 @end
 

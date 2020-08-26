@@ -21,7 +21,6 @@
 #import "DWListCollectionLayout.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
-#import "DWUserProfileViewController.h"
 #import "UICollectionView+DWDPItemDequeue.h"
 
 typedef NS_ENUM(NSInteger, DWContactsContentSection) {
@@ -64,6 +63,12 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     [self.view addSubview:self.collectionView];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    NSParameterAssert(self.delegate);
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -143,12 +148,7 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
 
     id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
 
-    DWUserProfileViewController *controller =
-        [[DWUserProfileViewController alloc] initWithItem:item
-                                                 payModel:self.payModel
-                                             dataProvider:self.dataProvider
-                                       shouldSkipUpdating:YES];
-    [self.navigationController pushViewController:controller animated:YES];
+    [self.delegate baseContactsContentViewController:self didSelect:item];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout

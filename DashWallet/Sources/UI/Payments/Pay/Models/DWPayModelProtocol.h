@@ -39,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
 - (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicUserItem>)userItem;
 
+- (void)updatePaymentOptions;
+- (void)updateFrequentContacts;
+
 @end
 
 NS_ASSUME_NONNULL_END

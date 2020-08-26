@@ -30,6 +30,9 @@ static NSString *TitleForOptionType(DWPayOptionModelType type) {
             return NSLocalizedString(@"Send to copied address", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"Send to", nil);
+        default:
+            NSCAssert(NO, @"Not supported type");
+            return nil;
     }
 }
 
@@ -41,6 +44,9 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
             return NSLocalizedString(@"No address copied", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"NFC device", nil);
+        default:
+            NSCAssert(NO, @"Not supported type");
+            return nil;
     }
 }
 
@@ -54,17 +60,6 @@ static UIColor *DescriptionColor(DWPayOptionModelType type, BOOL empty) {
 }
 
 
-static NSString *ActionTitleForOptionType(DWPayOptionModelType type) {
-    switch (type) {
-        case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Scan", @"should be as short as possible");
-        case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"Send", nil);
-        case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"Tap", @"Pay using NFC (should be as short as possible)");
-    }
-}
-
 static UIImage *IconForOptionType(DWPayOptionModelType type) {
     UIImage *image = nil;
     switch (type) {
@@ -77,21 +72,20 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_NFC:
             image = [UIImage imageNamed:@"pay_nfc"];
             break;
+        default:
+            NSCAssert(NO, @"Not supported type");
+            return nil;
     }
     NSCParameterAssert(image);
 
     return image;
 }
 
-static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
-
 @interface DWPayTableViewCell ()
 
 @property (strong, nonatomic) IBOutlet UIImageView *iconImageView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
-@property (strong, nonatomic) IBOutlet UIButton *actionButton;
-@property (strong, nonatomic) NSLayoutConstraint *actionButtonWidth;
 
 @end
 
@@ -102,10 +96,6 @@ static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
 
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-
-    self.actionButtonWidth = [self.actionButton.widthAnchor constraintGreaterThanOrEqualToConstant:0];
-    self.actionButtonWidth.priority = UILayoutPriorityRequired - 10;
-    self.actionButtonWidth.active = YES;
 
     // KVO
 
@@ -122,23 +112,13 @@ static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
     self.titleLabel.text = TitleForOptionType(type);
     self.iconImageView.image = IconForOptionType(type);
 
-    [self.actionButton setTitle:ActionTitleForOptionType(type) forState:UIControlStateNormal];
-    [self.actionButton sizeToFit];
-    [self.delegate payTableViewCell:self
-               didUpdateButtonWidth:MIN(MAX_ALLOWED_BUTTON_WIDTH, self.actionButton.bounds.size.width)];
-
     [self updateDetails];
 }
 
-- (void)setPreferredActionButtonWidth:(CGFloat)preferredActionButtonWidth {
-    _preferredActionButtonWidth = preferredActionButtonWidth;
-    self.actionButtonWidth.constant = preferredActionButtonWidth;
-}
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [super setHighlighted:highlighted animated:animated];
 
-#pragma mark - Actions
-
-- (IBAction)actionButtonAction:(UIButton *)sender {
-    [self.delegate payTableViewCell:self action:sender];
+    [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }
 
 #pragma mark - Private
@@ -146,19 +126,17 @@ static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
 - (void)updateDetails {
     DWPayOptionModelType type = self.model.type;
     NSString *details = self.model.details;
+    NSAssert(details == nil || [details isKindOfClass:NSString.class], @"Unsupported details type");
     const BOOL emptyDetails = details == nil;
     self.descriptionLabel.text = emptyDetails ? DescriptionForOptionType(type) : details;
     self.descriptionLabel.textColor = DescriptionColor(type, emptyDetails);
 
-    if (type == DWPayOptionModelType_Pasteboard) {
-        self.actionButton.enabled = !!details;
 #if SNAPSHOT
-        self.actionButton.accessibilityIdentifier = @"send_pasteboard_button";
+    if (type == DWPayOptionModelType_Pasteboard) {
+        // TODO: DP: probably needs to be fixed
+        self.accessibilityIdentifier = @"send_pasteboard_button";
+    }
 #endif /* SNAPSHOT */
-    }
-    else {
-        self.actionButton.enabled = YES;
-    }
 }
 
 @end

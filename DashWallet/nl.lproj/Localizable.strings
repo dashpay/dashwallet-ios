@@ -53,6 +53,9 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Een toegangscode is nog om je portemonnee te beschermen. Ga naar de instellingen en zet de toegangscode aan om door te gaan.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Over";
 
 /* No comment provided by engineer. */
@@ -725,9 +728,6 @@
 "Rewards" = "Beloningen";
 
 /* No comment provided by engineer. */
-"Scan" = "Scan";
-
-/* No comment provided by engineer. */
 "Scan Private Key" = "Scan persoonlijke sleutel";
 
 /* No comment provided by engineer. */
@@ -897,9 +897,6 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Aan het synchroniseren";
-
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Tik";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tik om saldo te verbergen";

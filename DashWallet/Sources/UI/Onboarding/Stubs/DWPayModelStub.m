@@ -77,6 +77,12 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)updatePaymentOptions {
+}
+
+- (void)updateFrequentContacts {
+}
+
 - (void)checkIfPayToAddressFromPasteboardAvailable:(nonnull void (^)(BOOL))completion {
 }
 

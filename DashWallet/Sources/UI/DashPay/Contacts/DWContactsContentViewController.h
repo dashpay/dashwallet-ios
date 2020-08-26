@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWContactsContentViewController;
 
-@protocol DWContactsContentControllerDelegate <NSObject>
+@protocol DWContactsContentControllerDelegate <DWBaseContactsContentViewControllerDelegate>
 
 - (void)contactsContentController:(DWContactsContentViewController *)controller
        contactsFilterButtonAction:(UIView *)sender;

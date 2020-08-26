@@ -17,12 +17,13 @@
 
 #import "DWSearchViewController.h"
 
+#import "DWBaseContactsContentViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseContactsViewController : DWSearchViewController
+@interface DWBaseContactsViewController : DWSearchViewController <DWBaseContactsContentViewControllerDelegate>
 
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;
