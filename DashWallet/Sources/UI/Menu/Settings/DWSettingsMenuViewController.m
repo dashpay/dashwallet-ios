@@ -90,23 +90,23 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
-    {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Network", nil)];
-        self.switchNetworkCellModel = cellModel;
-        [self updateSwitchNetworkCellModel];
-        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            UITableView *tableView = self.formController.tableView;
-            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-            [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
-        };
-        [items addObject:cellModel];
-    }
+    //    {
+    //        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Network", nil)];
+    //        self.switchNetworkCellModel = cellModel;
+    //        [self updateSwitchNetworkCellModel];
+    //        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+    //        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+    //            __strong typeof(weakSelf) strongSelf = weakSelf;
+    //            if (!strongSelf) {
+    //                return;
+    //            }
+    //
+    //            UITableView *tableView = self.formController.tableView;
+    //            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    //            [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
+    //        };
+    //        [items addObject:cellModel];
+    //    }
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Rescan Blockchain", nil)];
