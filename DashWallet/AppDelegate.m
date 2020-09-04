@@ -286,7 +286,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     if (shouldRescanBlockchain) {
         DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-        [chainManager rescan];
+        [chainManager masternodeListAndBlocksRescan];
     }
 }
 
