@@ -361,6 +361,9 @@
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Tenha controle completo e customize sua carteira de acordo com suas necessidades";
 
+/* No comment provided by engineer. */
+"header #%d of %d" = "header #%1$d of %2$d";
+
 /* Hello username, */
 "Hello %@," = "Hello %@,";
 
