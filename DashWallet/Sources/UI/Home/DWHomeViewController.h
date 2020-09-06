@@ -26,9 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWHomeViewControllerDelegate <NSObject>
 
-- (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender;
-- (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender;
-
 @end
 
 @interface DWHomeViewController : DWBasePayViewController

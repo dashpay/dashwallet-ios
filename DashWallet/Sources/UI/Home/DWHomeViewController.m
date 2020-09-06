@@ -93,14 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:YES];
 }
 
-- (void)homeView:(DWHomeView *)homeView payButtonAction:(UIButton *)sender {
-    [self.delegate homeViewController:self payButtonAction:sender];
-}
-
-- (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender {
-    [self.delegate homeViewController:self receiveButtonAction:sender];
-}
-
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
     DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] init];
     [self.navigationController pushViewController:controller animated:YES];

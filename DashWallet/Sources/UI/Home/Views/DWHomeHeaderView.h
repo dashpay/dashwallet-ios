@@ -27,8 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWHomeHeaderViewDelegate <NSObject>
 
 - (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view;
-- (void)homeHeaderView:(DWHomeHeaderView *)view payButtonAction:(UIButton *)sender;
-- (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender;
 - (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender;
 
 @end

@@ -211,7 +211,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
 #pragma mark - DWFilterHeaderViewDelegate
@@ -224,14 +223,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view {
     [self setNeedsLayout];
-}
-
-- (void)homeHeaderView:(DWHomeHeaderView *)view payButtonAction:(UIButton *)sender {
-    [self.delegate homeView:self payButtonAction:sender];
-}
-
-- (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender {
-    [self.delegate homeView:self receiveButtonAction:sender];
 }
 
 - (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender {
