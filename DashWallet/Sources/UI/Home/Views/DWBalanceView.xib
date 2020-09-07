@@ -28,10 +28,10 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hLW-nv-HXU" userLabel="Balance View">
-                    <rect key="frame" x="20" y="8" width="374" height="173.66666666666666"/>
+                    <rect key="frame" x="20" y="8" width="374" height="181.66666666666666"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Eje-aF-LFe" userLabel="Centered Balance Control" customClass="UIControl">
-                            <rect key="frame" x="0.0" y="47.333333333333336" width="374" height="79.333333333333314"/>
+                            <rect key="frame" x="0.0" y="51.333333333333336" width="374" height="79.333333333333314"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="chD-8m-nbL" userLabel="Title Label">
                                     <rect key="frame" x="0.0" y="0.0" width="374" height="20.333333333333332"/>
@@ -122,7 +122,7 @@
                     </constraints>
                 </view>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" verticalCompressionResistancePriority="752" text="Tap to unhide balance" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="veC-5Z-8ER">
-                    <rect key="frame" x="20" y="181.66666666666666" width="374" height="13.333333333333343"/>
+                    <rect key="frame" x="20" y="189.66666666666666" width="374" height="13.333333333333343"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -135,7 +135,7 @@
                 <constraint firstItem="veC-5Z-8ER" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="69r-9j-OjW"/>
                 <constraint firstItem="veC-5Z-8ER" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailingMargin" id="Rzs-iG-f2s"/>
                 <constraint firstItem="veC-5Z-8ER" firstAttribute="top" secondItem="hLW-nv-HXU" secondAttribute="bottom" id="kNd-g7-SRf"/>
-                <constraint firstAttribute="bottom" secondItem="veC-5Z-8ER" secondAttribute="bottom" constant="16" id="pQu-en-8Wu"/>
+                <constraint firstAttribute="bottom" secondItem="veC-5Z-8ER" secondAttribute="bottom" constant="8" id="pQu-en-8Wu"/>
                 <constraint firstItem="hLW-nv-HXU" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="qSj-CK-nao"/>
                 <constraint firstAttribute="trailingMargin" secondItem="hLW-nv-HXU" secondAttribute="trailing" id="sXe-PJ-mqd"/>
             </constraints>

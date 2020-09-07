@@ -6,45 +6,12 @@
       "scale" : "1x"
     },
     {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "shortcut_payToAddress_dark.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
       "filename" : "shortcut_payToAddress@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "shortcut_payToAddress_dark@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
       "filename" : "shortcut_payToAddress@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "shortcut_payToAddress_dark@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

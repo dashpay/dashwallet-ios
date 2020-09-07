@@ -211,6 +211,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
 #pragma mark - DWFilterHeaderViewDelegate

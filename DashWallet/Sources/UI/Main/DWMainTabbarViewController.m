@@ -187,6 +187,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 #pragma mark - DWHomeViewControllerDelegate
 
+- (void)homeViewControllerShowReceivePayment:(DWHomeViewController *)controller {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+}
+
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
