@@ -43,7 +43,7 @@
             case DWDPRegistrationState_ProcessingPayment:
                 return NSLocalizedString(@"(1/3) Unable to process payment", nil);
             case DWDPRegistrationState_CreatingID:
-                return NSLocalizedString(@"(2/3) Unable to create ID", nil);
+                return NSLocalizedString(@"(2/3) Unable to create Dash Identity", nil);
             case DWDPRegistrationState_RegistrationUsername:
                 return NSLocalizedString(@"(3/3) Can't register username", nil);
             case DWDPRegistrationState_Done:
@@ -56,7 +56,7 @@
             case DWDPRegistrationState_ProcessingPayment:
                 return NSLocalizedString(@"(1/3) Processing Payment", nil);
             case DWDPRegistrationState_CreatingID:
-                return NSLocalizedString(@"(2/3) Creating ID", nil);
+                return NSLocalizedString(@"(2/3) Creating Dash Identity", nil);
             case DWDPRegistrationState_RegistrationUsername:
                 return NSLocalizedString(@"(3/3) Registering Username", nil);
             case DWDPRegistrationState_Done:
