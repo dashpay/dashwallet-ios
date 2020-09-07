@@ -61,11 +61,23 @@ NS_ASSUME_NONNULL_BEGIN
                          message:nil
                   preferredStyle:UIAlertControllerStyleActionSheet];
     UIAlertAction *rescanAction = [UIAlertAction
-        actionWithTitle:DSLocalizedString(@"Confirm", nil)
+        actionWithTitle:DSLocalizedString(@"Rescan Transactions (Suggested)", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-                    [chainManager rescan];
+                    [chainManager syncBlocksRescan];
+
+                    if (completion) {
+                        completion(YES);
+                    }
+                }];
+
+    UIAlertAction *rescanMNLAction = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Full Resync", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+                    [chainManager masternodeListAndBlocksRescan];
 
                     if (completion) {
                         completion(YES);
@@ -81,6 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
                     }
                 }];
     [actionSheet addAction:rescanAction];
+    [actionSheet addAction:rescanMNLAction];
     [actionSheet addAction:cancelAction];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         actionSheet.popoverPresentationController.sourceView = sourceView;

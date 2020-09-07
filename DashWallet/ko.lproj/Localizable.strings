@@ -364,6 +364,9 @@
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "당신의 필요에 따라 지갑에 대한 완전한 통제를 행사하고 자신의 지갑을 커스터마이징 하세요";
 
+/* No comment provided by engineer. */
+"header #%d of %d" = "header #%1$d of %2$d";
+
 /* Hello username, */
 "Hello %@," = "Hello %@,";
 

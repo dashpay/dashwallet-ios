@@ -364,6 +364,9 @@
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Έχετε τον πλήρη έλεγχο να προσαρμόσετε το πορτοφόλι σας ανάλογα με τις ανάγκες σας";
 
+/* No comment provided by engineer. */
+"header #%d of %d" = "header #%1$d of %2$d";
+
 /* Hello username, */
 "Hello %@," = "Hello %@,";
 

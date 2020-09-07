@@ -364,6 +364,9 @@
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Majte úplnú kontrolu a prispôsobte si vašu peňaženku podľa svojich potrieb";
 
+/* No comment provided by engineer. */
+"header #%d of %d" = "header #%1$d of %2$d";
+
 /* Hello username, */
 "Hello %@," = "Hello %@,";
 

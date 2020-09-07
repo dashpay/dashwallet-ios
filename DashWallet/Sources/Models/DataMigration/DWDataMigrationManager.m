@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _shouldMigrate = NO;
+        _shouldMigrate = [DSCoreDataMigrator requiresMigration];
     }
     return self;
 }
@@ -42,7 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)migrate:(void (^)(BOOL completed))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-    completion(YES);
+
+    [DSCoreDataMigrator performMigration:^{
+        completion(YES);
+    }];
 }
 
 @end
