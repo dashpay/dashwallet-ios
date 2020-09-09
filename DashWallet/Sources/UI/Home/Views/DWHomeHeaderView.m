@@ -17,7 +17,7 @@
 
 #import "DWHomeHeaderView.h"
 
-#import "DWBalancePayReceiveButtonsView.h"
+#import "DWBalanceView.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDashPayProfileView.h"
 #import "DWShortcutAction.h"
@@ -28,12 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
-@interface DWHomeHeaderView () <DWBalancePayReceiveButtonsViewDelegate,
+@interface DWHomeHeaderView () <DWBalanceViewDelegate,
                                 DWShortcutsViewDelegate,
                                 DWSyncViewDelegate>
 
 @property (readonly, nonatomic, strong) DWDashPayProfileView *profileView;
-@property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
+@property (readonly, nonatomic, strong) DWBalanceView *balanceView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
 @property (readonly, nonatomic, strong) DWShortcutsView *shortcutsView;
 @property (readonly, nonatomic, strong) UIStackView *stackView;
@@ -50,9 +50,9 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         [profileView addTarget:self action:@selector(profileViewAction:) forControlEvents:UIControlEventTouchUpInside];
         _profileView = profileView;
 
-        DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
-        balancePayReceiveButtonsView.delegate = self;
-        _balancePayReceiveButtonsView = balancePayReceiveButtonsView;
+        DWBalanceView *balanceView = [[DWBalanceView alloc] initWithFrame:CGRectZero];
+        balanceView.delegate = self;
+        _balanceView = balanceView;
 
         DWSyncView *syncView = [[DWSyncView alloc] initWithFrame:CGRectZero];
         syncView.delegate = self;
@@ -62,7 +62,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         shortcutsView.delegate = self;
         _shortcutsView = shortcutsView;
 
-        NSArray<UIView *> *views = @[ profileView, balancePayReceiveButtonsView, syncView, shortcutsView ];
+        NSArray<UIView *> *views = @[ profileView, balanceView, syncView, shortcutsView ];
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
@@ -126,7 +126,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 - (void)setModel:(nullable id<DWHomeProtocol>)model {
     _model = model;
 
-    self.balancePayReceiveButtonsView.model = model;
+    self.balanceView.model = model;
     self.shortcutsView.model = model.shortcutsModel;
     [self updateProfileView];
 }
@@ -140,27 +140,15 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 }
 
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
-    [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
 }
 
-#pragma mark - DWBalancePayReceiveButtonsViewDelegate
+#pragma mark - DWBalanceViewDelegate
 
-- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
-              balanceLongPressAction:(UIControl *)sender {
+- (void)balanceView:(DWBalanceView *)view balanceLongPressAction:(UIControl *)sender {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
-    [self.shortcutsDelegate shortcutsView:self.balancePayReceiveButtonsView
+    [self.shortcutsDelegate shortcutsView:self.balanceView
                           didSelectAction:action
                                    sender:sender];
-}
-
-- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
-                     payButtonAction:(UIButton *)sender {
-    [self.delegate homeHeaderView:self payButtonAction:sender];
-}
-
-- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
-                 receiveButtonAction:(UIButton *)sender {
-    [self.delegate homeHeaderView:self receiveButtonAction:sender];
 }
 
 #pragma mark - DWShortcutsViewDelegate

@@ -226,14 +226,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self setNeedsLayout];
 }
 
-- (void)homeHeaderView:(DWHomeHeaderView *)view payButtonAction:(UIButton *)sender {
-    [self.delegate homeView:self payButtonAction:sender];
-}
-
-- (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender {
-    [self.delegate homeView:self receiveButtonAction:sender];
-}
-
 - (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender {
     [self.delegate homeView:self profileButtonAction:sender];
 }

@@ -97,6 +97,10 @@ NS_ASSUME_NONNULL_BEGIN
             [self showCreateUsername];
             break;
         }
+        case DWShortcutActionType_Receive: {
+            [self.delegate homeViewControllerShowReceivePayment:self];
+            break;
+        }
         case DWShortcutActionType_AddShortcut: {
             break;
         }

@@ -187,11 +187,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 #pragma mark - DWHomeViewControllerDelegate
 
-- (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
-}
-
-- (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender {
+- (void)homeViewControllerShowReceivePayment:(DWHomeViewController *)controller {
     [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
 

@@ -19,6 +19,7 @@
 
 #import "DWGlobalOptions.h"
 #import "DWShortcutAction.h"
+#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -85,15 +86,19 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
     const BOOL walletNeedsBackup = options.walletNeedsBackup;
     if (walletNeedsBackup) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SecureWallet]];
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
+        if (!IS_IPHONE_5_OR_LESS) {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+        }
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
     }
-
-    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
-    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
-    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
-
-    const BOOL canShowAdditionalButton = !walletNeedsBackup && !isShowingCreateUserName;
-    if (canShowAdditionalButton) {
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ImportPrivateKey]];
+    else {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+        if (!IS_IPHONE_5_OR_LESS) {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+        }
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
     }
 
     return mutableItems;

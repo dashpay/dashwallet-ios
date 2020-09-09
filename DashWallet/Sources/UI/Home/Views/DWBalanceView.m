@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWBalancePayReceiveButtonsView.h"
+#import "DWBalanceView.h"
 
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWBalanceModel.h"
@@ -34,7 +34,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
 
 static NSTimeInterval const ANIMATION_DURATION = 0.3;
 
-@interface DWBalancePayReceiveButtonsView ()
+@interface DWBalanceView ()
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UIControl *balanceButton;
@@ -45,14 +45,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 @property (strong, nonatomic) IBOutlet UIView *amountsView;
 @property (strong, nonatomic) IBOutlet UILabel *dashBalanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatBalanceLabel;
-@property (strong, nonatomic) IBOutlet UIView *buttonsContainerView;
-@property (strong, nonatomic) IBOutlet UIButton *payButton;
-@property (strong, nonatomic) IBOutlet UIButton *receiveButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *balanceViewHeightContraint;
 
 @end
 
-@implementation DWBalancePayReceiveButtonsView
+@implementation DWBalanceView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -96,12 +93,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
     self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    [self.payButton setTitle:NSLocalizedString(@"Send", nil) forState:UIControlStateNormal];
-    self.payButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-
-    [self.receiveButton setTitle:NSLocalizedString(@"Receive", nil) forState:UIControlStateNormal];
-    self.receiveButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-
     self.balanceViewHeightContraint.constant = BalanceButtonMinHeight();
 
     UILongPressGestureRecognizer *recognizer =
@@ -127,16 +118,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
                   }];
 }
 
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
-    const CGFloat offset = scrollView.contentOffset.y + scrollView.contentInset.top;
-    const CGRect buttonsFrame = self.buttonsContainerView.frame;
-    const CGFloat threshold = CGRectGetHeight(buttonsFrame) / 2.0;
-    // start descreasing alpha when scroll offset reached the point before the half of buttons height until the center of the buttons
-    CGFloat alpha = 1.0 - (threshold + offset - CGRectGetMinY(buttonsFrame)) / threshold;
-    alpha = MAX(0.0, MIN(1.0, alpha));
-    self.buttonsContainerView.alpha = alpha;
-}
-
 - (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
     [super traitCollectionDidChange:previousTraitCollection];
 
@@ -145,21 +126,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 
 #pragma mark - Actions
 
-- (IBAction)payButtonAction:(UIButton *)sender {
-    [self.delegate balancePayReceiveButtonsView:self payButtonAction:sender];
-}
-
-- (IBAction)receiveButtonAction:(UIButton *)sender {
-    [self.delegate balancePayReceiveButtonsView:self receiveButtonAction:sender];
-}
-
 - (IBAction)balanceButtonAction:(UIControl *)sender {
     id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions = self.model.balanceDisplayOptions;
     balanceDisplayOptions.balanceHidden = !balanceDisplayOptions.balanceHidden;
 }
 
 - (void)balanceLongPressAction:(UIControl *)sender {
-    [self.delegate balancePayReceiveButtonsView:self balanceLongPressAction:sender];
+    [self.delegate balanceView:self balanceLongPressAction:sender];
 }
 
 #pragma mark - Notifications

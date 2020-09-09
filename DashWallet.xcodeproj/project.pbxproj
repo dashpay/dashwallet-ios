@@ -79,9 +79,8 @@
 		2A2CD71E22F99ED8008C7BC9 /* DWShortcutAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71D22F99ED8008C7BC9 /* DWShortcutAction.m */; };
 		2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */; };
 		2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */; };
-		2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72822FA3017008C7BC9 /* DWPaymentsButton.m */; };
-		2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */; };
-		2A307CB822E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */; };
+		2A307CB622E7006600A18347 /* DWBalanceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CB522E7006600A18347 /* DWBalanceView.m */; };
+		2A307CB822E7006F00A18347 /* DWBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A307CB722E7006F00A18347 /* DWBalanceView.xib */; };
 		2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBB22E8925100A18347 /* DWHomeView.m */; };
 		2A307CBF22E8A44200A18347 /* DWButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBE22E8A44200A18347 /* DWButton.m */; };
 		2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */; };
@@ -122,6 +121,7 @@
 		2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
+		2A4E1D5325056297008AC53F /* DWPaymentsButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E1D5225056297008AC53F /* DWPaymentsButton.m */; };
 		2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
 		2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
 		2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531722EA381F00E5168A /* DWSyncView.m */; };
@@ -724,11 +724,9 @@
 		2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPressableButton.h; sourceTree = "<group>"; };
 		2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPressableButton.m; sourceTree = "<group>"; };
 		2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsActionDelegate.h; sourceTree = "<group>"; };
-		2A2CD72722FA3017008C7BC9 /* DWPaymentsButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsButton.h; sourceTree = "<group>"; };
-		2A2CD72822FA3017008C7BC9 /* DWPaymentsButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentsButton.m; sourceTree = "<group>"; };
-		2A307CB422E7006600A18347 /* DWBalancePayReceiveButtonsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalancePayReceiveButtonsView.h; sourceTree = "<group>"; };
-		2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalancePayReceiveButtonsView.m; sourceTree = "<group>"; };
-		2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWBalancePayReceiveButtonsView.xib; sourceTree = "<group>"; };
+		2A307CB422E7006600A18347 /* DWBalanceView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceView.h; sourceTree = "<group>"; };
+		2A307CB522E7006600A18347 /* DWBalanceView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceView.m; sourceTree = "<group>"; };
+		2A307CB722E7006F00A18347 /* DWBalanceView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWBalanceView.xib; sourceTree = "<group>"; };
 		2A307CBA22E8925100A18347 /* DWHomeView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeView.h; sourceTree = "<group>"; };
 		2A307CBB22E8925100A18347 /* DWHomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeView.m; sourceTree = "<group>"; };
 		2A307CBD22E8A44200A18347 /* DWButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWButton.h; sourceTree = "<group>"; };
@@ -805,6 +803,8 @@
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A46630C2279DD7D0027533B /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
 		2A46630E2279DF490027533B /* DashWalletScreenshotsUITests-Briding-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWalletScreenshotsUITests-Briding-Header.h"; sourceTree = "<group>"; };
+		2A4E1D5125056297008AC53F /* DWPaymentsButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsButton.h; sourceTree = "<group>"; };
+		2A4E1D5225056297008AC53F /* DWPaymentsButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentsButton.m; sourceTree = "<group>"; };
 		2A4E531622EA381F00E5168A /* DWSyncView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncView.h; sourceTree = "<group>"; };
 		2A4E531722EA381F00E5168A /* DWSyncView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncView.m; sourceTree = "<group>"; };
 		2A4E531922EA382B00E5168A /* DWSyncView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWSyncView.xib; sourceTree = "<group>"; };
@@ -1978,9 +1978,9 @@
 			children = (
 				2A2CD70B22F97A9D008C7BC9 /* Shortcuts */,
 				2A4E533C22F025ED00E5168A /* Cells */,
-				2A307CB422E7006600A18347 /* DWBalancePayReceiveButtonsView.h */,
-				2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */,
-				2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */,
+				2A307CB422E7006600A18347 /* DWBalanceView.h */,
+				2A307CB522E7006600A18347 /* DWBalanceView.m */,
+				2A307CB722E7006F00A18347 /* DWBalanceView.xib */,
 				2A307CBA22E8925100A18347 /* DWHomeView.h */,
 				2A307CBB22E8925100A18347 /* DWHomeView.m */,
 				2A4E531622EA381F00E5168A /* DWSyncView.h */,
@@ -3007,10 +3007,10 @@
 			children = (
 				2A9CEBB322E1EAC900A50237 /* DWTabBarView.h */,
 				2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */,
-				2A2CD72722FA3017008C7BC9 /* DWPaymentsButton.h */,
-				2A2CD72822FA3017008C7BC9 /* DWPaymentsButton.m */,
 				2A392563234CD21300316EA6 /* DWTabBarButton.h */,
 				2A392564234CD21300316EA6 /* DWTabBarButton.m */,
+				2A4E1D5125056297008AC53F /* DWPaymentsButton.h */,
+				2A4E1D5225056297008AC53F /* DWPaymentsButton.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4352,7 +4352,7 @@
 				2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */,
 				2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */,
 				2ACCD86323193C1E00A96B62 /* DWReceiveContentView.xib in Resources */,
-				2A307CB822E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib in Resources */,
+				2A307CB822E7006F00A18347 /* DWBalanceView.xib in Resources */,
 				C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */,
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
@@ -4714,7 +4714,6 @@
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				2A7A7BD62348CB6600451078 /* DWSettingsMenuViewController.m in Sources */,
 				2A2CD71B22F99EAC008C7BC9 /* DWShortcutsModel.m in Sources */,
-				2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				2A9D72AC249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m in Sources */,
 				2A7A7BDD2348DC0A00451078 /* DWToolsMenuModel.m in Sources */,
@@ -4875,7 +4874,7 @@
 				2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */,
 				2A7AF35624824F97001D74F9 /* DWDPImageStatusCell.m in Sources */,
 				2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */,
-				2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */,
+				2A307CB622E7006600A18347 /* DWBalanceView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */,
@@ -5061,6 +5060,7 @@
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
+				2A4E1D5325056297008AC53F /* DWPaymentsButton.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */,
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
@@ -5463,7 +5463,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5494,7 +5494,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5580,7 +5580,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -5602,7 +5602,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -5622,7 +5622,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
@@ -5644,7 +5644,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
@@ -5667,7 +5667,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5691,7 +5691,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5776,7 +5776,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5806,7 +5806,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5859,7 +5859,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -5879,7 +5879,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
@@ -5969,7 +5969,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5997,7 +5997,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6049,7 +6049,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6069,7 +6069,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
