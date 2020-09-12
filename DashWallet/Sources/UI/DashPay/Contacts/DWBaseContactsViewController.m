@@ -114,7 +114,8 @@ NS_ASSUME_NONNULL_END
         [[DWUserProfileViewController alloc] initWithItem:item
                                                  payModel:self.payModel
                                              dataProvider:self.dataProvider
-                                       shouldSkipUpdating:YES];
+                                       shouldSkipUpdating:YES
+                                     shouldAcceptIncoming:NO];
     [self.navigationController pushViewController:profileController animated:YES];
 }
 

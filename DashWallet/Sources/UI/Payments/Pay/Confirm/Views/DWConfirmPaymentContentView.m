@@ -18,6 +18,7 @@
 #import "DWConfirmPaymentContentView.h"
 
 #import "DWAmountPreviewView.h"
+#import "DWCheckbox.h"
 #import "DWTitleDetailCellView.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
@@ -33,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *addressRowView;
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *feeRowView;
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *totalRowView;
+@property (strong, nonatomic) IBOutlet DWCheckbox *checkbox;
 
 @end
 
@@ -74,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.feeRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
     self.totalRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
 
+    self.checkbox.title = NSLocalizedString(@"Accept Contact Request", nil);
+    [self.checkbox addTarget:self action:@selector(checkboxValueChanged:) forControlEvents:UIControlEventValueChanged];
+
     UILongPressGestureRecognizer *recognizer =
         [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                       action:@selector(addressLongPressGestureAction:)];
@@ -98,6 +103,9 @@ NS_ASSUME_NONNULL_BEGIN
     id<DWTitleDetailItem> info = [model generalInfo];
     self.infoRowView.model = info;
     self.infoRowView.hidden = (info == nil);
+
+    self.checkbox.hidden = ![model isAcceptContactRequestCheckboxVisible];
+    self.checkbox.on = [model isAcceptContactRequestCheckboxOn];
 
     [self reloadAttributedData];
 }
@@ -142,6 +150,10 @@ NS_ASSUME_NONNULL_BEGIN
     self.feeRowView.hidden = (fee == nil);
 
     self.totalRowView.model = [self.model totalWithFont:font tintColor:color];
+}
+
+- (void)checkboxValueChanged:(DWCheckbox *)sender {
+    [self.model setIsAcceptContactRequestCheckboxOn:sender.isOn];
 }
 
 @end

@@ -17,6 +17,7 @@
 
 #import "DWModalUserProfileViewController.h"
 
+#import "DWGlobalOptions.h"
 #import "DWNavigationController.h"
 #import "DWUserProfileViewController.h"
 #import "UIViewController+DWEmbedding.h"
@@ -38,10 +39,12 @@ NS_ASSUME_NONNULL_END
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _profileController = [[DWUserProfileViewController alloc] initWithItem:item
-                                                                      payModel:payModel
-                                                                  dataProvider:dataProvider
-                                                            shouldSkipUpdating:YES];
+        _profileController =
+            [[DWUserProfileViewController alloc] initWithItem:item
+                                                     payModel:payModel
+                                                 dataProvider:dataProvider
+                                           shouldSkipUpdating:YES
+                                         shouldAcceptIncoming:[DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn];
     }
     return self;
 }

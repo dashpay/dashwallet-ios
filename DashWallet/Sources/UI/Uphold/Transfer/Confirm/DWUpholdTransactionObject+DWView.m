@@ -90,4 +90,15 @@
     return NO;
 }
 
+- (BOOL)isAcceptContactRequestCheckboxVisible {
+    return NO;
+}
+
+- (BOOL)isAcceptContactRequestCheckboxOn {
+    return NO;
+}
+
+- (void)setIsAcceptContactRequestCheckboxOn:(BOOL)value {
+}
+
 @end
