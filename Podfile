@@ -1,5 +1,5 @@
 target 'dashwallet' do
-  platform :ios, '11.0'
+  platform :ios, '12.0'
   
   pod 'DashSync', :path => '../DashSync/'
   pod 'DAPI-GRPC', :path => '../DashSync/'
@@ -25,7 +25,7 @@ target 'dashwallet' do
 end
 
 target 'TodayExtension' do
-  platform :ios, '11.0'
+  platform :ios, '12.0'
   
   pod 'DSDynamicOptions', '0.1.1'
 
