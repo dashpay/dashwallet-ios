@@ -43,9 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)migrate:(void (^)(BOOL completed))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    [DSCoreDataMigrator performMigration:^{
-        completion(YES);
-    }];
+    [DSCoreDataMigrator performMigrationWithCompletionQueue:dispatch_get_main_queue()
+                                                 completion:^{
+                                                     completion(YES);
+                                                 }];
 }
 
 @end
