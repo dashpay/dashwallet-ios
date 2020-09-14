@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWProfileTxsFetchedDataSource *txsFetchedDataSource;
 @property (nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
+@property (nonatomic, assign) BOOL shouldAcceptIncoming;
 
 @end
 
@@ -41,12 +42,14 @@ NS_ASSUME_NONNULL_END
 @synthesize displayMode = _displayMode;
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
-              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider {
+              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider
+        shouldAcceptIncoming:(BOOL)shouldAcceptIncoming {
     self = [super init];
     if (self) {
         _item = item;
         _txDataProvider = txDataProvider;
         _dataSource = [[DWUserProfileDataSourceObject alloc] init]; // empty data source
+        _shouldAcceptIncoming = shouldAcceptIncoming;
 
         // TODO: DP global notification is used temporary. Remove its usage once FRC delegate issue is resolved
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -66,7 +69,14 @@ NS_ASSUME_NONNULL_END
 
 - (void)skipUpdating {
     [self updateDataSource];
-    self.state = DWUserProfileModelState_Done;
+
+
+    if (self.shouldAcceptIncoming && [self friendshipStatusInternal] == DSBlockchainIdentityFriendshipStatus_Incoming) {
+        [self acceptContactRequest];
+    }
+    else {
+        self.state = DWUserProfileModelState_Done;
+    }
 }
 
 - (void)setState:(DWUserProfileModelState)state {
@@ -105,10 +115,7 @@ NS_ASSUME_NONNULL_END
         return DSBlockchainIdentityFriendshipStatus_Unknown;
     }
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
-    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+    return [self friendshipStatusInternal];
 }
 
 - (void)sendContactRequest {
@@ -174,6 +181,13 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - Private
+
+- (DSBlockchainIdentityFriendshipStatus)friendshipStatusInternal {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
+    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+}
 
 - (void)updateDataSource {
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];

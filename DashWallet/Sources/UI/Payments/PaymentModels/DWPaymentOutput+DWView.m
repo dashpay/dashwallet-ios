@@ -20,6 +20,9 @@
 #import <DashSync/DashSync.h>
 #import <UIKit/UIKit.h>
 
+#import "DWDPBasicUserItem.h"
+#import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
 #import "NSAttributedString+DWBuilder.h"
@@ -170,6 +173,25 @@ static NSString *sanitizeString(NSString *s) {
     }
 
     return hasInfo ? info : nil;
+}
+
+- (BOOL)isAcceptContactRequestCheckboxVisible {
+    if (self.userItem.blockchainIdentity == nil) {
+        return NO;
+    }
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainIdentity *blockchainIdentity = self.userItem.blockchainIdentity;
+    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity] == DSBlockchainIdentityFriendshipStatus_Incoming;
+}
+
+- (BOOL)isAcceptContactRequestCheckboxOn {
+    return [DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn;
+}
+
+- (void)setIsAcceptContactRequestCheckboxOn:(BOOL)value {
+    [DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn = value;
 }
 
 @end

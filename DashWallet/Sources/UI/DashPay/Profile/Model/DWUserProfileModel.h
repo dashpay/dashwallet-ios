@@ -61,7 +61,8 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 - (void)acceptContactRequest;
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
-              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider;
+              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider
+        shouldAcceptIncoming:(BOOL)shouldAcceptIncoming;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

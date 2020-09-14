@@ -17,7 +17,7 @@
 
 #import "DWPaymentProcessor.h"
 
-#import "DWDPUserObject.h"
+#import "DWDPNewIncomingRequestObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPaymentInput+Private.h"
@@ -128,7 +128,7 @@ static NSString *sanitizeString(NSString *s) {
             }
 
             if (requestIdentity) {
-                paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
+                paymentInput.userItem = [[DWDPNewIncomingRequestObject alloc] initWithBlockchainIdentity:requestIdentity];
             }
         }
     }
