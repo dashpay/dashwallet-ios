@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_END
     }
 
     UIColor *color = [UIColor dw_secondaryTextColor];
-    NSString *format = NSLocalizedString(@"You have chosen \"%@\" as your username. Username cannot be changed once it's registered", nil);
+    NSString *format = NSLocalizedString(@"You have chosen \"%@\" as your username. Your username cannot be changed once registered.", nil);
     NSString *text = [NSString stringWithFormat:format, self.username];
 
     NSDictionary<NSAttributedStringKey, id> *attributes = @{

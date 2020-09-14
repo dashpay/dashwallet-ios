@@ -288,7 +288,7 @@ NS_ASSUME_NONNULL_END
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
 
-    NSString *format = NSLocalizedString(@"There are no users that matches with the name %@", nil);
+    NSString *format = NSLocalizedString(@"There are no users that match with the name %@", nil);
     NSString *query = [NSString stringWithFormat:@"\"%@\"", self.searchQuery ?: @""];
     NSString *text = [NSString stringWithFormat:format, query];
 
@@ -320,7 +320,7 @@ NS_ASSUME_NONNULL_END
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
 
-    NSString *format = NSLocalizedString(@"There are no users that matches with the name %@ in your contacts", nil);
+    NSString *format = NSLocalizedString(@"There are no users that match with the name %@ in your contacts", nil);
     NSString *query = [NSString stringWithFormat:@"\"%@\"", self.searchQuery ?: @""];
     NSString *text = [NSString stringWithFormat:format, query];
 

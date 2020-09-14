@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "shortcut_buySellDash.png",
+      "filename" : "shortcut_receive.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "shortcut_buySellDash@2x.png",
+      "filename" : "shortcut_receive@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "shortcut_buySellDash@3x.png",
+      "filename" : "shortcut_receive@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
