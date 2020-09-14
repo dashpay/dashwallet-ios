@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_END
         _item = item;
         _txDataProvider = txDataProvider;
         _dataSource = [[DWUserProfileDataSourceObject alloc] init]; // empty data source
+        _shouldAcceptIncoming = shouldAcceptIncoming;
 
         // TODO: DP global notification is used temporary. Remove its usage once FRC delegate issue is resolved
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
