@@ -62,7 +62,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         shortcutsView.delegate = self;
         _shortcutsView = shortcutsView;
 
-        NSArray<UIView *> *views = @[ profileView, balanceView, syncView, shortcutsView ];
+        NSArray<UIView *> *views = @[ profileView, balanceView, shortcutsView, syncView ];
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;

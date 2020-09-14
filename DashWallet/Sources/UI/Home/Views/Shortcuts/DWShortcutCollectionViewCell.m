@@ -166,7 +166,7 @@ static UIColor *TextColor(DWShortcutAction *action) {
     const DWShortcutActionType type = action.type;
     switch (type) {
         case DWShortcutActionType_CreateUsername:
-            return [UIColor dw_lightTitleColor];
+            return [UIColor dw_darkTitleColor];
         default:
             return [UIColor dw_darkTitleColor];
     }
