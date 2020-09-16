@@ -28,7 +28,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 @interface DWShortcutsModel ()
 
 @property (strong, nonatomic) NSMutableArray<DWShortcutAction *> *mutableItems;
-@property (nullable, nonatomic, weak) id<DWShortcutsModelDataSource> dataSource;
+@property (nullable, nonatomic, weak) id<DWDashPayReadyProtocol> dataSource;
 
 @end
 
@@ -42,7 +42,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
     return keyPaths ?: [super keyPathsForValuesAffectingValueForKey:key];
 }
 
-- (instancetype)initWithDataSource:(id<DWShortcutsModelDataSource>)dataSource {
+- (instancetype)initWithDataSource:(id<DWDashPayReadyProtocol>)dataSource {
     self = [super init];
     if (self) {
         _dataSource = dataSource;
@@ -67,7 +67,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
         self.mutableItems = [self.class userShortcuts];
     }
     else {
-        const BOOL isShowingCreateUserName = [self.dataSource shouldShowCreateUserNameButton];
+        const BOOL isShowingCreateUserName = [self.dataSource isDashPayReady];
         self.mutableItems = [self.class defaultShortcutsShowingCreateUserName:isShowingCreateUserName];
     }
 }

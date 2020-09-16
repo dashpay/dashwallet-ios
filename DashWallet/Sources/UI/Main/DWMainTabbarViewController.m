@@ -17,12 +17,12 @@
 
 #import "DWMainTabbarViewController.h"
 
-#import "DWContactsViewController.h"
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
+#import "DWRootContactsViewController.h"
 #import "DWTabBarView.h"
 #import "DWUIKit.h"
 
@@ -241,7 +241,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (DWNavigationController *)contactsNavigationController {
     if (!_contactsNavigationController) {
-        DWContactsViewController *contactsController = [[DWContactsViewController alloc] initWithPayModel:self.homeModel.payModel dataProvider:self.homeModel.getDataProvider];
+        DWRootContactsViewController *contactsController =
+            [[DWRootContactsViewController alloc] initWithPayModel:self.homeModel.payModel
+                                                      dataProvider:self.homeModel.getDataProvider
+                                                      dashPayModel:self.homeModel.dashPayModel
+                                                      dashPayReady:self.homeModel];
 
         _contactsNavigationController = [[DWNavigationController alloc] initWithRootViewController:contactsController];
         _contactsNavigationController.delegate = self;
