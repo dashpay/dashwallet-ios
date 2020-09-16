@@ -257,6 +257,9 @@
 "Create a New Wallet" = "새로운 지갑 생성";
 
 /* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Current user: %@";
 
 /* No comment provided by engineer. */
@@ -986,7 +989,13 @@
 "Updated: %@" = "업데이트됨: %@";
 
 /* No comment provided by engineer. */
+"Upgrade" = "Upgrade";
+
+/* No comment provided by engineer. */
 "Upgrade Fee" = "Upgrade Fee";
+
+/* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Upgrading to DashPay";

@@ -233,6 +233,8 @@
 		2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
 		2A858A13237EE8A80097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
 		2A858A14237EE8A80097A7B5 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
+		2A877C9F2511638600AB14FC /* DWRootContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A877C9E2511638600AB14FC /* DWRootContactsViewController.m */; };
+		2A877CA225116F1800AB14FC /* DWContactsPlaceholderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A877CA125116F1800AB14FC /* DWContactsPlaceholderViewController.m */; };
 		2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FC62449B66500B9F679 /* DWSearchStateViewController.m */; };
 		2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCB2449F08700B9F679 /* DWUserSearchResultViewController.m */; };
 		2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCF2449F37A00B9F679 /* DWUserSearchModel.m */; };
@@ -1032,6 +1034,11 @@
 		2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhoneWCSessionManager.m; sourceTree = "<group>"; };
 		2A858A0D237EE89B0097A7B5 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppleWatchTransactionData.m; sourceTree = "<group>"; };
+		2A877C9D2511638600AB14FC /* DWRootContactsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootContactsViewController.h; sourceTree = "<group>"; };
+		2A877C9E2511638600AB14FC /* DWRootContactsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootContactsViewController.m; sourceTree = "<group>"; };
+		2A877CA025116F1800AB14FC /* DWContactsPlaceholderViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsPlaceholderViewController.h; sourceTree = "<group>"; };
+		2A877CA125116F1800AB14FC /* DWContactsPlaceholderViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsPlaceholderViewController.m; sourceTree = "<group>"; };
+		2A877CA32511F33E00AB14FC /* DWDashPayReadyProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayReadyProtocol.h; sourceTree = "<group>"; };
 		2A885FC52449B66500B9F679 /* DWSearchStateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSearchStateViewController.h; sourceTree = "<group>"; };
 		2A885FC62449B66500B9F679 /* DWSearchStateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSearchStateViewController.m; sourceTree = "<group>"; };
 		2A885FCA2449F08700B9F679 /* DWUserSearchResultViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserSearchResultViewController.h; sourceTree = "<group>"; };
@@ -2919,6 +2926,7 @@
 				2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */,
 				2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */,
 				2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */,
+				2A877CA32511F33E00AB14FC /* DWDashPayReadyProtocol.h */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -3800,6 +3808,10 @@
 				2AD6E5562487D8C000B52F14 /* DWContactsContentViewController.m */,
 				2AD6E5582487D9AF00B52F14 /* DWContactsViewController.h */,
 				2AD6E5592487D9AF00B52F14 /* DWContactsViewController.m */,
+				2A877C9D2511638600AB14FC /* DWRootContactsViewController.h */,
+				2A877C9E2511638600AB14FC /* DWRootContactsViewController.m */,
+				2A877CA025116F1800AB14FC /* DWContactsPlaceholderViewController.h */,
+				2A877CA125116F1800AB14FC /* DWContactsPlaceholderViewController.m */,
 			);
 			path = Contacts;
 			sourceTree = "<group>";
@@ -4795,6 +4807,7 @@
 				2AFCB9AC23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m in Sources */,
 				2AD6E5632487E16400B52F14 /* DWRequestsViewController.m in Sources */,
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
+				2A877CA225116F1800AB14FC /* DWContactsPlaceholderViewController.m in Sources */,
 				2A7AF36324825A0C001D74F9 /* DWDPUserObject.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
@@ -4977,6 +4990,7 @@
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
+				2A877C9F2511638600AB14FC /* DWRootContactsViewController.m in Sources */,
 				2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */,

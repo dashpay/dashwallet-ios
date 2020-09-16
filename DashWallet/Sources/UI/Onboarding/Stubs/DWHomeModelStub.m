@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub () <DWShortcutsModelDataSource>
+@interface DWHomeModelStub ()
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 
@@ -138,9 +138,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletDidWipe {
 }
 
-#pragma mark - DWShortcutsModelDataSource
+#pragma mark - DWDashPayReadyProtocol
 
-- (BOOL)shouldShowCreateUserNameButton {
+- (BOOL)isDashPayReady {
     return NO;
 }
 

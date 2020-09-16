@@ -19,6 +19,7 @@
 
 #import "DWBalanceProtocol.h"
 #import "DWDashPayProtocol.h"
+#import "DWDashPayReadyProtocol.h"
 #import "DWShortcutsProtocol.h"
 #import "DWSyncContainerProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
@@ -39,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol, DWShortcutsProtocol>
+@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol, DWShortcutsProtocol, DWDashPayReadyProtocol>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 

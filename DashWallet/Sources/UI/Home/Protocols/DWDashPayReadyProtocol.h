@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,22 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDashPayReadyProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWShortcutAction;
+extern NSNotificationName const DWDWDashPayCanBeReadyNotification;
 
-@interface DWShortcutsModel : NSObject
+@protocol DWDashPayReadyProtocol <NSObject>
 
-@property (readonly, copy, nonatomic) NSArray<DWShortcutAction *> *items;
-
-- (instancetype)initWithDataSource:(id<DWDashPayReadyProtocol>)dataSource;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-
-- (void)reloadShortcuts;
+- (BOOL)isDashPayReady;
 
 @end
 

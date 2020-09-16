@@ -41,6 +41,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSNotificationName const DWDWDashPayCanBeReadyNotification = @"DWDWDashPayCanBeReadyNotification";
+
 static BOOL IsJailbroken(void) {
     struct stat s;
     BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
@@ -58,7 +60,7 @@ static BOOL IsJailbroken(void) {
     return jailbroken;
 }
 
-@interface DWHomeModel () <DWShortcutsModelDataSource>
+@interface DWHomeModel ()
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
@@ -230,6 +232,7 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)reloadShortcuts {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWDWDashPayCanBeReadyNotification object:nil];
     [self.shortcutsModel reloadShortcuts];
 }
 
@@ -297,9 +300,9 @@ static BOOL IsJailbroken(void) {
     self.dashPayModel = [[DWDashPayModel alloc] init];
 }
 
-#pragma mark - DWShortcutsModelDataSource
+#pragma mark - DWDashPayReadyProtocol
 
-- (BOOL)shouldShowCreateUserNameButton {
+- (BOOL)isDashPayReady {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
         return NO;
     }
