@@ -100,7 +100,7 @@
                              object:nil];
     [notificationCenter addObserver:self
                            selector:@selector(update)
-                               name:DWDWDashPayCanBeReadyNotification
+                               name:DWDashPayAvailabilityStatusUpdatedNotification
                              object:nil];
 
     [self update];

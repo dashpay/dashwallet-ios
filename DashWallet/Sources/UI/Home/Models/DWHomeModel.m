@@ -41,7 +41,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSNotificationName const DWDWDashPayCanBeReadyNotification = @"DWDWDashPayCanBeReadyNotification";
+NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification = @"DWDashPayAvailabilityStatusUpdatedNotification";
 
 static BOOL IsJailbroken(void) {
     struct stat s;
@@ -232,7 +232,7 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)reloadShortcuts {
-    [[NSNotificationCenter defaultCenter] postNotificationName:DWDWDashPayCanBeReadyNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayAvailabilityStatusUpdatedNotification object:nil];
     [self.shortcutsModel reloadShortcuts];
 }
 

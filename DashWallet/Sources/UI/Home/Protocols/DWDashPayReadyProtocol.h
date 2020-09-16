@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSNotificationName const DWDWDashPayCanBeReadyNotification;
+extern NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification;
 
 @protocol DWDashPayReadyProtocol <NSObject>
 
