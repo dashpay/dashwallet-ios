@@ -17,6 +17,7 @@
 
 #import "DWPaymentInput+Private.h"
 
+#import "DWDPUserObject.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,6 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
         _source = source;
     }
     return self;
+}
+
+- (void)dealloc {
+    [self.strangerRequest cancel];
 }
 
 - (nullable NSString *)userDetails {
@@ -46,6 +51,25 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return result;
+}
+
+- (void)fetchStrangerBlockchainIdentity:(NSString *)username {
+    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
+    __weak typeof(self) weakSelf = self;
+    self.strangerRequest = [manager
+        searchIdentityByDashpayUsername:username
+                         withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
+                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                             if (!strongSelf) {
+                                 return;
+                             }
+
+                             NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+                             if (blockchainIdentity != nil) {
+                                 strongSelf.strangerUserItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:blockchainIdentity];
+                             }
+                         }];
 }
 
 @end

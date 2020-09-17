@@ -17,6 +17,8 @@
 
 #import "DWPaymentInput.h"
 
+#import "DWEnvironment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPaymentInput ()
@@ -25,7 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 @property (nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
+@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> strangerRequest;
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> strangerUserItem;
+
 - (instancetype)initWithSource:(DWPaymentInputSource)source;
+
+- (void)fetchStrangerBlockchainIdentity:(NSString *)username;
 
 @end
 
