@@ -40,7 +40,7 @@ final class BRAWKeypadModel {
 }
 
 final class BRAWKeypad: WKInterfaceController {
-    var digits: [String] = [String]()
+    var digits = [String]()
     var ctx: BRAWKeypadModel?
 
     override func awake(withContext context: Any?) {
