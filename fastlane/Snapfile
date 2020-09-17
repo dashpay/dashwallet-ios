@@ -1,14 +1,14 @@
 devices([
-  "iPhone SE",
+  "iPhone SE (1st generation)",
   "iPhone 8",
   "iPhone 8 Plus",
-  "iPhone Xs",
-  "iPhone Xs Max",
+  "iPhone 11 Pro",
+  "iPhone 11 Pro Max",
 
   "iPad Air 2",
   "iPad Pro (10.5-inch)",
-  "iPad Pro (11-inch)",
-  "iPad Pro (12.9-inch) (2nd generation)",
+  "iPad Pro (11-inch) (2nd generation)",
+  "iPad Pro (12.9-inch) (4th generation)",
 ])
 
 languages([
