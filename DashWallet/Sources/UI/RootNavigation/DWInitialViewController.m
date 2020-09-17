@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if SNAPSHOT
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
-    [self displayViewController:controller];
+    [self transitionToController:controller];
 #else
     if ([self shouldDisplayOnboarding]) {
         DWOnboardingViewController *onboarding = [DWOnboardingViewController controller];

@@ -103,6 +103,10 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
     self.collectionView.layer.cornerRadius = 8.0;
     self.collectionView.layer.masksToBounds = YES;
 
+    if (IS_IPAD) {
+        self.collectionView.contentInset = UIEdgeInsetsMake(0, 16.0, 0, 0);
+    }
+
     NSString *cellId = DWShortcutCollectionViewCell.dw_reuseIdentifier;
     UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
     NSParameterAssert(nib);
