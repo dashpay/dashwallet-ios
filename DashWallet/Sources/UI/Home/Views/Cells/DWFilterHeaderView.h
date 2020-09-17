@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWFilterHeaderViewDelegate <NSObject>
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender;
+- (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender;
 
 @end
 
@@ -31,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *filterButton;
+/// Hidden by default
+@property (strong, nonatomic) IBOutlet UIButton *infoButton;
 
 @property (assign, nonatomic) CGFloat padding;
 

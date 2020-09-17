@@ -20,6 +20,7 @@
 #import "DWDPBasicCell.h"
 #import "DWDPTxItem.h"
 #import "DWFilterHeaderView.h"
+#import "DWInfoPopupViewController.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
@@ -151,6 +152,7 @@ NS_ASSUME_NONNULL_END
                                withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier
                                       forIndexPath:indexPath];
         headerView.padding = FILTER_PADDING;
+        headerView.infoButton.hidden = (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends);
         headerView.titleLabel.text = NSLocalizedString(@"Activity", nil);
         headerView.delegate = self;
         [headerView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
@@ -294,6 +296,16 @@ NS_ASSUME_NONNULL_END
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
     [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:NO];
+}
+
+- (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {
+    CGPoint offset = [self.view.window convertRect:sender.frame fromView:sender.superview].origin;
+    DWInfoPopupViewController *controller =
+        [[DWInfoPopupViewController alloc] initWithText:NSLocalizedString(@"Payments made directly to addresses won’t be retained in activity.", nil)
+                                                 offset:offset];
+    controller.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    controller.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - Private

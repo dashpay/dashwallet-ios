@@ -608,6 +608,9 @@
 "Payments" = "お支払い";
 
 /* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+
+/* No comment provided by engineer. */
 "Pending" = "Pending";
 
 /* No comment provided by engineer. */

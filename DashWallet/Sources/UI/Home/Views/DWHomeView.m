@@ -220,6 +220,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate homeView:self showTxFilter:sender];
 }
 
+- (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {
+    // NOP
+}
+
 #pragma mark - DWHomeHeaderViewDelegate
 
 - (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view {

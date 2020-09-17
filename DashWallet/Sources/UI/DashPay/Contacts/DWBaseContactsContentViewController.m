@@ -186,6 +186,9 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     // to be overriden
 }
 
+- (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {
+}
+
 #pragma mark - DWTitleActionHeaderViewDelegate
 
 - (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender {
