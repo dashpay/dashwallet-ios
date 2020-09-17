@@ -17,7 +17,6 @@
 
 #import "DWModalUserProfileViewController.h"
 
-#import "DWGlobalOptions.h"
 #import "DWNavigationController.h"
 #import "DWUserProfileViewController.h"
 #import "UIViewController+DWEmbedding.h"
@@ -43,8 +42,7 @@ NS_ASSUME_NONNULL_END
             [[DWUserProfileViewController alloc] initWithItem:item
                                                      payModel:payModel
                                                  dataProvider:dataProvider
-                                           shouldSkipUpdating:YES
-                                         shouldAcceptIncoming:[DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn];
+                                           shouldSkipUpdating:YES];
     }
     return self;
 }
@@ -60,6 +58,13 @@ NS_ASSUME_NONNULL_END
 
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.profileController];
     [self dw_embedChild:navigationController];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.profileController.view setNeedsLayout];
+    [self.profileController.view layoutIfNeeded];
 }
 
 - (void)cancelButtonAction {

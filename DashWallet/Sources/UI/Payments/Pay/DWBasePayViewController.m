@@ -28,7 +28,6 @@
 #import "DWQRScanModel.h"
 #import "DWQRScanViewController.h"
 #import "DWSendAmountViewController.h"
-#import "DWTxDetailFullscreenViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWEmbedding.h"

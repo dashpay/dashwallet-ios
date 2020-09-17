@@ -117,6 +117,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicUserItem>)userItem {
     DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
+
+    if (friendRequest == nil) {
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+
+        NSManagedObjectContext *context = NSManagedObjectContext.viewContext;
+        DSDashpayUserEntity *dashpayUserEntity = [myBlockchainIdentity matchingDashpayUserInContext:context];
+        for (DSFriendRequestEntity *request in dashpayUserEntity.incomingRequests) {
+            if ([[request.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:userItem.blockchainIdentity.currentDashpayUsername]) {
+                friendRequest = request;
+                break;
+            }
+        }
+    }
+
     NSParameterAssert(friendRequest);
 
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;

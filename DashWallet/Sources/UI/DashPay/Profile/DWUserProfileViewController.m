@@ -53,6 +53,10 @@ static CGFloat const FILTER_PADDING = 15.0; // same as horizontal padding for it
 @property (null_resettable, nonatomic, strong) DWFilterHeaderView *measuringFilterHeaderView;
 @property (null_resettable, nonatomic, strong) DWUserProfileHeaderView *measuringProfileHeaderView;
 
+@property (null_resettable, nonatomic, strong) DWUserProfileSendRequestCell *measuringSendCell;
+@property (null_resettable, nonatomic, strong) DWUserProfileContactActionsCell *measuringActionsCell;
+@property (null_resettable, nonatomic, strong) DWDPBasicCell *measuringBasicCell;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -62,19 +66,17 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
-    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO shouldAcceptIncoming:NO];
+    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO];
 }
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-          shouldSkipUpdating:(BOOL)shouldSkipUpdating
-        shouldAcceptIncoming:(BOOL)shouldAcceptIncoming {
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _model = [[DWUserProfileModel alloc] initWithItem:item
-                                           txDataProvider:dataProvider
-                                     shouldAcceptIncoming:shouldAcceptIncoming];
+                                           txDataProvider:dataProvider];
         _model.delegate = self;
         if (shouldSkipUpdating) {
             [_model skipUpdating];
@@ -107,6 +109,13 @@ NS_ASSUME_NONNULL_END
     self.navigationItem.titleView = titleView;
 
     [self.view addSubview:self.collectionView];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.collectionView setNeedsLayout];
+    [self.collectionView layoutIfNeeded];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -215,6 +224,43 @@ NS_ASSUME_NONNULL_END
     return size;
 }
 
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
+    UICollectionViewCell *measuringCell = nil;
+    if (indexPath.section == 0) {
+        if ([self shouldShowSendRequestAction]) {
+            DWUserProfileSendRequestCell *cell = self.measuringSendCell;
+            cell.contentWidth = contentWidth;
+            cell.model = self.model;
+            measuringCell = cell;
+        }
+        DWUserProfileContactActionsCell *cell = self.measuringActionsCell;
+        cell.contentWidth = contentWidth;
+        cell.model = self.model;
+        measuringCell = cell;
+    }
+    else {
+        id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+
+        DWDPBasicCell *cell = self.measuringBasicCell;
+        cell.contentWidth = contentWidth;
+        cell.itemView.avatarHidden = YES;
+        cell.displayItemBackgroundView = NO;
+        cell.item = item;
+        measuringCell = cell;
+    }
+
+    measuringCell.frame = CGRectMake(0, 0, contentWidth, 300);
+    CGSize size = [measuringCell systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingCompressedSize.height)
+                               withHorizontalFittingPriority:UILayoutPriorityRequired
+                                     verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
+    return size;
+}
+
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -308,6 +354,16 @@ NS_ASSUME_NONNULL_END
     [self presentViewController:controller animated:YES completion:nil];
 }
 
+#pragma mark - DWTxDetailFullscreenViewControllerDelegate
+
+- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailFullscreenViewController *)controller {
+    if (self.model.shouldAcceptIncomingAfterPayment) {
+        [self.model acceptContactRequest];
+    }
+
+    [super detailFullscreenViewControllerDidFinish:controller];
+}
+
 #pragma mark - Private
 
 - (BOOL)shouldShowActions {
@@ -390,6 +446,27 @@ NS_ASSUME_NONNULL_END
     }
     [_measuringFilterHeaderView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
     return _measuringFilterHeaderView;
+}
+
+- (DWUserProfileSendRequestCell *)measuringSendCell {
+    if (_measuringSendCell == nil) {
+        _measuringSendCell = [[DWUserProfileSendRequestCell alloc] initWithFrame:CGRectZero];
+    }
+    return _measuringSendCell;
+}
+
+- (DWUserProfileContactActionsCell *)measuringActionsCell {
+    if (_measuringActionsCell == nil) {
+        _measuringActionsCell = [[DWUserProfileContactActionsCell alloc] initWithFrame:CGRectZero];
+    }
+    return _measuringActionsCell;
+}
+
+- (DWDPBasicCell *)measuringBasicCell {
+    if (_measuringBasicCell == nil) {
+        _measuringBasicCell = [[DWDPBasicCell alloc] initWithFrame:CGRectZero];
+    }
+    return _measuringBasicCell;
 }
 
 - (NSString *)titleForFilterButton {

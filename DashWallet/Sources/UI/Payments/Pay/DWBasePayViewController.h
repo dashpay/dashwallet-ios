@@ -20,6 +20,7 @@
 #import "DWDPBasicUserItem.h"
 #import "DWDemoDelegate.h"
 #import "DWNavigationChildViewController.h"
+#import "DWTxDetailFullscreenViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTransactionListDataProviderProtocol;
 @protocol DWDPBasicUserItem;
 
-@interface DWBasePayViewController : DWNavigationChildViewController
+@interface DWBasePayViewController : DWNavigationChildViewController <DWTxDetailFullscreenViewControllerDelegate>
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
