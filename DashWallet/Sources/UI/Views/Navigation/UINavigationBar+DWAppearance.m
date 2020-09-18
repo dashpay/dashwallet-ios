@@ -51,4 +51,24 @@
     navigationBar.shadowImage = [[UIImage alloc] init];
 }
 
+- (void)dw_applyStandardAppearance {
+    if (@available(iOS 13.0, *)) {
+        UINavigationBarAppearance *standardAppearance = self.standardAppearance;
+        UINavigationBar *navigationBar = self;
+        NSParameterAssert(standardAppearance);
+        standardAppearance.backgroundColor = navigationBar.barTintColor;
+        standardAppearance.titleTextAttributes = navigationBar.titleTextAttributes;
+        standardAppearance.shadowImage = navigationBar.shadowImage;
+        standardAppearance.shadowColor = [UIColor clearColor];
+
+        UIBarButtonItemAppearance *buttonAppearance = standardAppearance.buttonAppearance;
+        NSParameterAssert(buttonAppearance);
+        UIBarButtonItemStateAppearance *stateApperance = buttonAppearance.normal;
+        stateApperance.titleTextAttributes = navigationBar.titleTextAttributes;
+
+        navigationBar.scrollEdgeAppearance = standardAppearance;
+        navigationBar.compactAppearance = standardAppearance;
+    }
+}
+
 @end
