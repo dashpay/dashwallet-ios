@@ -148,25 +148,25 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
     return nil;
 }
 
-static CGFloat AlphaForAction(DWShortcutAction *action) {
-    return (action.enabled ? 1.0 : 0.4);
-}
-
-static BOOL ShowsGradientLayer(DWShortcutAction *action) {
+static UIFont *FontForAction(DWShortcutAction *action) {
     const DWShortcutActionType type = action.type;
     switch (type) {
         case DWShortcutActionType_CreateUsername:
-            return YES;
+            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
         default:
-            return NO;
+            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
     }
+}
+
+static CGFloat AlphaForAction(DWShortcutAction *action) {
+    return (action.enabled ? 1.0 : 0.4);
 }
 
 static UIColor *TextColor(DWShortcutAction *action) {
     const DWShortcutActionType type = action.type;
     switch (type) {
         case DWShortcutActionType_CreateUsername:
-            return [UIColor dw_darkTitleColor];
+            return [UIColor dw_dashBlueColor];
         default:
             return [UIColor dw_darkTitleColor];
     }
@@ -177,7 +177,6 @@ static UIColor *TextColor(DWShortcutAction *action) {
 @property (strong, nonatomic) IBOutlet UIView *centeredView;
 @property (strong, nonatomic) IBOutlet UIImageView *iconImageView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
-@property (nonatomic, strong) CAGradientLayer *gradientLayer;
 
 @end
 
@@ -196,8 +195,9 @@ static UIColor *TextColor(DWShortcutAction *action) {
 
     self.titleLabel.text = TitleForAction(model);
     self.titleLabel.textColor = TextColor(model);
+    self.titleLabel.font = FontForAction(model);
     self.iconImageView.image = IconForAction(model);
-    self.gradientLayer.hidden = !ShowsGradientLayer(model);
+    self.iconImageView.hidden = self.iconImageView.image == nil;
     const CGFloat alpha = AlphaForAction(model);
     self.titleLabel.alpha = alpha;
     self.iconImageView.alpha = alpha;
