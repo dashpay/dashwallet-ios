@@ -65,6 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+
+    self.infoButton.hidden = YES;
 }
 
 - (void)setPadding:(CGFloat)padding {
@@ -77,6 +79,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)filterButtonAction:(UIButton *)sender {
     [self.delegate filterHeaderView:self filterButtonAction:sender];
+}
+
+- (IBAction)infoButtonAction:(UIButton *)sender {
+    [self.delegate filterHeaderView:self infoButtonAction:sender];
 }
 
 @end

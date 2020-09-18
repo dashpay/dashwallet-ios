@@ -15,22 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
-
-#import "DWDPBasicUserItem.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUserProfileViewController : DWBasePayViewController
+@interface DWInfoPopupViewController : UIViewController
 
-- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
-                    payModel:(id<DWPayModelProtocol>)payModel
-                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
-
-- (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
-                    payModel:(id<DWPayModelProtocol>)payModel
-                dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-          shouldSkipUpdating:(BOOL)shouldSkipUpdating NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithText:(NSString *)text offset:(CGPoint)offset;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

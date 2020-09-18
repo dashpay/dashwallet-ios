@@ -20,6 +20,7 @@
 #import "DWDashPayContactsActions.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWProfileTxsFetchedDataSource.h"
 #import "DWUserProfileDataSourceObject.h"
 
@@ -31,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWProfileTxsFetchedDataSource *txsFetchedDataSource;
 @property (nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
-@property (nonatomic, assign) BOOL shouldAcceptIncoming;
 
 @end
 
@@ -42,14 +42,12 @@ NS_ASSUME_NONNULL_END
 @synthesize displayMode = _displayMode;
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
-              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider
-        shouldAcceptIncoming:(BOOL)shouldAcceptIncoming {
+              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider {
     self = [super init];
     if (self) {
         _item = item;
         _txDataProvider = txDataProvider;
         _dataSource = [[DWUserProfileDataSourceObject alloc] init]; // empty data source
-        _shouldAcceptIncoming = shouldAcceptIncoming;
 
         // TODO: DP global notification is used temporary. Remove its usage once FRC delegate issue is resolved
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -59,6 +57,10 @@ NS_ASSUME_NONNULL_END
                                  object:nil];
     }
     return self;
+}
+
+- (BOOL)shouldAcceptIncomingAfterPayment {
+    return ([DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn && [self friendshipStatusInternal] == DSBlockchainIdentityFriendshipStatus_Incoming);
 }
 
 - (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
@@ -71,7 +73,7 @@ NS_ASSUME_NONNULL_END
     [self updateDataSource];
 
 
-    if (self.shouldAcceptIncoming && [self friendshipStatusInternal] == DSBlockchainIdentityFriendshipStatus_Incoming) {
+    if (self.shouldAcceptIncomingAfterPayment) {
         [self acceptContactRequest];
     }
     else {

@@ -51,6 +51,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 @property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
 @property (readonly, nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 @property (readonly, nonatomic, assign) DWUserProfileModelState requestState;
+@property (readonly, nonatomic, assign) BOOL shouldAcceptIncomingAfterPayment;
 
 @property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
 
@@ -61,8 +62,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 - (void)acceptContactRequest;
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
-              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider
-        shouldAcceptIncoming:(BOOL)shouldAcceptIncoming;
+              txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

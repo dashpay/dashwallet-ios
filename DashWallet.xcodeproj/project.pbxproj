@@ -38,6 +38,8 @@
 		2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69F12316B93F001B8C90 /* DWTitleDetailCellView.m */; };
 		2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A0C69F323179C0F001B8C90 /* DWConfirmPaymentContentView.xib */; };
 		2A0C6C472362E25E00C86F37 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
+		2A0FF69E2513A305006B6801 /* DWInfoPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0FF69D2513A305006B6801 /* DWInfoPopupViewController.m */; };
+		2A0FF6A12513A77F006B6801 /* DWInfoPopupContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0FF6A02513A77F006B6801 /* DWInfoPopupContentView.m */; };
 		2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */; };
 		2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */; };
 		2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */; };
@@ -650,6 +652,10 @@
 		2A0C69F12316B93F001B8C90 /* DWTitleDetailCellView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTitleDetailCellView.m; sourceTree = "<group>"; };
 		2A0C69F323179C0F001B8C90 /* DWConfirmPaymentContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWConfirmPaymentContentView.xib; sourceTree = "<group>"; };
 		2A0C6C852362EFAE00C86F37 /* libDashSync-Shared.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libDashSync-Shared.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A0FF69C2513A305006B6801 /* DWInfoPopupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInfoPopupViewController.h; sourceTree = "<group>"; };
+		2A0FF69D2513A305006B6801 /* DWInfoPopupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInfoPopupViewController.m; sourceTree = "<group>"; };
+		2A0FF69F2513A77E006B6801 /* DWInfoPopupContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInfoPopupContentView.h; sourceTree = "<group>"; };
+		2A0FF6A02513A77F006B6801 /* DWInfoPopupContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInfoPopupContentView.m; sourceTree = "<group>"; };
 		2A10EB332358996700C38B61 /* DWImportWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImportWalletInfoViewController.h; sourceTree = "<group>"; };
 		2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImportWalletInfoViewController.m; sourceTree = "<group>"; };
 		2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ImportWalletInfo.storyboard; sourceTree = "<group>"; };
@@ -1812,6 +1818,17 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2A0FF69B2513A2E5006B6801 /* InfoPopup */ = {
+			isa = PBXGroup;
+			children = (
+				2A0FF69C2513A305006B6801 /* DWInfoPopupViewController.h */,
+				2A0FF69D2513A305006B6801 /* DWInfoPopupViewController.m */,
+				2A0FF69F2513A77E006B6801 /* DWInfoPopupContentView.h */,
+				2A0FF6A02513A77F006B6801 /* DWInfoPopupContentView.m */,
+			);
+			path = InfoPopup;
+			sourceTree = "<group>";
+		};
 		2A10EB322358994400C38B61 /* ImportWallet */ = {
 			isa = PBXGroup;
 			children = (
@@ -2041,6 +2058,7 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A0FF69B2513A2E5006B6801 /* InfoPopup */,
 				2A913E9923A53AC6006A2A59 /* Containers */,
 				2A0C69D423143B17001B8C90 /* ModalController */,
 				2A0C69B62313EB4A001B8C90 /* Transitions */,
@@ -4957,6 +4975,7 @@
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
 				2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */,
 				2AB3416923A8C479004E37A7 /* DWOnboardingCollectionViewCell.m in Sources */,
+				2A0FF6A12513A77F006B6801 /* DWInfoPopupContentView.m in Sources */,
 				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2A856CFD24EB30680040BD61 /* DWVerticalContactCell.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
@@ -5012,6 +5031,7 @@
 				2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */,
 				2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */,
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,
+				2A0FF69E2513A305006B6801 /* DWInfoPopupViewController.m in Sources */,
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */,
 				2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */,

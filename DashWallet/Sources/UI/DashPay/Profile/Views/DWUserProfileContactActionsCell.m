@@ -101,7 +101,10 @@ NS_ASSUME_NONNULL_END
 
         UILayoutGuide *guide = self.contentView.layoutMarginsGuide;
 
-        [titleLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+        [titleLabel setContentHuggingPriority:UILayoutPriorityRequired - 1
+                                      forAxis:UILayoutConstraintAxisVertical];
+        [titleLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 2
+                                                    forAxis:UILayoutConstraintAxisVertical];
 
         [NSLayoutConstraint activateConstraints:@[
             [contentView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
@@ -119,6 +122,7 @@ NS_ASSUME_NONNULL_END
             [stackView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
             [guide.trailingAnchor constraintEqualToAnchor:stackView.trailingAnchor],
 
+            [actionsStackView.heightAnchor constraintEqualToConstant:BUTTON_HEIGHT],
             [mainButton.heightAnchor constraintEqualToConstant:BUTTON_HEIGHT],
             [secondaryButton.heightAnchor constraintEqualToConstant:BUTTON_HEIGHT],
 
@@ -141,6 +145,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)setContentWidth:(CGFloat)contentWidth {
     self.contentWidthConstraint.constant = contentWidth;
+    [self invalidateIntrinsicContentSize];
 }
 
 - (void)setModel:(DWUserProfileModel *)model {
@@ -149,6 +154,8 @@ NS_ASSUME_NONNULL_END
     [self configureForIncomingStatus];
 
     [self updateState:self.model.requestState];
+
+    [self invalidateIntrinsicContentSize];
 }
 
 - (void)prepareForReuse {
