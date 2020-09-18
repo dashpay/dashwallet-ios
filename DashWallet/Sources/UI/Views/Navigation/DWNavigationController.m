@@ -79,6 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
                               animated:animated];
     }
 
+
     // https://stackoverflow.com/questions/23484310/canceling-interactive-uinavigationcontroller-pop-gesture-does-not-call-uinavigat
     [navigationController.transitionCoordinator
         notifyWhenInteractionChangesUsingBlock:^(id<UIViewControllerTransitionCoordinatorContext> context) {

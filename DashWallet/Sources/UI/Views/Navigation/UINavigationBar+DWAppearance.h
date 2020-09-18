@@ -24,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dw_configureForDefaultAppearance;
 - (void)dw_configureForWhiteAppearance;
 
+/// Warning: After applying standard appearance switching between defualt / white won't be possible
+- (void)dw_applyStandardAppearance;
+
 @end
 
 NS_ASSUME_NONNULL_END
