@@ -152,14 +152,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverWalletWithCurrentSeedPhrase {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
-        NSString *phrase = [self.model cleanupPhrase:textView.text];
+        NSString *phrase = textView.text;
+
         NSString *incorrectWord = nil;
 
-        if (![textView.text hasPrefix:DW_WATCH] && ![phrase isEqual:textView.text]) {
-            textView.text = phrase;
-        }
+        if (![phrase isEqualToString:DW_WIPE_STRONG]) {
+            phrase = [self.model cleanupPhrase:phrase];
 
-        phrase = [self.model normalizePhrase:phrase];
+
+            if (![textView.text hasPrefix:DW_WATCH] && ![phrase isEqual:textView.text]) {
+                textView.text = phrase;
+            }
+            phrase = [self.model normalizePhrase:phrase];
+        }
 
         NSArray<NSString *> *words = CFBridgingRelease(
             CFStringCreateArrayBySeparatingStrings(
@@ -174,7 +179,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
 
-        if ([phrase isEqualToString:DW_WIPE] ||
+        if ([phrase isEqualToString:DW_WIPE] || [phrase isEqualToString:DW_WIPE_STRONG] ||
             [[phrase lowercaseString] isEqualToString:[self.model.wipeAcceptPhrase lowercaseString]]) {
             [self wipeWithPhrase:phrase];
         }
