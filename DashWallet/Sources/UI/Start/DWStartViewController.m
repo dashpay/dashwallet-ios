@@ -49,6 +49,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self mvvm_observe:@"viewModel.state"
                   with:^(__typeof__(self) self, NSNumber *value) {
+                      // upgrade old keys after migration is done
+                      if ([self upgradeOldKeys]) {
+                          return;
+                      }
+
                       if (self.viewModel.state == DWStartModelStateDone) {
                           [self.delegate startViewController:self
                               didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
@@ -112,10 +117,13 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)performMigration {
+    [self.viewModel startMigration];
+}
+
+- (BOOL)upgradeOldKeys {
     DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
     if ([dashSyncVersionManager noOldWallet]) {
-        [self.viewModel startMigration];
-        return;
+        return NO;
     }
 
     DSWallet *wallet = [[DWEnvironment sharedInstance] currentWallet];
@@ -130,6 +138,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                           [self.viewModel startMigration];
                                                       }
                                                   }];
+
+    return YES;
 }
 
 - (void)performRescanBlockchain {
