@@ -56,16 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
                           }
                       }
 
-                      if (self.viewModel.state == DWStartModelStateDone) {
-                          [self.delegate startViewController:self
-                              didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
-                                          shouldRescanBlockchain:NO];
-                      }
-                      else if (self.viewModel.state == DWStartModelStateDoneAndRescan) {
-                          [self.delegate startViewController:self
-                              didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
-                                          shouldRescanBlockchain:YES];
-                      }
+                      [self finishMigrationIfDone];
                   }];
 }
 
@@ -137,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                           [self forceUpdateWalletAuthentication:cancelled];
                                                       }
                                                       else {
-                                                          [self.viewModel startMigration];
+                                                          [self finishMigrationIfDone];
                                                       }
                                                   }];
 
@@ -146,6 +137,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performRescanBlockchain {
     [self.viewModel cancelMigrationAndRescanBlockchain];
+}
+
+- (void)finishMigrationIfDone {
+    if (self.viewModel.state == DWStartModelStateDone) {
+        [self.delegate startViewController:self
+            didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
+                        shouldRescanBlockchain:NO];
+    }
+    else if (self.viewModel.state == DWStartModelStateDoneAndRescan) {
+        [self.delegate startViewController:self
+            didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
+                        shouldRescanBlockchain:YES];
+    }
 }
 
 @end
