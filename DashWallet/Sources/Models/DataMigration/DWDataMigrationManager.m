@@ -31,7 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _shouldMigrate = [DSCoreDataMigrator requiresMigration];
+        _shouldMigrateDatabase = [DSCoreDataMigrator requiresMigration];
+        _shouldMigrateWalletKeys = ![[DSVersionManager sharedInstance] noOldWallet];
+        _shouldMigrate = _shouldMigrateDatabase || _shouldMigrateWalletKeys;
     }
     return self;
 }

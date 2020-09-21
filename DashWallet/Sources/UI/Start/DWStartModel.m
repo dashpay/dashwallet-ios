@@ -37,6 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    if (![DWDataMigrationManager sharedInstance].shouldMigrateDatabase) {
+        self.state = DWStartModelStateDone;
+        return;
+    }
+
     self.state = DWStartModelStateInProgress;
 
 #ifdef DEBUG

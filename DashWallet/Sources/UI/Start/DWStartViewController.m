@@ -49,9 +49,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self mvvm_observe:@"viewModel.state"
                   with:^(__typeof__(self) self, NSNumber *value) {
-                      // upgrade old keys after migration is done
-                      if ([self upgradeOldKeys]) {
-                          return;
+                      if (self.viewModel.state == DWStartModelStateDone || self.viewModel.state == DWStartModelStateDoneAndRescan) {
+                          // upgrade old keys after migration is done
+                          if ([self upgradeOldKeys]) {
+                              return;
+                          }
                       }
 
                       if (self.viewModel.state == DWStartModelStateDone) {
