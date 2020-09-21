@@ -24,6 +24,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 NSString *const DW_WIPE = @"wipe";
+NSString *const DW_WIPE_STRONG = @"wipe!!!";
 NSString *const DW_WATCH = @"watch";
 NSInteger const DW_PHRASE_LENGTH = 12;
 

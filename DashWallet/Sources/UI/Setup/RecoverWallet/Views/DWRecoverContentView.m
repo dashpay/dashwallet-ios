@@ -212,7 +212,7 @@ NS_ASSUME_NONNULL_BEGIN
                 [self.delegate recoverContentViewWipeNotAllowed:self];
             }
         }
-        else if ([phrase.lowercaseString isEqualToString:self.model.wipeAcceptPhrase.lowercaseString]) {
+        else if ([phrase isEqualToString:DW_WIPE_STRONG] || [phrase.lowercaseString isEqualToString:self.model.wipeAcceptPhrase.lowercaseString]) {
             [self.delegate recoverContentViewPerformWipe:self];
         }
         else {
