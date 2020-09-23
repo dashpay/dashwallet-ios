@@ -295,6 +295,9 @@
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Earlier";
 
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
 

@@ -416,6 +416,8 @@
 		2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D702462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m */; };
 		2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */; };
 		2ADC9D7C24644E46001D7C0D /* DWUserProfileContactActionsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */; };
+		2ADDF98A251B2F0E00DA8926 /* DWCurrentUserProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADDF989251B2F0E00DA8926 /* DWCurrentUserProfileView.m */; };
+		2ADDF98D251B4A9200DA8926 /* DWCurrentUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */; };
 		2ADF83FA23632D1C008459A7 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
 		2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
@@ -1424,6 +1426,10 @@
 		2ADC9D7524640A2B001D7C0D /* DWUserProfileModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileModel.m; sourceTree = "<group>"; };
 		2ADC9D7A24644E46001D7C0D /* DWUserProfileContactActionsCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileContactActionsCell.h; sourceTree = "<group>"; };
 		2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileContactActionsCell.m; sourceTree = "<group>"; };
+		2ADDF988251B2F0E00DA8926 /* DWCurrentUserProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrentUserProfileView.h; sourceTree = "<group>"; };
+		2ADDF989251B2F0E00DA8926 /* DWCurrentUserProfileView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCurrentUserProfileView.m; sourceTree = "<group>"; };
+		2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrentUserProfileModel.h; sourceTree = "<group>"; };
+		2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCurrentUserProfileModel.m; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
 		2AE2F0F7245C16C8001DD722 /* DWUserProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileViewController.h; sourceTree = "<group>"; };
 		2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileViewController.m; sourceTree = "<group>"; };
@@ -2454,6 +2460,7 @@
 		2A7A7BC52347DF7100451078 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				2ADDF987251B2D8E00DA8926 /* UserProfile */,
 				2A7A7BB32347928B00451078 /* Views */,
 				2A7A7BB02347927700451078 /* DWMainMenuViewController.h */,
 				2A7A7BB12347927700451078 /* DWMainMenuViewController.m */,
@@ -3722,6 +3729,17 @@
 				2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		2ADDF987251B2D8E00DA8926 /* UserProfile */ = {
+			isa = PBXGroup;
+			children = (
+				2ADDF988251B2F0E00DA8926 /* DWCurrentUserProfileView.h */,
+				2ADDF989251B2F0E00DA8926 /* DWCurrentUserProfileView.m */,
+				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
+				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
+			);
+			path = UserProfile;
 			sourceTree = "<group>";
 		};
 		2ADF83FB23632D55008459A7 /* Shared */ = {
@@ -5000,6 +5018,7 @@
 				2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */,
 				2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
+				2ADDF98A251B2F0E00DA8926 /* DWCurrentUserProfileView.m in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
@@ -5081,6 +5100,7 @@
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
+				2ADDF98D251B4A9200DA8926 /* DWCurrentUserProfileModel.m in Sources */,
 				2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */,
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */,

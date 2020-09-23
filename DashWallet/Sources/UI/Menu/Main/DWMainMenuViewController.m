@@ -66,10 +66,17 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.view.model = [[DWMainMenuModel alloc] init];
+    self.view.userModel = [[DWCurrentUserProfileModel alloc] init];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.view viewWillAppear];
 }
 
 #pragma mark - DWMainMenuContentViewDelegate
@@ -125,6 +132,14 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
     }
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender {
+    
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender {
+    
 }
 
 #pragma mark - DWToolsMenuViewControllerDelegate
