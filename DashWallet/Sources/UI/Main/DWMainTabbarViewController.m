@@ -257,7 +257,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 - (DWNavigationController *)menuNavigationController {
     if (!_menuNavigationController) {
         DWMainMenuViewController *menuController =
-            [[DWMainMenuViewController alloc] initWithBalanceDisplayOptions:self.homeModel.balanceDisplayOptions];
+            [[DWMainMenuViewController alloc] initWithBalanceDisplayOptions:self.homeModel.balanceDisplayOptions
+                                                               receiveModel:self.homeModel.receiveModel];
         menuController.delegate = self;
 
         _menuNavigationController = [[DWNavigationController alloc] initWithRootViewController:menuController];

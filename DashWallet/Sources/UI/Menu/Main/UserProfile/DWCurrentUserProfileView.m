@@ -17,6 +17,7 @@
 
 #import "DWCurrentUserProfileView.h"
 
+#import "DSBlockchainIdentity+DWDisplayTitleSubtitle.h"
 #import "DWButton.h"
 #import "DWUIKit.h"
 
@@ -134,34 +135,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
-    [result beginEditing];
-    NSString *title = nil;
-    NSString *subtitle = nil;
-    if (self.blockchainIdentity.matchingDashpayUserInViewContext.displayName != nil) {
-        title = self.blockchainIdentity.matchingDashpayUserInViewContext.displayName;
-        subtitle = self.blockchainIdentity.currentDashpayUsername;
-    }
-    else {
-        title = self.blockchainIdentity.currentDashpayUsername;
-    }
-    if (title != nil) {
-        [result appendAttributedString:[[NSAttributedString alloc] initWithString:title
-                                                                       attributes:@{
-                                                                           NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3],
-                                                                           NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
-                                                                       }]];
-    }
-    if (subtitle != nil) {
-        [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
-        [result appendAttributedString:[[NSAttributedString alloc] initWithString:subtitle
-                                                                       attributes:@{
-                                                                           NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleCallout],
-                                                                           NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
-                                                                       }]];
-    }
-    [result endEditing];
-    self.infoLabel.attributedText = result;
+    self.infoLabel.attributedText = [self.blockchainIdentity dw_asTitleSubtitle];
 }
 
 @end

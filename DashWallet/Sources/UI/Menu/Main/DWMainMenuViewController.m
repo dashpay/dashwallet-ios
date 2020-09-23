@@ -28,6 +28,7 @@
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
 #import "DWUpholdViewController.h"
+#import "DWUserProfileModalQRViewController.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -38,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 
 @end
 
@@ -45,10 +47,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions
+                                 receiveModel:(id<DWReceiveModelProtocol>)receiveModel {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
+        _receiveModel = receiveModel;
 
         self.title = NSLocalizedString(@"More", nil);
     }
@@ -135,11 +139,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender {
-    
+    DWUserProfileModalQRViewController *controller = [[DWUserProfileModalQRViewController alloc] initWithModel:self.receiveModel];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender {
-    
 }
 
 #pragma mark - DWToolsMenuViewControllerDelegate

@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,31 +17,17 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWWipeDelegate.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWMainMenuViewController;
-@protocol DWBalanceDisplayOptionsProtocol;
 @protocol DWReceiveModelProtocol;
 
-@protocol DWMainMenuViewControllerDelegate <NSObject>
+@interface DWUserProfileModalQRViewController : UIViewController
 
-- (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
-- (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
-
-@end
-
-@interface DWMainMenuViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
-
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions
-                                 receiveModel:(id<DWReceiveModelProtocol>)receiveModel;
+- (instancetype)initWithModel:(id<DWReceiveModelProtocol>)model;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
 @end
