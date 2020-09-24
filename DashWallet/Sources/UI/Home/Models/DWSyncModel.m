@@ -71,16 +71,20 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
-                               selector:@selector(transactionManagerSyncStartedNotification:)
-                                   name:DSTransactionManagerSyncStartedNotification
+                               selector:@selector(chainManagerSyncStartedNotification:)
+                                   name:DSChainManagerSyncStartedNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(transactionManagerSyncFinishedNotification:)
-                                   name:DSTransactionManagerSyncFinishedNotification
+                               selector:@selector(chainManagerSyncParametersUpdatedNotification:)
+                                   name:DSChainManagerSyncParametersUpdatedNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(transactionManagerSyncFailedNotification:)
-                                   name:DSTransactionManagerSyncFailedNotification
+                               selector:@selector(chainManagerSyncFinishedNotification:)
+                                   name:DSChainManagerSyncFinishedNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(chainManagerSyncFailedNotification:)
+                                   name:DSChainManagerSyncFailedNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainBlocksDidChangeNotification)
@@ -113,26 +117,38 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
 
 #pragma mark Notifications
 
-- (void)transactionManagerSyncStartedNotification:(NSNotification *)sender {
+- (void)chainManagerSyncStartedNotification:(NSNotification *)sender {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     if (![self shouldAcceptSyncNotification:sender]) {
         return;
     }
 
-    DWSyncLog(@"[DW Sync] transactionManagerSyncStartedNotification");
+    DWSyncLog(@"[DW Sync] ChainManagerSyncStartedNotification");
 
     [self startSyncingActivity];
 }
 
-- (void)transactionManagerSyncFinishedNotification:(NSNotification *)sender {
+- (void)chainManagerSyncParametersUpdatedNotification:(NSNotification *)sender {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     if (![self shouldAcceptSyncNotification:sender]) {
         return;
     }
 
-    DWSyncLog(@"[DW Sync] transactionManagerSyncFinishedNotification");
+    DWSyncLog(@"[DW Sync] ChainManagerSyncStartedNotification");
+
+    [self startSyncingActivity];
+}
+
+- (void)chainManagerSyncFinishedNotification:(NSNotification *)sender {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (![self shouldAcceptSyncNotification:sender]) {
+        return;
+    }
+
+    DWSyncLog(@"[DW Sync] ChainManagerSyncFinishedNotification");
 
     if (![self shouldStopSyncing]) {
         return;
@@ -141,14 +157,14 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
     [self stopSyncingActivityFailed:NO];
 }
 
-- (void)transactionManagerSyncFailedNotification:(NSNotification *)sender {
+- (void)chainManagerSyncFailedNotification:(NSNotification *)sender {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     if (![self shouldAcceptSyncNotification:sender]) {
         return;
     }
 
-    DWSyncLog(@"[DW Sync] transactionManagerSyncFailedNotification");
+    DWSyncLog(@"[DW Sync] ChainManagerSyncFailedNotification");
 
     [self stopSyncingActivityFailed:YES];
 }
