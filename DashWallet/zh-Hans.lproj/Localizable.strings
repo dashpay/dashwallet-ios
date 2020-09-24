@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Processing Payment";
 
@@ -57,6 +60,9 @@
 
 /* No comment provided by engineer. */
 "About" = "关于";
+
+/* No comment provided by engineer. */
+"About me" = "About me";
 
 /* No comment provided by engineer. */
 "Accept" = "Accept";
@@ -282,6 +288,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+
+/* No comment provided by engineer. */
+"Display Name" = "Display Name";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Do not take a screenshot";
@@ -741,6 +750,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Rewards";
+
+/* No comment provided by engineer. */
+"Save" = "Save";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";

@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWAboutModel.h"
+#import "DWEditProfileViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
@@ -35,7 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
-                                        DWSettingsMenuViewControllerDelegate>
+                                        DWSettingsMenuViewControllerDelegate,
+                                        DWEditProfileViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
@@ -80,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self.view viewWillAppear];
+    [self.view updateUserHeader];
 }
 
 #pragma mark - DWMainMenuContentViewDelegate
@@ -144,6 +146,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender {
+    DWEditProfileViewController *controller = [[DWEditProfileViewController alloc] init];
+    controller.delegate = self;
+    DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigation.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigation animated:YES completion:nil];
 }
 
 #pragma mark - DWToolsMenuViewControllerDelegate
@@ -158,6 +165,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)settingsMenuViewControllerDidRescanBlockchain:(DWSettingsMenuViewController *)controller {
     [self.navigationController popToRootViewControllerAnimated:NO];
     [self.delegate mainMenuViewControllerOpenHomeScreen:self];
+}
+
+#pragma mark - DWEditProfileViewControllerDelegate
+
+- (void)editProfileViewControllerDidUpdateUserProfile {
+    [self.view updateUserHeader];
 }
 
 @end

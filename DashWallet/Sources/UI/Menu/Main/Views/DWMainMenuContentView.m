@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView reloadData];
 }
 
-- (void)viewWillAppear {
+- (void)updateUserHeader {
     [self.userModel update];
     [self updateHeader];
 }

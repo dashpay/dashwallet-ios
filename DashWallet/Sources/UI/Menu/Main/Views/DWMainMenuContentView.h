@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DWCurrentUserProfileModel *userModel;
 @property (nullable, nonatomic, weak) id<DWMainMenuContentViewDelegate> delegate;
 
-- (void)viewWillAppear;
+- (void)updateUserHeader;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
