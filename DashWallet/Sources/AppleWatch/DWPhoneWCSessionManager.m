@@ -75,7 +75,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                                                               }];
 
             self.syncFinishedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification
+                [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFinishedNotification
                                                                   object:nil
                                                                    queue:nil
                                                               usingBlock:^(NSNotification *_Nonnull note) {
@@ -83,7 +83,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                                                               }];
 
             self.syncFailedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification
+                [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFailedNotification
                                                                   object:nil
                                                                    queue:nil
                                                               usingBlock:^(NSNotification *_Nonnull note) {
