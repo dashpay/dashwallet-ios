@@ -78,7 +78,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)actionButtonAction:(id)sender {
-    [self.blockchainIdentity updateDashpayProfileWithDisplayName:self.displayNameModel.text publicMessage:self.aboutModel.text avatarURLString:@""];
+    // TODO: DP provide valid avatar URL
+    id avatar = nil;
+    [self.blockchainIdentity updateDashpayProfileWithDisplayName:self.displayNameModel.text publicMessage:self.aboutModel.text avatarURLString:avatar];
 
     [self showActivityIndicator];
     __weak typeof(self) weakSelf = self;
