@@ -17,6 +17,7 @@
 
 #import "DWEditProfileViewController.h"
 
+#import "DWEditProfileAvatarView.h"
 #import "DWEditProfileTextFieldCell.h"
 #import "DWEditProfileTextViewCell.h"
 #import "DWEnvironment.h"
@@ -27,11 +28,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWEditProfileViewController () <UITableViewDelegate, UITableViewDataSource>
+@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate>
 
-@property (nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
-
-@property (nullable, nonatomic, strong) UITableView *tableView;
+@property (nullable, nonatomic, strong) DWEditProfileAvatarView *headerView;
 
 @property (nullable, nonatomic, copy) NSArray<DWBaseFormCellModel *> *items;
 @property (nullable, nonatomic, strong) DWProfileDisplayNameCellModel *displayNameModel;
@@ -43,75 +42,59 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWEditProfileViewController
 
-- (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Save", nil);
+- (instancetype)init {
+    self = [super initWithStyle:UITableViewStylePlain];
+    if (self) {
+    }
+    return self;
+}
+
+- (NSString *)displayName {
+    return self.displayNameModel.text;
+}
+
+- (NSString *)aboutMe {
+    return self.aboutModel.text;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Edit Profile", nil);
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
-    self.actionButton.enabled = YES;
 
     self.blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     NSParameterAssert(self.blockchainIdentity);
-
-    UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                                                                            target:self
-                                                                            action:@selector(cancelButtonAction)];
-    self.navigationItem.leftBarButtonItem = cancel;
 
     [self setupItems];
     [self setupView];
 }
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
-}
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
 
-#pragma mark - Actions
-
-- (void)cancelButtonAction {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)actionButtonAction:(id)sender {
-    // TODO: DP provide valid avatar URL
-    id avatar = nil;
-    [self.blockchainIdentity updateDashpayProfileWithDisplayName:self.displayNameModel.text publicMessage:self.aboutModel.text avatarURLString:avatar];
-
-    [self showActivityIndicator];
-    __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
+    UIView *tableHeaderView = self.tableView.tableHeaderView;
+    if (tableHeaderView) {
+        CGSize headerSize = [tableHeaderView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+        if (CGRectGetHeight(tableHeaderView.frame) != headerSize.height) {
+            tableHeaderView.frame = CGRectMake(0.0, 0.0, headerSize.width, headerSize.height);
+            self.tableView.tableHeaderView = tableHeaderView;
         }
-
-        [strongSelf hideActivityIndicator];
-        if (success) {
-            [strongSelf.delegate editProfileViewControllerDidUpdateUserProfile];
-            [strongSelf dismissViewControllerAnimated:YES completion:nil];
-        }
-    }];
+    }
 }
 
 #pragma mark - Private
 
 - (void)setupView {
-    self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
+    self.headerView = [[DWEditProfileAvatarView alloc] initWithFrame:CGRectZero];
+    self.headerView.delegate = self;
+
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedRowHeight = 60.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.tableFooterView = [[UIView alloc] init];
-    self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
-    [self setupContentView:self.tableView];
+    self.tableView.tableHeaderView = self.headerView;
 
     NSArray<Class> *cellClasses = @[
         DWEditProfileTextViewCell.class,
@@ -142,6 +125,11 @@ NS_ASSUME_NONNULL_END
     }
 
     self.items = items;
+}
+
+#pragma mark - DWEditProfileAvatarViewDelegate
+
+- (void)editProfileAvatarView:(DWEditProfileAvatarView *)view editAvatarAction:(UIButton *)sender {
 }
 
 #pragma mark - UITableView

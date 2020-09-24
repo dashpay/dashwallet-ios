@@ -31,7 +31,6 @@ static CGSize const ShowQRSize = {46.0, 45.0};
 @interface DWCurrentUserProfileView ()
 
 @property (readonly, nonatomic, strong) UIImageView *avatarImageView;
-@property (readonly, nonatomic, strong) UIButton *showQRButton;
 @property (readonly, nonatomic, strong) UILabel *infoLabel;
 @property (readonly, nonatomic, strong) UIButton *editProfileButton;
 

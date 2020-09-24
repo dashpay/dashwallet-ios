@@ -20,11 +20,11 @@
 #import <DashSync/DashSync.h>
 
 #import "DWAboutModel.h"
-#import "DWEditProfileViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWNavigationController.h"
+#import "DWRootEditProfileViewController.h"
 #import "DWSecurityMenuViewController.h"
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
@@ -36,8 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
-                                        DWSettingsMenuViewControllerDelegate,
-                                        DWEditProfileViewControllerDelegate>
+                                        DWSettingsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
@@ -146,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender {
-    DWEditProfileViewController *controller = [[DWEditProfileViewController alloc] init];
+    DWRootEditProfileViewController *controller = [[DWRootEditProfileViewController alloc] init];
     controller.delegate = self;
     DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
     navigation.modalPresentationStyle = UIModalPresentationFullScreen;

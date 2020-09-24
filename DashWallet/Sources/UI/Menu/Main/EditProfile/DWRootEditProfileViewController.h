@@ -15,18 +15,20 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseActionButtonViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@protocol DWEditProfileViewControllerDelegate <NSObject>
 
-@interface DWEditProfileViewController : UITableViewController
+- (void)editProfileViewControllerDidUpdateUserProfile;
 
-@property (nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@end
 
-@property (readonly, nonatomic, copy) NSString *displayName;
-@property (readonly, nonatomic, copy) NSString *aboutMe;
+
+@interface DWRootEditProfileViewController : DWBaseActionButtonViewController
+
+@property (nullable, nonatomic, weak) id<DWEditProfileViewControllerDelegate> delegate;
 
 @end
 

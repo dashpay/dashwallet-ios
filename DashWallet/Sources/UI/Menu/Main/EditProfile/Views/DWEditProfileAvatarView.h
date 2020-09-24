@@ -19,14 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DWEditProfileAvatarView;
 
-@interface DWEditProfileViewController : UITableViewController
+@protocol DWEditProfileAvatarViewDelegate <NSObject>
 
-@property (nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+- (void)editProfileAvatarView:(DWEditProfileAvatarView *)view editAvatarAction:(UIButton *)sender;
 
-@property (readonly, nonatomic, copy) NSString *displayName;
-@property (readonly, nonatomic, copy) NSString *aboutMe;
+@end
+
+@interface DWEditProfileAvatarView : UIView
+
+@property (nullable, nonatomic, weak) id<DWEditProfileAvatarViewDelegate> delegate;
 
 @end
 
