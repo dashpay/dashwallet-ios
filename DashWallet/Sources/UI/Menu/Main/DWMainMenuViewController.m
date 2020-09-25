@@ -24,20 +24,24 @@
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWNavigationController.h"
+#import "DWRootEditProfileViewController.h"
 #import "DWSecurityMenuViewController.h"
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
 #import "DWUpholdViewController.h"
+#import "DWUserProfileModalQRViewController.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
-                                        DWSettingsMenuViewControllerDelegate>
+                                        DWSettingsMenuViewControllerDelegate,
+                                        DWRootEditProfileViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 
 @end
 
@@ -45,10 +49,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions
+                                 receiveModel:(id<DWReceiveModelProtocol>)receiveModel {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
+        _receiveModel = receiveModel;
 
         self.title = NSLocalizedString(@"More", nil);
     }
@@ -66,10 +72,17 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.view.model = [[DWMainMenuModel alloc] init];
+    self.view.userModel = [[DWCurrentUserProfileModel alloc] init];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.view updateUserHeader];
 }
 
 #pragma mark - DWMainMenuContentViewDelegate
@@ -127,6 +140,19 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender {
+    DWUserProfileModalQRViewController *controller = [[DWUserProfileModalQRViewController alloc] initWithModel:self.receiveModel];
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender {
+    DWRootEditProfileViewController *controller = [[DWRootEditProfileViewController alloc] init];
+    controller.delegate = self;
+    DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigation.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigation animated:YES completion:nil];
+}
+
 #pragma mark - DWToolsMenuViewControllerDelegate
 
 - (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller {
@@ -139,6 +165,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)settingsMenuViewControllerDidRescanBlockchain:(DWSettingsMenuViewController *)controller {
     [self.navigationController popToRootViewControllerAnimated:NO];
     [self.delegate mainMenuViewControllerOpenHomeScreen:self];
+}
+
+#pragma mark - DWRootEditProfileViewControllerDelegate
+
+- (void)editProfileViewControllerDidUpdateUserProfile {
+    [self.view updateUserHeader];
 }
 
 @end

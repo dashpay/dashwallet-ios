@@ -17,6 +17,7 @@
 
 #import "DWMainMenuContentView.h"
 
+#import "DWCurrentUserProfileView.h"
 #import "DWMainMenuModel.h"
 #import "DWMainMenuTableViewCell.h"
 #import "DWSharedUIConstants.h"
@@ -24,9 +25,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMainMenuContentView () <UITableViewDataSource, UITableViewDelegate>
+@interface DWMainMenuContentView () <UITableViewDataSource, UITableViewDelegate, DWCurrentUserProfileViewDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) DWCurrentUserProfileView *headerView;
 
 @end
 
@@ -49,10 +51,19 @@ NS_ASSUME_NONNULL_BEGIN
         [self addSubview:tableView];
         _tableView = tableView;
 
+        DWCurrentUserProfileView *headerView = [[DWCurrentUserProfileView alloc] initWithFrame:CGRectZero];
+        headerView.delegate = self;
+        _headerView = headerView;
+
         NSString *cellId = DWMainMenuTableViewCell.dw_reuseIdentifier;
         UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
         NSParameterAssert(nib);
         [tableView registerNib:nib forCellReuseIdentifier:cellId];
+
+        [self mvvm_observe:DW_KEYPATH(self, userModel.state)
+                      with:^(typeof(self) self, id value) {
+                          [self updateHeader];
+                      }];
     }
     return self;
 }
@@ -61,6 +72,35 @@ NS_ASSUME_NONNULL_BEGIN
     _model = model;
 
     [self.tableView reloadData];
+}
+
+- (void)updateUserHeader {
+    [self.userModel update];
+    [self updateHeader];
+}
+
+- (void)updateHeader {
+    if (self.userModel.blockchainIdentity != nil) {
+        self.headerView.blockchainIdentity = self.userModel.blockchainIdentity;
+        self.tableView.tableHeaderView = self.headerView;
+    }
+    else {
+        self.tableView.tableHeaderView = nil;
+    }
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    UIView *tableHeaderView = self.tableView.tableHeaderView;
+    if (tableHeaderView) {
+        CGSize headerSize = [tableHeaderView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+        if (CGRectGetHeight(tableHeaderView.frame) != headerSize.height) {
+            tableHeaderView.frame = CGRectMake(0.0, 0.0, headerSize.width, headerSize.height);
+            self.tableView.tableHeaderView = tableHeaderView;
+        }
+    }
 }
 
 #pragma mark - UITableViewDataSource
@@ -92,6 +132,16 @@ NS_ASSUME_NONNULL_BEGIN
 
     id<DWMainMenuItem> menuItem = self.model.items[indexPath.row];
     [self.delegate mainMenuContentView:self didSelectMenuItem:menuItem];
+}
+
+#pragma mark - DWCurrentUserProfileViewDelegate
+
+- (void)currentUserProfileView:(DWCurrentUserProfileView *)view showQRAction:(UIButton *)sender {
+    [self.delegate mainMenuContentView:self showQRAction:sender];
+}
+
+- (void)currentUserProfileView:(DWCurrentUserProfileView *)view editProfileAction:(UIButton *)sender {
+    [self.delegate mainMenuContentView:self editProfileAction:sender];
 }
 
 @end

@@ -15,8 +15,9 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
+#import "DWCurrentUserProfileModel.h"
 #import "DWMainMenuItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -28,12 +29,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view didSelectMenuItem:(id<DWMainMenuItem>)item;
 
+- (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender;
+- (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender;
+
 @end
 
-@interface DWMainMenuContentView : UIView
+@interface DWMainMenuContentView : KVOUIView
 
 @property (nonatomic, strong) DWMainMenuModel *model;
+@property (nonatomic, strong) DWCurrentUserProfileModel *userModel;
 @property (nullable, nonatomic, weak) id<DWMainMenuContentViewDelegate> delegate;
+
+- (void)updateUserHeader;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

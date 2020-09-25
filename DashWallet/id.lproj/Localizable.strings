@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ tidak diizinkan mengakses Pengenal Sentuh";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Processing Payment";
 
@@ -57,6 +60,9 @@
 
 /* No comment provided by engineer. */
 "About" = "Tentang";
+
+/* No comment provided by engineer. */
+"About me" = "About me";
 
 /* No comment provided by engineer. */
 "Accept" = "Accept";
@@ -284,6 +290,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri Dash Anda). Bersihkan dompet ini segera dan kembalikan pada perangkat yang aman.";
 
 /* No comment provided by engineer. */
+"Display Name" = "Display Name";
+
+/* No comment provided by engineer. */
 "Do not take a screenshot" = "Do not take a screenshot";
 
 /* No comment provided by engineer. */
@@ -294,6 +303,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Earlier";
+
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
@@ -740,6 +752,9 @@
 "Rewards" = "Hadiah";
 
 /* No comment provided by engineer. */
+"Save" = "Save";
+
+/* No comment provided by engineer. */
 "Scan Private Key" = "Pindai Kunci Pribadi";
 
 /* No comment provided by engineer. */
@@ -795,6 +810,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Lihat di Uphold";
+
+/* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
 
 /* No comment provided by engineer. */
 "Send" = "Kirim";
@@ -909,6 +927,9 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Menyingkronkan:";
+
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Ketuk untuk menyembunyikan saldo";
