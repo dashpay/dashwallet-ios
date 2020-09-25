@@ -812,6 +812,9 @@
 "See on Uphold" = "업홀드에서 확인";
 
 /* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "보내기";
 
 /* No comment provided by engineer. */
@@ -924,6 +927,9 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "동기화 중";
+
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "잔고를 숨기시려면 탭하세요";

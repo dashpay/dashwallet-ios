@@ -812,6 +812,9 @@
 "See on Uphold" = "Виж Uphold";
 
 /* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Изпрати";
 
 /* No comment provided by engineer. */
@@ -924,6 +927,9 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Синхронизиране";
+
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Докоснете, за да скриете баланса";

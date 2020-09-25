@@ -17,6 +17,7 @@
 
 #import "DWEditProfileViewController.h"
 
+#import "DWAvatarEditSelectorViewController.h"
 #import "DWEditProfileAvatarView.h"
 #import "DWEditProfileTextFieldCell.h"
 #import "DWEditProfileTextViewCell.h"
@@ -153,6 +154,8 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWEditProfileAvatarViewDelegate
 
 - (void)editProfileAvatarView:(DWEditProfileAvatarView *)view editAvatarAction:(UIButton *)sender {
+    DWAvatarEditSelectorViewController *controller = [[DWAvatarEditSelectorViewController alloc] init];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - UITableView

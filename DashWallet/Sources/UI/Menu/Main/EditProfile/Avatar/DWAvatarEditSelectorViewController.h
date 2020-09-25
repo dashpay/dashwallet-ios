@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,12 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- UIButton with Dynamic type support
- */
-@interface DWButton : UIButton
-
-- (void)setInsetsForContentPadding:(UIEdgeInsets)contentPadding imageTitlePadding:(CGFloat)imageTitlePadding;
+@interface DWAvatarEditSelectorViewController : UIViewController
 
 @end
 

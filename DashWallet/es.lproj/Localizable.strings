@@ -812,6 +812,9 @@
 "See on Uphold" = "Ver en Uphold";
 
 /* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Enviar";
 
 /* No comment provided by engineer. */
@@ -924,6 +927,9 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Sincronizando";
+
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tocar para ocultar saldo";

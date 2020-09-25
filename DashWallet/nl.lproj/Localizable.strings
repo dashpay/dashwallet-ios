@@ -812,6 +812,9 @@
 "See on Uphold" = "Bekijk op Uphold";
 
 /* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Verstuur";
 
 /* No comment provided by engineer. */
@@ -924,6 +927,9 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Aan het synchroniseren";
+
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tik om saldo te verbergen";

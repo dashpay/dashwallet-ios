@@ -144,6 +144,8 @@
 		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
 		2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
+		2A5A7FB6251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5A7FB5251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m */; };
+		2A5A7FBB251DF74400ADD073 /* DWAvatarEditSelectorContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5A7FBA251DF74400ADD073 /* DWAvatarEditSelectorContentView.m */; };
 		2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */; };
 		2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */; };
 		2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */; };
@@ -869,6 +871,10 @@
 		2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayProtocol.h; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseLegacyViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseLegacyViewController.m; sourceTree = "<group>"; };
+		2A5A7FB4251DF6E500ADD073 /* DWAvatarEditSelectorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarEditSelectorViewController.h; sourceTree = "<group>"; };
+		2A5A7FB5251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarEditSelectorViewController.m; sourceTree = "<group>"; };
+		2A5A7FB9251DF74400ADD073 /* DWAvatarEditSelectorContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarEditSelectorContentView.h; sourceTree = "<group>"; };
+		2A5A7FBA251DF74400ADD073 /* DWAvatarEditSelectorContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarEditSelectorContentView.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
 		2A5BD5902451D68200688A8D /* DWMinLengthUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMinLengthUsernameValidationRule.h; sourceTree = "<group>"; };
 		2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMinLengthUsernameValidationRule.m; sourceTree = "<group>"; };
@@ -2375,6 +2381,25 @@
 			path = Cells;
 			sourceTree = "<group>";
 		};
+		2A5A7FB7251DF6FA00ADD073 /* Avatar */ = {
+			isa = PBXGroup;
+			children = (
+				2A5A7FB8251DF70400ADD073 /* Views */,
+				2A5A7FB4251DF6E500ADD073 /* DWAvatarEditSelectorViewController.h */,
+				2A5A7FB5251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m */,
+			);
+			path = Avatar;
+			sourceTree = "<group>";
+		};
+		2A5A7FB8251DF70400ADD073 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A5A7FB9251DF74400ADD073 /* DWAvatarEditSelectorContentView.h */,
+				2A5A7FBA251DF74400ADD073 /* DWAvatarEditSelectorContentView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		2A5E4544243E0595006BA067 /* RegistrationStatus */ = {
 			isa = PBXGroup;
 			children = (
@@ -3800,6 +3825,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2A5A7FB7251DF6FA00ADD073 /* Avatar */,
 				2ADDF999251B7C4700DA8926 /* Views */,
 				2ADDF996251B7C3C00DA8926 /* DWEditProfileViewController.h */,
 				2ADDF997251B7C3C00DA8926 /* DWEditProfileViewController.m */,
@@ -5033,6 +5059,7 @@
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
+				2A5A7FB6251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m in Sources */,
 				2AD6E5602487E13F00B52F14 /* DWRequestsContentViewController.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */,
@@ -5225,6 +5252,7 @@
 				2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */,
 				2A7AF34C24823315001D74F9 /* DWDPGenericStatusItemView.m in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
+				2A5A7FBB251DF74400ADD073 /* DWAvatarEditSelectorContentView.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */,
 				2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */,
