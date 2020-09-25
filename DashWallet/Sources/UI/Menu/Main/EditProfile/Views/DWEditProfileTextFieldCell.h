@@ -18,7 +18,6 @@
 #import "DWEditProfileBaseCell.h"
 
 #import "DWTextFieldFormCellModel.h"
-#import "DWTextInputFormTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

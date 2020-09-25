@@ -18,14 +18,17 @@
 #import <KVO-MVVM/KVOUITableViewCell.h>
 
 #import "DWTextFieldFormCellModel.h"
+#import "DWTextInputFormTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWEditProfileBaseCell : KVOUITableViewCell
+@interface DWEditProfileBaseCell : KVOUITableViewCell <DWTextInputFormTableViewCell>
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UIView *inputContentView;
 @property (readonly, nonatomic, strong) UILabel *validationLabel;
+
+- (void)textInputBecomeFirstResponder;
 
 - (void)showValidationResult:(DWTextFieldFormValidationResult *)validationResult;
 

@@ -98,6 +98,9 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (void)textInputBecomeFirstResponder {
+}
+
 - (void)showValidationResult:(DWTextFieldFormValidationResult *)validationResult {
     self.validationLabel.textColor = validationResult.isErrored ? [UIColor dw_redColor] : [UIColor dw_secondaryTextColor];
     self.validationLabel.text = validationResult.info;

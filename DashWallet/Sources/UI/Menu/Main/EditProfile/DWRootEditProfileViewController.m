@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootEditProfileViewController ()
+@interface DWRootEditProfileViewController () <DWEditProfileViewControllerDelegate>
 
 @property (nonatomic, strong) DWEditProfileViewController *editController;
 @property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
@@ -46,7 +46,6 @@ NS_ASSUME_NONNULL_END
     [super viewDidLoad];
 
     self.title = NSLocalizedString(@"Edit Profile", nil);
-    self.actionButton.enabled = YES;
 
     UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                                             target:self
@@ -58,11 +57,20 @@ NS_ASSUME_NONNULL_END
     [self setupContentView:contentView];
 
     self.editController = [[DWEditProfileViewController alloc] init];
+    self.editController.delegate = self;
     [self dw_embedChild:self.editController inContainer:contentView];
+
+    [self editProfileViewControllerDidUpdate:self.editController];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - DWEditProfileViewControllerDelegate
+
+- (void)editProfileViewControllerDidUpdate:(DWEditProfileViewController *)controller {
+    self.actionButton.enabled = controller.isValid;
 }
 
 #pragma mark - Actions

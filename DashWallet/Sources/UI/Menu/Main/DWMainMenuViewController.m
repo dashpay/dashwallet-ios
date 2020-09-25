@@ -36,7 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
-                                        DWSettingsMenuViewControllerDelegate>
+                                        DWSettingsMenuViewControllerDelegate,
+                                        DWRootEditProfileViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
@@ -166,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate mainMenuViewControllerOpenHomeScreen:self];
 }
 
-#pragma mark - DWEditProfileViewControllerDelegate
+#pragma mark - DWRootEditProfileViewControllerDelegate
 
 - (void)editProfileViewControllerDidUpdateUserProfile {
     [self.view updateUserHeader];

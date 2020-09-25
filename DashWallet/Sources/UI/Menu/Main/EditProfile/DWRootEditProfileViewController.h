@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWEditProfileViewControllerDelegate <NSObject>
+@protocol DWRootEditProfileViewControllerDelegate <NSObject>
 
 - (void)editProfileViewControllerDidUpdateUserProfile;
 
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRootEditProfileViewController : DWBaseActionButtonViewController
 
-@property (nullable, nonatomic, weak) id<DWEditProfileViewControllerDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWRootEditProfileViewControllerDelegate> delegate;
 
 @end
 

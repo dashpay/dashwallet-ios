@@ -3817,7 +3817,6 @@
 				2ADDF99B251B7C6B00DA8926 /* DWEditProfileBaseCell.m */,
 				2ADDF99D251B7F6500DA8926 /* DWEditProfileTextFieldCell.h */,
 				2ADDF99E251B7F6500DA8926 /* DWEditProfileTextFieldCell.m */,
-				2ADDF9A4251B81B700DA8926 /* DWTextInputFormTableViewCell.h */,
 				2ADDF9A5251B82B200DA8926 /* DWEditProfileTextViewCell.h */,
 				2ADDF9A6251B82B200DA8926 /* DWEditProfileTextViewCell.m */,
 				2AEC24BA251D382000AC86F6 /* DWEditProfileAvatarView.h */,
@@ -3978,6 +3977,7 @@
 		2AEC24B3251D066E00AC86F6 /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				2ADDF9A4251B81B700DA8926 /* DWTextInputFormTableViewCell.h */,
 				2AEC24B1251CF1A100AC86F6 /* DWTextViewFormCellModel.h */,
 				2AEC24B0251CF1A100AC86F6 /* DWTextViewFormCellModel.m */,
 				2ADDF9A1251B807600DA8926 /* DWTextFieldFormCellModel.h */,

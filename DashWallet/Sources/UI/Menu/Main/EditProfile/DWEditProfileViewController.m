@@ -24,11 +24,12 @@
 #import "DWProfileAboutCellModel.h"
 #import "DWProfileDisplayNameCellModel.h"
 #import "DWSharedUIConstants.h"
+#import "DWTextInputFormTableViewCell.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate>
+@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate>
 
 @property (nullable, nonatomic, strong) DWEditProfileAvatarView *headerView;
 
@@ -55,6 +56,10 @@ NS_ASSUME_NONNULL_END
 
 - (NSString *)aboutMe {
     return self.aboutModel.text;
+}
+
+- (BOOL)isValid {
+    return [self.aboutModel postValidate].isErrored == NO && [self.displayNameModel postValidate].isErrored == NO;
 }
 
 - (void)viewDidLoad {
@@ -114,6 +119,15 @@ NS_ASSUME_NONNULL_END
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.displayName;
+        __weak typeof(self) weakSelf = self;
+        cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf.delegate editProfileViewControllerDidUpdate:strongSelf];
+        };
         [items addObject:cellModel];
     }
 
@@ -121,6 +135,15 @@ NS_ASSUME_NONNULL_END
         DWProfileAboutCellModel *cellModel = [[DWProfileAboutCellModel alloc] initWithTitle:NSLocalizedString(@"About me", nil)];
         self.aboutModel = cellModel;
         cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
+        __weak typeof(self) weakSelf = self;
+        cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf.delegate editProfileViewControllerDidUpdate:strongSelf];
+        };
         [items addObject:cellModel];
     }
 
@@ -153,6 +176,7 @@ NS_ASSUME_NONNULL_END
         DWEditProfileTextFieldCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                            forIndexPath:indexPath];
         cell.cellModel = (DWTextFieldFormCellModel *)cellModel;
+        cell.delegate = self;
         return cell;
     }
     else {
@@ -164,6 +188,33 @@ NS_ASSUME_NONNULL_END
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     UIView *view = [[UIView alloc] init];
     return view;
+}
+
+#pragma mark - DWTextInputFormTableViewCell
+
+- (void)editProfileTextFieldCellActivateNextFirstResponder:(DWEditProfileTextFieldCell *)cell {
+    DWTextFieldFormCellModel *cellModel = cell.cellModel;
+    NSParameterAssert((cellModel.returnKeyType == UIReturnKeyNext));
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+    if (!indexPath) {
+        return;
+    }
+
+    for (NSUInteger i = indexPath.row + 1; i < self.items.count; i++) {
+        DWBaseFormCellModel *cellModel = self.items[i];
+        if ([cellModel isKindOfClass:DWTextFieldFormCellModel.class]) {
+            NSIndexPath *nextIndexPath = [NSIndexPath indexPathForRow:i inSection:0];
+            id<DWTextInputFormTableViewCell> cell = [self.tableView cellForRowAtIndexPath:nextIndexPath];
+            if ([cell conformsToProtocol:@protocol(DWTextInputFormTableViewCell)]) {
+                [cell textInputBecomeFirstResponder];
+            }
+            else {
+                NSAssert(NO, @"Invalid cell class for TextFieldFormCellModel");
+            }
+
+            return; // we're done
+        }
+    }
 }
 
 @end
