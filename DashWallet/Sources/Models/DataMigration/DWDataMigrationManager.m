@@ -31,7 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _shouldMigrate = [DSCoreDataMigrator requiresMigration];
+        _shouldMigrateDatabase = [DSCoreDataMigrator requiresMigration];
+        _shouldMigrateWalletKeys = ![[DSVersionManager sharedInstance] noOldWallet];
+        _shouldMigrate = _shouldMigrateDatabase || _shouldMigrateWalletKeys;
     }
     return self;
 }
@@ -42,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)migrate:(void (^)(BOOL completed))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (![DSCoreDataMigrator requiresMigration]) {
+        completion(YES);
+        return;
+    }
 
     [DSCoreDataMigrator performMigrationWithCompletionQueue:dispatch_get_main_queue()
                                                  completion:^{

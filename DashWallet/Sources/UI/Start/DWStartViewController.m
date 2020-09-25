@@ -49,16 +49,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self mvvm_observe:@"viewModel.state"
                   with:^(__typeof__(self) self, NSNumber *value) {
-                      if (self.viewModel.state == DWStartModelStateDone) {
-                          [self.delegate startViewController:self
-                              didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
-                                          shouldRescanBlockchain:NO];
+                      if (self.viewModel.state == DWStartModelStateDone || self.viewModel.state == DWStartModelStateDoneAndRescan) {
+                          // upgrade old keys after migration is done
+                          if ([self upgradeOldKeys]) {
+                              return;
+                          }
                       }
-                      else if (self.viewModel.state == DWStartModelStateDoneAndRescan) {
-                          [self.delegate startViewController:self
-                              didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
-                                          shouldRescanBlockchain:YES];
-                      }
+
+                      [self finishMigrationIfDone];
                   }];
 }
 
@@ -112,10 +110,13 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)performMigration {
+    [self.viewModel startMigration];
+}
+
+- (BOOL)upgradeOldKeys {
     DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
     if ([dashSyncVersionManager noOldWallet]) {
-        [self.viewModel startMigration];
-        return;
+        return NO;
     }
 
     DSWallet *wallet = [[DWEnvironment sharedInstance] currentWallet];
@@ -127,13 +128,28 @@ NS_ASSUME_NONNULL_BEGIN
                                                           [self forceUpdateWalletAuthentication:cancelled];
                                                       }
                                                       else {
-                                                          [self.viewModel startMigration];
+                                                          [self finishMigrationIfDone];
                                                       }
                                                   }];
+
+    return YES;
 }
 
 - (void)performRescanBlockchain {
     [self.viewModel cancelMigrationAndRescanBlockchain];
+}
+
+- (void)finishMigrationIfDone {
+    if (self.viewModel.state == DWStartModelStateDone) {
+        [self.delegate startViewController:self
+            didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
+                        shouldRescanBlockchain:NO];
+    }
+    else if (self.viewModel.state == DWStartModelStateDoneAndRescan) {
+        [self.delegate startViewController:self
+            didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
+                        shouldRescanBlockchain:YES];
+    }
 }
 
 @end

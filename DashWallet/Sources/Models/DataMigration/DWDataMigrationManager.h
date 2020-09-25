@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, getter=isMigrationSuccessful) BOOL migrationSuccessful;
 @property (readonly, assign, nonatomic) BOOL shouldMigrate;
+@property (readonly, assign, nonatomic) BOOL shouldMigrateDatabase;
+@property (readonly, assign, nonatomic) BOOL shouldMigrateWalletKeys;
 
 + (instancetype)sharedInstance;
 
