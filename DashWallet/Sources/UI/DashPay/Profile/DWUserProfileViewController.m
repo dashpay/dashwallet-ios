@@ -66,18 +66,20 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
-    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO];
+    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO shownAfterPayment:NO];
 }
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-          shouldSkipUpdating:(BOOL)shouldSkipUpdating {
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating
+           shownAfterPayment:(BOOL)shownAfterPayment {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _model = [[DWUserProfileModel alloc] initWithItem:item
                                            txDataProvider:dataProvider];
         _model.delegate = self;
+        _model.shownAfterPayment = shownAfterPayment;
         if (shouldSkipUpdating) {
             [_model skipUpdating];
         }

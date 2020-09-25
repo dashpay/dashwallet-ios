@@ -55,6 +55,8 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 
 @property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
 
+@property (nonatomic, assign) BOOL shownAfterPayment;
+
 - (void)skipUpdating;
 - (void)update;
 
