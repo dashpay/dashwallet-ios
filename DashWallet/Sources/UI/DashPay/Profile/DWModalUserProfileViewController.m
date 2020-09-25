@@ -42,7 +42,8 @@ NS_ASSUME_NONNULL_END
             [[DWUserProfileViewController alloc] initWithItem:item
                                                      payModel:payModel
                                                  dataProvider:dataProvider
-                                           shouldSkipUpdating:YES];
+                                           shouldSkipUpdating:YES
+                                            shownAfterPayment:YES];
     }
     return self;
 }

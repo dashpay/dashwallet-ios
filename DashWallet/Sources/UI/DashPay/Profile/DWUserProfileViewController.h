@@ -30,7 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-          shouldSkipUpdating:(BOOL)shouldSkipUpdating NS_DESIGNATED_INITIALIZER;
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating
+           shownAfterPayment:(BOOL)shownAfterPayment NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

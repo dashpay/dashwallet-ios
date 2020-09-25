@@ -73,7 +73,7 @@ NS_ASSUME_NONNULL_END
     [self updateDataSource];
 
 
-    if (self.shouldAcceptIncomingAfterPayment) {
+    if (self.shownAfterPayment && self.shouldAcceptIncomingAfterPayment) {
         [self acceptContactRequest];
     }
     else {
