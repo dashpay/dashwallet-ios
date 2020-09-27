@@ -422,6 +422,12 @@
 "Invalid QR Code" = "Invalid QR Code";
 
 /* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take a few minutes." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take a few minutes.";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+
+/* No comment provided by engineer. */
 "It's Important" = "Ini penting";
 
 /* No comment provided by engineer. */
@@ -671,6 +677,9 @@
 "Received from" = "Diterima dari";
 
 /* No comment provided by engineer. */
+"Recover" = "Recover";
+
+/* No comment provided by engineer. */
 "Recover Wallet" = "Pulihkan Dompet";
 
 /* No comment provided by engineer. */
@@ -680,7 +689,7 @@
 "Recovery phrase doesn't match" = "Frasa pemulihan tidak sama";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "Frasa pemulihan harus memiliki %d kata";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
 /* Button title, Register (username) */
 "Register" = "Register";

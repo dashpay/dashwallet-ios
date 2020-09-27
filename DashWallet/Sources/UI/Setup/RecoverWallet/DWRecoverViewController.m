@@ -83,12 +83,37 @@ NS_ASSUME_NONNULL_BEGIN
     [self showAlertWithTitle:nil message:message];
 }
 
-- (void)recoverContentView:(DWRecoverContentView *)view
-    invalidWordsCountInsteadOf:(NSInteger)neededWordsCount {
-    NSString *message = [NSString stringWithFormat:
-                                      NSLocalizedString(@"Recovery phrase must have %d words", nil),
-                                      neededWordsCount];
-    [self showAlertWithTitle:nil message:message];
+- (void)recoverContentView:(DWRecoverContentView *)view usedWordsHaveInvalidCount:(NSArray *)words {
+    if (words.count == 10 || words.count == 11) {
+        NSString *message;
+        if (words.count == 10) {
+            message = [NSString stringWithFormat:NSLocalizedString(@"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take a few minutes.", nil), words.count];
+        }
+        else {
+            message = [NSString stringWithFormat:NSLocalizedString(@"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?", nil), words.count];
+        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                       message:message
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:^(UIAlertAction *_Nonnull action) {
+                                                                 [self.contentView activateTextView];
+                                                             }];
+        UIAlertAction *recoverAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Recover", nil)
+                                                                style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction *_Nonnull action) {
+                                                                  [self.model recoverLastWordsForPhrase:[words componentsJoinedByString:@" "]];
+                                                              }];
+        [alert addAction:cancelAction];
+        [alert addAction:recoverAction];
+        [self presentViewController:alert animated:YES completion:nil];
+        [self showAlertWithTitle:nil message:message];
+    }
+    else {
+        NSString *message = NSLocalizedString(@"Recovery phrase must have 12, 15, 18, 21 or 24 words", nil);
+        [self showAlertWithTitle:nil message:message];
+    }
 }
 
 - (void)recoverContentViewBadRecoveryPhrase:(DWRecoverContentView *)view {

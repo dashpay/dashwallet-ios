@@ -187,8 +187,8 @@ NS_ASSUME_NONNULL_BEGIN
             textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
             [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
         }
-        else if (words.count != DW_PHRASE_LENGTH) {
-            [self.delegate recoverContentView:self invalidWordsCountInsteadOf:DW_PHRASE_LENGTH];
+        else if (words.count < DW_PHRASE_MIN_LENGTH || words.count % DW_PHRASE_MULTIPLE) {
+            [self.delegate recoverContentView:self usedWordsHaveInvalidCount:words];
         }
         else if (![self.model phraseIsValid:phrase]) {
             [self.delegate recoverContentViewBadRecoveryPhrase:self];

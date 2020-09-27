@@ -26,7 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 NSString *const DW_WIPE = @"wipe";
 NSString *const DW_WIPE_STRONG = @"exterminate!";
 NSString *const DW_WATCH = @"watch";
-NSInteger const DW_PHRASE_LENGTH = 12;
+NSInteger const DW_PHRASE_MIN_LENGTH = 12;
+NSInteger const DW_PHRASE_MULTIPLE = 3;
 
 @implementation DWRecoverModel
 
@@ -109,6 +110,16 @@ NSInteger const DW_PHRASE_LENGTH = 12;
 
 - (NSString *)wipeAcceptPhrase {
     return NSLocalizedString(@"I accept that I will lose my coins if I no longer possess the recovery phrase", nil);
+}
+
+- (void)recoverLastWordsForPhrase:(NSString *)phrase {
+    [[DSBIP39Mnemonic sharedInstance] findLastPotentialWordsOfMnemonicForPassphrase:phrase
+        progressUpdate:^(float progress) {
+            self->_missingWordProgress = progress;
+        }
+        completion:^(NSArray<NSString *> *_Nonnull missingWords) {
+            self->_potentialMissingWords = missingWords;
+        }];
 }
 
 @end

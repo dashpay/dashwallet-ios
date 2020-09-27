@@ -24,11 +24,14 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString *const DW_WIPE;
 extern NSString *const DW_WIPE_STRONG;
 extern NSString *const DW_WATCH;
-extern NSInteger const DW_PHRASE_LENGTH;
+extern NSInteger const DW_PHRASE_MIN_LENGTH;
+extern NSInteger const DW_PHRASE_MULTIPLE;
 
 @interface DWRecoverModel : NSObject
 
 @property (readonly, nonatomic, assign) DWRecoverAction action;
+@property (readonly, nonatomic, assign) float missingWordProgress;
+@property (readonly, nonatomic, copy) NSArray<NSString *> *potentialMissingWords;
 
 - (BOOL)hasWallet;
 - (BOOL)isWalletEmpty;
@@ -45,6 +48,8 @@ extern NSInteger const DW_PHRASE_LENGTH;
 - (BOOL)canWipeWithPhrase:(NSString *)phrase;
 
 - (NSString *)wipeAcceptPhrase;
+
+- (void)recoverLastWordsForPhrase:(NSString *)phrase;
 
 - (instancetype)initWithAction:(DWRecoverAction)action;
 
