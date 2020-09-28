@@ -22,12 +22,12 @@
 - (DWTextFieldFormValidationResult *)postValidate {
     NSUInteger len = self.text.length;
     const NSUInteger max = 20;
+    NSString *info = [NSString stringWithFormat:NSLocalizedString(@"%ld/%ld Characters", @"10/20 Characters"),
+                                                len, max];
     if (len > max) {
-        NSString *info = [NSString stringWithFormat:NSLocalizedString(@"%ld/%ld Characters", @"10/20 Characters"),
-                                                    len, max];
         return [[DWTextFieldFormValidationResult alloc] initWithError:info];
     }
-    return [[DWTextFieldFormValidationResult alloc] initWithInfo:@" "];
+    return [[DWTextFieldFormValidationResult alloc] initWithInfo:info];
 }
 
 @end

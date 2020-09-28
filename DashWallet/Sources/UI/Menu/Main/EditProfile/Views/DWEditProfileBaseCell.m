@@ -101,9 +101,14 @@ NS_ASSUME_NONNULL_END
 - (void)textInputBecomeFirstResponder {
 }
 
-- (void)showValidationResult:(DWTextFieldFormValidationResult *)validationResult {
+- (void)provideValidationResult:(DWTextFieldFormValidationResult *)validationResult {
     self.validationLabel.textColor = validationResult.isErrored ? [UIColor dw_redColor] : [UIColor dw_secondaryTextColor];
-    self.validationLabel.text = validationResult.info;
+    if (validationResult.isErrored || self.isFirstResponder) {
+        self.validationLabel.text = validationResult.info;
+    }
+    else {
+        self.validationLabel.text = @" ";
+    }
 }
 
 @end
