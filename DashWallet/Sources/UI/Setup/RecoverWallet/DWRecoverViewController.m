@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (words.count == 10 || words.count == 11) {
         NSString *message;
         if (words.count == 10) {
-            message = [NSString stringWithFormat:NSLocalizedString(@"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take a few minutes.", nil), words.count];
+            message = [NSString stringWithFormat:NSLocalizedString(@"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.", nil), words.count];
         }
         else {
             message = [NSString stringWithFormat:NSLocalizedString(@"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?", nil), words.count];

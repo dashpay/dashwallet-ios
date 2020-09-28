@@ -114,7 +114,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 
 - (void)recoverLastWordsForPhrase:(NSString *)phrase {
     [[DSBIP39Mnemonic sharedInstance] findLastPotentialWordsOfMnemonicForPassphrase:phrase
-        progressUpdate:^(float progress) {
+        progressUpdate:^(float progress, bool *stop) {
             self->_missingWordProgress = progress;
         }
         completion:^(NSArray<NSString *> *_Nonnull missingWords) {
