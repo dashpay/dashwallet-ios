@@ -133,6 +133,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self recoverWalletWithCurrentSeedPhrase];
 }
 
+- (void)appendText:(NSString *)text {
+    self.textView.text = [self.textView.text stringByAppendingFormat:@" %@", text];
+}
+
+- (void)replaceText:(NSString *)target replacement:(NSString *)replacement {
+    self.textView.text = [self.textView.text stringByReplacingOccurrencesOfString:target withString:replacement];
+}
+
 #pragma mark - UITextViewDelegate
 
 - (BOOL)textView:(UITextView *)textView

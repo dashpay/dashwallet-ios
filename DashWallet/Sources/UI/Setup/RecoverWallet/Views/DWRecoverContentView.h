@@ -49,6 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
+- (void)appendText:(NSString *)text;
+- (void)replaceText:(NSString *)target replacement:(NSString *)replacement;
+
 @end
 
 NS_ASSUME_NONNULL_END

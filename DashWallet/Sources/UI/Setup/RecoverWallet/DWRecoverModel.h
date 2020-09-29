@@ -30,8 +30,6 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 @interface DWRecoverModel : NSObject
 
 @property (readonly, nonatomic, assign) DWRecoverAction action;
-@property (readonly, nonatomic, assign) float missingWordProgress;
-@property (readonly, nonatomic, copy) NSArray<NSString *> *potentialMissingWords;
 
 - (BOOL)hasWallet;
 - (BOOL)isWalletEmpty;
@@ -48,10 +46,6 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 - (BOOL)canWipeWithPhrase:(NSString *)phrase;
 
 - (NSString *)wipeAcceptPhrase;
-
-- (void)recoverWordsForPhrase:(NSString *)phrase withIncorrectWord:(NSString *)incorrectWord;
-
-- (void)recoverLastWordsForPhrase:(NSString *)phrase;
 
 - (instancetype)initWithAction:(DWRecoverAction)action;
 

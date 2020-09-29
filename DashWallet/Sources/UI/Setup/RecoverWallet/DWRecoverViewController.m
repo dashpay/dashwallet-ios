@@ -19,13 +19,14 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DWPhraseRepairViewController.h"
 #import "DWRecoverContentView.h"
 #import "DWRecoverModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRecoverViewController () <DWRecoverContentViewDelegate>
+@interface DWRecoverViewController () <DWRecoverContentViewDelegate, DWPhraseRepairViewControllerDelegate>
 
 @property (nonatomic, strong) DWRecoverModel *model;
 @property (nullable, nonatomic, strong) DWRecoverContentView *contentView;
@@ -98,7 +99,11 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertAction *recoverAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Recover", nil)
                                                             style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction *_Nonnull action) {
-                                                              [self.model recoverWordsForPhrase:phrase withIncorrectWord:incorrectWord];
+                                                              DWPhraseRepairViewController *controller =
+                                                                  [[DWPhraseRepairViewController alloc] initWithPhrase:phrase
+                                                                                                         incorrectWord:incorrectWord];
+                                                              controller.delegate = self;
+                                                              [self presentViewController:controller animated:YES completion:nil];
                                                           }];
     [alert addAction:cancelAction];
     [alert addAction:recoverAction];
@@ -126,7 +131,11 @@ NS_ASSUME_NONNULL_BEGIN
         UIAlertAction *recoverAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Recover", nil)
                                                                 style:UIAlertActionStyleDefault
                                                               handler:^(UIAlertAction *_Nonnull action) {
-                                                                  [self.model recoverLastWordsForPhrase:[words componentsJoinedByString:@" "]];
+                                                                  DWPhraseRepairViewController *controller =
+                                                                      [[DWPhraseRepairViewController alloc] initWithPhrase:[words componentsJoinedByString:@" "]
+                                                                                                             incorrectWord:nil];
+                                                                  controller.delegate = self;
+                                                                  [self presentViewController:controller animated:YES completion:nil];
                                                               }];
         [alert addAction:cancelAction];
         [alert addAction:recoverAction];
@@ -181,6 +190,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverContentViewWipeNotAllowedPhraseMismatch:(DWRecoverContentView *)view {
     NSString *message = NSLocalizedString(@"Recovery phrase doesn't match", nil);
     [self showAlertWithTitle:nil message:message];
+}
+
+#pragma mark - DWPhraseRepairViewControllerDelegate
+
+- (void)phraseRepairViewControllerDidFindLastWords:(NSArray<NSString *> *)lastWords {
+    if (lastWords.count > 0) {
+        [self.contentView appendText:lastWords.firstObject];
+    }
+}
+
+- (void)phraseRepairViewControllerDidFindReplaceWords:(NSArray<NSString *> *)words incorrectWord:(NSString *)incorrectWord {
+    if (words.count > 0) {
+        [self.contentView replaceText:incorrectWord replacement:words.firstObject];
+    }
 }
 
 #pragma mark - Private

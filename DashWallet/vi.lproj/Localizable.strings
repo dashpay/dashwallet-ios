@@ -350,6 +350,9 @@
 "Forgot PIN?" = "Quên mã PIN";
 
 /* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+
+/* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
 
 /* No comment provided by engineer. */
@@ -684,6 +687,9 @@
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Khôi phục Ví";
+
+/* No comment provided by engineer. */
+"Recovering..." = "Recovering...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Cụm từ phục hồi";
