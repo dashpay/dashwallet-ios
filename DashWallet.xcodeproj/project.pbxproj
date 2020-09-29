@@ -276,6 +276,8 @@
 		2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */; };
 		2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */; };
 		2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EB523A7E145006A2A59 /* DWTransactionStub.m */; };
+		2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */; };
+		2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */; };
 		2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */; };
 		2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */; };
 		2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */; };
@@ -1126,6 +1128,10 @@
 		2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A913EB423A7E145006A2A59 /* DWTransactionStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionStub.h; sourceTree = "<group>"; };
 		2A913EB523A7E145006A2A59 /* DWTransactionStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionStub.m; sourceTree = "<group>"; };
+		2A9172C225233DC50024B4C5 /* DWPhraseRepairViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairViewController.h; sourceTree = "<group>"; };
+		2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairViewController.m; sourceTree = "<group>"; };
+		2A9172D125233F4F0024B4C5 /* DWPhraseRepairChildViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairChildViewController.h; sourceTree = "<group>"; };
+		2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairChildViewController.m; sourceTree = "<group>"; };
 		2A919F9A24A4DCAD0018C9A3 /* DWDPSmallContactView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPSmallContactView.h; sourceTree = "<group>"; };
 		2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPSmallContactView.m; sourceTree = "<group>"; };
 		2A919F9D24A65CE00018C9A3 /* DWDPAmountContactView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPAmountContactView.h; sourceTree = "<group>"; };
@@ -2336,6 +2342,7 @@
 		2A74EFEA2305316A00C475EB /* RecoverWallet */ = {
 			isa = PBXGroup;
 			children = (
+				2A9172C125233D7D0024B4C5 /* PhraseRepair */,
 				2A74EFEE230531BC00C475EB /* Views */,
 				2A74EFEB2305318000C475EB /* DWRecoverViewController.h */,
 				2A74EFEC2305318000C475EB /* DWRecoverViewController.m */,
@@ -2948,6 +2955,17 @@
 				2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */,
 			);
 			path = Transactions;
+			sourceTree = "<group>";
+		};
+		2A9172C125233D7D0024B4C5 /* PhraseRepair */ = {
+			isa = PBXGroup;
+			children = (
+				2A9172C225233DC50024B4C5 /* DWPhraseRepairViewController.h */,
+				2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */,
+				2A9172D125233F4F0024B4C5 /* DWPhraseRepairChildViewController.h */,
+				2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */,
+			);
+			path = PhraseRepair;
 			sourceTree = "<group>";
 		};
 		2A951CE523D1CC6300602824 /* Profile */ = {
@@ -4941,6 +4959,7 @@
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
 				2A7AF36C248266FB001D74F9 /* DWDPEstablishedContactObject.m in Sources */,
+				2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				2ACCD8ED231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
 				2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */,
@@ -5037,6 +5056,7 @@
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
 				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
 				2ACCA3A824BE0C7D00DB32DE /* DWDPTxListCell.m in Sources */,
+				2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,

@@ -26,7 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 NSString *const DW_WIPE = @"wipe";
 NSString *const DW_WIPE_STRONG = @"exterminate!";
 NSString *const DW_WATCH = @"watch";
-NSInteger const DW_PHRASE_LENGTH = 12;
+NSInteger const DW_PHRASE_MIN_LENGTH = 12;
+NSInteger const DW_PHRASE_MULTIPLE = 3;
 
 @implementation DWRecoverModel
 

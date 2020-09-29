@@ -47,6 +47,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" is geen woord uit de herstelzin";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\nprobeer opnieuw over %@";
 
 /* No comment provided by engineer. */
@@ -347,6 +350,9 @@
 "Forgot PIN?" = "PIN vergeten?";
 
 /* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+
+/* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
 
 /* No comment provided by engineer. */
@@ -420,6 +426,12 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
 
 /* No comment provided by engineer. */
 "It's Important" = "Het is belangrijk";
@@ -671,7 +683,13 @@
 "Received from" = "Ontvangen van";
 
 /* No comment provided by engineer. */
+"Recover" = "Recover";
+
+/* No comment provided by engineer. */
 "Recover Wallet" = "Herstel portemonnee";
+
+/* No comment provided by engineer. */
+"Recovering..." = "Recovering...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Herstelzin";
@@ -680,7 +698,7 @@
 "Recovery phrase doesn't match" = "De herstelzin komt niet overeen";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "De herstelzin moet %d woorden bevatten";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
 /* Button title, Register (username) */
 "Register" = "Register";

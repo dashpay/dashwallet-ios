@@ -24,7 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString *const DW_WIPE;
 extern NSString *const DW_WIPE_STRONG;
 extern NSString *const DW_WATCH;
-extern NSInteger const DW_PHRASE_LENGTH;
+extern NSInteger const DW_PHRASE_MIN_LENGTH;
+extern NSInteger const DW_PHRASE_MULTIPLE;
 
 @interface DWRecoverModel : NSObject
 
