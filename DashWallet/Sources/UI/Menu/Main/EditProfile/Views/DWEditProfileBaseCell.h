@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)textInputBecomeFirstResponder;
 
-- (void)showValidationResult:(DWTextFieldFormValidationResult *)validationResult;
+- (void)provideValidationResult:(DWTextFieldFormValidationResult *)validationResult;
 
 @end
 

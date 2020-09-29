@@ -76,10 +76,14 @@ NS_ASSUME_NONNULL_END
                       with:^(typeof(self) self, NSString *value) {
                           self.textField.text = value;
 
-                          [self showValidationResult:[self.cellModel postValidate]];
+                          [self provideValidationResult:[self.cellModel postValidate]];
                       }];
     }
     return self;
+}
+
+- (BOOL)isFirstResponder {
+    return self.textField.isFirstResponder;
 }
 
 - (void)setCellModel:(nullable DWTextFieldFormCellModel *)cellModel {
@@ -92,7 +96,7 @@ NS_ASSUME_NONNULL_END
     self.textField.enablesReturnKeyAutomatically = cellModel.enablesReturnKeyAutomatically;
     self.textField.secureTextEntry = cellModel.secureTextEntry;
 
-    [self showValidationResult:[cellModel postValidate]];
+    [self provideValidationResult:[cellModel postValidate]];
 }
 
 #pragma mark - TextInputFormTableViewCell
@@ -103,6 +107,10 @@ NS_ASSUME_NONNULL_END
 
 
 #pragma mark UITextFieldDelegate
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    [self provideValidationResult:[self.cellModel postValidate]];
+}
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     BOOL allowed = [self.cellModel validateReplacementString:string text:textField.text];
@@ -115,7 +123,7 @@ NS_ASSUME_NONNULL_END
         self.cellModel.didChangeValueBlock(self.cellModel);
     }
 
-    [self showValidationResult:[self.cellModel postValidate]];
+    [self provideValidationResult:[self.cellModel postValidate]];
 
     return NO;
 }
@@ -141,6 +149,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason {
+    [self provideValidationResult:[self.cellModel postValidate]];
+
     if (reason == UITextFieldDidEndEditingReasonCommitted && self.cellModel.didReturnValueBlock) {
         self.cellModel.didReturnValueBlock(self.cellModel);
     }
