@@ -47,6 +47,9 @@
 "\"%@\" is not a recovery phrase word" = "「%@」 は復元フレーズの単語ではありません。";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\n %@でもう一度お試しください";
 
 /* No comment provided by engineer. */

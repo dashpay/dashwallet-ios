@@ -49,6 +49,8 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 
 - (NSString *)wipeAcceptPhrase;
 
+- (void)recoverWordsForPhrase:(NSString *)phrase withIncorrectWord:(NSString *)incorrectWord;
+
 - (void)recoverLastWordsForPhrase:(NSString *)phrase;
 
 - (instancetype)initWithAction:(DWRecoverAction)action;

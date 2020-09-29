@@ -47,6 +47,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" není slovo z fráze pro obnovení";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "zkuste to znovu za %@";
 
 /* No comment provided by engineer. */

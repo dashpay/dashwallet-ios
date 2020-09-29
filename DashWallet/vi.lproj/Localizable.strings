@@ -47,6 +47,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" không phải là một cụm từ khôi phục";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\nthử lại trong vòng %@";
 
 /* No comment provided by engineer. */

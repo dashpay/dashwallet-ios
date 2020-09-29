@@ -112,6 +112,17 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return NSLocalizedString(@"I accept that I will lose my coins if I no longer possess the recovery phrase", nil);
 }
 
+- (void)recoverWordsForPhrase:(NSString *)phrase withIncorrectWord:(NSString *)incorrectWord {
+    [[DSBIP39Mnemonic sharedInstance] findPotentialWordsOfMnemonicForPassphrase:phrase
+        replacementString:incorrectWord
+        progressUpdate:^(float progress, bool *stop) {
+            self->_missingWordProgress = progress;
+        }
+        completion:^(NSArray<NSString *> *_Nonnull missingWords) {
+            self->_potentialMissingWords = missingWords;
+        }];
+}
+
 - (void)recoverLastWordsForPhrase:(NSString *)phrase {
     [[DSBIP39Mnemonic sharedInstance] findLastPotentialWordsOfMnemonicForPassphrase:phrase
         progressUpdate:^(float progress, bool *stop) {

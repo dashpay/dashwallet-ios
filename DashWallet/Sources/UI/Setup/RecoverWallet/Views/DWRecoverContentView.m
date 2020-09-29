@@ -155,6 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *phrase = textView.text;
 
         NSString *incorrectWord = nil;
+        uint32_t incorrectWordCount = 0;
 
         if (![phrase isEqualToString:DW_WIPE_STRONG]) {
             phrase = [self.model cleanupPhrase:phrase];
@@ -172,11 +173,12 @@ NS_ASSUME_NONNULL_BEGIN
                 CFSTR(" ")));
 
         for (NSString *word in words) {
-            if ([[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
-                continue;
+            if (![[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
+                if (incorrectWord == nil) {
+                    incorrectWord = word;
+                }
+                incorrectWordCount++;
             }
-            incorrectWord = word;
-            break;
         }
 
         if ([phrase isEqualToString:DW_WIPE] || [phrase isEqualToString:DW_WIPE_STRONG] ||
@@ -184,8 +186,13 @@ NS_ASSUME_NONNULL_BEGIN
             [self wipeWithPhrase:phrase];
         }
         else if (incorrectWord) {
-            textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
-            [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
+            if (incorrectWordCount > 1) {
+                textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
+                [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
+            }
+            else {
+                [self.delegate recoverContentView:self offerToReplaceIncorrectWord:incorrectWord inPhrase:phrase];
+            }
         }
         else if (words.count < DW_PHRASE_MIN_LENGTH || words.count % DW_PHRASE_MULTIPLE) {
             [self.delegate recoverContentView:self usedWordsHaveInvalidCount:words];

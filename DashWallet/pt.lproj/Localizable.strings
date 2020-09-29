@@ -47,6 +47,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" não é uma palavra da frase de recuperação";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\ntente novamente em %@";
 
 /* No comment provided by engineer. */
