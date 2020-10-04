@@ -443,7 +443,25 @@ static BOOL IsJailbroken(void) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
         NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
-        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey ascending:NO];
+
+        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey
+                                                                         ascending:NO
+                                                                        comparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
+                                                                            if ([obj1 unsignedIntValue] == 0) {
+                                                                                if ([obj2 unsignedIntValue] == 0) {
+                                                                                    return NSOrderedSame;
+                                                                                }
+                                                                                else {
+                                                                                    return NSOrderedDescending;
+                                                                                }
+                                                                            }
+                                                                            else if ([obj2 unsignedIntValue] == 0) {
+                                                                                return NSOrderedAscending;
+                                                                            }
+                                                                            else {
+                                                                                return [(NSNumber *)obj1 compare:obj2];
+                                                                            }
+                                                                        }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
         BOOL shouldAnimate = YES;
