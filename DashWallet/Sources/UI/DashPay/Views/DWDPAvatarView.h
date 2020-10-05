@@ -30,6 +30,8 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nonatomic, assign, getter=isSmall) BOOL small;
 
+- (void)setAsDashPlaceholder;
+
 @end
 
 NS_ASSUME_NONNULL_END

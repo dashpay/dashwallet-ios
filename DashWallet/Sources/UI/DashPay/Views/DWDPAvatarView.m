@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPAvatarView ()
 
+@property (readonly, nonatomic, strong) UIImageView *imageView;
 @property (readonly, nonatomic, strong) UILabel *letterLabel;
 
 @end
@@ -53,6 +54,7 @@ NS_ASSUME_NONNULL_END
 
     self.layer.cornerRadius = CGRectGetWidth(self.bounds) / 2.0;
 
+    self.imageView.frame = self.bounds;
     self.letterLabel.frame = self.bounds;
 }
 
@@ -63,6 +65,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setUsername:(NSString *)username {
+    self.letterLabel.hidden = NO;
+    self.imageView.hidden = YES;
+
     if (username.length >= 1) {
         NSString *firstLetter = [username substringToIndex:1];
         self.letterLabel.text = [firstLetter uppercaseString];
@@ -73,6 +78,17 @@ NS_ASSUME_NONNULL_END
         self.letterLabel.text = nil;
         self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
     }
+}
+
+- (void)setAsDashPlaceholder {
+    self.letterLabel.hidden = YES;
+    self.imageView.hidden = NO;
+
+    self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
+
+    self.imageView.tintColor = [UIColor whiteColor];
+    self.imageView.contentMode = UIViewContentModeCenter;
+    self.imageView.image = [UIImage imageNamed:@"icon_dash_small"];
 }
 
 - (void)setSmall:(BOOL)small {
@@ -91,6 +107,10 @@ NS_ASSUME_NONNULL_END
 - (void)setup {
     self.layer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
     self.layer.masksToBounds = YES;
+
+    UIImageView *imageView = [[UIImageView alloc] init];
+    [self addSubview:imageView];
+    _imageView = imageView;
 
     UILabel *letterLabel = [[UILabel alloc] init];
     letterLabel.font = [UIFont dw_regularFontOfSize:30];

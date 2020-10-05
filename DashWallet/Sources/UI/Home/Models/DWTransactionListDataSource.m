@@ -23,7 +23,7 @@
 #import "DWDPRegistrationErrorTableViewCell.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDPRegistrationStatusTableViewCell.h"
-#import "DWTxListTableViewCell.h"
+#import "DWTxListHomeCell.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -110,9 +110,9 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
     else {
-        NSString *cellId = DWTxListTableViewCell.dw_reuseIdentifier;
-        DWTxListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                                                      forIndexPath:indexPath];
+        NSString *cellId = DWTxListHomeCell.dw_reuseIdentifier;
+        DWTxListHomeCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                 forIndexPath:indexPath];
         DSTransaction *transaction = [self transactionForIndexPath:indexPath];
         [cell configureWithTransaction:transaction dataProvider:self.dataProvider];
         return cell;
