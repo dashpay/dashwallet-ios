@@ -432,6 +432,8 @@
 		2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */; };
 		2AE310FE2527A4450054266D /* DWTxListHomeCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE310FD2527A4450054266D /* DWTxListHomeCell.m */; };
 		2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE4736A241BC5E300804DD4 /* UIViewController+DWDisplayError.m */; };
+		2AE85089252B81AA008FE11A /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE85087252B81AA008FE11A /* DWPhraseRepairChildViewController.m */; };
+		2AE8508A252B81AA008FE11A /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE85088252B81AA008FE11A /* DWPhraseRepairViewController.m */; };
 		2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */; };
 		2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */; };
 		2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B66323CF09000016F221 /* DWConfirmUsernameViewController.m */; };
@@ -1470,6 +1472,10 @@
 		2AE47369241BC5E300804DD4 /* UIViewController+DWDisplayError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWDisplayError.h"; sourceTree = "<group>"; };
 		2AE4736A241BC5E300804DD4 /* UIViewController+DWDisplayError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+DWDisplayError.m"; sourceTree = "<group>"; };
 		2AE56473249B675500CC2E80 /* DWDPNotificationItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNotificationItem.h; sourceTree = "<group>"; };
+		2AE85085252B81AA008FE11A /* DWPhraseRepairChildViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairChildViewController.h; sourceTree = "<group>"; };
+		2AE85086252B81AA008FE11A /* DWPhraseRepairViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairViewController.h; sourceTree = "<group>"; };
+		2AE85087252B81AA008FE11A /* DWPhraseRepairChildViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairChildViewController.m; sourceTree = "<group>"; };
+		2AE85088252B81AA008FE11A /* DWPhraseRepairViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairViewController.m; sourceTree = "<group>"; };
 		2AE8B63F23CDB98A0016F221 /* DWCreateUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateUsernameViewController.h; sourceTree = "<group>"; };
 		2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateUsernameViewController.m; sourceTree = "<group>"; };
 		2AE8B64223CDC0F40016F221 /* DWInputUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInputUsernameViewController.h; sourceTree = "<group>"; };
@@ -2442,6 +2448,7 @@
 		2A74EFEA2305316A00C475EB /* RecoverWallet */ = {
 			isa = PBXGroup;
 			children = (
+				2AE85084252B81AA008FE11A /* PhraseRepair */,
 				2A74EFEE230531BC00C475EB /* Views */,
 				2A74EFEB2305318000C475EB /* DWRecoverViewController.h */,
 				2A74EFEC2305318000C475EB /* DWRecoverViewController.m */,
@@ -3886,6 +3893,17 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		2AE85084252B81AA008FE11A /* PhraseRepair */ = {
+			isa = PBXGroup;
+			children = (
+				2AE85085252B81AA008FE11A /* DWPhraseRepairChildViewController.h */,
+				2AE85086252B81AA008FE11A /* DWPhraseRepairViewController.h */,
+				2AE85087252B81AA008FE11A /* DWPhraseRepairChildViewController.m */,
+				2AE85088252B81AA008FE11A /* DWPhraseRepairViewController.m */,
+			);
+			path = PhraseRepair;
+			sourceTree = "<group>";
+		};
 		2AE8B63D23CDB94E0016F221 /* DashPay */ = {
 			isa = PBXGroup;
 			children = (
@@ -5250,6 +5268,7 @@
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A5A7FBB251DF74400ADD073 /* DWAvatarEditSelectorContentView.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
+				2AE85089252B81AA008FE11A /* DWPhraseRepairChildViewController.m in Sources */,
 				2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */,
 				2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */,
 				2AEC5CC2249755BB00F4A689 /* DWDashPayContactsUpdater.m in Sources */,
@@ -5271,6 +5290,7 @@
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
 				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
+				2AE8508A252B81AA008FE11A /* DWPhraseRepairViewController.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,

@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWRecoverContentViewDelegate <NSObject>
 
 - (void)recoverContentView:(DWRecoverContentView *)view showIncorrectWord:(NSString *)incorrectWord;
-- (void)recoverContentView:(DWRecoverContentView *)view
-    invalidWordsCountInsteadOf:(NSInteger)neededWordsCount;
+- (void)recoverContentView:(DWRecoverContentView *)view offerToReplaceIncorrectWord:(NSString *)incorrectWord inPhrase:(NSString *)phrase;
+- (void)recoverContentView:(DWRecoverContentView *)view usedWordsHaveInvalidCount:(NSArray *)words;
 - (void)recoverContentViewBadRecoveryPhrase:(DWRecoverContentView *)view;
 - (void)recoverContentViewDidRecoverWallet:(DWRecoverContentView *)view phrase:(NSString *)phrase;
 - (void)recoverContentViewPerformWipe:(DWRecoverContentView *)view;
@@ -48,6 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)continueAction;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+
+- (void)appendText:(NSString *)text;
+- (void)replaceText:(NSString *)target replacement:(NSString *)replacement;
 
 @end
 
