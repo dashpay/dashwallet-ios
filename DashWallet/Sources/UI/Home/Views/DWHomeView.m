@@ -27,7 +27,7 @@
 #import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
-#import "DWTxListTableViewCell.h"
+#import "DWTxListHomeCell.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -79,17 +79,23 @@ NS_ASSUME_NONNULL_BEGIN
         [self addSubview:tableView];
         _tableView = tableView;
 
-        NSArray<NSString *> *cellIds = @[
+        NSArray<NSString *> *cellNibIds = @[
             DWTxListEmptyTableViewCell.dw_reuseIdentifier,
-            DWTxListTableViewCell.dw_reuseIdentifier,
             DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
             DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
             DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
         ];
-        for (NSString *cellId in cellIds) {
+        for (NSString *cellId in cellNibIds) {
             UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
             NSParameterAssert(nib);
             [tableView registerNib:nib forCellReuseIdentifier:cellId];
+        }
+
+        NSArray<NSString *> *cellIds = @[
+            DWTxListHomeCell.dw_reuseIdentifier,
+        ];
+        for (NSString *cellId in cellIds) {
+            [tableView registerClass:NSClassFromString(cellId) forCellReuseIdentifier:cellId];
         }
 
         [[NSNotificationCenter defaultCenter] addObserver:self
