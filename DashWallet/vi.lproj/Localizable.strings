@@ -491,6 +491,9 @@
 "Manage Trusted Node" = "Quản lý nút tin cậy";
 
 /* No comment provided by engineer. */
+"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+
+/* No comment provided by engineer. */
 "Masternode Registration" = "Đăng ký Masternode";
 
 /* No comment provided by engineer. */
