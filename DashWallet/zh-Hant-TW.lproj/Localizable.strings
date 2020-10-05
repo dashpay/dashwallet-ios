@@ -491,6 +491,9 @@
 "Manage Trusted Node" = "Manage Trusted Node";
 
 /* No comment provided by engineer. */
+"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+
+/* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
