@@ -194,18 +194,24 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
 - (void)handleApplicationContextDataRequest:(NSDictionary *)request
                                replyHandler:(void (^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
-    NSDictionary *replay =
-        @{AW_SESSION_RESPONSE_KEY : [NSKeyedArchiver archivedDataWithRootObject:[self applicationContextData]]};
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[self applicationContextData]
+                                         requiringSecureCoding:NO
+                                                         error:nil];
+
+    NSDictionary *replay = @{AW_SESSION_RESPONSE_KEY : data} ?: @{};
 
     replyHandler(replay);
 }
 
 - (void)sendApplicationContext {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        BRAppleWatchData *appleWatchData = [self applicationContextData];
-        [self.session updateApplicationContext:@{
-            AW_APPLICATION_CONTEXT_KEY : [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[self applicationContextData]
+                                             requiringSecureCoding:NO
+                                                             error:nil];
+        if (data == nil) {
+            return;
         }
+        [self.session updateApplicationContext:@{AW_APPLICATION_CONTEXT_KEY : data}
                                          error:nil];
     });
 }

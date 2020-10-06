@@ -144,8 +144,8 @@ NS_ASSUME_NONNULL_BEGIN
             if (chainManager.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
                 if (chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight && chainManager.masternodeManager.masternodeListRetrievalQueueCount) {
                     self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"masternode list #%d of %d", nil),
-                                                                            chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount,
-                                                                            chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount];
+                                                                            (int)(chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount),
+                                                                            (int)chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount];
                 }
                 else {
                     self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"header #%d of %d", nil),
