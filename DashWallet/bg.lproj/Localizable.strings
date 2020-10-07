@@ -317,7 +317,7 @@
 "Enter your 2FA code below" = "Въведете вашият 2FA код по-долу";
 
 /* No comment provided by engineer. */
-"Error" = "Error";
+"Error" = "Грешка";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Error Upgrading";
@@ -614,7 +614,7 @@
 "Payments" = "Плащания";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "Изчакване";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ПИН се изисква винаги при правене на плащания";
@@ -638,7 +638,7 @@
 "Please Wait" = "Моля изчакайте";
 
 /* No comment provided by engineer. */
-"Please wait" = "Please wait";
+"Please wait" = "Моля изчакайте";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Моля изчакайте синхронизирането да приключи";
