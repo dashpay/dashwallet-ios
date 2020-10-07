@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWDerivationPathKeysTableViewCell *cell =
             (DWDerivationPathKeysTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
         id<DWDerivationPathKeysItem> item = cell.item;
-        if (item && ![item.detail isEqualToString:@""]) {
+        if (item && item.detail && ![item.detail isEqualToString:@""]) {
             [UIPasteboard generalPasteboard].string = item.detail;
             [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
         }
