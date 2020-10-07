@@ -1,8 +1,8 @@
 /* No comment provided by engineer. */
-"%@ has accepted your contact request" = "%@ has accepted your contact request";
+"%@ has accepted your contact request" = "%@ 님이 당신의 연락처 요청을 수락하였습니다";
 
 /* Username has sent you a contact request */
-"%@ has sent you a contact request" = "%@ has sent you a contact request";
+"%@ has sent you a contact request" = "%@ 님이 당신에게 연락처 요청을 보냈습니다";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@에 페이스 ID 접근 권한이 없습니다";
@@ -14,22 +14,22 @@
 "%@ is not allowed to access Touch ID" = "%@게 터치 ID 접근 권한이 없습니다";
 
 /* No comment provided by engineer. */
-"(1/3) Processing Payment" = "(1/3) Processing Payment";
+"(1/3) Processing Payment" = "(1/3) 지불 처리 중";
 
 /* No comment provided by engineer. */
-"(1/3) Unable to process payment" = "(1/3) Unable to process payment";
+"(1/3) Unable to process payment" = "(1/3) 지불을 처리할 수 없습니다";
 
 /* No comment provided by engineer. */
-"(2/3) Creating Dash Identity" = "(2/3) Creating Dash Identity";
+"(2/3) Creating Dash Identity" = "(2/3) 대시 신원을 생성하는 중";
 
 /* No comment provided by engineer. */
-"(2/3) Unable to create Dash Identity" = "(2/3) Unable to create Dash Identity";
+"(2/3) Unable to create Dash Identity" = "(2/3) 대시 신원을 생성할 수 없습니다";
 
 /* No comment provided by engineer. */
-"(3/3) Can't register username" = "(3/3) Can't register username";
+"(3/3) Can't register username" = "(3/3) 사용자 이름을 등록할 수 없습니다";
 
 /* No comment provided by engineer. */
-"(3/3) Registering Username" = "(3/3) Registering Username";
+"(3/3) Registering Username" = "(3/3) 사용자 이름을 등록하는 중";
 
 /* No comment provided by engineer. */
 "1 hour" = "1시간";
@@ -59,16 +59,16 @@
 "About" = "정보";
 
 /* No comment provided by engineer. */
-"Accept" = "Accept";
+"Accept" = "수락";
 
 /* No comment provided by engineer. */
-"Activity" = "Activity";
+"Activity" = "활동";
 
 /* Add <username> as your contact... */
-"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "사용자 이름에 직접 지불하고 상호 거래 내역을 유지하려면 %@를 당신의 연락처에 추가하세요";
 
 /* No comment provided by engineer. */
-"Add a New Contact" = "Add a New Contact";
+"Add a New Contact" = "새로운 연락처 추가하기";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "단축키 추가";
@@ -176,7 +176,7 @@
 "Check your connection" = "연결을 확인하세요";
 
 /* Choose your Dash username */
-"Choose your" = "Choose your";
+"Choose your" = "다음을 선택하세요";
 
 /* No comment provided by engineer. */
 "Clear" = "삭제";
@@ -197,7 +197,7 @@
 "Confirm" = "승인";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "Confirm & Pay";
+"Confirm & Pay" = "승인 & 지불";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "PIN 확인";
@@ -215,16 +215,16 @@
 "Connecting to payment server" = "지불 서버에 연결 중";
 
 /* No comment provided by engineer. */
-"Contact Request Pending" = "Contact Request Pending";
+"Contact Request Pending" = "연락처 요청 대기 중";
 
 /* No comment provided by engineer. */
-"Contact Requests" = "Contact Requests";
+"Contact Requests" = "연락처 요청";
 
 /* No comment provided by engineer. */
 "Contact Support" = "고객 지원부에 문의하기";
 
 /* No comment provided by engineer. */
-"Contacts" = "Contacts";
+"Contacts" = "연락처";
 
 /* No comment provided by engineer. */
 "Continue" = "계속";
@@ -254,16 +254,16 @@
 "Create a New Wallet" = "새로운 지갑 생성";
 
 /* No comment provided by engineer. */
-"Current user: %@" = "Current user: %@";
+"Current user: %@" = "현재 사용자: %@";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
 
 /* No comment provided by engineer. */
-"Dash username" = "Dash username";
+"Dash username" = "대시 사용자 이름";
 
 /* No comment provided by engineer. */
-"DashPay Upgrade Fee" = "DashPay Upgrade Fee";
+"DashPay Upgrade Fee" = "대시페이 업그레이드 수수료";
 
 /* No comment provided by engineer. */
 "Date" = "날짜";
@@ -278,7 +278,7 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다). 이 지갑을 즉시 삭제하시고 안전한 기기에서 지갑을 복구하십시오.";
 
 /* No comment provided by engineer. */
-"Do not take a screenshot" = "Do not take a screenshot";
+"Do not take a screenshot" = "스크린샷을 찍지 마세요";
 
 /* No comment provided by engineer. */
 "Done" = "완료";
@@ -287,10 +287,10 @@
 "Download peer: %@" = "피어 다운로드: %@";
 
 /* (List of notifications happened) Earlier (some time ago) */
-"Earlier" = "Earlier";
+"Earlier" = "이전";
 
 /* Input username textfield placeholder */
-"eg: johndoe" = "eg: johndoe";
+"eg: johndoe" = "예시: 홍길동";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "페이스 ID 활성화";
@@ -317,10 +317,10 @@
 "Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
 
 /* No comment provided by engineer. */
-"Error" = "Error";
+"Error" = "오류";
 
 /* No comment provided by engineer. */
-"Error Upgrading" = "Error Upgrading";
+"Error Upgrading" = "업그레이드 오류";
 
 /* No comment provided by engineer. */
 "Exit" = "나가기";
@@ -344,7 +344,7 @@
 "Filter Transactions" = "거래 필터링 하기";
 
 /* No comment provided by engineer. */
-"Find a user on the Dash Network" = "Find a user on the Dash Network";
+"Find a user on the Dash Network" = "대시 네트워크에서 사용자를 검색합니다";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PIN을 잊어버리셨나요?";
@@ -353,7 +353,7 @@
 "Found potential missing words:\n%@" = "Found potential missing words:\n%@";
 
 /* No comment provided by engineer. */
-"Generate extended public keys?" = "Generate extended public keys?";
+"Generate extended public keys?" = "확장된 공개 키를 생성합니까?";
 
 /* No comment provided by engineer. */
 "Get Started" = "시작하기";
@@ -362,16 +362,16 @@
 "Go to Website" = "웹사이트로 가기";
 
 /* Username has requested to be your friend */
-"has requested to be your friend" = "has requested to be your friend";
+"has requested to be your friend" = "님이 친구 요청을 보냈습니다";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "당신의 필요에 따라 지갑에 대한 완전한 통제를 행사하고 자신의 지갑을 커스터마이징 하세요";
 
 /* No comment provided by engineer. */
-"header #%d of %d" = "header #%1$d of %2$d";
+"header #%d of %d" = "헤더 %2$d 중 #%1$d";
 
 /* Hello username, */
-"Hello %@," = "Hello %@,";
+"Hello %@," = "%@님 안녕하세요,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "우리가 당신의 경험을 향상할 수 있도록 도와주세요";
@@ -383,7 +383,7 @@
 "History" = "내역";
 
 /* No comment provided by engineer. */
-"I Accept" = "I Accept";
+"I Accept" = "수락합니다";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
@@ -425,7 +425,7 @@
 "Invalid Payment Request" = "유효하지 않은 결제 요청";
 
 /* No comment provided by engineer. */
-"Invalid QR Code" = "Invalid QR Code";
+"Invalid QR Code" = "유효하지 않은 QR 코드";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
@@ -437,16 +437,16 @@
 "It's Important" = "중요";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Join Evolution";
+"Join Evolution" = "에볼루션에 합류합니다";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "키페어 %ld";
 
 /* No comment provided by engineer. */
-"Let me know when it’s done" = "Let me know when it’s done";
+"Let me know when it’s done" = "완료되면 알려주세요";
 
 /* Validation rule */
-"Letters and numbers only" = "Letters and numbers only";
+"Letters and numbers only" = "숫자와 문자만 가능합니다";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "업홀드 계정 연결";
@@ -506,13 +506,13 @@
 "Max" = "최대";
 
 /* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Maximum %ld characters";
+"Maximum %ld characters" = "최대 %ld 글자";
 
 /* adjective, security level */
 "Medium" = "중간";
 
 /* Validation rule */
-"Minimum 3 characters" = "Minimum 3 characters";
+"Minimum 3 characters" = "최소 세 글자";
 
 /* No comment provided by engineer. */
 "More" = "더 알아보기";
@@ -527,19 +527,19 @@
 "Moved to Address" = "주소로 이동";
 
 /* No comment provided by engineer. */
-"My Contacts" = "My Contacts";
+"My Contacts" = "나의 연락처";
 
 /* No comment provided by engineer. */
-"Name" = "Name";
+"Name" = "이름";
 
 /* No comment provided by engineer. */
 "Network" = "네트워크";
 
 /* No comment provided by engineer. */
-"Network fee" = "네트워크 비용";
+"Network fee" = "네트워크 수수료";
 
 /* (List of) New (notifications) */
-"New" = "New";
+"New" = "새로운 알림";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC 장치";
@@ -569,13 +569,13 @@
 "Not yet used" = "아직 사용되지 않음";
 
 /* No comment provided by engineer. */
-"Notifications" = "Notifications";
+"Notifications" = "알림";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* Once <username> accepts your request... */
-"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+"Once %@ accepts your request you can Pay Directly to Username" = "%@ 님이 당신의 요청을 수락하면 사용자 이름에 직접 지불할 수 있습니다";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "운영자 키";
@@ -593,28 +593,28 @@
 "Pay and get paid instantly with easy to use payment flows" = "사용하기 쉬운 지불 플로우로 즉시 송금하고 송금 받으세요";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
-"Pay Directly to Username" = "Pay Directly to Username";
+"Pay Directly to Username" = "사용자 이름에 직접 지불하기";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "쉬운 지불";
 
 /* 1 out of 4 in the Paying Animation */
-"Paying" = "Paying";
+"Paying" = "지불 중";
 
 /* 2 out of 4 in the Paying Animation */
-"Paying." = "Paying.";
+"Paying." = "지불 중.";
 
 /* 3 out of 4 in the Paying Animation */
-"Paying.." = "Paying..";
+"Paying.." = "지불 중..";
 
 /* 4 out of 4 in the Paying Animation */
-"Paying..." = "Paying...";
+"Paying..." = "지불 중...";
 
 /* No comment provided by engineer. */
 "Payments" = "지불";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "대기 중";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
@@ -632,13 +632,13 @@
 "Please try again" = "다시 시도하세요";
 
 /* No comment provided by engineer. */
-"Please try scanning again" = "Please try scanning again";
+"Please try scanning again" = "다시 스캔해주세요";
 
 /* No comment provided by engineer. */
 "Please Wait" = "기다려주십시오";
 
 /* No comment provided by engineer. */
-"Please wait" = "Please wait";
+"Please wait" = "기다려주십시오";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "동기화가 완료될 때까지 기다려주세요";
@@ -704,10 +704,10 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
 /* Button title, Register (username) */
-"Register" = "Register";
+"Register" = "등록";
 
 /* No comment provided by engineer. */
-"Register?" = "Register?";
+"Register?" = "등록합니까?";
 
 /* No comment provided by engineer. */
 "Registered from" = "다음으로부터 등록되었습니다";
@@ -734,7 +734,7 @@
 "Reset Wallet" = "지갑 리셋하기";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
-"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
+"Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";
 
 /* No comment provided by engineer. */
 "Retry" = "재시도";
@@ -776,22 +776,22 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 복원 문구를 새로 만들고 비밀로 간직하세요.";
 
 /* No comment provided by engineer. */
-"Search for a contact" = "Search for a contact";
+"Search for a contact" = "연락처 검색";
 
 /* No comment provided by engineer. */
-"Search for a contact request" = "Search for a contact request";
+"Search for a contact request" = "연락처 요청 검색";
 
 /* No comment provided by engineer. */
-"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+"Search for a User on the Dash Network" = "대시 네트워크에서 사용자 검색";
 
 /* No comment provided by engineer. */
-"Search for a username" = "Search for a username";
+"Search for a username" = "사용자 검색";
 
 /* Search results for \"John Doe\" */
-"Search results for \"" = "Search results for \"";
+"Search results for \"" = "\" 검색 결과";
 
 /* No comment provided by engineer. */
-"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+"Searching for username %@ on the Dash Network" = "대시 네트워크에서 사용자 이름 %@ 검색 중";
 
 /* No comment provided by engineer. */
 "Secure now" = "현재 안전합니다";
@@ -818,7 +818,7 @@
 "Send by" = "다음에서 전송하였습니다";
 
 /* No comment provided by engineer. */
-"Send Contact Request" = "Send Contact Request";
+"Send Contact Request" = "연락처 요청 전송";
 
 /* No comment provided by engineer. */
 "Send to" = "다음에 전송합니다";
@@ -836,7 +836,7 @@
 "Sending" = "보내는 중";
 
 /* No comment provided by engineer. */
-"Sending to" = "Sending to";
+"Sending to" = "다음에 전송합니다";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "보내는 중.";
@@ -890,10 +890,10 @@
 "Something went wrong" = "뭔가 잘못되었습니다";
 
 /* No comment provided by engineer. */
-"Sort by" = "Sort by";
+"Sort by" = "분류";
 
 /* No comment provided by engineer. */
-"Sort Contacts" = "Sort Contacts";
+"Sort Contacts" = "연락처 분류";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "금액 특정하기";
@@ -902,7 +902,7 @@
 "Spending Confirmation" = "승인 보내는 중";
 
 /* No comment provided by engineer. */
-"Support" = "Support";
+"Support" = "지원";
 
 /* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
@@ -932,16 +932,16 @@
 "Tap to unhide balance" = "잔고를 확인하시려면 탭하세요";
 
 /* No comment provided by engineer. */
-"There are no new notifications" = "There are no new notifications";
+"There are no new notifications" = "새로운 알림이 없습니다";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "표시할 거래가 없습니다";
 
 /* No comment provided by engineer. */
-"There are no users that match with the name %@" = "There are no users that match with the name %@";
+"There are no users that match with the name %@" = "%@ 라는 이름에 맞는 사용자가 존재하지 않습니다";
 
 /* No comment provided by engineer. */
-"There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
+"There are no users that match with the name %@ in your contacts" = "당신의 연락처에 %@ 라는 이름에 맞는 사용자가 존재하지 않습니다";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "이 어플은 오픈 소스입니다:";
@@ -1007,10 +1007,10 @@
 "Updated: %@" = "업데이트됨: %@";
 
 /* No comment provided by engineer. */
-"Upgrade Fee" = "Upgrade Fee";
+"Upgrade Fee" = "업그레이드 수수료";
 
 /* No comment provided by engineer. */
-"Upgrading to DashPay" = "Upgrading to DashPay";
+"Upgrading to DashPay" = "대시페이로 업그레이드 중";
 
 /* No comment provided by engineer. */
 "Uphold" = "업홀드";
@@ -1022,16 +1022,16 @@
 "Used at IP address" = "이 IP 주소에서 사용됨";
 
 /* No comment provided by engineer. */
-"Username taken" = "Username taken";
+"Username taken" = "이미 사용 중인 사용자 이름";
 
 /* No comment provided by engineer. */
-"Validating username done" = "Validating username done";
+"Validating username done" = "사용자 이름 인증 완료";
 
 /* No comment provided by engineer. */
-"Validating username failed" = "Validating username failed";
+"Validating username failed" = "사용자 이름 인증 실패";
 
 /* No comment provided by engineer. */
-"Validating username…" = "Validating username…";
+"Validating username…" = "사용자 이름 인증 중...";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "성공적으로 인증되었습니다";
@@ -1043,10 +1043,10 @@
 "Very High" = "매우 높음";
 
 /* No comment provided by engineer. */
-"View All" = "View All";
+"View All" = "모두 보기";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View in Block Explorer" = "블록 탐색기에서 보기";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "비밀문구, 백업 지갑 보기....";
@@ -1091,7 +1091,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "거래가 확인되면 다른 지갑은 가치를 가지지 않게 되며, 보안 관련 사유를 위해서는 이를 다시 사용해서는 안됩니다.";
 
 /* No comment provided by engineer. */
-"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
+"Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
 
 /* No comment provided by engineer. */
 "Wipe" = "지우기";
@@ -1103,7 +1103,7 @@
 "with Dash blockchain" = "대시 블록체인을 통해";
 
 /* No comment provided by engineer. */
-"You accepted the contact request from %@" = "You accepted the contact request from %@";
+"You accepted the contact request from %@" = "%@ 님으로부터의 연락처 요청을 수락하였습니다";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "당신은 곧 다른 대시 지갑으로부터 자금을 스위프하게됩니다.";
@@ -1118,7 +1118,7 @@
 "You can authenticate with Touch ID for payments below" = "지불을 위해서는 터치 ID를 통해 아래에서 인증할 수 있습니다";
 
 /* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "대시 지갑에 접근하시려면 PIN을 입력해야 합니다";
@@ -1127,7 +1127,7 @@
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "당신은 대시를 수령하셨습니다! 이 기기를 분실하시게 되면 당신의 자금 역시 잃게 됩니다. 다른 기기에서 당신의 지갑을 복원할 수 있도록 복구 문구를 설정하세요.";
 
 /* No comment provided by engineer. */
-"You sent the contact request to %@" = "You sent the contact request to %@";
+"You sent the contact request to %@" = "%@ 님에게 연락처 요청을 전송하였습니다";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "또한 당신의 브라우저를 이용하여 업홀드 웹사이트에서 로그아웃 하십시오.";
@@ -1136,7 +1136,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "이 기기를 분실하거나 기기가 파손되는 경우, 혹은 대시 지갑이 이 기기에서 실수로 삭제되는 경우에는 당신의 자금에 접근하기 위해서 이 복구 문구가 필요합니다.";
 
 /* No comment provided by engineer. */
-"Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+"Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
@@ -1145,10 +1145,10 @@
 "Your Uphold account Dash balance is" = "당신의 업홀드 계정 대시 잔고는 다음과 같습니다";
 
 /* No comment provided by engineer. */
-"Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
+"Your username %@ has been successfully created on the Dash Network" = "당신의 사용자 이름인 %@가 대시 네트워크에 성공적으로 생성되었습니다";
 
 /* No comment provided by engineer. */
-"Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
+"Your username %@ is being created on the Dash Network" = "당신의 사용자 이름인 %@가 대시 네트워크에 생성되는 중입니다";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "이제 당신의 지갑은 안전합니다. 언제든 당신의 복원 문구를 사용하셔서 당신의 계정을 다른 기기에서 복원하실 수 있습니다.";
