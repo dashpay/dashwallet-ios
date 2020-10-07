@@ -49,7 +49,7 @@ NSString *const DWSyncStateChangedNotification = @"DWSyncStateChangedNotificatio
 NSString *const DWSyncStateChangedFromStateKey = @"DWSyncStateChangedFromStateKey";
 
 static NSTimeInterval const SYNC_LOOP_INTERVAL = 0.2;
-float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
+float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
 
 @interface DWSyncModel ()
 
