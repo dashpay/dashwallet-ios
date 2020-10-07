@@ -145,9 +145,10 @@ NS_ASSUME_NONNULL_BEGIN
         DWDerivationPathKeysTableViewCell *cell =
             (DWDerivationPathKeysTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
         id<DWDerivationPathKeysItem> item = cell.item;
-        [UIPasteboard generalPasteboard].string = item.detail;
-
-        [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
+        if (item && ![item.detail isEqualToString:@""]) {
+            [UIPasteboard generalPasteboard].string = item.detail;
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
+        }
     }
 }
 
