@@ -587,6 +587,9 @@
 "Not a valid Dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
+
+/* No comment provided by engineer. */
 "Not yet used" = "ยังไม่ถูกใช้";
 
 /* No comment provided by engineer. */

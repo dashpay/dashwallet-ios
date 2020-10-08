@@ -587,6 +587,9 @@
 "Not a valid Dash address" = "有効なDashアドレスではありません";
 
 /* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
+
+/* No comment provided by engineer. */
 "Not yet used" = "まだ使用されていません";
 
 /* No comment provided by engineer. */

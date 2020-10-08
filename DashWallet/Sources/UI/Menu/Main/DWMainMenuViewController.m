@@ -17,9 +17,8 @@
 
 #import "DWMainMenuViewController.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWAboutModel.h"
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
@@ -90,6 +89,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)mainMenuContentView:(DWMainMenuContentView *)view didSelectMenuItem:(id<DWMainMenuItem>)item {
     switch (item.type) {
         case DWMainMenuItemType_BuySellDash: {
+            DSChainType chainType = [DWEnvironment sharedInstance].currentChain.chainType;
+            if (chainType != DSChainType_MainNet && chainType != DSChainType_TestNet) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Not Available For Devnet", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *ok = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleCancel handler:nil];
+                [alert addAction:ok];
+
+                [self presentViewController:alert animated:YES completion:nil];
+
+                return;
+            }
+
             [[DSAuthenticationManager sharedInstance]
                       authenticateWithPrompt:nil
                 usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled

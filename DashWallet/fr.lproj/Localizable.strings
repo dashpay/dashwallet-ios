@@ -587,6 +587,9 @@
 "Not a valid Dash address" = "Ce n'est pas une adresse Dash valide";
 
 /* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Pas encore utilisé";
 
 /* No comment provided by engineer. */
