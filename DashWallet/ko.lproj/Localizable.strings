@@ -587,6 +587,9 @@
 "Not a valid Dash address" = "유효한 대시 주소가 아닙니다";
 
 /* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
+
+/* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
 
 /* No comment provided by engineer. */
