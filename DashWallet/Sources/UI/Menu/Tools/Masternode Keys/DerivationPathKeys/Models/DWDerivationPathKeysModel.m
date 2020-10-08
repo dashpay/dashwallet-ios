@@ -78,13 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
                 NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
                                                                       withPassphrase:nil];
                 DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
-                if ([key isKindOfClass:[DSECDSAKey class]]) {
-#warning FIXME
-                    //                    item.detail = [((DSECDSAKey *)key) privateKeyStringForChain:self.derivationPath.chain];
-                }
-                else {
-                    item.detail = key.secretKeyString;
-                }
+                item.detail = key.secretKeyString;
             }
 
             break;

@@ -87,12 +87,12 @@ NS_ASSUME_NONNULL_BEGIN
                                                        chain.lastSyncBlockHeight,
                                                        chain.estimatedBlockHeight];
     NSString *peersString = [NSString stringWithFormat:NSLocalizedString(@"Connected peers: %d", nil),
-                                                       peerManager.connectedPeerCount];
+                                                       (int)peerManager.connectedPeerCount];
     NSString *dlPeerString = [NSString stringWithFormat:NSLocalizedString(@"Download peer: %@", @"ex., Download peer: 127.0.0.1:9999"),
                                                         peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-"];
     NSString *quorumsString = [NSString stringWithFormat:NSLocalizedString(@"Quorums validated: %d/%d", nil),
-                                                         [currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
-                                                         [currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
+                                                         (int)[currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
+                                                         (int)[currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
 
     NSString *usernameString = @"";
     if ([DWGlobalOptions sharedInstance].dashpayUsername) {

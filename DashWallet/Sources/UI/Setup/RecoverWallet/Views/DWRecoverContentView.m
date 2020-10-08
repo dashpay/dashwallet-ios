@@ -193,16 +193,14 @@ NS_ASSUME_NONNULL_BEGIN
             [[phrase lowercaseString] isEqualToString:[self.model.wipeAcceptPhrase lowercaseString]]) {
             [self wipeWithPhrase:phrase];
         }
-        else if (incorrectWord) {
-            if (incorrectWordCount > 1) {
-                textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
-                [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
-            }
-            else {
-                [self.delegate recoverContentView:self offerToReplaceIncorrectWord:incorrectWord inPhrase:phrase];
-            }
+        else if (incorrectWord && incorrectWordCount > 1) {
+            textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
+            [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
         }
-        else if (words.count < DW_PHRASE_MIN_LENGTH || words.count % DW_PHRASE_MULTIPLE) {
+        else if (incorrectWord && incorrectWordCount == 1 && self.model.action == DWRecoverAction_Recover) {
+            [self.delegate recoverContentView:self offerToReplaceIncorrectWord:incorrectWord inPhrase:phrase];
+        }
+        else if (self.model.action == DWRecoverAction_Recover && (words.count < DW_PHRASE_MIN_LENGTH || words.count % DW_PHRASE_MULTIPLE)) {
             [self.delegate recoverContentView:self usedWordsHaveInvalidCount:words];
         }
         else if (![self.model phraseIsValid:phrase]) {

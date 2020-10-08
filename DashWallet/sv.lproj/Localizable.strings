@@ -35,7 +35,7 @@
 "(3/3) Registering Username" = "(3/3) Registering Username";
 
 /* No comment provided by engineer. */
-"1 hour" = "1 hour";
+"1 hour" = "1 timme";
 
 /* Shorten version of minute */
 "1 min" = "1 min";
@@ -212,7 +212,7 @@
 "Confirm & Pay" = "Confirm & Pay";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Bekräfta PIN";
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirming";
@@ -239,7 +239,7 @@
 "Contacts" = "Contacts";
 
 /* No comment provided by engineer. */
-"Continue" = "Continue";
+"Continue" = "Fortsätt";
 
 /* No comment provided by engineer. */
 "Copied" = "Copied";
@@ -281,7 +281,7 @@
 "DashPay Upgrade Fee" = "DashPay Upgrade Fee";
 
 /* No comment provided by engineer. */
-"Date" = "Date";
+"Date" = "Datum";
 
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
@@ -338,13 +338,13 @@
 "Enter your 2FA code below" = "Enter your 2FA code below";
 
 /* No comment provided by engineer. */
-"Error" = "Error";
+"Error" = "Fel";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Error Upgrading";
 
 /* No comment provided by engineer. */
-"Exit" = "Exit";
+"Exit" = "Avsluta";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
@@ -554,7 +554,7 @@
 "Name" = "Name";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "Nätverk";
 
 /* No comment provided by engineer. */
 "Network fee" = "Nätverksavgift";

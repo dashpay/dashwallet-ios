@@ -87,29 +87,15 @@ NS_ASSUME_NONNULL_BEGIN
         strongSelf.linkButton.userInteractionEnabled = YES;
     };
 
-    if (@available(iOS 12.0, *)) {
-        ASWebAuthenticationSession *authenticationSession =
-            [[ASWebAuthenticationSession alloc] initWithURL:url
-                                          callbackURLScheme:callbackURLScheme
-                                          completionHandler:completionHandler];
-        if (@available(iOS 13.0, *)) {
-            authenticationSession.presentationContextProvider = self;
-        }
-        [authenticationSession start];
-        self.authenticationSession = authenticationSession;
+    ASWebAuthenticationSession *authenticationSession =
+        [[ASWebAuthenticationSession alloc] initWithURL:url
+                                      callbackURLScheme:callbackURLScheme
+                                      completionHandler:completionHandler];
+    if (@available(iOS 13.0, *)) {
+        authenticationSession.presentationContextProvider = self;
     }
-    else if (@available(iOS 11.0, *)) {
-        SFAuthenticationSession *authenticationSession =
-            [[SFAuthenticationSession alloc] initWithURL:url
-                                       callbackURLScheme:callbackURLScheme
-                                       completionHandler:completionHandler];
-        [authenticationSession start];
-        self.authenticationSession = authenticationSession;
-    }
-    else {
-        SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
-        [self presentViewController:controller animated:YES completion:nil];
-    }
+    [authenticationSession start];
+    self.authenticationSession = authenticationSession;
 }
 
 - (void)didReceiveURLNotification:(NSNotification *)n {
