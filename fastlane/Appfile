@@ -1,4 +1,4 @@
-app_identifier "org.dashfoundation.dashredesign2019" # The bundle identifier of your app
+app_identifier "org.dashfoundation.dash" # The bundle identifier of your app
 # apple_id "example@gmail.com" # will be asked and stored in keychain
 
 itc_team_id "117878981" # iTunes Connect Team ID
