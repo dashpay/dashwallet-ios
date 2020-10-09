@@ -41,6 +41,10 @@
     return YES;
 }
 
+- (BOOL)isSendAllowed {
+    return [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced;
+}
+
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
     void (^selectAllFundsBlock)(void) = ^{
         preparationBlock();

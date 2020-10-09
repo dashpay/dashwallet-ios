@@ -77,6 +77,15 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    if (!self.sendAmountModel.isSendAllowed) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Please wait for the sync to complete", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *ok = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:ok];
+        [self presentViewController:alert animated:YES completion:nil];
+
+        return;
+    }
+
     DWSendAmountModel *sendModel = (DWSendAmountModel *)self.model;
     NSAssert([sendModel isKindOfClass:DWSendAmountModel.class], @"Inconsistent state");
 
