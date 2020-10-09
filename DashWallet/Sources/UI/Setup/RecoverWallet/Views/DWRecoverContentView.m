@@ -138,7 +138,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)replaceText:(NSString *)target replacement:(NSString *)replacement {
-    self.textView.text = [self.textView.text stringByReplacingOccurrencesOfString:target withString:replacement];
+    self.textView.text = [self.textView.text stringByReplacingOccurrencesOfString:target
+                                                                       withString:replacement
+                                                                          options:NSCaseInsensitiveSearch
+                                                                            range:NSMakeRange(0, self.textView.text.length)];
 }
 
 #pragma mark - UITextViewDelegate
