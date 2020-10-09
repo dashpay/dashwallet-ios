@@ -32,6 +32,11 @@
     self = [super init];
     if (self) {
         _itemsFactory = [[DWDPContactsItemsFactory alloc] init];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didUpdateContacts)
+                                                     name:DWDashPayContactsDidUpdateNotification
+                                                   object:nil];
     }
     return self;
 }
@@ -56,6 +61,8 @@
 }
 
 - (void)start {
+    self.active = YES;
+
     if ([self shouldFetchData]) {
         [[DWDashPayContactsUpdater sharedInstance] fetch];
     }
@@ -71,6 +78,8 @@
 }
 
 - (void)stop {
+    self.active = NO;
+
     [self.requestsDataSource stop];
     [self.contactsDataSource stop];
 }
@@ -142,6 +151,13 @@
 
 - (BOOL)isSearching {
     return self.trimmedQuery.length > 0;
+}
+
+- (void)didUpdateContacts {
+    if (self.isActive) {
+        [self stop];
+        [self start];
+    }
 }
 
 @end

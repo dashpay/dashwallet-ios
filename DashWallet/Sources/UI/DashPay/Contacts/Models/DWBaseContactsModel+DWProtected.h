@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DWDPContactsItemsFactory *itemsFactory;
 @property (nullable, nonatomic, copy) NSString *trimmedQuery;
 
+@property (nonatomic, assign, getter=isActive) BOOL active;
+
 - (void)rebuildFRCDataSources;
 
 - (BOOL)shouldFetchData;
