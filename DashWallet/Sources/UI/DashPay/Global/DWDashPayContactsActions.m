@@ -42,13 +42,13 @@
 
         // TODO: DP temp workaround to update and force reload contact list
         // This will trigger DWNotificationsProvider to reset
-        [[DWDashPayContactsUpdater sharedInstance] fetch];
+        [[DWDashPayContactsUpdater sharedInstance] fetchWithCompletion:^(BOOL contactsSuccess, NSArray<NSError *> *_Nonnull contactsErrors) {
+            if (completion) {
+                completion(success, errors);
+            }
+        }];
 
         DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
-
-        if (completion) {
-            completion(success, errors);
-        }
     };
 
     // Accepting request from a DSFriendRequestEntity doesn't require searching for associated blockchain identity.
