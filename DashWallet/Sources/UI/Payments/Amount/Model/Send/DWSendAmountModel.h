@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly, strong, nonatomic) DWAmountSendingOptionsModel *sendingOptions;
 @property (nonatomic, assign) BOOL insufficientFundsErrorWasShown;
+@property (readonly, nonatomic, assign, getter=isSendAllowed) BOOL sendAllowed;
 
 - (instancetype)initWithSendingDestination:(nullable NSString *)sendingDestination
                             paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
