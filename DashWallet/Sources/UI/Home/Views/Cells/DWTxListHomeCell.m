@@ -17,6 +17,7 @@
 
 #import "DWTxListHomeCell.h"
 
+#import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWDPTxItemView.h"
 #import "DWEnvironment.h"
 #import "DWUIKit.h"
@@ -34,14 +35,14 @@ static NSAttributedString *AttributedString(NSString *string, UIFont *font, UICo
     return [[NSAttributedString alloc] initWithString:string attributes:attributes];
 }
 
-static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> transactionData) {
+static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> transactionData, NSString *dashpayUsername) {
     UIFont *directionFont = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     UIColor *directionColor = [UIColor dw_darkTitleColor];
 
 
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] init];
 
-    [attributedString appendAttributedString:AttributedString(transactionData.directionText,
+    [attributedString appendAttributedString:AttributedString(dashpayUsername ?: transactionData.directionText,
                                                               directionFont,
                                                               directionColor)];
 
@@ -64,6 +65,7 @@ static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> tr
 @property (nullable, nonatomic, weak) id<DWTransactionListDataProviderProtocol> dataProvider;
 @property (nonatomic, strong) DSTransaction *transaction;
 @property (nonatomic, strong) id<DWTransactionListDataItem> transactionData;
+@property (nullable, copy, nonatomic) NSString *dashpayUsername;
 
 @end
 
@@ -132,16 +134,20 @@ NS_ASSUME_NONNULL_END
     DSBlockchainIdentity *currentUser = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     if (currentUser == nil) {
         [self.itemView.avatarView setAsDashPlaceholder];
+        self.dashpayUsername = nil;
     }
     else {
         if (source != nil && !uint256_eq(source.uniqueID, currentUser.uniqueID)) {
             self.itemView.avatarView.username = source.currentDashpayUsername;
+            self.dashpayUsername = source.dw_displayNameOrUsername;
         }
         else if (destination != nil && !uint256_eq(destination.uniqueID, currentUser.uniqueID)) {
             self.itemView.avatarView.username = destination.currentDashpayUsername;
+            self.dashpayUsername = destination.dw_displayNameOrUsername;
         }
         else {
             [self.itemView.avatarView setAsDashPlaceholder];
+            self.dashpayUsername = nil;
         }
     }
 
@@ -163,7 +169,7 @@ NS_ASSUME_NONNULL_END
 
     // Left side label
 
-    NSAttributedString *titleString = DirectionStateString(self.transactionData);
+    NSAttributedString *titleString = DirectionStateString(self.transactionData, self.dashpayUsername);
     NSAttributedString *subtitleString = AttributedString([self.dataProvider shortDateStringForTransaction:self.transaction],
                                                           subtitleFont,
                                                           subtitleColor);

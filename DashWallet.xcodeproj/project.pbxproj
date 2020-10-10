@@ -137,6 +137,7 @@
 		2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */; };
 		2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534F22F19BE300E5168A /* DWSyncModel.m */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
+		2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */; };
 		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
@@ -859,6 +860,8 @@
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
+		2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayName.h"; sourceTree = "<group>"; };
+		2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSBlockchainIdentity+DWDisplayName.m"; sourceTree = "<group>"; };
 		2A5279BB23D994BC00F856D3 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
 		2A56EEF92417E30F002C32F3 /* DWConfirmUsernameContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameContentView.h; sourceTree = "<group>"; };
 		2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameContentView.m; sourceTree = "<group>"; };
@@ -4035,6 +4038,8 @@
 				2A7AF3982482E32E001D74F9 /* DWDashPayContactsActions.m */,
 				2AEC5CC0249755BB00F4A689 /* DWDashPayContactsUpdater.h */,
 				2AEC5CC1249755BB00F4A689 /* DWDashPayContactsUpdater.m */,
+				2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */,
+				2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */,
 			);
 			path = Global;
 			sourceTree = "<group>";
@@ -5037,6 +5042,7 @@
 				2AFF01DF243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,
+				2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
 				2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */,
 				2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */,
