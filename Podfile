@@ -51,7 +51,7 @@ post_install do |installer|
         end
         
         # Hide warnings for specific pods
-        if ["gRPC"].include? target.name
+        if ["gRPC", "CocoaLumberjack"].include? target.name
             target.build_configurations.each do |config|
                 config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
             end
