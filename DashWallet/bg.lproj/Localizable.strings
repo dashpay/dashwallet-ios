@@ -242,6 +242,9 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
+"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Плащането не може да се изпълни";
 
 /* No comment provided by engineer. */
@@ -348,6 +351,12 @@
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Забравен ПИН?";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "Found missing word:\n%@";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "Found missing words:\n%@";
 
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Found potential missing words:\n%@";
