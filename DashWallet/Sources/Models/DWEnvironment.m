@@ -21,7 +21,8 @@
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
-static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
+static NSString *const DWMobileDevnetIdentifier = @"devnet-mobile-2";
+static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
 
 @implementation DWEnvironment
 
@@ -45,11 +46,19 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        //        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        // TODO: DP specific (for use in DashPay only)
+        [userDefaults setInteger:DSChainType_DevNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        // END TODO
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
-    DSChain *evonet = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
+    DSChain *evonet = [DSChain devnetWithIdentifier:[self currentDevnetIdentifier]];
+    // TODO: DP specific (for use in DashPay only)
+    if (evonet == nil) {
+        evonet = [self currentDevnetChain];
+    }
+    // END TODO
     if (evonet) {
         [evonet setDevnetNetworkName:@"Evonet"];
         [[DSChainsManager sharedInstance] chainManagerForChain:evonet];
@@ -70,7 +79,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
             self.currentChain = [DSChain testnet];
             break;
         case DSChainType_DevNet: //we will only have evonet
-            self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
+            self.currentChain = [DSChain devnetWithIdentifier:[self currentDevnetIdentifier]];
             if (!self.currentChain) {
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                 [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
@@ -127,34 +136,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
 }
 
 - (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier]) {
-        [self switchToNetwork:DSChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
+    NSString *devnetIdentifier = [self currentDevnetIdentifier];
+    if (self.currentChain != [DSChain devnetWithIdentifier:devnetIdentifier]) {
+        [self switchToNetwork:DSChainType_DevNet withIdentifier:devnetIdentifier withCompletion:completion];
     }
-}
-
-- (NSOrderedSet *)evonetServiceLocation {
-    NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"52.35.250.121"];
-    [serviceLocations addObject:@"54.245.160.193"];
-    [serviceLocations addObject:@"34.219.179.226"];
-    [serviceLocations addObject:@"54.245.182.120"];
-    [serviceLocations addObject:@"34.221.212.4"];
-    [serviceLocations addObject:@"52.12.235.213"];
-    [serviceLocations addObject:@"34.215.219.45"];
-    [serviceLocations addObject:@"34.220.98.95"];
-    [serviceLocations addObject:@"34.219.86.70"];
-    [serviceLocations addObject:@"54.202.75.194"];
-    [serviceLocations addObject:@"52.12.2.242"];
-    [serviceLocations addObject:@"34.209.152.117"];
-    [serviceLocations addObject:@"34.222.151.181"];
-    //shuffle them
-    NSUInteger count = [serviceLocations count];
-    for (NSUInteger i = 0; i < count - 1; ++i) {
-        NSInteger remainingCount = count - i;
-        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
-        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
-    }
-    return [NSOrderedSet orderedSetWithArray:serviceLocations];
 }
 
 - (void)switchToNetwork:(DSChainType)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
@@ -176,21 +161,8 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
             break;
         case DSChainType_DevNet:
             destinationChain = [DSChain devnetWithIdentifier:identifier];
-            if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
-                // TODO: provide valid `dpnsContractID` and `dashpayContractID`
-                destinationChain = [[DSChainsManager sharedInstance]
-                    registerDevnetChainWithIdentifier:identifier
-                                  forServiceLocations:[self evonetServiceLocation]
-                          withMinimumDifficultyBlocks:UINT32_MAX
-                                         standardPort:20001
-                                         dapiJRPCPort:3000
-                                         dapiGRPCPort:3010
-                                       dpnsContractID:@"CpUg99yVZDK3CDkauTKtzSTbRJN7uH5u31zgTFYor5E8".base58ToData.UInt256
-                                    dashpayContractID:@"FZpu8tK7biyRdQfCdbsYt17gJmvLBycY8TJXQRocToph".base58ToData.UInt256
-                                      protocolVersion:70216
-                                   minProtocolVersion:70216
-                                         sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
-                                      sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
+            if (!destinationChain && [identifier isEqualToString:[self currentDevnetIdentifier]]) {
+                destinationChain = [self currentDevnetChain];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }
             break;
@@ -229,6 +201,96 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-palinka";
                                                             object:nil];
         completion(YES);
     }
+}
+
+- (NSOrderedSet *)mobileDevnetServiceLocation {
+    NSMutableArray *serviceLocations = [NSMutableArray array];
+    [serviceLocations addObject:@"34.219.177.88"];
+    [serviceLocations addObject:@"52.12.115.4"];
+    [serviceLocations addObject:@"34.222.93.50"];
+    [serviceLocations addObject:@"52.27.96.24"];
+    [serviceLocations addObject:@"34.222.63.37"];
+    [serviceLocations addObject:@"34.219.147.102"];
+    [serviceLocations addObject:@"52.24.159.236"];
+    [serviceLocations addObject:@"34.216.79.150"];
+    [serviceLocations addObject:@"34.214.159.94"];
+    [serviceLocations addObject:@"52.13.103.87"];
+    [serviceLocations addObject:@"34.220.91.64"];
+    [serviceLocations addObject:@"54.185.66.134"];
+    [serviceLocations addObject:@"35.167.229.36"];
+    //shuffle them
+    NSUInteger count = [serviceLocations count];
+    for (NSUInteger i = 0; i < count - 1; ++i) {
+        NSInteger remainingCount = count - i;
+        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
+        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
+    }
+    return [NSOrderedSet orderedSetWithArray:serviceLocations];
+}
+
+- (NSOrderedSet *)palinkaDevnetServiceLocation {
+    NSMutableArray *serviceLocations = [NSMutableArray array];
+    [serviceLocations addObject:@"52.35.250.121"];
+    [serviceLocations addObject:@"54.245.160.193"];
+    [serviceLocations addObject:@"34.219.179.226"];
+    [serviceLocations addObject:@"54.245.182.120"];
+    [serviceLocations addObject:@"34.221.212.4"];
+    [serviceLocations addObject:@"52.12.235.213"];
+    [serviceLocations addObject:@"34.215.219.45"];
+    [serviceLocations addObject:@"34.220.98.95"];
+    [serviceLocations addObject:@"34.219.86.70"];
+    [serviceLocations addObject:@"54.202.75.194"];
+    [serviceLocations addObject:@"52.12.2.242"];
+    [serviceLocations addObject:@"34.209.152.117"];
+    [serviceLocations addObject:@"34.222.151.181"];
+    //shuffle them
+    NSUInteger count = [serviceLocations count];
+    for (NSUInteger i = 0; i < count - 1; ++i) {
+        NSInteger remainingCount = count - i;
+        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
+        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
+    }
+    return [NSOrderedSet orderedSetWithArray:serviceLocations];
+}
+
+- (NSString *)currentDevnetIdentifier {
+    return DWMobileDevnetIdentifier;
+}
+
+- (DSChain *)currentDevnetChain {
+    return [self mobileDevnetChain];
+}
+
+- (DSChain *)mobileDevnetChain {
+    return [[DSChainsManager sharedInstance]
+        registerDevnetChainWithIdentifier:DWMobileDevnetIdentifier
+                      forServiceLocations:[self mobileDevnetServiceLocation]
+              withMinimumDifficultyBlocks:UINT32_MAX
+                             standardPort:20001
+                             dapiJRPCPort:3000
+                             dapiGRPCPort:3010
+                           dpnsContractID:@"CVZzFCbz4Rcf2Lmu9mvtC1CmvPukHy5kS2LNtNaBFM2N".base58ToData.UInt256
+                        dashpayContractID:@"Du2kswW2h1gNVnTWdfNdSxBrC2F9ofoaZsXA6ki1PhG6".base58ToData.UInt256
+                          protocolVersion:70216
+                       minProtocolVersion:70216
+                             sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
+                          sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
+}
+
+- (DSChain *)palinkaDevnetChain {
+    return [[DSChainsManager sharedInstance]
+        registerDevnetChainWithIdentifier:DWPalinkaDevnetIdentifier
+                      forServiceLocations:[self palinkaDevnetServiceLocation]
+              withMinimumDifficultyBlocks:UINT32_MAX
+                             standardPort:20001
+                             dapiJRPCPort:3000
+                             dapiGRPCPort:3010
+                           dpnsContractID:@"CpUg99yVZDK3CDkauTKtzSTbRJN7uH5u31zgTFYor5E8".base58ToData.UInt256
+                        dashpayContractID:@"FZpu8tK7biyRdQfCdbsYt17gJmvLBycY8TJXQRocToph".base58ToData.UInt256
+                          protocolVersion:70216
+                       minProtocolVersion:70216
+                             sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
+                          sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
 }
 
 @end
