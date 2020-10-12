@@ -46,12 +46,12 @@ post_install do |installer|
         # fixes warnings about unsupported Deployment Target in Xcode 10
         if ["BoringSSL-GRPC", "abseil", "gRPC", "gRPC-Core", "gRPC-RxLibrary", "gRPC-ProtoRPC", "Protobuf", "DSJSONSchemaValidation", "!ProtoCompiler", "!ProtoCompiler-gRPCPlugin", "gRPC-gRPCCertificates", "UIViewController-KeyboardAdditions", "MMSegmentSlider", "MBProgressHUD", "KVO-MVVM", "CocoaLumberjack"].include? target.name
             target.build_configurations.each do |config|
-                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
             end
         end
         
         # Hide warnings for specific pods
-        if ["gRPC", "CocoaLumberjack"].include? target.name
+        if ["gRPC"].include? target.name
             target.build_configurations.each do |config|
                 config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
             end
