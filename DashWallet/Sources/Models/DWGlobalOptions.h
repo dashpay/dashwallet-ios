@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
 
-@property (nullable, nonatomic, copy) NSString *dashpayUsername;
+@property (nullable, nonatomic, copy) NSString *persistedDashPayUsername;
 @property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
 @property (nonatomic, assign) BOOL confirmationAcceptContactRequestIsOn;

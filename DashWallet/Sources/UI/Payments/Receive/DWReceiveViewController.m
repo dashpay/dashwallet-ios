@@ -17,6 +17,7 @@
 
 #import "DWReceiveViewController.h"
 
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWReceiveContentView.h"
 #import "DWReceiveModel.h"
@@ -137,7 +138,8 @@ static CGFloat TopPadding(void) {
     [self.view addSubview:contentView];
     self.contentView = contentView;
 
-    NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    NSString *username = blockchainIdentity.currentDashpayUsername;
     if (username != nil) {
         NSString *displayName = nil; // TODO: DP provide display name
 

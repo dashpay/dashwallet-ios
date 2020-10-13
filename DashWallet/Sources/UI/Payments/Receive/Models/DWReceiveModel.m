@@ -163,7 +163,8 @@ NS_ASSUME_NONNULL_BEGIN
             paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
         }
 
-        paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
+        DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+        paymentRequest.dashpayUsername = blockchainIdentity.currentDashpayUsername;
 
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {

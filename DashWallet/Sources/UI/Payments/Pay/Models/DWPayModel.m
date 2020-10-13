@@ -19,6 +19,7 @@
 
 #import <CoreNFC/CoreNFC.h>
 
+#import "DWEnvironment.h"
 #import "DWFrequentContactsDataSource.h"
 #import "DWGlobalOptions.h"
 #import "DWPasteboardAddressObserver.h"
@@ -66,7 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updatePaymentOptions {
     NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
 
-    if ([DWGlobalOptions sharedInstance].dashpayUsername != nil) {
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    if (blockchainIdentity.currentDashpayUsername != nil) {
         DWPayOptionModel *option = [[DWPayOptionModel alloc] initWithType:DWPayOptionModelType_DashPayUser];
         option.details = [[DWFrequentContactsDataSource alloc] init];
         [options addObject:option];

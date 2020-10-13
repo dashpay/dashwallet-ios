@@ -86,7 +86,7 @@
 }
 
 - (BOOL)contactsAvailable {
-    return [DWGlobalOptions sharedInstance].dashpayUsername != nil;
+    return self.dashPayModel.username != nil;
 }
 
 @end

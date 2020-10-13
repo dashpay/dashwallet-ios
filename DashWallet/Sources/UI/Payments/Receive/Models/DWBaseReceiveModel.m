@@ -17,6 +17,7 @@
 
 #import "DWBaseReceiveModel.h"
 
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DevicesCompatibility.h"
 #import "UIColor+DWDashPay.h"
@@ -116,7 +117,8 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
     NSParameterAssert(overlayImage);
 
     CGSize size = overlayImage.size;
-    NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    NSString *username = blockchainIdentity.currentDashpayUsername;
     const BOOL shouldDrawUser = username != nil;
 
     if (ShouldResizeLogoToSmall(hasAmount)) {

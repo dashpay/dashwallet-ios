@@ -95,9 +95,10 @@ NS_ASSUME_NONNULL_BEGIN
                                                          (int)[currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
 
     NSString *usernameString = @"";
-    if ([DWGlobalOptions sharedInstance].dashpayUsername) {
-        usernameString = [NSString stringWithFormat:NSLocalizedString(@"Current user: %@", nil),
-                                                    [DWGlobalOptions sharedInstance].dashpayUsername];
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    NSString *username = blockchainIdentity.currentDashpayUsername;
+    if (username) {
+        usernameString = [NSString stringWithFormat:NSLocalizedString(@"Current user: %@", nil), username];
     }
 
     NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString, usernameString ];
