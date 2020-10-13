@@ -45,11 +45,11 @@ NS_ASSUME_NONNULL_END
     if (self) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        NSString *username = [DWGlobalOptions sharedInstance].persistedDashPayUsername;
 
         if (blockchainIdentity) {
             if (username == nil) {
-                [DWGlobalOptions sharedInstance].dashpayUsername = blockchainIdentity.currentDashpayUsername;
+                [DWGlobalOptions sharedInstance].persistedDashPayUsername = blockchainIdentity.currentDashpayUsername;
                 username = blockchainIdentity.currentDashpayUsername;
             }
 
@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_END
             [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity username:username];
         }
 
-        DSLogVerbose(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
+        DSLogVerbose(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].persistedDashPayUsername);
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -73,7 +73,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)username {
-    return [DWGlobalOptions sharedInstance].dashpayUsername;
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    return blockchainIdentity.currentDashpayUsername ?: [DWGlobalOptions sharedInstance].persistedDashPayUsername;
 }
 
 - (BOOL)registrationCompleted {
@@ -92,7 +93,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)createUsername:(NSString *)username {
     self.lastRegistrationError = nil;
-    [DWGlobalOptions sharedInstance].dashpayUsername = username;
+    [DWGlobalOptions sharedInstance].persistedDashPayUsername = username;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
@@ -128,6 +129,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)completeRegistration {
     [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
+    [DWGlobalOptions sharedInstance].persistedDashPayUsername = nil;
+    NSAssert(self.username != nil, @"Default DSBlockchainIdentity has an empty username");
     self.registrationStatus = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
 }
@@ -141,8 +144,8 @@ NS_ASSUME_NONNULL_END
     if (blockchainIdentity) {
         NSString *username = blockchainIdentity.currentDashpayUsername;
         DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
-        if (options.dashpayUsername == nil && username != nil) {
-            options.dashpayUsername = username;
+        if (options.persistedDashPayUsername == nil && username != nil) {
+            options.persistedDashPayUsername = username;
             [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity
                                                        username:username];
         }
@@ -262,7 +265,7 @@ NS_ASSUME_NONNULL_END
 - (void)cancel {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    [DWGlobalOptions sharedInstance].dashpayUsername = nil;
+    [DWGlobalOptions sharedInstance].persistedDashPayUsername = nil;
     self.lastRegistrationError = nil;
     self.registrationStatus = nil;
 
@@ -278,6 +281,8 @@ NS_ASSUME_NONNULL_END
 
         if (isDone) {
             [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
+            [DWGlobalOptions sharedInstance].persistedDashPayUsername = nil;
+            NSAssert(self.username != nil, @"Default DSBlockchainIdentity has an empty username");
         }
     }
 }
