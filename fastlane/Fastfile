@@ -40,6 +40,13 @@ platform :ios do
 
     # Make sure our directory is clean, except for changes Fastlane has made
     clean_build_artifacts
+
+    git_commit(
+      path: ["*.plist", "#{ENV["XCODE_PROJECT"]}/project.pbxproj"],
+      message: "Bump build number to # #{get_build_number}"
+    )
+
+    puts "\n\n\niOS Build # #{get_build_number}\n\n\n"
   end
 
   desc "Run tests"
