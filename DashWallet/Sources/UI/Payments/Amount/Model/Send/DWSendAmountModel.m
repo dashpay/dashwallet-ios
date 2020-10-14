@@ -19,6 +19,7 @@
 
 #import "DWAmountModel+DWProtected.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
 
@@ -42,7 +43,8 @@
 }
 
 - (BOOL)isSendAllowed {
-    return [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced;
+    return ([DWGlobalOptions sharedInstance].isRecoveringWallet == NO ||
+            [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced);
 }
 
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
