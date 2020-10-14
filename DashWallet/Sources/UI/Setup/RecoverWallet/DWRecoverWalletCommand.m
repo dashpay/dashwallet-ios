@@ -54,8 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
                                   forChain:chain
                            storeSeedPhrase:YES
                                isTransient:NO];
-    
-    [DWGlobalOptions sharedInstance].recoveringWallet = YES;
+
+    [DWGlobalOptions sharedInstance].resyncingWallet = YES;
 
     // START_SYNC_ENTRY_POINT
     [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];

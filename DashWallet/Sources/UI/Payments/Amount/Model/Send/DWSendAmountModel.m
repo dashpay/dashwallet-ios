@@ -19,9 +19,9 @@
 
 #import "DWAmountModel+DWProtected.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
-#import "DWGlobalOptions.h"
 
 @implementation DWSendAmountModel
 
@@ -43,7 +43,7 @@
 }
 
 - (BOOL)isSendAllowed {
-    return ([DWGlobalOptions sharedInstance].isRecoveringWallet == NO ||
+    return ([DWGlobalOptions sharedInstance].isResyncingWallet == NO ||
             [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced);
 }
 

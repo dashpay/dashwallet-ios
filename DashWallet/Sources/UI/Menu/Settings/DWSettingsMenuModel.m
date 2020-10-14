@@ -64,6 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
         actionWithTitle:DSLocalizedString(@"Rescan Transactions (Suggested)", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
+                    [DWGlobalOptions sharedInstance].resyncingWallet = YES;
+
                     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
                     [chainManager syncBlocksRescan];
 
@@ -76,6 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
         actionWithTitle:DSLocalizedString(@"Full Resync", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
+                    [DWGlobalOptions sharedInstance].resyncingWallet = YES;
+
                     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
                     [chainManager masternodeListAndBlocksRescan];
 
