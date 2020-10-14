@@ -18,6 +18,7 @@
 #import "DWSecurityMenuModel.h"
 
 #import <DashSync/DSAuthenticationManager+Private.h>
+#import <DashSync/DSDataController.h>
 #import <DashSync/DashSync.h>
 
 #import "DWAdvancedSecurityModel.h"
@@ -152,6 +153,30 @@ NS_ASSUME_NONNULL_BEGIN
                                   }
                               }
                           }];
+}
+
++ (void)hardReset {
+    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+    CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
+
+    NSArray *secItemClasses = @[ (__bridge id)kSecClassGenericPassword,
+                                 (__bridge id)kSecClassInternetPassword,
+                                 (__bridge id)kSecClassCertificate,
+                                 (__bridge id)kSecClassKey,
+                                 (__bridge id)kSecClassIdentity ];
+    for (id secItemClass in secItemClasses) {
+        NSDictionary *spec = @{(__bridge id)kSecClass : secItemClass};
+        SecItemDelete((__bridge CFDictionaryRef)spec);
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtURL:[DSDataController storeURL] error:nil];
+    [fileManager removeItemAtURL:[DSDataController storeWALURL] error:nil];
+    [fileManager removeItemAtURL:[DSDataController storeSHMURL] error:nil];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        exit(0);
+    });
 }
 
 @end

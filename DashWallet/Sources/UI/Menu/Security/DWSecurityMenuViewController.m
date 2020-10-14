@@ -157,6 +157,21 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+#warning Disable in Release
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:@"Hard Reset"];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_None;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf hardReset];
+        };
+        [items addObject:cellModel];
+    }
+
     return [items copy];
 }
 
@@ -336,6 +351,23 @@ NS_ASSUME_NONNULL_BEGIN
 
     alert.preferredAction = settingsAction;
 
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)hardReset {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Hard Reset"
+                                                                   message:@"This action will completely reset your wallet, passphrase, PIN, and transaction history."
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"Cancel", nil)
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:nil];
+    [alert addAction:cancelAction];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Confirm", nil)
+                                                       style:UIAlertActionStyleDestructive
+                                                     handler:^(UIAlertAction *action) {
+                                                         [DWSecurityMenuModel hardReset];
+                                                     }];
+    [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:nil];
 }
 
