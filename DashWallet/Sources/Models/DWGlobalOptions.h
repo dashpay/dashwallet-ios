@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
 
+@property (nonatomic, assign, getter=isRecoveringWallet) BOOL recoveringWallet;
+
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

@@ -21,6 +21,7 @@
 #import "DWEnvironment.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
+#import "DWGlobalOptions.h"
 
 @implementation DWSendAmountModel
 
@@ -42,7 +43,8 @@
 }
 
 - (BOOL)isSendAllowed {
-    return [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced;
+    return ([DWGlobalOptions sharedInstance].isRecoveringWallet == NO &&
+            [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced);
 }
 
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
