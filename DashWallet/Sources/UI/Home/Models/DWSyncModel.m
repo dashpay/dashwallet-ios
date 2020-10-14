@@ -218,7 +218,7 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
     _state = state;
 
     if (state == DWSyncModelState_SyncDone) {
-        [DWGlobalOptions sharedInstance].recoveringWallet = NO;
+        [DWGlobalOptions sharedInstance].resyncingWallet = NO;
     }
 
     DWSyncLog(@"[DW Sync] Sync state: %@ -> %@", SyncStateToString(previousState), SyncStateToString(state));

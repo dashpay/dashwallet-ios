@@ -43,7 +43,7 @@
 }
 
 - (BOOL)isSendAllowed {
-    return ([DWGlobalOptions sharedInstance].isRecoveringWallet == NO ||
+    return ([DWGlobalOptions sharedInstance].isResyncingWallet == NO ||
             [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced);
 }
 

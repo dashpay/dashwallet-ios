@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
 @property (nonatomic, assign) BOOL confirmationAcceptContactRequestIsOn;
 
-@property (nonatomic, assign, getter=isRecoveringWallet) BOOL recoveringWallet;
+@property (nonatomic, assign, getter=isResyncingWallet) BOOL resyncingWallet;
 
 // Non-dynamic
 
