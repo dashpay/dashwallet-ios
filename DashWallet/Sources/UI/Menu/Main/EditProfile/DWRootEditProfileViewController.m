@@ -82,10 +82,21 @@ NS_ASSUME_NONNULL_END
 - (void)actionButtonAction:(id)sender {
     // TODO: DP provide valid avatar URL
     id avatar = nil;
-    [self.blockchainIdentity updateDashpayProfileWithDisplayName:self.editController.displayName
-                                                   publicMessage:self.editController.aboutMe
+    NSString *displayName = self.editController.displayName;
+    if ([self.editController.displayName isEqualToString:self.blockchainIdentity.currentDashpayUsername]) {
+        displayName = @"";
+    }
+    displayName = [displayName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+    NSString *aboutMe = [self.editController.aboutMe stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName
+                                                   publicMessage:aboutMe
                                                  avatarURLString:avatar];
 
+
+    NSString *uiDisplayName = displayName.length == 0 ? self.blockchainIdentity.currentDashpayUsername : displayName;
+    [self.editController updateDisplayName:uiDisplayName aboutMe:aboutMe];
     [self showActivityIndicator];
     __weak typeof(self) weakSelf = self;
     [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {

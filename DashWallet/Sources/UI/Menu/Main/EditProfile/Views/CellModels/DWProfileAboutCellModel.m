@@ -21,7 +21,7 @@
 
 - (DWTextFieldFormValidationResult *)postValidate {
     NSUInteger len = self.text.length;
-    const NSUInteger max = 120;
+    const NSUInteger max = 250;
     NSString *info = [NSString stringWithFormat:NSLocalizedString(@"%ld/%ld Characters", @"10/20 Characters"),
                                                 len, max];
     if (len > max) {

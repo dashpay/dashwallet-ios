@@ -17,6 +17,7 @@
 
 #import "DWEditProfileViewController.h"
 
+#import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
 #import "DWEditProfileAvatarView.h"
 #import "DWEditProfileTextFieldCell.h"
@@ -61,6 +62,11 @@ NS_ASSUME_NONNULL_END
 
 - (BOOL)isValid {
     return [self.aboutModel postValidate].isErrored == NO && [self.displayNameModel postValidate].isErrored == NO;
+}
+
+- (void)updateDisplayName:(NSString *)displayName aboutMe:(NSString *)aboutMe {
+    self.displayNameModel.text = displayName;
+    self.aboutModel.text = aboutMe;
 }
 
 - (void)viewDidLoad {
@@ -119,7 +125,7 @@ NS_ASSUME_NONNULL_END
         self.displayNameModel = cellModel;
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
-        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.displayName;
+        cellModel.text = [self.blockchainIdentity dw_displayNameOrUsername];
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
