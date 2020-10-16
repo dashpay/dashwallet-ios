@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWEditProfileViewControllerDelegate> delegate;
 
+- (void)updateDisplayName:(NSString *)displayName aboutMe:(NSString *)aboutMe;
+
 @end
 
 NS_ASSUME_NONNULL_END

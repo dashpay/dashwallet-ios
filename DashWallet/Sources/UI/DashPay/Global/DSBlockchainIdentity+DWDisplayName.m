@@ -20,7 +20,11 @@
 @implementation DSBlockchainIdentity (DWDisplayName)
 
 - (NSString *)dw_displayNameOrUsername {
-    return self.matchingDashpayUserInViewContext.displayName ?: self.currentDashpayUsername;
+    NSString *displayName = self.matchingDashpayUserInViewContext.displayName;
+    if (displayName.length == 0) {
+        return self.currentDashpayUsername;
+    }
+    return displayName;
 }
 
 @end
