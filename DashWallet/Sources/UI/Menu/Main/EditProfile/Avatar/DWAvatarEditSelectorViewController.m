@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_END
     [NSLayoutConstraint activateConstraints:@[
         [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [self.view.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-        [self.view.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+        [self.view.safeAreaLayoutGuide.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
 
         [overscroll.topAnchor constraintEqualToAnchor:contentView.bottomAnchor
                                              constant:-10],
@@ -81,10 +81,10 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWAvatarEditSelectorContentViewDelegate <NSObject>
 
 - (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view photoButtonAction:(UIButton *)sender {
-    NSLog(@"photo");
+    [self.delegate avatarEditSelectorViewController:self photoButtonAction:sender];
 }
 
 - (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view galleryButtonAction:(UIButton *)sender {
-    NSLog(@"gallery");
+    [self.delegate avatarEditSelectorViewController:self galleryButtonAction:sender];
 }
 @end
