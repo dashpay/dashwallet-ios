@@ -19,7 +19,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWAvatarEditSelectorViewController;
+
+@protocol DWAvatarEditSelectorViewControllerDelegate <NSObject>
+
+- (void)avatarEditSelectorViewController:(DWAvatarEditSelectorViewController *)controller photoButtonAction:(UIButton *)sender;
+- (void)avatarEditSelectorViewController:(DWAvatarEditSelectorViewController *)controller galleryButtonAction:(UIButton *)sender;
+
+@end
+
 @interface DWAvatarEditSelectorViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWAvatarEditSelectorViewControllerDelegate> delegate;
 
 @end
 

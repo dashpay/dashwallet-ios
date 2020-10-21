@@ -98,8 +98,8 @@ final class DWWatchDataManager: NSObject {
                 msg,
                 replyHandler: { ctx -> Void in
                     if let dat = ctx[AW_QR_CODE_BITS_KEY],
-                        let datDat = dat as? Data,
-                        let img = UIImage(data: datDat)
+                       let datDat = dat as? Data,
+                       let img = UIImage(data: datDat)
                     {
                         responseHandler(img, nil)
                         return
@@ -263,10 +263,10 @@ extension DWWatchDataManager: WCSessionDelegate {
     {
         print("Handle message from phone \(message)")
         if let noteV = message[AW_PHONE_NOTIFICATION_KEY],
-            let noteStr = noteV as? String,
-            let noteTypeV = message[AW_PHONE_NOTIFICATION_TYPE_KEY],
-            let noteTypeN = noteTypeV as? NSNumber,
-            noteTypeN.uint32Value == AWPhoneNotificationTypeTxReceive.rawValue
+           let noteStr = noteV as? String,
+           let noteTypeV = message[AW_PHONE_NOTIFICATION_TYPE_KEY],
+           let noteTypeN = noteTypeV as? NSNumber,
+           noteTypeN.uint32Value == AWPhoneNotificationTypeTxReceive.rawValue
         {
             let note = Notification(
                 name: DWWatchDataManager.WalletTxReceiveNotification,

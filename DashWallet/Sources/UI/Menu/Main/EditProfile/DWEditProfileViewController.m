@@ -17,6 +17,8 @@
 
 #import "DWEditProfileViewController.h"
 
+#import <MobileCoreServices/MobileCoreServices.h>
+
 #import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
 #import "DWEditProfileAvatarView.h"
@@ -31,7 +33,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate>
+@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate, DWAvatarEditSelectorViewControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWEditProfileAvatarView *headerView;
 
@@ -157,13 +159,6 @@ NS_ASSUME_NONNULL_END
     self.items = items;
 }
 
-#pragma mark - DWEditProfileAvatarViewDelegate
-
-- (void)editProfileAvatarView:(DWEditProfileAvatarView *)view editAvatarAction:(UIButton *)sender {
-    DWAvatarEditSelectorViewController *controller = [[DWAvatarEditSelectorViewController alloc] init];
-    [self presentViewController:controller animated:YES completion:nil];
-}
-
 #pragma mark - UITableView
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -199,6 +194,40 @@ NS_ASSUME_NONNULL_END
     return view;
 }
 
+#pragma mark - DWEditProfileAvatarViewDelegate
+
+- (void)editProfileAvatarView:(DWEditProfileAvatarView *)view editAvatarAction:(UIButton *)sender {
+    DWAvatarEditSelectorViewController *controller = [[DWAvatarEditSelectorViewController alloc] init];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+#pragma mark - DWAvatarEditSelectorViewControllerDelegate
+
+- (void)avatarEditSelectorViewController:(DWAvatarEditSelectorViewController *)controller photoButtonAction:(UIButton *)sender {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self showImagePickerWithType:UIImagePickerControllerSourceTypeCamera];
+                                   }];
+}
+
+- (void)avatarEditSelectorViewController:(DWAvatarEditSelectorViewController *)controller galleryButtonAction:(UIButton *)sender {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self showImagePickerWithType:UIImagePickerControllerSourceTypePhotoLibrary];
+                                   }];
+}
+
+#pragma mark - UIImagePickerControllerDelegate
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id> *)info {
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
 #pragma mark - DWTextInputFormTableViewCell
 
 - (void)editProfileTextFieldCellActivateNextFirstResponder:(DWEditProfileTextFieldCell *)cell {
@@ -224,6 +253,20 @@ NS_ASSUME_NONNULL_END
             return; // we're done
         }
     }
+}
+
+#pragma mark - Private
+
+- (void)showImagePickerWithType:(UIImagePickerControllerSourceType)sourceType {
+    if (![UIImagePickerController isSourceTypeAvailable:sourceType]) {
+        return;
+    }
+
+    UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+    picker.delegate = self;
+    picker.sourceType = sourceType;
+    picker.mediaTypes = @[ (id)kUTTypeImage ];
+    [self presentViewController:picker animated:YES completion:nil];
 }
 
 @end
