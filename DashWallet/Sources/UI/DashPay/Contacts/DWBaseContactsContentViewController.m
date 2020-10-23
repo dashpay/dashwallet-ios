@@ -54,7 +54,13 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     self.contactsHeaderFilterButtonTitle = nil;
 
     // TODO: DP polishing: diff reload
+    CGPoint contentOffset = self.collectionView.contentOffset;
     [self.collectionView reloadData];
+    [self.collectionView layoutIfNeeded];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.collectionView setContentOffset:contentOffset animated:NO];
+    });
 }
 
 - (void)viewDidLoad {
