@@ -21,8 +21,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSTransaction;
 @protocol DWTransactionListDataProviderProtocol;
+@class DWTxDetailPopupViewController;
+@protocol DWDPBasicUserItem;
+
+@protocol DWTxDetailPopupViewControllerDelegate <NSObject>
+
+- (void)txDetailPopupViewController:(DWTxDetailPopupViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem;
+
+@end
 
 @interface DWTxDetailPopupViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWTxDetailPopupViewControllerDelegate> delegate;
 
 - (instancetype)initWithTransaction:(DSTransaction *)transaction
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;

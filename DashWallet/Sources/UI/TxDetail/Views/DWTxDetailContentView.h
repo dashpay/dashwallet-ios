@@ -23,11 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWTxDetailContentView;
 @class DWTxDetailModel;
+@protocol DWDPBasicUserItem;
 
 @protocol DWTxDetailContentViewDelegate <NSObject>
 
 - (void)txDetailContentView:(DWTxDetailContentView *)view viewInExplorerButtonAction:(UIButton *)sender;
 - (void)txDetailContentView:(DWTxDetailContentView *)view closeButtonAction:(UIButton *)sender;
+- (void)txDetailContentView:(DWTxDetailContentView *)view openUserItem:(id<DWDPBasicUserItem>)userItem;
 
 @end
 

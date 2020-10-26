@@ -63,6 +63,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate detailFullscreenViewControllerDidFinish:self];
 }
 
+- (void)txDetailViewController:(DWTxDetailViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem {
+    // NOP
+    // Opening user profile from the fullscreen is not supported here because
+    // it will be opened automatically after payment.
+}
+
 #pragma mark - Private
 
 - (void)setupView {

@@ -28,12 +28,13 @@
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWTxDetailPopupViewController.h"
+#import "DWUserProfileViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate>
+@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, DWTxDetailPopupViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
 
@@ -103,12 +104,28 @@ NS_ASSUME_NONNULL_BEGIN
     DWTxDetailPopupViewController *controller =
         [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
                                                       dataProvider:dataProvider];
+    controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
     [self performActionForShortcut:action sender:homeView];
+}
+
+#pragma mark - DWTxDetailPopupViewControllerDelegate
+
+- (void)txDetailPopupViewController:(DWTxDetailPopupViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       DWUserProfileViewController *profileController =
+                                           [[DWUserProfileViewController alloc] initWithItem:userItem
+                                                                                    payModel:self.payModel
+                                                                                dataProvider:self.dataProvider
+                                                                          shouldSkipUpdating:NO
+                                                                           shownAfterPayment:NO];
+                                       [self.navigationController pushViewController:profileController animated:YES];
+                                   }];
 }
 
 #pragma mark - DWShortcutsActionDelegate

@@ -75,6 +75,10 @@ static CGFloat VerticalPadding(void) {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)txDetailViewController:(DWTxDetailViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem {
+    [self.delegate txDetailPopupViewController:self openUserItem:userItem];
+}
+
 #pragma mark - Private
 
 - (void)setupView {

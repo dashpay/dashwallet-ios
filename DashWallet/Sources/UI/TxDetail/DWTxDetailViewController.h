@@ -22,10 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWTxDetailViewController;
 @class DSTransaction;
 @protocol DWTransactionListDataProviderProtocol;
+@protocol DWDPBasicUserItem;
 
 @protocol DWTxDetailViewControllerDelegate <NSObject>
 
 - (void)txDetailViewController:(DWTxDetailViewController *)controller closeButtonAction:(UIButton *)sender;
+- (void)txDetailViewController:(DWTxDetailViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem;
 
 @end
 
