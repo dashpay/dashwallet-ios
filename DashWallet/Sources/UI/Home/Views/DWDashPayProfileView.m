@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor dw_dashBlueColor];
+        self.backgroundColor = [UIColor dw_dashNavigationBlueColor];
 
         UIView *contentView = [[UIView alloc] init];
         contentView.translatesAutoresizingMaskIntoConstraints = NO;
