@@ -965,7 +965,7 @@
 "This transaction may take several minutes to settle." = "Ta transakcja może zająć kilka minut aby się usadowiła.";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Ta transakcja powinna się usadowić natychmiast bez braku dodatkowych opłat";
+"This transaction should settle instantly at no extra fee" = "Ta transakcja powinna się usadowić natychmiast bez konieczności dodatkowych opłat";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Portfel ten dalej ma fundusze lub synchronizacja nie jeszcze nie została ukończona. Nie możesz wymazać tego portfela bez listy słów wymaganych do odzysku portfela.";
