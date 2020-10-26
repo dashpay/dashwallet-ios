@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
                     }
                 }];
 
-    UIAlertAction *rescanMNLAction = [UIAlertAction
+    UIAlertAction *rescanMNLAndBlocksAction = [UIAlertAction
         actionWithTitle:DSLocalizedString(@"Full Resync", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
@@ -88,6 +88,24 @@ NS_ASSUME_NONNULL_BEGIN
                     }
                 }];
 
+#if DEBUG
+
+    UIAlertAction *rescanMNLAction = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Resync Masternode List", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [DWGlobalOptions sharedInstance].resyncingWallet = YES;
+
+                    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+                    [chainManager masternodeListRescan];
+
+                    if (completion) {
+                        completion(YES);
+                    }
+                }];
+
+#endif
+
     UIAlertAction *cancelAction = [UIAlertAction
         actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
@@ -97,7 +115,13 @@ NS_ASSUME_NONNULL_BEGIN
                     }
                 }];
     [actionSheet addAction:rescanAction];
+    [actionSheet addAction:rescanMNLAndBlocksAction];
+
+#if DEBUG
+
     [actionSheet addAction:rescanMNLAction];
+
+#endif
     [actionSheet addAction:cancelAction];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         actionSheet.popoverPresentationController.sourceView = sourceView;
