@@ -115,6 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                  forIndexPath:indexPath];
         DSTransaction *transaction = [self transactionForIndexPath:indexPath];
         [cell configureWithTransaction:transaction dataProvider:self.dataProvider];
+        cell.delegate = self.userProfileDelegate;
         return cell;
     }
 }

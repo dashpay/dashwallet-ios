@@ -108,6 +108,16 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
+- (void)homeView:(DWHomeView *)homeView openUserProfile:(id<DWDPBasicUserItem>)userItem {
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithItem:userItem
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider
+                                       shouldSkipUpdating:NO
+                                        shownAfterPayment:NO];
+    [self.navigationController pushViewController:profileController animated:YES];
+}
+
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
     [self performActionForShortcut:action sender:homeView];
@@ -118,13 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)txDetailPopupViewController:(DWTxDetailPopupViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       DWUserProfileViewController *profileController =
-                                           [[DWUserProfileViewController alloc] initWithItem:userItem
-                                                                                    payModel:self.payModel
-                                                                                dataProvider:self.dataProvider
-                                                                          shouldSkipUpdating:NO
-                                                                           shownAfterPayment:NO];
-                                       [self.navigationController pushViewController:profileController animated:YES];
+                                       [self homeView:self.view openUserProfile:userItem];
                                    }];
 }
 

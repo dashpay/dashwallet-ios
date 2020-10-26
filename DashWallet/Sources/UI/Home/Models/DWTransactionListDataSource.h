@@ -18,6 +18,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWDPRegistrationErrorRetryDelegate.h"
+#import "DWOpenUserProfileDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWTransactionListDataSource : NSObject <UITableViewDataSource>
 
 @property (nullable, nonatomic, weak) id<DWDPRegistrationErrorRetryDelegate> retryDelegate;
+@property (nullable, nonatomic, weak) id<DWOpenUserProfileDelegate> userProfileDelegate;
 
 @property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (readonly, copy, nonatomic) NSArray<DSTransaction *> *items;

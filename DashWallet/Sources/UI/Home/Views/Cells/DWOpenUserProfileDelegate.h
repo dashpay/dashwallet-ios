@@ -15,19 +15,15 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWOpenUserProfileDelegate.h"
-#import "DWTransactionListDataProviderProtocol.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWTxListHomeCell : UITableViewCell
+@protocol DWDPBasicUserItem;
 
-@property (nullable, nonatomic, weak) id<DWOpenUserProfileDelegate> delegate;
+@protocol DWOpenUserProfileDelegate <NSObject>
 
-- (void)configureWithTransaction:(DSTransaction *)transaction
-                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+- (void)openUserProfile:(id<DWDPBasicUserItem>)userItem;
 
 @end
 
