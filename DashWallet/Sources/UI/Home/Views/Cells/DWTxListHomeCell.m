@@ -78,6 +78,8 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         self.contentView.backgroundColor = self.backgroundColor;
 
@@ -120,10 +122,10 @@ NS_ASSUME_NONNULL_END
     [self reloadAttributedData];
 }
 
-- (void)setHighlighted:(BOOL)highlighted {
-    [super setHighlighted:highlighted];
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [super setHighlighted:highlighted animated:animated];
 
-    [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
+    [self.contentView dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }
 
 - (void)configureWithTransaction:(DSTransaction *)transaction
