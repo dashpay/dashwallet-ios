@@ -24,11 +24,15 @@
 #import "DWNotificationsModel.h"
 #import "DWTitleActionHeaderView.h"
 #import "DWUIKit.h"
+#import "DWUserProfileViewController.h"
 #import "UICollectionView+DWDPItemDequeue.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPNewIncomingRequestItemDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
+
+@property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
+@property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (null_resettable, nonatomic, strong) DWNotificationsModel *model;
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
@@ -40,9 +44,13 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWNotificationsViewController
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+- (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
+                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _payModel = payModel;
+        _dataProvider = dataProvider;
+
         self.hidesBottomBarWhenPushed = YES;
     }
     return self;
@@ -118,6 +126,19 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - UICollectionViewDelegate
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+
+    id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithItem:item
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider
+                                       shouldSkipUpdating:YES
+                                        shownAfterPayment:NO];
+    [self.navigationController pushViewController:profileController animated:YES];
+}
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
     const NSInteger section = indexPath.section;

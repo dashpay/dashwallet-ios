@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
-    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] init];
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
     [self.navigationController pushViewController:controller animated:YES];
 }
 
