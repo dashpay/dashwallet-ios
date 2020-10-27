@@ -107,7 +107,7 @@
 "Application %@ is requesting a payment to" = "Приложение %@ запрашивает платёж для";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Приложение %@запрашивает адрес, чтобы перевести вам оплату. Даёте ли вы разрешение на эти действия?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Приложение %@ запрашивает адрес, чтобы перевести вам оплату. Даёте ли вы разрешение на эти действия?";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложение %@ хочет получить Ваш основной публичный ключ. Это может быть использовано для отслеживания Вашего кошелька, но не для отправки Ваших Dash.";
@@ -239,10 +239,10 @@
 "Copy Logs" = "Копировать логи";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2020 Dash Core" = "Авторские права © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Не удалось автоматически восстановить отсутствующие или неправильные слова";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Не удалось совершить платёж";
@@ -353,10 +353,10 @@
 "Forgot PIN?" = "Забыли PIN?";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Найдено пропущенное слово:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Найдено пропущенное слово:\n%@";
 
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Найдены возможно пропущенные слова: \n%@";
@@ -404,7 +404,7 @@
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Если Вы потеряете это устройство, то Вы потеряете доступ к вашим средствам. Сохраните Вашу фразу восстановления, чтобы иметь возможность восстановить кошелек на другом устройстве.";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "Если Вы всё ещё хотите выполнить удаление кошелька, пожалуйста, введите: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Если Вы всё ещё хотите удаленить кошелёк, пожалуйста, введите: \"%@\"";
 
 /* No comment provided by engineer. */
 "Ignore" = "Игнорировать";
@@ -452,7 +452,7 @@
 "Keypair %ld" = "Ключи %ld";
 
 /* No comment provided by engineer. */
-"Let me know when it’s done" = "Уведомить, когда будет готово";
+"Let me know when it’s done" = "Сообщить, когда будет готово";
 
 /* Validation rule */
 "Letters and numbers only" = "Только цифры и буквы";
@@ -500,7 +500,7 @@
 "Manage Trusted Node" = "Управление доверенным узлом";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "список мастернод #%1$dиз %2$d";
+"masternode list #%d of %d" = "список мастернод #%1$d из %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Регистрация masternode";
@@ -584,7 +584,7 @@
 "OK" = "ОК";
 
 /* Once <username> accepts your request... */
-"Once %@ accepts your request you can Pay Directly to Username" = "Когда %@примет ваш запрос, вы сможете оплатить напрямую по Имени пользователя";
+"Once %@ accepts your request you can Pay Directly to Username" = "Когда %@ примет ваш запрос, вы сможете оплатить напрямую по Имени пользователя";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Ключи оператора";
@@ -629,7 +629,7 @@
 "PIN is always required to make a payment" = "Всегда требовать PIN для совершения платежа";
 
 /* No comment provided by engineer. */
-"Please enter PIN to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
+"Please enter PIN to upgrade wallet" = "Пожалуйста, введите PIN для обновления кошелька";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Пожалуйста, поместите Ваш телефон рядом с NFC устройством.";
@@ -965,7 +965,7 @@
 "This transaction may take several minutes to settle." = "Для подтверждения этой транзакции может понадобиться несколько минут.";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Эту транзакция будет подтверждена немедленно без дополнительной комиссии";
+"This transaction should settle instantly at no extra fee" = "Эта транзакция будет подтверждена немедленно без дополнительной комиссии";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "В кошельке есть средства или синхронизация не была завершена. Вы не сможете удалить его без фразы восстановления.";
@@ -977,7 +977,7 @@
 "Tools" = "Инструменты";
 
 /* No comment provided by engineer. */
-"Total" = "Итого";
+"Total" = "Всего";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Лимит Touch ID";
@@ -1100,7 +1100,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = " Когда эта транзакция будет подтверждена, другой кошелёк будет бесполезен и не должен быть повторно использован в целях безопасности.";
 
 /* No comment provided by engineer. */
-"Why I should not take a screenshot?" = "Почему нельзя делать скриншот?";
+"Why I should not take a screenshot?" = "Почему Я не могу сделать скриншот?";
 
 /* No comment provided by engineer. */
 "Wipe" = "Удалить";
@@ -1121,10 +1121,10 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Вы собираетесь удалить кошелек с этого устройства. Средства на этом кошельке смогут быть доступны, только если у Вас есть фраза восстановления.";
 
 /* No comment provided by engineer. */
-"You can authenticate with Face ID for payments below" = "Вам будут доступны платежи через Face ID меньше";
+"You can authenticate with Face ID for payments below" = "В дальнейшем Вам будут доступны платежи через Face ID";
 
 /* No comment provided by engineer. */
-"You can authenticate with Touch ID for payments below" = "Вам будут доступны платежи через Touch ID меньше";
+"You can authenticate with Touch ID for payments below" = "В дальнейшем Вам будут доступны платежи через Touch ID";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Вы выбрали %@ в качестве имени пользователя. После регистрации смена имени пользователя будет невозможна.";
@@ -1160,4 +1160,4 @@
 "Your username %@ is being created on the Dash Network" = "Ваше имя пользователя %@ создаётся в сети Dash";
 
 /* No comment provided by engineer. */
-"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Сейчас Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему аккаунту на другом устройстве.";
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему кошельку на другом устройстве.";
