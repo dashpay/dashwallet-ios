@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
                           UITableViewDelegate,
                           DWHomeModelUpdatesObserver,
                           DWFilterHeaderViewDelegate,
-                          DWDPRegistrationErrorRetryDelegate>
+                          DWDPRegistrationErrorRetryDelegate,
+                          DWOpenUserProfileDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
@@ -143,6 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeModel:(id<DWHomeProtocol>)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
     self.currentDataSource = dataSource;
     dataSource.retryDelegate = self;
+    dataSource.userProfileDelegate = self;
 
     if (dataSource.isEmpty) {
         self.tableView.dataSource = self;
@@ -218,6 +220,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     [self.headerView parentScrollViewDidScroll:scrollView];
+}
+
+#pragma mark - DWOpenUserProfileDelegate
+
+- (void)openUserProfile:(id<DWDPBasicUserItem>)userItem {
+    [self.delegate homeView:self openUserProfile:userItem];
 }
 
 #pragma mark - DWFilterHeaderViewDelegate

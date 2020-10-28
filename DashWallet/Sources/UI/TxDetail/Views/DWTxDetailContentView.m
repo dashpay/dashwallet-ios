@@ -206,6 +206,20 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
     [self dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
 }
 
+- (void)txDetailListView:(DWTxDetailListView *)view tapActionOnView:(DWTitleDetailCellView *)cellView {
+    if (cellView.model.style != DWTitleDetailItemStyle_User) {
+        return;
+    }
+
+    id<DWDPBasicUserItem> userItem = cellView.model.userItem;
+    NSParameterAssert(userItem);
+    if (!userItem) {
+        return;
+    }
+
+    [self.delegate txDetailContentView:self openUserItem:userItem];
+}
+
 #pragma mark - Private
 
 - (void)reloadAttributedData {

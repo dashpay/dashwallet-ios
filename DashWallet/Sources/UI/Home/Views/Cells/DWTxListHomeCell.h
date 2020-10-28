@@ -17,11 +17,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWOpenUserProfileDelegate.h"
 #import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWTxListHomeCell : UITableViewCell
+
+@property (nullable, nonatomic, weak) id<DWOpenUserProfileDelegate> delegate;
 
 - (void)configureWithTransaction:(DSTransaction *)transaction
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;

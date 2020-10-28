@@ -28,12 +28,13 @@
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWTxDetailPopupViewController.h"
+#import "DWUserProfileViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate>
+@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, DWTxDetailPopupViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
 
@@ -94,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
-    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] init];
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -103,12 +104,32 @@ NS_ASSUME_NONNULL_BEGIN
     DWTxDetailPopupViewController *controller =
         [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
                                                       dataProvider:dataProvider];
+    controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)homeView:(DWHomeView *)homeView openUserProfile:(id<DWDPBasicUserItem>)userItem {
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithItem:userItem
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider
+                                       shouldSkipUpdating:NO
+                                        shownAfterPayment:NO];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
     [self performActionForShortcut:action sender:homeView];
+}
+
+#pragma mark - DWTxDetailPopupViewControllerDelegate
+
+- (void)txDetailPopupViewController:(DWTxDetailPopupViewController *)controller openUserItem:(id<DWDPBasicUserItem>)userItem {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self homeView:self.view openUserProfile:userItem];
+                                   }];
 }
 
 #pragma mark - DWShortcutsActionDelegate

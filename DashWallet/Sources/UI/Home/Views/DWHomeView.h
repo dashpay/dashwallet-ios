@@ -24,12 +24,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeView;
 @class DSTransaction;
+@protocol DWDPBasicUserItem;
 
 @protocol DWHomeViewDelegate <NSObject>
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender;
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender;
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction;
+- (void)homeView:(DWHomeView *)homeView openUserProfile:(id<DWDPBasicUserItem>)userItem;
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView;
 
 @end

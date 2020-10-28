@@ -19,6 +19,7 @@
 
 #import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWDPTxItemView.h"
+#import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWUIKit.h"
 #import "UIFont+DWDPItem.h"
@@ -66,6 +67,7 @@ static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> tr
 @property (nonatomic, strong) DSTransaction *transaction;
 @property (nonatomic, strong) id<DWTransactionListDataItem> transactionData;
 @property (nullable, copy, nonatomic) NSString *dashpayUsername;
+@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
 @end
 
@@ -76,6 +78,8 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         self.contentView.backgroundColor = self.backgroundColor;
 
@@ -105,6 +109,9 @@ NS_ASSUME_NONNULL_END
                                selector:@selector(contentSizeCategoryDidChangeNotification)
                                    name:UIContentSizeCategoryDidChangeNotification
                                  object:nil];
+
+        UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapRecognizerAction:)];
+        [itemView.avatarView addGestureRecognizer:tapRecognizer];
     }
     return self;
 }
@@ -115,10 +122,10 @@ NS_ASSUME_NONNULL_END
     [self reloadAttributedData];
 }
 
-- (void)setHighlighted:(BOOL)highlighted {
-    [super setHighlighted:highlighted];
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [super setHighlighted:highlighted animated:animated];
 
-    [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
+    [self.contentView dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }
 
 - (void)configureWithTransaction:(DSTransaction *)transaction
@@ -135,19 +142,23 @@ NS_ASSUME_NONNULL_END
     if (currentUser == nil) {
         [self.itemView.avatarView setAsDashPlaceholder];
         self.dashpayUsername = nil;
+        self.userItem = nil;
     }
     else {
         if (source != nil && !uint256_eq(source.uniqueID, currentUser.uniqueID)) {
             self.itemView.avatarView.username = source.currentDashpayUsername;
             self.dashpayUsername = source.dw_displayNameOrUsername;
+            self.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:source];
         }
         else if (destination != nil && !uint256_eq(destination.uniqueID, currentUser.uniqueID)) {
             self.itemView.avatarView.username = destination.currentDashpayUsername;
             self.dashpayUsername = destination.dw_displayNameOrUsername;
+            self.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:destination];
         }
         else {
             [self.itemView.avatarView setAsDashPlaceholder];
             self.dashpayUsername = nil;
+            self.userItem = nil;
         }
     }
 
@@ -161,6 +172,13 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - Private
+
+- (void)tapRecognizerAction:(UIGestureRecognizer *)sender {
+    if (self.userItem == nil) {
+        return;
+    }
+    [self.delegate openUserProfile:self.userItem];
+}
 
 - (void)reloadAttributedData {
     UIFont *titleFont = [UIFont dw_itemTitleFont];

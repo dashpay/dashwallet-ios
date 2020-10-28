@@ -111,6 +111,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate txDetailViewController:self closeButtonAction:sender];
 }
 
+- (void)txDetailContentView:(DWTxDetailContentView *)view openUserItem:(id<DWDPBasicUserItem>)userItem {
+    [self.delegate txDetailViewController:self openUserItem:userItem];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

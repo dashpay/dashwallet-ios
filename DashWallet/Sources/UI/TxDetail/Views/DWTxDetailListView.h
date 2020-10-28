@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTxDetailListViewDelegate <NSObject>
 
 - (void)txDetailListView:(DWTxDetailListView *)view longPressActionOnView:(DWTitleDetailCellView *)cellView;
+- (void)txDetailListView:(DWTxDetailListView *)view tapActionOnView:(DWTitleDetailCellView *)cellView;
 
 @end
 
