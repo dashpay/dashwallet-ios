@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWEditProfileAvatarView : UIView
 
+@property (nullable, nonatomic, strong) UIImage *image;
+
 @property (nullable, nonatomic, weak) id<DWEditProfileAvatarViewDelegate> delegate;
 
 @end
