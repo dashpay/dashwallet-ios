@@ -446,6 +446,7 @@
 		2AEC24BC251D382000AC86F6 /* DWEditProfileAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC24BB251D382000AC86F6 /* DWEditProfileAvatarView.m */; };
 		2AEC24BF251D3E8D00AC86F6 /* DWRootEditProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC24BE251D3E8D00AC86F6 /* DWRootEditProfileViewController.m */; };
 		2AEC59812549D2B300971D75 /* DWCropAvatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC59802549D2B300971D75 /* DWCropAvatarViewController.m */; };
+		2AEC598C254A9B3500971D75 /* DWFaceDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC598B254A9B3500971D75 /* DWFaceDetector.m */; };
 		2AEC5CB52493D87D00F4A689 /* DWNotificationsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CB42493D87D00F4A689 /* DWNotificationsProvider.m */; };
 		2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CBA2494045C00F4A689 /* DWNotificationsFetchedDataSource.m */; };
 		2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CBD24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m */; };
@@ -1503,6 +1504,8 @@
 		2AEC58ED25473BCB00971D75 /* DWOpenUserProfileDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOpenUserProfileDelegate.h; sourceTree = "<group>"; };
 		2AEC597F2549D2B300971D75 /* DWCropAvatarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCropAvatarViewController.h; sourceTree = "<group>"; };
 		2AEC59802549D2B300971D75 /* DWCropAvatarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCropAvatarViewController.m; sourceTree = "<group>"; };
+		2AEC598A254A9B3500971D75 /* DWFaceDetector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFaceDetector.h; sourceTree = "<group>"; };
+		2AEC598B254A9B3500971D75 /* DWFaceDetector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFaceDetector.m; sourceTree = "<group>"; };
 		2AEC5CB32493D87D00F4A689 /* DWNotificationsProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNotificationsProvider.h; sourceTree = "<group>"; };
 		2AEC5CB42493D87D00F4A689 /* DWNotificationsProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsProvider.m; sourceTree = "<group>"; };
 		2AEC5CB92494045C00F4A689 /* DWNotificationsFetchedDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNotificationsFetchedDataSource.h; sourceTree = "<group>"; };
@@ -3837,6 +3840,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2AEC5989254A9B2400971D75 /* Utils */,
 				2A5A7FB7251DF6FA00ADD073 /* Avatar */,
 				2ADDF999251B7C4700DA8926 /* Views */,
 				2ADDF996251B7C3C00DA8926 /* DWEditProfileViewController.h */,
@@ -4035,6 +4039,15 @@
 				2ADDF9A0251B807600DA8926 /* DWTextFieldFormCellModel.m */,
 			);
 			path = Base;
+			sourceTree = "<group>";
+		};
+		2AEC5989254A9B2400971D75 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				2AEC598A254A9B3500971D75 /* DWFaceDetector.h */,
+				2AEC598B254A9B3500971D75 /* DWFaceDetector.m */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		2AEC5CBF2497558900F4A689 /* Global */ = {
@@ -5071,6 +5084,7 @@
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
+				2AEC598C254A9B3500971D75 /* DWFaceDetector.m in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,

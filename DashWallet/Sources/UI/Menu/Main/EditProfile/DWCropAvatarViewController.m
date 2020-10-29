@@ -22,6 +22,7 @@
 
 #import "DWActionButton.h"
 #import "DWBaseActionButtonViewController.h"
+#import "DWFaceDetector.h"
 #import "DWUIKit.h"
 
 @interface DWTOCropViewController : TOCropViewController
@@ -44,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat const PADDING = 38.0;
 
 @interface DWCropAvatarViewController ()
+
+@property (nullable, nonatomic, strong) DWFaceDetector *faceDetector;
 
 @property (readonly, nonatomic, strong) TOCropViewController *cropController;
 @property (null_resettable, nonatomic, strong) UILabel *titleLabel;
@@ -70,6 +73,24 @@ NS_ASSUME_NONNULL_END
         _cropController.doneButtonHidden = YES;
         _cropController.cancelButtonHidden = YES;
         _cropController.cropView.cropViewPadding = PADDING;
+
+        if (image.CGImage) {
+            __weak typeof(self) weakSelf = self;
+            _faceDetector =
+                [[DWFaceDetector alloc] initWithImage:image
+                                           completion:^(CGRect roi) {
+                                               __strong typeof(weakSelf) strongSelf = weakSelf;
+                                               if (!strongSelf) {
+                                                   return;
+                                               }
+
+                                               if (!CGRectEqualToRect(roi, CGRectZero)) {
+                                                   strongSelf.cropController.imageCropFrame = roi;
+                                               }
+
+                                               strongSelf.faceDetector = nil;
+                                           }];
+        }
     }
     return self;
 }
