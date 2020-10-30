@@ -21,6 +21,7 @@
 
 #import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
+#import "DWCropAvatarViewController.h"
 #import "DWEditProfileAvatarView.h"
 #import "DWEditProfileTextFieldCell.h"
 #import "DWEditProfileTextViewCell.h"
@@ -33,7 +34,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate, DWAvatarEditSelectorViewControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate, DWAvatarEditSelectorViewControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, DWCropAvatarViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWEditProfileAvatarView *headerView;
 
@@ -221,11 +222,32 @@ NS_ASSUME_NONNULL_END
 #pragma mark - UIImagePickerControllerDelegate
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id> *)info {
-    [picker dismissViewControllerAnimated:YES completion:nil];
+    UIImage *image = info[UIImagePickerControllerOriginalImage];
+    [picker dismissViewControllerAnimated:YES
+                               completion:^{
+                                   if (image == nil) {
+                                       return;
+                                   }
+
+                                   DWCropAvatarViewController *cropController = [[DWCropAvatarViewController alloc] initWithImage:image];
+                                   cropController.delegate = self;
+                                   [self presentViewController:cropController animated:YES completion:nil];
+                               }];
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWCropAvatarViewControllerDelegate
+
+- (void)cropAvatarViewController:(DWCropAvatarViewController *)controller didCropImage:(UIImage *)croppedImage {
+    self.headerView.image = croppedImage;
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)cropAvatarViewControllerDidCancel:(DWCropAvatarViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - DWTextInputFormTableViewCell

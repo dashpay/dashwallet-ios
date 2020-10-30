@@ -19,19 +19,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWEditProfileAvatarView;
+@interface DWFaceDetector : NSObject
 
-@protocol DWEditProfileAvatarViewDelegate <NSObject>
+- (instancetype)initWithImage:(UIImage *)image completion:(void (^)(CGRect roi))completion;
 
-- (void)editProfileAvatarView:(DWEditProfileAvatarView *)view editAvatarAction:(UIButton *)sender;
-
-@end
-
-@interface DWEditProfileAvatarView : UIView
-
-@property (nullable, nonatomic, strong) UIImage *image;
-
-@property (nullable, nonatomic, weak) id<DWEditProfileAvatarViewDelegate> delegate;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

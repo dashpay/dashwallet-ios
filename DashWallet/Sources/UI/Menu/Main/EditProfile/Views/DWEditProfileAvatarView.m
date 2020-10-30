@@ -32,12 +32,22 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWEditProfileAvatarView
 
+- (UIImage *)image {
+    return self.avatarImageView.image;
+}
+
+- (void)setImage:(UIImage *)image {
+    self.avatarImageView.image = image;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         UIImageView *avatarImageView = [[UIImageView alloc] init];
         avatarImageView.translatesAutoresizingMaskIntoConstraints = NO;
         avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
+        avatarImageView.layer.cornerRadius = AvatarSize / 2.0;
+        avatarImageView.layer.masksToBounds = YES;
         [self addSubview:avatarImageView];
         _avatarImageView = avatarImageView;
 

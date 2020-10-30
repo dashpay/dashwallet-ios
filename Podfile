@@ -10,6 +10,7 @@ target 'dashwallet' do
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
+  pod 'TOCropViewController', '2.5.5'
 
   # Debugging purposes
 #  pod 'Reveal-SDK', :configurations => ['Debug']
