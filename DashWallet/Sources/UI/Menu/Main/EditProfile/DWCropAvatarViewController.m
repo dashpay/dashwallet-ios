@@ -24,6 +24,7 @@
 #import "DWBaseActionButtonViewController.h"
 #import "DWFaceDetector.h"
 #import "DWUIKit.h"
+#import "DWUploadAvatarViewController.h"
 
 @interface DWTOCropViewController : TOCropViewController
 @end
@@ -123,13 +124,20 @@ NS_ASSUME_NONNULL_END
     ]];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 #pragma mark - Actions
 
 - (void)selectButtonAction:(UIButton *)sender {
     CGRect cropFrame = self.cropController.cropView.imageCropFrame;
     NSInteger angle = self.cropController.cropView.angle;
     UIImage *croppedImage = [self.cropController.image croppedImageWithFrame:cropFrame angle:angle circularClip:NO];
-    [self.delegate cropAvatarViewController:self didCropImage:croppedImage];
+    //    [self.delegate cropAvatarViewController:self didCropImage:croppedImage];
+
+    DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {

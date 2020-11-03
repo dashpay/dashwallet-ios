@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWModalPopupAppearanceStyle.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWModalPopupTransition : NSObject <UIViewControllerTransitioningDelegate>
+@interface DWUploadAvatarViewController : UIViewController
 
-@property (nonatomic, assign) DWModalPopupAppearanceStyle appearanceStyle;
+- (instancetype)initWithImage:(UIImage *)image;
 
-- (instancetype)initWithInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

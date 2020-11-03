@@ -231,6 +231,7 @@ NS_ASSUME_NONNULL_END
 
                                    DWCropAvatarViewController *cropController = [[DWCropAvatarViewController alloc] initWithImage:image];
                                    cropController.delegate = self;
+                                   cropController.modalPresentationStyle = UIModalPresentationFullScreen;
                                    [self presentViewController:cropController animated:YES completion:nil];
                                }];
 }

@@ -84,6 +84,10 @@
 		2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72822FA3017008C7BC9 /* DWPaymentsButton.m */; };
 		2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBB22E8925100A18347 /* DWHomeView.m */; };
 		2A307CBF22E8A44200A18347 /* DWButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBE22E8A44200A18347 /* DWButton.m */; };
+		2A32AA0C255125860080138E /* DWUploadAvatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA0B255125860080138E /* DWUploadAvatarViewController.m */; };
+		2A32AA16255127CF0080138E /* DWUploadAvatarChildView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA15255127CF0080138E /* DWUploadAvatarChildView.m */; };
+		2A32AA1F255191F80080138E /* DWUploadAvatarModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA1E255191F80080138E /* DWUploadAvatarModel.m */; };
+		2A32AA282551C0DA0080138E /* DWHourGlassAnimationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA272551C0DA0080138E /* DWHourGlassAnimationView.m */; };
 		2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */; };
 		2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392564234CD21300316EA6 /* DWTabBarButton.m */; };
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
@@ -764,6 +768,14 @@
 		2A307CBB22E8925100A18347 /* DWHomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeView.m; sourceTree = "<group>"; };
 		2A307CBD22E8A44200A18347 /* DWButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWButton.h; sourceTree = "<group>"; };
 		2A307CBE22E8A44200A18347 /* DWButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWButton.m; sourceTree = "<group>"; };
+		2A32AA0A255125860080138E /* DWUploadAvatarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUploadAvatarViewController.h; sourceTree = "<group>"; };
+		2A32AA0B255125860080138E /* DWUploadAvatarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarViewController.m; sourceTree = "<group>"; };
+		2A32AA14255127CF0080138E /* DWUploadAvatarChildView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUploadAvatarChildView.h; sourceTree = "<group>"; };
+		2A32AA15255127CF0080138E /* DWUploadAvatarChildView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarChildView.m; sourceTree = "<group>"; };
+		2A32AA1D255191F80080138E /* DWUploadAvatarModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUploadAvatarModel.h; sourceTree = "<group>"; };
+		2A32AA1E255191F80080138E /* DWUploadAvatarModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarModel.m; sourceTree = "<group>"; };
+		2A32AA262551C0DA0080138E /* DWHourGlassAnimationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHourGlassAnimationView.h; sourceTree = "<group>"; };
+		2A32AA272551C0DA0080138E /* DWHourGlassAnimationView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHourGlassAnimationView.m; sourceTree = "<group>"; };
 		2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSelectorFormItem.h; sourceTree = "<group>"; };
 		2A36A8892350A05B0014DC60 /* DWBackupSeedPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBackupSeedPhraseViewController.h; sourceTree = "<group>"; };
 		2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBackupSeedPhraseViewController.m; sourceTree = "<group>"; };
@@ -2095,6 +2107,21 @@
 				2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		2A32AA13255127AB0080138E /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				2A32AA0A255125860080138E /* DWUploadAvatarViewController.h */,
+				2A32AA0B255125860080138E /* DWUploadAvatarViewController.m */,
+				2A32AA14255127CF0080138E /* DWUploadAvatarChildView.h */,
+				2A32AA15255127CF0080138E /* DWUploadAvatarChildView.m */,
+				2A32AA1D255191F80080138E /* DWUploadAvatarModel.h */,
+				2A32AA1E255191F80080138E /* DWUploadAvatarModel.m */,
+				2A32AA262551C0DA0080138E /* DWHourGlassAnimationView.h */,
+				2A32AA272551C0DA0080138E /* DWHourGlassAnimationView.m */,
+			);
+			path = Upload;
 			sourceTree = "<group>";
 		};
 		2A3CCEF6242BB0AF00300AF8 /* RegistrationCompleted */ = {
@@ -3840,6 +3867,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2A32AA13255127AB0080138E /* Upload */,
 				2AEC5989254A9B2400971D75 /* Utils */,
 				2A5A7FB7251DF6FA00ADD073 /* Avatar */,
 				2ADDF999251B7C4700DA8926 /* Views */,
@@ -4987,6 +5015,7 @@
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */,
+				2A32AA1F255191F80080138E /* DWUploadAvatarModel.m in Sources */,
 				2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */,
 				2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */,
 				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
@@ -5083,6 +5112,7 @@
 				2AB66E02235711FA007BE825 /* DWWalletKeysOverviewModel.m in Sources */,
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
+				2A32AA16255127CF0080138E /* DWUploadAvatarChildView.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
 				2AEC598C254A9B3500971D75 /* DWFaceDetector.m in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
@@ -5122,6 +5152,7 @@
 				2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */,
 				2A7AF34924823167001D74F9 /* DWDPGenericImageItemView.m in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
+				2A32AA282551C0DA0080138E /* DWHourGlassAnimationView.m in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
@@ -5246,6 +5277,7 @@
 				2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */,
+				2A32AA0C255125860080138E /* DWUploadAvatarViewController.m in Sources */,
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,

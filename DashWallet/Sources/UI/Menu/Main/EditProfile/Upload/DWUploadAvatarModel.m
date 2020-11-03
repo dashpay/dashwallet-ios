@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,31 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWModalPopupAppearanceStyle.h"
+#import "DWUploadAvatarModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWModalPopupTransition : NSObject <UIViewControllerTransitioningDelegate>
+@interface DWUploadAvatarModel ()
 
-@property (nonatomic, assign) DWModalPopupAppearanceStyle appearanceStyle;
-
-- (instancetype)initWithInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed;
+@property (nonatomic, assign) DWUploadAvatarModelState state;
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+@implementation DWUploadAvatarModel
+
+- (instancetype)initWithImage:(UIImage *)image {
+    self = [super init];
+    if (self) {
+        _image = image;
+        [self retry];
+    }
+    return self;
+}
+
+- (void)retry {
+    self.state = DWUploadAvatarModelState_Loading;
+}
+
+@end

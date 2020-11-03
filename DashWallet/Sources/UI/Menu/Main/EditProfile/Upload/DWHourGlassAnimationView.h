@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWModalPopupAppearanceStyle.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWModalPopupTransition : NSObject <UIViewControllerTransitioningDelegate>
+@interface DWHourGlassAnimationView : UIView
 
-@property (nonatomic, assign) DWModalPopupAppearanceStyle appearanceStyle;
-
-- (instancetype)initWithInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed;
+- (void)startAnimating;
+- (void)stopAnimating;
 
 @end
 
