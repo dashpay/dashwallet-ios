@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithImage:(UIImage *)image {
     self = [super init];
     if (self) {
+        NSAssert([DWSecrets iCloudAPIKey].length > 0, @"Invalid iCloud key");
+
         _image = image;
 
         CKContainer *container = [CKContainer containerWithIdentifier:@"iCloud.org.dash.dashwallet"];
