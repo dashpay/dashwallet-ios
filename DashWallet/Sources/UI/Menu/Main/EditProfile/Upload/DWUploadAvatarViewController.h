@@ -19,7 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWUploadAvatarViewController;
+
+@protocol DWUploadAvatarViewControllerDelegate <NSObject>
+
+- (void)uploadAvatarViewControllerDidCancel:(DWUploadAvatarViewController *)controller;
+- (void)uploadAvatarViewController:(DWUploadAvatarViewController *)controller didFinishWithURLString:(NSString *)urlString;
+
+@end
+
 @interface DWUploadAvatarViewController : UIViewController
+
+@property (readonly, nonatomic, strong) UIImage *image;
+@property (nullable, nonatomic, weak) id<DWUploadAvatarViewControllerDelegate> delegate;
 
 - (instancetype)initWithImage:(UIImage *)image;
 

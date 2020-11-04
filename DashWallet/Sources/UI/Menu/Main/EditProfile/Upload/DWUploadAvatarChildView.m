@@ -212,7 +212,8 @@ NS_ASSUME_NONNULL_END
                                   self.animationView.hidden = YES;
 
                                   break;
-                              default:
+                              case DWUploadAvatarModelState_Success:
+                                  [self.delegate uploadAvatarChildViewDidFinish:self];
                                   break;
                           }
                       }];
@@ -227,9 +228,12 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
+    [self.model cancel];
+    [self.delegate uploadAvatarChildViewDidCancel:self];
 }
 
 - (void)retryButtonAction:(UIButton *)sender {
+    [self.model retry];
 }
 
 @end

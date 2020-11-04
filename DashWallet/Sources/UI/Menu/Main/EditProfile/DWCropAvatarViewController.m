@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const PADDING = 38.0;
 
-@interface DWCropAvatarViewController ()
+@interface DWCropAvatarViewController () <DWUploadAvatarViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWFaceDetector *faceDetector;
 
@@ -134,14 +134,28 @@ NS_ASSUME_NONNULL_END
     CGRect cropFrame = self.cropController.cropView.imageCropFrame;
     NSInteger angle = self.cropController.cropView.angle;
     UIImage *croppedImage = [self.cropController.image croppedImageWithFrame:cropFrame angle:angle circularClip:NO];
-    //    [self.delegate cropAvatarViewController:self didCropImage:croppedImage];
 
     DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
+    controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
     [self.delegate cropAvatarViewControllerDidCancel:self];
+}
+
+#pragma mark - DWUploadAvatarViewControllerDelegate
+
+- (void)uploadAvatarViewControllerDidCancel:(DWUploadAvatarViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)uploadAvatarViewController:(DWUploadAvatarViewController *)controller didFinishWithURLString:(NSString *)urlString {
+    UIImage *image = controller.image;
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self.delegate cropAvatarViewController:self didCropImage:image urlString:urlString];
+                                   }];
 }
 
 #pragma mark - Private

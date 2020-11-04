@@ -32,9 +32,12 @@ typedef NS_ENUM(NSUInteger, DWUploadAvatarModelState) {
 @property (readonly, nonatomic, assign) DWUploadAvatarModelState state;
 @property (readonly, nonatomic, strong) UIImage *image;
 
+@property (readonly, nullable, nonatomic, copy) NSString *resultURLString;
+
 - (instancetype)initWithImage:(UIImage *)image;
 
 - (void)retry;
+- (void)cancel;
 
 @end
 

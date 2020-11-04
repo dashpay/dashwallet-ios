@@ -242,8 +242,12 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWCropAvatarViewControllerDelegate
 
-- (void)cropAvatarViewController:(DWCropAvatarViewController *)controller didCropImage:(UIImage *)croppedImage {
+- (void)cropAvatarViewController:(DWCropAvatarViewController *)controller
+                    didCropImage:(UIImage *)croppedImage
+                       urlString:(NSString *)urlString {
     self.headerView.image = croppedImage;
+    // TODO: DP avatar: save image URL
+    [UIPasteboard generalPasteboard].string = urlString; // for debugging purposes
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 

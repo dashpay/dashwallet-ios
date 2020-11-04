@@ -15,24 +15,16 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUploadAvatarModel;
-@class DWUploadAvatarChildView;
+@interface DWSecrets : NSObject
 
-@protocol DWUploadAvatarChildViewDelegate <NSObject>
++ (NSString *)iCloudAPIKey;
 
-- (void)uploadAvatarChildViewDidFinish:(DWUploadAvatarChildView *)view;
-- (void)uploadAvatarChildViewDidCancel:(DWUploadAvatarChildView *)view;
-
-@end
-
-@interface DWUploadAvatarChildView : KVOUIView
-
-@property (nullable, nonatomic, strong) DWUploadAvatarModel *model;
-@property (nullable, nonatomic, weak) id<DWUploadAvatarChildViewDelegate> delegate;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

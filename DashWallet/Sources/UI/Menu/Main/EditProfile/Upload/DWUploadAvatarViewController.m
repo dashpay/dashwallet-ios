@@ -36,7 +36,7 @@ static CGFloat VerticalPadding(void) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUploadAvatarViewController ()
+@interface DWUploadAvatarViewController () <DWUploadAvatarChildViewDelegate>
 
 @property (nonatomic, strong) DWUploadAvatarModel *model;
 @property (nonatomic, strong) DWModalPopupTransition *modalTransition;
@@ -59,6 +59,10 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (UIImage *)image {
+    return self.model.image;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -68,6 +72,7 @@ NS_ASSUME_NONNULL_END
 
     DWUploadAvatarChildView *childView = [[DWUploadAvatarChildView alloc] initWithFrame:CGRectZero];
     childView.model = self.model;
+    childView.delegate = self;
     childView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:childView];
 
@@ -76,12 +81,18 @@ NS_ASSUME_NONNULL_END
         [childView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
         [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
         [childView.centerYAnchor constraintEqualToAnchor:contentView.centerYAnchor],
-        //        [childView.topAnchor constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
-        //                                                         constant:padding],
-        //        [childView.bottomAnchor constraintGreaterThanOrEqualToAnchor:contentView.bottomAnchor
-        //                                                            constant:-padding],
         [childView.heightAnchor constraintEqualToAnchor:childView.widthAnchor],
     ]];
+}
+
+#pragma mark - DWUploadAvatarChildViewDelegate
+
+- (void)uploadAvatarChildViewDidFinish:(DWUploadAvatarChildView *)view {
+    [self.delegate uploadAvatarViewController:self didFinishWithURLString:self.model.resultURLString];
+}
+
+- (void)uploadAvatarChildViewDidCancel:(DWUploadAvatarChildView *)view {
+    [self.delegate uploadAvatarViewControllerDidCancel:self];
 }
 
 @end
