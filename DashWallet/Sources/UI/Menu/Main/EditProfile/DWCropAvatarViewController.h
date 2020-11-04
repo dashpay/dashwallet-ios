@@ -23,7 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWCropAvatarViewControllerDelegate <NSObject>
 
-- (void)cropAvatarViewController:(DWCropAvatarViewController *)controller didCropImage:(UIImage *)croppedImage;
+- (void)cropAvatarViewController:(DWCropAvatarViewController *)controller
+                    didCropImage:(UIImage *)croppedImage
+                       urlString:(NSString *)urlString;
 - (void)cropAvatarViewControllerDidCancel:(DWCropAvatarViewController *)controller;
 
 @end

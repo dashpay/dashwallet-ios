@@ -41,3 +41,4 @@ Pods/
 
 # Production Constants
 DWUpholdMainnetConstants__Release.m
+DWSecrets.m

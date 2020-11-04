@@ -24,6 +24,7 @@
 #import "DWBaseActionButtonViewController.h"
 #import "DWFaceDetector.h"
 #import "DWUIKit.h"
+#import "DWUploadAvatarViewController.h"
 
 @interface DWTOCropViewController : TOCropViewController
 @end
@@ -44,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const PADDING = 38.0;
 
-@interface DWCropAvatarViewController ()
+@interface DWCropAvatarViewController () <DWUploadAvatarViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWFaceDetector *faceDetector;
 
@@ -123,17 +124,44 @@ NS_ASSUME_NONNULL_END
     ]];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 #pragma mark - Actions
 
 - (void)selectButtonAction:(UIButton *)sender {
     CGRect cropFrame = self.cropController.cropView.imageCropFrame;
     NSInteger angle = self.cropController.cropView.angle;
     UIImage *croppedImage = [self.cropController.image croppedImageWithFrame:cropFrame angle:angle circularClip:NO];
-    [self.delegate cropAvatarViewController:self didCropImage:croppedImage];
+
+    self.titleLabel.hidden = YES;
+    self.buttonsStackView.hidden = YES;
+
+    DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
     [self.delegate cropAvatarViewControllerDidCancel:self];
+}
+
+#pragma mark - DWUploadAvatarViewControllerDelegate
+
+- (void)uploadAvatarViewControllerDidCancel:(DWUploadAvatarViewController *)controller {
+    self.titleLabel.hidden = NO;
+    self.buttonsStackView.hidden = NO;
+
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)uploadAvatarViewController:(DWUploadAvatarViewController *)controller didFinishWithURLString:(NSString *)urlString {
+    UIImage *image = controller.image;
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self.delegate cropAvatarViewController:self didCropImage:image urlString:urlString];
+                                   }];
 }
 
 #pragma mark - Private

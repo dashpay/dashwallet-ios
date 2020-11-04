@@ -1043,6 +1043,9 @@
 "Unable to get new QR code" = "Δεν είναι δυνατή η λήψη νέου QR κωδικού";
 
 /* No comment provided by engineer. */
+"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+
+/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Μη υποστηριζόμενο ή κατεστραμμένο έγγραφο";
 
 /* No comment provided by engineer. */
@@ -1065,6 +1068,12 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Upload Error" = "Upload Error";
+
+/* No comment provided by engineer. */
+"Uploading your picture to the network" = "Uploading your picture to the network";
 
 /* No comment provided by engineer. */
 "Used" = "Χρησιμοποιήθηκε";

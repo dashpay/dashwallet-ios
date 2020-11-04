@@ -84,6 +84,11 @@
 		2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72822FA3017008C7BC9 /* DWPaymentsButton.m */; };
 		2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBB22E8925100A18347 /* DWHomeView.m */; };
 		2A307CBF22E8A44200A18347 /* DWButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBE22E8A44200A18347 /* DWButton.m */; };
+		2A32AA0C255125860080138E /* DWUploadAvatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA0B255125860080138E /* DWUploadAvatarViewController.m */; };
+		2A32AA16255127CF0080138E /* DWUploadAvatarChildView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA15255127CF0080138E /* DWUploadAvatarChildView.m */; };
+		2A32AA1F255191F80080138E /* DWUploadAvatarModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA1E255191F80080138E /* DWUploadAvatarModel.m */; };
+		2A32AA282551C0DA0080138E /* DWHourGlassAnimationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA272551C0DA0080138E /* DWHourGlassAnimationView.m */; };
+		2A32AA312552A14B0080138E /* DWSecrets.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A32AA302552A14B0080138E /* DWSecrets.m */; };
 		2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */; };
 		2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392564234CD21300316EA6 /* DWTabBarButton.m */; };
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
@@ -764,6 +769,16 @@
 		2A307CBB22E8925100A18347 /* DWHomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeView.m; sourceTree = "<group>"; };
 		2A307CBD22E8A44200A18347 /* DWButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWButton.h; sourceTree = "<group>"; };
 		2A307CBE22E8A44200A18347 /* DWButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWButton.m; sourceTree = "<group>"; };
+		2A32AA0A255125860080138E /* DWUploadAvatarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUploadAvatarViewController.h; sourceTree = "<group>"; };
+		2A32AA0B255125860080138E /* DWUploadAvatarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarViewController.m; sourceTree = "<group>"; };
+		2A32AA14255127CF0080138E /* DWUploadAvatarChildView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUploadAvatarChildView.h; sourceTree = "<group>"; };
+		2A32AA15255127CF0080138E /* DWUploadAvatarChildView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarChildView.m; sourceTree = "<group>"; };
+		2A32AA1D255191F80080138E /* DWUploadAvatarModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUploadAvatarModel.h; sourceTree = "<group>"; };
+		2A32AA1E255191F80080138E /* DWUploadAvatarModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarModel.m; sourceTree = "<group>"; };
+		2A32AA262551C0DA0080138E /* DWHourGlassAnimationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHourGlassAnimationView.h; sourceTree = "<group>"; };
+		2A32AA272551C0DA0080138E /* DWHourGlassAnimationView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHourGlassAnimationView.m; sourceTree = "<group>"; };
+		2A32AA2F2552A14B0080138E /* DWSecrets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecrets.h; sourceTree = "<group>"; };
+		2A32AA302552A14B0080138E /* DWSecrets.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSecrets.m; sourceTree = "<group>"; };
 		2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSelectorFormItem.h; sourceTree = "<group>"; };
 		2A36A8892350A05B0014DC60 /* DWBackupSeedPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBackupSeedPhraseViewController.h; sourceTree = "<group>"; };
 		2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBackupSeedPhraseViewController.m; sourceTree = "<group>"; };
@@ -2097,6 +2112,21 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2A32AA13255127AB0080138E /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				2A32AA0A255125860080138E /* DWUploadAvatarViewController.h */,
+				2A32AA0B255125860080138E /* DWUploadAvatarViewController.m */,
+				2A32AA14255127CF0080138E /* DWUploadAvatarChildView.h */,
+				2A32AA15255127CF0080138E /* DWUploadAvatarChildView.m */,
+				2A32AA1D255191F80080138E /* DWUploadAvatarModel.h */,
+				2A32AA1E255191F80080138E /* DWUploadAvatarModel.m */,
+				2A32AA262551C0DA0080138E /* DWHourGlassAnimationView.h */,
+				2A32AA272551C0DA0080138E /* DWHourGlassAnimationView.m */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
 		2A3CCEF6242BB0AF00300AF8 /* RegistrationCompleted */ = {
 			isa = PBXGroup;
 			children = (
@@ -2291,6 +2321,8 @@
 				2ACD53E9234BCFAA00650AD3 /* DWWeakContainer.h */,
 				2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */,
 				BA4EECDF1B351AE200D443A3 /* DWAppGroupConstants.h */,
+				2A32AA2F2552A14B0080138E /* DWSecrets.h */,
+				2A32AA302552A14B0080138E /* DWSecrets.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -3840,6 +3872,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2A32AA13255127AB0080138E /* Upload */,
 				2AEC5989254A9B2400971D75 /* Utils */,
 				2A5A7FB7251DF6FA00ADD073 /* Avatar */,
 				2ADDF999251B7C4700DA8926 /* Views */,
@@ -4369,9 +4402,11 @@
 			buildPhases = (
 				1B5D1A098C1ECFC62A9E06B1 /* [CP] Check Pods Manifest.lock */,
 				2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */,
+				2A5F0ABE25533A82001A94B1 /* Run Script - Provide Secrets */,
 				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
 				FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */,
 				75D5F3BA191EC270004AB296 /* Sources */,
+				2A5F0ABF25533AD4001A94B1 /* Run Script - Reset Secrets */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
 				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
@@ -4739,6 +4774,42 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
+		2A5F0ABE25533A82001A94B1 /* Run Script - Provide Secrets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - Provide Secrets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ ! -f \"DWSecrets.m\" ]; then\n    echo \"warning: DWSecrets.m file not found!\"\n    exit 0\nfi\n\nif [ ! -f \"DashWallet/Sources/Models/DWSecrets.m\" ]; then\n    echo \"error: Target DashWallet/Sources/Models/DWSecrets.m file not found!\"\n    exit 1\nfi\n\ncp \"DWSecrets.m\" \"DashWallet/Sources/Models/DWSecrets.m\"\n";
+		};
+		2A5F0ABF25533AD4001A94B1 /* Run Script - Reset Secrets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - Reset Secrets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "git checkout -- DashWallet/Sources/Models/DWSecrets.m\n";
+		};
 		2A858A15237EED350097A7B5 /* Swift Format */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -4987,6 +5058,7 @@
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */,
+				2A32AA1F255191F80080138E /* DWUploadAvatarModel.m in Sources */,
 				2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */,
 				2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */,
 				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
@@ -5083,10 +5155,12 @@
 				2AB66E02235711FA007BE825 /* DWWalletKeysOverviewModel.m in Sources */,
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
+				2A32AA16255127CF0080138E /* DWUploadAvatarChildView.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
 				2AEC598C254A9B3500971D75 /* DWFaceDetector.m in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
+				2A32AA312552A14B0080138E /* DWSecrets.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
@@ -5122,6 +5196,7 @@
 				2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */,
 				2A7AF34924823167001D74F9 /* DWDPGenericImageItemView.m in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
+				2A32AA282551C0DA0080138E /* DWHourGlassAnimationView.m in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
@@ -5246,6 +5321,7 @@
 				2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */,
+				2A32AA0C255125860080138E /* DWUploadAvatarViewController.m in Sources */,
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
@@ -5747,7 +5823,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5777,7 +5853,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5860,7 +5936,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -5881,7 +5957,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -5900,7 +5976,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -5921,7 +5997,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -5943,7 +6019,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5966,7 +6042,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6051,7 +6127,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6080,7 +6156,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6131,7 +6207,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6150,7 +6226,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6240,7 +6316,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6267,7 +6343,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6317,7 +6393,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6336,7 +6412,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 48;
+				CURRENT_PROJECT_VERSION = 49;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
