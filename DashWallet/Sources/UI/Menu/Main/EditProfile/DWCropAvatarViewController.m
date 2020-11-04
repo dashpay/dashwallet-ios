@@ -135,6 +135,9 @@ NS_ASSUME_NONNULL_END
     NSInteger angle = self.cropController.cropView.angle;
     UIImage *croppedImage = [self.cropController.image croppedImageWithFrame:cropFrame angle:angle circularClip:NO];
 
+    self.titleLabel.hidden = YES;
+    self.buttonsStackView.hidden = YES;
+
     DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
     controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
@@ -147,6 +150,9 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUploadAvatarViewControllerDelegate
 
 - (void)uploadAvatarViewControllerDidCancel:(DWUploadAvatarViewController *)controller {
+    self.titleLabel.hidden = NO;
+    self.buttonsStackView.hidden = NO;
+
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
