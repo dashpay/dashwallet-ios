@@ -141,10 +141,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)fetchURL {
-#warning set production API endpoint
+#if DEBUG
     NSString *urlString = [NSString stringWithFormat:
                                         @"https://api.apple-cloudkit.com/database/1/iCloud.org.dash.dashwallet/development/public/records/query?ckAPIToken=%@",
                                         [DWSecrets iCloudAPIKey]];
+#else
+    NSString *urlString = [NSString stringWithFormat:
+                                        @"https://api.apple-cloudkit.com/database/1/iCloud.org.dash.dashwallet/production/public/records/query?ckAPIToken=%@",
+                                        [DWSecrets iCloudAPIKey]];
+#endif /* DEBUG */
     NSURL *url = [NSURL URLWithString:urlString];
 
     NSDictionary *query = @{
