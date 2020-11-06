@@ -50,7 +50,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" non è una parola della frase di recupero";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\"  non è una parola della frase di recupero. Vorresti provare a recuperare la parola corretta che dovrebbe stare in questa posizione?";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nriprova tra %@";
@@ -254,7 +254,7 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Non è stato possibile recuperare automaticamente le parole mancanti od errate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Impossibile effettuare il pagamento";
@@ -374,7 +374,7 @@
 "Forgot PIN?" = "Hai dimenticato il PIN?";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Parola mancante trovata:\n%@";
 
 /* No comment provided by engineer. */
 "Found missing words:\n%@" = "Found missing words:\n%@";
