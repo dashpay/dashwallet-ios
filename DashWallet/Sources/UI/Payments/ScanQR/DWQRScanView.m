@@ -196,7 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (self.sampleBufferDisplayLayer.status == AVQueuedSampleBufferRenderingStatusFailed) {
-        DSLogError(@"Failed to display frame: %@", self.sampleBufferDisplayLayer.error);
+        DSLog(@"Failed to display frame: %@", self.sampleBufferDisplayLayer.error);
         [self.sampleBufferDisplayLayer flush];
     }
 

@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
@@ -132,14 +132,14 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<NSString *> *array = [NSMutableArray array];
     for (NFCNDEFMessage *message in messages) {
         for (NFCNDEFPayload *payload in message.records) {
-            DSLogVerbose(@"NFC payload.payload %@", payload.payload);
+            DSLogPrivate(@"NFC payload.payload %@", payload.payload);
             NSData *data = payload.payload;
             const unsigned char *bytes = data.bytes;
 
             if (bytes[0] == 0) {
                 data = [data subdataWithRange:NSMakeRange(1, data.length - 1)];
             }
-            DSLogVerbose(@"NFC Payload data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            DSLogPrivate(@"NFC Payload data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             [array addObject:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
         }
     }

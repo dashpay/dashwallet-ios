@@ -44,7 +44,7 @@
         // This will trigger DWNotificationsProvider to reset
         [[DWDashPayContactsUpdater sharedInstance] fetch];
 
-        DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+        DSLog(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
 
         if (completion) {
             completion(success, errors);
