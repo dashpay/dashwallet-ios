@@ -52,7 +52,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (NSArray<DWShortcutAction *> *)items {

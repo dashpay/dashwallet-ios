@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_END
             [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity username:username];
         }
 
-        DSLogVerbose(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
+        DSLogPrivate(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
