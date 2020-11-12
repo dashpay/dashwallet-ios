@@ -17,6 +17,9 @@
 
 #import "DWEditProfileAvatarView.h"
 
+#import <DashSync/DashSync.h>
+#import <SDWebImage/SDWebImage.h>
+
 static CGFloat const AvatarSize = 134.0;
 static CGSize const EditSize = {46.0, 45.0};
 
@@ -38,6 +41,11 @@ NS_ASSUME_NONNULL_END
 
 - (void)setImage:(UIImage *)image {
     self.avatarImageView.image = image;
+}
+
+- (void)setImageWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    NSURL *url = [NSURL URLWithString:blockchainIdentity.matchingDashpayUserInViewContext.avatarPath];
+    [self.avatarImageView sd_setImageWithURL:url placeholderImage:[UIImage imageNamed:@"dp_current_user_placeholder"]];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {

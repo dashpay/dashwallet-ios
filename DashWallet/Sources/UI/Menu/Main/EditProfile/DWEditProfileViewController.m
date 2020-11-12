@@ -107,6 +107,7 @@ NS_ASSUME_NONNULL_END
 - (void)setupView {
     self.headerView = [[DWEditProfileAvatarView alloc] initWithFrame:CGRectZero];
     self.headerView.delegate = self;
+    [self.headerView setImageWithBlockchainIdentity:self.blockchainIdentity];
 
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
