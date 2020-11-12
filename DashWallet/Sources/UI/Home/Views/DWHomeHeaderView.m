@@ -172,7 +172,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 - (void)updateProfileView {
     DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
     const BOOL completed = self.model.dashPayModel.registrationCompleted;
-    if (status.state == DWDPRegistrationState_Done || completed) {
+    if ((status.state == DWDPRegistrationState_Done || completed) && self.model.dashPayModel.blockchainIdentity) {
         self.profileView.blockchainIdentity = self.model.dashPayModel.blockchainIdentity;
         self.profileView.hidden = NO;
     }
