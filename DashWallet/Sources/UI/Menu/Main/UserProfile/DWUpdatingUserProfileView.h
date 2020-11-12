@@ -19,21 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
-
-typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
-    DWDPAvatarBackgroundMode_DashBlue,
-    DWDPAvatarBackgroundMode_Random,
-};
-
-@interface DWDPAvatarView : UIView
-
-@property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
-@property (nonatomic, assign, getter=isSmall) BOOL small;
-
-- (void)setAsDashPlaceholder;
-- (void)configureWithUsername:(NSString *)username;
+@interface DWUpdatingUserProfileView : UIView
 
 @end
 

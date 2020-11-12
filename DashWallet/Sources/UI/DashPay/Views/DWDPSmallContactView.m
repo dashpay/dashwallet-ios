@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_END
 - (void)setItem:(id<DWDPBasicUserItem>)item {
     _item = item;
 
-    self.avatarView.username = item.username;
+    self.avatarView.blockchainIdentity = item.blockchainIdentity;
     self.titleLabel.text = item.displayName ?: item.username;
 }
 

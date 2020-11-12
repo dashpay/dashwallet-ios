@@ -98,10 +98,16 @@ NS_ASSUME_NONNULL_END
     [self.contentView dw_pressedAnimation:DWPressedAnimationStrength_Medium pressed:highlighted];
 }
 
-- (void)setUsername:(NSString *)username {
-    _username = username;
+- (DSBlockchainIdentity *)blockchainIdentity {
+    return self.avatarView.blockchainIdentity;
+}
 
-    self.avatarView.username = username;
+- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self.avatarView.blockchainIdentity = blockchainIdentity;
+}
+
+- (void)configureWithUsername:(NSString *)username {
+    [self.avatarView configureWithUsername:username];
 }
 
 - (void)setUnreadCount:(NSUInteger)unreadCount {

@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_END
 
             DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
                                                                   dataProvider:self.txDataProvider
-                                                                      username:self.friendBlockchainIdentity.currentDashpayUsername];
+                                                            blockchainIdentity:self.friendBlockchainIdentity];
 
             if (self.incomingNotificationAdded == NO && [self isNotificationNewerThan:self.incomingNotification txDate:txDate]) {
                 [self.items addObject:self.incomingNotification];

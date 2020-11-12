@@ -20,6 +20,9 @@
 #import "DWUIKit.h"
 #import "UIColor+DWDashPay.h"
 
+#import <DashSync/DashSync.h>
+#import <SDWebImage/SDWebImage.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPAvatarView ()
@@ -62,6 +65,35 @@ NS_ASSUME_NONNULL_END
     _backgroundMode = backgroundMode;
 
     [self updateBackgroundColor];
+}
+
+- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    _blockchainIdentity = blockchainIdentity;
+
+    NSString *username = blockchainIdentity.currentDashpayUsername;
+    NSURL *url = [NSURL URLWithString:blockchainIdentity.matchingDashpayUserInViewContext.avatarPath];
+    __weak typeof(self) weakSelf = self;
+    [self.imageView
+        sd_setImageWithURL:url
+                 completed:^(UIImage *_Nullable image, NSError *_Nullable error, SDImageCacheType cacheType, NSURL *_Nullable imageURL) {
+                     __strong typeof(weakSelf) strongSelf = weakSelf;
+                     if (!strongSelf) {
+                         return;
+                     }
+
+                     if (image) {
+                         strongSelf.imageView.hidden = NO;
+                         strongSelf.letterLabel.hidden = YES;
+                         strongSelf.imageView.image = image;
+                     }
+                     else {
+                         [strongSelf setUsername:username];
+                     }
+                 }];
+}
+
+- (void)configureWithUsername:(NSString *)username {
+    [self setUsername:username];
 }
 
 - (void)setUsername:(NSString *)username {

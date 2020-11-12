@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSArray<DWBaseFormCellModel *> *items;
 @property (nullable, nonatomic, strong) DWProfileDisplayNameCellModel *displayNameModel;
 @property (nullable, nonatomic, strong) DWProfileAboutCellModel *aboutModel;
+@property (nullable, nonatomic, copy) NSString *unsavedAvatarURL;
 
 @end
 
@@ -61,6 +62,10 @@ NS_ASSUME_NONNULL_END
 
 - (NSString *)aboutMe {
     return self.aboutModel.text;
+}
+
+- (NSString *)avatarURLString {
+    return self.unsavedAvatarURL ?: self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath;
 }
 
 - (BOOL)isValid {
@@ -246,8 +251,8 @@ NS_ASSUME_NONNULL_END
                     didCropImage:(UIImage *)croppedImage
                        urlString:(NSString *)urlString {
     self.headerView.image = croppedImage;
-    // TODO: DP avatar: save image URL
-    [UIPasteboard generalPasteboard].string = urlString; // for debugging purposes
+    self.unsavedAvatarURL = urlString;
+
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 

@@ -67,6 +67,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)didMoveToWindow {
+    [super didMoveToWindow];
+
     if (self.window) {
         [self.animationView startAnimating];
     }

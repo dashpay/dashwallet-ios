@@ -76,40 +76,13 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Actions
 
 - (void)cancelButtonAction {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self.delegate editProfileViewControllerDidCancel:self];
 }
 
 - (void)actionButtonAction:(id)sender {
-    // TODO: DP provide valid avatar URL
-    id avatar = nil;
-    NSString *displayName = self.editController.displayName;
-    if ([self.editController.displayName isEqualToString:self.blockchainIdentity.currentDashpayUsername]) {
-        displayName = @"";
-    }
-    displayName = [displayName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-
-    NSString *aboutMe = [self.editController.aboutMe stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-
-    [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName
-                                                   publicMessage:aboutMe
-                                                 avatarURLString:avatar];
-
-
-    NSString *uiDisplayName = displayName.length == 0 ? self.blockchainIdentity.currentDashpayUsername : displayName;
-    [self.editController updateDisplayName:uiDisplayName aboutMe:aboutMe];
-    [self showActivityIndicator];
-    __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        [strongSelf hideActivityIndicator];
-        if (success) {
-            [strongSelf.delegate editProfileViewControllerDidUpdateUserProfile];
-            [strongSelf dismissViewControllerAnimated:YES completion:nil];
-        }
-    }];
+    [self.delegate editProfileViewController:self
+                           updateDisplayName:self.editController.displayName
+                                     aboutMe:self.editController.aboutMe
+                             avatarURLString:self.editController.avatarURLString];
 }
 @end

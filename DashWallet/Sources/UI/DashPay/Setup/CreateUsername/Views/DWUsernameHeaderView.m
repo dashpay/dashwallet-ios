@@ -115,7 +115,7 @@ static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable username) {
             DWPlanetObject *planet = [[DWPlanetObject alloc] init];
             if (username.length > 0) {
                 DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, avatarSize}];
-                avatarView.username = username;
+                [avatarView configureWithUsername:username];
                 planet.customView = avatarView;
             }
             else {
@@ -183,7 +183,7 @@ static NSArray<DWPlanetObject *> *Planets(NSString *_Nullable username) {
             DWPlanetObject *planet = [[DWPlanetObject alloc] init];
             if (username.length > 0) {
                 DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, avatarSize}];
-                avatarView.username = username;
+                [avatarView configureWithUsername:username];
                 planet.customView = avatarView;
             }
             else {

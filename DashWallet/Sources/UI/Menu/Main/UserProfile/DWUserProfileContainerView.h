@@ -15,23 +15,18 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <KVO-MVVM/KVOUIView.h>
+
+#import "DWCurrentUserProfileView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DWCurrentUserProfileModel;
 
-typedef NS_ENUM(NSUInteger, DWCurrentUserProfileModelState) {
-    DWCurrentUserProfileModel_None,
-    DWCurrentUserProfileModel_Loading,
-    DWCurrentUserProfileModel_Done,
-    DWCurrentUserProfileModel_Error,
-};
+@interface DWUserProfileContainerView : KVOUIView
 
-@interface DWCurrentUserProfileModel : NSObject
-
-@property (readonly, nonatomic, assign) DWCurrentUserProfileModelState state;
-@property (readonly, nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nonatomic, strong) DWCurrentUserProfileModel *userModel;
+@property (nullable, nonatomic, weak) id<DWCurrentUserProfileViewDelegate> delegate;
 
 - (void)update;
 

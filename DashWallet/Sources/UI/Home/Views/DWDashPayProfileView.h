@@ -19,10 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSBlockchainIdentity;
+
 @interface DWDashPayProfileView : UIControl
 
-@property (nullable, nonatomic, copy) NSString *username;
+@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
 @property (nonatomic, assign) NSUInteger unreadCount;
+
+- (void)configureWithUsername:(NSString *)username;
 
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 

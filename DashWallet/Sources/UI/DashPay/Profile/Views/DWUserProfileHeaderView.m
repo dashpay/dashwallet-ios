@@ -207,7 +207,7 @@ NS_ASSUME_NONNULL_END
 - (void)setModel:(DWUserProfileModel *)model {
     _model = model;
 
-    [self updateUsername:model.username];
+    [self updateBlockchainIdentity:model.item.blockchainIdentity];
 }
 
 - (void)setScrollingPercent:(float)percent {
@@ -260,9 +260,9 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)updateUsername:(NSString *)username {
-    self.detailsLabel.text = username;
-    self.avatarView.username = username;
+- (void)updateBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self.detailsLabel.text = blockchainIdentity.currentDashpayUsername;
+    self.avatarView.blockchainIdentity = blockchainIdentity;
 
     [self setScrollingPercent:0.0];
 }

@@ -77,6 +77,10 @@ NS_ASSUME_NONNULL_END
     return blockchainIdentity.currentDashpayUsername ?: [DWGlobalOptions sharedInstance].persistedDashPayUsername;
 }
 
+- (DSBlockchainIdentity *)blockchainIdentity {
+    return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+}
+
 - (BOOL)registrationCompleted {
     return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
 }

@@ -179,8 +179,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWRootEditProfileViewControllerDelegate
 
-- (void)editProfileViewControllerDidUpdateUserProfile {
-    [self.view updateUserHeader];
+- (void)editProfileViewController:(DWRootEditProfileViewController *)controller
+                updateDisplayName:(NSString *)rawDisplayName
+                          aboutMe:(NSString *)rawAboutMe
+                  avatarURLString:(nullable NSString *)avatarURLString {
+    [self.view.userModel.updateModel updateWithDisplayName:rawDisplayName aboutMe:rawAboutMe avatarURLString:avatarURLString];
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)editProfileViewControllerDidCancel:(DWRootEditProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

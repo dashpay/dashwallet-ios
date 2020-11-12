@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSString *displayName;
 @property (readonly, nonatomic, copy) NSString *aboutMe;
+@property (nullable, readonly, nonatomic, copy) NSString *avatarURLString;
 @property (readonly, nonatomic, assign, getter=isValid) BOOL valid;
 
 @property (nullable, nonatomic, weak) id<DWEditProfileViewControllerDelegate> delegate;

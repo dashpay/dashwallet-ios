@@ -22,10 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 
 @class DWDPRegistrationStatus;
+@class DSBlockchainIdentity;
 
 @protocol DWDashPayProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, copy) NSString *username;
+@property (nullable, readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 @property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
 @property (readonly, nonatomic, assign) BOOL registrationCompleted;

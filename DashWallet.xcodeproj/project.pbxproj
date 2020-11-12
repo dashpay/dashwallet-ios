@@ -156,6 +156,10 @@
 		2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */; };
 		2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */; };
 		2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */; };
+		2A5F100F255C77F1001A94B1 /* DWDPUpdateProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5F100E255C77F1001A94B1 /* DWDPUpdateProfileModel.m */; };
+		2A5F1018255C7C89001A94B1 /* DWUpdatingUserProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5F1017255C7C89001A94B1 /* DWUpdatingUserProfileView.m */; };
+		2A5F1027255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5F1026255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m */; };
+		2A5F1036255C8AF4001A94B1 /* DWUserProfileContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5F1035255C8AF4001A94B1 /* DWUserProfileContainerView.m */; };
 		2A60C9452444BF3A00AF72CF /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A60C9442444BF3900AF72CF /* DWConfirmUsernameContentView.xib */; };
 		2A612AB724409D6E0060CC77 /* DWDashPayProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
@@ -906,6 +910,14 @@
 		2A5E4545243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationStatusTableViewCell.h; sourceTree = "<group>"; };
 		2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationStatusTableViewCell.m; sourceTree = "<group>"; };
 		2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationStatusTableViewCell.xib; sourceTree = "<group>"; };
+		2A5F100D255C77F1001A94B1 /* DWDPUpdateProfileModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPUpdateProfileModel.h; sourceTree = "<group>"; };
+		2A5F100E255C77F1001A94B1 /* DWDPUpdateProfileModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPUpdateProfileModel.m; sourceTree = "<group>"; };
+		2A5F1016255C7C89001A94B1 /* DWUpdatingUserProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpdatingUserProfileView.h; sourceTree = "<group>"; };
+		2A5F1017255C7C89001A94B1 /* DWUpdatingUserProfileView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpdatingUserProfileView.m; sourceTree = "<group>"; };
+		2A5F1025255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWErrorUpdatingUserProfileView.h; sourceTree = "<group>"; };
+		2A5F1026255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWErrorUpdatingUserProfileView.m; sourceTree = "<group>"; };
+		2A5F1034255C8AF4001A94B1 /* DWUserProfileContainerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileContainerView.h; sourceTree = "<group>"; };
+		2A5F1035255C8AF4001A94B1 /* DWUserProfileContainerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileContainerView.m; sourceTree = "<group>"; };
 		2A60C9442444BF3900AF72CF /* DWConfirmUsernameContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWConfirmUsernameContentView.xib; sourceTree = "<group>"; };
 		2A612AB524409D6E0060CC77 /* DWDashPayProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayProfileView.h; sourceTree = "<group>"; };
 		2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPayProfileView.m; sourceTree = "<group>"; };
@@ -2463,6 +2475,19 @@
 			path = RegistrationStatus;
 			sourceTree = "<group>";
 		};
+		2A5F106B255D3ACB001A94B1 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2ADF54C2251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.h */,
+				2ADF54C3251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.m */,
+				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
+				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
+				2A5F100D255C77F1001A94B1 /* DWDPUpdateProfileModel.h */,
+				2A5F100E255C77F1001A94B1 /* DWDPUpdateProfileModel.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		2A6300402328CCAC00827825 /* LockScreen */ = {
 			isa = PBXGroup;
 			children = (
@@ -3848,12 +3873,15 @@
 		2ADDF987251B2D8E00DA8926 /* UserProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2A5F106B255D3ACB001A94B1 /* Models */,
 				2ADDF988251B2F0E00DA8926 /* DWCurrentUserProfileView.h */,
 				2ADDF989251B2F0E00DA8926 /* DWCurrentUserProfileView.m */,
-				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
-				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
-				2ADF54C2251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.h */,
-				2ADF54C3251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.m */,
+				2A5F1016255C7C89001A94B1 /* DWUpdatingUserProfileView.h */,
+				2A5F1017255C7C89001A94B1 /* DWUpdatingUserProfileView.m */,
+				2A5F1025255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.h */,
+				2A5F1026255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m */,
+				2A5F1034255C8AF4001A94B1 /* DWUserProfileContainerView.h */,
+				2A5F1035255C8AF4001A94B1 /* DWUserProfileContainerView.m */,
 			);
 			path = UserProfile;
 			sourceTree = "<group>";
@@ -5137,6 +5165,7 @@
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,
 				2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */,
+				2A5F1018255C7C89001A94B1 /* DWUpdatingUserProfileView.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
 				2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */,
 				2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */,
@@ -5240,6 +5269,7 @@
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2ADDF994251B579100DA8926 /* DWUserProfileModalQRContentView.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
+				2A5F1036255C8AF4001A94B1 /* DWUserProfileContainerView.m in Sources */,
 				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A913E6B23A15419006A2A59 /* DWUpholdAuthURLNotification.m in Sources */,
 				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
@@ -5419,11 +5449,13 @@
 				2A7AF37B2482756D001D74F9 /* DWDPPendingRequestObject.m in Sources */,
 				2ADDF99C251B7C6B00DA8926 /* DWEditProfileBaseCell.m in Sources */,
 				2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */,
+				2A5F100F255C77F1001A94B1 /* DWDPUpdateProfileModel.m in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				2ADDF9A2251B807600DA8926 /* DWTextFieldFormCellModel.m in Sources */,
 				2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */,
+				2A5F1027255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,

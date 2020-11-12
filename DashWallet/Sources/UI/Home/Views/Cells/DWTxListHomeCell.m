@@ -146,12 +146,12 @@ NS_ASSUME_NONNULL_END
     }
     else {
         if (source != nil && !uint256_eq(source.uniqueID, currentUser.uniqueID)) {
-            self.itemView.avatarView.username = source.currentDashpayUsername;
+            self.itemView.avatarView.blockchainIdentity = source;
             self.dashpayUsername = source.dw_displayNameOrUsername;
             self.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:source];
         }
         else if (destination != nil && !uint256_eq(destination.uniqueID, currentUser.uniqueID)) {
-            self.itemView.avatarView.username = destination.currentDashpayUsername;
+            self.itemView.avatarView.blockchainIdentity = destination;
             self.dashpayUsername = destination.dw_displayNameOrUsername;
             self.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:destination];
         }
