@@ -81,7 +81,7 @@ NS_ASSUME_NONNULL_END
                         }
 
                         if (error != nil) {
-                            DSLogVerbose(@"DPAvatar: delete prev failed: %@", error);
+                            DSLog(@"DPAvatar: delete prev failed: %@", error);
                         }
 
                         if (strongSelf.cancelled) {
@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_END
                 }
 
                 if (error != nil) {
-                    DSLogVerbose(@"DPAvatar: upload failed: %@", error);
+                    DSLog(@"DPAvatar: upload failed: %@", error);
 
                     dispatch_async(dispatch_get_main_queue(), ^{
                         strongSelf.state = DWUploadAvatarModelState_Error;

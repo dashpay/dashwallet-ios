@@ -119,9 +119,9 @@ NS_ASSUME_NONNULL_END
 
         strongSelf.fetching = NO;
 
-        DSLogVerbose(@"DWDP: Fetch contact requests %@: %@",
-                     success ? @"Succeeded" : @"Failed",
-                     errors.count == 0 ? @"" : errors);
+        DSLog(@"DWDP: Fetch contact requests %@: %@",
+              success ? @"Succeeded" : @"Failed",
+              errors.count == 0 ? @"" : errors);
 
         if (strongSelf.fetchCompletion) {
             strongSelf.fetchCompletion(success, errors);

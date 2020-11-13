@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (NSString *)paymentAddressOrRequestToShare {
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
         total += [wallet amountReceivedFromTransaction:tx];
 
         if (total + fuzz >= request.amount) {
-            DSLogVerbose(@"DWReceiveModel: Received %@", @(total));
+            DSLog(@"DWReceiveModel: Received %@", @(total));
 
             // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
             // (`total` is not calculated properly for very small amounts like 0.000257)

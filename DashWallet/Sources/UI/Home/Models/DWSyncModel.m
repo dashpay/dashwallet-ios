@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define LOG_SYNCING 0
 
 #if LOG_SYNCING
-#define DWSyncLog(frmt, ...) DSLogVerbose(frmt, ##__VA_ARGS__)
+#define DWSyncLog(frmt, ...) DSLog(frmt, ##__VA_ARGS__)
 #else
 #define DWSyncLog(frmt, ...)
 #endif /* LOG_SYNCING */
@@ -100,7 +100,7 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)reachabilityStatusDidChange {

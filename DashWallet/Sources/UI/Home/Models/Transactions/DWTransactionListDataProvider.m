@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWTransactionListDataProvider
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 #pragma mark - DWTransactionListDataProviderProtocol

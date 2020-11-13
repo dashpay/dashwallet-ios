@@ -48,7 +48,7 @@
             }
         }];
 
-        DSLogVerbose(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
+        DSLog(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
     };
 
     // Accepting request from a DSFriendRequestEntity doesn't require searching for associated blockchain identity.

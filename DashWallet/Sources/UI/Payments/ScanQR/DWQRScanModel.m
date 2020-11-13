@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 + (BOOL)isTorchAvailable {

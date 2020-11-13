@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize model = _model;
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)loadView {
