@@ -19,9 +19,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWRootEditProfileViewController;
+
 @protocol DWRootEditProfileViewControllerDelegate <NSObject>
 
-- (void)editProfileViewControllerDidUpdateUserProfile;
+- (void)editProfileViewController:(DWRootEditProfileViewController *)controller
+                updateDisplayName:(NSString *)rawDisplayName
+                          aboutMe:(NSString *)rawAboutMe
+                  avatarURLString:(nullable NSString *)avatarURLString;
+
+- (void)editProfileViewControllerDidCancel:(DWRootEditProfileViewController *)controller;
 
 @end
 

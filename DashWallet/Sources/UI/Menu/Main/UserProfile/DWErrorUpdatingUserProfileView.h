@@ -19,21 +19,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DWErrorUpdatingUserProfileView;
 
-typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
-    DWDPAvatarBackgroundMode_DashBlue,
-    DWDPAvatarBackgroundMode_Random,
-};
+@protocol DWErrorUpdatingUserProfileViewDelegate <NSObject>
 
-@interface DWDPAvatarView : UIView
+- (void)errorUpdatingUserProfileView:(DWErrorUpdatingUserProfileView *)view retryAction:(UIButton *)sender;
+- (void)errorUpdatingUserProfileView:(DWErrorUpdatingUserProfileView *)view cancelAction:(UIButton *)sender;
 
-@property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
-@property (nonatomic, assign, getter=isSmall) BOOL small;
+@end
 
-- (void)setAsDashPlaceholder;
-- (void)configureWithUsername:(NSString *)username;
+@interface DWErrorUpdatingUserProfileView : UIView
+
+@property (nullable, nonatomic, weak) id<DWErrorUpdatingUserProfileViewDelegate> delegate;
 
 @end
 

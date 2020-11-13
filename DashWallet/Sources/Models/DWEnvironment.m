@@ -230,19 +230,20 @@ static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
 
 - (NSOrderedSet *)palinkaDevnetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"52.35.250.121"];
-    [serviceLocations addObject:@"54.245.160.193"];
-    [serviceLocations addObject:@"34.219.179.226"];
-    [serviceLocations addObject:@"54.245.182.120"];
-    [serviceLocations addObject:@"34.221.212.4"];
-    [serviceLocations addObject:@"52.12.235.213"];
-    [serviceLocations addObject:@"34.215.219.45"];
-    [serviceLocations addObject:@"34.220.98.95"];
-    [serviceLocations addObject:@"34.219.86.70"];
-    [serviceLocations addObject:@"54.202.75.194"];
-    [serviceLocations addObject:@"52.12.2.242"];
-    [serviceLocations addObject:@"34.209.152.117"];
-    [serviceLocations addObject:@"34.222.151.181"];
+    [serviceLocations addObject:@"35.160.208.146"];
+    [serviceLocations addObject:@"52.25.119.181"];
+    [serviceLocations addObject:@"34.217.123.47"];
+    [serviceLocations addObject:@"54.187.180.191"];
+    [serviceLocations addObject:@"54.218.238.240"];
+    [serviceLocations addObject:@"54.214.223.133"];
+    [serviceLocations addObject:@"34.216.205.76"];
+    [serviceLocations addObject:@"34.217.44.188"];
+    [serviceLocations addObject:@"54.212.184.233"];
+    [serviceLocations addObject:@"34.216.221.94"];
+    [serviceLocations addObject:@"34.219.217.150"];
+    [serviceLocations addObject:@"34.222.170.91"];
+    [serviceLocations addObject:@"54.213.188.235"];
+    [serviceLocations addObject:@"44.230.162.12"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -254,11 +255,11 @@ static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
 }
 
 - (NSString *)currentDevnetIdentifier {
-    return DWMobileDevnetIdentifier;
+    return DWPalinkaDevnetIdentifier;
 }
 
 - (DSChain *)currentDevnetChain {
-    return [self mobileDevnetChain];
+    return [self palinkaDevnetChain];
 }
 
 - (DSChain *)mobileDevnetChain {
@@ -285,10 +286,10 @@ static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
                              standardPort:20001
                              dapiJRPCPort:3000
                              dapiGRPCPort:3010
-                           dpnsContractID:@"CpUg99yVZDK3CDkauTKtzSTbRJN7uH5u31zgTFYor5E8".base58ToData.UInt256
-                        dashpayContractID:@"FZpu8tK7biyRdQfCdbsYt17gJmvLBycY8TJXQRocToph".base58ToData.UInt256
-                          protocolVersion:70216
-                       minProtocolVersion:70216
+                           dpnsContractID:@"H9AxLAvgxEpq72pDg41nsqR3bY5Cv9hTT6yZdKzY3PaE".base58ToData.UInt256
+                        dashpayContractID:@"Fxf3w1rsUvRxW8WsVnQcUNgtgVn8w47BwZtQPAsJWkkH".base58ToData.UInt256
+                          protocolVersion:70218
+                       minProtocolVersion:70218
                              sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
                           sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
 }

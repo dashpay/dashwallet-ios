@@ -15,25 +15,29 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+#import "DWDPUpdateProfileModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSBlockchainIdentity;
 
-typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
-    DWDPAvatarBackgroundMode_DashBlue,
-    DWDPAvatarBackgroundMode_Random,
+typedef NS_ENUM(NSUInteger, DWCurrentUserProfileModelState) {
+    DWCurrentUserProfileModel_None,
+    DWCurrentUserProfileModel_Loading,
+    DWCurrentUserProfileModel_Done,
+    DWCurrentUserProfileModel_Error,
 };
 
-@interface DWDPAvatarView : UIView
+@interface DWCurrentUserProfileModel : NSObject
 
-@property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
-@property (nonatomic, assign, getter=isSmall) BOOL small;
+@property (readonly, nonatomic, strong) DWDPUpdateProfileModel *updateModel;
 
-- (void)setAsDashPlaceholder;
-- (void)configureWithUsername:(NSString *)username;
+@property (readonly, nonatomic, assign) DWCurrentUserProfileModelState state;
+@property (readonly, nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+
+- (void)update;
 
 @end
 

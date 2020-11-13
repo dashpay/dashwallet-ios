@@ -11,6 +11,7 @@ target 'dashwallet' do
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'TOCropViewController', '2.5.5'
+  pod 'SDWebImage', '5.9.4'
 
   # Debugging purposes
 #  pod 'Reveal-SDK', :configurations => ['Debug']
@@ -45,7 +46,7 @@ end
 post_install do |installer|
     installer.pods_project.targets.each do |target|
         # fixes warnings about unsupported Deployment Target in Xcode 10
-        if ["BoringSSL-GRPC", "abseil", "gRPC", "gRPC-Core", "gRPC-RxLibrary", "gRPC-ProtoRPC", "Protobuf", "DSJSONSchemaValidation", "!ProtoCompiler", "!ProtoCompiler-gRPCPlugin", "gRPC-gRPCCertificates", "UIViewController-KeyboardAdditions", "MMSegmentSlider", "MBProgressHUD", "KVO-MVVM", "CocoaLumberjack"].include? target.name
+        if ["BoringSSL-GRPC", "abseil", "gRPC", "gRPC-Core", "gRPC-RxLibrary", "gRPC-ProtoRPC", "Protobuf", "DSJSONSchemaValidation", "!ProtoCompiler", "!ProtoCompiler-gRPCPlugin", "gRPC-gRPCCertificates", "UIViewController-KeyboardAdditions", "MMSegmentSlider", "MBProgressHUD", "KVO-MVVM", "CocoaLumberjack", "TOCropViewController", "TOCropViewController-TOCropViewControllerBundle", "SDWebImage"].include? target.name
             target.build_configurations.each do |config|
                 config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
             end

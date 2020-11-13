@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWUserProfileNavigationTitleView *titleView = [[DWUserProfileNavigationTitleView alloc] initWithFrame:CGRectZero];
-    [titleView updateWithUsername:self.model.username];
+    [titleView updateWithBlockchainIdentity:self.model.item.blockchainIdentity];
     CGSize titleSize = [titleView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
     titleView.frame = CGRectMake(0, 0, titleSize.width, titleSize.height);
     self.navigationItem.titleView = titleView;

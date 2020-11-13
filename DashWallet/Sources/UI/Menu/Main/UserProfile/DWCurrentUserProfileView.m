@@ -22,6 +22,7 @@
 #import "DWUIKit.h"
 
 #import <DashSync/DashSync.h>
+#import <SDWebImage/SDWebImage.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,6 +47,8 @@ NS_ASSUME_NONNULL_END
         UIImageView *avatarImageView = [[UIImageView alloc] init];
         avatarImageView.translatesAutoresizingMaskIntoConstraints = NO;
         avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
+        avatarImageView.layer.cornerRadius = AvatarSize / 2.0;
+        avatarImageView.layer.masksToBounds = YES;
         [self addSubview:avatarImageView];
         _avatarImageView = avatarImageView;
 
@@ -113,7 +116,9 @@ NS_ASSUME_NONNULL_END
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
 
-    // TODO: DP set avatar
+    NSURL *url = [NSURL URLWithString:blockchainIdentity.matchingDashpayUserInViewContext.avatarPath];
+    [self.avatarImageView sd_setImageWithURL:url placeholderImage:[UIImage imageNamed:@"dp_current_user_placeholder"]];
+
     [self reloadAttributedData];
 }
 

@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_END
     NSString *directory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
     NSString *filePath = [directory stringByAppendingPathComponent:@"dpavatar.jpg"];
     [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
-    NSData *imageData = UIImageJPEGRepresentation(self.image, 0.8);
+    NSData *imageData = UIImageJPEGRepresentation(self.image, 0.5);
     [imageData writeToFile:filePath atomically:YES];
 
     CKRecord *record = [[CKRecord alloc] initWithRecordType:RecordType recordID:self.recordID];

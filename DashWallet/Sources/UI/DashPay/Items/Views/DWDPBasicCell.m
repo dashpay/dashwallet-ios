@@ -143,7 +143,7 @@ NS_ASSUME_NONNULL_END
 
     self.highlightedText = highlightedText;
 
-    self.itemView.avatarView.username = item.username;
+    self.itemView.avatarView.blockchainIdentity = item.blockchainIdentity;
 
     [self reloadAttributedData];
 }

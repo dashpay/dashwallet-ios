@@ -27,6 +27,14 @@
 
 @implementation DWCurrentUserProfileModel
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _updateModel = [[DWDPUpdateProfileModel alloc] init];
+    }
+    return self;
+}
+
 - (DSBlockchainIdentity *)blockchainIdentity {
     return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
 }

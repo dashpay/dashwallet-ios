@@ -17,18 +17,18 @@
 
 #import "DWMainMenuContentView.h"
 
-#import "DWCurrentUserProfileView.h"
 #import "DWMainMenuModel.h"
 #import "DWMainMenuTableViewCell.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
+#import "DWUserProfileContainerView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuContentView () <UITableViewDataSource, UITableViewDelegate, DWCurrentUserProfileViewDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
-@property (nonatomic, strong) DWCurrentUserProfileView *headerView;
+@property (nonatomic, strong) DWUserProfileContainerView *headerView;
 
 @end
 
@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self addSubview:tableView];
         _tableView = tableView;
 
-        DWCurrentUserProfileView *headerView = [[DWCurrentUserProfileView alloc] initWithFrame:CGRectZero];
+        DWUserProfileContainerView *headerView = [[DWUserProfileContainerView alloc] initWithFrame:CGRectZero];
         headerView.delegate = self;
         _headerView = headerView;
 
@@ -74,6 +74,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView reloadData];
 }
 
+- (void)setUserModel:(DWCurrentUserProfileModel *)userModel {
+    _userModel = userModel;
+
+    self.headerView.userModel = userModel;
+}
+
 - (void)updateUserHeader {
     [self.userModel update];
     [self updateHeader];
@@ -81,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateHeader {
     if (self.userModel.blockchainIdentity != nil) {
-        self.headerView.blockchainIdentity = self.userModel.blockchainIdentity;
+        [self.headerView update];
         self.tableView.tableHeaderView = self.headerView;
     }
     else {

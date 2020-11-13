@@ -20,6 +20,8 @@
 #import "DWDPAvatarView.h"
 #import "DWUIKit.h"
 
+#import <DashSync/DashSync.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const AVATAR_SIZE = 28.0;
@@ -81,9 +83,9 @@ NS_ASSUME_NONNULL_END
     return CGSizeMake(UIViewNoIntrinsicMetric, VIEW_HEIGHT);
 }
 
-- (void)updateWithUsername:(NSString *)username {
-    self.titleLabel.text = username;
-    self.avatarView.username = username;
+- (void)updateWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    self.titleLabel.text = blockchainIdentity.currentDashpayUsername;
+    self.avatarView.blockchainIdentity = blockchainIdentity;
 
     [self setScrollingPercent:0.0];
 }
