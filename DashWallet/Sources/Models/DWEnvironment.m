@@ -23,6 +23,7 @@ NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetw
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
 static NSString *const DWMobileDevnetIdentifier = @"devnet-mobile-2";
 static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
+static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 
 @implementation DWEnvironment
 
@@ -254,6 +255,69 @@ static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
     return [NSOrderedSet orderedSetWithArray:serviceLocations];
 }
 
+- (NSOrderedSet *)evoDevnetServiceLocation {
+    NSMutableArray *serviceLocations = [NSMutableArray array];
+    [serviceLocations addObject:@"54.188.72.112"];
+    [serviceLocations addObject:@"18.236.235.220"];
+    [serviceLocations addObject:@"54.190.1.129"];
+    [serviceLocations addObject:@"52.88.52.65"];
+    [serviceLocations addObject:@"54.189.121.60"];
+    [serviceLocations addObject:@"34.219.43.9"];
+    [serviceLocations addObject:@"54.69.71.240"];
+    [serviceLocations addObject:@"34.219.79.193"];
+    [serviceLocations addObject:@"54.184.89.215"];
+    [serviceLocations addObject:@"54.189.73.226"];
+    [serviceLocations addObject:@"52.88.13.87"];
+    [serviceLocations addObject:@"34.220.159.57"];
+    [serviceLocations addObject:@"34.220.38.59"];
+    [serviceLocations addObject:@"34.221.226.198"];
+    [serviceLocations addObject:@"54.190.26.250"];
+    [serviceLocations addObject:@"54.202.214.68"];
+    [serviceLocations addObject:@"34.222.91.196"];
+    [serviceLocations addObject:@"54.149.99.26"];
+    [serviceLocations addObject:@"54.186.22.30"];
+    [serviceLocations addObject:@"54.190.136.191"];
+    [serviceLocations addObject:@"34.221.185.231"];
+    [serviceLocations addObject:@"52.33.251.111"];
+    [serviceLocations addObject:@"35.167.226.182"];
+    [serviceLocations addObject:@"54.184.71.154"];
+    [serviceLocations addObject:@"35.164.4.147"];
+    [serviceLocations addObject:@"54.186.133.94"];
+    [serviceLocations addObject:@"54.203.2.102"];
+    [serviceLocations addObject:@"34.216.133.190"];
+    [serviceLocations addObject:@"54.212.206.131"];
+    [serviceLocations addObject:@"34.221.5.65"];
+    [serviceLocations addObject:@"54.244.159.60"];
+    [serviceLocations addObject:@"52.25.73.91"];
+    [serviceLocations addObject:@"54.186.129.244"];
+    [serviceLocations addObject:@"52.32.251.203"];
+    [serviceLocations addObject:@"34.212.169.216"];
+    [serviceLocations addObject:@"211.30.243.82"];
+    [serviceLocations addObject:@"18.237.194.30"];
+    [serviceLocations addObject:@"54.244.203.43"];
+    [serviceLocations addObject:@"54.200.73.105"];
+    [serviceLocations addObject:@"54.149.181.16"];
+    [serviceLocations addObject:@"54.187.128.127"];
+    [serviceLocations addObject:@"54.186.145.12"];
+    [serviceLocations addObject:@"18.237.255.133"];
+    [serviceLocations addObject:@"18.236.73.143"];
+    [serviceLocations addObject:@"54.245.217.116"];
+    [serviceLocations addObject:@"34.214.12.133"];
+    [serviceLocations addObject:@"54.185.186.111"];
+    [serviceLocations addObject:@"52.88.38.138"];
+    [serviceLocations addObject:@"18.236.139.199"];
+    [serviceLocations addObject:@"34.223.226.20"];
+    [serviceLocations addObject:@"35.167.241.7"];
+    //shuffle them
+    NSUInteger count = [serviceLocations count];
+    for (NSUInteger i = 0; i < count - 1; ++i) {
+        NSInteger remainingCount = count - i;
+        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
+        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
+    }
+    return [NSOrderedSet orderedSetWithArray:serviceLocations];
+}
+
 - (NSString *)currentDevnetIdentifier {
     return DWPalinkaDevnetIdentifier;
 }
@@ -292,6 +356,22 @@ static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
                        minProtocolVersion:70218
                              sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
                           sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
+}
+
+- (DSChain *)evoDevnetChain {
+    return [[DSChainsManager sharedInstance]
+        registerDevnetChainWithIdentifier:DWEvoDevnetIdentifier
+                      forServiceLocations:[self evoDevnetServiceLocation]
+              withMinimumDifficultyBlocks:UINT32_MAX
+                             standardPort:20001
+                             dapiJRPCPort:3000
+                             dapiGRPCPort:3010
+                           dpnsContractID:@"3VvS19qomuGSbEYWbTsRzeuRgawU3yK4fPMzLrbV62u8".base58ToData.UInt256
+                        dashpayContractID:@"FrXpVEsxFZ9hgCpiXwWbsQe4xHB9wZHGj4Lg5UjgxtHb".base58ToData.UInt256
+                          protocolVersion:70218
+                       minProtocolVersion:70218
+                             sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
+                          sporkPrivateKey:nil];
 }
 
 @end
