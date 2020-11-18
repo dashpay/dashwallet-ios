@@ -116,7 +116,7 @@ NS_ASSUME_NONNULL_END
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
 
-    NSURL *url = [NSURL URLWithString:blockchainIdentity.matchingDashpayUserInViewContext.avatarPath];
+    NSURL *url = [NSURL URLWithString:blockchainIdentity.avatarPath];
     [self.avatarImageView sd_setImageWithURL:url placeholderImage:[UIImage imageNamed:@"dp_current_user_placeholder"]];
 
     [self reloadAttributedData];

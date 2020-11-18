@@ -166,41 +166,41 @@ NS_ASSUME_NONNULL_END
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
     self.request = [manager
-        searchIdentitiesByNamePrefix:query
-                            inDomain:@"dash"
-                              offset:offset
-                               limit:LIMIT
-                      withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *errors) {
-                          __strong typeof(weakSelf) strongSelf = weakSelf;
-                          if (!strongSelf) {
-                              return;
-                          }
+        searchIdentitiesByDashpayUsernamePrefix:query
+                                         offset:offset
+                                          limit:LIMIT
+                        queryDashpayProfileInfo:YES
+                                 withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                                     __strong typeof(weakSelf) strongSelf = weakSelf;
+                                     if (!strongSelf) {
+                                         return;
+                                     }
 
-                          NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+                                     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-                          // search query was changed before results arrive, ignore results
-                          if (!strongSelf.searchRequest || ![strongSelf.searchRequest.trimmedQuery isEqualToString:query]) {
-                              return;
-                          }
+                                     // search query was changed before results arrive, ignore results
+                                     if (!strongSelf.searchRequest || ![strongSelf.searchRequest.trimmedQuery isEqualToString:query]) {
+                                         return;
+                                     }
 
-                          strongSelf.searchRequest.requestInProgress = NO;
+                                     strongSelf.searchRequest.requestInProgress = NO;
 
-                          if (success) {
-                              NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
-                              for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                                  id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
-                                  [items addObject:item];
-                              }
+                                     if (success) {
+                                         NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                                         for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
+                                             id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
+                                             [items addObject:item];
+                                         }
 
-                              strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
-                              strongSelf.searchRequest.items = items;
-                              [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
-                          }
-                          else {
-                              strongSelf.searchRequest.hasNextPage = NO;
-                              [strongSelf.delegate userSearchModel:strongSelf completedWithError:errors.firstObject];
-                          }
-                      }];
+                                         strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
+                                         strongSelf.searchRequest.items = items;
+                                         [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
+                                     }
+                                     else {
+                                         strongSelf.searchRequest.hasNextPage = NO;
+                                         [strongSelf.delegate userSearchModel:strongSelf completedWithError:errors.firstObject];
+                                     }
+                                 }];
 }
 
 @end

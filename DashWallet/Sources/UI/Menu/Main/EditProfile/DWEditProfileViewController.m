@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)avatarURLString {
-    return self.unsavedAvatarURL ?: self.blockchainIdentity.matchingDashpayUserInViewContext.avatarPath;
+    return self.unsavedAvatarURL ?: self.blockchainIdentity.avatarPath;
 }
 
 - (BOOL)isValid {
