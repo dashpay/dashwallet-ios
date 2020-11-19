@@ -21,6 +21,7 @@
 
 #import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
+#import "DWAvatarGravatarViewController.h"
 #import "DWAvatarPublicURLViewController.h"
 #import "DWCropAvatarViewController.h"
 #import "DWEditProfileAvatarView.h"
@@ -331,7 +332,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)showGravatarSource {
-    //
+    DWAvatarGravatarViewController *controller = [[DWAvatarGravatarViewController alloc] init];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)showImagePickerWithType:(UIImagePickerControllerSourceType)sourceType {

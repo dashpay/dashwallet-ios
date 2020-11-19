@@ -53,8 +53,10 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)performLoad:(NSURL *)url {
+- (void)performLoad:(NSString *)urlString {
     [self showLoadingView];
+
+    NSURL *url = [NSURL URLWithString:urlString];
 
     __weak typeof(self) weakSelf = self;
     self.token = [[SDWebImageDownloader sharedDownloader]
@@ -76,7 +78,7 @@ NS_ASSUME_NONNULL_END
                    }];
 }
 
-- (void)cancelButton {
+- (void)cancelLoading {
     [self.token cancel];
     self.token = nil;
 

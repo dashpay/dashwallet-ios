@@ -341,6 +341,9 @@
 "Enter your 2FA code below" = "Digite abaixo seu código de autenticação de dois fatores \"2FA\"";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "Error";
 
 /* No comment provided by engineer. */
@@ -666,6 +669,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN é sempre necessário para realizar um pagamento";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
 
 /* No comment provided by engineer. */
 "Please enter a valid image URL." = "Please enter a valid image URL.";
@@ -1058,6 +1064,9 @@
 "Unable to fetch image. Please enter a valid image URL." = "Unable to fetch image. Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Não foi possível obter um novo código QR";
 
 /* No comment provided by engineer. */
@@ -1221,6 +1230,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+
+/* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Sua transação foi enviada e o valor aparecerá na sua carteira em alguns minutos. ";

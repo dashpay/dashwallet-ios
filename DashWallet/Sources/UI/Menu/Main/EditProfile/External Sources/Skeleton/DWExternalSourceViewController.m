@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_END
     return config;
 }
 
-- (void)performLoad:(NSURL *)url {
+- (void)performLoad:(NSString *)url {
 }
 
 - (void)cancelButton {
@@ -81,6 +81,9 @@ NS_ASSUME_NONNULL_END
 - (void)showLoadingView {
     self.loadingView.hidden = NO;
     self.sourceView.hidden = YES;
+}
+
+- (void)cancelLoading {
 }
 
 - (void)viewDidLoad {
@@ -167,11 +170,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)avatarExternalSourceViewOKAction:(DWAvatarExternalSourceView *)view {
     if ([self isInputValid:view.input]) {
-        // assume isInputValid checks URL is valid
-        NSURL *url = [NSURL URLWithString:view.input];
-        NSParameterAssert(url);
         [self.view endEditing:YES];
-        [self performLoad:url];
+        [self performLoad:view.input];
     }
 }
 
@@ -182,6 +182,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWAvatarExternalLoadingViewDelegate
 
 - (void)avatarExternalLoadingViewCancelAction:(DWAvatarExternalLoadingView *)view {
+    [self cancelLoading];
 }
 
 @end

@@ -80,6 +80,7 @@ NS_ASSUME_NONNULL_END
         textField.layer.borderWidth = 1.0;
         textField.textAlignment = NSTextAlignmentCenter;
         textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         [self addSubview:textField];
         _textField = textField;
 

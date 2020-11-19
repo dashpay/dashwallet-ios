@@ -369,6 +369,7 @@
 		2AC1EDEC2565C49700410917 /* DWExternalSourceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EDEB2565C49700410917 /* DWExternalSourceViewController.m */; };
 		2AC1EE082565C8A800410917 /* DWAvatarPublicURLViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EE072565C8A800410917 /* DWAvatarPublicURLViewController.m */; };
 		2AC1EE17256671C200410917 /* DWAvatarExternalLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EE16256671C100410917 /* DWAvatarExternalLoadingView.m */; };
+		2AC1EE202566C37900410917 /* DWAvatarGravatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EE1F2566C37900410917 /* DWAvatarGravatarViewController.m */; };
 		2AC52AD6241BB5FC00D9A829 /* DWDashPaySetupFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC52AD5241BB5FC00D9A829 /* DWDashPaySetupFlowController.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
@@ -1362,6 +1363,8 @@
 		2AC1EE072565C8A800410917 /* DWAvatarPublicURLViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarPublicURLViewController.m; sourceTree = "<group>"; };
 		2AC1EE15256671C100410917 /* DWAvatarExternalLoadingView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalLoadingView.h; sourceTree = "<group>"; };
 		2AC1EE16256671C100410917 /* DWAvatarExternalLoadingView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalLoadingView.m; sourceTree = "<group>"; };
+		2AC1EE1E2566C37900410917 /* DWAvatarGravatarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarGravatarViewController.h; sourceTree = "<group>"; };
+		2AC1EE1F2566C37900410917 /* DWAvatarGravatarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarGravatarViewController.m; sourceTree = "<group>"; };
 		2AC52AD4241BB5FC00D9A829 /* DWDashPaySetupFlowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupFlowController.h; sourceTree = "<group>"; };
 		2AC52AD5241BB5FC00D9A829 /* DWDashPaySetupFlowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupFlowController.m; sourceTree = "<group>"; };
 		2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewController.h; sourceTree = "<group>"; };
@@ -3646,6 +3649,8 @@
 				2AC1EE052565C88B00410917 /* Skeleton */,
 				2AC1EE062565C8A800410917 /* DWAvatarPublicURLViewController.h */,
 				2AC1EE072565C8A800410917 /* DWAvatarPublicURLViewController.m */,
+				2AC1EE1E2566C37900410917 /* DWAvatarGravatarViewController.h */,
+				2AC1EE1F2566C37900410917 /* DWAvatarGravatarViewController.m */,
 			);
 			path = "External Sources";
 			sourceTree = "<group>";
@@ -5306,6 +5311,7 @@
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
+				2AC1EE202566C37900410917 /* DWAvatarGravatarViewController.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,

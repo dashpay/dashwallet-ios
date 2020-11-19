@@ -38,12 +38,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWAvatarExternalSourceConfig *)config;
 
-- (void)performLoad:(NSURL *)url;
+- (void)performLoad:(NSString *)urlString;
 - (BOOL)isInputValid:(NSString *)input;
 
 - (void)showError:(NSString *)error;
 - (void)showDefaultSubtitle;
 - (void)showLoadingView;
+- (void)cancelLoading;
 
 @end
 
