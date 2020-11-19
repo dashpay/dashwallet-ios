@@ -20,7 +20,11 @@
 @implementation DWSecrets
 
 + (NSString *)iCloudAPIKey {
-    return @"";
+#if DEBUG
+    return @"0f3e9bfdc516b5bc912241c02203005c10d4aeebb6a238c6cd452e90522ff81a";
+#else
+    return @"8948fbbfdb3df2d1080bcf96163716d6721a2f7b55176b47693ae5ed09749052";
+#endif
 }
 
 @end
