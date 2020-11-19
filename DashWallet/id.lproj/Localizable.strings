@@ -368,6 +368,9 @@
 "Fee will be deducted from requested amount." = "Biaya akan dipotong dari jumlah yang diminta.";
 
 /* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Saring Transaksi";
 
 /* No comment provided by engineer. */
@@ -626,6 +629,9 @@
 "Owner Keys" = "Kunci Pemilik";
 
 /* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
+
+/* No comment provided by engineer. */
 "Pay" = "Bayar";
 
 /* No comment provided by engineer. */
@@ -660,6 +666,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN selalu diperlukan untuk melakukan pembayaran";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Silakan masukkan PIN untuk meningkatkan dompet";
@@ -702,6 +711,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Kunci publik";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Terima Cepat";
@@ -1043,6 +1055,9 @@
 "Unable to connect" = "Tidak dapat terhubung";
 
 /* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL." = "Unable to fetch image. Please enter a valid image URL.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Tidak dapat mendapat kode QR baru";
 
 /* No comment provided by engineer. */
@@ -1182,6 +1197,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Anda dapat mengautentikasi dengan Touch ID untuk pembayaran di bawah ini";
+
+/* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";

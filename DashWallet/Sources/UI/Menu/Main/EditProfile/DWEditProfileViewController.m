@@ -21,6 +21,7 @@
 
 #import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
+#import "DWAvatarPublicURLViewController.h"
 #import "DWCropAvatarViewController.h"
 #import "DWEditProfileAvatarView.h"
 #import "DWEditProfileTextFieldCell.h"
@@ -34,7 +35,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate, DWAvatarEditSelectorViewControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, DWCropAvatarViewControllerDelegate>
+@interface DWEditProfileViewController () <DWEditProfileAvatarViewDelegate, DWEditProfileTextFieldCellDelegate, DWAvatarEditSelectorViewControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, DWCropAvatarViewControllerDelegate, DWExternalSourceViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWEditProfileAvatarView *headerView;
 
@@ -225,6 +226,20 @@ NS_ASSUME_NONNULL_END
                                    }];
 }
 
+- (void)avatarEditSelectorViewController:(DWAvatarEditSelectorViewController *)controller gravatarButtonAction:(UIButton *)sender {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self showGravatarSource];
+                                   }];
+}
+
+- (void)avatarEditSelectorViewController:(DWAvatarEditSelectorViewController *)controller urlButtonAction:(UIButton *)sender {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self showPublicURLSource];
+                                   }];
+}
+
 #pragma mark - UIImagePickerControllerDelegate
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id> *)info {
@@ -235,7 +250,7 @@ NS_ASSUME_NONNULL_END
                                        return;
                                    }
 
-                                   DWCropAvatarViewController *cropController = [[DWCropAvatarViewController alloc] initWithImage:image];
+                                   DWCropAvatarViewController *cropController = [[DWCropAvatarViewController alloc] initWithImage:image imageURL:nil];
                                    cropController.delegate = self;
                                    cropController.modalPresentationStyle = UIModalPresentationFullScreen;
                                    [self presentViewController:cropController animated:YES completion:nil];
@@ -288,7 +303,36 @@ NS_ASSUME_NONNULL_END
     }
 }
 
+#pragma mark - DWExternalSourceViewControllerDelegate
+
+- (void)externalSourceViewController:(DWExternalSourceViewController *)controller didLoadImage:(UIImage *)image url:(NSURL *)url shouldCrop:(BOOL)shouldCrop {
+    if (!shouldCrop) {
+        self.headerView.image = image;
+        self.unsavedAvatarURL = url.absoluteString;
+        [controller dismissViewControllerAnimated:YES completion:nil];
+    }
+    else {
+        [controller dismissViewControllerAnimated:YES
+                                       completion:^{
+                                           DWCropAvatarViewController *cropController = [[DWCropAvatarViewController alloc] initWithImage:image imageURL:url];
+                                           cropController.delegate = self;
+                                           cropController.modalPresentationStyle = UIModalPresentationFullScreen;
+                                           [self presentViewController:cropController animated:YES completion:nil];
+                                       }];
+    }
+}
+
 #pragma mark - Private
+
+- (void)showPublicURLSource {
+    DWAvatarPublicURLViewController *controller = [[DWAvatarPublicURLViewController alloc] init];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)showGravatarSource {
+    //
+}
 
 - (void)showImagePickerWithType:(UIImagePickerControllerSourceType)sourceType {
     if (![UIImagePickerController isSourceTypeAvailable:sourceType]) {

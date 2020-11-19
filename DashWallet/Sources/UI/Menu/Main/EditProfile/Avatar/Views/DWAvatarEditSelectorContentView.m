@@ -39,6 +39,16 @@ NS_ASSUME_NONNULL_END
         self.layer.cornerRadius = 8.0;
         self.layer.masksToBounds = YES;
 
+        UIButton *gravatarButton = [self.class button];
+        [gravatarButton setImage:[UIImage imageNamed:@"dp_avatar_gravatar"] forState:UIControlStateNormal];
+        [gravatarButton setTitle:@"Gravatar" forState:UIControlStateNormal];
+        [gravatarButton addTarget:self action:@selector(gravatarButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+
+        UIButton *urlButton = [self.class button];
+        [urlButton setImage:[UIImage imageNamed:@"dp_avatar_url"] forState:UIControlStateNormal];
+        [urlButton setTitle:NSLocalizedString(@"Public URL", nil) forState:UIControlStateNormal];
+        [urlButton addTarget:self action:@selector(urlButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+
         UIButton *photoButton = [self.class button];
         [photoButton setImage:[UIImage imageNamed:@"dp_avatar_photo"] forState:UIControlStateNormal];
         [photoButton setTitle:NSLocalizedString(@"Take a Photo from Camera", nil) forState:UIControlStateNormal];
@@ -49,11 +59,11 @@ NS_ASSUME_NONNULL_END
         [galleryButton setTitle:NSLocalizedString(@"Select from Gallery", nil) forState:UIControlStateNormal];
         [galleryButton addTarget:self action:@selector(galleryButtonAction:) forControlEvents:UIControlEventTouchUpInside];
 
-        UIView *separator = [[UIView alloc] init];
-        separator.translatesAutoresizingMaskIntoConstraints = NO;
-        separator.backgroundColor = [UIColor dw_separatorLineColor];
+        UIView *separator1 = [[UIView alloc] init];
+        separator1.translatesAutoresizingMaskIntoConstraints = NO;
+        separator1.backgroundColor = [UIColor dw_separatorLineColor];
 
-        UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ photoButton, separator, galleryButton ]];
+        UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ gravatarButton, separator1, urlButton ]];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
         [self addSubview:stackView];
@@ -67,9 +77,12 @@ NS_ASSUME_NONNULL_END
                                                 constant:padding],
             [self.bottomAnchor constraintEqualToAnchor:stackView.bottomAnchor],
 
-            [photoButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
-            [galleryButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
-            [separator.heightAnchor constraintEqualToConstant:1],
+            //            [photoButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
+            //            [galleryButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
+            [gravatarButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
+            [urlButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
+
+            [separator1.heightAnchor constraintEqualToConstant:1],
         ]];
     }
     return self;
@@ -81,6 +94,14 @@ NS_ASSUME_NONNULL_END
 
 - (void)galleryButtonAction:(UIButton *)sender {
     [self.delegate avatarEditSelectorContentView:self galleryButtonAction:sender];
+}
+
+- (void)gravatarButtonAction:(UIButton *)sender {
+    [self.delegate avatarEditSelectorContentView:self gravatarButtonAction:sender];
+}
+
+- (void)urlButtonAction:(UIButton *)sender {
+    [self.delegate avatarEditSelectorContentView:self publicURLButtonAction:sender];
 }
 
 + (UIButton *)button {

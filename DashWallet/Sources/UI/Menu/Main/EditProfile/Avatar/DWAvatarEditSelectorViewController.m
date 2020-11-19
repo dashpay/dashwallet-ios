@@ -87,4 +87,13 @@ NS_ASSUME_NONNULL_END
 - (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view galleryButtonAction:(UIButton *)sender {
     [self.delegate avatarEditSelectorViewController:self galleryButtonAction:sender];
 }
+
+- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view publicURLButtonAction:(UIButton *)sender {
+    [self.delegate avatarEditSelectorViewController:self urlButtonAction:sender];
+}
+
+- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view gravatarButtonAction:(UIButton *)sender {
+    [self.delegate avatarEditSelectorViewController:self gravatarButtonAction:sender];
+}
+
 @end
