@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_END
 
 
 - (BOOL)isInputValid:(NSString *)input {
-    BOOL valid = [self validateEmailWithString:input];
+    BOOL valid = input.length > 0 && [self validateEmailWithString:input];
     if (valid) {
         return YES;
     }
