@@ -440,6 +440,9 @@
 "Ignore" = "Ignorovat";
 
 /* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+
+/* No comment provided by engineer. */
 "Immediately" = "Okamžitě";
 
 /* Translate it as short as possible! (24 symbols max) */

@@ -47,8 +47,14 @@ NS_ASSUME_NONNULL_END
 
         self.transitioningDelegate = self.modalTransition;
         self.modalPresentationStyle = UIModalPresentationCustom;
+
+        self.sourceView = [[DWAvatarExternalSourceView alloc] init];
     }
     return self;
+}
+
+- (void)setCurrentInput:(NSString *)input {
+    self.sourceView.input = input;
 }
 
 - (DWAvatarExternalSourceConfig *)config {
@@ -99,12 +105,10 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:contentView];
     self.contentView = contentView;
 
-    DWAvatarExternalSourceView *sourceView = [[DWAvatarExternalSourceView alloc] init];
-    sourceView.translatesAutoresizingMaskIntoConstraints = NO;
-    sourceView.config = self.config;
-    sourceView.delegate = self;
-    [contentView addSubview:sourceView];
-    self.sourceView = sourceView;
+    self.sourceView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.sourceView.config = self.config;
+    self.sourceView.delegate = self;
+    [contentView addSubview:self.sourceView];
 
     DWAvatarExternalLoadingView *loadingView = [[DWAvatarExternalLoadingView alloc] init];
     loadingView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -119,11 +123,11 @@ NS_ASSUME_NONNULL_END
         [contentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
         self.centerYConstraint,
 
-        [sourceView.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                             constant:32.0],
-        [sourceView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
-        [sourceView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-        [contentView.bottomAnchor constraintEqualToAnchor:sourceView.bottomAnchor
+        [self.sourceView.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                                  constant:32.0],
+        [self.sourceView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+        [self.sourceView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+        [contentView.bottomAnchor constraintEqualToAnchor:self.sourceView.bottomAnchor
                                                  constant:32.0],
 
         [loadingView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],

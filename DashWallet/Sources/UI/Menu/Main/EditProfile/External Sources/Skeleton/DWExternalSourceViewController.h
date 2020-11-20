@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWExternalSourceViewControllerDelegate> delegate;
 
+- (void)setCurrentInput:(NSString *)input;
+
 - (DWAvatarExternalSourceConfig *)config;
 
 - (void)performLoad:(NSString *)urlString;

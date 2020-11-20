@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAvatarExternalSourceView : UIView
 
-@property (nullable, nonatomic, readonly) NSString *input;
+@property (nullable, nonatomic, copy) NSString *input;
 
 @property (nullable, nonatomic, strong) DWAvatarExternalSourceConfig *config;
 

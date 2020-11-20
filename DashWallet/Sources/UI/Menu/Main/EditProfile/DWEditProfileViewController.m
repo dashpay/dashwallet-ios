@@ -328,6 +328,7 @@ NS_ASSUME_NONNULL_END
 - (void)showPublicURLSource {
     DWAvatarPublicURLViewController *controller = [[DWAvatarPublicURLViewController alloc] init];
     controller.delegate = self;
+    [controller setCurrentInput:[self avatarURLString]];
     [self presentViewController:controller animated:YES completion:nil];
 }
 

@@ -179,6 +179,10 @@ NS_ASSUME_NONNULL_END
     return self.textField.text;
 }
 
+- (void)setInput:(NSString *)input {
+    self.textField.text = input;
+}
+
 - (void)setConfig:(DWAvatarExternalSourceConfig *)config {
     _config = config;
 
