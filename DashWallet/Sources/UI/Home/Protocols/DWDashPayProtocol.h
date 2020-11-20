@@ -17,18 +17,22 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWCurrentUserProfileModel.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 
 @class DWDPRegistrationStatus;
 @class DSBlockchainIdentity;
+@class DWCurrentUserProfileModel;
 
 @protocol DWDashPayProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, copy) NSString *username;
 @property (nullable, readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 @property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
+@property (readonly, nonatomic, strong) DWCurrentUserProfileModel *userProfile;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
 @property (readonly, nonatomic, assign) BOOL registrationCompleted;
 @property (readonly, nonatomic, assign) NSUInteger unreadNotificationsCount;

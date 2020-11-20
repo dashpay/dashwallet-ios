@@ -2076,6 +2076,8 @@
 				2A913EA123A799D9006A2A59 /* Transactions */,
 				2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */,
 				2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */,
+				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
+				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
 				2A4E533622F023AB00E5168A /* DWHomeModel.h */,
 				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
 				2A4E534E22F19BE300E5168A /* DWSyncModel.h */,
@@ -2498,8 +2500,6 @@
 			children = (
 				2ADF54C2251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.h */,
 				2ADF54C3251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.m */,
-				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
-				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
 				2A5F100D255C77F1001A94B1 /* DWDPUpdateProfileModel.h */,
 				2A5F100E255C77F1001A94B1 /* DWDPUpdateProfileModel.m */,
 			);

@@ -18,6 +18,7 @@
 #import "DWHomeHeaderView.h"
 
 #import "DWBalanceView.h"
+#import "DWCurrentUserProfileModel.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDashPayProfileView.h"
 #import "DWShortcutAction.h"
@@ -115,6 +116,11 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                           [self updateProfileView];
                       }];
 
+        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.userProfile.state)
+                      with:^(typeof(self) self, id value) {
+                          [self updateProfileView];
+                      }];
+
         [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.unreadNotificationsCount)
                       with:^(typeof(self) self, id value) {
                           self.profileView.unreadCount = self.model.dashPayModel.unreadNotificationsCount;
@@ -129,6 +135,14 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
     self.balanceView.model = model;
     self.shortcutsView.model = model.shortcutsModel;
     [self updateProfileView];
+}
+
+- (void)didMoveToWindow {
+    [super didMoveToWindow];
+
+    if (self.window) {
+        [self.model.dashPayModel.userProfile update];
+    }
 }
 
 - (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
