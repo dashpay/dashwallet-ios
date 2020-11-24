@@ -29,7 +29,7 @@ static NSString *TitleForAction(DWShortcutAction *action) {
             return NSLocalizedString(@"Secure Wallet Now",
                                      @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_ScanToPay:
-            return NSLocalizedString(@"Scan to Pay",
+            return NSLocalizedString(@"Scan to Send",
                                      @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_PayToAddress:
             return NSLocalizedString(@"Send to Address",
@@ -62,6 +62,9 @@ static NSString *TitleForAction(DWShortcutAction *action) {
             return NSLocalizedString(@"Join Evolution", nil);
         case DWShortcutActionType_Receive:
             return NSLocalizedString(@"Receive", nil);
+        case DWShortcutActionType_SendToContact:
+            return NSLocalizedString(@"Send to Contact",
+                                     @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_AddShortcut:
             return NSLocalizedString(@"Add Shortcut",
                                      @"Translate it as short as possible! (24 symbols max)");
@@ -84,7 +87,8 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
             NSCParameterAssert(image);
             return image;
         }
-        case DWShortcutActionType_PayToAddress: {
+        case DWShortcutActionType_PayToAddress:
+        case DWShortcutActionType_SendToContact: {
             UIImage *image = [UIImage imageNamed:@"shortcut_payToAddress"];
             NSCParameterAssert(image);
             return image;

@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 @property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
+@property (nonatomic, strong) DWCurrentUserProfileModel *userProfileModel;
 
 @end
 
@@ -49,11 +50,13 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic view;
 
 - (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions
-                                 receiveModel:(id<DWReceiveModelProtocol>)receiveModel {
+                                 receiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                             userProfileModel:(DWCurrentUserProfileModel *)userProfileModel {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
         _receiveModel = receiveModel;
+        _userProfileModel = userProfileModel;
 
         self.title = NSLocalizedString(@"More", nil);
     }
@@ -71,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.view.model = [[DWMainMenuModel alloc] init];
-    self.view.userModel = [[DWCurrentUserProfileModel alloc] init];
+    self.view.userModel = self.userProfileModel;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

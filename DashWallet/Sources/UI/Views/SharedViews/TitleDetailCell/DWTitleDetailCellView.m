@@ -96,14 +96,16 @@ static CGFloat const SMALL_PADDING = 12.0;
     [self addSubview:stackView];
     _stackView = stackView;
 
+    NSLayoutConstraint *titleWidth = [titleLabel.widthAnchor constraintEqualToAnchor:detailLabel.widthAnchor multiplier:0.5];
+    titleWidth.priority = UILayoutPriorityRequired - 1;
+
     [NSLayoutConstraint activateConstraints:@[
         [stackView.topAnchor constraintEqualToAnchor:self.topAnchor],
         [stackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         [stackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
-        [titleLabel.widthAnchor constraintGreaterThanOrEqualToAnchor:self.widthAnchor
-                                                          multiplier:0.35],
+        titleWidth,
     ]];
 }
 

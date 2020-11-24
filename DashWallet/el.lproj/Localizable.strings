@@ -341,6 +341,9 @@
 "Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "Error";
 
 /* No comment provided by engineer. */
@@ -366,6 +369,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Το τέλος θα αφαιρεθεί από το ποσό που ζητήσατε.";
+
+/* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Φίλτρο Συναλλαγών";
@@ -432,6 +438,9 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Παράβλεψη";
+
+/* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
 
 /* No comment provided by engineer. */
 "Immediately" = "Άμεσα";
@@ -626,6 +635,9 @@
 "Owner Keys" = "Κλειδιά Κατόχου";
 
 /* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
+
+/* No comment provided by engineer. */
 "Pay" = "πληρώστε";
 
 /* No comment provided by engineer. */
@@ -660,6 +672,12 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Παρακαλώ εισάγετε το PIN για να αναβαθμίσετε το πορτοφόλι";
@@ -702,6 +720,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Δημόσιο κλειδί";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Γρήγορη Λήψη";
@@ -802,9 +823,6 @@
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Σαρώστε το για να πληρώσετε";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Σαρώστε για να πληρώσετε";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "Σαρώστε για να Στείλετε";
 
@@ -873,6 +891,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Αποστολή στη διεύθυνση";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "Αποστολή στη αντιγραμμένη διεύθυνση";
@@ -1043,6 +1064,12 @@
 "Unable to connect" = "Δεν είναι δυνατή η σύνδεση";
 
 /* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL." = "Unable to fetch image. Please enter a valid image URL.";
+
+/* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Δεν είναι δυνατή η λήψη νέου QR κωδικού";
 
 /* No comment provided by engineer. */
@@ -1184,6 +1211,9 @@
 "You can authenticate with Touch ID for payments below" = "Μπορείτε να επαληθεύσετε το Touch ID για πληρωμές παρακάτω";
 
 /* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+
+/* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";
 
 /* No comment provided by engineer. */
@@ -1203,6 +1233,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+
+/* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";

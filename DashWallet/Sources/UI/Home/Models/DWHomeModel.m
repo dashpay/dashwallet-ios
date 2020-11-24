@@ -389,6 +389,7 @@ static BOOL IsJailbroken(void) {
     [self reloadTxDataSource];
 
     [self.payModel updatePaymentOptions];
+    [self.shortcutsModel reloadShortcuts];
 
     [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
 }

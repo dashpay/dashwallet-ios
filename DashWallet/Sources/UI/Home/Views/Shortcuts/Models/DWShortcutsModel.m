@@ -17,6 +17,7 @@
 
 #import "DWShortcutsModel.h"
 
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWShortcutAction.h"
 #import "DevicesCompatibility.h"
@@ -83,22 +84,33 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_CreateUsername]];
     }
 
+    const BOOL hasUserName = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity != nil;
     const BOOL walletNeedsBackup = options.walletNeedsBackup;
     if (walletNeedsBackup) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SecureWallet]];
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
         if (!IS_IPHONE_5_OR_LESS) {
-            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+            if (hasUserName) {
+                [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SendToContact]];
+            }
+            else {
+                [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+            }
         }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
     }
     else {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
-        if (!IS_IPHONE_5_OR_LESS) {
-            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+        if (hasUserName) {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SendToContact]];
         }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+        else {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+        }
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+        if (!IS_IPHONE_5_OR_LESS) {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+        }
     }
 
     return mutableItems;

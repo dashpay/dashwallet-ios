@@ -33,7 +33,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPayViewController () <UITableViewDataSource, UITableViewDelegate, DWUserPayTableViewCellDelegate, DWContactsViewControllerPayDelegate>
+@interface DWPayViewController () <UITableViewDataSource, UITableViewDelegate, DWUserPayTableViewCellDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
@@ -133,10 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWPayOptionModelType_DashPayUser: {
-            DWContactsViewController *contactsController = [[DWContactsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
-            contactsController.intent = DWContactsControllerIntent_PayToSelector;
-            contactsController.payDelegate = self;
-            [self.navigationController pushViewController:contactsController animated:YES];
+            [self performPayToDashPayUser];
 
             break;
         }
@@ -146,12 +143,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWUserPayTableViewCellDelegate
 
 - (void)userPayTableViewCell:(DWUserPayTableViewCell *)cell didSelectUserItem:(id<DWDPBasicUserItem>)item {
-    [self performPayToUser:item];
-}
-
-#pragma mark - DWContactsViewControllerPayDelegate
-
-- (void)contactsViewController:(DWContactsViewController *)controller payToItem:(id<DWDPBasicUserItem>)item {
     [self performPayToUser:item];
 }
 

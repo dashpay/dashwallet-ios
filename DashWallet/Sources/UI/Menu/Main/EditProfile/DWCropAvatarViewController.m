@@ -55,15 +55,19 @@ static CGFloat const PADDING = 38.0;
 @property (null_resettable, nonatomic, strong) UIButton *cancelButton;
 @property (null_resettable, nonatomic, strong) UIStackView *buttonsStackView;
 
+@property (nullable, nonatomic, strong) NSURL *imageURL;
+
 @end
 
 NS_ASSUME_NONNULL_END
 
 @implementation DWCropAvatarViewController
 
-- (instancetype)initWithImage:(UIImage *)image {
+- (instancetype)initWithImage:(UIImage *)image imageURL:(NSURL *)imageURL {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _imageURL = imageURL;
+
         _cropController = [[DWTOCropViewController alloc] initWithCroppingStyle:TOCropViewCroppingStyleCircular
                                                                           image:image];
         _cropController.hidesNavigationBar = YES;
@@ -134,6 +138,28 @@ NS_ASSUME_NONNULL_END
     CGRect cropFrame = self.cropController.cropView.imageCropFrame;
     NSInteger angle = self.cropController.cropView.angle;
     UIImage *croppedImage = [self.cropController.image croppedImageWithFrame:cropFrame angle:angle circularClip:NO];
+
+    // external image
+    if (self.imageURL != nil) {
+        CGSize imageSize = self.cropController.image.size;
+
+        CGRect rectOfInterest = CGRectMake(cropFrame.origin.x / imageSize.width,
+                                           cropFrame.origin.y / imageSize.height,
+                                           cropFrame.size.width / imageSize.width,
+                                           cropFrame.size.height / imageSize.height);
+        // dashpay-profile-pic-zoom=left,top,right,bottom
+        NSString *parameter = [NSString stringWithFormat:@"?dashpay-profile-pic-zoom=%f,%f,%f,%f",
+                                                         rectOfInterest.origin.x,                               // left,
+                                                         rectOfInterest.origin.y,                               // top
+                                                         rectOfInterest.origin.x + rectOfInterest.size.width,   // right,
+                                                         rectOfInterest.origin.y + rectOfInterest.size.height]; // bottom
+
+        [self.delegate cropAvatarViewController:self
+                                   didCropImage:croppedImage
+                                      urlString:[self.imageURL.absoluteString stringByAppendingString:parameter]];
+
+        return;
+    }
 
     self.titleLabel.hidden = YES;
     self.buttonsStackView.hidden = YES;

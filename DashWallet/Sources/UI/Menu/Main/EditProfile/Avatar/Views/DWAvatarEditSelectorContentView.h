@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view photoButtonAction:(UIButton *)sender;
 - (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view galleryButtonAction:(UIButton *)sender;
+- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view publicURLButtonAction:(UIButton *)sender;
+- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view gravatarButtonAction:(UIButton *)sender;
 
 @end
 

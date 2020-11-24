@@ -28,8 +28,8 @@
     [result beginEditing];
     NSString *title = nil;
     NSString *subtitle = nil;
-    if (self.matchingDashpayUserInViewContext.displayName != nil) {
-        title = self.matchingDashpayUserInViewContext.displayName;
+    if (self.displayName != nil) {
+        title = self.displayName;
         subtitle = self.currentDashpayUsername;
     }
     else {

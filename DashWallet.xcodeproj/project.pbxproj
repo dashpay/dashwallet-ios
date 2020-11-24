@@ -364,6 +364,12 @@
 		2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */; };
 		2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */; };
 		2ABCA9182357A61B00092C09 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
+		2AC1EDD42565B92A00410917 /* DWAvatarExternalSourceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EDD32565B92A00410917 /* DWAvatarExternalSourceView.m */; };
+		2AC1EDE32565BB8500410917 /* DWAvatarExternalSourceConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EDE22565BB8500410917 /* DWAvatarExternalSourceConfig.m */; };
+		2AC1EDEC2565C49700410917 /* DWExternalSourceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EDEB2565C49700410917 /* DWExternalSourceViewController.m */; };
+		2AC1EE082565C8A800410917 /* DWAvatarPublicURLViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EE072565C8A800410917 /* DWAvatarPublicURLViewController.m */; };
+		2AC1EE17256671C200410917 /* DWAvatarExternalLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EE16256671C100410917 /* DWAvatarExternalLoadingView.m */; };
+		2AC1EE202566C37900410917 /* DWAvatarGravatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC1EE1F2566C37900410917 /* DWAvatarGravatarViewController.m */; };
 		2AC52AD6241BB5FC00D9A829 /* DWDashPaySetupFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC52AD5241BB5FC00D9A829 /* DWDashPaySetupFlowController.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
@@ -1347,6 +1353,18 @@
 		2AB8CDE2220DCA7D00A3D1DB /* DWNumberKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboard.h; sourceTree = "<group>"; };
 		2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberKeyboard.m; sourceTree = "<group>"; };
 		2ABCA9172357A61B00092C09 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		2AC1EDD22565B92A00410917 /* DWAvatarExternalSourceView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalSourceView.h; sourceTree = "<group>"; };
+		2AC1EDD32565B92A00410917 /* DWAvatarExternalSourceView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalSourceView.m; sourceTree = "<group>"; };
+		2AC1EDE12565BB8500410917 /* DWAvatarExternalSourceConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalSourceConfig.h; sourceTree = "<group>"; };
+		2AC1EDE22565BB8500410917 /* DWAvatarExternalSourceConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalSourceConfig.m; sourceTree = "<group>"; };
+		2AC1EDEA2565C49700410917 /* DWExternalSourceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExternalSourceViewController.h; sourceTree = "<group>"; };
+		2AC1EDEB2565C49700410917 /* DWExternalSourceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExternalSourceViewController.m; sourceTree = "<group>"; };
+		2AC1EE062565C8A800410917 /* DWAvatarPublicURLViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarPublicURLViewController.h; sourceTree = "<group>"; };
+		2AC1EE072565C8A800410917 /* DWAvatarPublicURLViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarPublicURLViewController.m; sourceTree = "<group>"; };
+		2AC1EE15256671C100410917 /* DWAvatarExternalLoadingView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalLoadingView.h; sourceTree = "<group>"; };
+		2AC1EE16256671C100410917 /* DWAvatarExternalLoadingView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalLoadingView.m; sourceTree = "<group>"; };
+		2AC1EE1E2566C37900410917 /* DWAvatarGravatarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarGravatarViewController.h; sourceTree = "<group>"; };
+		2AC1EE1F2566C37900410917 /* DWAvatarGravatarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarGravatarViewController.m; sourceTree = "<group>"; };
 		2AC52AD4241BB5FC00D9A829 /* DWDashPaySetupFlowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupFlowController.h; sourceTree = "<group>"; };
 		2AC52AD5241BB5FC00D9A829 /* DWDashPaySetupFlowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupFlowController.m; sourceTree = "<group>"; };
 		2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewController.h; sourceTree = "<group>"; };
@@ -2058,6 +2076,8 @@
 				2A913EA123A799D9006A2A59 /* Transactions */,
 				2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */,
 				2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */,
+				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
+				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
 				2A4E533622F023AB00E5168A /* DWHomeModel.h */,
 				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
 				2A4E534E22F19BE300E5168A /* DWSyncModel.h */,
@@ -2480,8 +2500,6 @@
 			children = (
 				2ADF54C2251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.h */,
 				2ADF54C3251B6DA300C6EE3F /* DSBlockchainIdentity+DWDisplayTitleSubtitle.m */,
-				2ADDF98B251B4A9200DA8926 /* DWCurrentUserProfileModel.h */,
-				2ADDF98C251B4A9200DA8926 /* DWCurrentUserProfileModel.m */,
 				2A5F100D255C77F1001A94B1 /* DWDPUpdateProfileModel.h */,
 				2A5F100E255C77F1001A94B1 /* DWDPUpdateProfileModel.m */,
 			);
@@ -3625,6 +3643,41 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2AC1EDC12565B85800410917 /* External Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2AC1EE052565C88B00410917 /* Skeleton */,
+				2AC1EE062565C8A800410917 /* DWAvatarPublicURLViewController.h */,
+				2AC1EE072565C8A800410917 /* DWAvatarPublicURLViewController.m */,
+				2AC1EE1E2566C37900410917 /* DWAvatarGravatarViewController.h */,
+				2AC1EE1F2566C37900410917 /* DWAvatarGravatarViewController.m */,
+			);
+			path = "External Sources";
+			sourceTree = "<group>";
+		};
+		2AC1EDC22565B88400410917 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2AC1EDD22565B92A00410917 /* DWAvatarExternalSourceView.h */,
+				2AC1EDD32565B92A00410917 /* DWAvatarExternalSourceView.m */,
+				2AC1EDE12565BB8500410917 /* DWAvatarExternalSourceConfig.h */,
+				2AC1EDE22565BB8500410917 /* DWAvatarExternalSourceConfig.m */,
+				2AC1EE15256671C100410917 /* DWAvatarExternalLoadingView.h */,
+				2AC1EE16256671C100410917 /* DWAvatarExternalLoadingView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2AC1EE052565C88B00410917 /* Skeleton */ = {
+			isa = PBXGroup;
+			children = (
+				2AC1EDC22565B88400410917 /* Views */,
+				2AC1EDEA2565C49700410917 /* DWExternalSourceViewController.h */,
+				2AC1EDEB2565C49700410917 /* DWExternalSourceViewController.m */,
+			);
+			path = Skeleton;
+			sourceTree = "<group>";
+		};
 		2AC52AD3241BB5CC00D9A829 /* Setup */ = {
 			isa = PBXGroup;
 			children = (
@@ -3900,6 +3953,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2AC1EDC12565B85800410917 /* External Sources */,
 				2A32AA13255127AB0080138E /* Upload */,
 				2AEC5989254A9B2400971D75 /* Utils */,
 				2A5A7FB7251DF6FA00ADD073 /* Avatar */,
@@ -5104,6 +5158,7 @@
 				2A7AF3182480E35A001D74F9 /* DWContactsFetchedDataSource.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
+				2AC1EE17256671C200410917 /* DWAvatarExternalLoadingView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A7AF38924829AF2001D74F9 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */,
@@ -5146,6 +5201,7 @@
 				2A7AF3992482E32E001D74F9 /* DWDashPayContactsActions.m in Sources */,
 				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
+				2AC1EDD42565B92A00410917 /* DWAvatarExternalSourceView.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
@@ -5255,6 +5311,7 @@
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
+				2AC1EE202566C37900410917 /* DWAvatarGravatarViewController.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
@@ -5299,6 +5356,7 @@
 				2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */,
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
 				2AEC24B2251CF1A100AC86F6 /* DWTextViewFormCellModel.m in Sources */,
+				2AC1EDE32565BB8500410917 /* DWAvatarExternalSourceConfig.m in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
 				2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */,
@@ -5423,6 +5481,7 @@
 				C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
+				2AC1EDEC2565C49700410917 /* DWExternalSourceViewController.m in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
 				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
@@ -5448,6 +5507,7 @@
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A7AF37B2482756D001D74F9 /* DWDPPendingRequestObject.m in Sources */,
 				2ADDF99C251B7C6B00DA8926 /* DWEditProfileBaseCell.m in Sources */,
+				2AC1EE082565C8A800410917 /* DWAvatarPublicURLViewController.m in Sources */,
 				2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */,
 				2A5F100F255C77F1001A94B1 /* DWDPUpdateProfileModel.m in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
@@ -5855,7 +5915,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5885,7 +5945,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5968,7 +6028,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -5989,7 +6049,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6008,7 +6068,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6029,7 +6089,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6051,7 +6111,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6074,7 +6134,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6159,7 +6219,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6188,7 +6248,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6239,7 +6299,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6258,7 +6318,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6348,7 +6408,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6375,7 +6435,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6425,7 +6485,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6444,7 +6504,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";

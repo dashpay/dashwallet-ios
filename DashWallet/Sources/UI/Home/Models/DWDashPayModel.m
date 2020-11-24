@@ -17,6 +17,7 @@
 
 #import "DWDashPayModel.h"
 
+#import "DWCurrentUserProfileModel.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
@@ -40,12 +41,16 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDashPayModel
 
+@synthesize userProfile = _userProfile;
+
 - (instancetype)init {
     self = [super init];
     if (self) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
         NSString *username = [DWGlobalOptions sharedInstance].persistedDashPayUsername;
+
+        _userProfile = [[DWCurrentUserProfileModel alloc] init];
 
         if (blockchainIdentity) {
             if (username == nil) {
@@ -287,6 +292,8 @@ NS_ASSUME_NONNULL_END
             [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
             [DWGlobalOptions sharedInstance].persistedDashPayUsername = nil;
             NSAssert(self.username != nil, @"Default DSBlockchainIdentity has an empty username");
+
+            [self.userProfile update];
         }
     }
 }

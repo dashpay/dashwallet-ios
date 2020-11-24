@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_END
     _blockchainIdentity = blockchainIdentity;
 
     NSString *username = blockchainIdentity.currentDashpayUsername;
-    NSURL *url = [NSURL URLWithString:blockchainIdentity.matchingDashpayUserInViewContext.avatarPath];
+    NSURL *url = [NSURL URLWithString:blockchainIdentity.avatarPath];
     __weak typeof(self) weakSelf = self;
     [self.imageView
         sd_setImageWithURL:url

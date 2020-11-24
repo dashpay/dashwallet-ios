@@ -40,6 +40,11 @@
 }
 
 - (void)update {
+    if (self.blockchainIdentity == nil) {
+        self.state = DWCurrentUserProfileModel_None;
+        return;
+    }
+
     if (self.state == DWCurrentUserProfileModel_Loading) {
         return;
     }
