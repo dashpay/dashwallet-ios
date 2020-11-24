@@ -823,9 +823,6 @@
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Escanear para Pagar";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Escanear para Paga";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "Escanear para Envia";
 
@@ -894,6 +891,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Enviar a Dirección";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "Enviar a dirección copiada";

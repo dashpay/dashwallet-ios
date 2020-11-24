@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWConfirmSendPaymentViewController.h"
+#import "DWContactsViewController.h"
 #import "DWHomeViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
@@ -74,6 +75,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
+- (void)performPayToDashPayUser {
+    DWContactsViewController *contactsController = [[DWContactsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
+    contactsController.intent = DWContactsControllerIntent_PayToSelector;
+    contactsController.payDelegate = self;
+    contactsController.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:contactsController animated:YES];
+}
+
 - (void)performPayToPasteboardAction {
     DWPaymentInput *paymentInput = self.payModel.pasteboardPaymentInput;
     NSParameterAssert(paymentInput);
@@ -123,6 +132,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<DWDPBasicUserItem>)contactItem {
     return nil; // to be overriden
+}
+
+#pragma mark - DWContactsViewControllerPayDelegate
+
+- (void)contactsViewController:(DWContactsViewController *)controller payToItem:(id<DWDPBasicUserItem>)item {
+    [self performPayToUser:item];
 }
 
 #pragma mark - DWPaymentProcessorDelegate

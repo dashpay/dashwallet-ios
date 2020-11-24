@@ -17,6 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWContactsViewController.h"
 #import "DWDPBasicUserItem.h"
 #import "DWDemoDelegate.h"
 #import "DWNavigationChildViewController.h"
@@ -29,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTransactionListDataProviderProtocol;
 @protocol DWDPBasicUserItem;
 
-@interface DWBasePayViewController : DWNavigationChildViewController <DWTxDetailFullscreenViewControllerDelegate>
+@interface DWBasePayViewController : DWNavigationChildViewController <DWTxDetailFullscreenViewControllerDelegate, DWContactsViewControllerPayDelegate>
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
@@ -41,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performScanQRCodeAction;
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
+- (void)performPayToDashPayUser;
 - (void)performPayToURL:(NSURL *)url;
 - (void)performPayToUser:(id<DWDPBasicUserItem>)userItem;
 

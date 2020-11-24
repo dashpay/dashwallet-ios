@@ -823,9 +823,6 @@
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Отсканируйте для оплаты";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Оплатить по QR-коду";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "Сканировать";
 
@@ -894,6 +891,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Отправить на адрес";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "Отправить на скопированный адрес";

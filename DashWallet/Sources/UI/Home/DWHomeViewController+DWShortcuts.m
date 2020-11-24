@@ -100,6 +100,10 @@ NS_ASSUME_NONNULL_BEGIN
             [self.delegate homeViewControllerShowReceivePayment:self];
             break;
         }
+        case DWShortcutActionType_SendToContact: {
+            [self performPayToDashPayUser];
+            break;
+        }
         case DWShortcutActionType_AddShortcut: {
             break;
         }
