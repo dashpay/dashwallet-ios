@@ -269,6 +269,9 @@
 "Create a New Wallet" = "Créer un nouveau portefeuille";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
 
 /* No comment provided by engineer. */
@@ -479,7 +482,7 @@
 "It's Important" = "C'est important";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Join Evolution";
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Paire de clés %ld";

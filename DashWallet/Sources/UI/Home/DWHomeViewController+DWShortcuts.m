@@ -18,7 +18,6 @@
 #import "DWHomeViewController+DWShortcuts.h"
 
 #import "DWBackupInfoViewController.h"
-#import "DWDashPaySetupFlowController.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
@@ -90,10 +89,6 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ReportAnIssue: {
-            break;
-        }
-        case DWShortcutActionType_CreateUsername: {
-            [self showCreateUsername];
             break;
         }
         case DWShortcutActionType_Receive: {
@@ -203,13 +198,6 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf presentViewController:alert animated:YES completion:nil];
         }
     }];
-}
-
-- (void)showCreateUsername {
-    DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
-        initWithDashPayModel:self.model.dashPayModel];
-    controller.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {

@@ -29,7 +29,6 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 @interface DWShortcutsModel ()
 
 @property (strong, nonatomic) NSMutableArray<DWShortcutAction *> *mutableItems;
-@property (nullable, nonatomic, weak) id<DWDashPayReadyProtocol> dataSource;
 
 @end
 
@@ -43,10 +42,9 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
     return keyPaths ?: [super keyPathsForValuesAffectingValueForKey:key];
 }
 
-- (instancetype)initWithDataSource:(id<DWDashPayReadyProtocol>)dataSource {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _dataSource = dataSource;
         [self reloadShortcuts];
     }
     return self;
@@ -68,21 +66,16 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
         self.mutableItems = [self.class userShortcuts];
     }
     else {
-        const BOOL isShowingCreateUserName = [self.dataSource isDashPayReady];
-        self.mutableItems = [self.class defaultShortcutsShowingCreateUserName:isShowingCreateUserName];
+        self.mutableItems = [self.class defaultShortcuts];
     }
 }
 
 #pragma mark - Private
 
-+ (NSMutableArray<DWShortcutAction *> *)defaultShortcutsShowingCreateUserName:(BOOL)isShowingCreateUserName {
++ (NSMutableArray<DWShortcutAction *> *)defaultShortcuts {
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
 
     NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
-
-    if (isShowingCreateUserName) {
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_CreateUsername]];
-    }
 
     const BOOL hasUserName = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity != nil;
     const BOOL walletNeedsBackup = options.walletNeedsBackup;

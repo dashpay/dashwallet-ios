@@ -17,8 +17,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDashPayReadyProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWShortcutAction;
@@ -26,11 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWShortcutsModel : NSObject
 
 @property (readonly, copy, nonatomic) NSArray<DWShortcutAction *> *items;
-
-- (instancetype)initWithDataSource:(id<DWDashPayReadyProtocol>)dataSource;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
 
 - (void)reloadShortcuts;
 

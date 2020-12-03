@@ -15,15 +15,11 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWBasePressableControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification;
-
-@protocol DWDashPayReadyProtocol <NSObject>
-
-@property (readonly, nonatomic, assign) BOOL isDashPayReady;
+@interface DWDPWelcomeView : DWBasePressableControl
 
 @end
 
