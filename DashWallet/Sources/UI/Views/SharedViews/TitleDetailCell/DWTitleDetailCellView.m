@@ -96,8 +96,13 @@ static CGFloat const SMALL_PADDING = 12.0;
     [self addSubview:stackView];
     _stackView = stackView;
 
+    [contactView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+
     NSLayoutConstraint *titleWidth = [titleLabel.widthAnchor constraintEqualToAnchor:detailLabel.widthAnchor multiplier:0.5];
     titleWidth.priority = UILayoutPriorityRequired - 1;
+
+    NSLayoutConstraint *titleWidth2 = [titleLabel.widthAnchor constraintEqualToAnchor:contactView.widthAnchor multiplier:0.5];
+    titleWidth2.priority = UILayoutPriorityRequired - 2;
 
     [NSLayoutConstraint activateConstraints:@[
         [stackView.topAnchor constraintEqualToAnchor:self.topAnchor],
@@ -106,6 +111,7 @@ static CGFloat const SMALL_PADDING = 12.0;
         [stackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
         titleWidth,
+        titleWidth2,
     ]];
 }
 
