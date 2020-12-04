@@ -72,6 +72,7 @@
 		2A2120F022147A40009906DC /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
 		2A25A98A2578255500BBD5C5 /* DWDPWelcomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A25A9892578255500BBD5C5 /* DWDPWelcomeView.m */; };
 		2A25A99C2578C3B600BBD5C5 /* DWBasePressableControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A25A99B2578C3B600BBD5C5 /* DWBasePressableControl.m */; };
+		2A25A9A52579328A00BBD5C5 /* DWDPWelcomeMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A25A9A42579328A00BBD5C5 /* DWDPWelcomeMenuView.m */; };
 		2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */; };
 		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
@@ -757,6 +758,8 @@
 		2A25A9892578255500BBD5C5 /* DWDPWelcomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeView.m; sourceTree = "<group>"; };
 		2A25A99A2578C3B600BBD5C5 /* DWBasePressableControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBasePressableControl.h; sourceTree = "<group>"; };
 		2A25A99B2578C3B600BBD5C5 /* DWBasePressableControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBasePressableControl.m; sourceTree = "<group>"; };
+		2A25A9A32579328A00BBD5C5 /* DWDPWelcomeMenuView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeMenuView.h; sourceTree = "<group>"; };
+		2A25A9A42579328A00BBD5C5 /* DWDPWelcomeMenuView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeMenuView.m; sourceTree = "<group>"; };
 		2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceModel.h; sourceTree = "<group>"; };
 		2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceModel.m; sourceTree = "<group>"; };
 		2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsView.h; sourceTree = "<group>"; };
@@ -3945,6 +3948,8 @@
 				2A5F1026255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m */,
 				2A5F1034255C8AF4001A94B1 /* DWUserProfileContainerView.h */,
 				2A5F1035255C8AF4001A94B1 /* DWUserProfileContainerView.m */,
+				2A25A9A32579328A00BBD5C5 /* DWDPWelcomeMenuView.h */,
+				2A25A9A42579328A00BBD5C5 /* DWDPWelcomeMenuView.m */,
 			);
 			path = UserProfile;
 			sourceTree = "<group>";
@@ -5291,6 +5296,7 @@
 				2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */,
 				2A7AF34924823167001D74F9 /* DWDPGenericImageItemView.m in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
+				2A25A9A52579328A00BBD5C5 /* DWDPWelcomeMenuView.m in Sources */,
 				2A32AA282551C0DA0080138E /* DWHourGlassAnimationView.m in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,

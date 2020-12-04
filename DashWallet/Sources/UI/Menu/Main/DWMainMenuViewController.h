@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWBalanceDisplayOptionsProtocol;
 @protocol DWReceiveModelProtocol;
 @class DWCurrentUserProfileModel;
+@protocol DWDashPayReadyProtocol;
+@protocol DWDashPayProtocol;
 
 @protocol DWMainMenuViewControllerDelegate <NSObject>
 
@@ -39,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions
                                  receiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                                 dashPayReady:(id<DWDashPayReadyProtocol>)dashPayReady
+                                 dashPayModel:(id<DWDashPayProtocol>)dashPayModel
                              userProfileModel:(DWCurrentUserProfileModel *)userProfileModel;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;

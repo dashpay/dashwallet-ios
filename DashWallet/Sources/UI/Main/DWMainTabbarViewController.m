@@ -259,6 +259,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         DWMainMenuViewController *menuController =
             [[DWMainMenuViewController alloc] initWithBalanceDisplayOptions:self.homeModel.balanceDisplayOptions
                                                                receiveModel:self.homeModel.receiveModel
+                                                               dashPayReady:self.homeModel
+                                                               dashPayModel:self.homeModel.dashPayModel
                                                            userProfileModel:self.homeModel.dashPayModel.userProfile];
         menuController.delegate = self;
 

@@ -17,6 +17,8 @@
 
 #import "DWMainMenuContentView.h"
 
+#import "DWDPWelcomeMenuView.h"
+#import "DWDashPayReadyProtocol.h"
 #import "DWMainMenuModel.h"
 #import "DWMainMenuTableViewCell.h"
 #import "DWSharedUIConstants.h"
@@ -29,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) DWUserProfileContainerView *headerView;
+@property (nonatomic, strong) DWDPWelcomeMenuView *joinHeaderView;
 
 @end
 
@@ -55,12 +58,23 @@ NS_ASSUME_NONNULL_BEGIN
         headerView.delegate = self;
         _headerView = headerView;
 
+        DWDPWelcomeMenuView *joinHeaderView = [[DWDPWelcomeMenuView alloc] initWithFrame:CGRectZero];
+        [joinHeaderView.joinButton addTarget:self
+                                      action:@selector(joinButtonAction:)
+                            forControlEvents:UIControlEventTouchUpInside];
+        _joinHeaderView = joinHeaderView;
+
         NSString *cellId = DWMainMenuTableViewCell.dw_reuseIdentifier;
         UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
         NSParameterAssert(nib);
         [tableView registerNib:nib forCellReuseIdentifier:cellId];
 
         [self mvvm_observe:DW_KEYPATH(self, userModel.state)
+                      with:^(typeof(self) self, id value) {
+                          [self updateHeader];
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, dashPayReady.isDashPayReady)
                       with:^(typeof(self) self, id value) {
                           [self updateHeader];
                       }];
@@ -86,13 +100,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateHeader {
-    if (self.userModel.blockchainIdentity != nil) {
+    UIView *header = nil;
+    if (self.dashPayReady.isDashPayReady) {
+        header = self.joinHeaderView;
+    }
+    else if (self.userModel.blockchainIdentity != nil) {
         [self.headerView update];
-        self.tableView.tableHeaderView = self.headerView;
+        header = self.headerView;
     }
-    else {
-        self.tableView.tableHeaderView = nil;
-    }
+
+    self.tableView.tableHeaderView = header;
     [self setNeedsLayout];
 }
 
@@ -148,6 +165,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)currentUserProfileView:(DWCurrentUserProfileView *)view editProfileAction:(UIButton *)sender {
     [self.delegate mainMenuContentView:self editProfileAction:sender];
+}
+
+#pragma mark - Private
+
+- (void)joinButtonAction:(UIButton *)sender {
+    [self.delegate mainMenuContentView:self joinDashPayAction:sender];
 }
 
 @end

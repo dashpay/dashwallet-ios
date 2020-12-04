@@ -18,6 +18,7 @@
 #import "DWMainMenuViewController.h"
 
 #import "DWAboutModel.h"
+#import "DWDashPaySetupFlowController.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
@@ -41,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 @property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
+@property (nonatomic, strong) id<DWDashPayReadyProtocol> dashPayReady;
+@property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 @property (nonatomic, strong) DWCurrentUserProfileModel *userProfileModel;
 
 @end
@@ -51,11 +54,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions
                                  receiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                                 dashPayReady:(id<DWDashPayReadyProtocol>)dashPayReady
+                                 dashPayModel:(id<DWDashPayProtocol>)dashPayModel
                              userProfileModel:(DWCurrentUserProfileModel *)userProfileModel {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
         _receiveModel = receiveModel;
+        _dashPayReady = dashPayReady;
+        _dashPayModel = dashPayModel;
         _userProfileModel = userProfileModel;
 
         self.title = NSLocalizedString(@"More", nil);
@@ -75,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.view.model = [[DWMainMenuModel alloc] init];
     self.view.userModel = self.userProfileModel;
+    self.view.dashPayReady = self.dashPayReady;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -164,6 +172,13 @@ NS_ASSUME_NONNULL_BEGIN
     DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
     navigation.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:navigation animated:YES completion:nil];
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
+    DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
+        initWithDashPayModel:self.dashPayModel];
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - DWToolsMenuViewControllerDelegate
