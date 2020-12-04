@@ -75,7 +75,6 @@ static BOOL IsJailbroken(void) {
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
 @property (nonatomic, assign) BOOL isDashPayReady;
-@property (nonatomic, assign) BOOL isDashPayReadyMainSuggestion;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
@@ -92,7 +91,6 @@ static BOOL IsJailbroken(void) {
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize isDashPayReady = _isDashPayReady;
-@synthesize isDashPayReadyMainSuggestion = _isDashPayReadyMainSuggestion;
 
 - (instancetype)init {
     self = [super init];
@@ -238,7 +236,6 @@ static BOOL IsJailbroken(void) {
 - (void)reloadShortcuts {
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayAvailabilityStatusUpdatedNotification object:nil];
     self.isDashPayReady = [self isDashPayReadyValue];
-    self.isDashPayReadyMainSuggestion = self.isDashPayReady && ![DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce;
 
     [self.shortcutsModel reloadShortcuts];
 }
@@ -305,6 +302,10 @@ static BOOL IsJailbroken(void) {
 
 - (void)walletDidWipe {
     self.dashPayModel = [[DWDashPayModel alloc] init];
+}
+
+- (BOOL)isDashPayReadyMainSuggestion {
+    return self.isDashPayReady && ![DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce;
 }
 
 - (BOOL)isDashPayReadyValue {

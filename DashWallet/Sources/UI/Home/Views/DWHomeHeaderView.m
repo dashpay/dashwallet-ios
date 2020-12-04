@@ -136,7 +136,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                           self.profileView.unreadCount = self.model.dashPayModel.unreadNotificationsCount;
                       }];
 
-        [self mvvm_observe:DW_KEYPATH(self, model.isDashPayReadyMainSuggestion)
+        [self mvvm_observe:DW_KEYPATH(self, model.isDashPayReady)
                       with:^(typeof(self) self, id value) {
                           [self updateProfileView];
                       }];
@@ -157,6 +157,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
     if (self.window) {
         [self.model.dashPayModel.userProfile update];
+        [self updateProfileView];
     }
 }
 
