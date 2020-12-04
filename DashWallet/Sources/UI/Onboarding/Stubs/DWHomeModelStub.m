@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
+@synthesize isDashPayReadyMainSuggestion = _isDashPayReadyMainSuggestion;
 
 - (instancetype)init {
     self = [super init];

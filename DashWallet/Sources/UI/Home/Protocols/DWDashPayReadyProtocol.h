@@ -24,6 +24,7 @@ extern NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification;
 @protocol DWDashPayReadyProtocol <NSObject>
 
 @property (readonly, nonatomic, assign) BOOL isDashPayReady;
+@property (readonly, nonatomic, assign) BOOL isDashPayReadyMainSuggestion;
 
 @end
 

@@ -20,6 +20,7 @@
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWDashPaySetupFlowController.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -120,6 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
+    [DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce = YES;
     DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
         initWithDashPayModel:self.model.dashPayModel];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;

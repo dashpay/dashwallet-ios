@@ -136,7 +136,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                           self.profileView.unreadCount = self.model.dashPayModel.unreadNotificationsCount;
                       }];
 
-        [self mvvm_observe:DW_KEYPATH(self, model.isDashPayReady)
+        [self mvvm_observe:DW_KEYPATH(self, model.isDashPayReadyMainSuggestion)
                       with:^(typeof(self) self, id value) {
                           [self updateProfileView];
                       }];
@@ -212,7 +212,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
     else {
         self.profileView.hidden = YES;
     }
-    self.welcomeView.hidden = ![self.model isDashPayReady];
+    self.welcomeView.hidden = ![self.model isDashPayReadyMainSuggestion];
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 
