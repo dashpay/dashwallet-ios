@@ -90,7 +90,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
                 [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
             }
         }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
     }
     else {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
@@ -100,8 +100,12 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
         else {
             [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
         }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
-        if (!IS_IPHONE_5_OR_LESS) {
+
+        if (IS_IPHONE_5_OR_LESS) {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+        }
+        else {
+            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
             [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
         }
     }
