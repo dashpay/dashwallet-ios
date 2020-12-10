@@ -68,6 +68,11 @@ post_install do |installer|
         end
     end
     
+    # Apple Silicon fix when targeting Simulator
+    installer.pods_project.build_configurations.each do |config|
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    end
+    
     # update info about current DashSync version
     # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
     system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
