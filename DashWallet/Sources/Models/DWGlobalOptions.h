@@ -53,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, getter=isResyncingWallet) BOOL resyncingWallet;
 
+@property (nonatomic, assign) BOOL dashPayRegistrationOpenedOnce;
+
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

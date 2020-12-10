@@ -248,6 +248,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate homeView:self profileButtonAction:sender];
 }
 
+- (void)homeHeaderView:(DWHomeHeaderView *)view joinDashPayAction:(UIControl *)sender {
+    [self.delegate homeViewShowDashPayRegistrationFlow:self];
+}
+
 #pragma mark - DWDPRegistrationErrorRetryDelegate
 
 - (void)registrationErrorRetryAction {

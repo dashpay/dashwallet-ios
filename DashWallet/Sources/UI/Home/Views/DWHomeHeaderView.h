@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view;
 - (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender;
+- (void)homeHeaderView:(DWHomeHeaderView *)view joinDashPayAction:(UIControl *)sender;
 
 @end
 

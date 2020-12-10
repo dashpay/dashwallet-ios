@@ -269,6 +269,9 @@
 "Create a New Wallet" = "Tạo một ví mới";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
 
 /* No comment provided by engineer. */
@@ -479,7 +482,10 @@
 "It's Important" = "Điều này là quan trọng";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Join Evolution";
+"Join" = "Join";
+
+/* No comment provided by engineer. */
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Cặp khoá %ld";

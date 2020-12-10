@@ -20,6 +20,7 @@
 #import "DWBalanceView.h"
 #import "DWCurrentUserProfileModel.h"
 #import "DWDPRegistrationStatus.h"
+#import "DWDPWelcomeView.h"
 #import "DWDashPayProfileView.h"
 #import "DWShortcutAction.h"
 #import "DWShortcutsView.h"
@@ -37,6 +38,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 @property (readonly, nonatomic, strong) DWBalanceView *balanceView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
 @property (readonly, nonatomic, strong) DWShortcutsView *shortcutsView;
+@property (readonly, nonatomic, strong) DWDPWelcomeView *welcomeView;
 @property (readonly, nonatomic, strong) UIStackView *stackView;
 
 @end
@@ -52,18 +54,26 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         _profileView = profileView;
 
         DWBalanceView *balanceView = [[DWBalanceView alloc] initWithFrame:CGRectZero];
+        balanceView.translatesAutoresizingMaskIntoConstraints = NO;
         balanceView.delegate = self;
         _balanceView = balanceView;
 
         DWSyncView *syncView = [[DWSyncView alloc] initWithFrame:CGRectZero];
+        syncView.translatesAutoresizingMaskIntoConstraints = NO;
         syncView.delegate = self;
         _syncView = syncView;
 
         DWShortcutsView *shortcutsView = [[DWShortcutsView alloc] initWithFrame:CGRectZero];
+        shortcutsView.translatesAutoresizingMaskIntoConstraints = NO;
         shortcutsView.delegate = self;
         _shortcutsView = shortcutsView;
 
-        NSArray<UIView *> *views = @[ profileView, balanceView, shortcutsView, syncView ];
+        DWDPWelcomeView *welcomeView = [[DWDPWelcomeView alloc] initWithFrame:CGRectZero];
+        welcomeView.translatesAutoresizingMaskIntoConstraints = NO;
+        [welcomeView addTarget:self action:@selector(joinDashPayAction:) forControlEvents:UIControlEventTouchUpInside];
+        _welcomeView = welcomeView;
+
+        NSArray<UIView *> *views = @[ profileView, balanceView, shortcutsView, welcomeView, syncView ];
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
@@ -125,6 +135,11 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                       with:^(typeof(self) self, id value) {
                           self.profileView.unreadCount = self.model.dashPayModel.unreadNotificationsCount;
                       }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.isDashPayReady)
+                      with:^(typeof(self) self, id value) {
+                          [self updateProfileView];
+                      }];
     }
     return self;
 }
@@ -142,6 +157,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
     if (self.window) {
         [self.model.dashPayModel.userProfile update];
+        [self updateProfileView];
     }
 }
 
@@ -183,6 +199,10 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
     [self.delegate homeHeaderView:self profileButtonAction:sender];
 }
 
+- (void)joinDashPayAction:(UIControl *)sender {
+    [self.delegate homeHeaderView:self joinDashPayAction:sender];
+}
+
 - (void)updateProfileView {
     DWDPRegistrationStatus *status = self.model.dashPayModel.registrationStatus;
     const BOOL completed = self.model.dashPayModel.registrationCompleted;
@@ -193,6 +213,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
     else {
         self.profileView.hidden = YES;
     }
+    self.welcomeView.hidden = ![self.model isDashPayReadyMainSuggestion];
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 

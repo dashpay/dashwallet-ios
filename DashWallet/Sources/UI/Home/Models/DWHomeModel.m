@@ -74,6 +74,7 @@ static BOOL IsJailbroken(void) {
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
+@property (nonatomic, assign) BOOL isDashPayReady;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
@@ -89,6 +90,7 @@ static BOOL IsJailbroken(void) {
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
+@synthesize isDashPayReady = _isDashPayReady;
 
 - (instancetype)init {
     self = [super init];
@@ -116,7 +118,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
+        _shortcutsModel = [[DWShortcutsModel alloc] init];
 
         _payModel = [[DWPayModel alloc] init];
 
@@ -233,6 +235,8 @@ static BOOL IsJailbroken(void) {
 
 - (void)reloadShortcuts {
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayAvailabilityStatusUpdatedNotification object:nil];
+    self.isDashPayReady = [self isDashPayReadyValue];
+
     [self.shortcutsModel reloadShortcuts];
 }
 
@@ -300,9 +304,11 @@ static BOOL IsJailbroken(void) {
     self.dashPayModel = [[DWDashPayModel alloc] init];
 }
 
-#pragma mark - DWDashPayReadyProtocol
+- (BOOL)isDashPayReadyMainSuggestion {
+    return self.isDashPayReady && ![DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce;
+}
 
-- (BOOL)isDashPayReady {
+- (BOOL)isDashPayReadyValue {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
         return NO;
     }

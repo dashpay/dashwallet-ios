@@ -70,6 +70,9 @@
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
 		2A2120F022147A40009906DC /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
+		2A25A98A2578255500BBD5C5 /* DWDPWelcomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A25A9892578255500BBD5C5 /* DWDPWelcomeView.m */; };
+		2A25A99C2578C3B600BBD5C5 /* DWBasePressableControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A25A99B2578C3B600BBD5C5 /* DWBasePressableControl.m */; };
+		2A25A9A52579328A00BBD5C5 /* DWDPWelcomeMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A25A9A42579328A00BBD5C5 /* DWDPWelcomeMenuView.m */; };
 		2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */; };
 		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
@@ -751,6 +754,12 @@
 		2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputValidatorTests.m; sourceTree = "<group>"; };
 		2A2120EE22147A40009906DC /* DWAmountObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountObject.h; sourceTree = "<group>"; };
 		2A2120EF22147A40009906DC /* DWAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObject.m; sourceTree = "<group>"; };
+		2A25A9882578255500BBD5C5 /* DWDPWelcomeView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeView.h; sourceTree = "<group>"; };
+		2A25A9892578255500BBD5C5 /* DWDPWelcomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeView.m; sourceTree = "<group>"; };
+		2A25A99A2578C3B600BBD5C5 /* DWBasePressableControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBasePressableControl.h; sourceTree = "<group>"; };
+		2A25A99B2578C3B600BBD5C5 /* DWBasePressableControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBasePressableControl.m; sourceTree = "<group>"; };
+		2A25A9A32579328A00BBD5C5 /* DWDPWelcomeMenuView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeMenuView.h; sourceTree = "<group>"; };
+		2A25A9A42579328A00BBD5C5 /* DWDPWelcomeMenuView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeMenuView.m; sourceTree = "<group>"; };
 		2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceModel.h; sourceTree = "<group>"; };
 		2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceModel.m; sourceTree = "<group>"; };
 		2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsView.h; sourceTree = "<group>"; };
@@ -2140,6 +2149,8 @@
 				2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */,
 				2A612AB524409D6E0060CC77 /* DWDashPayProfileView.h */,
 				2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */,
+				2A25A9882578255500BBD5C5 /* DWDPWelcomeView.h */,
+				2A25A9892578255500BBD5C5 /* DWDPWelcomeView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2677,6 +2688,8 @@
 				2A307CBE22E8A44200A18347 /* DWButton.m */,
 				2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */,
 				2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */,
+				2A25A99A2578C3B600BBD5C5 /* DWBasePressableControl.h */,
+				2A25A99B2578C3B600BBD5C5 /* DWBasePressableControl.m */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -3935,6 +3948,8 @@
 				2A5F1026255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m */,
 				2A5F1034255C8AF4001A94B1 /* DWUserProfileContainerView.h */,
 				2A5F1035255C8AF4001A94B1 /* DWUserProfileContainerView.m */,
+				2A25A9A32579328A00BBD5C5 /* DWDPWelcomeMenuView.h */,
+				2A25A9A42579328A00BBD5C5 /* DWDPWelcomeMenuView.m */,
 			);
 			path = UserProfile;
 			sourceTree = "<group>";
@@ -5281,6 +5296,7 @@
 				2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */,
 				2A7AF34924823167001D74F9 /* DWDPGenericImageItemView.m in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
+				2A25A9A52579328A00BBD5C5 /* DWDPWelcomeMenuView.m in Sources */,
 				2A32AA282551C0DA0080138E /* DWHourGlassAnimationView.m in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
@@ -5394,6 +5410,7 @@
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */,
+				2A25A99C2578C3B600BBD5C5 /* DWBasePressableControl.m in Sources */,
 				2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */,
 				2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */,
 				2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */,
@@ -5520,6 +5537,7 @@
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */,
+				2A25A98A2578255500BBD5C5 /* DWDPWelcomeView.m in Sources */,
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */,
@@ -5915,7 +5933,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5945,7 +5963,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6028,7 +6046,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6049,7 +6067,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6068,7 +6086,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6089,7 +6107,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6111,7 +6129,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6134,7 +6152,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6219,7 +6237,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6248,7 +6266,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6299,7 +6317,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6318,7 +6336,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6408,7 +6426,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6435,7 +6453,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6485,7 +6503,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6504,7 +6522,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";

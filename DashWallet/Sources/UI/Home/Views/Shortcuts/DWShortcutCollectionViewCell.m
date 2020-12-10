@@ -58,8 +58,6 @@ static NSString *TitleForAction(DWShortcutAction *action) {
         case DWShortcutActionType_ReportAnIssue:
             return NSLocalizedString(@"Report an Issue",
                                      @"Translate it as short as possible! (24 symbols max)");
-        case DWShortcutActionType_CreateUsername:
-            return NSLocalizedString(@"Join Evolution", nil);
         case DWShortcutActionType_Receive:
             return NSLocalizedString(@"Receive", nil);
         case DWShortcutActionType_SendToContact:
@@ -133,9 +131,6 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
             NSCParameterAssert(image);
             return image;
         }
-        case DWShortcutActionType_CreateUsername: {
-            return nil;
-        }
         case DWShortcutActionType_Receive: {
             UIImage *image = [UIImage imageNamed:@"shortcut_receive"];
             NSCParameterAssert(image);
@@ -153,13 +148,7 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
 }
 
 static UIFont *FontForAction(DWShortcutAction *action) {
-    const DWShortcutActionType type = action.type;
-    switch (type) {
-        case DWShortcutActionType_CreateUsername:
-            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-        default:
-            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
-    }
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
 }
 
 static CGFloat AlphaForAction(DWShortcutAction *action) {
@@ -167,13 +156,7 @@ static CGFloat AlphaForAction(DWShortcutAction *action) {
 }
 
 static UIColor *TextColor(DWShortcutAction *action) {
-    const DWShortcutActionType type = action.type;
-    switch (type) {
-        case DWShortcutActionType_CreateUsername:
-            return [UIColor dw_dashBlueColor];
-        default:
-            return [UIColor dw_darkTitleColor];
-    }
+    return [UIColor dw_darkTitleColor];
 }
 
 @interface DWShortcutCollectionViewCell ()

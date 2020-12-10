@@ -43,6 +43,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic mostRecentViewedNotificationDate;
 @dynamic confirmationAcceptContactRequestIsOn;
 @dynamic resyncingWallet;
+@dynamic dashPayRegistrationOpenedOnce;
 
 #pragma mark - Init
 
@@ -122,6 +123,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.mostRecentViewedNotificationDate = nil;
     self.confirmationAcceptContactRequestIsOn = YES;
     self.resyncingWallet = NO;
+    self.dashPayRegistrationOpenedOnce = NO;
 }
 
 @end
