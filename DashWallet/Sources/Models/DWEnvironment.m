@@ -371,7 +371,7 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                           protocolVersion:70218
                        minProtocolVersion:70218
                              sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
-                          sporkPrivateKey:nil];
+                          sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
 }
 
 @end
