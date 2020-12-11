@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_END
 - (void)performLoad:(NSString *)urlString {
     [self showLoadingView];
 
-    NSURL *url = [NSURL URLWithString:urlString];
+    NSURL *url = [self convertedURLString:urlString];
 
     __weak typeof(self) weakSelf = self;
     self.token = [[SDWebImageDownloader sharedDownloader]
@@ -94,6 +94,31 @@ NS_ASSUME_NONNULL_END
     self.token = nil;
 
     [self showDefaultSubtitle];
+}
+
+- (NSURL *)convertedURLString:(NSString *)urlString {
+    // https://drive.google.com/file/d/12rhWM7_wIXwDcFfsANkVGa0ArrbnhrMN/view?usp=sharing
+    NSString *googlePrefix = @"https://drive.google.com/file/d/";
+    if ([urlString hasPrefix:googlePrefix]) {
+        NSString *rest = [urlString stringByReplacingOccurrencesOfString:googlePrefix withString:@""];
+        NSRange range = [rest rangeOfString:@"/"];
+        if (range.location != NSNotFound) {
+            NSString *googleID = [rest substringToIndex:range.location];
+            NSString *resultFormat = [NSString stringWithFormat:@"https://drive.google.com/uc?export=view&id=%@",
+                                                                googleID];
+            return [NSURL URLWithString:resultFormat];
+        }
+    }
+
+    // https://www.dropbox.com/s/2ldd9fjk02yvyv1/IMG_20201103_220114.jpg?dl=0
+    NSString *dropboxPrefix = @"https://www.dropbox.com/s/";
+    if ([urlString hasPrefix:dropboxPrefix]) {
+        NSString *result = [urlString stringByReplacingOccurrencesOfString:dropboxPrefix
+                                                                withString:@"https://dl.dropboxusercontent.com/s/"];
+        return [NSURL URLWithString:result];
+    }
+
+    return [NSURL URLWithString:urlString];
 }
 
 @end
