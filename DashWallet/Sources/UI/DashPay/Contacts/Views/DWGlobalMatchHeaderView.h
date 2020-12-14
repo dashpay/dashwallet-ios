@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,20 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTitleActionHeaderView;
+@interface DWGlobalMatchHeaderView : BaseCollectionReusableView
 
-@protocol DWTitleActionHeaderViewDelegate <NSObject>
-
-- (void)titleActionHeaderView:(DWTitleActionHeaderView *)view buttonAction:(UIView *)sender;
-
-@end
-
-@interface DWTitleActionHeaderView : BaseCollectionReusableView
-
-@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
-@property (strong, nonatomic) IBOutlet UIButton *actionButton;
-
-@property (nullable, nonatomic, weak) id<DWTitleActionHeaderViewDelegate> delegate;
+@property (nullable, nonatomic, copy) NSString *searchQuery;
 
 @end
 

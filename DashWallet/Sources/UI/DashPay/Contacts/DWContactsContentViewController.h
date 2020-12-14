@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
        contactsFilterButtonAction:(UIView *)sender;
 - (void)contactsContentController:(DWContactsContentViewController *)controller
       contactRequestsButtonAction:(UIView *)sender;
+- (void)contactsContentController:(DWContactsContentViewController *)controller
+         globalSearchButtonAction:(UIView *)sender;
 
 @end
 

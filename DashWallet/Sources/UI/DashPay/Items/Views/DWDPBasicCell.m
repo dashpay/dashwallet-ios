@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWDPBasicCell ()
 
 @property (readonly, nonatomic, strong) DWShadowView *shadowView;
-
+@property (readonly, nonatomic, strong) UIView *roundedContentView;
 @property (nullable, nonatomic, copy) NSString *highlightedText;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
 
@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_END
         roundedContentView.backgroundColor = [UIColor dw_backgroundColor];
         roundedContentView.layer.cornerRadius = 8.0;
         roundedContentView.layer.masksToBounds = YES;
+        _roundedContentView = roundedContentView;
         [shadowView addSubview:roundedContentView];
 
         Class klass = [self.class itemViewClass];
@@ -66,16 +67,19 @@ NS_ASSUME_NONNULL_END
         [self.contentView addSubview:itemView];
         _itemView = itemView;
 
-        const CGFloat verticalPadding = 5.0;
-        const CGFloat itemVerticalPadding = 18.0;
+        const CGFloat horizontalPadding = 10.0;
+        const CGFloat verticalPadding = 10.0;
+        const CGFloat itemVerticalPadding = 23.0;
         const CGFloat itemHorizontalPadding = verticalPadding + 10.0;
 
         UILayoutGuide *guide = self.contentView.layoutMarginsGuide;
         [NSLayoutConstraint activateConstraints:@[
             [shadowView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
                                                  constant:verticalPadding],
-            [shadowView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
-            [guide.trailingAnchor constraintEqualToAnchor:shadowView.trailingAnchor],
+            [shadowView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
+                                                     constant:horizontalPadding],
+            [guide.trailingAnchor constraintEqualToAnchor:shadowView.trailingAnchor
+                                                 constant:horizontalPadding],
             [self.contentView.bottomAnchor constraintEqualToAnchor:shadowView.bottomAnchor
                                                           constant:verticalPadding],
 
@@ -104,11 +108,29 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (void)setDisplayItemBackgroundView:(BOOL)displayItemBackgroundView {
-    _displayItemBackgroundView = displayItemBackgroundView;
+- (void)setBackgroundStyle:(DWDPBasicCellBackgroundStyle)backgroundStyle {
+    _backgroundStyle = backgroundStyle;
 
-    self.shadowView.hidden = !displayItemBackgroundView;
-    self.itemView.backgroundColor = displayItemBackgroundView ? [UIColor dw_backgroundColor] : [UIColor dw_secondaryBackgroundColor];
+    switch (backgroundStyle) {
+        case DWDPBasicCellBackgroundStyle_GrayOnGray:
+            self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+            self.itemView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+            self.shadowView.hidden = YES;
+            break;
+        case DWDPBasicCellBackgroundStyle_WhiteOnGray:
+            self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+            self.itemView.backgroundColor = [UIColor dw_backgroundColor];
+            self.roundedContentView.backgroundColor = [UIColor dw_backgroundColor];
+            self.shadowView.hidden = NO;
+            break;
+        case DWDPBasicCellBackgroundStyle_GrayOnWhite:
+            self.backgroundColor = [UIColor dw_backgroundColor];
+            self.itemView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+            self.roundedContentView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+            self.shadowView.hidden = NO;
+            break;
+    }
+    self.contentView.backgroundColor = self.backgroundColor;
 }
 
 - (CGFloat)contentWidth {

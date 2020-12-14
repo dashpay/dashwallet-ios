@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_END
 
     DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
     cell.contentWidth = contentWidth;
-    cell.displayItemBackgroundView = YES;
+    cell.backgroundStyle = DWDPBasicCellBackgroundStyle_WhiteOnGray;
     cell.delegate = self;
     [cell setItem:item highlightedText:self.searchQuery];
 
