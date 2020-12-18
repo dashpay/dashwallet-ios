@@ -81,6 +81,7 @@ NS_ASSUME_NONNULL_END
         textField.textAlignment = NSTextAlignmentCenter;
         textField.autocorrectionType = UITextAutocorrectionTypeNo;
         textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        textField.clearButtonMode = UITextFieldViewModeWhileEditing;
         [self addSubview:textField];
         _textField = textField;
 
