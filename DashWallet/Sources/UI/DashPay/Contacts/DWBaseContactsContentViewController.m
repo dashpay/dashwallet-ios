@@ -57,11 +57,14 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     // TODO: DP polishing: diff reload
     CGPoint contentOffset = self.collectionView.contentOffset;
     [self.collectionView reloadData];
-    [self.collectionView layoutIfNeeded];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView setContentOffset:contentOffset animated:NO];
-    });
+    if (self.view.window != nil) {
+        [self.collectionView layoutIfNeeded];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.collectionView setContentOffset:contentOffset animated:NO];
+        });
+    }
 }
 
 - (void)setMatchedItems:(NSArray<id<DWDPBasicUserItem>> *)matchedItems {
@@ -70,11 +73,14 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     // TODO: DP polishing: diff reload
     CGPoint contentOffset = self.collectionView.contentOffset;
     [self.collectionView reloadData];
-    [self.collectionView layoutIfNeeded];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView setContentOffset:contentOffset animated:NO];
-    });
+    if (self.view.window != nil) {
+        [self.collectionView layoutIfNeeded];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.collectionView setContentOffset:contentOffset animated:NO];
+        });
+    }
 }
 
 - (void)viewDidLoad {
