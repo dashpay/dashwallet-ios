@@ -18,21 +18,25 @@
 #import "DWBaseContactsContentViewController.h"
 
 #import "DWContactsSearchInfoHeaderView.h"
+#import "DWContactsSearchPlaceholderView.h"
 #import "DWFilterHeaderView.h"
+#import "DWGlobalMatchHeaderView.h"
 #import "DWTitleActionHeaderView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseContactsContentViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, DWTitleActionHeaderViewDelegate, DWFilterHeaderViewDelegate>
+@interface DWBaseContactsContentViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, DWTitleActionHeaderViewDelegate, DWFilterHeaderViewDelegate, DWContactsSearchPlaceholderViewDelegate>
 
 @property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 
+@property (null_resettable, nonatomic, strong) DWContactsSearchPlaceholderView *measuringSearchPlaceholderView;
 @property (null_resettable, nonatomic, strong) DWContactsSearchInfoHeaderView *measuringSearchHeaderView;
 @property (null_resettable, nonatomic, strong) DWTitleActionHeaderView *measuringRequestsHeaderView;
 @property (null_resettable, nonatomic, strong) DWFilterHeaderView *measuringContactsHeaderView;
+@property (null_resettable, nonatomic, strong) DWGlobalMatchHeaderView *measuringGlobalMatchHeaderView;
 
 @property (null_resettable, nonatomic, copy) NSAttributedString *searchHeaderTitle;
 @property (null_resettable, nonatomic, copy) NSString *requestsHeaderTitle;

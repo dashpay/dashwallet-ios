@@ -200,7 +200,7 @@ NS_ASSUME_NONNULL_END
         DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
         cell.contentWidth = contentWidth;
         cell.itemView.avatarHidden = YES;
-        cell.displayItemBackgroundView = NO;
+        cell.backgroundStyle = DWDPBasicCellBackgroundStyle_GrayOnGray;
         cell.item = item;
         return cell;
     }
@@ -250,7 +250,7 @@ NS_ASSUME_NONNULL_END
         DWDPBasicCell *cell = self.measuringBasicCell;
         cell.contentWidth = contentWidth;
         cell.itemView.avatarHidden = YES;
-        cell.displayItemBackgroundView = NO;
+        cell.backgroundStyle = DWDPBasicCellBackgroundStyle_GrayOnGray;
         cell.item = item;
         measuringCell = cell;
     }

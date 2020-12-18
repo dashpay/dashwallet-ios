@@ -32,6 +32,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _globalSearchModel = [[DWUserSearchModel alloc] init];
         [self rebuildFRCDataSources];
     }
     return self;

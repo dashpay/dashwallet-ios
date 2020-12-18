@@ -569,6 +569,9 @@
 "More Control" = "Περισσότερος Έλεγχος";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
 "Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
 
 /* No comment provided by engineer. */
@@ -1122,6 +1125,9 @@
 
 /* No comment provided by engineer. */
 "Username taken" = "Username taken";
+
+/* No comment provided by engineer. */
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* No comment provided by engineer. */
 "Validating username done" = "Validating username done";

@@ -93,8 +93,7 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicUserItem>> *)items;
-{
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicUserItem>> *)items {
     if (items.count > 0) {
         self.resultsController.searchQuery = model.trimmedQuery;
         self.resultsController.items = items;

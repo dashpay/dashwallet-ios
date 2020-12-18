@@ -118,7 +118,12 @@ NS_ASSUME_NONNULL_END
     id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
 
     DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
-    cell.displayItemBackgroundView = indexPath.section == 0;
+    if (indexPath.section == 0) {
+        cell.backgroundStyle = DWDPBasicCellBackgroundStyle_WhiteOnGray;
+    }
+    else {
+        cell.backgroundStyle = DWDPBasicCellBackgroundStyle_GrayOnGray;
+    }
     cell.contentWidth = contentWidth;
     cell.delegate = self;
     cell.item = item;

@@ -17,11 +17,15 @@
 
 #import "DWBaseContactsModel.h"
 
+#import "DWUserSearchModel.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWRequestsModel;
 
 @interface DWContactsModel : DWBaseContactsModel
+
+@property (readonly, nonatomic, strong) DWUserSearchModel *globalSearchModel;
 
 - (DWRequestsModel *)contactRequestsModel;
 

@@ -21,9 +21,14 @@
 #import "DWContactsContentViewController.h"
 #import "DWRequestsViewController.h"
 
+#import "DWDPEstablishedContactItem.h"
+#import "DWDPNewIncomingRequestItem.h"
+#import "DWDPPendingRequestItem.h"
+#import "DWDPRespondedRequestItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsViewController () <DWContactsContentControllerDelegate>
+@interface DWContactsViewController () <DWContactsContentControllerDelegate, DWUserSearchModelDelegate>
 
 @end
 
@@ -37,6 +42,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    self.disableSearchPlaceholder = YES;
 
     self.title = NSLocalizedString(@"Contacts", nil);
     self.searchBar.placeholder = NSLocalizedString(@"Search for a contact", nil);
@@ -55,6 +62,7 @@ NS_ASSUME_NONNULL_END
     if (!_model) {
         _model = [[DWContactsModel alloc] init];
         _model.delegate = self;
+        _model.globalSearchModel.delegate = self;
     }
     return _model;
 }
@@ -72,12 +80,24 @@ NS_ASSUME_NONNULL_END
         DWContactsContentViewController *controller =
             [[DWContactsContentViewController alloc] initWithPayModel:self.payModel
                                                          dataProvider:self.dataProvider];
+        controller.contactsScreen = YES;
         controller.dataSource = self.model.dataSource;
         controller.itemsDelegate = self;
         controller.delegate = self;
         _contentController = controller;
     }
     return _contentController;
+}
+
+#pragma mark - UISearchBarDelegate
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    [super searchBar:searchBar textDidChange:searchText];
+
+    if (self.intent == DWContactsControllerIntent_Default) {
+        self.contentController.matchedItems = @[];
+        [self.model.globalSearchModel searchWithQuery:self.searchBar.text];
+    }
 }
 
 #pragma mark - DWBaseContactsContentViewControllerDelegate
@@ -137,6 +157,48 @@ NS_ASSUME_NONNULL_END
         requestsController.contentDelegate = self;
     }
     [self.navigationController pushViewController:requestsController animated:YES];
+}
+
+- (void)contactsContentController:(DWContactsContentViewController *)controller
+         globalSearchButtonAction:(UIView *)sender {
+    [self addContactButtonAction];
+}
+
+#pragma mark - DWUserSearchModelDelegate
+
+- (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model {
+    self.contentController.matchedItems = @[];
+}
+
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithItems:(NSArray<id<DWDPBasicUserItem>> *)items {
+    const NSUInteger maxMatchedCount = 3;
+    NSMutableArray<id<DWDPBasicUserItem>> *selected = [NSMutableArray array];
+    for (id<DWDPBasicUserItem> item in items) {
+        if ([item conformsToProtocol:@protocol(DWDPEstablishedContactItem)]) {
+            continue;
+        }
+        else if ([item conformsToProtocol:@protocol(DWDPPendingRequestItem)]) {
+            continue;
+        }
+        else if ([item conformsToProtocol:@protocol(DWDPRespondedRequestItem)]) {
+            continue;
+        }
+        else if ([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)]) {
+            continue;
+        }
+        else {
+            [selected addObject:item];
+        }
+
+        if (selected.count == maxMatchedCount) {
+            break;
+        }
+    }
+    self.contentController.matchedItems = selected;
+}
+
+- (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error {
+    self.contentController.matchedItems = @[];
 }
 
 @end

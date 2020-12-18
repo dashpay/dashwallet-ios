@@ -25,13 +25,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWDPBasicCellBackgroundStyle) {
+    DWDPBasicCellBackgroundStyle_GrayOnGray,
+    DWDPBasicCellBackgroundStyle_WhiteOnGray,
+    DWDPBasicCellBackgroundStyle_GrayOnWhite,
+};
+
 @interface DWDPBasicCell : KVOUICollectionViewCell
 
 @property (readonly, class, nonatomic) Class itemViewClass;
 
 @property (readonly, nonatomic, strong) DWDPGenericItemView *itemView;
-@property (nonatomic, assign) BOOL displayItemBackgroundView;
 @property (nonatomic, assign) CGFloat contentWidth;
+@property (nonatomic, assign) DWDPBasicCellBackgroundStyle backgroundStyle;
 
 @property (nullable, nonatomic, weak) id<DWDPItemCellDelegate> delegate;
 

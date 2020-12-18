@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBaseContactsViewController : DWSearchViewController <DWBaseContactsContentViewControllerDelegate>
 
+@property (nonatomic, assign) BOOL disableSearchPlaceholder;
+
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;
 
