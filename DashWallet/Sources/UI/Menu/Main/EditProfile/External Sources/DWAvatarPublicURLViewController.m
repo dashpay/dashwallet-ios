@@ -42,19 +42,21 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)isInputValid:(NSString *)input {
-    if (input.length == 0) {
+    NSString *trimmed = [input stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    if (trimmed.length == 0) {
         [self showError:NSLocalizedString(@"Please enter a valid image URL.", nil)];
         return NO;
     }
 
     const NSUInteger maxLength = 256;
-    if (input.length > maxLength) {
+    if (trimmed.length > maxLength) {
         [self showError:[NSString stringWithFormat:NSLocalizedString(@"Image URL can't be longer than %ld characters.", nil), maxLength]];
         return NO;
     }
 
     // regex to check valid url is too complicated, do a dumb check
-    NSURL *url = [NSURL URLWithString:input];
+    NSURL *url = [NSURL URLWithString:trimmed];
     if (url) {
         return YES;
     }
@@ -97,10 +99,12 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSURL *)convertedURLString:(NSString *)urlString {
+    NSString *trimmed = [urlString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
     // https://drive.google.com/file/d/12rhWM7_wIXwDcFfsANkVGa0ArrbnhrMN/view?usp=sharing
     NSString *googlePrefix = @"https://drive.google.com/file/d/";
-    if ([urlString hasPrefix:googlePrefix]) {
-        NSString *rest = [urlString stringByReplacingOccurrencesOfString:googlePrefix withString:@""];
+    if ([trimmed hasPrefix:googlePrefix]) {
+        NSString *rest = [trimmed stringByReplacingOccurrencesOfString:googlePrefix withString:@""];
         NSRange range = [rest rangeOfString:@"/"];
         if (range.location != NSNotFound) {
             NSString *googleID = [rest substringToIndex:range.location];
@@ -112,13 +116,13 @@ NS_ASSUME_NONNULL_END
 
     // https://www.dropbox.com/s/2ldd9fjk02yvyv1/IMG_20201103_220114.jpg?dl=0
     NSString *dropboxPrefix = @"https://www.dropbox.com/s/";
-    if ([urlString hasPrefix:dropboxPrefix]) {
-        NSString *result = [urlString stringByReplacingOccurrencesOfString:dropboxPrefix
-                                                                withString:@"https://dl.dropboxusercontent.com/s/"];
+    if ([trimmed hasPrefix:dropboxPrefix]) {
+        NSString *result = [trimmed stringByReplacingOccurrencesOfString:dropboxPrefix
+                                                              withString:@"https://dl.dropboxusercontent.com/s/"];
         return [NSURL URLWithString:result];
     }
 
-    return [NSURL URLWithString:urlString];
+    return [NSURL URLWithString:trimmed];
 }
 
 @end

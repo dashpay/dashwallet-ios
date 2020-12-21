@@ -62,7 +62,9 @@ NS_ASSUME_NONNULL_END
 
 
 - (BOOL)isInputValid:(NSString *)input {
-    BOOL valid = input.length > 0 && [self validateEmailWithString:input];
+    NSString *trimmed = [input stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    BOOL valid = trimmed.length > 0 && [self validateEmailWithString:trimmed];
     if (valid) {
         return YES;
     }
@@ -75,9 +77,11 @@ NS_ASSUME_NONNULL_END
 - (void)performLoad:(NSString *)email {
     [self showLoadingView];
 
+    NSString *trimmed = [email stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
     // fetch size 200px (s=200) and fail if not found (d=404)
     NSString *urlString = [NSString stringWithFormat:@"https://www.gravatar.com/avatar/%@?s=200&d=404",
-                                                     [[email dw_MD5String] lowercaseString]];
+                                                     [[trimmed dw_MD5String] lowercaseString]];
     NSURL *url = [NSURL URLWithString:urlString];
 
     __weak typeof(self) weakSelf = self;
