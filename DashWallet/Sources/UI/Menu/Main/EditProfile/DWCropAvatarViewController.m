@@ -148,7 +148,16 @@ NS_ASSUME_NONNULL_END
                                            cropFrame.size.width / imageSize.width,
                                            cropFrame.size.height / imageSize.height);
         // dashpay-profile-pic-zoom=left,top,right,bottom
-        NSString *parameter = [NSString stringWithFormat:@"?dashpay-profile-pic-zoom=%f,%f,%f,%f",
+        NSString *paramSpecifier = nil;
+        if ([NSURLComponents componentsWithURL:self.imageURL resolvingAgainstBaseURL:NO].queryItems.count > 0) {
+            paramSpecifier = @"&";
+        }
+        else {
+            paramSpecifier = @"?";
+        }
+
+        NSString *parameter = [NSString stringWithFormat:@"%@dashpay-profile-pic-zoom=%f,%f,%f,%f",
+                                                        paramSpecifier,
                                                          rectOfInterest.origin.x,                               // left,
                                                          rectOfInterest.origin.y,                               // top
                                                          rectOfInterest.origin.x + rectOfInterest.size.width,   // right,
