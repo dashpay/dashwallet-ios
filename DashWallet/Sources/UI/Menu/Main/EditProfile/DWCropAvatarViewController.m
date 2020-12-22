@@ -157,7 +157,7 @@ NS_ASSUME_NONNULL_END
         }
 
         NSString *parameter = [NSString stringWithFormat:@"%@dashpay-profile-pic-zoom=%f,%f,%f,%f",
-                                                        paramSpecifier,
+                                                         paramSpecifier,
                                                          rectOfInterest.origin.x,                               // left,
                                                          rectOfInterest.origin.y,                               // top
                                                          rectOfInterest.origin.x + rectOfInterest.size.width,   // right,
