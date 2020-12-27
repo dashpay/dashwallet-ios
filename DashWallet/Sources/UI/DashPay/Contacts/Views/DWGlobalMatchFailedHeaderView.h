@@ -15,28 +15,11 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "BaseCollectionReusableView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSearchStateViewController;
-
-@protocol DWSearchStateViewControllerDelegate <NSObject>
-
-- (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender;
-
-@end
-
-@interface DWSearchStateViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWSearchStateViewControllerDelegate> delegate;
-
-- (void)setPlaceholderGlobalState;
-- (void)setPlaceholderLocalState;
-- (void)setSearchingStateWithQuery:(NSString *)query;
-- (void)setNoResultsGlobalStateWithQuery:(NSString *)query;
-- (void)setNoResultsLocalStateWithQuery:(NSString *)query;
-- (void)setErrorState;
+@interface DWGlobalMatchFailedHeaderView : BaseCollectionReusableView
 
 @end
 

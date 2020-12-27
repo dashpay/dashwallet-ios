@@ -95,6 +95,7 @@ NS_ASSUME_NONNULL_END
     [super searchBar:searchBar textDidChange:searchText];
 
     if (self.intent == DWContactsControllerIntent_Default) {
+        self.contentController.matchFailed = NO;
         self.contentController.matchedItems = @[];
         [self.model.globalSearchModel searchWithQuery:self.searchBar.text];
     }
@@ -167,6 +168,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserSearchModelDelegate
 
 - (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model {
+    self.contentController.matchFailed = NO;
     self.contentController.matchedItems = @[];
 }
 
@@ -194,10 +196,12 @@ NS_ASSUME_NONNULL_END
             break;
         }
     }
+    self.contentController.matchFailed = NO;
     self.contentController.matchedItems = selected;
 }
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error {
+    self.contentController.matchFailed = YES;
     self.contentController.matchedItems = @[];
 }
 

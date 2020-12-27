@@ -19,24 +19,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSearchStateViewController;
+typedef NS_ENUM(NSUInteger, DWErrorDescriptionType) {
+    DWErrorDescriptionType_Profile,
+};
 
-@protocol DWSearchStateViewControllerDelegate <NSObject>
+@interface DWNetworkErrorViewController : UIViewController
 
-- (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender;
+- (instancetype)initWithType:(DWErrorDescriptionType)type;
 
-@end
-
-@interface DWSearchStateViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWSearchStateViewControllerDelegate> delegate;
-
-- (void)setPlaceholderGlobalState;
-- (void)setPlaceholderLocalState;
-- (void)setSearchingStateWithQuery:(NSString *)query;
-- (void)setNoResultsGlobalStateWithQuery:(NSString *)query;
-- (void)setNoResultsLocalStateWithQuery:(NSString *)query;
-- (void)setErrorState;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
 

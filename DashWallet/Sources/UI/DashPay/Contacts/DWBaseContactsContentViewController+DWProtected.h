@@ -20,6 +20,7 @@
 #import "DWContactsSearchInfoHeaderView.h"
 #import "DWContactsSearchPlaceholderView.h"
 #import "DWFilterHeaderView.h"
+#import "DWGlobalMatchFailedHeaderView.h"
 #import "DWGlobalMatchHeaderView.h"
 #import "DWTitleActionHeaderView.h"
 
@@ -37,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) DWTitleActionHeaderView *measuringRequestsHeaderView;
 @property (null_resettable, nonatomic, strong) DWFilterHeaderView *measuringContactsHeaderView;
 @property (null_resettable, nonatomic, strong) DWGlobalMatchHeaderView *measuringGlobalMatchHeaderView;
+@property (null_resettable, nonatomic, strong) DWGlobalMatchFailedHeaderView *measuringGlobalMatchFailedHeaderView;
 
 @property (null_resettable, nonatomic, copy) NSAttributedString *searchHeaderTitle;
 @property (null_resettable, nonatomic, copy) NSString *requestsHeaderTitle;

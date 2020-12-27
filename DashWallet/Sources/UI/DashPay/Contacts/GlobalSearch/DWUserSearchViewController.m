@@ -107,7 +107,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error {
     [self.resultsController dw_detachFromParent];
-    [self.stateController setErrorStateWithError:error];
+    [self.stateController setErrorState];
 }
 
 #pragma mark - DWUserSearchResultViewControllerDelegate

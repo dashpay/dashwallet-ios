@@ -592,6 +592,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Tarifa e rrjetit";
 
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "New";
 
@@ -1073,6 +1076,9 @@
 "Unable to connect" = "Unable to connect";
 
 /* No comment provided by engineer. */
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
 "Unable to fetch image. Please enter a valid image URL." = "Unable to fetch image. Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
@@ -1080,6 +1086,12 @@
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Unable to get new QR code";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";

@@ -21,6 +21,7 @@
 #import "DWDPTxItem.h"
 #import "DWFilterHeaderView.h"
 #import "DWInfoPopupViewController.h"
+#import "DWNetworkErrorViewController.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
@@ -303,6 +304,11 @@ NS_ASSUME_NONNULL_END
 
 - (void)userProfileModelDidUpdate:(DWUserProfileModel *)model {
     [self.collectionView reloadData];
+
+    if (model.state == DWUserProfileModelState_Error) {
+        DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_Profile];
+        [self presentViewController:controller animated:YES completion:nil];
+    }
 }
 
 #pragma mark - DWUserProfileHeaderViewDelegate

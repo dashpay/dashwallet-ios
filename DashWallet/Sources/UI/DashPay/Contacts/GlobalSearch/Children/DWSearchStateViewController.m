@@ -40,7 +40,6 @@ typedef NS_ENUM(NSUInteger, DWUserSearchState) {
 
 @property (nonatomic, assign) DWUserSearchState state;
 @property (nullable, copy, nonatomic) NSString *searchQuery;
-@property (nullable, nonatomic, strong) NSError *error;
 
 @end
 
@@ -50,7 +49,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)setPlaceholderGlobalState {
     self.searchQuery = nil;
-    self.error = nil;
     self.state = DWUserSearchState_PlaceholderGlobal;
 
     [self reloadData];
@@ -58,7 +56,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)setPlaceholderLocalState {
     self.searchQuery = nil;
-    self.error = nil;
     self.state = DWUserSearchState_PlaceholderLocal;
 
     [self reloadData];
@@ -66,7 +63,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)setSearchingStateWithQuery:(NSString *)query {
     self.searchQuery = query;
-    self.error = nil;
     self.state = DWUserSearchState_Searching;
 
     [self reloadData];
@@ -74,7 +70,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)setNoResultsGlobalStateWithQuery:(NSString *)query {
     self.searchQuery = query;
-    self.error = nil;
     self.state = DWUserSearchState_NoResultsGlobal;
 
     [self reloadData];
@@ -82,15 +77,13 @@ NS_ASSUME_NONNULL_END
 
 - (void)setNoResultsLocalStateWithQuery:(NSString *)query {
     self.searchQuery = query;
-    self.error = nil;
     self.state = DWUserSearchState_NoResultsLocal;
 
     [self reloadData];
 }
 
-- (void)setErrorStateWithError:(NSError *)error {
+- (void)setErrorState {
     self.searchQuery = nil;
-    self.error = error;
     self.state = DWUserSearchState_Error;
 
     [self reloadData];
@@ -345,24 +338,22 @@ NS_ASSUME_NONNULL_END
 
     [self.iconImageView stopAnimating];
     self.iconImageView.animationImages = nil;
-    self.iconImageView.image = [UIImage imageNamed:@"dp_user_search_warning"];
+    self.iconImageView.image = [UIImage imageNamed:@"network_unavailable"];
 
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
 
     NSAttributedString *title =
-        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Error", nil)
+        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Network Unavailable", nil)
                                         attributes:@{NSFontAttributeName : self.boldFont}];
     [result appendAttributedString:title];
 
-    if (self.error) {
-        [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+    [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
 
-        NSAttributedString *subtitle =
-            [[NSAttributedString alloc] initWithString:self.error.localizedDescription
-                                            attributes:@{NSFontAttributeName : self.regularFont}];
-        [result appendAttributedString:subtitle];
-    }
+    NSAttributedString *subtitle =
+        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Unable to search for a user", nil)
+                                        attributes:@{NSFontAttributeName : self.regularFont}];
+    [result appendAttributedString:subtitle];
 
     [result endEditing];
 
@@ -378,7 +369,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UIFont *)regularFont {
-    return [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 }
 
 - (UIFont *)boldFont {

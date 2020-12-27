@@ -19,24 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSearchStateViewController;
+@interface DWNetworkUnavailableView : UIView
 
-@protocol DWSearchStateViewControllerDelegate <NSObject>
-
-- (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender;
-
-@end
-
-@interface DWSearchStateViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWSearchStateViewControllerDelegate> delegate;
-
-- (void)setPlaceholderGlobalState;
-- (void)setPlaceholderLocalState;
-- (void)setSearchingStateWithQuery:(NSString *)query;
-- (void)setNoResultsGlobalStateWithQuery:(NSString *)query;
-- (void)setNoResultsLocalStateWithQuery:(NSString *)query;
-- (void)setErrorState;
+@property (nullable, copy, nonatomic) NSString *error;
 
 @end
 

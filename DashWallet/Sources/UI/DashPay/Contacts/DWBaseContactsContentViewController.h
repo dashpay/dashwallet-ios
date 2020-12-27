@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<DWContactsDataSource> dataSource;
 
 @property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem>> *matchedItems;
+@property (nonatomic, assign) BOOL matchFailed;
 
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;

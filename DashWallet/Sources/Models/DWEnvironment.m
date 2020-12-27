@@ -319,11 +319,11 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 }
 
 - (NSString *)currentDevnetIdentifier {
-    return DWPalinkaDevnetIdentifier;
+    return DWEvoDevnetIdentifier;
 }
 
 - (DSChain *)currentDevnetChain {
-    return [self palinkaDevnetChain];
+    return [self evoDevnetChain];
 }
 
 - (DSChain *)mobileDevnetChain {
