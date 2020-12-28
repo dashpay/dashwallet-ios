@@ -21,8 +21,8 @@
 #import "DWButton.h"
 #import "DWUIKit.h"
 
+#import "UIImageView+DWDPAvatar.h"
 #import <DashSync/DashSync.h>
-#import <SDWebImage/SDWebImage.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -116,8 +116,21 @@ NS_ASSUME_NONNULL_END
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
 
-    NSURL *url = [NSURL URLWithString:blockchainIdentity.avatarPath];
-    [self.avatarImageView sd_setImageWithURL:url placeholderImage:[UIImage imageNamed:@"dp_current_user_placeholder"]];
+    __weak typeof(self) weakSelf = self;
+    [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
+                                         completion:^(UIImage *_Nullable image) {
+                                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                                             if (!strongSelf) {
+                                                 return;
+                                             }
+
+                                             if (image) {
+                                                 strongSelf.avatarImageView.image = image;
+                                             }
+                                             else {
+                                                 strongSelf.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
+                                             }
+                                         }];
 
     [self reloadAttributedData];
 }

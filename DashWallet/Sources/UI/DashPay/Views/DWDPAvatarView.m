@@ -20,10 +20,12 @@
 #import "DWUIKit.h"
 #import "UIColor+DWDashPay.h"
 
+#import "UIImageView+DWDPAvatar.h"
 #import <DashSync/DashSync.h>
-#import <SDWebImage/SDWebImage.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+NSString *const DPCropParameterName = @"dashpay-profile-pic-zoom";
 
 @interface DWDPAvatarView ()
 
@@ -71,25 +73,25 @@ NS_ASSUME_NONNULL_END
     _blockchainIdentity = blockchainIdentity;
 
     NSString *username = blockchainIdentity.currentDashpayUsername;
-    NSURL *url = [NSURL URLWithString:blockchainIdentity.avatarPath];
-    __weak typeof(self) weakSelf = self;
-    [self.imageView
-        sd_setImageWithURL:url
-                 completed:^(UIImage *_Nullable image, NSError *_Nullable error, SDImageCacheType cacheType, NSURL *_Nullable imageURL) {
-                     __strong typeof(weakSelf) strongSelf = weakSelf;
-                     if (!strongSelf) {
-                         return;
-                     }
+    NSString *urlString = blockchainIdentity.avatarPath;
 
-                     if (image) {
-                         strongSelf.imageView.hidden = NO;
-                         strongSelf.letterLabel.hidden = YES;
-                         strongSelf.imageView.image = image;
-                     }
-                     else {
-                         [strongSelf setUsername:username];
-                     }
-                 }];
+    __weak typeof(self) weakSelf = self;
+    [self.imageView dw_setAvatarWithURLString:urlString
+                                   completion:^(UIImage *_Nullable image) {
+                                       __strong typeof(weakSelf) strongSelf = weakSelf;
+                                       if (!strongSelf) {
+                                           return;
+                                       }
+
+                                       if (image) {
+                                           strongSelf.imageView.hidden = NO;
+                                           strongSelf.letterLabel.hidden = YES;
+                                           strongSelf.imageView.image = image;
+                                       }
+                                       else {
+                                           [strongSelf setUsername:username];
+                                       }
+                                   }];
 }
 
 - (void)configureWithUsername:(NSString *)username {

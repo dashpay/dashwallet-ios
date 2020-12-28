@@ -22,6 +22,7 @@
 
 #import "DWActionButton.h"
 #import "DWBaseActionButtonViewController.h"
+#import "DWDPAvatarView.h"
 #import "DWFaceDetector.h"
 #import "DWUIKit.h"
 #import "DWUploadAvatarViewController.h"
@@ -156,8 +157,9 @@ NS_ASSUME_NONNULL_END
             paramSpecifier = @"?";
         }
 
-        NSString *parameter = [NSString stringWithFormat:@"%@dashpay-profile-pic-zoom=%f,%f,%f,%f",
+        NSString *parameter = [NSString stringWithFormat:@"%@%@=%f,%f,%f,%f",
                                                          paramSpecifier,
+                                                         DPCropParameterName,
                                                          rectOfInterest.origin.x,                               // left,
                                                          rectOfInterest.origin.y,                               // top
                                                          rectOfInterest.origin.x + rectOfInterest.size.width,   // right,

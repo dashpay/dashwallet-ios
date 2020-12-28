@@ -149,6 +149,7 @@
 		2A4EB4812598CFF200892E4D /* DWNetworkUnavailableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4802598CFF200892E4D /* DWNetworkUnavailableView.m */; };
 		2A4EB48B2598D69800892E4D /* DWNetworkErrorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB48A2598D69800892E4D /* DWNetworkErrorViewController.m */; };
 		2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */; };
+		2A4EB4E92599F50B00892E4D /* UIImageView+DWDPAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */; };
 		2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */; };
@@ -910,6 +911,8 @@
 		2A4EB48A2598D69800892E4D /* DWNetworkErrorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNetworkErrorViewController.m; sourceTree = "<group>"; };
 		2A4EB4AF259939AF00892E4D /* DWGlobalMatchFailedHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGlobalMatchFailedHeaderView.h; sourceTree = "<group>"; };
 		2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchFailedHeaderView.m; sourceTree = "<group>"; };
+		2A4EB4E72599F50B00892E4D /* UIImageView+DWDPAvatar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImageView+DWDPAvatar.h"; sourceTree = "<group>"; };
+		2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+DWDPAvatar.m"; sourceTree = "<group>"; };
 		2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayName.h"; sourceTree = "<group>"; };
 		2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSBlockchainIdentity+DWDisplayName.m"; sourceTree = "<group>"; };
 		2A5279BB23D994BC00F856D3 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
@@ -4228,6 +4231,8 @@
 				2AEC5CC1249755BB00F4A689 /* DWDashPayContactsUpdater.m */,
 				2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */,
 				2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */,
+				2A4EB4E72599F50B00892E4D /* UIImageView+DWDPAvatar.h */,
+				2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */,
 			);
 			path = Global;
 			sourceTree = "<group>";
@@ -5381,6 +5386,7 @@
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
 				2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */,
 				2A7AF39E2482FE46001D74F9 /* DWDateFormatter.m in Sources */,
+				2A4EB4E92599F50B00892E4D /* UIImageView+DWDPAvatar.m in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2ADDF994251B579100DA8926 /* DWUserProfileModalQRContentView.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
