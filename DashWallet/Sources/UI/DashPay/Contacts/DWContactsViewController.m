@@ -45,7 +45,16 @@ NS_ASSUME_NONNULL_END
 
     self.disableSearchPlaceholder = YES;
 
-    self.title = NSLocalizedString(@"Contacts", nil);
+    switch (self.intent) {
+        case DWContactsControllerIntent_Default:
+            self.title = NSLocalizedString(@"Contacts", nil);
+            break;
+
+        case DWContactsControllerIntent_PayToSelector:
+            self.title = NSLocalizedString(@"Send to a Contact", nil);
+            break;
+    }
+
     self.searchBar.placeholder = NSLocalizedString(@"Search for a contact", nil);
 
     UIImage *image = [[UIImage imageNamed:@"dp_add_contact"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];

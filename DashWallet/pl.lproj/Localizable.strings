@@ -901,6 +901,9 @@
 /* No comment provided by engineer. */
 "Send to" = "Wyślij do";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Zapłać na Adres";
 

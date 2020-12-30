@@ -901,6 +901,9 @@
 /* No comment provided by engineer. */
 "Send to" = "Изпрати на";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Изпрати до адрес";
 
