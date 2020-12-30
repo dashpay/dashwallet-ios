@@ -34,19 +34,25 @@ NS_ASSUME_NONNULL_END
 - (instancetype)init {
     self = [super init];
     if (self) {
-        NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
+        NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789-"];
         _illegalChars = [allowedCharacterSet invertedSet];
     }
     return self;
 }
 
 - (NSString *)title {
-    return NSLocalizedString(@"Letters and numbers only", @"Validation rule");
+    return NSLocalizedString(@"Letters, numbers, and a hyphen only", @"Validation rule");
 }
 
 - (void)validateText:(NSString *)text {
     if (text.length == 0) {
         self.validationResult = DWUsernameValidationRuleResultEmpty;
+        return;
+    }
+
+    // The user should be able use a hyphen anywhere in the username except the first or last characters
+    if ([text hasPrefix:@"-"] || [text hasSuffix:@"-"]) {
+        self.validationResult = DWUsernameValidationRuleResultInvalid;
         return;
     }
 

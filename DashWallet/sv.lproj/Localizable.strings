@@ -494,7 +494,7 @@
 "Let me know when it’s done" = "Let me know when it’s done";
 
 /* Validation rule */
-"Letters and numbers only" = "Letters and numbers only";
+"Letters, numbers, and a hyphen only" = "Letters, numbers, and a hyphen only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Link Uphold Account";
