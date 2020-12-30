@@ -34,6 +34,7 @@
     if (self) {
         _model = model;
         _model.delegate = self;
+        _model.context = self;
     }
     return self;
 }

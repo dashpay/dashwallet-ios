@@ -85,11 +85,11 @@
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
-    [DWDashPayContactsActions acceptContactRequest:item completion:nil];
+    [DWDashPayContactsActions acceptContactRequest:item context:self.context completion:nil];
 }
 
 - (void)declineContactRequest:(id<DWDPBasicUserItem>)item {
-    [DWDashPayContactsActions declineContactRequest:item completion:nil];
+    [DWDashPayContactsActions declineContactRequest:item context:self.context completion:nil];
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {

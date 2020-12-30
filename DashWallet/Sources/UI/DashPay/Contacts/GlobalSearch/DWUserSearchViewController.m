@@ -163,6 +163,7 @@ NS_ASSUME_NONNULL_END
     if (_model == nil) {
         DWUserSearchModel *model = [[DWUserSearchModel alloc] init];
         model.delegate = self;
+        model.context = self;
         _model = model;
     }
     return _model;

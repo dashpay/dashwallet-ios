@@ -79,6 +79,7 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _model = [[DWUserProfileModel alloc] initWithItem:item
                                            txDataProvider:dataProvider];
+        _model.context = self;
         _model.delegate = self;
         _model.shownAfterPayment = shownAfterPayment;
         if (shouldSkipUpdating) {
@@ -328,7 +329,12 @@ NS_ASSUME_NONNULL_END
     const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
     NSParameterAssert(canSendRequest);
     if (canSendRequest) {
-        [self.model sendContactRequest];
+        [self.model sendContactRequest:^(BOOL success) {
+            if (!success) {
+                DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_SendContactRequest];
+                [self presentViewController:controller animated:YES completion:nil];
+            }
+        }];
     }
 }
 

@@ -57,10 +57,12 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 
 @property (nonatomic, assign) BOOL shownAfterPayment;
 
+@property (nullable, nonatomic, weak) UIViewController *context;
+
 - (void)skipUpdating;
 - (void)update;
 
-- (void)sendContactRequest;
+- (void)sendContactRequest:(void (^)(BOOL success))completion;
 - (void)acceptContactRequest;
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item

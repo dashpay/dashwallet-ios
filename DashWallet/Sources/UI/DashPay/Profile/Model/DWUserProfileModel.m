@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_END
     return [self friendshipStatusInternal];
 }
 
-- (void)sendContactRequest {
+- (void)sendContactRequest:(void (^)(BOOL success))completion {
     self.requestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
@@ -135,6 +135,10 @@ NS_ASSUME_NONNULL_END
 
                                                             [strongSelf updateDataSource];
                                                             strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+
+                                                            if (completion) {
+                                                                completion(success);
+                                                            }
                                                         }];
 }
 
@@ -143,6 +147,7 @@ NS_ASSUME_NONNULL_END
 
     __weak typeof(self) weakSelf = self;
     [DWDashPayContactsActions acceptContactRequest:self.item
+                                           context:self.context
                                         completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
                                             __strong typeof(weakSelf) strongSelf = weakSelf;
                                             if (!strongSelf) {

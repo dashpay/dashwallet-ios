@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWErrorDescriptionType) {
     DWErrorDescriptionType_Profile,
+    DWErrorDescriptionType_AcceptContactRequest,
+    DWErrorDescriptionType_SendContactRequest,
 };
 
 @interface DWNetworkErrorViewController : UIViewController

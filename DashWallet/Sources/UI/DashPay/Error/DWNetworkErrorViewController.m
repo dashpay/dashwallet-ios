@@ -65,6 +65,12 @@ NS_ASSUME_NONNULL_END
         case DWErrorDescriptionType_Profile:
             errorView.error = NSLocalizedString(@"Unable to fetch contact details", nil);
             break;
+        case DWErrorDescriptionType_AcceptContactRequest:
+            errorView.error = NSLocalizedString(@"Unable to accept contact request", nil);
+            break;
+        case DWErrorDescriptionType_SendContactRequest:
+            errorView.error = NSLocalizedString(@"Unable to send contact request", nil);
+            break;
     }
     [contentView addSubview:errorView];
 

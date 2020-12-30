@@ -129,6 +129,7 @@ NS_ASSUME_NONNULL_END
     __weak typeof(self) weakSelf = self;
     [DWDashPayContactsActions
         acceptContactRequest:item
+                     context:self.context
                   completion:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
                       __strong typeof(weakSelf) strongSelf = weakSelf;
                       if (!strongSelf) {
@@ -141,7 +142,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)declineContactRequest:(id<DWDPBasicUserItem>)item {
-    [DWDashPayContactsActions declineContactRequest:item completion:nil];
+    [DWDashPayContactsActions declineContactRequest:item context:self.context completion:nil];
 }
 
 #pragma mark Private

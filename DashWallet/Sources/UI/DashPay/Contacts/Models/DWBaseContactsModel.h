@@ -39,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) DWContactsSortMode sortMode;
 
+@property (nullable, nonatomic, weak) UIViewController *context;
+
 - (void)start;
 - (void)stop;
 

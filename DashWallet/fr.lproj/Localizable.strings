@@ -1073,6 +1073,9 @@
 "Turn device passcode on" = "Activer le code d'accès de l'appareil";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "Impossible de se connecter";
 
 /* No comment provided by engineer. */
@@ -1092,6 +1095,9 @@
 
 /* No comment provided by engineer. */
 "Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";

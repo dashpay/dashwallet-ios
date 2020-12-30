@@ -62,7 +62,9 @@ NS_ASSUME_NONNULL_END
     if (!_model) {
         _model = [[DWContactsModel alloc] init];
         _model.delegate = self;
+        _model.context = self;
         _model.globalSearchModel.delegate = self;
+        _model.globalSearchModel.context = self;
     }
     return _model;
 }

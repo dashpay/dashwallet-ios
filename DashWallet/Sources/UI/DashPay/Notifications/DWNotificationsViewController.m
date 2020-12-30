@@ -235,6 +235,7 @@ NS_ASSUME_NONNULL_END
     if (!_model) {
         _model = [[DWNotificationsModel alloc] init];
         _model.delegate = self;
+        _model.context = self;
     }
     return _model;
 }
