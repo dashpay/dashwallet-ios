@@ -261,7 +261,34 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)updateBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self.detailsLabel.text = blockchainIdentity.currentDashpayUsername;
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+    [result beginEditing];
+
+    BOOL hasDisplayName = blockchainIdentity.displayName.length > 0;
+    NSString *title = hasDisplayName ? blockchainIdentity.displayName : blockchainIdentity.currentDashpayUsername;
+
+    NSAttributedString *titleString = [[NSAttributedString alloc]
+        initWithString:title
+            attributes:@{
+                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline],
+                NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+            }];
+    [result appendAttributedString:titleString];
+
+    if (hasDisplayName) {
+        NSString *subtitle = [NSString stringWithFormat:@"\n%@", blockchainIdentity.currentDashpayUsername];
+        NSAttributedString *subtitleString = [[NSAttributedString alloc]
+            initWithString:subtitle
+                attributes:@{
+                    NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
+                    NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
+                }];
+        [result appendAttributedString:subtitleString];
+    }
+
+    [result endEditing];
+
+    self.detailsLabel.attributedText = result;
     self.avatarView.blockchainIdentity = blockchainIdentity;
 
     [self setScrollingPercent:0.0];
