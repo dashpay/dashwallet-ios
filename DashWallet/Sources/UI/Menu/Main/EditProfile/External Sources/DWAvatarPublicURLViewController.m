@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_END
                            [strongSelf.delegate externalSourceViewController:self didLoadImage:image url:url shouldCrop:YES];
                        }
                        else {
-                           [strongSelf showError:NSLocalizedString(@"Unable to fetch image. Please enter a valid image URL.", nil)];
+                           [strongSelf showError:NSLocalizedString(@"Unable to fetch image. Please enter a valid image URL or check your connection.", nil)];
                        }
                    }];
 }

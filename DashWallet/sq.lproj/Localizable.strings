@@ -1085,7 +1085,7 @@
 "Unable to fetch contact details" = "Unable to fetch contact details";
 
 /* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL." = "Unable to fetch image. Please enter a valid image URL.";
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
