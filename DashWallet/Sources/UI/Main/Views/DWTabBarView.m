@@ -24,8 +24,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const DW_TABBAR_HEIGHT = 64.0;
-static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
 static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
 
@@ -127,8 +125,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
 }
 
 - (CGSize)intrinsicContentSize {
-    return CGSizeMake(UIViewNoIntrinsicMetric,
-                      DEVICE_HAS_HOME_INDICATOR ? TABBAR_HEIGHT_LARGE : DW_TABBAR_HEIGHT);
+    return CGSizeMake(UIViewNoIntrinsicMetric, DW_TABBAR_HEIGHT);
 }
 
 - (void)layoutSubviews {
