@@ -337,6 +337,7 @@ PODS:
     - BoringSSL-GRPC/Interface (= 0.0.14)
   - BoringSSL-GRPC/Interface (0.0.14)
   - CloudInAppMessaging (0.1.0)
+  - CocoaImageHashing (1.9.0)
   - CocoaLumberjack (3.6.0):
     - CocoaLumberjack/Core (= 3.6.0)
   - CocoaLumberjack/Core (3.6.0)
@@ -425,6 +426,7 @@ PODS:
 
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
+  - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
   - DAPI-GRPC (from `../DashSync/`)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.1)
@@ -461,6 +463,9 @@ SPEC REPOS:
     - UIViewController-KeyboardAdditions
 
 EXTERNAL SOURCES:
+  CocoaImageHashing:
+    :commit: ad01eee
+    :git: https://github.com/ameingast/cocoaimagehashing.git
   DAPI-GRPC:
     :path: "../DashSync/"
   DashSync:
@@ -470,6 +475,9 @@ EXTERNAL SOURCES:
     :git: https://github.com/podkovyrin/MMSegmentSlider
 
 CHECKOUT OPTIONS:
+  CocoaImageHashing:
+    :commit: ad01eee
+    :git: https://github.com/ameingast/cocoaimagehashing.git
   MMSegmentSlider:
     :commit: 2d91366
     :git: https://github.com/podkovyrin/MMSegmentSlider
@@ -481,6 +489,7 @@ SPEC CHECKSUMS:
   bls-signatures-pod: 6bca9f1d2c67d321d935713d49c272880989f169
   BoringSSL-GRPC: 63bef04e04730659f5125c3f27d72df324f68f59
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
+  CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   DAPI-GRPC: 1e6b58642afd19d1e7167a40557da02bf43cef7c
   DashSync: f4b0c036ddd9ebe00f8f45ef0db47fdf7809d1ef
@@ -501,6 +510,6 @@ SPEC CHECKSUMS:
   TOCropViewController: da59f531f8ac8a94ef6d6c0fc34009350f9e8bfe
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 70c7c378f11575f976ec99165dba00cdfad3b7e9
+PODFILE CHECKSUM: 2d1cc531964f505984889a7d4ce25d385d8fa1d7
 
 COCOAPODS: 1.10.0

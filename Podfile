@@ -13,6 +13,8 @@ target 'dashwallet' do
   pod 'TOCropViewController', '2.5.5'
   pod 'SDWebImage', '5.9.4'
 
+  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
+
   # Debugging purposes
 #  pod 'Reveal-SDK', :configurations => ['Debug']
   
