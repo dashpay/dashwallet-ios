@@ -124,7 +124,8 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWBaseContactsContentViewController
 
 - (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
-                                didSelect:(id<DWDPBasicUserItem>)item {
+                                didSelect:(id<DWDPBasicUserItem>)item
+                                indexPath:(NSIndexPath *)indexPath {
     DWUserProfileViewController *profileController =
         [[DWUserProfileViewController alloc] initWithItem:item
                                                  payModel:self.payModel

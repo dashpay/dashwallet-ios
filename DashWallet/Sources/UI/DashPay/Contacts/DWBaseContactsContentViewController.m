@@ -227,7 +227,7 @@ static NSString *const DummyCellId = @"DummyCellId";
 
     id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
 
-    [self.delegate baseContactsContentViewController:self didSelect:item];
+    [self.delegate baseContactsContentViewController:self didSelect:item indexPath:indexPath];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout

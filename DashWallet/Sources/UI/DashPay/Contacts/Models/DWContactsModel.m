@@ -38,6 +38,12 @@
     return self;
 }
 
+- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+}
+
 - (DWRequestsModel *)contactRequestsModel {
     return [[DWRequestsModel alloc] initWithRequestsDataSource:self.requestsDataSource];
 }

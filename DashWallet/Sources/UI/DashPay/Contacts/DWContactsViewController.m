@@ -25,6 +25,7 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -114,9 +115,17 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWBaseContactsContentViewControllerDelegate
 
-- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller didSelect:(id<DWDPBasicUserItem>)item {
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
+                                didSelect:(id<DWDPBasicUserItem>)item
+                                indexPath:(NSIndexPath *)indexPath {
+    if (![self.model canOpenBlockchainIdentity:item.blockchainIdentity]) {
+        UICollectionViewCell *cell = [self.contentController.collectionView cellForItemAtIndexPath:indexPath];
+        [cell dw_shakeView];
+        return;
+    }
+
     if (self.intent == DWContactsControllerIntent_Default) {
-        [super baseContactsContentViewController:controller didSelect:item];
+        [super baseContactsContentViewController:controller didSelect:item indexPath:indexPath];
     }
     else {
         [self.payDelegate contactsViewController:self payToItem:item];

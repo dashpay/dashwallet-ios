@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) DWUserSearchModel *globalSearchModel;
 
+- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 - (DWRequestsModel *)contactRequestsModel;
 
 @end
