@@ -282,12 +282,23 @@ static CGFloat ActionButtonsHeight(void) {
 - (void)setupView {
     NSParameterAssert(self.model);
 
+    NSLocale *locale = [NSLocale currentLocale];
+    const BOOL isEN = [locale.localeIdentifier hasPrefix:@"en"];
+
     self.pinInputView.delegate = self;
     [self.pinInputView configureWithKeyboard:self.keyboarView];
 
     [self.forgotPinButton setTitle:NSLocalizedString(@"Forgot PIN?", nil) forState:UIControlStateNormal];
 
-    self.quickReceiveButton.title = NSLocalizedString(@"Quick Receive", nil);
+    if (isEN) {
+        self.quickReceiveButton.title = NSLocalizedString(@"Quick Receive", nil);
+        self.scanToPayButton.title = NSLocalizedString(@"Scan to Send", nil);
+    }
+    else {
+        self.quickReceiveButton.title = NSLocalizedString(@"Receive", nil);
+        self.scanToPayButton.title = NSLocalizedString(@"Send", nil);
+    }
+
     self.quickReceiveButton.image = [UIImage imageNamed:@"icon_lock_receive"];
 
     switch (self.model.biometryType) {
@@ -311,7 +322,6 @@ static CGFloat ActionButtonsHeight(void) {
     }
     [self hideLoginButtonIfNeeded];
 
-    self.scanToPayButton.title = NSLocalizedString(@"Scan to Send", nil);
     self.scanToPayButton.image = [UIImage imageNamed:@"icon_lock_scan_to_pay"];
 
     [self.keyboarView configureFunctionButtonAsHidden];
