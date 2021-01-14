@@ -49,7 +49,7 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         //        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
         // TODO: DP specific (for use in DashPay only)
-        [userDefaults setInteger:DSChainType_DevNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:DSChainType_TestNet forKey:CURRENT_CHAIN_TYPE_KEY];
         // END TODO
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
