@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,33 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWAllowedCharactersUsernameValidationRule.h"
+#import "DWFirstUsernameSymbolValidationRule.h"
 
 #import "DWUsernameValidationRule+Protected.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWAllowedCharactersUsernameValidationRule ()
-
-@property (readonly, strong, nonatomic) NSCharacterSet *illegalChars;
-
-@end
-
-NS_ASSUME_NONNULL_END
-
-@implementation DWAllowedCharactersUsernameValidationRule
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"];
-        _illegalChars = [allowedCharacterSet invertedSet];
-    }
-    return self;
-}
+@implementation DWFirstUsernameSymbolValidationRule
 
 - (NSString *)title {
-    return NSLocalizedString(@"Letters, numbers and hyphens only", @"Validation rule");
+    return NSLocalizedString(@"Must start with a letter or number", @"Validation rule");
 }
 
 - (void)validateText:(NSString *)text {
@@ -56,8 +37,8 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:self.illegalChars].location != NSNotFound;
-    self.validationResult = hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
+    self.validationResult = DWUsernameValidationRuleResultValid;
 }
+
 
 @end

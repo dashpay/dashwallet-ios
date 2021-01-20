@@ -494,7 +494,7 @@
 "Let me know when it’s done" = "Let me know when it’s done";
 
 /* Validation rule */
-"Letters, numbers, and a hyphen only" = "Letters, numbers, and a hyphen only";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Upholdアカウントをリンクさせる";
@@ -579,6 +579,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "アドレスへ移動した";
+
+/* Validation rule */
+"Must start with a letter or number" = "Must start with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "My Contacts";

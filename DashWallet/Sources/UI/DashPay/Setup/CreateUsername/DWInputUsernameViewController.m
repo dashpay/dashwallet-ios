@@ -24,6 +24,7 @@
 #import "DWBaseActionButtonViewController.h"
 #import "DWCheckExistenceUsernameValidationRule.h"
 #import "DWDashPayConstants.h"
+#import "DWFirstUsernameSymbolValidationRule.h"
 #import "DWMaxLengthUsernameValidationRule.h"
 #import "DWMinLengthUsernameValidationRule.h"
 #import "DWTextField.h"
@@ -70,6 +71,7 @@ NS_ASSUME_NONNULL_END
         [[DWMinLengthUsernameValidationRule alloc] init],
         [[DWAllowedCharactersUsernameValidationRule alloc] init],
         [[DWMaxLengthUsernameValidationRule alloc] init],
+        [[DWFirstUsernameSymbolValidationRule alloc] init],
         self.checkExistenceValidator,
     ];
 

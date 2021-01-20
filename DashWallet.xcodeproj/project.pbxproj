@@ -101,6 +101,7 @@
 		2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */; };
 		2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */; };
 		2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */; };
+		2A429A9725B8610500A847F7 /* DWFirstUsernameSymbolValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */; };
 		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
 		2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
@@ -825,6 +826,8 @@
 		2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverWalletCommand.m; sourceTree = "<group>"; };
 		2A3DC86F23972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"; sourceTree = "<group>"; };
 		2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.m"; sourceTree = "<group>"; };
+		2A429A8F25B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFirstUsernameSymbolValidationRule.h; sourceTree = "<group>"; };
+		2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFirstUsernameSymbolValidationRule.m; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		2A4430EA22CBBA82009BAF7F /* Setup.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Setup.storyboard; sourceTree = "<group>"; };
@@ -3323,6 +3326,8 @@
 				2A9E7DCC23F6C01A00CDA1EE /* DWUsernameValidationRule.h */,
 				2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */,
 				2A5BD5992451F1A100688A8D /* DWUsernameValidationRule+Protected.h */,
+				2A429A8F25B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.h */,
+				2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -5490,6 +5495,7 @@
 				2ACCD8E2231E507900A96B62 /* DWPinInputStepView.m in Sources */,
 				2AC52AD6241BB5FC00D9A829 /* DWDashPaySetupFlowController.m in Sources */,
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
+				2A429A9725B8610500A847F7 /* DWFirstUsernameSymbolValidationRule.m in Sources */,
 				2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */,
 				2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
