@@ -87,8 +87,14 @@ NS_ASSUME_NONNULL_END
     [self.delegate userProfileModelDidUpdate:self];
 }
 
-- (void)setRequestState:(DWUserProfileModelState)requestState {
-    _requestState = requestState;
+- (void)setSendRequestState:(DWUserProfileModelState)sendRequestState {
+    _sendRequestState = sendRequestState;
+
+    [self.delegate userProfileModelDidUpdate:self];
+}
+
+- (void)setAcceptRequestState:(DWUserProfileModelState)acceptRequestState {
+    _acceptRequestState = acceptRequestState;
 
     [self.delegate userProfileModelDidUpdate:self];
 }
@@ -120,8 +126,34 @@ NS_ASSUME_NONNULL_END
     return [self friendshipStatusInternal];
 }
 
+- (BOOL)shouldShowActions {
+    if (self.state != DWUserProfileModelState_Done) {
+        return NO;
+    }
+
+    const DSBlockchainIdentityFriendshipStatus status = self.friendshipStatus;
+    return (status == DSBlockchainIdentityFriendshipStatus_Incoming ||
+            status == DSBlockchainIdentityFriendshipStatus_None ||
+            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
+}
+
+- (BOOL)shouldShowSendRequestAction {
+    NSParameterAssert(self.state == DWUserProfileModelState_Done);
+
+    const DSBlockchainIdentityFriendshipStatus status = self.friendshipStatus;
+    return (status == DSBlockchainIdentityFriendshipStatus_None ||
+            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
+}
+
+- (BOOL)shouldShowAcceptDeclineRequestAction {
+    NSParameterAssert(self.state == DWUserProfileModelState_Done);
+
+    const DSBlockchainIdentityFriendshipStatus status = self.friendshipStatus;
+    return status == DSBlockchainIdentityFriendshipStatus_Incoming;
+}
+
 - (void)sendContactRequest:(void (^)(BOOL success))completion {
-    self.requestState = DWUserProfileModelState_Loading;
+    self.sendRequestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
@@ -134,7 +166,7 @@ NS_ASSUME_NONNULL_END
                                                             }
 
                                                             [strongSelf updateDataSource];
-                                                            strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                                            strongSelf.sendRequestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
 
                                                             if (completion) {
                                                                 completion(success);
@@ -143,7 +175,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)acceptContactRequest {
-    self.requestState = DWUserProfileModelState_Loading;
+    self.acceptRequestState = DWUserProfileModelState_Loading;
 
     __weak typeof(self) weakSelf = self;
     [DWDashPayContactsActions acceptContactRequest:self.item
@@ -155,7 +187,7 @@ NS_ASSUME_NONNULL_END
                                             }
 
                                             [strongSelf updateDataSource];
-                                            strongSelf.requestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                            strongSelf.acceptRequestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
                                         }];
 }
 

@@ -50,7 +50,8 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 @property (readonly, nonatomic, copy) NSString *username;
 @property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
 @property (readonly, nonatomic, strong) id<DWUserProfileDataSource> dataSource;
-@property (readonly, nonatomic, assign) DWUserProfileModelState requestState;
+@property (readonly, nonatomic, assign) DWUserProfileModelState sendRequestState;
+@property (readonly, nonatomic, assign) DWUserProfileModelState acceptRequestState;
 @property (readonly, nonatomic, assign) BOOL shouldAcceptIncomingAfterPayment;
 
 @property (nullable, nonatomic, weak) id<DWUserProfileModelDelegate> delegate;
@@ -58,6 +59,10 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 @property (nonatomic, assign) BOOL shownAfterPayment;
 
 @property (nullable, nonatomic, weak) UIViewController *context;
+
+- (BOOL)shouldShowActions;
+- (BOOL)shouldShowSendRequestAction;
+- (BOOL)shouldShowAcceptDeclineRequestAction;
 
 - (void)skipUpdating;
 - (void)update;

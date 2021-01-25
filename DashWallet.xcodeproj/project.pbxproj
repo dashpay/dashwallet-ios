@@ -152,6 +152,7 @@
 		2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */; };
 		2A4EB4E92599F50B00892E4D /* UIImageView+DWDPAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */; };
 		2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */; };
+		2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */; };
 		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
@@ -918,6 +919,8 @@
 		2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+DWDPAvatar.m"; sourceTree = "<group>"; };
 		2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayName.h"; sourceTree = "<group>"; };
 		2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSBlockchainIdentity+DWDisplayName.m"; sourceTree = "<group>"; };
+		2A520C8B25BF093E00FC5650 /* DWPendingContactInfoView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPendingContactInfoView.h; sourceTree = "<group>"; };
+		2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPendingContactInfoView.m; sourceTree = "<group>"; };
 		2A5279BB23D994BC00F856D3 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
 		2A56EEF92417E30F002C32F3 /* DWConfirmUsernameContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameContentView.h; sourceTree = "<group>"; };
 		2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameContentView.m; sourceTree = "<group>"; };
@@ -3969,6 +3972,8 @@
 				2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */,
 				2A80F3D724DC55CC003E3B1E /* DWUserProfileSendRequestCell.h */,
 				2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */,
+				2A520C8B25BF093E00FC5650 /* DWPendingContactInfoView.h */,
+				2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5254,6 +5259,7 @@
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
+				2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
