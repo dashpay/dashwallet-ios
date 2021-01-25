@@ -50,12 +50,6 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    // The user should be able use a hyphen anywhere in the username except the first or last characters
-    if ([text hasPrefix:@"-"] || [text hasSuffix:@"-"]) {
-        self.validationResult = DWUsernameValidationRuleResultInvalid;
-        return;
-    }
-
     BOOL hasIllegalCharacter = [text rangeOfCharacterFromSet:self.illegalChars].location != NSNotFound;
     self.validationResult = hasIllegalCharacter ? DWUsernameValidationRuleResultInvalid : DWUsernameValidationRuleResultValid;
 }

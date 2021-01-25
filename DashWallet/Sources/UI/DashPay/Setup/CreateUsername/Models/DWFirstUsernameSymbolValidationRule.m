@@ -26,8 +26,8 @@
 }
 
 - (void)validateText:(NSString *)text {
-    if (text.length == 0) {
-        self.validationResult = DWUsernameValidationRuleResultEmpty;
+    if (text.length == 0 || [text rangeOfString:@"-"].location == NSNotFound) {
+        self.validationResult = DWUsernameValidationRuleResultHidden;
         return;
     }
 

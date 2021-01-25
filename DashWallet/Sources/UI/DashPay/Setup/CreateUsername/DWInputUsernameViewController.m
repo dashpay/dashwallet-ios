@@ -166,7 +166,7 @@ NS_ASSUME_NONNULL_END
         isDone = YES;
         string = @"";
     }
-    NSString *text = [[self.textField.text stringByReplacingCharactersInRange:range withString:string] lowercaseString];
+    NSString *text = [self.textField.text stringByReplacingCharactersInRange:range withString:string];
     for (DWUsernameValidationView *validationView in self.validationViews) {
         DWUsernameValidationRule *validator = validationView.rule;
         [validator validateText:text];
