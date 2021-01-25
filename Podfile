@@ -31,7 +31,7 @@ end
 target 'TodayExtension' do
   platform :ios, '12.0'
   
-  pod 'DSDynamicOptions', '0.1.1'
+  pod 'DSDynamicOptions', '0.1.2'
 
 end
 
