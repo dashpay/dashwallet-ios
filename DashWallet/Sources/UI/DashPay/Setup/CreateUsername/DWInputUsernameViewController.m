@@ -25,8 +25,7 @@
 #import "DWCheckExistenceUsernameValidationRule.h"
 #import "DWDashPayConstants.h"
 #import "DWFirstUsernameSymbolValidationRule.h"
-#import "DWMaxLengthUsernameValidationRule.h"
-#import "DWMinLengthUsernameValidationRule.h"
+#import "DWLengthUsernameValidationRule.h"
 #import "DWTextField.h"
 #import "DWUIKit.h"
 #import "DWUsernameValidationView.h"
@@ -68,9 +67,8 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     NSArray<DWUsernameValidationRule *> *validators = @[
-        [[DWMinLengthUsernameValidationRule alloc] init],
+        [[DWLengthUsernameValidationRule alloc] init],
         [[DWAllowedCharactersUsernameValidationRule alloc] init],
-        [[DWMaxLengthUsernameValidationRule alloc] init],
         [[DWFirstUsernameSymbolValidationRule alloc] init],
         self.checkExistenceValidator,
     ];

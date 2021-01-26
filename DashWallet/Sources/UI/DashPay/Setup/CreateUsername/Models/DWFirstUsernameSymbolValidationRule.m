@@ -22,7 +22,7 @@
 @implementation DWFirstUsernameSymbolValidationRule
 
 - (NSString *)title {
-    return NSLocalizedString(@"Must start with a letter or number", @"Validation rule");
+    return NSLocalizedString(@"Must start and end with a letter or number", @"Validation rule");
 }
 
 - (void)validateText:(NSString *)text {

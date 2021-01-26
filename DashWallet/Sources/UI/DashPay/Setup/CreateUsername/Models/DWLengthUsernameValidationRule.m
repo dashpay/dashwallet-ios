@@ -15,25 +15,27 @@
 //  limitations under the License.
 //
 
-#import "DWMinLengthUsernameValidationRule.h"
+#import "DWLengthUsernameValidationRule.h"
 
 #import "DWDashPayConstants.h"
 #import "DWUsernameValidationRule+Protected.h"
 
-@implementation DWMinLengthUsernameValidationRule
+@implementation DWLengthUsernameValidationRule
 
 - (NSString *)title {
-    return NSLocalizedString(@"Minimum 3 characters", @"Validation rule");
+    return [NSString stringWithFormat:NSLocalizedString(@"Between %ld and %ld characters", @"Validation rule: Between 3 and 24 characters"), DW_MIN_USERNAME_LENGTH, DW_MAX_USERNAME_LENGTH];
 }
 
-- (void)validateText:(NSString *_Nullable)text {
+- (void)validateText:(NSString *)text {
     const NSUInteger length = text.length;
     if (length == 0) {
         self.validationResult = DWUsernameValidationRuleResultEmpty;
         return;
     }
 
-    self.validationResult = length >= DW_MIN_USERNAME_LENGTH ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
+    BOOL isValid = length >= DW_MIN_USERNAME_LENGTH && length <= DW_MAX_USERNAME_LENGTH;
+
+    self.validationResult = isValid ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
 }
 
 @end

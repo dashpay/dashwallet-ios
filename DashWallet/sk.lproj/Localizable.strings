@@ -151,6 +151,9 @@
 /* No comment provided by engineer. */
 "Balance hidden" = "Zostatok skrytý";
 
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
+
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d z %2$d";
 
@@ -553,14 +556,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Maximum %ld characters";
-
 /* adjective, security level */
 "Medium" = "Stredné";
-
-/* Validation rule */
-"Minimum 3 characters" = "Minimum 3 characters";
 
 /* No comment provided by engineer. */
 "More" = "Viac";
@@ -581,7 +578,7 @@
 "Moved to Address" = "Presunuté k adrese";
 
 /* Validation rule */
-"Must start with a letter or number" = "Must start with a letter or number";
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "My Contacts";
@@ -1151,13 +1148,13 @@
 "Used at IP address" = "Použité na IP adrese";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "Username taken";
 
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
-
-/* No comment provided by engineer. */
-"Validating username done" = "Validating username done";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "Validating username failed";
