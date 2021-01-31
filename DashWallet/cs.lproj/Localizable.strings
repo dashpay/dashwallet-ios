@@ -92,6 +92,9 @@
 "Advanced Security" = "Pokročilé zabzpečení";
 
 /* No comment provided by engineer. */
+"Agree" = "Agree";
+
+/* No comment provided by engineer. */
 "All" = "Vše";
 
 /* No comment provided by engineer. */
@@ -444,6 +447,9 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignorovat";
+
+/* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
 
 /* No comment provided by engineer. */
 "Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
@@ -1018,6 +1024,9 @@
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Klepněte pro zobrazení zůstatku";
 
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
@@ -1239,6 +1248,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Chystáte se smazat tuto peněženku ze zařízení. Prostředky spojené s touto peněženkou budou moci být opětovně získány pouze pokud máte frázi pro obnovení.";
+
+/* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Pro placení se níže můžete ověřit přes Face ID";

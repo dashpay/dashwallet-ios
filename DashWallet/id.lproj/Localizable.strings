@@ -92,6 +92,9 @@
 "Advanced Security" = "Keamanan Tingkat Lanjut";
 
 /* No comment provided by engineer. */
+"Agree" = "Agree";
+
+/* No comment provided by engineer. */
 "All" = "Semua";
 
 /* No comment provided by engineer. */
@@ -444,6 +447,9 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Abaikan";
+
+/* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
 
 /* No comment provided by engineer. */
 "Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
@@ -1018,6 +1024,9 @@
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Ketuk untuk melihat saldo";
 
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
@@ -1239,6 +1248,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Anda akan menghapus dompet ini dari perangkat ini. Dana yang terkait dengan dompet ini hanya dapat diambil jika Anda memiliki frasa pemulihan.";
+
+/* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Anda dapat mengautentikasi dengan ID Wajah untuk pembayaran di bawah";

@@ -24,6 +24,7 @@
 #import "DWBaseActionButtonViewController.h"
 #import "DWDPAvatarView.h"
 #import "DWFaceDetector.h"
+#import "DWImgurInfoViewController.h"
 #import "DWUIKit.h"
 #import "DWUploadAvatarViewController.h"
 
@@ -46,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const PADDING = 38.0;
 
-@interface DWCropAvatarViewController () <DWUploadAvatarViewControllerDelegate>
+@interface DWCropAvatarViewController () <DWUploadAvatarViewControllerDelegate, DWImgurInfoViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWFaceDetector *faceDetector;
 
@@ -175,13 +176,38 @@ NS_ASSUME_NONNULL_END
     self.titleLabel.hidden = YES;
     self.buttonsStackView.hidden = YES;
 
-    DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
+    DWImgurInfoViewController *controller = [[DWImgurInfoViewController alloc] init];
+    controller.croppedImage = croppedImage;
     controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
     [self.delegate cropAvatarViewControllerDidCancel:self];
+}
+
+#pragma mark - DWImgurInfoViewControllerDelegate
+
+- (void)imgurInfoViewControllerDidAccept:(DWImgurInfoViewController *)controller {
+    UIImage *croppedImage = controller.croppedImage;
+    [controller
+        dismissViewControllerAnimated:YES
+                           completion:^{
+                               if (croppedImage == nil) {
+                                   return;
+                               }
+
+                               DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
+                               controller.delegate = self;
+                               [self presentViewController:controller animated:YES completion:nil];
+                           }];
+}
+
+- (void)imgurInfoViewControllerDidCancel:(DWImgurInfoViewController *)controller {
+    self.titleLabel.hidden = NO;
+    self.buttonsStackView.hidden = NO;
+
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - DWUploadAvatarViewControllerDelegate

@@ -92,6 +92,9 @@
 "Advanced Security" = "Sicurezza Avanzata";
 
 /* No comment provided by engineer. */
+"Agree" = "Agree";
+
+/* No comment provided by engineer. */
 "All" = "Tutte";
 
 /* No comment provided by engineer. */
@@ -444,6 +447,9 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignora";
+
+/* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
 
 /* No comment provided by engineer. */
 "Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
@@ -1018,6 +1024,9 @@
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Tocca per visualizzare il saldo";
 
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
@@ -1239,6 +1248,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Stai per cancellare il portafoglio da questo dispositivo. Tutti i fondi associati ad esso potranno essere recuperati solo se si dispone della frase di recupero.";
+
+/* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Puoi effettuare l'autenticazione con Face ID per i pagamenti di seguito";

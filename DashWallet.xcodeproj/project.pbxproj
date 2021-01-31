@@ -130,6 +130,9 @@
 		2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E022D7219E009BAF7F /* DWSeedWordView.m */; };
 		2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */; };
 		2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */; };
+		2A44AAF525C6DA0A00671AC3 /* DWImgurInfoChildView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44AAF425C6DA0A00671AC3 /* DWImgurInfoChildView.m */; };
+		2A44AB0425C6DABD00671AC3 /* DWImgurItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44AB0325C6DABD00671AC3 /* DWImgurItemView.m */; };
+		2A44AB0D25C6F0F400671AC3 /* DWImgurInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44AB0C25C6F0F400671AC3 /* DWImgurInfoViewController.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
@@ -877,6 +880,12 @@
 		2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseTitledView.m; sourceTree = "<group>"; };
 		2A4431E722D738C0009BAF7F /* DWSeedPhraseModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseModel.h; sourceTree = "<group>"; };
 		2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseModel.m; sourceTree = "<group>"; };
+		2A44AAF325C6DA0A00671AC3 /* DWImgurInfoChildView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImgurInfoChildView.h; sourceTree = "<group>"; };
+		2A44AAF425C6DA0A00671AC3 /* DWImgurInfoChildView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImgurInfoChildView.m; sourceTree = "<group>"; };
+		2A44AB0225C6DABD00671AC3 /* DWImgurItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImgurItemView.h; sourceTree = "<group>"; };
+		2A44AB0325C6DABD00671AC3 /* DWImgurItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImgurItemView.m; sourceTree = "<group>"; };
+		2A44AB0B25C6F0F400671AC3 /* DWImgurInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImgurInfoViewController.h; sourceTree = "<group>"; };
+		2A44AB0C25C6F0F400671AC3 /* DWImgurInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImgurInfoViewController.m; sourceTree = "<group>"; };
 		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -2466,6 +2475,19 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2A44AAF225C6D9EF00671AC3 /* Imgur */ = {
+			isa = PBXGroup;
+			children = (
+				2A44AAF325C6DA0A00671AC3 /* DWImgurInfoChildView.h */,
+				2A44AAF425C6DA0A00671AC3 /* DWImgurInfoChildView.m */,
+				2A44AB0225C6DABD00671AC3 /* DWImgurItemView.h */,
+				2A44AB0325C6DABD00671AC3 /* DWImgurItemView.m */,
+				2A44AB0B25C6F0F400671AC3 /* DWImgurInfoViewController.h */,
+				2A44AB0C25C6F0F400671AC3 /* DWImgurInfoViewController.m */,
+			);
+			path = Imgur;
+			sourceTree = "<group>";
+		};
 		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -4005,6 +4027,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2A44AAF225C6D9EF00671AC3 /* Imgur */,
 				2AC1EDC12565B85800410917 /* External Sources */,
 				2A32AA13255127AB0080138E /* Upload */,
 				2AEC5989254A9B2400971D75 /* Utils */,
@@ -5376,6 +5399,7 @@
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */,
+				2A44AAF525C6DA0A00671AC3 /* DWImgurInfoChildView.m in Sources */,
 				2A7AF3502482374D001D74F9 /* DWDPBasicCell.m in Sources */,
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
@@ -5385,6 +5409,7 @@
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
+				2A44AB0425C6DABD00671AC3 /* DWImgurItemView.m in Sources */,
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
@@ -5601,6 +5626,7 @@
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
+				2A44AB0D25C6F0F400671AC3 /* DWImgurInfoViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2AB7303E24D0BC0400DCB420 /* UIColor+DWDashPay.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
