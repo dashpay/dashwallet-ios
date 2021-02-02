@@ -19,6 +19,7 @@
 
 #import "DWEnvironment.h"
 #import "DWSecrets.h"
+#import "UIImage+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -72,11 +73,15 @@ NS_ASSUME_NONNULL_END
                      return;
                  }
 
-                 [strongSelf upload];
+                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                     [strongSelf upload];
+                 });
              }];
     }
     else {
-        [self upload];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [self upload];
+        });
     }
 }
 
@@ -90,10 +95,17 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
+    const CGFloat maxImageSide = 600;
+    UIImage *resultImage = self.image;
+    if (self.image.size.width > maxImageSide || self.image.size.height > maxImageSide) {
+        resultImage = [self.image dw_resize:CGSizeMake(maxImageSide, maxImageSide)
+                   withInterpolationQuality:kCGInterpolationHigh];
+    }
+
     NSURL *url = [NSURL URLWithString:@"https://api.imgur.com/3/upload"];
 
     NSString *boundary = [NSUUID UUID].UUIDString;
-    NSData *body = [self createBodyWithBoundary:boundary image:self.image];
+    NSData *body = [self createBodyWithBoundary:boundary image:resultImage];
     HTTPRequest *request = [[HTTPRequest alloc] initWithURL:url method:HTTPRequestMethod_POST contentType:HTTPContentType_JSON parameters:nil body:body sourceIdentifier:nil];
     [request addValue:[NSString stringWithFormat:@"Client-ID %@", [DWSecrets imgurClientID]]
             forHeader:@"Authorization"];
