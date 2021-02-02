@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecrets : NSObject
 
-+ (NSString *)iCloudAPIKey;
++ (NSString *)imgurClientID;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

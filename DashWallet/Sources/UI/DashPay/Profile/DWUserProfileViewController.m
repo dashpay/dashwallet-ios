@@ -21,6 +21,7 @@
 #import "DWDPTxItem.h"
 #import "DWFilterHeaderView.h"
 #import "DWInfoPopupViewController.h"
+#import "DWNetworkErrorViewController.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
@@ -47,6 +48,7 @@ static CGFloat const FILTER_PADDING = 15.0; // same as horizontal padding for it
 
 @property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
+@property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 @property (nullable, nonatomic, weak) DWUserProfileHeaderView *headerView;
 
@@ -78,6 +80,7 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _model = [[DWUserProfileModel alloc] initWithItem:item
                                            txDataProvider:dataProvider];
+        _model.context = self;
         _model.delegate = self;
         _model.shownAfterPayment = shownAfterPayment;
         if (shouldSkipUpdating) {
@@ -113,6 +116,13 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:self.collectionView];
 }
 
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+
+    CGSize size = self.view.bounds.size;
+    self.topOverscrollView.frame = CGRectMake(0.0, -size.height, size.width, size.height);
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
@@ -138,7 +148,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (section == 0) {
-        const BOOL shouldDisplayActions = [self shouldShowActions];
+        const BOOL shouldDisplayActions = [self.model shouldShowActions];
         return shouldDisplayActions ? 1 : 0;
     }
     else {
@@ -177,7 +187,7 @@ NS_ASSUME_NONNULL_END
     const CGFloat contentWidth = layout.contentWidth;
 
     if (indexPath.section == 0) {
-        if ([self shouldShowSendRequestAction]) {
+        if ([self.model shouldShowSendRequestAction]) {
             DWUserProfileSendRequestCell *cell = [collectionView
                 dequeueReusableCellWithReuseIdentifier:DWUserProfileSendRequestCell.dw_reuseIdentifier
                                           forIndexPath:indexPath];
@@ -233,7 +243,7 @@ NS_ASSUME_NONNULL_END
 
     UICollectionViewCell *measuringCell = nil;
     if (indexPath.section == 0) {
-        if ([self shouldShowSendRequestAction]) {
+        if ([self.model shouldShowSendRequestAction]) {
             DWUserProfileSendRequestCell *cell = self.measuringSendCell;
             cell.contentWidth = contentWidth;
             cell.model = self.model;
@@ -303,11 +313,21 @@ NS_ASSUME_NONNULL_END
 
 - (void)userProfileModelDidUpdate:(DWUserProfileModel *)model {
     [self.collectionView reloadData];
+
+    if (model.state == DWUserProfileModelState_Error) {
+        DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_Profile];
+        [self presentViewController:controller animated:YES completion:nil];
+    }
 }
 
 #pragma mark - DWUserProfileHeaderViewDelegate
 
 - (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender {
+    if ([self.model shouldShowSendRequestAction]) {
+        [self sendContactRequest];
+        return;
+    }
+
     const BOOL canPay = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
                         self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends;
     NSParameterAssert(canPay);
@@ -319,11 +339,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserProfileSendRequestCellDelegate
 
 - (void)userProfileSendRequestCell:(DWUserProfileSendRequestCell *)cell sendRequestButtonAction:(UIButton *)sender {
-    const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
-    NSParameterAssert(canSendRequest);
-    if (canSendRequest) {
-        [self.model sendContactRequest];
-    }
+    [self sendContactRequest];
 }
 
 #pragma mark - DWUserProfileContactActionsCellDelegate
@@ -368,30 +384,16 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
-- (BOOL)shouldShowActions {
-    if (self.model.state != DWUserProfileModelState_Done) {
-        return NO;
+- (void)sendContactRequest {
+    const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
+    if (canSendRequest) {
+        [self.model sendContactRequest:^(BOOL success) {
+            if (!success) {
+                DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_SendContactRequest];
+                [self presentViewController:controller animated:YES completion:nil];
+            }
+        }];
     }
-
-    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
-    return (status == DSBlockchainIdentityFriendshipStatus_Incoming ||
-            status == DSBlockchainIdentityFriendshipStatus_None ||
-            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
-}
-
-- (BOOL)shouldShowSendRequestAction {
-    NSParameterAssert(self.model.state == DWUserProfileModelState_Done);
-
-    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
-    return (status == DSBlockchainIdentityFriendshipStatus_None ||
-            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
-}
-
-- (BOOL)shouldShowAcceptDeclineRequestAction {
-    NSParameterAssert(self.model.state == DWUserProfileModelState_Done);
-
-    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
-    return status == DSBlockchainIdentityFriendshipStatus_Incoming;
 }
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
@@ -403,6 +405,11 @@ NS_ASSUME_NONNULL_END
 
 - (UICollectionView *)collectionView {
     if (_collectionView == nil) {
+        UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
+        topOverscrollView.backgroundColor = [UIColor dw_backgroundColor];
+        _topOverscrollView = topOverscrollView;
+
+
         DWStretchyHeaderListCollectionLayout *layout = [[DWStretchyHeaderListCollectionLayout alloc] init];
 
         UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
@@ -426,6 +433,8 @@ NS_ASSUME_NONNULL_END
         [collectionView registerClass:DWFilterHeaderView.class
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                    withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier];
+
+        [collectionView addSubview:topOverscrollView];
 
         _collectionView = collectionView;
     }

@@ -17,6 +17,8 @@
 
 #import "DWUserSearchViewController.h"
 
+#import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
+
 #import "DWDashPayConstants.h"
 #import "DWSearchStateViewController.h"
 #import "DWUIKit.h"
@@ -98,6 +100,7 @@ NS_ASSUME_NONNULL_END
         self.resultsController.searchQuery = model.trimmedQuery;
         self.resultsController.items = items;
         [self dw_embedChild:self.resultsController inContainer:self.contentView];
+        [self updateContentKeyboardConstraintsIfNeeded];
     }
     else {
         [self.resultsController dw_detachFromParent];
@@ -107,7 +110,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error {
     [self.resultsController dw_detachFromParent];
-    [self.stateController setErrorStateWithError:error];
+    [self.stateController setErrorState];
 }
 
 #pragma mark - DWUserSearchResultViewControllerDelegate
@@ -154,7 +157,18 @@ NS_ASSUME_NONNULL_END
                                   animationCurve:(UIViewAnimationCurve)animationCurve {
     NSLayoutConstraint *constraint = [self.stateController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
     constraint.constant = height;
+    [self updateContentKeyboardConstraintsIfNeeded];
     [self.view layoutIfNeeded];
+}
+
+- (void)updateContentKeyboardConstraintsIfNeeded {
+    NSLayoutConstraint *constraint = [self.resultsController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
+    if (self.ka_keyboardHeight > 0) {
+        constraint.constant = self.ka_keyboardHeight - DW_TABBAR_HEIGHT;
+    }
+    else {
+        constraint.constant = 0;
+    }
 }
 
 #pragma mark - Private
@@ -163,6 +177,7 @@ NS_ASSUME_NONNULL_END
     if (_model == nil) {
         DWUserSearchModel *model = [[DWUserSearchModel alloc] init];
         model.delegate = self;
+        model.context = self;
         _model = model;
     }
     return _model;

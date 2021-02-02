@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString *const DPCropParameterName;
+
 @class DSBlockchainIdentity;
 
 typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {

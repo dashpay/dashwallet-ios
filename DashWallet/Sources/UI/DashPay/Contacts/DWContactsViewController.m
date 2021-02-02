@@ -25,6 +25,7 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -45,7 +46,16 @@ NS_ASSUME_NONNULL_END
 
     self.disableSearchPlaceholder = YES;
 
-    self.title = NSLocalizedString(@"Contacts", nil);
+    switch (self.intent) {
+        case DWContactsControllerIntent_Default:
+            self.title = NSLocalizedString(@"Contacts", nil);
+            break;
+
+        case DWContactsControllerIntent_PayToSelector:
+            self.title = NSLocalizedString(@"Send to a Contact", nil);
+            break;
+    }
+
     self.searchBar.placeholder = NSLocalizedString(@"Search for a contact", nil);
 
     UIImage *image = [[UIImage imageNamed:@"dp_add_contact"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
@@ -62,7 +72,9 @@ NS_ASSUME_NONNULL_END
     if (!_model) {
         _model = [[DWContactsModel alloc] init];
         _model.delegate = self;
+        _model.context = self;
         _model.globalSearchModel.delegate = self;
+        _model.globalSearchModel.context = self;
     }
     return _model;
 }
@@ -95,6 +107,7 @@ NS_ASSUME_NONNULL_END
     [super searchBar:searchBar textDidChange:searchText];
 
     if (self.intent == DWContactsControllerIntent_Default) {
+        self.contentController.matchFailed = NO;
         self.contentController.matchedItems = @[];
         [self.model.globalSearchModel searchWithQuery:self.searchBar.text];
     }
@@ -102,9 +115,17 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWBaseContactsContentViewControllerDelegate
 
-- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller didSelect:(id<DWDPBasicUserItem>)item {
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
+                                didSelect:(id<DWDPBasicUserItem>)item
+                                indexPath:(NSIndexPath *)indexPath {
+    if (![self.model canOpenBlockchainIdentity:item.blockchainIdentity]) {
+        UICollectionViewCell *cell = [self.contentController.collectionView cellForItemAtIndexPath:indexPath];
+        [cell dw_shakeView];
+        return;
+    }
+
     if (self.intent == DWContactsControllerIntent_Default) {
-        [super baseContactsContentViewController:controller didSelect:item];
+        [super baseContactsContentViewController:controller didSelect:item indexPath:indexPath];
     }
     else {
         [self.payDelegate contactsViewController:self payToItem:item];
@@ -167,6 +188,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserSearchModelDelegate
 
 - (void)userSearchModelDidStartSearch:(DWUserSearchModel *)model {
+    self.contentController.matchFailed = NO;
     self.contentController.matchedItems = @[];
 }
 
@@ -194,10 +216,12 @@ NS_ASSUME_NONNULL_END
             break;
         }
     }
+    self.contentController.matchFailed = NO;
     self.contentController.matchedItems = selected;
 }
 
 - (void)userSearchModel:(DWUserSearchModel *)model completedWithError:(NSError *)error {
+    self.contentController.matchFailed = YES;
     self.contentController.matchedItems = @[];
 }
 

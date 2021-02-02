@@ -31,6 +31,8 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     CountOfDWContactsContentSections,
 };
 
+static NSString *const DummyCellId = @"DummyCellId";
+
 @implementation DWBaseContactsContentViewController
 
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
@@ -57,24 +59,35 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     // TODO: DP polishing: diff reload
     CGPoint contentOffset = self.collectionView.contentOffset;
     [self.collectionView reloadData];
-    [self.collectionView layoutIfNeeded];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView setContentOffset:contentOffset animated:NO];
-    });
+    if (self.view.window != nil) {
+        [self.collectionView layoutIfNeeded];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.collectionView setContentOffset:contentOffset animated:NO];
+        });
+    }
 }
 
 - (void)setMatchedItems:(NSArray<id<DWDPBasicUserItem>> *)matchedItems {
-    _matchedItems = matchedItems;
+    if (self.matchFailed) {
+        _matchedItems = @[ (id<DWDPBasicUserItem>)DummyCellId ];
+    }
+    else {
+        _matchedItems = matchedItems;
+    }
 
     // TODO: DP polishing: diff reload
     CGPoint contentOffset = self.collectionView.contentOffset;
     [self.collectionView reloadData];
-    [self.collectionView layoutIfNeeded];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView setContentOffset:contentOffset animated:NO];
-    });
+    if (self.view.window != nil) {
+        [self.collectionView layoutIfNeeded];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.collectionView setContentOffset:contentOffset animated:NO];
+        });
+    }
 }
 
 - (void)viewDidLoad {
@@ -113,6 +126,11 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == DWContactsContentSectionGlobalMatched && self.matchFailed) {
+        UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:DummyCellId forIndexPath:indexPath];
+        return cell;
+    }
+
     DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
     NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
     const CGFloat contentWidth = layout.contentWidth;
@@ -184,12 +202,21 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
         return headerView;
     }
     else {
-        DWGlobalMatchHeaderView *headerView = (DWGlobalMatchHeaderView *)[collectionView
-            dequeueReusableSupplementaryViewOfKind:kind
-                               withReuseIdentifier:DWGlobalMatchHeaderView.dw_reuseIdentifier
-                                      forIndexPath:indexPath];
-        headerView.searchQuery = self.dataSource.trimmedQuery;
-        return headerView;
+        if (self.matchFailed) {
+            DWGlobalMatchFailedHeaderView *headerView = (DWGlobalMatchFailedHeaderView *)[collectionView
+                dequeueReusableSupplementaryViewOfKind:kind
+                                   withReuseIdentifier:DWGlobalMatchFailedHeaderView.dw_reuseIdentifier
+                                          forIndexPath:indexPath];
+            return headerView;
+        }
+        else {
+            DWGlobalMatchHeaderView *headerView = (DWGlobalMatchHeaderView *)[collectionView
+                dequeueReusableSupplementaryViewOfKind:kind
+                                   withReuseIdentifier:DWGlobalMatchHeaderView.dw_reuseIdentifier
+                                          forIndexPath:indexPath];
+            headerView.searchQuery = self.dataSource.trimmedQuery;
+            return headerView;
+        }
     }
 }
 
@@ -200,7 +227,7 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
 
     id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
 
-    [self.delegate baseContactsContentViewController:self didSelect:item];
+    [self.delegate baseContactsContentViewController:self didSelect:item indexPath:indexPath];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
@@ -230,7 +257,12 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
         measuringView = self.measuringContactsHeaderView;
     }
     else {
-        measuringView = self.measuringGlobalMatchHeaderView;
+        if (self.matchFailed) {
+            measuringView = self.measuringGlobalMatchFailedHeaderView;
+        }
+        else {
+            measuringView = self.measuringGlobalMatchHeaderView;
+        }
     }
 
     if (measuringView.isContentChanged) {
@@ -329,6 +361,10 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
         [collectionView registerClass:DWGlobalMatchHeaderView.class
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                    withReuseIdentifier:DWGlobalMatchHeaderView.dw_reuseIdentifier];
+        [collectionView registerClass:DWGlobalMatchFailedHeaderView.class
+            forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                   withReuseIdentifier:DWGlobalMatchFailedHeaderView.dw_reuseIdentifier];
+        [collectionView registerClass:UICollectionViewCell.class forCellWithReuseIdentifier:DummyCellId];
 
         _collectionView = collectionView;
     }
@@ -389,6 +425,14 @@ typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     }
     _measuringGlobalMatchHeaderView.searchQuery = self.dataSource.trimmedQuery;
     return _measuringGlobalMatchHeaderView;
+}
+
+- (DWGlobalMatchFailedHeaderView *)measuringGlobalMatchFailedHeaderView {
+    if (_measuringGlobalMatchFailedHeaderView == nil) {
+        _measuringGlobalMatchFailedHeaderView = [[DWGlobalMatchFailedHeaderView alloc] initWithFrame:CGRectZero];
+        _measuringGlobalMatchFailedHeaderView.isContentChanged = YES;
+    }
+    return _measuringGlobalMatchFailedHeaderView;
 }
 
 - (BOOL)shouldHideViewAllRequests {

@@ -76,6 +76,7 @@
             [[DWContactsViewController alloc] initWithPayModel:self.payModel
                                                   dataProvider:self.dataProvider];
         [self dw_embedChild:contactsController];
+        self.navigationItem.rightBarButtonItem = contactsController.navigationItem.rightBarButtonItem;
     }
     else {
         DWContactsPlaceholderViewController *placeholderController =

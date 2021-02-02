@@ -101,6 +101,7 @@
 		2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */; };
 		2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */; };
 		2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */; };
+		2A429A9725B8610500A847F7 /* DWFirstUsernameSymbolValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */; };
 		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
 		2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
@@ -129,6 +130,9 @@
 		2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E022D7219E009BAF7F /* DWSeedWordView.m */; };
 		2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */; };
 		2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */; };
+		2A44AAF525C6DA0A00671AC3 /* DWImgurInfoChildView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44AAF425C6DA0A00671AC3 /* DWImgurInfoChildView.m */; };
+		2A44AB0425C6DABD00671AC3 /* DWImgurItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44AB0325C6DABD00671AC3 /* DWImgurItemView.m */; };
+		2A44AB0D25C6F0F400671AC3 /* DWImgurInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44AB0C25C6F0F400671AC3 /* DWImgurInfoViewController.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
@@ -146,7 +150,12 @@
 		2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */; };
 		2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534F22F19BE300E5168A /* DWSyncModel.m */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
+		2A4EB4812598CFF200892E4D /* DWNetworkUnavailableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4802598CFF200892E4D /* DWNetworkUnavailableView.m */; };
+		2A4EB48B2598D69800892E4D /* DWNetworkErrorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB48A2598D69800892E4D /* DWNetworkErrorViewController.m */; };
+		2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */; };
+		2A4EB4E92599F50B00892E4D /* UIImageView+DWDPAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */; };
 		2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */; };
+		2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */; };
 		2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFF2419310C002C32F3 /* DWDashPayConstants.m */; };
@@ -154,9 +163,8 @@
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
 		2A5A7FB6251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5A7FB5251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m */; };
 		2A5A7FBB251DF74400ADD073 /* DWAvatarEditSelectorContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5A7FBA251DF74400ADD073 /* DWAvatarEditSelectorContentView.m */; };
-		2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */; };
 		2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */; };
-		2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */; };
+		2A5BD5982451DD0700688A8D /* DWLengthUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD5972451DD0700688A8D /* DWLengthUsernameValidationRule.m */; };
 		2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */; };
 		2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */; };
 		2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */; };
@@ -821,6 +829,8 @@
 		2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverWalletCommand.m; sourceTree = "<group>"; };
 		2A3DC86F23972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"; sourceTree = "<group>"; };
 		2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.m"; sourceTree = "<group>"; };
+		2A429A8F25B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFirstUsernameSymbolValidationRule.h; sourceTree = "<group>"; };
+		2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFirstUsernameSymbolValidationRule.m; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		2A4430EA22CBBA82009BAF7F /* Setup.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Setup.storyboard; sourceTree = "<group>"; };
@@ -870,6 +880,12 @@
 		2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseTitledView.m; sourceTree = "<group>"; };
 		2A4431E722D738C0009BAF7F /* DWSeedPhraseModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseModel.h; sourceTree = "<group>"; };
 		2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseModel.m; sourceTree = "<group>"; };
+		2A44AAF325C6DA0A00671AC3 /* DWImgurInfoChildView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImgurInfoChildView.h; sourceTree = "<group>"; };
+		2A44AAF425C6DA0A00671AC3 /* DWImgurInfoChildView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImgurInfoChildView.m; sourceTree = "<group>"; };
+		2A44AB0225C6DABD00671AC3 /* DWImgurItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImgurItemView.h; sourceTree = "<group>"; };
+		2A44AB0325C6DABD00671AC3 /* DWImgurItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImgurItemView.m; sourceTree = "<group>"; };
+		2A44AB0B25C6F0F400671AC3 /* DWImgurInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImgurInfoViewController.h; sourceTree = "<group>"; };
+		2A44AB0C25C6F0F400671AC3 /* DWImgurInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImgurInfoViewController.m; sourceTree = "<group>"; };
 		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -901,8 +917,18 @@
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
+		2A4EB47F2598CFF200892E4D /* DWNetworkUnavailableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNetworkUnavailableView.h; sourceTree = "<group>"; };
+		2A4EB4802598CFF200892E4D /* DWNetworkUnavailableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNetworkUnavailableView.m; sourceTree = "<group>"; };
+		2A4EB4892598D69800892E4D /* DWNetworkErrorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNetworkErrorViewController.h; sourceTree = "<group>"; };
+		2A4EB48A2598D69800892E4D /* DWNetworkErrorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNetworkErrorViewController.m; sourceTree = "<group>"; };
+		2A4EB4AF259939AF00892E4D /* DWGlobalMatchFailedHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGlobalMatchFailedHeaderView.h; sourceTree = "<group>"; };
+		2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchFailedHeaderView.m; sourceTree = "<group>"; };
+		2A4EB4E72599F50B00892E4D /* UIImageView+DWDPAvatar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImageView+DWDPAvatar.h"; sourceTree = "<group>"; };
+		2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+DWDPAvatar.m"; sourceTree = "<group>"; };
 		2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayName.h"; sourceTree = "<group>"; };
 		2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSBlockchainIdentity+DWDisplayName.m"; sourceTree = "<group>"; };
+		2A520C8B25BF093E00FC5650 /* DWPendingContactInfoView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPendingContactInfoView.h; sourceTree = "<group>"; };
+		2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPendingContactInfoView.m; sourceTree = "<group>"; };
 		2A5279BB23D994BC00F856D3 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
 		2A56EEF92417E30F002C32F3 /* DWConfirmUsernameContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameContentView.h; sourceTree = "<group>"; };
 		2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameContentView.m; sourceTree = "<group>"; };
@@ -918,12 +944,10 @@
 		2A5A7FB9251DF74400ADD073 /* DWAvatarEditSelectorContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAvatarEditSelectorContentView.h; sourceTree = "<group>"; };
 		2A5A7FBA251DF74400ADD073 /* DWAvatarEditSelectorContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAvatarEditSelectorContentView.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
-		2A5BD5902451D68200688A8D /* DWMinLengthUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMinLengthUsernameValidationRule.h; sourceTree = "<group>"; };
-		2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMinLengthUsernameValidationRule.m; sourceTree = "<group>"; };
 		2A5BD5932451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAllowedCharactersUsernameValidationRule.h; sourceTree = "<group>"; };
 		2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAllowedCharactersUsernameValidationRule.m; sourceTree = "<group>"; };
-		2A5BD5962451DD0700688A8D /* DWMaxLengthUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMaxLengthUsernameValidationRule.h; sourceTree = "<group>"; };
-		2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMaxLengthUsernameValidationRule.m; sourceTree = "<group>"; };
+		2A5BD5962451DD0700688A8D /* DWLengthUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLengthUsernameValidationRule.h; sourceTree = "<group>"; };
+		2A5BD5972451DD0700688A8D /* DWLengthUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLengthUsernameValidationRule.m; sourceTree = "<group>"; };
 		2A5BD5992451F1A100688A8D /* DWUsernameValidationRule+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWUsernameValidationRule+Protected.h"; sourceTree = "<group>"; };
 		2A5BD59C2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCheckExistenceUsernameValidationRule.h; sourceTree = "<group>"; };
 		2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCheckExistenceUsernameValidationRule.m; sourceTree = "<group>"; };
@@ -2451,6 +2475,19 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2A44AAF225C6D9EF00671AC3 /* Imgur */ = {
+			isa = PBXGroup;
+			children = (
+				2A44AAF325C6DA0A00671AC3 /* DWImgurInfoChildView.h */,
+				2A44AAF425C6DA0A00671AC3 /* DWImgurInfoChildView.m */,
+				2A44AB0225C6DABD00671AC3 /* DWImgurItemView.h */,
+				2A44AB0325C6DABD00671AC3 /* DWImgurItemView.m */,
+				2A44AB0B25C6F0F400671AC3 /* DWImgurInfoViewController.h */,
+				2A44AB0C25C6F0F400671AC3 /* DWImgurInfoViewController.m */,
+			);
+			path = Imgur;
+			sourceTree = "<group>";
+		};
 		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -2477,6 +2514,15 @@
 				2AEC58ED25473BCB00971D75 /* DWOpenUserProfileDelegate.h */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		2A4EB4882598D67400892E4D /* Error */ = {
+			isa = PBXGroup;
+			children = (
+				2A4EB4892598D69800892E4D /* DWNetworkErrorViewController.h */,
+				2A4EB48A2598D69800892E4D /* DWNetworkErrorViewController.m */,
+			);
+			path = Error;
 			sourceTree = "<group>";
 		};
 		2A5A7FB7251DF6FA00ADD073 /* Avatar */ = {
@@ -3295,13 +3341,13 @@
 				2A5BD5942451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m */,
 				2A5BD59C2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.h */,
 				2A5BD59D2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m */,
-				2A5BD5962451DD0700688A8D /* DWMaxLengthUsernameValidationRule.h */,
-				2A5BD5972451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m */,
-				2A5BD5902451D68200688A8D /* DWMinLengthUsernameValidationRule.h */,
-				2A5BD5912451D68300688A8D /* DWMinLengthUsernameValidationRule.m */,
+				2A5BD5962451DD0700688A8D /* DWLengthUsernameValidationRule.h */,
+				2A5BD5972451DD0700688A8D /* DWLengthUsernameValidationRule.m */,
 				2A9E7DCC23F6C01A00CDA1EE /* DWUsernameValidationRule.h */,
 				2A9E7DCD23F6C01A00CDA1EE /* DWUsernameValidationRule.m */,
 				2A5BD5992451F1A100688A8D /* DWUsernameValidationRule+Protected.h */,
+				2A429A8F25B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.h */,
+				2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -3924,6 +3970,8 @@
 				2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */,
 				2AB7303C24D0BC0400DCB420 /* UIColor+DWDashPay.h */,
 				2AB7303D24D0BC0400DCB420 /* UIColor+DWDashPay.m */,
+				2A4EB47F2598CFF200892E4D /* DWNetworkUnavailableView.h */,
+				2A4EB4802598CFF200892E4D /* DWNetworkUnavailableView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3941,6 +3989,8 @@
 				2ADC9D7B24644E46001D7C0D /* DWUserProfileContactActionsCell.m */,
 				2A80F3D724DC55CC003E3B1E /* DWUserProfileSendRequestCell.h */,
 				2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */,
+				2A520C8B25BF093E00FC5650 /* DWPendingContactInfoView.h */,
+				2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3977,6 +4027,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2A44AAF225C6D9EF00671AC3 /* Imgur */,
 				2AC1EDC12565B85800410917 /* External Sources */,
 				2A32AA13255127AB0080138E /* Upload */,
 				2AEC5989254A9B2400971D75 /* Utils */,
@@ -4060,6 +4111,7 @@
 		2AE8B63D23CDB94E0016F221 /* DashPay */ = {
 			isa = PBXGroup;
 			children = (
+				2A4EB4882598D67400892E4D /* Error */,
 				2AEC5CBF2497558900F4A689 /* Global */,
 				2A7AF39A2482FA7D001D74F9 /* Items */,
 				C3CA2029247E4AC300158074 /* Notifications */,
@@ -4155,6 +4207,8 @@
 				2A8E74C7258960710075407B /* DWGlobalMatchHeaderView.m */,
 				2AABD62B258CCCB800723855 /* BaseCollectionReusableView.h */,
 				2AABD62C258CCCB800723855 /* BaseCollectionReusableView.m */,
+				2A4EB4AF259939AF00892E4D /* DWGlobalMatchFailedHeaderView.h */,
+				2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4205,6 +4259,8 @@
 				2AEC5CC1249755BB00F4A689 /* DWDashPayContactsUpdater.m */,
 				2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */,
 				2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */,
+				2A4EB4E72599F50B00892E4D /* UIImageView+DWDPAvatar.h */,
+				2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */,
 			);
 			path = Global;
 			sourceTree = "<group>";
@@ -5221,6 +5277,7 @@
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
+				2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
@@ -5237,6 +5294,7 @@
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
+				2A4EB48B2598D69800892E4D /* DWNetworkErrorViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
@@ -5263,6 +5321,7 @@
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
+				2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */,
@@ -5340,6 +5399,7 @@
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */,
+				2A44AAF525C6DA0A00671AC3 /* DWImgurInfoChildView.m in Sources */,
 				2A7AF3502482374D001D74F9 /* DWDPBasicCell.m in Sources */,
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
@@ -5349,6 +5409,7 @@
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
+				2A44AB0425C6DABD00671AC3 /* DWImgurItemView.m in Sources */,
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
@@ -5356,6 +5417,7 @@
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
 				2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */,
 				2A7AF39E2482FE46001D74F9 /* DWDateFormatter.m in Sources */,
+				2A4EB4E92599F50B00892E4D /* UIImageView+DWDPAvatar.m in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2ADDF994251B579100DA8926 /* DWUserProfileModalQRContentView.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
@@ -5423,7 +5485,6 @@
 				2ADDF9A7251B82B200DA8926 /* DWEditProfileTextViewCell.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				2ACCD8ED231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
-				2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */,
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
@@ -5452,13 +5513,14 @@
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2ADDF991251B562B00DA8926 /* DWUserProfileModalQRViewController.m in Sources */,
-				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
+				2A5BD5982451DD0700688A8D /* DWLengthUsernameValidationRule.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
 				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				2ACCD8E2231E507900A96B62 /* DWPinInputStepView.m in Sources */,
 				2AC52AD6241BB5FC00D9A829 /* DWDashPaySetupFlowController.m in Sources */,
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
+				2A429A9725B8610500A847F7 /* DWFirstUsernameSymbolValidationRule.m in Sources */,
 				2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */,
 				2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
@@ -5487,6 +5549,7 @@
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
+				2A4EB4812598CFF200892E4D /* DWNetworkUnavailableView.m in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
 				2ADDF98D251B4A9200DA8926 /* DWCurrentUserProfileModel.m in Sources */,
 				2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */,
@@ -5563,6 +5626,7 @@
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
+				2A44AB0D25C6F0F400671AC3 /* DWImgurInfoViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2AB7303E24D0BC0400DCB420 /* UIColor+DWDashPay.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
@@ -5953,7 +6017,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -5983,7 +6047,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6066,7 +6130,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6087,7 +6151,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6106,7 +6170,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6127,7 +6191,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6149,7 +6213,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6172,7 +6236,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6258,7 +6322,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6287,7 +6351,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6338,7 +6402,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6357,7 +6421,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6448,7 +6512,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
@@ -6475,7 +6539,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6525,7 +6589,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6544,7 +6608,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 61;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";

@@ -19,6 +19,7 @@
 
 #import "DWActionButton.h"
 #import "DWDPAvatarView.h"
+#import "DWPendingContactInfoView.h"
 #import "DWUIKit.h"
 #import "DWUserProfileModel.h"
 
@@ -33,7 +34,7 @@ static CGFloat const BUTTON_HEIGHT = 40.0;
 @property (readonly, nonatomic, strong) DWDPAvatarView *avatarView;
 @property (readonly, nonatomic, strong) UILabel *detailsLabel;
 @property (readonly, nonatomic, strong) UIView *bottomContentView;
-@property (readonly, nonatomic, strong) UILabel *pendingLabel;
+@property (readonly, nonatomic, strong) DWPendingContactInfoView *pendingView;
 @property (readonly, nonatomic, strong) DWActionButton *actionButton;
 @property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
@@ -102,15 +103,11 @@ NS_ASSUME_NONNULL_END
 #endif /* DEBUG */
         [bottomContentView addSubview:bottomGrayView];
 
-        UILabel *pendingLabel = [[UILabel alloc] init];
-        pendingLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        pendingLabel.attributedText = [self.class pendingInfo];
-        pendingLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-        pendingLabel.textAlignment = NSTextAlignmentCenter;
-        pendingLabel.textColor = [UIColor dw_orangeColor];
-        _pendingLabel = pendingLabel;
+        DWPendingContactInfoView *pendingView = [[DWPendingContactInfoView alloc] init];
+        pendingView.translatesAutoresizingMaskIntoConstraints = NO;
+        _pendingView = pendingView;
 
-        UIStackView *pendingStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ pendingLabel ]];
+        UIStackView *pendingStackView = [[UIStackView alloc] initWithArrangedSubviews:@[ pendingView ]];
         pendingStackView.translatesAutoresizingMaskIntoConstraints = NO;
         pendingStackView.axis = UILayoutConstraintAxisVertical;
         [bottomContentView addSubview:pendingStackView];
@@ -169,14 +166,12 @@ NS_ASSUME_NONNULL_END
             [bottomContentView.trailingAnchor constraintEqualToAnchor:bottomGrayView.trailingAnchor],
             [bottomContentView.bottomAnchor constraintEqualToAnchor:bottomGrayView.bottomAnchor],
 
-            [pendingStackView.topAnchor constraintEqualToAnchor:bottomContentView.topAnchor],
-            [pendingStackView.leadingAnchor constraintEqualToAnchor:bottomContentView.leadingAnchor
-                                                           constant:buttonPadding],
-            [bottomContentView.trailingAnchor constraintEqualToAnchor:pendingStackView.trailingAnchor
-                                                             constant:buttonPadding],
+            [pendingStackView.topAnchor constraintEqualToAnchor:actionButton.topAnchor],
+            [pendingStackView.leadingAnchor constraintEqualToAnchor:actionButton.leadingAnchor],
+            [pendingStackView.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor],
+            [pendingStackView.bottomAnchor constraintEqualToAnchor:actionButton.bottomAnchor],
 
-            [actionButton.topAnchor constraintEqualToAnchor:pendingStackView.bottomAnchor
-                                                   constant:spacing],
+            [actionButton.topAnchor constraintEqualToAnchor:bottomContentView.topAnchor],
             [actionButton.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
                                                        constant:buttonPadding],
             [guide.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor
@@ -194,9 +189,16 @@ NS_ASSUME_NONNULL_END
                           [self updateState:self.model.state];
                       }];
 
-        [self mvvm_observe:DW_KEYPATH(self, model.requestState)
+        [self mvvm_observe:DW_KEYPATH(self, model.sendRequestState)
                       with:^(typeof(self) self, id value) {
-                          if (self.model.requestState == DWUserProfileModelState_Done) {
+                          if (self.model.state == DWUserProfileModelState_Done) {
+                              [self updateSendRequestState:self.model.sendRequestState];
+                          }
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.acceptRequestState)
+                      with:^(typeof(self) self, id value) {
+                          if (self.model.acceptRequestState == DWUserProfileModelState_Done) {
                               [self updateActions];
                           }
                       }];
@@ -212,8 +214,9 @@ NS_ASSUME_NONNULL_END
 
 - (void)setScrollingPercent:(float)percent {
     if (percent < 0) { // stretching
-        const CGFloat scale = MIN(1.5, 1.0 + ABS(percent));
-        self.centerContentView.transform = CGAffineTransformMakeScale(scale, scale);
+        const CGFloat scale = MIN(1.4, 1.0 + ABS(percent));
+        const CGFloat translation = MIN(ABS(percent) * 70, 25);
+        self.centerContentView.transform = CGAffineTransformTranslate(CGAffineTransformMakeScale(scale, scale), 0, translation);
         self.centerContentView.alpha = 1.0;
     }
     else {
@@ -238,7 +241,7 @@ NS_ASSUME_NONNULL_END
     switch (state) {
         case DWUserProfileModelState_None:
             self.actionButton.hidden = YES;
-            self.pendingLabel.hidden = YES;
+            self.pendingView.hidden = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;
@@ -249,7 +252,7 @@ NS_ASSUME_NONNULL_END
             break;
         case DWUserProfileModelState_Loading:
             self.actionButton.hidden = YES;
-            self.pendingLabel.hidden = YES;
+            self.pendingView.hidden = YES;
             [self.activityIndicatorView startAnimating];
 
             break;
@@ -260,8 +263,60 @@ NS_ASSUME_NONNULL_END
     }
 }
 
+- (void)updateSendRequestState:(DWUserProfileModelState)state {
+    switch (state) {
+        case DWUserProfileModelState_None:
+            [self updateActions];
+
+            break;
+        case DWUserProfileModelState_Error:
+            [self updateActions];
+
+            break;
+        case DWUserProfileModelState_Loading:
+            [self.activityIndicatorView stopAnimating];
+
+            self.actionButton.hidden = YES;
+            self.pendingView.hidden = NO;
+            [self.pendingView setAsSendingRequest];
+
+            break;
+        case DWUserProfileModelState_Done:
+            [self updateActions];
+
+            break;
+    }
+}
+
 - (void)updateBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self.detailsLabel.text = blockchainIdentity.currentDashpayUsername;
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+    [result beginEditing];
+
+    BOOL hasDisplayName = blockchainIdentity.displayName.length > 0;
+    NSString *title = hasDisplayName ? blockchainIdentity.displayName : blockchainIdentity.currentDashpayUsername;
+
+    NSAttributedString *titleString = [[NSAttributedString alloc]
+        initWithString:title
+            attributes:@{
+                NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline],
+                NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+            }];
+    [result appendAttributedString:titleString];
+
+    if (hasDisplayName) {
+        NSString *subtitle = [NSString stringWithFormat:@"\n%@", blockchainIdentity.currentDashpayUsername];
+        NSAttributedString *subtitleString = [[NSAttributedString alloc]
+            initWithString:subtitle
+                attributes:@{
+                    NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote],
+                    NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
+                }];
+        [result appendAttributedString:subtitleString];
+    }
+
+    [result endEditing];
+
+    self.detailsLabel.attributedText = result;
     self.avatarView.blockchainIdentity = blockchainIdentity;
 
     [self setScrollingPercent:0.0];
@@ -271,20 +326,30 @@ NS_ASSUME_NONNULL_END
     const DSBlockchainIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
     switch (friendshipStatus) {
         case DSBlockchainIdentityFriendshipStatus_Unknown:
-        case DSBlockchainIdentityFriendshipStatus_None:
             self.actionButton.hidden = YES;
-            self.pendingLabel.hidden = YES;
+            self.pendingView.hidden = YES;
+
+            break;
+        case DSBlockchainIdentityFriendshipStatus_None:
+            self.actionButton.hidden = NO;
+            self.pendingView.hidden = YES;
+
+            [self.actionButton setImage:[UIImage imageNamed:@"dp_send_request"] forState:UIControlStateNormal];
+            [self.actionButton setTitle:NSLocalizedString(@"Send Contact Request", nil) forState:UIControlStateNormal];
 
             break;
         case DSBlockchainIdentityFriendshipStatus_Outgoing:
             self.actionButton.hidden = YES;
-            self.pendingLabel.hidden = NO;
+            self.pendingView.hidden = NO;
+            [self.pendingView setAsPendingRequest];
 
             break;
         case DSBlockchainIdentityFriendshipStatus_Incoming:
         case DSBlockchainIdentityFriendshipStatus_Friends:
             self.actionButton.hidden = NO;
-            self.pendingLabel.hidden = YES;
+            self.pendingView.hidden = YES;
+
+            [self.actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
 
             break;
     }
@@ -292,23 +357,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)actionButtonAction:(UIButton *)sender {
     [self.delegate userProfileHeaderView:self actionButtonAction:sender];
-}
-
-+ (NSAttributedString *)pendingInfo {
-    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
-
-    UIImage *image = [UIImage imageNamed:@"dp_pending_contact"];
-    NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
-    textAttachment.image = image;
-    textAttachment.bounds = CGRectMake(-3.0, -2.0, image.size.width, image.size.height);
-
-    [result beginEditing];
-    [result appendAttributedString:[NSAttributedString attributedStringWithAttachment:textAttachment]];
-    [result appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-    [result appendAttributedString:[[NSAttributedString alloc] initWithString:NSLocalizedString(@"Contact Request Pending", nil)]];
-    [result endEditing];
-
-    return [result copy];
 }
 
 @end

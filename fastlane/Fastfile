@@ -22,7 +22,8 @@ platform :ios do
   lane :beta do
     ensure_git_status_clean
 
-    cocoapods_install
+    # temporary disable cocoapods lane because of issues on m1
+    # cocoapods_install
 
     increment_build_number
 

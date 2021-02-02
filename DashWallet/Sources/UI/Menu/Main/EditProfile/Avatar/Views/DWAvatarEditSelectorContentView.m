@@ -63,7 +63,15 @@ NS_ASSUME_NONNULL_END
         separator1.translatesAutoresizingMaskIntoConstraints = NO;
         separator1.backgroundColor = [UIColor dw_separatorLineColor];
 
-        UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ gravatarButton, separator1, urlButton ]];
+        UIView *separator2 = [[UIView alloc] init];
+        separator2.translatesAutoresizingMaskIntoConstraints = NO;
+        separator2.backgroundColor = [UIColor dw_separatorLineColor];
+
+        UIView *separator3 = [[UIView alloc] init];
+        separator3.translatesAutoresizingMaskIntoConstraints = NO;
+        separator3.backgroundColor = [UIColor dw_separatorLineColor];
+
+        UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ gravatarButton, separator1, urlButton, separator2, photoButton, separator3, galleryButton ]];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
         [self addSubview:stackView];
@@ -77,12 +85,14 @@ NS_ASSUME_NONNULL_END
                                                 constant:padding],
             [self.bottomAnchor constraintEqualToAnchor:stackView.bottomAnchor],
 
-            //            [photoButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
-            //            [galleryButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
+            [photoButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
+            [galleryButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
             [gravatarButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
             [urlButton.heightAnchor constraintGreaterThanOrEqualToConstant:80],
 
             [separator1.heightAnchor constraintEqualToConstant:1],
+            [separator2.heightAnchor constraintEqualToConstant:1],
+            [separator3.heightAnchor constraintEqualToConstant:1],
         ]];
     }
     return self;

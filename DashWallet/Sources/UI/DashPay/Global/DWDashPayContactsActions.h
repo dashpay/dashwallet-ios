@@ -22,8 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWDashPayContactsActions : NSObject
 
 + (void)acceptContactRequest:(id<DWDPBasicUserItem>)item
+                     context:(UIViewController *)context
                   completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 + (void)declineContactRequest:(id<DWDPBasicUserItem>)item
+                      context:(UIViewController *)context
                    completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion;
 
 - (instancetype)init NS_UNAVAILABLE;

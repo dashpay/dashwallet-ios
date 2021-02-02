@@ -17,6 +17,9 @@
 
 #import "DWBaseContactsViewController+DWProtected.h"
 
+#import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
+
+#import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "DWUserSearchViewController.h"
 #import "UIView+DWFindConstraints.h"
@@ -77,6 +80,7 @@ NS_ASSUME_NONNULL_END
 
                 if (self.contentController.parentViewController == nil) {
                     [self dw_embedChild:self.contentController inContainer:self.contentView];
+                    [self updateContentKeyboardConstraintsIfNeeded];
                 }
             }
             else {
@@ -95,6 +99,7 @@ NS_ASSUME_NONNULL_END
 
         if (self.contentController.parentViewController == nil) {
             [self dw_embedChild:self.contentController inContainer:self.contentView];
+            [self updateContentKeyboardConstraintsIfNeeded];
         }
     }
 }
@@ -119,7 +124,8 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWBaseContactsContentViewController
 
 - (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
-                                didSelect:(id<DWDPBasicUserItem>)item {
+                                didSelect:(id<DWDPBasicUserItem>)item
+                                indexPath:(NSIndexPath *)indexPath {
     DWUserProfileViewController *profileController =
         [[DWUserProfileViewController alloc] initWithItem:item
                                                  payModel:self.payModel
@@ -146,7 +152,18 @@ NS_ASSUME_NONNULL_END
                                   animationCurve:(UIViewAnimationCurve)animationCurve {
     NSLayoutConstraint *constraint = [self.stateController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
     constraint.constant = height;
+    [self updateContentKeyboardConstraintsIfNeeded];
     [self.view layoutIfNeeded];
+}
+
+- (void)updateContentKeyboardConstraintsIfNeeded {
+    NSLayoutConstraint *constraint = [self.contentController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
+    if (self.ka_keyboardHeight > 0) {
+        constraint.constant = self.ka_keyboardHeight - DW_TABBAR_HEIGHT;
+    }
+    else {
+        constraint.constant = 0;
+    }
 }
 
 #pragma mark - Actions

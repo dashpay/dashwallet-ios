@@ -17,8 +17,11 @@
 
 #import "DWCheckExistenceUsernameValidationRule.h"
 
+#import "DWAllowedCharactersUsernameValidationRule.h"
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+#import "DWFirstUsernameSymbolValidationRule.h"
+#import "DWLengthUsernameValidationRule.h"
 #import "DWUsernameValidationRule+Protected.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -32,6 +35,7 @@ static NSTimeInterval VALIDATION_DEBOUNCE_DELAY = 0.4;
 
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
+@property (readonly, nonatomic, copy) NSArray<DWUsernameValidationRule *> *validators;
 
 @end
 
@@ -44,9 +48,15 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _delegate = delegate;
 
+        _validators = @[
+            [[DWLengthUsernameValidationRule alloc] init],
+            [[DWAllowedCharactersUsernameValidationRule alloc] init],
+            [[DWFirstUsernameSymbolValidationRule alloc] init],
+        ];
+
         NSMutableDictionary<NSNumber *, NSString *> *titleByResult = [NSMutableDictionary dictionary];
         titleByResult[@(DWUsernameValidationRuleResultLoading)] = NSLocalizedString(@"Validating username…", nil);
-        titleByResult[@(DWUsernameValidationRuleResultValid)] = NSLocalizedString(@"Validating username done", nil);
+        titleByResult[@(DWUsernameValidationRuleResultValid)] = NSLocalizedString(@"Username available", nil);
         titleByResult[@(DWUsernameValidationRuleResultError)] = NSLocalizedString(@"Validating username failed", nil);
         titleByResult[@(DWUsernameValidationRuleResultInvalidCritical)] = NSLocalizedString(@"Username taken", nil);
         self.titleByResult = titleByResult;
@@ -69,9 +79,18 @@ NS_ASSUME_NONNULL_END
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performValidation) object:nil];
     self.username = text;
 
-    if (text.length < DW_MIN_USERNAME_LENGTH || text.length > DW_MAX_USERNAME_LENGTH) {
-        self.validationResult = DWUsernameValidationRuleResultHidden;
+    [self.validators makeObjectsPerformSelector:@selector(validateText:) withObject:text];
 
+    BOOL hasInvalid = NO;
+    for (DWUsernameValidationRule *rule in self.validators) {
+        if (rule.validationResult == DWUsernameValidationRuleResultInvalid) {
+            hasInvalid = YES;
+            break;
+        }
+    }
+
+    if (hasInvalid || text.length == 0) {
+        self.validationResult = DWUsernameValidationRuleResultHidden;
         return;
     }
 

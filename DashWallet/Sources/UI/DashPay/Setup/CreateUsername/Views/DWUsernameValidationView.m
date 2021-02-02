@@ -107,7 +107,7 @@ NS_ASSUME_NONNULL_END
         case DWUsernameValidationRuleResultValid:
             self.hidden = NO;
             self.iconImageView.image = [UIImage imageNamed:@"validation_checkmark"];
-            self.iconImageView.tintColor = [UIColor dw_darkTitleColor];
+            self.iconImageView.tintColor = [UIColor dw_greenColor];
             self.titleLabel.textColor = [UIColor dw_darkTitleColor];
             [self.activityIndicatorView stopAnimating];
             break;

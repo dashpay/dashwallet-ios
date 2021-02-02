@@ -15,25 +15,25 @@
 //  limitations under the License.
 //
 
-#import "DWMinLengthUsernameValidationRule.h"
+#import <UIKit/UIKit.h>
 
-#import "DWDashPayConstants.h"
-#import "DWUsernameValidationRule+Protected.h"
+NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWMinLengthUsernameValidationRule
+typedef NS_ENUM(NSUInteger, DWErrorDescriptionType) {
+    DWErrorDescriptionType_Profile,
+    DWErrorDescriptionType_AcceptContactRequest,
+    DWErrorDescriptionType_SendContactRequest,
+};
 
-- (NSString *)title {
-    return NSLocalizedString(@"Minimum 3 characters", @"Validation rule");
-}
+@interface DWNetworkErrorViewController : UIViewController
 
-- (void)validateText:(NSString *_Nullable)text {
-    const NSUInteger length = text.length;
-    if (length == 0) {
-        self.validationResult = DWUsernameValidationRuleResultEmpty;
-        return;
-    }
+- (instancetype)initWithType:(DWErrorDescriptionType)type;
 
-    self.validationResult = length >= DW_MIN_USERNAME_LENGTH ? DWUsernameValidationRuleResultValid : DWUsernameValidationRuleResultInvalid;
-}
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
+
+NS_ASSUME_NONNULL_END

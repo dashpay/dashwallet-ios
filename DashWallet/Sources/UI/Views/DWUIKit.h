@@ -29,4 +29,8 @@
 
 #import "UIViewController+DWEmbedding.h"
 
+// Global UI Constants
+
+#define DW_TABBAR_HEIGHT (DEVICE_HAS_HOME_INDICATOR ? 77.0 : 64.0)
+
 #endif /* DWUIKit_h */

@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_END
 
     [self configureForIncomingStatus];
 
-    [self updateState:self.model.requestState];
+    [self updateState:self.model.acceptRequestState];
 
     [self invalidateIntrinsicContentSize];
 }

@@ -22,11 +22,14 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWNetworkErrorViewController.h"
 #import "DWNotificationsProvider.h"
+
 
 @implementation DWDashPayContactsActions
 
 + (void)acceptContactRequest:(id<DWDPBasicUserItem>)item
+                     context:(UIViewController *)context
                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     NSAssert([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)], @"Incompatible item");
 
@@ -39,6 +42,11 @@
 
     void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
         newRequestItem.requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
+
+        if (!success) {
+            DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_AcceptContactRequest];
+            [context presentViewController:controller animated:YES completion:nil];
+        }
 
         // TODO: DP temp workaround to update and force reload contact list
         // This will trigger DWNotificationsProvider to reset
@@ -64,6 +72,7 @@
 }
 
 + (void)declineContactRequest:(id<DWDPBasicUserItem>)item
+                      context:(UIViewController *)context
                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     // TODO: DP dummy method
 

@@ -92,6 +92,9 @@
 "Advanced Security" = "Segurança Avançada";
 
 /* No comment provided by engineer. */
+"Agree" = "Agree";
+
+/* No comment provided by engineer. */
 "All" = "Todos";
 
 /* No comment provided by engineer. */
@@ -150,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Saldo escondido";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "bloco #%1$d de %2$d";
@@ -443,6 +449,9 @@
 "Ignore" = "Ignorar";
 
 /* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+
+/* No comment provided by engineer. */
 "Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
 
 /* No comment provided by engineer. */
@@ -494,7 +503,7 @@
 "Let me know when it’s done" = "Let me know when it’s done";
 
 /* Validation rule */
-"Letters and numbers only" = "Letters and numbers only";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Conectar Conta Uphold";
@@ -553,14 +562,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Máximo";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Maximum %ld characters";
-
 /* adjective, security level */
 "Medium" = "Média";
-
-/* Validation rule */
-"Minimum 3 characters" = "Minimum 3 characters";
 
 /* No comment provided by engineer. */
 "More" = "Mais";
@@ -580,6 +583,9 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Movido para Endereço";
 
+/* Validation rule */
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
+
 /* No comment provided by engineer. */
 "My Contacts" = "My Contacts";
 
@@ -591,6 +597,9 @@
 
 /* No comment provided by engineer. */
 "Network fee" = "Taxa de rede";
+
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "New";
@@ -898,6 +907,9 @@
 /* No comment provided by engineer. */
 "Send to" = "Enviar para";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Enviar para Endereço";
 
@@ -912,6 +924,9 @@
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Enviando";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
 
 /* No comment provided by engineer. */
 "Sending to" = "Sending to";
@@ -1009,6 +1024,9 @@
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Toque para mostrar o saldo";
 
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
@@ -1070,16 +1088,31 @@
 "Turn device passcode on" = "Habilite a senha de dispositivo";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "Não foi possível conectar";
 
 /* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL." = "Unable to fetch image. Please enter a valid image URL.";
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Não foi possível obter um novo código QR";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
@@ -1124,13 +1157,13 @@
 "Used at IP address" = "Utilizado no endereço de IP";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "Username taken";
 
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
-
-/* No comment provided by engineer. */
-"Validating username done" = "Validating username done";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "Validating username failed";
@@ -1215,6 +1248,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Você está prestes a limpar esta carteira desse dispositivo. Fundos associados a essa carteira poderão ser recuperados apenas se você tiver a sua frase de recuperação.";
+
+/* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Você pode autenticar com Face ID para pagamentos abaixo de";

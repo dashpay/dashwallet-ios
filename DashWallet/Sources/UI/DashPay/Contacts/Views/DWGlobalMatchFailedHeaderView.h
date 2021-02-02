@@ -15,19 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWMaxLengthUsernameValidationRule.h"
+#import "BaseCollectionReusableView.h"
 
-#import "DWDashPayConstants.h"
-#import "DWUsernameValidationRule+Protected.h"
+NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWMaxLengthUsernameValidationRule
-
-- (NSString *)title {
-    return [NSString stringWithFormat:NSLocalizedString(@"Maximum %ld characters", @"Validation rule: Maximum 24 characters"), DW_MAX_USERNAME_LENGTH];
-}
-
-- (void)validateText:(NSString *)text {
-    self.validationResult = text.length <= DW_MAX_USERNAME_LENGTH ? DWUsernameValidationRuleResultHidden : DWUsernameValidationRuleResultInvalid;
-}
+@interface DWGlobalMatchFailedHeaderView : BaseCollectionReusableView
 
 @end
+
+NS_ASSUME_NONNULL_END

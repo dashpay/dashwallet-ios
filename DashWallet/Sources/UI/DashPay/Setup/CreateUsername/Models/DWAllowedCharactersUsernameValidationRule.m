@@ -34,14 +34,14 @@ NS_ASSUME_NONNULL_END
 - (instancetype)init {
     self = [super init];
     if (self) {
-        NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789"];
+        NSCharacterSet *allowedCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"];
         _illegalChars = [allowedCharacterSet invertedSet];
     }
     return self;
 }
 
 - (NSString *)title {
-    return NSLocalizedString(@"Letters and numbers only", @"Validation rule");
+    return NSLocalizedString(@"Letters, numbers and hyphens only", @"Validation rule");
 }
 
 - (void)validateText:(NSString *)text {

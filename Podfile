@@ -13,6 +13,8 @@ target 'dashwallet' do
   pod 'TOCropViewController', '2.5.5'
   pod 'SDWebImage', '5.9.4'
 
+  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
+
   # Debugging purposes
 #  pod 'Reveal-SDK', :configurations => ['Debug']
   
@@ -29,7 +31,7 @@ end
 target 'TodayExtension' do
   platform :ios, '12.0'
   
-  pod 'DSDynamicOptions', '0.1.1'
+  pod 'DSDynamicOptions', '0.1.2'
 
 end
 

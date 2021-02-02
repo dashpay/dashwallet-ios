@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setSearchingStateWithQuery:(NSString *)query;
 - (void)setNoResultsGlobalStateWithQuery:(NSString *)query;
 - (void)setNoResultsLocalStateWithQuery:(NSString *)query;
-- (void)setErrorStateWithError:(NSError *)error;
+- (void)setErrorState;
 
 @end
 
