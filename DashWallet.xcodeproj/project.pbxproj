@@ -248,7 +248,7 @@
 		2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6422FFE43500FF8653 /* DWPayModel.m */; };
 		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
 		2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */; };
-		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */; };
+		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */; };
 		2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */; };
 		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
 		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
@@ -1058,8 +1058,8 @@
 		2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayOptionModel.m; sourceTree = "<group>"; };
 		2A8B9E6A23029D2B00FF8653 /* DWPaymentInputBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentInputBuilder.h; sourceTree = "<group>"; };
 		2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentInputBuilder.m; sourceTree = "<group>"; };
-		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressObserver.m; sourceTree = "<group>"; };
-		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressObserver.h; sourceTree = "<group>"; };
+		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressExtractor.m; sourceTree = "<group>"; };
+		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressExtractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressExtractor.h; sourceTree = "<group>"; };
 		2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
 		2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveViewController.m; sourceTree = "<group>"; };
 		2A8B9E782302E67400FF8653 /* DWReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModel.h; sourceTree = "<group>"; };
@@ -2789,8 +2789,8 @@
 		2A8B9E6923029C0D00FF8653 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */,
-				2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */,
+				2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressExtractor.h */,
+				2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */,
 				2A8B9E6322FFE43500FF8653 /* DWPayModel.h */,
 				2A8B9E6422FFE43500FF8653 /* DWPayModel.m */,
 				2AB3415B23A81291004E37A7 /* DWPayModelProtocol.h */,
@@ -4945,7 +4945,7 @@
 				2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
-				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */,
+				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
@@ -5387,6 +5387,8 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_ARCHS = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5451,6 +5453,8 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_ARCHS = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
@@ -5755,6 +5759,8 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_ARCHS = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "TESTFLIGHT=1";
@@ -5939,6 +5945,8 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_ARCHS = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
