@@ -19,16 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *DWPasteboardObserverNotification;
+@interface DWPasteboardAddressExtractor : NSObject
 
-@interface DWPasteboardAddressObserver : NSObject
-
-@property (readonly, copy, nonatomic) NSArray<NSString *> *contents;
-
-- (void)startIntervalObserving;
-- (void)stopIntervalObserving;
-
-- (void)checkPasteboardContentsCompletion:(nullable void (^)(void))completion;
+- (NSArray<NSString *> *)extractAddresses;
 
 @end
 

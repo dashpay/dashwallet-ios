@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)checkIfPayToAddressFromPasteboardAvailable:(nonnull void (^)(BOOL))completion {
+- (void)payToAddressFromPasteboardAvailable:(nonnull void (^)(BOOL))completion {
 }
 
 - (nonnull DWPaymentInput *)paymentInputWithURL:(nonnull NSURL *)url {
@@ -89,12 +89,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)performNFCReadingWithCompletion:(nonnull void (^)(DWPaymentInput *_Nonnull))completion {
-}
-
-- (void)startPasteboardIntervalObserving {
-}
-
-- (void)stopPasteboardIntervalObserving {
 }
 
 @end

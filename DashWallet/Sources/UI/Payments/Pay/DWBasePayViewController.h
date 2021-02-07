@@ -38,6 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
 - (void)performScanQRCodeAction;
+/// Check pasteboard and pay
+- (void)payToAddressAction;
+/// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
