@@ -455,6 +455,9 @@
 "Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
 
 /* No comment provided by engineer. */
+"Images Privacy Policy" = "Images Privacy Policy";
+
+/* No comment provided by engineer. */
 "Immediately" = "Immediatamente";
 
 /* Translate it as short as possible! (24 symbols max) */

@@ -42,6 +42,7 @@ NS_ASSUME_NONNULL_END
         textView.textContainer.lineFragmentPadding = 0.0;
         textView.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
         textView.delegate = self;
+        textView.backgroundColor = [UIColor clearColor];
         [self.inputContentView addSubview:textView];
         _textView = textView;
 

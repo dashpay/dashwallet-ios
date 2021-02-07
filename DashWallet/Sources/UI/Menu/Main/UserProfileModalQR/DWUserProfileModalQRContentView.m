@@ -58,6 +58,7 @@ NS_ASSUME_NONNULL_END
 
         UIButton *qrCodeButton = [UIButton buttonWithType:UIButtonTypeCustom];
         qrCodeButton.translatesAutoresizingMaskIntoConstraints = NO;
+        qrCodeButton.backgroundColor = [UIColor whiteColor];
         [qrCodeButton addTarget:self action:@selector(qrCodeButtonAction) forControlEvents:UIControlEventTouchUpInside];
         [contentView addSubview:qrCodeButton];
         _qrCodeButton = qrCodeButton;

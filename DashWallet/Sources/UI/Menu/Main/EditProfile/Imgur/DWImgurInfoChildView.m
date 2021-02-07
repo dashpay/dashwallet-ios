@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWImgurInfoChildView ()
 
+@property (nonatomic, strong) DWImgurItemView *item1;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -42,26 +44,17 @@ NS_ASSUME_NONNULL_END
         self.layer.cornerRadius = ViewCornerRadius;
         self.layer.masksToBounds = YES;
 
-        UIImageView *imageView = [[UIImageView alloc] init];
-        imageView.translatesAutoresizingMaskIntoConstraints = NO;
-        imageView.image = [UIImage imageNamed:@"logo_imgur"];
-        [self addSubview:imageView];
+        UILabel *title = [[UILabel alloc] init];
+        title.translatesAutoresizingMaskIntoConstraints = NO;
+        title.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+        title.textColor = [UIColor dw_darkTitleColor];
+        title.text = NSLocalizedString(@"Images Privacy Policy", nil);
+        title.textAlignment = NSTextAlignmentCenter;
+        [self addSubview:title];
 
         DWImgurItemView *item1 = [[DWImgurItemView alloc] init];
         item1.translatesAutoresizingMaskIntoConstraints = NO;
-
-        NSString *s1 = NSLocalizedString(@"The image you select will be uploaded to Imgur anonymously.",
-                                         @"Don't translate 'Imgur'");
-        NSRange range = [s1 rangeOfString:@"Imgur"];
-        NSMutableAttributedString *att1 = [[NSMutableAttributedString alloc] initWithString:s1];
-        if (range.location != NSNotFound) {
-            NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-            attachment.image = [UIImage imageNamed:@"logo_imgur_small"];
-            attachment.bounds = CGRectMake(0.0, -4.0, 45.0, 16.0);
-            NSAttributedString *imageString = [NSAttributedString attributedStringWithAttachment:attachment];
-            [att1 replaceCharactersInRange:range withAttributedString:imageString];
-        }
-        item1.text = att1;
+        _item1 = item1;
 
         DWImgurItemView *item2 = [[DWImgurItemView alloc] init];
         item2.translatesAutoresizingMaskIntoConstraints = NO;
@@ -103,11 +96,14 @@ NS_ASSUME_NONNULL_END
         [self addSubview:buttonsStackView];
 
         [NSLayoutConstraint activateConstraints:@[
-            [imageView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                                constant:32.0],
-            [imageView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+            [title.topAnchor constraintEqualToAnchor:self.topAnchor
+                                            constant:32.0],
+            [title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
+                                                constant:16.0],
+            [self.trailingAnchor constraintEqualToAnchor:title.trailingAnchor
+                                                constant:16.0],
 
-            [stackView.topAnchor constraintEqualToAnchor:imageView.bottomAnchor
+            [stackView.topAnchor constraintEqualToAnchor:title.bottomAnchor
                                                 constant:18.0],
             [stackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
                                                     constant:25.0],
@@ -125,6 +121,8 @@ NS_ASSUME_NONNULL_END
             [cancelButton.heightAnchor constraintEqualToConstant:ButtonHeight],
             [buttonsStackView.heightAnchor constraintEqualToConstant:ButtonHeight],
         ]];
+
+        [self updateItem1Text];
     }
     return self;
 }
@@ -135,6 +133,27 @@ NS_ASSUME_NONNULL_END
 
 - (void)cancelButtonAction {
     [self.delegate imgurInfoChildViewCancelAction:self];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self updateItem1Text];
+}
+
+- (void)updateItem1Text {
+    NSString *s1 = NSLocalizedString(@"The image you select will be uploaded to Imgur anonymously.",
+                                     @"Don't translate 'Imgur'");
+    NSRange range = [s1 rangeOfString:@"Imgur"];
+    NSMutableAttributedString *att1 = [[NSMutableAttributedString alloc] initWithString:s1];
+    if (range.location != NSNotFound) {
+        NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+        attachment.image = [UIImage imageNamed:@"logo_imgur_small"];
+        attachment.bounds = CGRectMake(0.0, -4.0, 45.0, 16.0);
+        NSAttributedString *imageString = [NSAttributedString attributedStringWithAttachment:attachment];
+        [att1 replaceCharactersInRange:range withAttributedString:imageString];
+    }
+    self.item1.text = att1;
 }
 
 @end
