@@ -557,9 +557,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC-устройство не предоставило Dash адрес";
 
 /* No comment provided by engineer. */
-"No address copied" = "Нет адреса";
-
-/* No comment provided by engineer. */
 "Node IP" = "IP узла";
 
 /* adjective, security level */
@@ -834,9 +831,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Отправить на адрес";
-
-/* No comment provided by engineer. */
-"Send to copied address" = "Отправить на скопированный адрес";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Отправить через NFC";
@@ -1161,3 +1155,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Сейчас Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему аккаунту на другом устройстве.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

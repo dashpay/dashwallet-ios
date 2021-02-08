@@ -557,9 +557,6 @@
 "NFC device didn't transmit a valid Dash address" = "Perangkat NFC tidak mengirimkan alamat Dash yang valid";
 
 /* No comment provided by engineer. */
-"No address copied" = "Tak ada alamat tersalin";
-
-/* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -834,9 +831,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Kirim ke alamat";
-
-/* No comment provided by engineer. */
-"Send to copied address" = "Kirim ke alamat yang disalin";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Kirim dengan NFC";
@@ -1161,3 +1155,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Dompet Anda aman sekarang. Anda dapat menggunakan frasa pemulihan kapan saja untuk memulihkan akun di perangkat lain.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

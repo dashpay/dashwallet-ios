@@ -557,9 +557,6 @@
 "NFC device didn't transmit a valid Dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"No address copied" = "ไม่มีที่อยู่คัดลอก";
-
-/* No comment provided by engineer. */
 "Node IP" = "โหนด IP";
 
 /* adjective, security level */
@@ -834,9 +831,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "ส่งไปยังที่อยู่";
-
-/* No comment provided by engineer. */
-"Send to copied address" = "ส่งไปยังที่อยู่ที่คัดลอก";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "ส่งกับ NFC";
@@ -1161,3 +1155,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

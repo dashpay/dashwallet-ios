@@ -557,9 +557,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFCデバイスは有効なDashアドレスを送信しませんでした";
 
 /* No comment provided by engineer. */
-"No address copied" = "アドレスがコピーされていません";
-
-/* No comment provided by engineer. */
 "Node IP" = "ノードIP";
 
 /* adjective, security level */
@@ -834,9 +831,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "アドレスへ送金する";
-
-/* No comment provided by engineer. */
-"Send to copied address" = "コピーしたアドレスへ送金する";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "NFCで送金する";
@@ -1161,3 +1155,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "現在あなたのウォレットは安全です。復元フレーズを使えばいつでも\n他の端末であなたのアカウントを復元できます。";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";
