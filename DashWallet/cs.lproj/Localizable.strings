@@ -557,9 +557,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC zařízení neodeslalo platnou Dash adresu";
 
 /* No comment provided by engineer. */
-"No address copied" = "Žádná zkopírovaná adresa";
-
-/* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -835,9 +832,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Odeslat na adresu";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Odeslat na zkopírovanou adresu";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Odeslat prostřednictvím NFC";
 
@@ -1103,6 +1097,9 @@
 "Why I should not take a screenshot?" = "Proč bych neměl pořizovat snímek obrazovky?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Smazat";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1158,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Peněženka je teď zabezpečena. Frázi pro obnovení můžete kdykoliv použít pro obnovení na jiném zařízení.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

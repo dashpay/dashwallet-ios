@@ -557,9 +557,6 @@
 "NFC device didn't transmit a valid Dash address" = "Urządzenie NFC nie wysłało poprawnego adresu Dash";
 
 /* No comment provided by engineer. */
-"No address copied" = "Adres nie skopiowany";
-
-/* No comment provided by engineer. */
 "Node IP" = "Węzeł IP";
 
 /* adjective, security level */
@@ -835,9 +832,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Zapłać na Adres";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Wyślij do skopiowanego adresu";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Wyślij z NFC";
 
@@ -1103,6 +1097,9 @@
 "Why I should not take a screenshot?" = "Dlaczego mam nie robić zrzutu ekranu?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Wyczyść";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1158,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Twój portfel jest teraz zabezpieczony. Możesz użyć swojej frazy odzyskiwania w dowolnym momencie, aby odzyskać konto na innym urządzeniu.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

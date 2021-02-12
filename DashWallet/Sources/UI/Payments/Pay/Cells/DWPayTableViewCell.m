@@ -27,7 +27,7 @@ static NSString *TitleForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_ScanQR:
             return NSLocalizedString(@"Send by", @"Send by (scanning QR code)");
         case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"Send to copied address", nil);
+            return NSLocalizedString(@"Send to", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"Send to", nil);
     }
@@ -38,19 +38,14 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_ScanQR:
             return NSLocalizedString(@"Scanning QR code", @"(Send by) Scanning QR code");
         case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"No address copied", nil);
+            return NSLocalizedString(@"Сopied address or QR", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"NFC device", nil);
     }
 }
 
-static UIColor *DescriptionColor(DWPayOptionModelType type, BOOL empty) {
-    if (empty && type == DWPayOptionModelType_Pasteboard) {
-        return [UIColor dw_quaternaryTextColor];
-    }
-    else {
-        return [UIColor dw_darkTitleColor];
-    }
+static UIColor *DescriptionColor(DWPayOptionModelType type) {
+    return [UIColor dw_darkTitleColor];
 }
 
 
@@ -146,19 +141,15 @@ static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
 - (void)updateDetails {
     DWPayOptionModelType type = self.model.type;
     NSString *details = self.model.details;
-    const BOOL emptyDetails = details == nil;
-    self.descriptionLabel.text = emptyDetails ? DescriptionForOptionType(type) : details;
-    self.descriptionLabel.textColor = DescriptionColor(type, emptyDetails);
+    self.descriptionLabel.text = DescriptionForOptionType(type);
+    self.descriptionLabel.textColor = DescriptionColor(type);
+    self.actionButton.enabled = YES;
 
-    if (type == DWPayOptionModelType_Pasteboard) {
-        self.actionButton.enabled = !!details;
 #if SNAPSHOT
+    if (type == DWPayOptionModelType_Pasteboard) {
         self.actionButton.accessibilityIdentifier = @"send_pasteboard_button";
+    }
 #endif /* SNAPSHOT */
-    }
-    else {
-        self.actionButton.enabled = YES;
-    }
 }
 
 @end
