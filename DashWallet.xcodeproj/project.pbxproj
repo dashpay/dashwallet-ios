@@ -462,6 +462,8 @@
 		2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE2F0F8245C16C8001DD722 /* DWUserProfileViewController.m */; };
 		2AE310FE2527A4450054266D /* DWTxListHomeCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE310FD2527A4450054266D /* DWTxListHomeCell.m */; };
 		2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE4736A241BC5E300804DD4 /* UIViewController+DWDisplayError.m */; };
+		2AE63CBF25D6E20F0051E341 /* DWSaveAlertChildView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE63CBE25D6E20F0051E341 /* DWSaveAlertChildView.m */; };
+		2AE63CF125D7FB230051E341 /* DWSaveAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE63CF025D7FB230051E341 /* DWSaveAlertViewController.m */; };
 		2AE85089252B81AA008FE11A /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE85087252B81AA008FE11A /* DWPhraseRepairChildViewController.m */; };
 		2AE8508A252B81AA008FE11A /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE85088252B81AA008FE11A /* DWPhraseRepairViewController.m */; };
 		2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */; };
@@ -1564,6 +1566,10 @@
 		2AE47369241BC5E300804DD4 /* UIViewController+DWDisplayError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWDisplayError.h"; sourceTree = "<group>"; };
 		2AE4736A241BC5E300804DD4 /* UIViewController+DWDisplayError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+DWDisplayError.m"; sourceTree = "<group>"; };
 		2AE56473249B675500CC2E80 /* DWDPNotificationItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNotificationItem.h; sourceTree = "<group>"; };
+		2AE63CBD25D6E20F0051E341 /* DWSaveAlertChildView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSaveAlertChildView.h; sourceTree = "<group>"; };
+		2AE63CBE25D6E20F0051E341 /* DWSaveAlertChildView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSaveAlertChildView.m; sourceTree = "<group>"; };
+		2AE63CEF25D7FB230051E341 /* DWSaveAlertViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSaveAlertViewController.h; sourceTree = "<group>"; };
+		2AE63CF025D7FB230051E341 /* DWSaveAlertViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSaveAlertViewController.m; sourceTree = "<group>"; };
 		2AE85085252B81AA008FE11A /* DWPhraseRepairChildViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairChildViewController.h; sourceTree = "<group>"; };
 		2AE85086252B81AA008FE11A /* DWPhraseRepairViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairViewController.h; sourceTree = "<group>"; };
 		2AE85087252B81AA008FE11A /* DWPhraseRepairChildViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairChildViewController.m; sourceTree = "<group>"; };
@@ -4027,6 +4033,7 @@
 		2ADDF995251B7C1A00DA8926 /* EditProfile */ = {
 			isa = PBXGroup;
 			children = (
+				2AE63CAD25D6E1E00051E341 /* SaveAlert */,
 				2A44AAF225C6D9EF00671AC3 /* Imgur */,
 				2AC1EDC12565B85800410917 /* External Sources */,
 				2A32AA13255127AB0080138E /* Upload */,
@@ -4095,6 +4102,17 @@
 				2ADF83FE23633116008459A7 /* SharedAssets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		2AE63CAD25D6E1E00051E341 /* SaveAlert */ = {
+			isa = PBXGroup;
+			children = (
+				2AE63CBD25D6E20F0051E341 /* DWSaveAlertChildView.h */,
+				2AE63CBE25D6E20F0051E341 /* DWSaveAlertChildView.m */,
+				2AE63CEF25D7FB230051E341 /* DWSaveAlertViewController.h */,
+				2AE63CF025D7FB230051E341 /* DWSaveAlertViewController.m */,
+			);
+			path = SaveAlert;
 			sourceTree = "<group>";
 		};
 		2AE85084252B81AA008FE11A /* PhraseRepair */ = {
@@ -5358,6 +5376,7 @@
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */,
 				2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */,
+				2AE63CF125D7FB230051E341 /* DWSaveAlertViewController.m in Sources */,
 				2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */,
 				C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */,
 				2A0C699923103952001B8C90 /* DWMaxButton.m in Sources */,
@@ -5436,6 +5455,7 @@
 				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2ADDF99F251B7F6500DA8926 /* DWEditProfileTextFieldCell.m in Sources */,
 				2AEC24BF251D3E8D00AC86F6 /* DWRootEditProfileViewController.m in Sources */,
+				2AE63CBF25D6E20F0051E341 /* DWSaveAlertChildView.m in Sources */,
 				2A856CFD24EB30680040BD61 /* DWVerticalContactCell.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
 				2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */,

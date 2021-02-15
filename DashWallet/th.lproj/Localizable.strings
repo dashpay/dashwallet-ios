@@ -614,6 +614,9 @@
 "NFC device didn't transmit a valid Dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
+"No" = "No";
+
+/* No comment provided by engineer. */
 "No address copied" = "ไม่มีที่อยู่คัดลอก";
 
 /* No comment provided by engineer. */
@@ -834,6 +837,9 @@
 
 /* No comment provided by engineer. */
 "Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "สแกนคีย์ส่วนตัว";
@@ -1242,6 +1248,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "กับ Dash Blockchain";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "You accepted the contact request from %@";

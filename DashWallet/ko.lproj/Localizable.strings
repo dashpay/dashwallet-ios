@@ -614,6 +614,9 @@
 "NFC device didn't transmit a valid Dash address" = "NFC 장치가 유효한 대시 주소를 전송하지 못했습니다";
 
 /* No comment provided by engineer. */
+"No" = "No";
+
+/* No comment provided by engineer. */
 "No address copied" = "클립보드에 복사된 주소가 없습니다";
 
 /* No comment provided by engineer. */
@@ -834,6 +837,9 @@
 
 /* No comment provided by engineer. */
 "Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "개인 키 스캔하기";
@@ -1242,6 +1248,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "대시 블록체인을 통해";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "You accepted the contact request from %@";

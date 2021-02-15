@@ -58,6 +58,22 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
+- (BOOL)hasChanges {
+    if (![self.displayName isEqualToString:[self.blockchainIdentity dw_displayNameOrUsername]]) {
+        return YES;
+    }
+
+    if (self.aboutMe && ![self.aboutMe isEqualToString:self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage]) {
+        return YES;
+    }
+
+    if (self.unsavedAvatarURL != nil) {
+        return YES;
+    }
+
+    return NO;
+}
+
 - (NSString *)displayName {
     return self.displayNameModel.text;
 }

@@ -19,11 +19,12 @@
 
 #import "DWEditProfileViewController.h"
 #import "DWEnvironment.h"
+#import "DWSaveAlertViewController.h"
 #import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootEditProfileViewController () <DWEditProfileViewControllerDelegate>
+@interface DWRootEditProfileViewController () <DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate>
 
 @property (nonatomic, strong) DWEditProfileViewController *editController;
 @property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
@@ -67,22 +68,50 @@ NS_ASSUME_NONNULL_END
     return UIStatusBarStyleLightContent;
 }
 
+- (void)performSave {
+    [self.delegate editProfileViewController:self
+                           updateDisplayName:self.editController.displayName
+                                     aboutMe:self.editController.aboutMe
+                             avatarURLString:self.editController.avatarURLString];
+}
+
 #pragma mark - DWEditProfileViewControllerDelegate
 
 - (void)editProfileViewControllerDidUpdate:(DWEditProfileViewController *)controller {
     self.actionButton.enabled = controller.isValid;
 }
 
+#pragma mark - DWSaveAlertViewController
+
+- (void)saveAlertViewControllerCancelAction:(DWSaveAlertViewController *)controller {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self.delegate editProfileViewControllerDidCancel:self];
+                                   }];
+}
+
+- (void)saveAlertViewControllerOKAction:(DWSaveAlertViewController *)controller {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self performSave];
+                                   }];
+}
+
 #pragma mark - Actions
 
 - (void)cancelButtonAction {
-    [self.delegate editProfileViewControllerDidCancel:self];
+    if ([self.editController hasChanges]) {
+        DWSaveAlertViewController *saveAlert = [[DWSaveAlertViewController alloc] init];
+        saveAlert.delegate = self;
+        [self presentViewController:saveAlert animated:YES completion:nil];
+    }
+    else {
+        [self.delegate editProfileViewControllerDidCancel:self];
+    }
 }
 
 - (void)actionButtonAction:(id)sender {
-    [self.delegate editProfileViewController:self
-                           updateDisplayName:self.editController.displayName
-                                     aboutMe:self.editController.aboutMe
-                             avatarURLString:self.editController.avatarURLString];
+    [self performSave];
 }
+
 @end
