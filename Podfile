@@ -10,6 +10,8 @@ target 'dashwallet' do
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
+  
+  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
 
   # Debugging purposes
 #  pod 'Reveal-SDK', :configurations => ['Debug']
@@ -27,7 +29,7 @@ end
 target 'TodayExtension' do
   platform :ios, '12.0'
   
-  pod 'DSDynamicOptions', '0.1.1'
+  pod 'DSDynamicOptions', '0.1.2'
 
 end
 
@@ -61,7 +63,7 @@ post_install do |installer|
         # see https://github.com/CocoaPods/CocoaPods/issues/8474
         if target.name == 'secp256k1_dash'
           target.build_configurations.each do |config|
-              config.build_settings['HEADER_SEARCH_PATHS'] = '"${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/secp256k1_dash" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/secp256k1_dash"'
+              config.build_settings['HEADER_SEARCH_PATHS'] = '"${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/secp256k1_dash" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/secp256k1_dash" "${PODS_ROOT}/secp256k1_dash"'
           end
         end
     end
