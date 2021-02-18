@@ -47,7 +47,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" nie je slovom obnovenia";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" nie je slovo frázy pre obnovenie. Chcete sa pokúsiť nájsť správne slovo, ktoré by malo byť na jeho mieste?";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nskúsiť znova za %@";
@@ -188,7 +188,7 @@
 "Clipboard doesn't contain a valid Dash address" = "Schránka neobsahuje platnú Dash adresu";
 
 /* No comment provided by engineer. */
-"Close" = "Ukončiť";
+"Close" = "Zatvoriť";
 
 /* No comment provided by engineer. */
 "Close App" = "Ukončiť Applikáciu";
@@ -242,7 +242,7 @@
 "Copyright © 2020 Dash Core" = "Autorské práva © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Chýbajúce alebo nesprávne slová sa nepodarilo automaticky obnoviť.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Platba sa nedá uskutočniť ";
@@ -353,13 +353,13 @@
 "Forgot PIN?" = "Zabudli ste PIN?";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Nájdené chýbajúce slovo:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Nájdené chýbajúce slová:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "Nájdené potencionálne chýbajúce slová:\n%@";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generovať rozšírené verejné kľúče?";
@@ -437,10 +437,10 @@
 "Invalid QR Code" = "Neplatný QR kód";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Zdá sa, že sa pokúšate obnoviť svoju peňaženku pomocou 12-slovnej frázy na obnovenie, avšak zadali ste iba 10 slov. Chcete automaticky obnoviť chýbajúce slová? Môže to trvať asi hodinu. Vaše zariadenie odporúčame pripojiť do siete.";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Zdá sa, že sa pokúšate obnoviť svoju peňaženku pomocou 12-slovnej frázy na obnovenie, avšak zadali ste iba 11 slov. Chcete automaticky obnoviť chýbajúce slovo?";
 
 /* No comment provided by engineer. */
 "It's Important" = "Je to dôležité";
@@ -500,7 +500,7 @@
 "Manage Trusted Node" = "Spravovať dôveryhodný uzol";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "zoznam mastenódov: %1$d z %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Registracia masternódu";
@@ -555,6 +555,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC zariadenie nevyslalo validnú Dash adresu";
+
+/* No comment provided by engineer. */
+"No address copied" = "Nebola skopírovaná žiadna adresa";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP uzla";
@@ -692,13 +695,13 @@
 "Received from" = "Prijaté od";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "Obnoviť";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Obnoviť peňaženku";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "Obnovuje sa...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Fráza pre obnovenie";
@@ -707,7 +710,7 @@
 "Recovery phrase doesn't match" = "Fráza pre obnovenie sa nezhoduje";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Fráza pre obnovenie musí mať 12, 15, 18, 21 alebo 24 slov";
 
 /* Button title, Register (username) */
 "Register" = "Registrovať";
@@ -831,6 +834,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Poslať na adresu";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "Poslať na skopírovanú adresu";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Poslať s NFC";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Prečo by som nemal robiť snímku obrazovky?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "Vymazať";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Vaša peňaženka je zabezpečená. Frázu pre obnovenie môžete kedykoľvek použiť na obnovenie svojho účtu na inom zariadení.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";

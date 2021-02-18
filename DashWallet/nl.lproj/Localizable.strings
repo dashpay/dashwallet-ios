@@ -47,7 +47,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" is geen woord uit de herstelzin";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is geen herstelzinwoord. Wil je het correcte woord herstellen dat er zou moeten staan?";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nprobeer opnieuw over %@";
@@ -242,7 +242,7 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Kon niet automatisch ontbrekende of incorrecte woorden herstellen";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Kon betaling niet maken";
@@ -353,13 +353,13 @@
 "Forgot PIN?" = "PIN vergeten?";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Ontbrekend woord is gevonden:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Ontbrekende woorden zijn gevonden:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "Mogelijkerwijs ontbrekende woorden zijn gevonden:\n%@";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Genereer uitgebreide publieke sleutels?";
@@ -437,10 +437,10 @@
 "Invalid QR Code" = "Ongeldige QR-code";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Het ziet er naar uit dat je probeert een portemonnee te herstellen met een herstelzin van 12 woorden, maar je hebt maar 10 woorden ingevoerd, wil je automatisch de ontbrekende woorden herstellen? Dit kan ongeveer een uur duren. We raden aan je apparaat aan de lader te hangen.";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Het ziet er naar uit dat je probeert een portemonnee te herstellen met een herstelzin van 12 woorden, maar je hebt maar 11 woorden ingevoerd, wil je automatisch de ontbrekende woorden herstellen?";
 
 /* No comment provided by engineer. */
 "It's Important" = "Het is belangrijk";
@@ -500,16 +500,16 @@
 "Manage Trusted Node" = "Beheer vertrouwde Node";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "lijst masternodes #%1$d of %2$d";
 
 /* No comment provided by engineer. */
-"Masternode Registration" = "Masternode registratie";
+"Masternode Registration" = "Registreren masternode";
 
 /* No comment provided by engineer. */
-"Masternode Revocation" = "Masternode herroeping";
+"Masternode Revocation" = "Herroepen masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update" = "Masternode updaten";
+"Masternode Update" = "Updaten masternode";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -555,6 +555,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC apparaat heeft geen geldig Dash-adres verzonden";
+
+/* No comment provided by engineer. */
+"No address copied" = "Geen adres gekopieerd";
 
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
@@ -692,13 +695,13 @@
 "Received from" = "Ontvangen van";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "Herstel";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Herstel portemonnee";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "Herstellende...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Herstelzin";
@@ -707,7 +710,7 @@
 "Recovery phrase doesn't match" = "De herstelzin komt niet overeen";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Herstelzin moet 12, 15, 18, 21 of 24 woorden hebben";
 
 /* Button title, Register (username) */
 "Register" = "Registreren";
@@ -719,7 +722,7 @@
 "Registered from" = "Geregistreerd van";
 
 /* No comment provided by engineer. */
-"Registered Masternode" = "Geregistreerde Masternode";
+"Registered Masternode" = "Geregistreerde masternode";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Meld een probleem";
@@ -832,6 +835,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Versturen naar adres";
 
+/* No comment provided by engineer. */
+"Send to copied address" = "Versturen naar gekopieerd adres";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Versturen met NFC";
 
@@ -878,7 +884,7 @@
 "Share" = "Delen";
 
 /* No comment provided by engineer. */
-"Show Masternode Keys" = "Toon Masternode sleutels";
+"Show Masternode Keys" = "Toon sleutels masternode";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Toon herstelzin";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Waarom moet ik geen screenshot maken?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "Verwijderen";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Uw portemonnee is nu beveiligd. U kunt uw herstelzin op elk gewenst moment gebruiken om uw account op een ander apparaat te herstellen.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
