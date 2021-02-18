@@ -356,10 +356,10 @@
 "Found missing word:\n%@" = "Parola mancante trovata:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Trovate parole mancanti:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "Trovare potenziali parole mancanti:\n%@";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generare chiavi pubbliche estese?";
@@ -437,10 +437,10 @@
 "Invalid QR Code" = "QR Code Non Valido";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Pare che tu stia tentando di rigenerare il tuo portafoglio utilizzando una frase di recupero con 12 parole, tuttavia ne hai inserite solamente 10, vorresti recuperare automaticamente le parole mancanti? Ciò richiederebbe all'incirca un'ora. Ti consigliamo di tenere in carica il tuo dispositivo.";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Pare che tu stia tentando di rigenerare il tuo portafoglio utilizzando una frase di recupero con 12 parole, tuttavia ne hai inserite solamente 11, vorresti recuperare automaticamente la parole mancante?";
 
 /* No comment provided by engineer. */
 "It's Important" = "È importante";
@@ -500,7 +500,7 @@
 "Manage Trusted Node" = "Gestisci Nodo Affidabile";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "lista masternode #%1$d di %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Registrazione Masternode";
@@ -555,6 +555,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Il dispositivo NFC non ha trasmesso un indirizzo Dash valido";
+
+/* No comment provided by engineer. */
+"No address copied" = "Nessun indirizzo copiato";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Nodo";
@@ -692,13 +695,13 @@
 "Received from" = "Ricevuto da";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "Recupera";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recuperare Wallet";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "Recupero in corso...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Frase di recupero";
@@ -707,7 +710,7 @@
 "Recovery phrase doesn't match" = "La frase di recupero non coincide";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "La frase di recupero deve avere 12, 15, 18, 21 o 24 parole";
 
 /* Button title, Register (username) */
 "Register" = "Registrati";
@@ -831,6 +834,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Invia all'indirizzo";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "Invia all'indirizzo copiato";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Invia con NFC";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Perché non devo scattare screenshot?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "Pulisci";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Il tuo wallet ora è protetto. Puoi utilizzare la frase di recupero in qualsiasi momento per ripristinare il tuo account su un altro dispositivo.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";

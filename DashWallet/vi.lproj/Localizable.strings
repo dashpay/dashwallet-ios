@@ -557,6 +557,9 @@
 "NFC device didn't transmit a valid Dash address" = "Thiết bị NFC không gửi một địa chỉ Dash hợp lệ";
 
 /* No comment provided by engineer. */
+"No address copied" = "Không có địa chỉ nào được copy";
+
+/* No comment provided by engineer. */
 "Node IP" = "Địa chỉ IP của nút";
 
 /* adjective, security level */
@@ -832,6 +835,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Gửi đến địa chỉ";
 
+/* No comment provided by engineer. */
+"Send to copied address" = "Gửi đến địa chỉ đã được copy";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Gửi với NFC";
 
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Tại sao tôi không nên chụp ảnh màn hình?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "Xoá";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Bây giờ ví của bạn đã được an toàn. Bạn có thể sử dụng dòng chữ phục hồi bất kỳ khi nào để khôi phục số tiền của mình trên một thiết bị khác.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";

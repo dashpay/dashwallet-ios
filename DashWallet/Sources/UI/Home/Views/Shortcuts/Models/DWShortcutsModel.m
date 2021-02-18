@@ -79,6 +79,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 
     NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
 
+    isShowingCreateUserName = NO;
     if (isShowingCreateUserName) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_CreateUsername]];
     }
