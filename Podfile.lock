@@ -376,7 +376,7 @@ PODS:
     - DAPI-GRPC (= 0.0.1)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
-    - secp256k1_dash (= 0.1.3-alpha.3)
+    - secp256k1_dash (= 0.1.4-alpha.2)
     - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
@@ -437,7 +437,7 @@ PODS:
   - SDWebImage (5.9.4):
     - SDWebImage/Core (= 5.9.4)
   - SDWebImage/Core (5.9.4)
-  - secp256k1_dash (0.1.3-alpha.3)
+  - secp256k1_dash (0.1.4-alpha.2)
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
     - tinycbor (= 0.5.4-alpha1)
@@ -512,7 +512,7 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   DAPI-GRPC: 1e6b58642afd19d1e7167a40557da02bf43cef7c
-  DashSync: 6712305db50e579216ab9e2cbe7fe0cf493acb14
+  DashSync: f3d9b23f0fe2b36a36654070c68259acfa940e4d
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: ab8da669d12626ced4915dad4c9edda44d3c1f8f
@@ -524,12 +524,12 @@ SPEC CHECKSUMS:
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   Protobuf: 0cde852566359049847168e51bd1c690e0f70056
   SDWebImage: b69257f4ab14e9b6a2ef53e910fdf914d8f757c1
-  secp256k1_dash: d3726c6ae5d8ea34aa73bf5428b38084376d4baf
+  secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
   TOCropViewController: da59f531f8ac8a94ef6d6c0fc34009350f9e8bfe
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 4603d3f74e55d0e25e5e039f3969a8bcb2389c2f
+PODFILE CHECKSUM: 2a1412e08fc6ae3ad4e4ff82c2264098f75a7f53
 
 COCOAPODS: 1.10.1

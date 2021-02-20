@@ -35,3 +35,4 @@ minimum_perc = 0
 source_file = fastlane/metadata/en-US/release_notes.txt
 source_lang = en
 type = TXT
+

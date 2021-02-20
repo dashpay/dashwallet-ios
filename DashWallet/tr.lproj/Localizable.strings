@@ -1,8 +1,8 @@
 /* No comment provided by engineer. */
-"%@ has accepted your contact request" = "%@ has accepted your contact request";
+"%@ has accepted your contact request" = "%@ talebinizi kabul etti.";
 
 /* Username has sent you a contact request */
-"%@ has sent you a contact request" = "%@ has sent you a contact request";
+"%@ has sent you a contact request" = "%@ size bir talep gönderdi";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ Yüz Kimliğine erişim izni verilmiyor";
@@ -13,26 +13,23 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ Dokunmatik Kimliğe erişim izni verilmiyor";
 
-/* 10/20 Characters */
-"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+/* No comment provided by engineer. */
+"(1/3) Processing Payment" = "(1/3) Ödeme İşleniyor";
 
 /* No comment provided by engineer. */
-"(1/3) Processing Payment" = "(1/3) Processing Payment";
+"(1/3) Unable to process payment" = "(1/3) Ödeme işlenemiyor";
 
 /* No comment provided by engineer. */
-"(1/3) Unable to process payment" = "(1/3) Unable to process payment";
+"(2/3) Creating Dash Identity" = "(2/3) Dash Kimliği Oluşturuluyor";
 
 /* No comment provided by engineer. */
-"(2/3) Creating Dash Identity" = "(2/3) Creating Dash Identity";
+"(2/3) Unable to create Dash Identity" = "(2/3) Dash Kimliği Oluşturulamadı";
 
 /* No comment provided by engineer. */
-"(2/3) Unable to create Dash Identity" = "(2/3) Unable to create Dash Identity";
+"(3/3) Can't register username" = "(3/3) Kullanıcı adı kaydedilemiyor";
 
 /* No comment provided by engineer. */
-"(3/3) Can't register username" = "(3/3) Can't register username";
-
-/* No comment provided by engineer. */
-"(3/3) Registering Username" = "(3/3) Registering Username";
+"(3/3) Registering Username" = "(3/3) Kullanıcı Adı Kaydediliyor";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 saat";
@@ -50,7 +47,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" kurtarma cümlesi kelimesi değil";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" bir kurtarma sözcüğü değildir. Yerine gelmesi gereken doğru sözcüğü denemek ister misiniz?";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\n%@ içinde tekrar deneyin";
@@ -59,28 +56,19 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Cüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
 
 /* No comment provided by engineer. */
-"A person in your contacts" = "A person in your contacts";
-
-/* No comment provided by engineer. */
 "About" = "Hakkında";
 
 /* No comment provided by engineer. */
-"About me" = "About me";
+"Accept" = "Kabul et";
 
 /* No comment provided by engineer. */
-"Accept" = "Accept";
-
-/* No comment provided by engineer. */
-"Accept Contact Request" = "Accept Contact Request";
-
-/* No comment provided by engineer. */
-"Activity" = "Activity";
+"Activity" = "Faaliyet";
 
 /* Add <username> as your contact... */
-"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "%@ Doğrudan Kullanıcı Adına Ödeme Yapmak ve Karşılıklı İşlem Geçmişini Saklamak için ekle";
 
 /* No comment provided by engineer. */
-"Add a New Contact" = "Add a New Contact";
+"Add a New Contact" = "Yeni Kişi Ekle";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Kısayol Ekle";
@@ -90,9 +78,6 @@
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Gelişmiş Güvenlik";
-
-/* No comment provided by engineer. */
-"Agree" = "Agree";
 
 /* No comment provided by engineer. */
 "All" = "Hepsi";
@@ -154,9 +139,6 @@
 /* No comment provided by engineer. */
 "Balance hidden" = "Bakiye gizlendi";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
-
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d'in %1$d'ini engelle";
 
@@ -194,7 +176,7 @@
 "Check your connection" = "Bağlantınızı kontrol edin";
 
 /* Choose your Dash username */
-"Choose your" = "Choose your";
+"Choose your" = "Seçin";
 
 /* No comment provided by engineer. */
 "Clear" = "Temizle";
@@ -215,7 +197,7 @@
 "Confirm" = "Onayla";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "Confirm & Pay";
+"Confirm & Pay" = "Onayla ve Öde";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "PİN'i Onayla";
@@ -233,16 +215,16 @@
 "Connecting to payment server" = "Ödeme Sunucusuna Bağlanıyor";
 
 /* No comment provided by engineer. */
-"Contact Request Pending" = "Contact Request Pending";
+"Contact Request Pending" = "Bekleyen İletişim Talebi";
 
 /* No comment provided by engineer. */
-"Contact Requests" = "Contact Requests";
+"Contact Requests" = "İletişim Talebi";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Destekle İletişime Geçin";
 
 /* No comment provided by engineer. */
-"Contacts" = "Contacts";
+"Contacts" = "Kişiler";
 
 /* No comment provided by engineer. */
 "Continue" = "Devam";
@@ -260,7 +242,7 @@
 "Copyright © 2020 Dash Core" = "Telif Hakkı © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Otomatik olarak eksik veya hatalı sözcükleri yedekleyememektedir";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Ödeme yapılamadı";
@@ -275,22 +257,16 @@
 "Create a New Wallet" = "Yeni Cüzdan Oluştur";
 
 /* No comment provided by engineer. */
-"Create a username, add your friends." = "Create a username, add your friends.";
-
-/* No comment provided by engineer. */
-"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
-
-/* No comment provided by engineer. */
-"Current user: %@" = "Current user: %@";
+"Current user: %@" = "Şu anki kullanıcı: %@";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash ödemesi %@ altında olamaz";
 
 /* No comment provided by engineer. */
-"Dash username" = "Dash username";
+"Dash username" = "Dash kullanıcı adı";
 
 /* No comment provided by engineer. */
-"DashPay Upgrade Fee" = "DashPay Upgrade Fee";
+"DashPay Upgrade Fee" = "DashPay Yükseltme Ücreti";
 
 /* No comment provided by engineer. */
 "Date" = "Tarih";
@@ -305,10 +281,7 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve Dashlerinizi çalabilir). Bu cüzdanı hemen silin ve güvenli bir cihaza yükleyin.";
 
 /* No comment provided by engineer. */
-"Display Name" = "Display Name";
-
-/* No comment provided by engineer. */
-"Do not take a screenshot" = "Do not take a screenshot";
+"Do not take a screenshot" = "Ekran görüntüsü almayın";
 
 /* No comment provided by engineer. */
 "Done" = "Bitti";
@@ -317,13 +290,10 @@
 "Download peer: %@" = "İndirilen dağıtıcı: %@";
 
 /* (List of notifications happened) Earlier (some time ago) */
-"Earlier" = "Earlier";
-
-/* No comment provided by engineer. */
-"Edit Profile" = "Edit Profile";
+"Earlier" = "Önceki";
 
 /* Input username textfield placeholder */
-"eg: johndoe" = "eg: johndoe";
+"eg: johndoe" = "örneğin: mehmetali";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Yüz Kimliğini Etkinleştir";
@@ -350,16 +320,10 @@
 "Enter your 2FA code below" = "2FA kodunu aşağıya girin";
 
 /* No comment provided by engineer. */
-"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+"Error" = "Hata";
 
 /* No comment provided by engineer. */
-"Error" = "Error";
-
-/* No comment provided by engineer. */
-"Error updating your profile" = "Error updating your profile";
-
-/* No comment provided by engineer. */
-"Error Upgrading" = "Error Upgrading";
+"Error Upgrading" = "Yükseltme Hatası";
 
 /* No comment provided by engineer. */
 "Exit" = "Çıkış";
@@ -380,28 +344,25 @@
 "Fee will be deducted from requested amount." = "Ücret talep edilen tutardan düşülecek.";
 
 /* No comment provided by engineer. */
-"Fetching Image" = "Fetching Image";
-
-/* No comment provided by engineer. */
 "Filter Transactions" = "İşlemleri Filtrele";
 
 /* No comment provided by engineer. */
-"Find a user on the Dash Network" = "Find a user on the Dash Network";
+"Find a user on the Dash Network" = "Dash Ağında bir kullanıcı bulun";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PİN'inizi unuttunuz mu?";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Eksik sözcük bulundu:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Eksik sözcükler bulundu:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "Olası eksik kelimeler bulundu:\n%@";
 
 /* No comment provided by engineer. */
-"Generate extended public keys?" = "Generate extended public keys?";
+"Generate extended public keys?" = "Genişletilmiş umumi anahtarlar oluşturulsun mu?";
 
 /* No comment provided by engineer. */
 "Get Started" = "Başla";
@@ -410,16 +371,16 @@
 "Go to Website" = "İnternet sitesine git";
 
 /* Username has requested to be your friend */
-"has requested to be your friend" = "has requested to be your friend";
+"has requested to be your friend" = "arkadaşın olma isteği gönderdi";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Tam kontrol sahibi olun ve cüzdanınızı ihtiyacınıza göre özelleştirin";
 
 /* No comment provided by engineer. */
-"header #%d of %d" = "header #%1$d of %2$d";
+"header #%d of %d" = "başlık #%1$d / %2$d";
 
 /* Hello username, */
-"Hello %@," = "Hello %@,";
+"Hello %@," = "Merhaba %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Deneyiminizi geliştirmemize yardımcı olun";
@@ -431,7 +392,7 @@
 "History" = "Geçmiş";
 
 /* No comment provided by engineer. */
-"I Accept" = "I Accept";
+"I Accept" = "Kabul ediyorum";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eğer kurtarma metnime sahip olmazsam paralarımı kaybedeceğimi kabul ediyorum";
@@ -447,15 +408,6 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Yoksay";
-
-/* No comment provided by engineer. */
-"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
-
-/* No comment provided by engineer. */
-"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
-
-/* No comment provided by engineer. */
-"Images Privacy Policy" = "Images Privacy Policy";
 
 /* No comment provided by engineer. */
 "Immediately" = "Derhal";
@@ -485,28 +437,25 @@
 "Invalid QR Code" = "Geçersiz QR Kodu";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Görünüşe göre cüzdanınızın 12 kelimelik bir kurtarma sözcük grubu kullanarak geri kurtarmaya çalışıyorsunuz, ancak yalnızca 10 kelime girdiniz, eksik kelimeleri otomatik olarak kurtarmak ister misiniz? Bu yaklaşık bir saat sürebilir. Cihazınızı fişe takmanızı öneririz.";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Görünüşe göre cüzdanınızın 12 kelimelik bir kurtarma sözcük grubu kullanarak geri kurtarmaya çalışıyorsunuz, ancak yalnızca 11 kelime girdiniz, eksik kelimeyi otomatik olarak kurtarmak ister misiniz?";
 
 /* No comment provided by engineer. */
 "It's Important" = "Bu önemli";
 
 /* No comment provided by engineer. */
-"Join" = "Join";
-
-/* No comment provided by engineer. */
-"Join DashPay" = "Join DashPay";
+"Join Evolution" = "Evolution'a katıl";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Anahtar çifti %ld";
 
 /* No comment provided by engineer. */
-"Let me know when it’s done" = "Let me know when it’s done";
+"Let me know when it’s done" = "Bittiğinde bana haber ver";
 
 /* Validation rule */
-"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+"Letters and numbers only" = "Sadece harfler ve rakamlar";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Uphold Hesabını Bağla";
@@ -551,7 +500,7 @@
 "Manage Trusted Node" = "Güvenilen Düğümü Yönet";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "Anadüğüm listesi #%1$d / %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Anadüğüm Kayıt İşlemi";
@@ -565,8 +514,14 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Maksimum";
 
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Maksimum %ld karakter";
+
 /* adjective, security level */
 "Medium" = "Orta";
+
+/* Validation rule */
+"Minimum 3 characters" = "Minimum 3 karakter";
 
 /* No comment provided by engineer. */
 "More" = "Daha Fazla";
@@ -575,25 +530,16 @@
 "More Control" = "Daha Fazla Kontrol";
 
 /* No comment provided by engineer. */
-"More Suggestions" = "More Suggestions";
-
-/* No comment provided by engineer. */
-"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
-
-/* No comment provided by engineer. */
 "Moved from" = "Taşındı";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Adrese Taşındı";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "Must start and end with a letter or number";
+/* No comment provided by engineer. */
+"My Contacts" = "Kişilerim";
 
 /* No comment provided by engineer. */
-"My Contacts" = "My Contacts";
-
-/* No comment provided by engineer. */
-"Name" = "Name";
+"Name" = "İsim";
 
 /* No comment provided by engineer. */
 "Network" = "Ağ";
@@ -601,20 +547,14 @@
 /* No comment provided by engineer. */
 "Network fee" = "Ağ ücreti";
 
-/* No comment provided by engineer. */
-"Network Unavailable" = "Network Unavailable";
-
 /* (List of) New (notifications) */
-"New" = "New";
+"New" = "Yeni";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC cihazı";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC cihazı geçerli bir Dash adresi göndermedi";
-
-/* No comment provided by engineer. */
-"No" = "No";
 
 /* No comment provided by engineer. */
 "No address copied" = "Kopyalanan adres yok";
@@ -635,19 +575,16 @@
 "Not a valid Dash address" = "Geçerli bir Dash adresi değil";
 
 /* No comment provided by engineer. */
-"Not Available For Devnet" = "Not Available For Devnet";
-
-/* No comment provided by engineer. */
 "Not yet used" = "Henüz kullanılmadı";
 
 /* No comment provided by engineer. */
-"Notifications" = "Notifications";
+"Notifications" = "Bildirimler";
 
 /* No comment provided by engineer. */
 "OK" = "Tamam";
 
 /* Once <username> accepts your request... */
-"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+"Once %@ accepts your request you can Pay Directly to Username" = "%@ isteğinizi kabul ettiğinizde Kullanıcı Adına Doğrudan Ödeme yapabilirsiniz";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operatör Anahtarları";
@@ -659,16 +596,13 @@
 "Owner Keys" = "Sahip Anahtarları";
 
 /* No comment provided by engineer. */
-"Paste your image URL" = "Paste your image URL";
-
-/* No comment provided by engineer. */
 "Pay" = "Ödeme";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Kullanımı kolay ödeme akımlarıyla anında ödeme yapın ve alın";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
-"Pay Directly to Username" = "Pay Directly to Username";
+"Pay Directly to Username" = "Kullanıcı Adına Doğrudan Ödeme Yap";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Kolaylıkla öde";
@@ -689,19 +623,10 @@
 "Payments" = "Ödemeler";
 
 /* No comment provided by engineer. */
-"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
-
-/* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "Bekliyor";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ödeme yapmak için her zaman PIN gereklidir";
-
-/* No comment provided by engineer. */
-"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
-
-/* No comment provided by engineer. */
-"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Cüzdanı yükseltmek için lütfen PİN kodunu girin";
@@ -722,7 +647,7 @@
 "Please Wait" = "Lütfen Bekleyin";
 
 /* No comment provided by engineer. */
-"Please wait" = "Please wait";
+"Please wait" = "Lütfen bekleyin";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Lütfen senkronizasyonun tamamlanmasını bekleyin";
@@ -744,9 +669,6 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Herkese açık anahtar";
-
-/* No comment provided by engineer. */
-"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Hızlı Al";
@@ -773,13 +695,13 @@
 "Received from" = "Gönderen";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "Kurtar";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Cüzdanı Kurtar";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "Kurtarılıyor...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Kurtarma Sözcük Grubu";
@@ -788,13 +710,13 @@
 "Recovery phrase doesn't match" = "Kurtarma cümlesi eşleşmiyor";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Kurtarma ifadesi 12, 15, 18, 21 veya 24 sözcükten oluşmalıdır";
 
 /* Button title, Register (username) */
-"Register" = "Register";
+"Register" = "Kayıt ol";
 
 /* No comment provided by engineer. */
-"Register?" = "Register?";
+"Register?" = "Kayıt ol?";
 
 /* No comment provided by engineer. */
 "Registered from" = "Tarafından kaydedildi";
@@ -821,7 +743,7 @@
 "Reset Wallet" = "Cüzdanı Sıfırla";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
-"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
+"Retain Mutual Transaction History" = "Karşılıklı İşlem Geçmişini Saklayın";
 
 /* No comment provided by engineer. */
 "Retry" = "Tekrar dene";
@@ -836,10 +758,7 @@
 "Rewards" = "Ödüller";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
-
-/* No comment provided by engineer. */
-"Save Changes" = "Save Changes";
+"Scan" = "Tara";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Özel Anahtarı Tara";
@@ -849,6 +768,9 @@
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Ödemek için tarayın";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Ödemek için Tara";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Göndermek için Tara";
@@ -863,22 +785,22 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
 
 /* No comment provided by engineer. */
-"Search for a contact" = "Search for a contact";
+"Search for a contact" = "Kişi arayın";
 
 /* No comment provided by engineer. */
-"Search for a contact request" = "Search for a contact request";
+"Search for a contact request" = "Kişi isteği arayın";
 
 /* No comment provided by engineer. */
-"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+"Search for a User on the Dash Network" = "Dash Ağındaki bir Kullanıcıyı Ara";
 
 /* No comment provided by engineer. */
-"Search for a username" = "Search for a username";
+"Search for a username" = "Bir kullanıcı adı arayın";
 
 /* Search results for \"John Doe\" */
-"Search results for \"" = "Search results for \"";
+"Search results for \"" = "\" için arama sonuçları";
 
 /* No comment provided by engineer. */
-"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+"Searching for username %@ on the Dash Network" = "Dash ağında %@ kullanıcı adı aranıyor";
 
 /* No comment provided by engineer. */
 "Secure now" = "Şimdi Korumaya Al";
@@ -896,12 +818,6 @@
 "See on Uphold" = "Uphold'da Gör";
 
 /* No comment provided by engineer. */
-"Select" = "Select";
-
-/* No comment provided by engineer. */
-"Select from Gallery" = "Select from Gallery";
-
-/* No comment provided by engineer. */
 "Send" = "Gönder";
 
 /* No comment provided by engineer. */
@@ -911,19 +827,13 @@
 "Send by" = "Tarafından Gönderildi";
 
 /* No comment provided by engineer. */
-"Send Contact Request" = "Send Contact Request";
+"Send Contact Request" = "İletişim İsteği Gönderin";
 
 /* No comment provided by engineer. */
 "Send to" = "Gönder";
 
-/* No comment provided by engineer. */
-"Send to a Contact" = "Send to a Contact";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Adrese Gönder";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Send to Contact" = "Send to Contact";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "Kopyalanan adrese gönder";
@@ -935,10 +845,7 @@
 "Sending" = "Gönderiliyor";
 
 /* No comment provided by engineer. */
-"Sending Contact Request" = "Sending Contact Request";
-
-/* No comment provided by engineer. */
-"Sending to" = "Sending to";
+"Sending to" = "Gönderiliyor";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Gönderiliyor.";
@@ -992,10 +899,10 @@
 "Something went wrong" = "Bir şeyler ters gitti";
 
 /* No comment provided by engineer. */
-"Sort by" = "Sort by";
+"Sort by" = "Göre sırala";
 
 /* No comment provided by engineer. */
-"Sort Contacts" = "Sort Contacts";
+"Sort Contacts" = "Kişileri Sırala";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Tutarı Belirleyin";
@@ -1004,7 +911,7 @@
 "Spending Confirmation" = "Harcama Onayı";
 
 /* No comment provided by engineer. */
-"Support" = "Support";
+"Support" = "Destek";
 
 /* No comment provided by engineer. */
 "Swept!" = "Tarandı!";
@@ -1024,8 +931,8 @@
 /* No comment provided by engineer. */
 "Syncing" = "Senkronize ediliyor";
 
-/* No comment provided by engineer. */
-"Take a Photo from Camera" = "Take a Photo from Camera";
+/* Pay using NFC (should be as short as possible) */
+"Tap" = "Dokun";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Bakiyeyi gizlemek için tıkla";
@@ -1033,20 +940,17 @@
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Bakiyeyi görmek için tıkla";
 
-/* Don't translate 'Imgur' */
-"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
-
 /* No comment provided by engineer. */
-"There are no new notifications" = "There are no new notifications";
+"There are no new notifications" = "Yeni bildirim yok";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Görüntülenecek işlem yok";
 
 /* No comment provided by engineer. */
-"There are no users that match with the name %@" = "There are no users that match with the name %@";
+"There are no users that match with the name %@" = "%@ Adıyla eşleşen kullanıcı yok";
 
 /* No comment provided by engineer. */
-"There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
+"There are no users that match with the name %@ in your contacts" = "Kişilerinizde %@ adıyla eşleşen kullanıcı yok";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Bu uygulama açık kaynaklıdır:";
@@ -1097,34 +1001,10 @@
 "Turn device passcode on" = "Cihaz parolasını aç";
 
 /* No comment provided by engineer. */
-"Unable to accept contact request" = "Unable to accept contact request";
-
-/* No comment provided by engineer. */
 "Unable to connect" = "Bağlanılamıyor";
 
 /* No comment provided by engineer. */
-"Unable to fetch contact details" = "Unable to fetch contact details";
-
-/* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
-
-/* No comment provided by engineer. */
-"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
-
-/* No comment provided by engineer. */
 "Unable to get new QR code" = "Yeni QR kod alınamıyor";
-
-/* No comment provided by engineer. */
-"Unable to provide suggestions" = "Unable to provide suggestions";
-
-/* No comment provided by engineer. */
-"Unable to search for a user" = "Unable to search for a user";
-
-/* No comment provided by engineer. */
-"Unable to send contact request" = "Unable to send contact request";
-
-/* No comment provided by engineer. */
-"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Desteklenmeyen veya bozuk belge";
@@ -1136,28 +1016,13 @@
 "Updated: %@" = "Güncellendi: %@";
 
 /* No comment provided by engineer. */
-"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+"Upgrade Fee" = "Yükseltme Ücreti";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
-
-/* No comment provided by engineer. */
-"Upgrade Fee" = "Upgrade Fee";
-
-/* No comment provided by engineer. */
-"Upgrade to Evolution" = "Upgrade to Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Upgrading to DashPay";
+"Upgrading to DashPay" = "DashPay'e yükseltiliyor";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
-
-/* No comment provided by engineer. */
-"Upload Error" = "Upload Error";
-
-/* No comment provided by engineer. */
-"Uploading your picture to the network" = "Uploading your picture to the network";
 
 /* No comment provided by engineer. */
 "Used" = "Kullanıldı";
@@ -1166,19 +1031,16 @@
 "Used at IP address" = "IP adresinde kullanıldı";
 
 /* No comment provided by engineer. */
-"Username available" = "Username available";
+"Username taken" = "Kullanıcı adı alınmış";
 
 /* No comment provided by engineer. */
-"Username taken" = "Username taken";
+"Validating username done" = "Kullanıcı adı doğrulandı";
 
 /* No comment provided by engineer. */
-"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+"Validating username failed" = "Kullanıcı adı doğrulanamadı";
 
 /* No comment provided by engineer. */
-"Validating username failed" = "Validating username failed";
-
-/* No comment provided by engineer. */
-"Validating username…" = "Validating username…";
+"Validating username…" = "Kullanıcı adı doğrulanıyor…";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Başarıyla Doğrulandı";
@@ -1190,7 +1052,7 @@
 "Very High" = "Çok Yüksek";
 
 /* No comment provided by engineer. */
-"View All" = "View All";
+"View All" = "Hepsini gör";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Blok gezgininde görüntüle";
@@ -1238,7 +1100,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "İşlem onaylandığında, diğer cüzdan değersiz olacaktır ve güvenlik nedeniyle yeniden kullanılmamalıdır.";
 
 /* No comment provided by engineer. */
-"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
+"Why I should not take a screenshot?" = "Neden ekran görüntüsü almamalıyım?";
 
 /* No comment provided by engineer. */
 "Wipe" = "Sil";
@@ -1250,13 +1112,7 @@
 "with Dash blockchain" = "Dash blok zinciri ile";
 
 /* No comment provided by engineer. */
-"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
-
-/* No comment provided by engineer. */
-"Yes" = "Yes";
-
-/* No comment provided by engineer. */
-"You accepted the contact request from %@" = "You accepted the contact request from %@";
+"You accepted the contact request from %@" = "%@'den gelen kişi talebini kabul ettiniz.";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "Başka bir Dash cüzdanından para aktarmak üzeresiniz.";
@@ -1265,19 +1121,13 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Bu cüzdanı bu cihazdan silmek üzeresiniz. Bu cüzdanla ilişkili fonlar yalnızca kurtarma sözcük grubunuz varsa geri alınabilir.";
 
 /* No comment provided by engineer. */
-"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
-
-/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Yüz Kimliği doğrulaması ile aşağıdaki ödemeleri yapabilirsiniz";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Dokunmatik Kimlik doğrulaması ile aşağıdaki ödemeleri yapabilirsiniz";
 
 /* No comment provided by engineer. */
-"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
-
-/* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Kullanıcı adınızı \"%@\" olarak belirlediniz. Kullanıcı adınız kayıt olduktan sonra değiştirilemez.";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Dash Wallet'a girmek için bir PİN kodu girmelisiniz";
@@ -1286,7 +1136,7 @@
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Dash aldınız! Bu cihazı kaybederseniz, paranızı kaybedersiniz. Cüzdanınızı başka bir cihaza geri yükleyebilmeniz için kurtarma sözcük grubunuza sahip çıkın.";
 
 /* No comment provided by engineer. */
-"You sent the contact request to %@" = "You sent the contact request to %@";
+"You sent the contact request to %@" = "%@'e iletişim talebi gönderildi";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Aynı zamanda tarayıcınızda Uphold internet sitesinden çıkış yapmanız gerekecek";
@@ -1295,10 +1145,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Bu cihazın kaybolması / hasar görmesi, Dash cüzdanının bu cihazdan yanlışlıkla silinmesi durumunda paranıza erişmek için bu kurtarma ifadesine ihtiyacınız olacaktır.";
 
 /* No comment provided by engineer. */
-"Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
-
-/* No comment provided by engineer. */
-"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+"Your DashPay Username is ready to use" = "DashPay Kullanıcı Adınız kullanıma hazır";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "İşleminiz yapıldı ve birkaç dakika içinde tutar cüzdanınızda görülecek.";
@@ -1307,10 +1154,10 @@
 "Your Uphold account Dash balance is" = "Uphold hesabınızın Dash bakiyesi:";
 
 /* No comment provided by engineer. */
-"Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
+"Your username %@ has been successfully created on the Dash Network" = "Kullanıcı adınız %@ Dash Ağında başarıyla oluşturuldu";
 
 /* No comment provided by engineer. */
-"Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
+"Your username %@ is being created on the Dash Network" = "Kullanıcı adınız %@ Dash Ağında oluşturuluyor";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Cüzdanınız artık güvende. Hesabınızı başka bir cihaza aktarmak için kurtarma sözcük grubunuzu istediğiniz zaman kullanabilirsiniz.";

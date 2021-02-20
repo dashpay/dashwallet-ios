@@ -27,7 +27,7 @@ static NSString *TitleForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_ScanQR:
             return NSLocalizedString(@"Send by", @"Send by (scanning QR code)");
         case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"Send to copied address", nil);
+            return NSLocalizedString(@"Send to", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"Send to", nil);
         default:
@@ -41,7 +41,7 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_ScanQR:
             return NSLocalizedString(@"Scanning QR code", @"(Send by) Scanning QR code");
         case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"No address copied", nil);
+            return NSLocalizedString(@"Сopied address or QR", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"NFC device", nil);
         default:
@@ -50,13 +50,8 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
     }
 }
 
-static UIColor *DescriptionColor(DWPayOptionModelType type, BOOL empty) {
-    if (empty && type == DWPayOptionModelType_Pasteboard) {
-        return [UIColor dw_quaternaryTextColor];
-    }
-    else {
-        return [UIColor dw_darkTitleColor];
-    }
+static UIColor *DescriptionColor(DWPayOptionModelType type) {
+    return [UIColor dw_darkTitleColor];
 }
 
 
@@ -129,12 +124,13 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
     NSAssert(details == nil || [details isKindOfClass:NSString.class], @"Unsupported details type");
     const BOOL emptyDetails = details == nil;
     self.descriptionLabel.text = emptyDetails ? DescriptionForOptionType(type) : details;
-    self.descriptionLabel.textColor = DescriptionColor(type, emptyDetails);
+    self.descriptionLabel.textColor = DescriptionColor(type);
 
 #if SNAPSHOT
     if (type == DWPayOptionModelType_Pasteboard) {
-        // TODO: DP: probably needs to be fixed
-        self.accessibilityIdentifier = @"send_pasteboard_button";
+        self.actionButton.accessibilityIdentifier = @"send_pasteboard_button";
+        self.descriptionLabel.text = DescriptionForOptionType(type);
+        self.descriptionLabel.textColor = DescriptionColor(type);
     }
 #endif /* SNAPSHOT */
 }

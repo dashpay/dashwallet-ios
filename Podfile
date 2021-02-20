@@ -65,9 +65,14 @@ post_install do |installer|
         # see https://github.com/CocoaPods/CocoaPods/issues/8474
         if target.name == 'secp256k1_dash'
           target.build_configurations.each do |config|
-              config.build_settings['HEADER_SEARCH_PATHS'] = '"${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/secp256k1_dash" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/secp256k1_dash"'
+              config.build_settings['HEADER_SEARCH_PATHS'] = '"${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/secp256k1_dash" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/secp256k1_dash" "${PODS_ROOT}/secp256k1_dash"'
           end
         end
+    end
+
+    # Apple Silicon fix when targeting Simulator
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
     
     # Apple Silicon fix when targeting Simulator

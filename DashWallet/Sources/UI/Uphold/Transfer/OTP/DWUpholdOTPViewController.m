@@ -173,6 +173,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)isLooksLikeOTPToken:(NSString *)inputString {
+    if (inputString.length == 0) {
+        return NO;
+    }
     NSCharacterSet *decimalNumbersSet = [NSCharacterSet decimalDigitCharacterSet];
     NSCharacterSet *inputStringSet = [NSCharacterSet characterSetWithCharactersInString:inputString];
     BOOL stringIsValid = [decimalNumbersSet isSupersetOfSet:inputStringSet];

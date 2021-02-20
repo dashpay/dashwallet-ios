@@ -83,6 +83,33 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:contactsController animated:YES];
 }
 
+- (void)payToAddressAction {
+    id<DWPayModelProtocol> payModel = self.payModel;
+    __weak typeof(self) weakSelf = self;
+    [payModel payToAddressFromPasteboardAvailable:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (success) {
+            [strongSelf performPayToPasteboardAction];
+        }
+        else {
+            NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid Dash address", nil);
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                           message:message
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:nil];
+            [alert addAction:okAction];
+
+            [strongSelf presentViewController:alert animated:YES completion:nil];
+        }
+    }];
+}
+
 - (void)performPayToPasteboardAction {
     DWPaymentInput *paymentInput = self.payModel.pasteboardPaymentInput;
     NSParameterAssert(paymentInput);

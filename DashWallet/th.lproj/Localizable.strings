@@ -1,8 +1,8 @@
 /* No comment provided by engineer. */
-"%@ has accepted your contact request" = "%@ has accepted your contact request";
+"%@ has accepted your contact request" = "%@ ยอมรับคำขอติดต่อของคุณ";
 
 /* Username has sent you a contact request */
-"%@ has sent you a contact request" = "%@ has sent you a contact request";
+"%@ has sent you a contact request" = "%@ ยอมรับคำขอติดต่อของคุณ";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ ไม่สามารถเข้าถึง Face ID";
@@ -13,26 +13,23 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ ไม่สามารถเข้าถึง Touch ID";
 
-/* 10/20 Characters */
-"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+/* No comment provided by engineer. */
+"(1/3) Processing Payment" = "(1/3) การประมวลผลการชำระเงิน";
 
 /* No comment provided by engineer. */
-"(1/3) Processing Payment" = "(1/3) Processing Payment";
+"(1/3) Unable to process payment" = "(1/3) ไม่สามารถดำเนินการชำระเงิน";
 
 /* No comment provided by engineer. */
-"(1/3) Unable to process payment" = "(1/3) Unable to process payment";
+"(2/3) Creating Dash Identity" = "(2/3) สร้างเอกลักษณ์ Dash";
 
 /* No comment provided by engineer. */
-"(2/3) Creating Dash Identity" = "(2/3) Creating Dash Identity";
+"(2/3) Unable to create Dash Identity" = "(2/3) ไม่สามารถสร้างเอกลักษณ์ Dash";
 
 /* No comment provided by engineer. */
-"(2/3) Unable to create Dash Identity" = "(2/3) Unable to create Dash Identity";
+"(3/3) Can't register username" = "(3/3) ไม่สามารถลงทะเบียนชื่อผู้ใช้";
 
 /* No comment provided by engineer. */
-"(3/3) Can't register username" = "(3/3) Can't register username";
-
-/* No comment provided by engineer. */
-"(3/3) Registering Username" = "(3/3) Registering Username";
+"(3/3) Registering Username" = "(3/3) ลงทะเบียนชื่อผู้ใช้";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 ชั่วโมง";
@@ -50,40 +47,31 @@
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" ไม่ใช่คำวลีการกู้คืน คุณต้องการที่จะพยายามกู้คืนคำที่ถูกต้องที่ควรเป็นที่ของมันหรือไม่";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nลองเข้าอีกครั้ง%@";
 
 /* No comment provided by engineer. */
-"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "การตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
-
-/* No comment provided by engineer. */
-"A person in your contacts" = "A person in your contacts";
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "รหัสผ่านอุปกรณ์นั้นจำเป็นในการปกป้องกระเป๋าสตางค์ของคุณ ไปที่การตั้งค่าและเปิดรหัสผ่านเพื่อดำเนินการต่อ";
 
 /* No comment provided by engineer. */
 "About" = "เกี่ยวกับ";
 
 /* No comment provided by engineer. */
-"About me" = "About me";
+"Accept" = "ยอมรับ";
 
 /* No comment provided by engineer. */
-"Accept" = "Accept";
-
-/* No comment provided by engineer. */
-"Accept Contact Request" = "Accept Contact Request";
-
-/* No comment provided by engineer. */
-"Activity" = "Activity";
+"Activity" = "กิจกรรม";
 
 /* Add <username> as your contact... */
-"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "เพิ่ม %@ เป็นผู้ติดต่อของคุณเพื่อชำระเงินโดยตรงกับชื่อผู้ใช้และเก็บประวัติการทำธุรกรรมร่วมกัน";
 
 /* No comment provided by engineer. */
-"Add a New Contact" = "Add a New Contact";
+"Add a New Contact" = "เพิ่มรายชื่อใหม่";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "ใส่ทางลัด";
+"Add Shortcut" = "เพิ่มทางลัด";
 
 /* No comment provided by engineer. */
 "Address" = "ที่อยู่";
@@ -92,19 +80,16 @@
 "Advanced Security" = "ความปลอดภัยขั้นสูง";
 
 /* No comment provided by engineer. */
-"Agree" = "Agree";
-
-/* No comment provided by engineer. */
 "All" = "ทั้งหมด";
 
 /* No comment provided by engineer. */
-"Allow camera access in Settings" = "อนุญาตการเข้าถึงกล้องถ่ายรูปใน Settings";
+"Allow camera access in Settings" = "อนุญาตให้เข้าถึงกล้องถ่ายรูปในการตั้งค่า";
 
 /* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "อนุญาตการเข้าถึง Face ID ใน Settings";
+"Allow Face ID access in Settings" = "อนุญาตให้เข้าถึง Face ID ในการตั้งค่า";
 
 /* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "อนุญาตการเข้าถึง Touch ID ใน Settings";
+"Allow Touch ID access in Settings" = "อนุญาตให้เข้าถึง Touch ID ในการตั้งค่า";
 
 /* No comment provided by engineer. */
 "Amount Received" = "จำนวนเงินที่ได้รับ";
@@ -119,13 +104,13 @@
 "An intuitive and familiar experience across all your devices" = "ประสบการณ์ที่ใช้งานง่ายและคุ้นเคย";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "แบบฟอร์ม%@ ชำระเงิน";
+"Application %@ is requesting a payment to" = "แอพพลิเคชั่น %@ จะขอชำระเงินไปยัง";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "แบบฟอร์ม%@ กำลังขอที่อยู่เพื่อให้สามารถชำระเงินได้ คุณต้องการให้สิทธิ์นี้หรือไม่";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "แอพพลิเคชั่น %@ จะขอที่อยู่เพื่อที่จะสามารถจ่ายเงินให้คุณ คุณต้องการที่จะให้สิทธิ์นี้หรือไม่?";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการ Master Public Key ของคุณ มันสามารถติดตาม wallet ของคุณ, มันไม่สามารถเคลื่อนย้าย Dash ของคุณได้";
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการรับ Master Public Key ของคุณ ซึ่งสามารถใช้ในการติดตามกระเป๋าสตางค์ของคุณได้ แต่ไม่สามารถใช้ในการย้าย Dash ของคุณ";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
@@ -134,10 +119,10 @@
 "Authentication is unvailable" = "ไม่สามารตรวจสอบสิทธิ์ได้";
 
 /* No comment provided by engineer. */
-"Auto Logout" = "ออกจากระแบบอัตโนมัติ";
+"Auto Logout" = "ออกจากระบบอัตโนมัติ";
 
 /* No comment provided by engineer. */
-"Autohide Balance" = "สมดุลอัตโนมัติ";
+"Autohide Balance" = "ซ่อนยอดคงเหลืออัตโนมัติ";
 
 /* lowercase, ex. 4 Dash available */
 "available" = "ที่สามารถใช้ได้";
@@ -153,9 +138,6 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "ยอดคงเหลือถูกซ่อน";
-
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
@@ -176,7 +158,7 @@
 "Buy Dash with Uphold account" = "ซื้อ Dash ด้วยบัญชี Uphold";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "จากการกวาดล้างอุปกรณ์นี้คุณจะไม่สามารถเข้าถึงเงินทุนในอุปกรณ์นี้ได้อีกต่อไป สิ่งนี้ควรจะเกิดขึ้นได้ก็ต่อเมื่อคุณไม่สามารถเข้าถึงข้อความรหัสผ่านของคุณได้อีกต่อไปและยังลืมรหัส PIN ของคุณด้วย";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "การกำจัดอุปกรณ์นี้คุณจะไม่สามารถเข้าถึงเงินทุนในอุปกรณ์นี้ได้อีกต่อไป สิ่งนี้ควรจะทำเฉพาะในกรณีที่คุณไม่จำเป็นต้องเข้าถึงข้อความรหัสผ่านของคุณและยังลืมรหัส PIN ของคุณอีกด้วย";
 
 /* No comment provided by engineer. */
 "Cancel" = "ยกเลิก";
@@ -185,7 +167,7 @@
 "Change" = "เปลี่ยนแปลง";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "เปลี่ยนแปลงจำนวนเงิน";
+"Change payment amount?" = "เปลี่ยนแปลงจำนวนเงินที่ชำระหรือไม่";
 
 /* No comment provided by engineer. */
 "Change PIN" = "เปลี่ยนแปลง PIN";
@@ -194,7 +176,7 @@
 "Check your connection" = "ตรวจสอบการเชื่อมต่อ";
 
 /* Choose your Dash username */
-"Choose your" = "Choose your";
+"Choose your" = "เลือกของคุณ";
 
 /* No comment provided by engineer. */
 "Clear" = "ลบออก";
@@ -215,7 +197,7 @@
 "Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "Confirm & Pay";
+"Confirm & Pay" = "ยืนยันและชำระเงิน";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "ยืนยัน PIN";
@@ -224,25 +206,25 @@
 "Confirming" = "กำลังยืนยัน";
 
 /* No comment provided by engineer. */
-"Connect with third party exchanges" = "เชื่อมต่อกับการแลกเปลี่ยนบุคคลที่สาม";
+"Connect with third party exchanges" = "เชื่อมต่อกับการแลกเปลี่ยนของบุคคลที่สาม";
 
 /* No comment provided by engineer. */
-"Connected peers: %d" = "เชื่อมต่อเพื่อน: %d";
+"Connected peers: %d" = "เชื่อมต่อ เพียร์: %d";
 
 /* No comment provided by engineer. */
 "Connecting to payment server" = "กำลังเชื่อมต่อกับเซิร์ฟเวอร์การชำระเงิน";
 
 /* No comment provided by engineer. */
-"Contact Request Pending" = "Contact Request Pending";
+"Contact Request Pending" = "คำขอติดต่อรอดำเนินการ";
 
 /* No comment provided by engineer. */
-"Contact Requests" = "Contact Requests";
+"Contact Requests" = "คำขอติดต่อ";
 
 /* No comment provided by engineer. */
 "Contact Support" = "ติดต่อฝ่ายสนับสนุน";
 
 /* No comment provided by engineer. */
-"Contacts" = "Contacts";
+"Contacts" = "ติดต่อ";
 
 /* No comment provided by engineer. */
 "Continue" = "ดำเนินการต่อ";
@@ -254,43 +236,37 @@
 "Copy" = "คัดลอก";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "คัดลอก logs";
+"Copy Logs" = "คัดลอกข้อมูลจากกการบันทึก";
 
 /* No comment provided by engineer. */
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "ไม่สามารถกู้คืนคำที่หายไปหรือไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "ไม่สามารถชำระเงินได้";
 
 /* No comment provided by engineer. */
-"Couldn't sweep balance" = "ไม่สามารถกวาดความสมดุลได้";
+"Couldn't sweep balance" = "ไม่สามารถล้างยอดคงเหลือได้";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to Dash network" = "ไม่สามารถส่งการชำระเงินไปยังเครือข่าย dash ได้";
+"Couldn't transmit payment to Dash network" = "ไม่สามารถชำระเงินส่งไปยังเครือข่าย Dash ได้";
 
 /* No comment provided by engineer. */
-"Create a New Wallet" = "สร้าง wallet ใหม่";
+"Create a New Wallet" = "สร้างกระเป๋าสตางค์ใหม่";
 
 /* No comment provided by engineer. */
-"Create a username, add your friends." = "Create a username, add your friends.";
+"Current user: %@" = "ผู้ใช้ปัจจุบัน: %@";
 
 /* No comment provided by engineer. */
-"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+"Dash payments can't be less than %@" = "การชำระเงิน Dash ไม่สามารถจะน้อยกว่า %@";
 
 /* No comment provided by engineer. */
-"Current user: %@" = "Current user: %@";
+"Dash username" = "ชื่อผู้ใช้ Dash";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
-
-/* No comment provided by engineer. */
-"Dash username" = "Dash username";
-
-/* No comment provided by engineer. */
-"DashPay Upgrade Fee" = "DashPay Upgrade Fee";
+"DashPay Upgrade Fee" = "DashPay อัพเกรดค่าบริการ";
 
 /* No comment provided by engineer. */
 "Date" = "วันที่";
@@ -299,31 +275,25 @@
 "Default currency, shortcuts, about…" = "สกุลเงินเริ่มต้น, ทางลัด, เกี่ยวกับ...";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น  สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "อุปกรณ์รักษาความปลอดภัยที่ถูกบุกรุก\n'jailbreak' แอพพลิเคชั่นต่าง ๆ สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้)";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )  ลบล้าง wallet นี้โดยทันทีและกู้คืนบนอุปกรณ์ที่ปลอดภัย";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "อุปกรณ์รักษาความปลอดภัยที่ถูกบุกรุก\n'jailbreak' แอพพลิเคชั่นต่าง ๆ สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้) กำจัดกระเป๋าสตางค์นี้โดยทันที และกู้คืนบนอุปกรณ์ที่ปลอดภัย";
 
 /* No comment provided by engineer. */
-"Display Name" = "Display Name";
-
-/* No comment provided by engineer. */
-"Do not take a screenshot" = "Do not take a screenshot";
+"Do not take a screenshot" = "อย่าใช้วิธีการบันทึกภาพหน้าจอ";
 
 /* No comment provided by engineer. */
 "Done" = "เสร็จแล้ว";
 
 /* ex., Download peer: 127.0.0.1:9999 */
-"Download peer: %@" = "เชื่อมต่อเพื่อน: %@";
+"Download peer: %@" = "ดาวน์โหลด เพียร์: %@";
 
 /* (List of notifications happened) Earlier (some time ago) */
-"Earlier" = "Earlier";
-
-/* No comment provided by engineer. */
-"Edit Profile" = "Edit Profile";
+"Earlier" = "ก่อน";
 
 /* Input username textfield placeholder */
-"eg: johndoe" = "eg: johndoe";
+"eg: johndoe" = "ตัวอย่างเช่น: johndoe";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "เชื่อมต่อ Face ID";
@@ -350,16 +320,10 @@
 "Enter your 2FA code below" = "ป้อนรหัส 2FA ของคุณด้านล่าง";
 
 /* No comment provided by engineer. */
-"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+"Error" = "ผิดพลาด";
 
 /* No comment provided by engineer. */
-"Error" = "Error";
-
-/* No comment provided by engineer. */
-"Error updating your profile" = "Error updating your profile";
-
-/* No comment provided by engineer. */
-"Error Upgrading" = "Error Upgrading";
+"Error Upgrading" = "อัพเกรดข้อผิดพลาด";
 
 /* No comment provided by engineer. */
 "Exit" = "ออก";
@@ -368,7 +332,7 @@
 "Face ID limit" = "ขีดจำกัด Face ID";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "อัปเดต wallet ล้มเหลว";
+"Failed wallet update" = "อัพเกรดกระเป๋าสตางค์ล้มเหลว";
 
 /* No comment provided by engineer. */
 "Fee" = "ค่าธรรมเนียม";
@@ -377,31 +341,28 @@
 "Fee is greater than balance" = "ค่าธรรมเนียมมากกว่ายอดคงเหลือ";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount." = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ต้องการ";
-
-/* No comment provided by engineer. */
-"Fetching Image" = "Fetching Image";
+"Fee will be deducted from requested amount." = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ร้องขอ";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "กรองธุรกรรม";
 
 /* No comment provided by engineer. */
-"Find a user on the Dash Network" = "Find a user on the Dash Network";
+"Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
-"Forgot PIN?" = "ลืม PIN?";
+"Forgot PIN?" = "ลืม PIN ใช่หรือไม่";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "พบคำที่หายไป:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "พบคำที่หายไป:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "พบคำที่หายไปที่อาจเกิดขึ้น:\n%@";
 
 /* No comment provided by engineer. */
-"Generate extended public keys?" = "Generate extended public keys?";
+"Generate extended public keys?" = "สร้างขยายกุญแจสาธารณะหรือไม่";
 
 /* No comment provided by engineer. */
 "Get Started" = "เริ่มต้น";
@@ -410,19 +371,19 @@
 "Go to Website" = "ไปยังเว็บไซต์";
 
 /* Username has requested to be your friend */
-"has requested to be your friend" = "has requested to be your friend";
+"has requested to be your friend" = "ขอเป็นเพื่อนของคุณ";
 
 /* No comment provided by engineer. */
-"Have complete control and customize your wallet based on your needs" = "มีการควบคุมที่สมบูรณ์และกำหนดกระเป๋าเงินของคุณตามความต้องการของคุณ";
+"Have complete control and customize your wallet based on your needs" = "มีการควบคุมที่สมบูรณ์และปรับแต่งกระเป๋าสตางค์ของคุณขึ้นอยู่กับความต้องการของคุณ";
 
 /* No comment provided by engineer. */
-"header #%d of %d" = "header #%1$d of %2$d";
+"header #%d of %d" = "หัวข้อ #%1$d of %2$d";
 
 /* Hello username, */
-"Hello %@," = "Hello %@,";
+"Hello %@," = "สวัสดี %@,";
 
 /* No comment provided by engineer. */
-"Help us improve your experience" = "ช่วยเราเพื่อพัฒนาประการณ์ของคุณ";
+"Help us improve your experience" = "ช่วยเราเพื่อพัฒนาประสบการณ์ของคุณ";
 
 /* adjective, security level */
 "High" = "สูง";
@@ -431,7 +392,7 @@
 "History" = "ประวัติ";
 
 /* No comment provided by engineer. */
-"I Accept" = "I Accept";
+"I Accept" = "ฉันยอมรับ";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
@@ -440,31 +401,22 @@
 "I wrote it down" = "ฉันได้เขียนลงไปแล้ว";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "หากคุณทำอุปกรณ์นี้หาย เงินก็จะสูญหาย รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าเงินของคุณบนอุปกรณ์อื่น";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "หากคุณทำอุปกรณ์นี้สูญหาย คุณก็จะสูญเสียเงินของคุณ รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าสตางค์ของคุณบนอุปกรณ์อื่นอุปกรณ์อื่น";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการลบล้าง กรุณาใส่: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการกำจัด กรุณาใส่: \"%@\"";
 
 /* No comment provided by engineer. */
 "Ignore" = "เพิกเฉย";
 
 /* No comment provided by engineer. */
-"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
-
-/* No comment provided by engineer. */
-"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
-
-/* No comment provided by engineer. */
-"Images Privacy Policy" = "Images Privacy Policy";
-
-/* No comment provided by engineer. */
 "Immediately" = "ทันที";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Import Private Key" = "นำเข้าคีย์ส่วนตัว";
+"Import Private Key" = "นำเข้ากุญแจส่วนตัว";
 
 /* No comment provided by engineer. */
-"Import private key…" = "นำเข้าคีย์ส่วนตัว...";
+"Import private key…" = "นำเข้ากุญแจส่วนตัว";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "ยอดเงินไม่เพียงพอ";
@@ -473,7 +425,7 @@
 "Internal Transfer" = "โอนเงินภายใน";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "ย้ายไปภายแล้ว";
+"Internally moved to" = "ย้ายไปภายในแล้ว";
 
 /* Invalid transaction */
 "Invalid" = "ไม่ถูกต้อง";
@@ -482,31 +434,28 @@
 "Invalid Payment Request" = "คำขอการชำระเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Invalid QR Code" = "Invalid QR Code";
+"Invalid QR Code" = "QR Code ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "ดูเหมือนว่าคุณกำลังพยายามที่จะกู้คืนกระเป๋าเงินของคุณโดยใช้วลีการกู้คืนคำ 12 คำ แต่คุณได้ป้อน 10 คำเท่านั้นคุณต้องการกู้คืนคำที่หายไปโดยอัตโนมัติหรือไม่ อาจใช้เวลาประมาณหนึ่งชั่วโมง เราขอแนะนำให้เสียบเข้ากับอุปกรณ์ของคุณ";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "ดูเหมือนว่าคุณกำลังพยายามกู้คืนกระเป๋าเงินของคุณโดยใช้วลีการกู้คืน 12 คำ แต่คุณได้ป้อน 11 คำเท่านั้นคุณต้องการกู้คืนคำที่หายไปโดยอัตโนมัติหรือไม่";
 
 /* No comment provided by engineer. */
 "It's Important" = "สำคัญ";
 
 /* No comment provided by engineer. */
-"Join" = "Join";
-
-/* No comment provided by engineer. */
-"Join DashPay" = "Join DashPay";
+"Join Evolution" = "เข้าร่วมกับวิวัฒนาการ";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
-"Let me know when it’s done" = "Let me know when it’s done";
+"Let me know when it’s done" = "แจ้งให้ฉันทราบเมื่อเสร็จแล้ว";
 
 /* Validation rule */
-"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+"Letters and numbers only" = "ตัวอักษรและตัวเลขเท่านั้น";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "เชื่อมบัญชี Uphold";
@@ -551,22 +500,28 @@
 "Manage Trusted Node" = "จัดการโหนดที่เชื่อถือได้";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "รายการมาสเตอร์โหนด #%1$d of %2$d";
 
 /* No comment provided by engineer. */
-"Masternode Registration" = "การลงทะเบียน Masternode ";
+"Masternode Registration" = "การลงทะเบียนมาสเตอร์โหนด";
 
 /* No comment provided by engineer. */
-"Masternode Revocation" = "การเพิกถอน Masternode";
+"Masternode Revocation" = "การเพิกถอนมาสเตอร์โหนด";
 
 /* No comment provided by engineer. */
-"Masternode Update" = "อัพเดต Masternode";
+"Masternode Update" = "อัพเดตมาสเตอร์โหนด";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "สูงสุด";
 
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "สูงสุด %ld ตัวอักษร";
+
 /* adjective, security level */
 "Medium" = "ปานกลาง";
+
+/* Validation rule */
+"Minimum 3 characters" = "ขั้นต่ำ 3 ตัวอักษร";
 
 /* No comment provided by engineer. */
 "More" = "มากขึ้น";
@@ -575,25 +530,16 @@
 "More Control" = "ควบคุมมากขึ้น";
 
 /* No comment provided by engineer. */
-"More Suggestions" = "More Suggestions";
-
-/* No comment provided by engineer. */
-"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
-
-/* No comment provided by engineer. */
 "Moved from" = "เคลื่อนย้ายจาก";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "ย้ายไปยังที่อยู่";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "Must start and end with a letter or number";
+/* No comment provided by engineer. */
+"My Contacts" = "ติดต่อของฉัน";
 
 /* No comment provided by engineer. */
-"My Contacts" = "My Contacts";
-
-/* No comment provided by engineer. */
-"Name" = "Name";
+"Name" = "ชื่อ";
 
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
@@ -601,20 +547,14 @@
 /* No comment provided by engineer. */
 "Network fee" = "ค่าธรรมเนียมเครือข่าย";
 
-/* No comment provided by engineer. */
-"Network Unavailable" = "Network Unavailable";
-
 /* (List of) New (notifications) */
-"New" = "New";
+"New" = "ใหม่";
 
 /* No comment provided by engineer. */
 "NFC device" = "อุปกรณ์ NFC";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
-
-/* No comment provided by engineer. */
-"No" = "No";
 
 /* No comment provided by engineer. */
 "No address copied" = "ไม่มีที่อยู่คัดลอก";
@@ -635,73 +575,58 @@
 "Not a valid Dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Not Available For Devnet" = "Not Available For Devnet";
-
-/* No comment provided by engineer. */
 "Not yet used" = "ยังไม่ถูกใช้";
 
 /* No comment provided by engineer. */
-"Notifications" = "Notifications";
+"Notifications" = "การแจ้งเตือน";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "ตกลง";
 
 /* Once <username> accepts your request... */
-"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+"Once %@ accepts your request you can Pay Directly to Username" = "เมื่อ %@ ยอมรับคำขอของคุณคุณสามารถชำระเงินโดยตรงกับชื่อผู้ใช้";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "ตัวดำเนินการ Keys";
+"Operator Keys" = "ตัวดำเนินการกุญแจ";
 
 /* No comment provided by engineer. */
 "Owner Address" = "ที่อยู่เจ้าของ";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "เจ้าของ Keys";
+"Owner Keys" = "เจ้าของกุญแจ";
 
 /* No comment provided by engineer. */
-"Paste your image URL" = "Paste your image URL";
-
-/* No comment provided by engineer. */
-"Pay" = "จ่ายเงิน";
+"Pay" = "ชำระเงิน";
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "ชำระเงินและรับเงินทันทีด้วยกระบวนการชำระเงินที่ใช้งานง่าย";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
-"Pay Directly to Username" = "Pay Directly to Username";
+"Pay Directly to Username" = "ชำระเงินโดยตรงกับชื่อผู้ใช้";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "ชำระเงินได้อย่างง่ายดาย";
 
 /* 1 out of 4 in the Paying Animation */
-"Paying" = "Paying";
+"Paying" = "กำลังชำระเงิน";
 
 /* 2 out of 4 in the Paying Animation */
-"Paying." = "Paying.";
+"Paying." = "กำลังชำระเงิน";
 
 /* 3 out of 4 in the Paying Animation */
-"Paying.." = "Paying..";
+"Paying.." = "กำลังชำระเงิน";
 
 /* 4 out of 4 in the Paying Animation */
-"Paying..." = "Paying...";
+"Paying..." = "กำลังชำระเงิน";
 
 /* No comment provided by engineer. */
 "Payments" = "การชำระเงิน";
 
 /* No comment provided by engineer. */
-"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
-
-/* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "รอดำเนินการ";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ต้องระบุ PIN ทุกครั้งเพื่อชำระเงิน";
-
-/* No comment provided by engineer. */
-"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
-
-/* No comment provided by engineer. */
-"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "โปรดป้อน PIN เพื่ออัปเกรด Wallet";
@@ -716,13 +641,13 @@
 "Please try again" = "โปรดลองใหม่อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Please try scanning again" = "Please try scanning again";
+"Please try scanning again" = "โปรดลองสแกนใหม่อีกครั้ง";
 
 /* No comment provided by engineer. */
 "Please Wait" = "กรุณารอสักครู่";
 
 /* No comment provided by engineer. */
-"Please wait" = "Please wait";
+"Please wait" = "กรุณารอสักครู่";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "โปรดรอจนกว่าการซิงค์จะเสร็จสมบูรณ์";
@@ -744,9 +669,6 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
-
-/* No comment provided by engineer. */
-"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "ได้รับอย่างรวดเร็ว";
@@ -773,13 +695,13 @@
 "Received from" = "ได้รับจาก";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "กู้คืน";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "กู้คืน wallet";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "กำลังกู้คืน...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "วลีกู้คืน";
@@ -788,13 +710,13 @@
 "Recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "วลีการกู้คืนต้องมี 12, 15, 18, 21 หรือ 24 ค";
 
 /* Button title, Register (username) */
-"Register" = "Register";
+"Register" = "ลงทะเบียน";
 
 /* No comment provided by engineer. */
-"Register?" = "Register?";
+"Register?" = "ลงทะเบียนหรือไม่";
 
 /* No comment provided by engineer. */
 "Registered from" = "ลงทะเบียนจาก";
@@ -821,7 +743,7 @@
 "Reset Wallet" = "ตั้งค่า wallet";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
-"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
+"Retain Mutual Transaction History" = "เก็บประวัติการทำธุรกรรมร่วมกัน";
 
 /* No comment provided by engineer. */
 "Retry" = "ลองอีกครั้ง";
@@ -836,19 +758,19 @@
 "Rewards" = "รางวัล";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Scan" = "สแกน";
 
 /* No comment provided by engineer. */
-"Save Changes" = "Save Changes";
-
-/* No comment provided by engineer. */
-"Scan Private Key" = "สแกนคีย์ส่วนตัว";
+"Scan Private Key" = "สแกนกุญแจส่วนตัว";
 
 /* No comment provided by engineer. */
 "Scan QR Code" = "สแกนโค้ด QR";
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "สแกนสิ่งนี้เพื่อจ่าย";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "สแกนเพื่อจ่าย";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "สแกนเพื่อส่ง";
@@ -857,28 +779,28 @@
 "Scanning QR code" = "สแกนโค้ด QR";
 
 /* No comment provided by engineer. */
-"Screenshot detected. New recovery phrase:" = "เกิดการบันทึกภาพหน้าจอ. วลีกู้คืนใหม่:";
+"Screenshot detected. New recovery phrase:" = "ตรวจพบการบันทึกภาพหน้าจอ วลีกู้คืนใหม่::";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  สร้างวลีกู้คืนใหม่และเก็บเป็นความลับ";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การบันทึกภาพจะปรากฏแก่แอพพลิเคชันและอุปกรณ์อื่น ๆ สร้างวลีกู้คืนใหม่และเก็บไว้เป็นความลับ";
 
 /* No comment provided by engineer. */
-"Search for a contact" = "Search for a contact";
+"Search for a contact" = "ค้นหารายชื่อผู้ติดต่อ";
 
 /* No comment provided by engineer. */
-"Search for a contact request" = "Search for a contact request";
+"Search for a contact request" = "ค้นหาคำขอการติดต่อ";
 
 /* No comment provided by engineer. */
-"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+"Search for a User on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
-"Search for a username" = "Search for a username";
+"Search for a username" = "ค้นหาชื่อผู้ใช้";
 
 /* Search results for \"John Doe\" */
-"Search results for \"" = "Search results for \"";
+"Search results for \"" = "ผลการค้นหาสำหรับ \"";
 
 /* No comment provided by engineer. */
-"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
+"Searching for username %@ on the Dash Network" = "กำลังหาชื่อผู้ใช้ %@ บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
 "Secure now" = "ปลอดภัย";
@@ -896,12 +818,6 @@
 "See on Uphold" = "เปิดดูที่ Uphold";
 
 /* No comment provided by engineer. */
-"Select" = "Select";
-
-/* No comment provided by engineer. */
-"Select from Gallery" = "Select from Gallery";
-
-/* No comment provided by engineer. */
 "Send" = "ส่ง";
 
 /* No comment provided by engineer. */
@@ -911,19 +827,13 @@
 "Send by" = "ส่งจาก";
 
 /* No comment provided by engineer. */
-"Send Contact Request" = "Send Contact Request";
+"Send Contact Request" = "ส่งคำขอการติดต่อ";
 
 /* No comment provided by engineer. */
 "Send to" = "ส่งไปยัง";
 
-/* No comment provided by engineer. */
-"Send to a Contact" = "Send to a Contact";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "ส่งไปยังที่อยู่";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Send to Contact" = "Send to Contact";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "ส่งไปยังที่อยู่ที่คัดลอก";
@@ -935,10 +845,7 @@
 "Sending" = "กำลังส่ง";
 
 /* No comment provided by engineer. */
-"Sending Contact Request" = "Sending Contact Request";
-
-/* No comment provided by engineer. */
-"Sending to" = "Sending to";
+"Sending to" = "ส่งไปยัง";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "กำลังส่ง";
@@ -992,10 +899,10 @@
 "Something went wrong" = "มีบางอย่างผิดพลาด";
 
 /* No comment provided by engineer. */
-"Sort by" = "Sort by";
+"Sort by" = "เรียงลำดับตาม";
 
 /* No comment provided by engineer. */
-"Sort Contacts" = "Sort Contacts";
+"Sort Contacts" = "เรียงลำดับที่ผู้ติดต่อ";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "ระบุจำนวน";
@@ -1004,7 +911,7 @@
 "Spending Confirmation" = "การยืนยันการใช้จ่าย";
 
 /* No comment provided by engineer. */
-"Support" = "Support";
+"Support" = "ฝ่ายสนับสนุน";
 
 /* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";
@@ -1024,8 +931,8 @@
 /* No comment provided by engineer. */
 "Syncing" = "กำลังซิงค์";
 
-/* No comment provided by engineer. */
-"Take a Photo from Camera" = "Take a Photo from Camera";
+/* Pay using NFC (should be as short as possible) */
+"Tap" = "กด";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";
@@ -1033,20 +940,17 @@
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "กดเพื่อเลิกซ่อนยอดคงเหลือ";
 
-/* Don't translate 'Imgur' */
-"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
-
 /* No comment provided by engineer. */
-"There are no new notifications" = "There are no new notifications";
+"There are no new notifications" = "ไม่มีการแจ้งเตือนใหม่";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "ไม่มีธุรกรรมเพื่อแสดง";
 
 /* No comment provided by engineer. */
-"There are no users that match with the name %@" = "There are no users that match with the name %@";
+"There are no users that match with the name %@" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@";
 
 /* No comment provided by engineer. */
-"There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
+"There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในรายชื่อผู้ติดต่อของคุณ";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "แอพพลิเคชั่นนี้คือ ซอฟต์แวร์ที่เปิดเผยหลักการหรือแหล่งที่มาของเทคโนโลยีของซอฟต์แวร์นั้นให้บุคคลภายนอกได้ใช้ ภายใต้เงื่อนไขบางประการที่เปิดโอกาสให้ผู้ใช้ทำการแก้ไข ดัดแปลงและเผยแพร่ซอร์สโค้ดได้ ภายใต้เงื่อนไขทางข้อตกลงทางกฎหมาย";
@@ -1097,34 +1001,10 @@
 "Turn device passcode on" = "เปิดรหัสผ่านของอุปกรณ์";
 
 /* No comment provided by engineer. */
-"Unable to accept contact request" = "Unable to accept contact request";
-
-/* No comment provided by engineer. */
 "Unable to connect" = "ไม่สามารถเชื่อมต่อ";
 
 /* No comment provided by engineer. */
-"Unable to fetch contact details" = "Unable to fetch contact details";
-
-/* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
-
-/* No comment provided by engineer. */
-"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
-
-/* No comment provided by engineer. */
 "Unable to get new QR code" = "ไม่สามารถได้รับโค้ด QR ใหม่";
-
-/* No comment provided by engineer. */
-"Unable to provide suggestions" = "Unable to provide suggestions";
-
-/* No comment provided by engineer. */
-"Unable to search for a user" = "Unable to search for a user";
-
-/* No comment provided by engineer. */
-"Unable to send contact request" = "Unable to send contact request";
-
-/* No comment provided by engineer. */
-"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "ไม่รับรอง หรือเอกสารได้รับความเสียหาย";
@@ -1136,28 +1016,13 @@
 "Updated: %@" = "อัพเดต: %@";
 
 /* No comment provided by engineer. */
-"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+"Upgrade Fee" = "อัพเกรดค่าธรรมเนียม";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
-
-/* No comment provided by engineer. */
-"Upgrade Fee" = "Upgrade Fee";
-
-/* No comment provided by engineer. */
-"Upgrade to Evolution" = "Upgrade to Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Upgrading to DashPay";
+"Upgrading to DashPay" = "อัพเกรดเป็น DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
-
-/* No comment provided by engineer. */
-"Upload Error" = "Upload Error";
-
-/* No comment provided by engineer. */
-"Uploading your picture to the network" = "Uploading your picture to the network";
 
 /* No comment provided by engineer. */
 "Used" = "ใช้แล้ว";
@@ -1166,19 +1031,16 @@
 "Used at IP address" = "ใช้ที่ที่อยู่ IP";
 
 /* No comment provided by engineer. */
-"Username available" = "Username available";
+"Username taken" = "ใช้ชื่อผู้ใช้แล้ว";
 
 /* No comment provided by engineer. */
-"Username taken" = "Username taken";
+"Validating username done" = "ตรวจสอบชื่อผู้ทำ";
 
 /* No comment provided by engineer. */
-"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+"Validating username failed" = "ตรวจสอบชื่อผู้ใช้ล้มเหลว";
 
 /* No comment provided by engineer. */
-"Validating username failed" = "Validating username failed";
-
-/* No comment provided by engineer. */
-"Validating username…" = "Validating username…";
+"Validating username…" = "ตรวจสอบชื่อผู้ใช้...";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "ตรวจสอบสำเร็จ";
@@ -1190,7 +1052,7 @@
 "Very High" = "สูงมาก";
 
 /* No comment provided by engineer. */
-"View All" = "View All";
+"View All" = "ดูทั้งหมด";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ดูใน Block Explorer";
@@ -1238,7 +1100,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "เมื่อธุรกรรมถูกยืนยัน วอลเล็ทอื่นๆจะไม่มีจราคาและไม่ควรนำมาใช้อีกครั้งเพื่อความปลอดภัย";
 
 /* No comment provided by engineer. */
-"Why I should not take a screenshot?" = "Why I should not take a screenshot?";
+"Why I should not take a screenshot?" = "ทำไมฉันจึงไม่ควรใช้การบันทึกภาพหน้าจอ";
 
 /* No comment provided by engineer. */
 "Wipe" = "ลบล้าง";
@@ -1250,13 +1112,7 @@
 "with Dash blockchain" = "กับ Dash Blockchain";
 
 /* No comment provided by engineer. */
-"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
-
-/* No comment provided by engineer. */
-"Yes" = "Yes";
-
-/* No comment provided by engineer. */
-"You accepted the contact request from %@" = "You accepted the contact request from %@";
+"You accepted the contact request from %@" = "คุณได้รับการยอมรับคำขอการติดต่อจาก %@";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "คุณกำลังจะเคลื่อนย้ายเงินจาก Dash Wallet อื่น";
@@ -1265,19 +1121,13 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "คุณกำลังจะล้างวอลเล็ทนี้จากอุปกรณ์นี้ เงินทุนที่เกี่ยวข้องกับกระเป๋าเงินนี้สามารถเรียกคืนได้หากคุณมีวลีกู้คืนของคุณ";
 
 /* No comment provided by engineer. */
-"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
-
-/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "คุณสามารถตรวจสอบด้วย Face ID สำหรับการชำระเงินด้านล่าง";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "คุณสามารถตรวจสอบด้วย Touch ID สำหรับการชำระเงินด้านล่าง";
 
 /* No comment provided by engineer. */
-"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
-
-/* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "คุณได้เลือก \"%@\" เป็นชื่อผู้ใช้ของคุณ ชื่อผู้ใช้ของคุณจะไม่สามารถเปลี่ยนแปลงได้เมื่อลงทะเบียนแล้ว";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "คุณต้องใส่รหัสผ่านเพื่อทำการเข้า Dash Wallet";
@@ -1286,7 +1136,7 @@
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "คุณได้รับ Dash! หากคุณทำอุปกรณ์นี้หายคุณจะเสียเงิน รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าเงินของคุณบนอุปกรณ์อื่น";
 
 /* No comment provided by engineer. */
-"You sent the contact request to %@" = "You sent the contact request to %@";
+"You sent the contact request to %@" = "คุณส่งคำขอการติดต่อไปยัง %@";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "คุณจะต้องออกจากระบบของเว็บไซต์ Uphold โดยใช้เบราว์เซอร์ของคุณ";
@@ -1295,10 +1145,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "คุณจะต้องใช้วลีกู้คืนนี้เพื่อเข้าถึงเงินทุนของคุณหากอุปกรณ์นี้สูญหายได้รับความเสียหายหรือหาก Dash Wallet เคยถอนการติดตั้งโดยไม่ได้ตั้งใจจากอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
-"Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
-
-/* No comment provided by engineer. */
-"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+"Your DashPay Username is ready to use" = " ชื่อผู้ใช้ DashPay ของคุณคือพร้อมใช้งาน";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";
@@ -1307,10 +1154,10 @@
 "Your Uphold account Dash balance is" = "ยอด Dash ของบัญชี Uphold ของคุณคือ";
 
 /* No comment provided by engineer. */
-"Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
+"Your username %@ has been successfully created on the Dash Network" = "ชื่อผู้ใช้ของคุณ %@ ได้รับการสร้างที่ประสบความสำเร็จบนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
-"Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
+"Your username %@ is being created on the Dash Network" = "ชื่อผู้ใช้ของคุณ %@ กำลังถูกสร้างขึ้นบนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
