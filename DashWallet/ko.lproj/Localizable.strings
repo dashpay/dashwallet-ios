@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@게 터치 ID 접근 권한이 없습니다";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) 지불 처리 중";
 
@@ -56,10 +59,19 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "지갑을 보호하기 위해 비밀번호가 필요합니다. 설정에서 비밀번호를 활성화해주세요.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "정보";
 
 /* No comment provided by engineer. */
+"About me" = "About me";
+
+/* No comment provided by engineer. */
 "Accept" = "수락";
+
+/* No comment provided by engineer. */
+"Accept Contact Request" = "Accept Contact Request";
 
 /* No comment provided by engineer. */
 "Activity" = "활동";
@@ -78,6 +90,9 @@
 
 /* No comment provided by engineer. */
 "Advanced Security" = "향상된 보안";
+
+/* No comment provided by engineer. */
+"Agree" = "Agree";
 
 /* No comment provided by engineer. */
 "All" = "모두";
@@ -138,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "숨긴 잔고";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
@@ -257,6 +275,12 @@
 "Create a New Wallet" = "새로운 지갑 생성";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "현재 사용자: %@";
 
 /* No comment provided by engineer. */
@@ -281,6 +305,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다). 이 지갑을 즉시 삭제하시고 안전한 기기에서 지갑을 복구하십시오.";
 
 /* No comment provided by engineer. */
+"Display Name" = "Display Name";
+
+/* No comment provided by engineer. */
 "Do not take a screenshot" = "스크린샷을 찍지 마세요";
 
 /* No comment provided by engineer. */
@@ -291,6 +318,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
+
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "예시: 홍길동";
@@ -320,7 +350,13 @@
 "Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "오류";
+
+/* No comment provided by engineer. */
+"Error updating your profile" = "Error updating your profile";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "업그레이드 오류";
@@ -342,6 +378,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "요청한 금액에서 수수료가 공제됩니다.";
+
+/* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "거래 필터링 하기";
@@ -410,6 +449,15 @@
 "Ignore" = "무시";
 
 /* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+
+/* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+
+/* No comment provided by engineer. */
+"Images Privacy Policy" = "Images Privacy Policy";
+
+/* No comment provided by engineer. */
 "Immediately" = "즉시";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -446,7 +494,10 @@
 "It's Important" = "중요";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "에볼루션에 합류합니다";
+"Join" = "Join";
+
+/* No comment provided by engineer. */
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "키페어 %ld";
@@ -455,7 +506,7 @@
 "Let me know when it’s done" = "완료되면 알려주세요";
 
 /* Validation rule */
-"Letters and numbers only" = "숫자와 문자만 가능합니다";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "업홀드 계정 연결";
@@ -514,14 +565,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "최대";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "최대 %ld 글자";
-
 /* adjective, security level */
 "Medium" = "중간";
-
-/* Validation rule */
-"Minimum 3 characters" = "최소 세 글자";
 
 /* No comment provided by engineer. */
 "More" = "더 알아보기";
@@ -530,10 +575,19 @@
 "More Control" = "보다 큰 제어";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
+"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+
+/* No comment provided by engineer. */
 "Moved from" = "다음에서 이동";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "주소로 이동";
+
+/* Validation rule */
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "나의 연락처";
@@ -547,6 +601,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "네트워크 수수료";
 
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "새로운 알림";
 
@@ -557,7 +614,7 @@
 "NFC device didn't transmit a valid Dash address" = "NFC 장치가 유효한 대시 주소를 전송하지 못했습니다";
 
 /* No comment provided by engineer. */
-"No address copied" = "클립보드에 복사된 주소가 없습니다";
+"No" = "No";
 
 /* No comment provided by engineer. */
 "Node IP" = "노드 IP";
@@ -573,6 +630,9 @@
 
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "유효한 대시 주소가 아닙니다";
+
+/* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
 
 /* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
@@ -594,6 +654,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "소유자 키";
+
+/* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
 
 /* No comment provided by engineer. */
 "Pay" = "지불";
@@ -623,10 +686,19 @@
 "Payments" = "지불";
 
 /* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+
+/* No comment provided by engineer. */
 "Pending" = "대기 중";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "지갑을 업그레이드하시려면 PIN을 입력하십시오";
@@ -669,6 +741,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "공개 키";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "빠른 송금 수령";
@@ -758,7 +833,10 @@
 "Rewards" = "리워드";
 
 /* No comment provided by engineer. */
-"Scan" = "스캔";
+"Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "개인 키 스캔하기";
@@ -768,9 +846,6 @@
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "지불을 위해 이를 스캔합니다";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "지불을 위해 스캔합니다";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "전송을 위해 스캔합니다";
@@ -818,6 +893,12 @@
 "See on Uphold" = "업홀드에서 확인";
 
 /* No comment provided by engineer. */
+"Select" = "Select";
+
+/* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "보내기";
 
 /* No comment provided by engineer. */
@@ -832,17 +913,23 @@
 /* No comment provided by engineer. */
 "Send to" = "다음에 전송합니다";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "주소로 전송합니다";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "복사된 주소로 전송합니다";
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "NFC를 통해 전송합니다";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "보내는 중";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
 
 /* No comment provided by engineer. */
 "Sending to" = "다음에 전송합니다";
@@ -931,14 +1018,17 @@
 /* No comment provided by engineer. */
 "Syncing" = "동기화 중";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "탭";
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "잔고를 숨기시려면 탭하세요";
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "잔고를 확인하시려면 탭하세요";
+
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "새로운 알림이 없습니다";
@@ -1001,10 +1091,34 @@
 "Turn device passcode on" = "비밀번호 켜기";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "연결할 수 없습니다";
 
 /* No comment provided by engineer. */
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+
+/* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "새로운 QR 코드를 불러올 수 없습니다";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
+
+/* No comment provided by engineer. */
+"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "지원되지 않거나 손상된 문서";
@@ -1016,7 +1130,16 @@
 "Updated: %@" = "업데이트됨: %@";
 
 /* No comment provided by engineer. */
+"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+
+/* No comment provided by engineer. */
+"Upgrade" = "Upgrade";
+
+/* No comment provided by engineer. */
 "Upgrade Fee" = "업그레이드 수수료";
+
+/* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "대시페이로 업그레이드 중";
@@ -1025,16 +1148,25 @@
 "Uphold" = "업홀드";
 
 /* No comment provided by engineer. */
+"Upload Error" = "Upload Error";
+
+/* No comment provided by engineer. */
+"Uploading your picture to the network" = "Uploading your picture to the network";
+
+/* No comment provided by engineer. */
 "Used" = "사용됨";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "이 IP 주소에서 사용됨";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "이미 사용 중인 사용자 이름";
 
 /* No comment provided by engineer. */
-"Validating username done" = "사용자 이름 인증 완료";
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "사용자 이름 인증 실패";
@@ -1103,6 +1235,9 @@
 "Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "지우기";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1245,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "대시 블록체인을 통해";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "%@ 님으로부터의 연락처 요청을 수락하였습니다";
@@ -1121,10 +1262,16 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "당신은 곧 본 기기로부터 이 지갑을 삭제하게 됩니다. 이 지갑과 관련된 자금은 당신이 복원 문구를 가지고 있을 떄에만 복구할 수 있습니다.";
 
 /* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+
+/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "지불을 위해서는 페이스 ID를 통해 아래에서 인증할 수 있습니다";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "지불을 위해서는 터치 ID를 통해 아래에서 인증할 수 있습니다";
+
+/* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
@@ -1148,6 +1295,9 @@
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
 
 /* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1311,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "이제 당신의 지갑은 안전합니다. 언제든 당신의 복원 문구를 사용하셔서 당신의 계정을 다른 기기에서 복원하실 수 있습니다.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

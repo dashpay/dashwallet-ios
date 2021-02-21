@@ -482,6 +482,8 @@
 		2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CBA2494045C00F4A689 /* DWNotificationsFetchedDataSource.m */; };
 		2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CBD24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m */; };
 		2AEC5CC2249755BB00F4A689 /* DWDashPayContactsUpdater.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CC1249755BB00F4A689 /* DWDashPayContactsUpdater.m */; };
+		2AECB4E025E2507D005B1041 /* DPAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB4DF25E2507D005B1041 /* DPAlertViewController.m */; };
+		2AECB4E925E25094005B1041 /* DPAlertChildContentsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB4E825E25094005B1041 /* DPAlertChildContentsView.m */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
@@ -1607,6 +1609,10 @@
 		2AEC5CBD24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPOutgoingRequestNotificationObject.m; sourceTree = "<group>"; };
 		2AEC5CC0249755BB00F4A689 /* DWDashPayContactsUpdater.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayContactsUpdater.h; sourceTree = "<group>"; };
 		2AEC5CC1249755BB00F4A689 /* DWDashPayContactsUpdater.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPayContactsUpdater.m; sourceTree = "<group>"; };
+		2AECB4DE25E2507D005B1041 /* DPAlertViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DPAlertViewController.h; sourceTree = "<group>"; };
+		2AECB4DF25E2507D005B1041 /* DPAlertViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPAlertViewController.m; sourceTree = "<group>"; };
+		2AECB4E725E25094005B1041 /* DPAlertChildContentsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DPAlertChildContentsView.h; sourceTree = "<group>"; };
+		2AECB4E825E25094005B1041 /* DPAlertChildContentsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPAlertChildContentsView.m; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
 		2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
 		2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
@@ -2365,6 +2371,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				2AECB4DC25E25056005B1041 /* Common */,
 				2AE8B63D23CDB94E0016F221 /* DashPay */,
 				2AB231CF2196E23200A6E7E6 /* Start */,
 				2A913E6C23A26469006A2A59 /* Onboarding */,
@@ -4296,6 +4303,25 @@
 			path = Notifications;
 			sourceTree = "<group>";
 		};
+		2AECB4DC25E25056005B1041 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				2AECB4DD25E25060005B1041 /* DPAlert */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		2AECB4DD25E25060005B1041 /* DPAlert */ = {
+			isa = PBXGroup;
+			children = (
+				2AECB4DE25E2507D005B1041 /* DPAlertViewController.h */,
+				2AECB4DF25E2507D005B1041 /* DPAlertViewController.m */,
+				2AECB4E725E25094005B1041 /* DPAlertChildContentsView.h */,
+				2AECB4E825E25094005B1041 /* DPAlertChildContentsView.m */,
+			);
+			path = DPAlert;
+			sourceTree = "<group>";
+		};
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
 			isa = PBXGroup;
 			children = (
@@ -5371,6 +5397,7 @@
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
+				2AECB4E925E25094005B1041 /* DPAlertChildContentsView.m in Sources */,
 				2A5A7FB6251DF6E500ADD073 /* DWAvatarEditSelectorViewController.m in Sources */,
 				2AD6E5602487E13F00B52F14 /* DWRequestsContentViewController.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
@@ -5587,6 +5614,7 @@
 				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
+				2AECB4E025E2507D005B1041 /* DPAlertViewController.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,

@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Touch ID";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Επεξεργασία Πληρωμής";
 
@@ -56,10 +59,19 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Ένας κωδικός φράσης για την συσκευή είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "Σχετικά";
 
 /* No comment provided by engineer. */
+"About me" = "About me";
+
+/* No comment provided by engineer. */
 "Accept" = "Αποδοχή";
+
+/* No comment provided by engineer. */
+"Accept Contact Request" = "Accept Contact Request";
 
 /* No comment provided by engineer. */
 "Activity" = "Δραστηριότητα";
@@ -78,6 +90,9 @@
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Ενισχυμένη Ασφάλεια";
+
+/* No comment provided by engineer. */
+"Agree" = "Agree";
 
 /* No comment provided by engineer. */
 "All" = "Όλα";
@@ -138,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Το υπόλοιπο αποκρύφτηκε";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "μπλόκ #%1$d από %2$d";
@@ -257,6 +275,12 @@
 "Create a New Wallet" = "Δημιουργία Νέου Πορτοφολιού";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Τρέχων χρήστης: %@";
 
 /* No comment provided by engineer. */
@@ -281,6 +305,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
 
 /* No comment provided by engineer. */
+"Display Name" = "Display Name";
+
+/* No comment provided by engineer. */
 "Do not take a screenshot" = "Μην τραβήξετε στιγμιότυπο οθόνης";
 
 /* No comment provided by engineer. */
@@ -291,6 +318,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Νωρίτερα";
+
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "πχ: johndoe";
@@ -320,7 +350,13 @@
 "Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "Σφάλμα";
+
+/* No comment provided by engineer. */
+"Error updating your profile" = "Error updating your profile";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Σφάλμα Αναβάθμισης";
@@ -342,6 +378,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Το τέλος θα αφαιρεθεί από το ποσό που ζητήσατε.";
+
+/* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Φίλτρο Συναλλαγών";
@@ -410,6 +449,15 @@
 "Ignore" = "Παράβλεψη";
 
 /* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+
+/* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+
+/* No comment provided by engineer. */
+"Images Privacy Policy" = "Images Privacy Policy";
+
+/* No comment provided by engineer. */
 "Immediately" = "Άμεσα";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -446,7 +494,10 @@
 "It's Important" = "Είναι σημαντικό";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Εγγραφείτε στο Evolution";
+"Join" = "Join";
+
+/* No comment provided by engineer. */
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
@@ -455,7 +506,7 @@
 "Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
 
 /* Validation rule */
-"Letters and numbers only" = "Μόνο γράμματα και αριθμοί ";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
@@ -514,14 +565,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Μέγιστο";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Μέγιστοι %ld χαρακτήρες";
-
 /* adjective, security level */
 "Medium" = "Μέσο";
-
-/* Validation rule */
-"Minimum 3 characters" = "Ελάχιστο 3 χαρακτήρες";
 
 /* No comment provided by engineer. */
 "More" = "Περισσότερα";
@@ -530,10 +575,19 @@
 "More Control" = "Περισσότερος Έλεγχος";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
+"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+
+/* No comment provided by engineer. */
 "Moved from" = "Μετακινήθηκε από";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Μετακινήθηκε στην διεύθυνση";
+
+/* Validation rule */
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Οι Επαφές μου";
@@ -547,6 +601,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Τέλος δικτύου";
 
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "Νέο";
 
@@ -557,7 +614,7 @@
 "NFC device didn't transmit a valid Dash address" = "Η συσκευή NFC δεν μεταδίδει έγκυρη διεύθυνση Dash";
 
 /* No comment provided by engineer. */
-"No address copied" = "Δεν αντιγράφηκε καμία διεύθυνση";
+"No" = "No";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Κόμβου";
@@ -573,6 +630,9 @@
 
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Δεν είναι μια έγκυρη διεύθυνση Dash";
+
+/* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Δεν έχουν χρησιμοποιηθεί ακόμη";
@@ -594,6 +654,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Κλειδιά Κατόχου";
+
+/* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
 
 /* No comment provided by engineer. */
 "Pay" = "πληρώστε";
@@ -623,10 +686,19 @@
 "Payments" = "Πληρωμές";
 
 /* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+
+/* No comment provided by engineer. */
 "Pending" = "Εκκρεμεί";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Παρακαλώ εισάγετε το PIN για να αναβαθμίσετε το πορτοφόλι";
@@ -669,6 +741,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Δημόσιο κλειδί";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Γρήγορη Λήψη";
@@ -758,7 +833,10 @@
 "Rewards" = "Ανταμοιβές";
 
 /* No comment provided by engineer. */
-"Scan" = "Ανίχνευση";
+"Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Σαρώστε το ιδιωτικό κλειδί";
@@ -768,9 +846,6 @@
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Σαρώστε το για να πληρώσετε";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Σαρώστε για να πληρώσετε";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Σαρώστε για να Στείλετε";
@@ -818,6 +893,12 @@
 "See on Uphold" = "Δείτε στο Uphold";
 
 /* No comment provided by engineer. */
+"Select" = "Select";
+
+/* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Αποστολή";
 
 /* No comment provided by engineer. */
@@ -832,17 +913,23 @@
 /* No comment provided by engineer. */
 "Send to" = "Εστάλη στο";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Αποστολή στη διεύθυνση";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Αποστολή στη αντιγραμμένη διεύθυνση";
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Αποστολή μέσω NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Αποστολή";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
 
 /* No comment provided by engineer. */
 "Sending to" = "Αποστολή στο";
@@ -931,14 +1018,17 @@
 /* No comment provided by engineer. */
 "Syncing" = "Συγχρονισμός";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Πατήστε";
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Πατήστε για να κρύψετε το υπόλοιπο";
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Πατήστε για να αποκαλύψετε το υπόλοιπο";
+
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Δεν υπάρχουν νέες ειδοποιήσεις";
@@ -1001,10 +1091,34 @@
 "Turn device passcode on" = "Ενεργοποιήστε τον κωδικό πρόσβασης της συσκευής";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "Δεν είναι δυνατή η σύνδεση";
 
 /* No comment provided by engineer. */
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+
+/* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Δεν είναι δυνατή η λήψη νέου QR κωδικού";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
+
+/* No comment provided by engineer. */
+"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Μη υποστηριζόμενο ή κατεστραμμένο έγγραφο";
@@ -1016,7 +1130,16 @@
 "Updated: %@" = "Ανανεώθηκε: %@";
 
 /* No comment provided by engineer. */
+"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+
+/* No comment provided by engineer. */
+"Upgrade" = "Upgrade";
+
+/* No comment provided by engineer. */
 "Upgrade Fee" = "Προμήθεια Αναβάθμισης";
+
+/* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Αναβάθμιση σε DashPay";
@@ -1025,16 +1148,25 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
+"Upload Error" = "Upload Error";
+
+/* No comment provided by engineer. */
+"Uploading your picture to the network" = "Uploading your picture to the network";
+
+/* No comment provided by engineer. */
 "Used" = "Χρησιμοποιήθηκε";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Χρησιμοποιήθηκε στη διεύθυνση IP";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";
 
 /* No comment provided by engineer. */
-"Validating username done" = "Η επικύρωση του ονόματος χρήστη ολοκληρώθηκε";
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "Η επικύρωση του ονόματος χρήστη απέτυχε";
@@ -1103,6 +1235,9 @@
 "Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "εκκαθάριση";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1245,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "Μεσώ του Dash blockchain";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Αποδεχθήκατε το αίτημα επαφής από %@";
@@ -1121,10 +1262,16 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Πρόκειται να σκανάρετε αυτό το πορτοφόλι από αυτήν τη συσκευή. Τα χρήματα που σχετίζονται με αυτό το πορτοφόλι μπορούν να ανακτηθούν μόνο αν έχετε την φράση ανάκτησης.";
 
 /* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+
+/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Μπορείτε να επαληθεύσετε το Face ID για πληρωμές παρακάτω";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Μπορείτε να επαληθεύσετε το Touch ID για πληρωμές παρακάτω";
+
+/* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Έχετε επιλέξει το \"%@\" ως το όνομα χρήστη σας. Το όνομα χρήστη σας δεν μπορεί να αλλάξει μόλις εγγραφεί.";
@@ -1148,6 +1295,9 @@
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
 
 /* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1311,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Το πορτοφόλι σας είναι ασφαλές τώρα. Μπορείτε να χρησιμοποιήσετε τη φράση ανάκτησης ανά πάσα στιγμή για να ανακτήσετε το λογαριασμό σας σε άλλη συσκευή.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ запрещен доступ к Touch ID";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Обработка платежа ";
 
@@ -56,10 +59,19 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Код-пароль необходим для защиты Вашего кошелька. Перейдите в Настройки и включите код-пароль, чтобы продолжить.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "О программе";
 
 /* No comment provided by engineer. */
+"About me" = "About me";
+
+/* No comment provided by engineer. */
 "Accept" = "Подтвердить";
+
+/* No comment provided by engineer. */
+"Accept Contact Request" = "Accept Contact Request";
 
 /* No comment provided by engineer. */
 "Activity" = "Активность";
@@ -78,6 +90,9 @@
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Настройки безопасности";
+
+/* No comment provided by engineer. */
+"Agree" = "Agree";
 
 /* No comment provided by engineer. */
 "All" = "Все";
@@ -138,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Баланс скрыт";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "блок №%1$d из %2$d";
@@ -257,6 +275,12 @@
 "Create a New Wallet" = "Создать новый кошелек";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Текущий пользователь: %@";
 
 /* No comment provided by engineer. */
@@ -281,6 +305,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши Dash). Немедленно удалите этот кошелёк и восстановите его на доверенном устройстве.";
 
 /* No comment provided by engineer. */
+"Display Name" = "Display Name";
+
+/* No comment provided by engineer. */
 "Do not take a screenshot" = "Не делайте скриншот";
 
 /* No comment provided by engineer. */
@@ -291,6 +318,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Ранее";
+
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "напр.: ИванИванов";
@@ -320,7 +350,13 @@
 "Enter your 2FA code below" = "Введите код 2FA ниже";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "Ошибка";
+
+/* No comment provided by engineer. */
+"Error updating your profile" = "Error updating your profile";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Ошибка при обновлении";
@@ -342,6 +378,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Комиссия будет списана из запрашиваемой суммы.";
+
+/* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Показать транзакции";
@@ -410,6 +449,15 @@
 "Ignore" = "Игнорировать";
 
 /* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+
+/* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+
+/* No comment provided by engineer. */
+"Images Privacy Policy" = "Images Privacy Policy";
+
+/* No comment provided by engineer. */
 "Immediately" = "Немедленно";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -446,7 +494,10 @@
 "It's Important" = "Это важно";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Присоединиться к Evolution";
+"Join" = "Join";
+
+/* No comment provided by engineer. */
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Ключи %ld";
@@ -455,7 +506,7 @@
 "Let me know when it’s done" = "Сообщить, когда будет готово";
 
 /* Validation rule */
-"Letters and numbers only" = "Только цифры и буквы";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Привязать Uphold аккаунт ";
@@ -514,14 +565,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Макс";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Максимум %ld символа";
-
 /* adjective, security level */
 "Medium" = "Средний";
-
-/* Validation rule */
-"Minimum 3 characters" = "Минимум 3 символа";
 
 /* No comment provided by engineer. */
 "More" = "Больше";
@@ -530,10 +575,19 @@
 "More Control" = "Больше контроля";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
+"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+
+/* No comment provided by engineer. */
 "Moved from" = "Перемещено из";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Перемещно на адрес";
+
+/* Validation rule */
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Мои контакты";
@@ -547,6 +601,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Комиссия сети";
 
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "Новые";
 
@@ -557,7 +614,7 @@
 "NFC device didn't transmit a valid Dash address" = "NFC-устройство не предоставило Dash адрес";
 
 /* No comment provided by engineer. */
-"No address copied" = "Нет адреса";
+"No" = "No";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP узла";
@@ -573,6 +630,9 @@
 
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Некорректный адрес Dash";
+
+/* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Еще не использован";
@@ -594,6 +654,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Ключи владельца";
+
+/* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
 
 /* No comment provided by engineer. */
 "Pay" = "Оплатить";
@@ -623,10 +686,19 @@
 "Payments" = "Платежи";
 
 /* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+
+/* No comment provided by engineer. */
 "Pending" = "В ожидании";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Всегда требовать PIN для совершения платежа";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Пожалуйста, введите PIN для обновления кошелька";
@@ -669,6 +741,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Публичный ключ";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Получить быстро";
@@ -758,7 +833,10 @@
 "Rewards" = "Вознаграждения";
 
 /* No comment provided by engineer. */
-"Scan" = "Скан.";
+"Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Сканировать приватный ключ";
@@ -768,9 +846,6 @@
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Отсканируйте для оплаты";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Оплатить по QR-коду";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Сканировать";
@@ -818,6 +893,12 @@
 "See on Uphold" = "Посмотреть на Uphold";
 
 /* No comment provided by engineer. */
+"Select" = "Select";
+
+/* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Отправить";
 
 /* No comment provided by engineer. */
@@ -832,17 +913,23 @@
 /* No comment provided by engineer. */
 "Send to" = "Отправить";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Отправить на адрес";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Отправить на скопированный адрес";
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Отправить через NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Отправка";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
 
 /* No comment provided by engineer. */
 "Sending to" = "Отправка";
@@ -931,14 +1018,17 @@
 /* No comment provided by engineer. */
 "Syncing" = "Синхронизация";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Вкл.";
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Нажмите, чтобы скрыть баланс";
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Нажмите, чтобы показать баланс";
+
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "У вас нет новых уведомлений";
@@ -1001,10 +1091,34 @@
 "Turn device passcode on" = "Включить код-пароль";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "Не удалось подключиться";
 
 /* No comment provided by engineer. */
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+
+/* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Не удалось получить новый QR-код";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
+
+/* No comment provided by engineer. */
+"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Неподдерживаемый или повреждённый документ";
@@ -1016,7 +1130,16 @@
 "Updated: %@" = "Обновлено: %@";
 
 /* No comment provided by engineer. */
+"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+
+/* No comment provided by engineer. */
+"Upgrade" = "Upgrade";
+
+/* No comment provided by engineer. */
 "Upgrade Fee" = "Комиссия за обновление";
+
+/* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Обновление до DashPay";
@@ -1025,16 +1148,25 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
+"Upload Error" = "Upload Error";
+
+/* No comment provided by engineer. */
+"Uploading your picture to the network" = "Uploading your picture to the network";
+
+/* No comment provided by engineer. */
 "Used" = "Использовано";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Использовано с IP адресом";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "Имя пользователя уже занято";
 
 /* No comment provided by engineer. */
-"Validating username done" = "Имя пользователя подтверждено";
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "Имя пользователя не подтверждено";
@@ -1103,6 +1235,9 @@
 "Why I should not take a screenshot?" = "Почему я не могу сделать скриншот?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Удалить";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1245,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "с Dash блокчейн";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Вы приняли запрос на добавление в контакты от %@";
@@ -1121,10 +1262,16 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Вы собираетесь удалить кошелек с этого устройства. Средства на этом кошельке смогут быть доступны, только если у Вас есть фраза восстановления.";
 
 /* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+
+/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "В дальнейшем Вам будут доступны платежи через Face ID";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "В дальнейшем Вам будут доступны платежи через Touch ID";
+
+/* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Вы выбрали %@ в качестве имени пользователя. После регистрации смена имени пользователя будет невозможна.";
@@ -1148,6 +1295,9 @@
 "Your DashPay Username is ready to use" = "Имя пользователя DashPay готово к работе";
 
 /* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакция была отправлена и её сумма отобразится в вашем кошельке через несколько минут.";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1311,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему кошельку на другом устройстве.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

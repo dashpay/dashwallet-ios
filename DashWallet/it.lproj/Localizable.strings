@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ non hai dato il permesso al sensore biometrico digitale";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Pagamento in elaborazione";
 
@@ -56,10 +59,19 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Un codice di accesso è necessario per proteggere il tuo portafoglio. Vai nelle impostazioni e attiva il codice per continuare.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "A proposito di";
 
 /* No comment provided by engineer. */
+"About me" = "About me";
+
+/* No comment provided by engineer. */
 "Accept" = "Accetta";
+
+/* No comment provided by engineer. */
+"Accept Contact Request" = "Accept Contact Request";
 
 /* No comment provided by engineer. */
 "Activity" = "Attività";
@@ -78,6 +90,9 @@
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Sicurezza Avanzata";
+
+/* No comment provided by engineer. */
+"Agree" = "Agree";
 
 /* No comment provided by engineer. */
 "All" = "Tutte";
@@ -138,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Bilancio nascosto";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blocco #%1$d di %2$d";
@@ -257,6 +275,12 @@
 "Create a New Wallet" = "Crea un nuovo portafoglio";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Utente corrente: %@";
 
 /* No comment provided by engineer. */
@@ -281,6 +305,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi Dash). Elimina subito questo portafoglio e ripristina su un dispositivo sicuro.";
 
 /* No comment provided by engineer. */
+"Display Name" = "Display Name";
+
+/* No comment provided by engineer. */
 "Do not take a screenshot" = "Non scattare screenshot";
 
 /* No comment provided by engineer. */
@@ -291,6 +318,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Prima";
+
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "es: johndoe";
@@ -320,7 +350,13 @@
 "Enter your 2FA code below" = "Inserisci il tuo codice 2FA di seguito";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "Errore";
+
+/* No comment provided by engineer. */
+"Error updating your profile" = "Error updating your profile";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Errore durante l'aggiornamento";
@@ -342,6 +378,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "La commissione verrà detratta dall'importo richiesto.";
+
+/* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtra Transazioni";
@@ -410,6 +449,15 @@
 "Ignore" = "Ignora";
 
 /* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+
+/* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+
+/* No comment provided by engineer. */
+"Images Privacy Policy" = "Images Privacy Policy";
+
+/* No comment provided by engineer. */
 "Immediately" = "Immediatamente";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -446,7 +494,10 @@
 "It's Important" = "È importante";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Aderisci a Evolution";
+"Join" = "Join";
+
+/* No comment provided by engineer. */
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
@@ -455,7 +506,7 @@
 "Let me know when it’s done" = "Fammi sapere quando è fatto";
 
 /* Validation rule */
-"Letters and numbers only" = "Solo numeri e lettere";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Collega l'account Uphold";
@@ -514,14 +565,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Massimo";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Numero massimo di caratteri %ld";
-
 /* adjective, security level */
 "Medium" = "Medio";
-
-/* Validation rule */
-"Minimum 3 characters" = "Minimo 3 caratteri";
 
 /* No comment provided by engineer. */
 "More" = "Di Più";
@@ -530,10 +575,19 @@
 "More Control" = "Più Controllo";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
+"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+
+/* No comment provided by engineer. */
 "Moved from" = "Trasferito da";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Spostato in Indirizzo";
+
+/* Validation rule */
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "I miei contatti";
@@ -547,6 +601,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Commissione di rete";
 
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "Nuovo";
 
@@ -557,7 +614,7 @@
 "NFC device didn't transmit a valid Dash address" = "Il dispositivo NFC non ha trasmesso un indirizzo Dash valido";
 
 /* No comment provided by engineer. */
-"No address copied" = "Nessun indirizzo copiato";
+"No" = "No";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Nodo";
@@ -573,6 +630,9 @@
 
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Non un indirizzo Dash valido";
+
+/* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Non ancora usato";
@@ -594,6 +654,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Chiavi proprietario";
+
+/* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
 
 /* No comment provided by engineer. */
 "Pay" = "Paga";
@@ -623,10 +686,19 @@
 "Payments" = "Pagamenti";
 
 /* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+
+/* No comment provided by engineer. */
 "Pending" = "In attesa";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Il PIN è sempre richiesto per effettuare un pagamento";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Inserisci il PIN per aggiornare il portafoglio";
@@ -669,6 +741,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Chiave pubblica";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Rapido Ricevi";
@@ -758,7 +833,10 @@
 "Rewards" = "Ricompense";
 
 /* No comment provided by engineer. */
-"Scan" = "Scansiona";
+"Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scansione Chiave Privata";
@@ -768,9 +846,6 @@
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Scansiona questo per Pagare";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Scansiona per pagare";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Scansiona per inviare";
@@ -818,6 +893,12 @@
 "See on Uphold" = "Vedi su Uphold";
 
 /* No comment provided by engineer. */
+"Select" = "Select";
+
+/* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Invia";
 
 /* No comment provided by engineer. */
@@ -832,17 +913,23 @@
 /* No comment provided by engineer. */
 "Send to" = "Manda a";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Invia all'indirizzo";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Invia all'indirizzo copiato";
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Invia con NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Invio in corso";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
 
 /* No comment provided by engineer. */
 "Sending to" = "Invio a";
@@ -931,14 +1018,17 @@
 /* No comment provided by engineer. */
 "Syncing" = "Sincronizzazione";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Tocca";
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tocca per nascondere il saldo";
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Tocca per visualizzare il saldo";
+
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Non ci sono nuove notifiche";
@@ -1001,10 +1091,34 @@
 "Turn device passcode on" = "Attiva codice d'accesso dispositivo";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "Impossibile connetersi";
 
 /* No comment provided by engineer. */
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+
+/* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Impossibile ottenere un nuovo codice QR";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
+
+/* No comment provided by engineer. */
+"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Documento non supportato o corrotto";
@@ -1016,7 +1130,16 @@
 "Updated: %@" = "Aggiornato %@";
 
 /* No comment provided by engineer. */
+"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+
+/* No comment provided by engineer. */
+"Upgrade" = "Upgrade";
+
+/* No comment provided by engineer. */
 "Upgrade Fee" = "Commissione di aggiornamento";
+
+/* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Aggiornamento a DashPay";
@@ -1025,16 +1148,25 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
+"Upload Error" = "Upload Error";
+
+/* No comment provided by engineer. */
+"Uploading your picture to the network" = "Uploading your picture to the network";
+
+/* No comment provided by engineer. */
 "Used" = "Usato";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Utilizzato all'indirizzo IP";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "Username già in uso";
 
 /* No comment provided by engineer. */
-"Validating username done" = "Convalida del nome utente completata";
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "Convalida del nome utente non riuscita";
@@ -1103,6 +1235,9 @@
 "Why I should not take a screenshot?" = "Perché non devo scattare screenshot?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Pulisci";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1245,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "con blockchain Dash";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Hai accettato la richiesta di contatto di %@";
@@ -1121,10 +1262,16 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Stai per cancellare il portafoglio da questo dispositivo. Tutti i fondi associati ad esso potranno essere recuperati solo se si dispone della frase di recupero.";
 
 /* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+
+/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Puoi effettuare l'autenticazione con Face ID per i pagamenti di seguito";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Puoi effettuare l'autenticazione con Touch ID per i pagamenti di seguito";
+
+/* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Hai scelto \"%@\" come nome utente. Il tuo nome utente non può essere modificato una volta registrato.";
@@ -1148,6 +1295,9 @@
 "Your DashPay Username is ready to use" = "Il tuo nome utente DashPay è pronto per l'uso";
 
 /* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "La tua transazione è stata inviata e l'importo dovrebbe essere visualizzato nel tuo portafoglio entro pochi minuti.";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1311,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Il tuo wallet ora è protetto. Puoi utilizzare la frase di recupero in qualsiasi momento per ripristinare il tuo account su un altro dispositivo.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

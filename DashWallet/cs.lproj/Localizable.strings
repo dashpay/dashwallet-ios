@@ -13,6 +13,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ nemá přístup k Touch ID";
 
+/* 10/20 Characters */
+"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Platba se zpracovává";
 
@@ -56,10 +59,19 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Přístupový kód zařízení je třeba k zabezpečení vaší peněženky. Přejděte do nastavení a pokračujte zapnutím přístupového kódu.";
 
 /* No comment provided by engineer. */
+"A person in your contacts" = "A person in your contacts";
+
+/* No comment provided by engineer. */
 "About" = "O aplikaci";
 
 /* No comment provided by engineer. */
+"About me" = "About me";
+
+/* No comment provided by engineer. */
 "Accept" = "Přijmout";
+
+/* No comment provided by engineer. */
+"Accept Contact Request" = "Accept Contact Request";
 
 /* No comment provided by engineer. */
 "Activity" = "Aktivita";
@@ -78,6 +90,9 @@
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Pokročilé zabzpečení";
+
+/* No comment provided by engineer. */
+"Agree" = "Agree";
 
 /* No comment provided by engineer. */
 "All" = "Vše";
@@ -138,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Skrytý zůstatek";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d z %2$d";
@@ -257,6 +275,12 @@
 "Create a New Wallet" = "Vytvořit novou peněženku";
 
 /* No comment provided by engineer. */
+"Create a username, add your friends." = "Create a username, add your friends.";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Aktuální uživatel: %@";
 
 /* No comment provided by engineer. */
@@ -281,6 +305,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ZABEZPEČENÍ ZAŘÍZENÍ KOMPROMITOVÁNO\nJakákoliv ‚jailbreak‘ aplikace může přistupovat k datům jiné aplikace (a ukrást váš Dash). Vymažte tuto peněženku a prověďte obnovu na jiném zařízení.";
 
 /* No comment provided by engineer. */
+"Display Name" = "Display Name";
+
+/* No comment provided by engineer. */
 "Do not take a screenshot" = "Nesnímejte obrazovku";
 
 /* No comment provided by engineer. */
@@ -291,6 +318,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Dřívější";
+
+/* No comment provided by engineer. */
+"Edit Profile" = "Edit Profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "např.: johndoe";
@@ -320,7 +350,13 @@
 "Enter your 2FA code below" = "Vložte váš 2FA kód níže";
 
 /* No comment provided by engineer. */
+"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* No comment provided by engineer. */
 "Error" = "Chyba";
+
+/* No comment provided by engineer. */
+"Error updating your profile" = "Error updating your profile";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Chyba při aktualizaci";
@@ -342,6 +378,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Poplatek bude odečten z požadované částky.";
+
+/* No comment provided by engineer. */
+"Fetching Image" = "Fetching Image";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtrovat transakce";
@@ -410,6 +449,15 @@
 "Ignore" = "Ignorovat";
 
 /* No comment provided by engineer. */
+"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+
+/* No comment provided by engineer. */
+"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+
+/* No comment provided by engineer. */
+"Images Privacy Policy" = "Images Privacy Policy";
+
+/* No comment provided by engineer. */
 "Immediately" = "Okamžitě";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -446,7 +494,10 @@
 "It's Important" = "Je důležité";
 
 /* No comment provided by engineer. */
-"Join Evolution" = "Připojte se k Evolution";
+"Join" = "Join";
+
+/* No comment provided by engineer. */
+"Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Klíčový pár %ld";
@@ -455,7 +506,7 @@
 "Let me know when it’s done" = "Dejte mi vědět, až to bude hotové";
 
 /* Validation rule */
-"Letters and numbers only" = "Pouze písmena a číslice";
+"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Připojit účet Uphold";
@@ -514,14 +565,8 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
-/* Validation rule: Maximum 24 characters */
-"Maximum %ld characters" = "Maximálně %ld znaků";
-
 /* adjective, security level */
 "Medium" = "Střední";
-
-/* Validation rule */
-"Minimum 3 characters" = "Minimálně 3 znaky";
 
 /* No comment provided by engineer. */
 "More" = "Více";
@@ -530,10 +575,19 @@
 "More Control" = "Lepší správa";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
+"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+
+/* No comment provided by engineer. */
 "Moved from" = "Přesunuto z";
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Přesunuto na adresu";
+
+/* Validation rule */
+"Must start and end with a letter or number" = "Must start and end with a letter or number";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Moje kontakty";
@@ -547,6 +601,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Poplatek síti";
 
+/* No comment provided by engineer. */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "Nový";
 
@@ -557,7 +614,7 @@
 "NFC device didn't transmit a valid Dash address" = "NFC zařízení neodeslalo platnou Dash adresu";
 
 /* No comment provided by engineer. */
-"No address copied" = "Žádná zkopírovaná adresa";
+"No" = "No";
 
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
@@ -573,6 +630,9 @@
 
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Není platnou Dash adresou";
+
+/* No comment provided by engineer. */
+"Not Available For Devnet" = "Not Available For Devnet";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Ještě nebyla použita";
@@ -594,6 +654,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Klíče majitele";
+
+/* No comment provided by engineer. */
+"Paste your image URL" = "Paste your image URL";
 
 /* No comment provided by engineer. */
 "Pay" = "Platit";
@@ -623,10 +686,19 @@
 "Payments" = "Platby";
 
 /* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+
+/* No comment provided by engineer. */
 "Pending" = "Čeká na vyřízení";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Pro platby je vždy vyžadován PIN";
+
+/* No comment provided by engineer. */
+"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Please enter a valid image URL.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pro aktualizaci peněženky zadejte PIN kód";
@@ -669,6 +741,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Veřejný klíč";
+
+/* No comment provided by engineer. */
+"Public URL" = "Public URL";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Přijmout";
@@ -758,7 +833,10 @@
 "Rewards" = "Odměny";
 
 /* No comment provided by engineer. */
-"Scan" = "Skenovat";
+"Save" = "Save";
+
+/* No comment provided by engineer. */
+"Save Changes" = "Save Changes";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Skenovat privátní klíč";
@@ -768,9 +846,6 @@
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Skenovat pro zaplacení";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Platit skenováním";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Poslat skenováním";
@@ -818,6 +893,12 @@
 "See on Uphold" = "Prohlédnout na Uphold";
 
 /* No comment provided by engineer. */
+"Select" = "Select";
+
+/* No comment provided by engineer. */
+"Select from Gallery" = "Select from Gallery";
+
+/* No comment provided by engineer. */
 "Send" = "Odeslat";
 
 /* No comment provided by engineer. */
@@ -832,17 +913,23 @@
 /* No comment provided by engineer. */
 "Send to" = "Odeslat prostřednictvím";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Odeslat na adresu";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Odeslat na zkopírovanou adresu";
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Odeslat prostřednictvím NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Odesílání";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
 
 /* No comment provided by engineer. */
 "Sending to" = "Odesílání";
@@ -931,14 +1018,17 @@
 /* No comment provided by engineer. */
 "Syncing" = "Synchronizace";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Začít";
+/* No comment provided by engineer. */
+"Take a Photo from Camera" = "Take a Photo from Camera";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Klepněte pro skrytí zůstatku";
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Klepněte pro zobrazení zůstatku";
+
+/* Don't translate 'Imgur' */
+"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Žádná nová oznámení";
@@ -1001,10 +1091,34 @@
 "Turn device passcode on" = "Zapněte bezpečnostní kód zařízení";
 
 /* No comment provided by engineer. */
+"Unable to accept contact request" = "Unable to accept contact request";
+
+/* No comment provided by engineer. */
 "Unable to connect" = "Nelze se připojit";
 
 /* No comment provided by engineer. */
+"Unable to fetch contact details" = "Unable to fetch contact details";
+
+/* No comment provided by engineer. */
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+
+/* No comment provided by engineer. */
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Nelze získat nový QR kód";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
+/* No comment provided by engineer. */
+"Unable to search for a user" = "Unable to search for a user";
+
+/* No comment provided by engineer. */
+"Unable to send contact request" = "Unable to send contact request";
+
+/* No comment provided by engineer. */
+"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nepodporovaný nebo poškozený dokument";
@@ -1016,7 +1130,16 @@
 "Updated: %@" = "Aktualizováno: %@";
 
 /* No comment provided by engineer. */
+"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+
+/* No comment provided by engineer. */
+"Upgrade" = "Upgrade";
+
+/* No comment provided by engineer. */
 "Upgrade Fee" = "Upgrade poplatek";
+
+/* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Upgraduji na DashPay";
@@ -1025,16 +1148,25 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
+"Upload Error" = "Upload Error";
+
+/* No comment provided by engineer. */
+"Uploading your picture to the network" = "Uploading your picture to the network";
+
+/* No comment provided by engineer. */
 "Used" = "Použito";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Použito na IP adrese";
 
 /* No comment provided by engineer. */
+"Username available" = "Username available";
+
+/* No comment provided by engineer. */
 "Username taken" = "Uživatelské jméno už není dostupné";
 
 /* No comment provided by engineer. */
-"Validating username done" = "Ověření uživatelské jméno hotovo";
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* No comment provided by engineer. */
 "Validating username failed" = "Ověření uživatelské jméno selhalo";
@@ -1103,6 +1235,9 @@
 "Why I should not take a screenshot?" = "Proč bych neměl pořizovat snímek obrazovky?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Smazat";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1245,12 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "s Dash blockchainem";
+
+/* No comment provided by engineer. */
+"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Přijal si žádost o přidání mezi kontakty od %@";
@@ -1121,10 +1262,16 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Chystáte se smazat tuto peněženku ze zařízení. Prostředky spojené s touto peněženkou budou moci být opětovně získány pouze pokud máte frázi pro obnovení.";
 
 /* No comment provided by engineer. */
+"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+
+/* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Pro placení se níže můžete ověřit přes Face ID";
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Pro placení se níže můžete ověřit přes Touch ID";
+
+/* No comment provided by engineer. */
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Jako uživatelské jméno jste si vybrali „%@“. Vaše uživatelské jméno nelze po registraci změnit.";
@@ -1148,6 +1295,9 @@
 "Your DashPay Username is ready to use" = "Tvoje uživatelské jméno DashPay je připraveo k použití";
 
 /* No comment provided by engineer. */
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transakce byla odeslána a částka by se měla objevit v pěněžence během pár minut.";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1311,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Peněženka je teď zabezpečena. Frázi pro obnovení můžete kdykoliv použít pro obnovení na jiném zařízení.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";
