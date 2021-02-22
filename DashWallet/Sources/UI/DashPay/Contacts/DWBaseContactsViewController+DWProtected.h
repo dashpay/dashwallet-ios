@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) DWBaseContactsModel *model;
 @property (readonly, nonatomic, strong) DWSearchStateViewController *stateController;
+@property (readonly, nonatomic, strong) __kindof UIViewController *localNoContactsController;
 @property (readonly, nonatomic, strong) DWBaseContactsContentViewController *contentController;
 
 - (void)addContactButtonAction;

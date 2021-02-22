@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.view.model = [[DWMainMenuModel alloc] init];
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:(self.userProfileModel.blockchainIdentity != nil)];
     self.view.userModel = self.userProfileModel;
     self.view.dashPayReady = self.dashPayReady;
 }
@@ -92,6 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:(self.userProfileModel.blockchainIdentity != nil)];
     [self.view updateUserHeader];
 }
 
@@ -156,6 +157,9 @@ NS_ASSUME_NONNULL_BEGIN
 
             SFSafariViewController *safariViewController = [SFSafariViewController dw_controllerWithURL:url];
             [self presentViewController:safariViewController animated:YES completion:nil];
+            break;
+        }
+        case DWMainMenuItemType_Invite: {
             break;
         }
     }

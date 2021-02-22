@@ -25,6 +25,8 @@
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
+#import "DWNoContactsViewController.h"
+#import "DWSendInviteFlowController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,6 +41,7 @@ NS_ASSUME_NONNULL_END
 
 @synthesize model = _model;
 @synthesize stateController = _stateController;
+@synthesize localNoContactsController = _localNoContactsController;
 @synthesize contentController = _contentController;
 
 - (void)viewDidLoad {
@@ -87,6 +90,21 @@ NS_ASSUME_NONNULL_END
     return _stateController;
 }
 
+- (DWNoContactsViewController *)localNoContactsController {
+    if (_localNoContactsController == nil) {
+        DWNoContactsViewController *controller = [[DWNoContactsViewController alloc] init];
+        [controller loadViewIfNeeded];
+        [controller.addButton addTarget:self
+                                 action:@selector(addContactButtonAction)
+                       forControlEvents:UIControlEventTouchUpInside];
+        [controller.inviteButton addTarget:self
+                                    action:@selector(inviteButtonAction)
+                          forControlEvents:UIControlEventTouchUpInside];
+        _localNoContactsController = controller;
+    }
+    return _localNoContactsController;
+}
+
 - (DWBaseContactsContentViewController *)contentController {
     if (_contentController == nil) {
         DWContactsContentViewController *controller =
@@ -99,6 +117,11 @@ NS_ASSUME_NONNULL_END
         _contentController = controller;
     }
     return _contentController;
+}
+
+- (void)inviteButtonAction {
+    DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - UISearchBarDelegate

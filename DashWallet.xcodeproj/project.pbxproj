@@ -484,6 +484,9 @@
 		2AEC5CC2249755BB00F4A689 /* DWDashPayContactsUpdater.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEC5CC1249755BB00F4A689 /* DWDashPayContactsUpdater.m */; };
 		2AECB4E025E2507D005B1041 /* DPAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB4DF25E2507D005B1041 /* DPAlertViewController.m */; };
 		2AECB4E925E25094005B1041 /* DPAlertChildContentsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB4E825E25094005B1041 /* DPAlertChildContentsView.m */; };
+		2AECB51325E39207005B1041 /* DWNoContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB51225E39207005B1041 /* DWNoContactsViewController.m */; };
+		2AECB52325E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */; };
+		2AECB53825E3EDB4005B1041 /* DWSendInviteFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
@@ -1613,6 +1616,12 @@
 		2AECB4DF25E2507D005B1041 /* DPAlertViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPAlertViewController.m; sourceTree = "<group>"; };
 		2AECB4E725E25094005B1041 /* DPAlertChildContentsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DPAlertChildContentsView.h; sourceTree = "<group>"; };
 		2AECB4E825E25094005B1041 /* DPAlertChildContentsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPAlertChildContentsView.m; sourceTree = "<group>"; };
+		2AECB51125E39207005B1041 /* DWNoContactsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNoContactsViewController.h; sourceTree = "<group>"; };
+		2AECB51225E39207005B1041 /* DWNoContactsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNoContactsViewController.m; sourceTree = "<group>"; };
+		2AECB52125E3DEE9005B1041 /* DWSendInviteFirstStepViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSendInviteFirstStepViewController.h; sourceTree = "<group>"; };
+		2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFirstStepViewController.m; sourceTree = "<group>"; };
+		2AECB53625E3EDB4005B1041 /* DWSendInviteFlowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSendInviteFlowController.h; sourceTree = "<group>"; };
+		2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFlowController.m; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
 		2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
 		2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
@@ -4136,6 +4145,7 @@
 		2AE8B63D23CDB94E0016F221 /* DashPay */ = {
 			isa = PBXGroup;
 			children = (
+				2AECB52025E3DEAB005B1041 /* Invites */,
 				2A4EB4882598D67400892E4D /* Error */,
 				2AEC5CBF2497558900F4A689 /* Global */,
 				2A7AF39A2482FA7D001D74F9 /* Items */,
@@ -4195,6 +4205,7 @@
 		2AE9549A23D0C4DC003612B3 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
+				2AECB51025E391E5005B1041 /* Placeholders */,
 				C3DAD2BD24747F2D0001624F /* Base */,
 				2AB2373524488D8E0081B62C /* GlobalSearch */,
 				2AE954A223D0C621003612B3 /* Models */,
@@ -4320,6 +4331,26 @@
 				2AECB4E825E25094005B1041 /* DPAlertChildContentsView.m */,
 			);
 			path = DPAlert;
+			sourceTree = "<group>";
+		};
+		2AECB51025E391E5005B1041 /* Placeholders */ = {
+			isa = PBXGroup;
+			children = (
+				2AECB51125E39207005B1041 /* DWNoContactsViewController.h */,
+				2AECB51225E39207005B1041 /* DWNoContactsViewController.m */,
+			);
+			path = Placeholders;
+			sourceTree = "<group>";
+		};
+		2AECB52025E3DEAB005B1041 /* Invites */ = {
+			isa = PBXGroup;
+			children = (
+				2AECB52125E3DEE9005B1041 /* DWSendInviteFirstStepViewController.h */,
+				2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */,
+				2AECB53625E3EDB4005B1041 /* DWSendInviteFlowController.h */,
+				2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */,
+			);
+			path = Invites;
 			sourceTree = "<group>";
 		};
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
@@ -5331,6 +5362,7 @@
 				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				2A1AE78E23F4668B00179A6E /* DWUsernameHeaderView.m in Sources */,
+				2AECB51325E39207005B1041 /* DWNoContactsViewController.m in Sources */,
 				2A7AF3992482E32E001D74F9 /* DWDashPayContactsActions.m in Sources */,
 				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
@@ -5356,6 +5388,7 @@
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,
 				2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */,
 				2A5F1018255C7C89001A94B1 /* DWUpdatingUserProfileView.m in Sources */,
+				2AECB52325E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
 				2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */,
 				2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */,
@@ -5437,6 +5470,7 @@
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				2AEC24BC251D382000AC86F6 /* DWEditProfileAvatarView.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
+				2AECB53825E3EDB4005B1041 /* DWSendInviteFlowController.m in Sources */,
 				2A7AF378248270A4001D74F9 /* DWDPEstablishedContactNotificationObject.m in Sources */,
 				2A0C69C623142AA4001B8C90 /* DWModalPresentationController.m in Sources */,
 				2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */,

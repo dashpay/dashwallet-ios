@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, DWMainMenuItemType) {
     DWMainMenuItemType_Settings,
     DWMainMenuItemType_Tools,
     DWMainMenuItemType_Support,
+    DWMainMenuItemType_Invite,
 };
 
 @protocol DWMainMenuItem <NSObject>

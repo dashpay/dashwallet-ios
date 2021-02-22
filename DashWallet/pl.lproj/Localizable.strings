@@ -272,6 +272,9 @@
 "Couldn't transmit payment to Dash network" = "Nie można przesłać płatności do sieci Dash";
 
 /* No comment provided by engineer. */
+"Create a new Invitation" = "Create a new Invitation";
+
+/* No comment provided by engineer. */
 "Create a New Wallet" = "Stwórz Nowy Portfel";
 
 /* No comment provided by engineer. */
@@ -485,6 +488,15 @@
 "Invalid QR Code" = "Niewłaściwy kod QR";
 
 /* No comment provided by engineer. */
+"Invite" = "Invite";
+
+/* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+
+/* No comment provided by engineer. */
+"Invite your friends & family" = "Invite your friends & family";
+
+/* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Wygląda na to, że próbujesz przywrócić swój portfel za pomocą 12-wyrazowej frazy odzyskiwania, jednak wprowadziłeś tylko 10 słów, czy chcesz automatycznie odzyskać brakujące słowa? Może to zająć około godziny. Zalecamy podłączenie urządzenia do zasilania.";
 
 /* No comment provided by engineer. */
@@ -504,6 +516,12 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Daj mi znać kiedy się skończy";
+
+/* No comment provided by engineer. */
+"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+
+/* No comment provided by engineer. */
+"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
@@ -648,6 +666,9 @@
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Klucze operatora";
+
+/* No comment provided by engineer. */
+"or" = "or";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Adres Właściciela";
@@ -1272,6 +1293,9 @@
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Wybrałeś \"%@\" jako swoją nazwę użytkownika. Jeżeli ją zarejestrujesz to nie może zostać ona później zmieniona.";

@@ -72,6 +72,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)contactsModelDidUpdate:(DWBaseContactsModel *)model {
     self.searchBar.hidden = NO;
+    [self.localNoContactsController dw_detachFromParent];
+
     id<DWContactsDataSource> dataSource = model.dataSource;
     if (dataSource.isEmpty) {
         if (dataSource.isSearching) {
@@ -84,13 +86,14 @@ NS_ASSUME_NONNULL_END
                 }
             }
             else {
+                [self dw_embedChild:self.stateController inContainer:self.contentView];
                 [self.stateController setNoResultsLocalStateWithQuery:dataSource.trimmedQuery];
                 [self.contentController dw_detachFromParent];
             }
         }
         else {
             self.searchBar.hidden = YES;
-            [self.stateController setPlaceholderLocalState];
+            [self dw_embedChild:self.localNoContactsController inContainer:self.contentView];
             [self.contentController dw_detachFromParent];
         }
     }

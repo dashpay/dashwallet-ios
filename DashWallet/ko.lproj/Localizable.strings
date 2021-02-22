@@ -272,6 +272,9 @@
 "Couldn't transmit payment to Dash network" = "지불 내용을 대시 네트워크에 전송하지 못하였습니다";
 
 /* No comment provided by engineer. */
+"Create a new Invitation" = "Create a new Invitation";
+
+/* No comment provided by engineer. */
 "Create a New Wallet" = "새로운 지갑 생성";
 
 /* No comment provided by engineer. */
@@ -485,6 +488,15 @@
 "Invalid QR Code" = "유효하지 않은 QR 코드";
 
 /* No comment provided by engineer. */
+"Invite" = "Invite";
+
+/* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+
+/* No comment provided by engineer. */
+"Invite your friends & family" = "Invite your friends & family";
+
+/* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "12 단어로 구성된 복구 문구를 이용하여 지갑을 복구하려고 시도하셨으나, 10 단어만을 입력하셨습니다. 입력되지 않은 단어를 자동으로 복구하시겠습니까? 이는 약 한 시간 정도 소요될 수 있습니다. 귀하의 디바이스 전원을 연결할 것을 권장합니다.";
 
 /* No comment provided by engineer. */
@@ -504,6 +516,12 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "완료되면 알려주세요";
+
+/* No comment provided by engineer. */
+"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+
+/* No comment provided by engineer. */
+"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
@@ -648,6 +666,9 @@
 
 /* No comment provided by engineer. */
 "Operator Keys" = "운영자 키";
+
+/* No comment provided by engineer. */
+"or" = "or";
 
 /* No comment provided by engineer. */
 "Owner Address" = "소유자 주소";
@@ -1272,6 +1293,9 @@
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
