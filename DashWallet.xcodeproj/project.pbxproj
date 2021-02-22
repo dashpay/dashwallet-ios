@@ -487,6 +487,7 @@
 		2AECB51325E39207005B1041 /* DWNoContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB51225E39207005B1041 /* DWNoContactsViewController.m */; };
 		2AECB52325E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */; };
 		2AECB53825E3EDB4005B1041 /* DWSendInviteFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */; };
+		2AECB54225E3F002005B1041 /* DPAlertViewController+DWInvite.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB54125E3F002005B1041 /* DPAlertViewController+DWInvite.m */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
@@ -1622,6 +1623,8 @@
 		2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFirstStepViewController.m; sourceTree = "<group>"; };
 		2AECB53625E3EDB4005B1041 /* DWSendInviteFlowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSendInviteFlowController.h; sourceTree = "<group>"; };
 		2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFlowController.m; sourceTree = "<group>"; };
+		2AECB54025E3F002005B1041 /* DPAlertViewController+DWInvite.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DPAlertViewController+DWInvite.h"; sourceTree = "<group>"; };
+		2AECB54125E3F002005B1041 /* DPAlertViewController+DWInvite.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DPAlertViewController+DWInvite.m"; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
 		2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
 		2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
@@ -4345,12 +4348,22 @@
 		2AECB52025E3DEAB005B1041 /* Invites */ = {
 			isa = PBXGroup;
 			children = (
+				2AECB53F25E3EFD0005B1041 /* Additions */,
 				2AECB52125E3DEE9005B1041 /* DWSendInviteFirstStepViewController.h */,
 				2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */,
 				2AECB53625E3EDB4005B1041 /* DWSendInviteFlowController.h */,
 				2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */,
 			);
 			path = Invites;
+			sourceTree = "<group>";
+		};
+		2AECB53F25E3EFD0005B1041 /* Additions */ = {
+			isa = PBXGroup;
+			children = (
+				2AECB54025E3F002005B1041 /* DPAlertViewController+DWInvite.h */,
+				2AECB54125E3F002005B1041 /* DPAlertViewController+DWInvite.m */,
+			);
+			path = Additions;
 			sourceTree = "<group>";
 		};
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
@@ -5467,6 +5480,7 @@
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
 				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
+				2AECB54225E3F002005B1041 /* DPAlertViewController+DWInvite.m in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				2AEC24BC251D382000AC86F6 /* DWEditProfileAvatarView.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,

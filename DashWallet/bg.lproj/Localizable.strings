@@ -472,6 +472,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Недостатъчно средства";
 
+/* No comment provided by engineer. */
+"Insufficient Wallet Balance" = "Insufficient Wallet Balance";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Вътрешен трансфер";
 
@@ -1302,6 +1305,9 @@
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Трябва да въведете своя ПИН, за да влезете в Dash Wallet";
+
+/* No comment provided by engineer. */
+"You need at least %@ Dash to create an invitation" = "You need at least %@ Dash to create an invitation";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Вие получихте Dash! Ако загубите това устройство, ще загубите средствата си. Вземете своята фраза за възстановяване, така че да можете да възстановите портфейла си на друго устройство.";

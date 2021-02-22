@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWDashPayConstants.h"
+#import "DPAlertViewController.h"
 
-#import <DashSync/DashSync.h>
+NS_ASSUME_NONNULL_BEGIN
 
-uint64_t DWDP_MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 100);   // 0.01 Dash
-uint64_t DWDP_MIN_BALANCE_TO_CREATE_INVITE = (DUFFS / 100) * 4; // 0.04 Dash
+@interface DPAlertViewController (DWInvite)
 
-NSInteger DW_MIN_USERNAME_LENGTH = 3;
-NSInteger DW_MAX_USERNAME_LENGTH = 24;
++ (DPAlertViewController *)insufficientFundsForInvitationAlert;
+
+@end
+
+NS_ASSUME_NONNULL_END

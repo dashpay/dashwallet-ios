@@ -472,6 +472,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Guthaben nicht ausreichend";
 
+/* No comment provided by engineer. */
+"Insufficient Wallet Balance" = "Insufficient Wallet Balance";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Interne Transaktion";
 
@@ -1302,6 +1305,9 @@
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "PIN eingeben zum öffnen der Dash Wallet";
+
+/* No comment provided by engineer. */
+"You need at least %@ Dash to create an invitation" = "You need at least %@ Dash to create an invitation";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Du hast Dash erhalten! Wenn Du dieses Gerät verlierst, verlierst Du dein Geld. Sicher Deine Wiederherstellungsphrase, damit Du Deine Wallet auf einem anderen Gerät wiederherstellen kannst.";

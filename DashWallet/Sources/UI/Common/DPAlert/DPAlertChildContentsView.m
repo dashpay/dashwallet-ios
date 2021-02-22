@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_END
         descLabel.textColor = [UIColor dw_secondaryTextColor];
         descLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
         descLabel.adjustsFontForContentSizeCategory = YES;
+        [self addSubview:descLabel];
         _descriptionLabel = descLabel;
 
         [titleLabel setContentCompressionResistancePriority:UILayoutPriorityRequired

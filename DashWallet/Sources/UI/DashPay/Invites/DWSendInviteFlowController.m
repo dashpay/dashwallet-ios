@@ -17,6 +17,7 @@
 
 #import "DWSendInviteFlowController.h"
 
+#import "DPAlertViewController+DWInvite.h"
 #import "DWNavigationController.h"
 #import "DWSendInviteFirstStepViewController.h"
 #import "DWUIKit.h"
@@ -52,6 +53,8 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWSendInviteFirstStepViewControllerDelegate
 
 - (void)sendInviteFirstStepViewControllerNewInviteAction:(DWSendInviteFirstStepViewController *)controller {
+    DPAlertViewController *alert = [DPAlertViewController insufficientFundsForInvitationAlert];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

@@ -43,7 +43,7 @@
         _title_ = title;
         _desc = description;
 
-        _modalTransition = [[DWModalPopupTransition alloc] initWithInteractiveTransitionAllowed:NO];
+        _modalTransition = [[DWModalPopupTransition alloc] initWithInteractiveTransitionAllowed:YES];
 
         self.transitioningDelegate = self.modalTransition;
         self.modalPresentationStyle = UIModalPresentationCustom;
@@ -88,8 +88,8 @@
                                             constant:32.0],
         [childView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
                                                 constant:16.0],
-        [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
-                                                 constant:16.0],
+        [contentView.trailingAnchor constraintEqualToAnchor:childView.trailingAnchor
+                                                   constant:16.0],
 
         [okButton.topAnchor constraintEqualToAnchor:childView.bottomAnchor
                                            constant:32.0],
@@ -97,6 +97,8 @@
         [contentView.bottomAnchor constraintEqualToAnchor:okButton.bottomAnchor
                                                  constant:20.0],
         [okButton.heightAnchor constraintGreaterThanOrEqualToConstant:40.0],
+        [okButton.widthAnchor constraintEqualToAnchor:childView.widthAnchor
+                                           multiplier:0.285],
     ]];
 }
 
