@@ -19,6 +19,7 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DWSendInviteFlowController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "DWUserSearchViewController.h"
@@ -124,6 +125,10 @@ NS_ASSUME_NONNULL_END
     [self addContactButtonAction];
 }
 
+- (void)searchStateViewController:(DWSearchStateViewController *)controller inviteButtonAction:(UIButton *)sender {
+    [self inviteButtonAction];
+}
+
 #pragma mark - DWBaseContactsContentViewController
 
 - (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
@@ -179,7 +184,13 @@ NS_ASSUME_NONNULL_END
     DWUserSearchViewController *controller =
         [[DWUserSearchViewController alloc] initWithPayModel:self.payModel
                                                 dataProvider:self.dataProvider];
+    controller.stateController.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)inviteButtonAction {
+    DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 @end

@@ -20,7 +20,6 @@
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
 #import "DWDashPayConstants.h"
-#import "DWSearchStateViewController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "DWUserSearchModel.h"

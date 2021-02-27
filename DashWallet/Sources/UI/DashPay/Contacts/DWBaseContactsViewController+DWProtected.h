@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DWBaseContactsContentViewController *contentController;
 
 - (void)addContactButtonAction;
+- (void)inviteButtonAction;
 
 @end
 

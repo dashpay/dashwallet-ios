@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWSearchStateViewControllerDelegate <NSObject>
 
 - (void)searchStateViewController:(DWSearchStateViewController *)controller buttonAction:(UIButton *)sender;
+- (void)searchStateViewController:(DWSearchStateViewController *)controller inviteButtonAction:(UIButton *)sender;
 
 @end
 

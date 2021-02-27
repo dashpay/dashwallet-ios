@@ -26,7 +26,6 @@
 #import "DWDPPendingRequestItem.h"
 #import "DWDPRespondedRequestItem.h"
 #import "DWNoContactsViewController.h"
-#import "DWSendInviteFlowController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -117,11 +116,6 @@ NS_ASSUME_NONNULL_END
         _contentController = controller;
     }
     return _contentController;
-}
-
-- (void)inviteButtonAction {
-    DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
-    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - UISearchBarDelegate

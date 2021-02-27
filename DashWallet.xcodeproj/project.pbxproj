@@ -365,6 +365,7 @@
 		2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */; };
 		2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
 		2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
+		2AB510BA25EA61DE00392683 /* DWInvitationSuggestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB510B925EA61DE00392683 /* DWInvitationSuggestionView.m */; };
 		2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DD123546746007BE825 /* DWTxDetailListView.m */; };
 		2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DFB2355BF59007BE825 /* DWTxDetailHeaderView.m */; };
 		2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AB66DFD2355BF67007BE825 /* DWTxDetailHeaderView.xib */; };
@@ -1381,6 +1382,8 @@
 		2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityModelStub.m; sourceTree = "<group>"; };
 		2AB3417D23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseAdvancedSecurityModel.h; sourceTree = "<group>"; };
 		2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseAdvancedSecurityModel.m; sourceTree = "<group>"; };
+		2AB510B825EA61DE00392683 /* DWInvitationSuggestionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationSuggestionView.h; sourceTree = "<group>"; };
+		2AB510B925EA61DE00392683 /* DWInvitationSuggestionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSuggestionView.m; sourceTree = "<group>"; };
 		2AB66DD023546746007BE825 /* DWTxDetailListView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailListView.h; sourceTree = "<group>"; };
 		2AB66DD123546746007BE825 /* DWTxDetailListView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailListView.m; sourceTree = "<group>"; };
 		2AB66DFA2355BF59007BE825 /* DWTxDetailHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailHeaderView.h; sourceTree = "<group>"; };
@@ -4341,6 +4344,8 @@
 			children = (
 				2AECB51125E39207005B1041 /* DWNoContactsViewController.h */,
 				2AECB51225E39207005B1041 /* DWNoContactsViewController.m */,
+				2AB510B825EA61DE00392683 /* DWInvitationSuggestionView.h */,
+				2AB510B925EA61DE00392683 /* DWInvitationSuggestionView.m */,
 			);
 			path = Placeholders;
 			sourceTree = "<group>";
@@ -5458,6 +5463,7 @@
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
+				2AB510BA25EA61DE00392683 /* DWInvitationSuggestionView.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
 				2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */,

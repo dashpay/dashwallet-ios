@@ -18,11 +18,14 @@
 #import "DWSearchViewController.h"
 
 #import "DWPayModelProtocol.h"
+#import "DWSearchStateViewController.h"
 #import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchViewController : DWSearchViewController
+
+@property (readonly, nonatomic, strong) DWSearchStateViewController *stateController;
 
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;
