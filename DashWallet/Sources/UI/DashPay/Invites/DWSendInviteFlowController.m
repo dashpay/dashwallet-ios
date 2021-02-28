@@ -18,13 +18,16 @@
 #import "DWSendInviteFlowController.h"
 
 #import "DPAlertViewController+DWInvite.h"
+#import "DWConfirmInvitationViewController.h"
 #import "DWNavigationController.h"
 #import "DWSendInviteFirstStepViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSendInviteFlowController () <DWSendInviteFirstStepViewControllerDelegate>
+@interface DWSendInviteFlowController () <
+    DWSendInviteFirstStepViewControllerDelegate,
+    DWConfirmInvitationViewControllerDelegate>
 
 @end
 
@@ -53,8 +56,16 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWSendInviteFirstStepViewControllerDelegate
 
 - (void)sendInviteFirstStepViewControllerNewInviteAction:(DWSendInviteFirstStepViewController *)controller {
-    DPAlertViewController *alert = [DPAlertViewController insufficientFundsForInvitationAlert];
-    [self presentViewController:alert animated:YES completion:nil];
+    DWConfirmInvitationViewController *confirmationController = [[DWConfirmInvitationViewController alloc] init];
+    confirmationController.delegate = self;
+    [self presentViewController:confirmationController animated:YES completion:nil];
+    // DPAlertViewController *alert = [DPAlertViewController insufficientFundsForInvitationAlert];
+    // [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - DWConfirmInvitationViewControllerDelegate
+
+- (void)confirmInvitationViewControllerDidConfirm:(DWConfirmInvitationViewController *)controller {
 }
 
 @end

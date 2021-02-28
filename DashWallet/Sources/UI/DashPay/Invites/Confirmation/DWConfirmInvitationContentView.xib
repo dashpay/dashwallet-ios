@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWConfirmInvitationContentView">
+            <connections>
+                <outlet property="confirmationCheckbox" destination="o9a-u0-Z1d" id="PS4-Oh-KJh"/>
+                <outlet property="contentView" destination="iN0-l3-epB" id="Sf1-7e-x04"/>
+                <outlet property="descriptionLabel" destination="huB-uo-ipf" id="EQc-hg-wHj"/>
+                <outlet property="mainAmountLabel" destination="yXi-IY-YD4" id="qIA-hy-j3k"/>
+                <outlet property="supplementaryAmountLabel" destination="USu-8i-GDk" id="40G-yA-bPf"/>
+                <outlet property="titleLabel" destination="VeO-f4-xB3" id="bFy-hC-Wmb"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="497" height="338"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="260" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VeO-f4-xB3">
+                    <rect key="frame" x="8" y="32" width="481" height="16"/>
+                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                    <color key="textColor" name="SecondaryTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="4zd-Lg-hJD">
+                    <rect key="frame" x="8" y="52" width="481" height="144"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="mtp-WY-oNJ">
+                            <rect key="frame" x="0.0" y="39.5" width="481" height="65"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="760" text="Main Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="yXi-IY-YD4" userLabel="Main Amount">
+                                    <rect key="frame" x="166" y="0.0" width="149" height="44"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="44" id="LbE-lg-6WF"/>
+                                    </constraints>
+                                    <fontDescription key="fontDescription" type="system" pointSize="26"/>
+                                    <nil key="highlightedColor"/>
+                                    <attributedString key="userComments">
+                                        <fragment content="#bc-ignore!"/>
+                                    </attributedString>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" alpha="0.43000000715255737" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="260" text="Supplementary Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="USu-8i-GDk" userLabel="Supplementary Amount">
+                                    <rect key="frame" x="164.5" y="48" width="152.5" height="17"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                    <nil key="highlightedColor"/>
+                                    <attributedString key="userComments">
+                                        <fragment content="#bc-ignore!"/>
+                                    </attributedString>
+                                </label>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                </stackView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="259" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="huB-uo-ipf">
+                    <rect key="frame" x="8" y="220" width="481" height="16"/>
+                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                    <color key="textColor" name="SecondaryTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view contentMode="scaleToFill" verticalHuggingPriority="265" placeholderIntrinsicWidth="300" placeholderIntrinsicHeight="44" translatesAutoresizingMaskIntoConstraints="NO" id="o9a-u0-Z1d" customClass="DWCheckbox">
+                    <rect key="frame" x="98.5" y="268" width="300" height="44"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                </view>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <color key="backgroundColor" name="BackgroundColor"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="4zd-Lg-hJD" secondAttribute="trailing" constant="8" id="5iU-rm-fFo"/>
+                <constraint firstItem="o9a-u0-Z1d" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="AVW-9L-1La"/>
+                <constraint firstItem="huB-uo-ipf" firstAttribute="top" secondItem="4zd-Lg-hJD" secondAttribute="bottom" constant="24" id="GWP-tN-cuW"/>
+                <constraint firstItem="VeO-f4-xB3" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="32" id="L7J-HR-m7w"/>
+                <constraint firstItem="huB-uo-ipf" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="Rxj-eQ-YMu"/>
+                <constraint firstItem="4zd-Lg-hJD" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="SSi-35-LAe"/>
+                <constraint firstItem="4zd-Lg-hJD" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="8" id="TDJ-n8-Qal"/>
+                <constraint firstItem="VeO-f4-xB3" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="8" id="V2D-eN-Vaw"/>
+                <constraint firstItem="o9a-u0-Z1d" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" constant="8" id="Z7d-eb-7iB"/>
+                <constraint firstItem="o9a-u0-Z1d" firstAttribute="top" secondItem="huB-uo-ipf" secondAttribute="bottom" constant="32" id="c9H-8s-zbO"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="o9a-u0-Z1d" secondAttribute="trailing" constant="8" id="qDc-Wu-O7u"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="VeO-f4-xB3" secondAttribute="trailing" constant="8" id="qy0-z9-6H3"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="huB-uo-ipf" secondAttribute="trailing" constant="8" id="wnc-TL-xiQ"/>
+                <constraint firstItem="o9a-u0-Z1d" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="xn9-c0-P6t"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-564" y="-6"/>
+        </view>
+    </objects>
+    <resources>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryTextColor">
+            <color red="0.28627450980392155" green="0.28627450980392155" blue="0.28627450980392155" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

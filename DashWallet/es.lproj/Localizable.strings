@@ -319,6 +319,9 @@
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Par conectado: %@";
 
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Antes";
 
@@ -489,6 +492,9 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Codigo QR invalido";
+
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invite" = "Invite";
