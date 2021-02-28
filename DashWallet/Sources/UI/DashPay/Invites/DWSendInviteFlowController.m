@@ -19,15 +19,18 @@
 
 #import "DPAlertViewController+DWInvite.h"
 #import "DWConfirmInvitationViewController.h"
+#import "DWFullScreenModalControllerViewController.h"
 #import "DWNavigationController.h"
 #import "DWSendInviteFirstStepViewController.h"
+#import "DWSuccessInvitationViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSendInviteFlowController () <
     DWSendInviteFirstStepViewControllerDelegate,
-    DWConfirmInvitationViewControllerDelegate>
+    DWConfirmInvitationViewControllerDelegate,
+    DWFullScreenModalControllerViewControllerDelegate>
 
 @end
 
@@ -53,6 +56,16 @@ NS_ASSUME_NONNULL_END
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)showSuccessInvitation {
+    DWSuccessInvitationViewController *invitationController = [[DWSuccessInvitationViewController alloc] init];
+    DWFullScreenModalControllerViewController *modal =
+        [[DWFullScreenModalControllerViewController alloc] initWithController:invitationController];
+    modal.delegate = self;
+    modal.title = NSLocalizedString(@"Invitation", nil);
+    modal.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:modal animated:YES completion:nil];
+}
+
 #pragma mark - DWSendInviteFirstStepViewControllerDelegate
 
 - (void)sendInviteFirstStepViewControllerNewInviteAction:(DWSendInviteFirstStepViewController *)controller {
@@ -66,6 +79,22 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWConfirmInvitationViewControllerDelegate
 
 - (void)confirmInvitationViewControllerDidConfirm:(DWConfirmInvitationViewController *)controller {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self showSuccessInvitation];
+                                   }];
+}
+
+#pragma mark - DWFullScreenModalControllerViewControllerDelegate
+
+- (void)fullScreenModalControllerViewControllerDidCancel:(DWFullScreenModalControllerViewController *)controller {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self dismissViewControllerAnimated:YES
+                                                                completion:^{
+                                                                    // TOOD: show history?
+                                                                }];
+                                   }];
 }
 
 @end

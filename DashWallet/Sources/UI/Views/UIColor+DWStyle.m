@@ -213,6 +213,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_lightBlueColor {
+    UIColor *color = [UIColor colorNamed:@"LightBlueColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

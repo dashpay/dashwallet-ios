@@ -28,6 +28,9 @@
 #import "UIView+DWReuseHelper.h"
 
 #import "UIViewController+DWEmbedding.h"
+#import "UIView+DWEmbedding.h"
+
+#import "DWDeviceSpecificBottomPadding.h"
 
 // Global UI Constants
 

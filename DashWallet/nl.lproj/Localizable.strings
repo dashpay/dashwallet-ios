@@ -254,6 +254,9 @@
 "Copy" = "Kopieer";
 
 /* No comment provided by engineer. */
+"Copy Invitation Link" = "Copy Invitation Link";
+
+/* No comment provided by engineer. */
 "Copy Logs" = "Kopieer logs";
 
 /* No comment provided by engineer. */
@@ -327,6 +330,9 @@
 
 /* No comment provided by engineer. */
 "Edit Profile" = "Edit Profile";
+
+/* Invitation tag placeholder */
+"eg: Dad" = "eg: Dad";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "bv: johndoe";
@@ -494,6 +500,12 @@
 "Invalid QR Code" = "Ongeldige QR-code";
 
 /* No comment provided by engineer. */
+"Invitation" = "Invitation";
+
+/* No comment provided by engineer. */
+"Invitation Created Successfully" = "Invitation Created Successfully";
+
+/* No comment provided by engineer. */
 "Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
@@ -591,6 +603,9 @@
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
+
+/* No comment provided by engineer. */
+"Maybe later" = "Maybe later";
 
 /* adjective, security level */
 "Medium" = "Medium";
@@ -756,6 +771,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "schrijf het alsjeblieft op";
+
+/* No comment provided by engineer. */
+"Preview Invitation" = "Preview Invitation";
 
 /* No comment provided by engineer. */
 "Previously used at IP address" = "Eerder gebruikt op IP-adres";
@@ -941,6 +959,9 @@
 "Send Contact Request" = "Contactverzoek verzenden";
 
 /* No comment provided by engineer. */
+"Send Invitation" = "Send Invitation";
+
+/* No comment provided by engineer. */
 "Send to" = "Verstuur naar";
 
 /* No comment provided by engineer. */
@@ -1047,6 +1068,9 @@
 
 /* No comment provided by engineer. */
 "Syncing" = "Aan het synchroniseren";
+
+/* No comment provided by engineer. */
+"Tag for your reference" = "Tag for your reference";
 
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "Take a Photo from Camera";

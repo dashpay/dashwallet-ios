@@ -17,21 +17,27 @@
 
 #import "DWTextField.h"
 
-static CGFloat const HORIZONTAL_PADDING = 30.0;
-static CGFloat const VERTICAL_PADDING = 16.0;
-
 @implementation DWTextField
 
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        _horizontalPadding = 30;
+        _verticalPadding = 16;
+    }
+    return self;
+}
+
 - (CGRect)textRectForBounds:(CGRect)bounds {
-    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+    return CGRectInset(bounds, self.horizontalPadding, self.verticalPadding);
 }
 
 - (CGRect)editingRectForBounds:(CGRect)bounds {
-    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+    return CGRectInset(bounds, self.horizontalPadding, self.verticalPadding);
 }
 
 - (CGRect)placeholderRectForBounds:(CGRect)bounds {
-    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+    return CGRectInset(bounds, self.horizontalPadding, self.verticalPadding);
 }
 
 @end

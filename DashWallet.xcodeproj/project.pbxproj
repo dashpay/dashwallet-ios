@@ -77,6 +77,9 @@
 		2A2692B325EBD30C00835B30 /* DWConfirmInvitationContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692B125EBD30C00835B30 /* DWConfirmInvitationContentView.m */; };
 		2A2692B425EBD30C00835B30 /* DWConfirmInvitationContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2692B225EBD30C00835B30 /* DWConfirmInvitationContentView.xib */; };
 		2A2692BD25EBD36600835B30 /* DWConfirmInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692BC25EBD36600835B30 /* DWConfirmInvitationViewController.m */; };
+		2A2692CD25EBD9D500835B30 /* DWSuccessInvitationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692CC25EBD9D500835B30 /* DWSuccessInvitationView.m */; };
+		2A2692E825EBF08600835B30 /* DWSuccessInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692E725EBF08600835B30 /* DWSuccessInvitationViewController.m */; };
+		2A2692F125EBF0C100835B30 /* DWSuccessInvitationTopView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692F025EBF0C100835B30 /* DWSuccessInvitationTopView.m */; };
 		2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */; };
 		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
@@ -183,6 +186,10 @@
 		2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300482328EA8900827825 /* DWLockActionButton.m */; };
 		2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
 		2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */; };
+		2A68089725EC1CF100829FC8 /* DWScrollingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692F925EBF74900835B30 /* DWScrollingViewController.m */; };
+		2A6808A025EC2C3200829FC8 /* DWInvitationActionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A68089F25EC2C3200829FC8 /* DWInvitationActionsView.m */; };
+		2A6808A925EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6808A825EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m */; };
+		2A6808B225EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6808B125EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m */; };
 		2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */; };
 		2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A741DC123639A9700840ADF /* TodayExtension.storyboard */; };
 		2A741DC323639C7E00840ADF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -790,6 +797,14 @@
 		2A2692B225EBD30C00835B30 /* DWConfirmInvitationContentView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWConfirmInvitationContentView.xib; sourceTree = "<group>"; };
 		2A2692BB25EBD36600835B30 /* DWConfirmInvitationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWConfirmInvitationViewController.h; sourceTree = "<group>"; };
 		2A2692BC25EBD36600835B30 /* DWConfirmInvitationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWConfirmInvitationViewController.m; sourceTree = "<group>"; };
+		2A2692CB25EBD9D500835B30 /* DWSuccessInvitationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSuccessInvitationView.h; sourceTree = "<group>"; };
+		2A2692CC25EBD9D500835B30 /* DWSuccessInvitationView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSuccessInvitationView.m; sourceTree = "<group>"; };
+		2A2692E625EBF08600835B30 /* DWSuccessInvitationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSuccessInvitationViewController.h; sourceTree = "<group>"; };
+		2A2692E725EBF08600835B30 /* DWSuccessInvitationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSuccessInvitationViewController.m; sourceTree = "<group>"; };
+		2A2692EF25EBF0C100835B30 /* DWSuccessInvitationTopView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSuccessInvitationTopView.h; sourceTree = "<group>"; };
+		2A2692F025EBF0C100835B30 /* DWSuccessInvitationTopView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSuccessInvitationTopView.m; sourceTree = "<group>"; };
+		2A2692F825EBF74900835B30 /* DWScrollingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScrollingViewController.h; sourceTree = "<group>"; };
+		2A2692F925EBF74900835B30 /* DWScrollingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWScrollingViewController.m; sourceTree = "<group>"; };
 		2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceModel.h; sourceTree = "<group>"; };
 		2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceModel.m; sourceTree = "<group>"; };
 		2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsView.h; sourceTree = "<group>"; };
@@ -994,6 +1009,12 @@
 		2A6688FA24BCB3AC008E10F0 /* DWDPBasicItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPBasicItem.h; sourceTree = "<group>"; };
 		2A6688FB24BCB739008E10F0 /* DWDPTxItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTxItemView.h; sourceTree = "<group>"; };
 		2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPTxItemView.m; sourceTree = "<group>"; };
+		2A68089E25EC2C3200829FC8 /* DWInvitationActionsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationActionsView.h; sourceTree = "<group>"; };
+		2A68089F25EC2C3200829FC8 /* DWInvitationActionsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationActionsView.m; sourceTree = "<group>"; };
+		2A6808A725EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFullScreenModalControllerViewController.h; sourceTree = "<group>"; };
+		2A6808A825EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFullScreenModalControllerViewController.m; sourceTree = "<group>"; };
+		2A6808B025EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDeviceSpecificBottomPadding.h; sourceTree = "<group>"; };
+		2A6808B125EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDeviceSpecificBottomPadding.m; sourceTree = "<group>"; };
 		2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptions.h; sourceTree = "<group>"; };
 		2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptions.m; sourceTree = "<group>"; };
 		2A741DC02363993600840ADF /* DWTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTodayViewController.h; sourceTree = "<group>"; };
@@ -2159,6 +2180,29 @@
 			path = Confirmation;
 			sourceTree = "<group>";
 		};
+		2A2692CA25EBD69400835B30 /* Invitation */ = {
+			isa = PBXGroup;
+			children = (
+				2A2692DA25EBD9DB00835B30 /* Views */,
+				2A2692E625EBF08600835B30 /* DWSuccessInvitationViewController.h */,
+				2A2692E725EBF08600835B30 /* DWSuccessInvitationViewController.m */,
+			);
+			path = Invitation;
+			sourceTree = "<group>";
+		};
+		2A2692DA25EBD9DB00835B30 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A2692CB25EBD9D500835B30 /* DWSuccessInvitationView.h */,
+				2A2692CC25EBD9D500835B30 /* DWSuccessInvitationView.m */,
+				2A2692EF25EBF0C100835B30 /* DWSuccessInvitationTopView.h */,
+				2A2692F025EBF0C100835B30 /* DWSuccessInvitationTopView.m */,
+				2A68089E25EC2C3200829FC8 /* DWInvitationActionsView.h */,
+				2A68089F25EC2C3200829FC8 /* DWInvitationActionsView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		2A2CD6E522F46D1A008C7BC9 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -2307,6 +2351,8 @@
 				2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */,
 				2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */,
 				2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */,
+				2A6808B025EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.h */,
+				2A6808B125EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3274,6 +3320,10 @@
 				2A913E9A23A53B8E006A2A59 /* DWExtendedContainerViewController.h */,
 				2A913E9B23A53B8E006A2A59 /* DWExtendedContainerViewController.m */,
 				2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */,
+				2A2692F825EBF74900835B30 /* DWScrollingViewController.h */,
+				2A2692F925EBF74900835B30 /* DWScrollingViewController.m */,
+				2A6808A725EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.h */,
+				2A6808A825EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m */,
 			);
 			path = Containers;
 			sourceTree = "<group>";
@@ -4373,6 +4423,7 @@
 		2AECB52025E3DEAB005B1041 /* Invites */ = {
 			isa = PBXGroup;
 			children = (
+				2A2692CA25EBD69400835B30 /* Invitation */,
 				2A2692AF25EBD2D700835B30 /* Confirmation */,
 				2AECB53F25E3EFD0005B1041 /* Additions */,
 				2AECB52125E3DEE9005B1041 /* DWSendInviteFirstStepViewController.h */,
@@ -5364,6 +5415,7 @@
 				2AC1EE17256671C200410917 /* DWAvatarExternalLoadingView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A7AF38924829AF2001D74F9 /* UICollectionView+DWDPItemDequeue.m in Sources */,
+				2A68089725EC1CF100829FC8 /* DWScrollingViewController.m in Sources */,
 				C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */,
 				2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
@@ -5418,6 +5470,7 @@
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */,
+				2A2692F125EBF0C100835B30 /* DWSuccessInvitationTopView.m in Sources */,
 				2A7AF37224826CDF001D74F9 /* DWDPAcceptedRequestNotificationObject.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */,
@@ -5507,6 +5560,7 @@
 				2A1B7DA123239C8700BA8C6A /* DWTxDetailModel.m in Sources */,
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
+				2A6808A025EC2C3200829FC8 /* DWInvitationActionsView.m in Sources */,
 				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				2AECB54225E3F002005B1041 /* DPAlertViewController+DWInvite.m in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
@@ -5547,6 +5601,7 @@
 				2A5F1036255C8AF4001A94B1 /* DWUserProfileContainerView.m in Sources */,
 				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A913E6B23A15419006A2A59 /* DWUpholdAuthURLNotification.m in Sources */,
+				2A6808B225EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m in Sources */,
 				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
 				2A7AF35324823EC8001D74F9 /* DWDPIncomingRequestCell.m in Sources */,
 				2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */,
@@ -5581,6 +5636,7 @@
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
 				2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */,
 				2A741DC62363A06000840ADF /* DWURLParser.m in Sources */,
+				2A2692CD25EBD9D500835B30 /* DWSuccessInvitationView.m in Sources */,
 				2A7AF36F24826737001D74F9 /* DWDPContactObject.m in Sources */,
 				2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
@@ -5589,6 +5645,7 @@
 				2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
 				2ADDF98A251B2F0E00DA8926 /* DWCurrentUserProfileView.m in Sources */,
+				2A6808A925EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
@@ -5624,6 +5681,7 @@
 				2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */,
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,
 				2A0FF69E2513A305006B6801 /* DWInfoPopupViewController.m in Sources */,
+				2A2692E825EBF08600835B30 /* DWSuccessInvitationViewController.m in Sources */,
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */,
 				2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */,

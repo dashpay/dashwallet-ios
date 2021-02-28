@@ -21,6 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWTextField : UITextField
 
+/// Defaults to 30
+@property (nonatomic, assign) CGFloat horizontalPadding;
+/// Defaults to 16
+@property (nonatomic, assign) CGFloat verticalPadding;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -69,6 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_blueGradientStartColor;
 
++ (UIColor *)dw_lightBlueColor;
+
 @end
 
 NS_ASSUME_NONNULL_END
