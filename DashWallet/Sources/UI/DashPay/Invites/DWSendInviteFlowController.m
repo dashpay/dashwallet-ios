@@ -30,7 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSendInviteFlowController () <
     DWSendInviteFirstStepViewControllerDelegate,
     DWConfirmInvitationViewControllerDelegate,
-    DWFullScreenModalControllerViewControllerDelegate>
+    DWFullScreenModalControllerViewControllerDelegate,
+    DWSuccessInvitationViewControllerDelegate>
 
 @end
 
@@ -58,6 +59,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)showSuccessInvitation {
     DWSuccessInvitationViewController *invitationController = [[DWSuccessInvitationViewController alloc] init];
+    invitationController.delegate = self;
     DWFullScreenModalControllerViewController *modal =
         [[DWFullScreenModalControllerViewController alloc] initWithController:invitationController];
     modal.delegate = self;
@@ -72,8 +74,6 @@ NS_ASSUME_NONNULL_END
     DWConfirmInvitationViewController *confirmationController = [[DWConfirmInvitationViewController alloc] init];
     confirmationController.delegate = self;
     [self presentViewController:confirmationController animated:YES completion:nil];
-    // DPAlertViewController *alert = [DPAlertViewController insufficientFundsForInvitationAlert];
-    // [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - DWConfirmInvitationViewControllerDelegate
@@ -88,6 +88,18 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWFullScreenModalControllerViewControllerDelegate
 
 - (void)fullScreenModalControllerViewControllerDidCancel:(DWFullScreenModalControllerViewController *)controller {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self dismissViewControllerAnimated:YES
+                                                                completion:^{
+                                                                    // TOOD: show history?
+                                                                }];
+                                   }];
+}
+
+#pragma mark - DWSuccessInvitationViewControllerDelegate
+
+- (void)successInvitationViewControllerDidSelectLater:(DWSuccessInvitationViewController *)controller {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
                                        [self dismissViewControllerAnimated:YES

@@ -19,6 +19,7 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
+#import "DPAlertViewController+DWInvite.h"
 #import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWInvitationActionsView.h"
@@ -176,9 +177,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendButtonAction {
+    NSURL *invitationURL = [NSURL URLWithString:@"https://dash.org"];
+    UIActivityViewController *sharingController =
+        [[UIActivityViewController alloc] initWithActivityItems:@[ invitationURL ]
+                                          applicationActivities:nil];
+    [self presentViewController:sharingController animated:YES completion:nil];
 }
 
 - (void)laterButtonAction {
+    [self.delegate successInvitationViewControllerDidSelectLater:self];
 }
 
 - (void)previewButtonAction {
@@ -199,6 +206,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)invitationActionsViewCopyButtonAction:(DWInvitationActionsView *)view {
+#warning "Demo"
+    DPAlertViewController *alert = [DPAlertViewController insufficientFundsForInvitationAlert];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

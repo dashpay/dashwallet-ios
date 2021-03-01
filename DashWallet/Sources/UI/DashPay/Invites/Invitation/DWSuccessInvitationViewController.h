@@ -19,7 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWSuccessInvitationViewController;
+
+@protocol DWSuccessInvitationViewControllerDelegate <NSObject>
+
+- (void)successInvitationViewControllerDidSelectLater:(DWSuccessInvitationViewController *)controller;
+
+@end
+
 @interface DWSuccessInvitationViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWSuccessInvitationViewControllerDelegate> delegate;
 
 @end
 
