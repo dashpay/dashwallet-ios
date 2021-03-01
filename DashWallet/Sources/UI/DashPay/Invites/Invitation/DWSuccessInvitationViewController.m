@@ -22,6 +22,7 @@
 #import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWInvitationActionsView.h"
+#import "DWInvitationPreviewViewController.h"
 #import "DWScrollingViewController.h"
 #import "DWSuccessInvitationTopView.h"
 #import "DWUIKit.h"
@@ -181,6 +182,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)previewButtonAction {
+    DWInvitationPreviewViewController *previewController = [[DWInvitationPreviewViewController alloc] init];
+    [self presentViewController:previewController animated:YES completion:nil];
 }
 
 - (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height

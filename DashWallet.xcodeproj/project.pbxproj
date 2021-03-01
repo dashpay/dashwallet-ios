@@ -190,6 +190,7 @@
 		2A6808A025EC2C3200829FC8 /* DWInvitationActionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A68089F25EC2C3200829FC8 /* DWInvitationActionsView.m */; };
 		2A6808A925EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6808A825EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m */; };
 		2A6808B225EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6808B125EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m */; };
+		2A68090B25ED30C000829FC8 /* DWInvitationPreviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A68090A25ED30C000829FC8 /* DWInvitationPreviewViewController.m */; };
 		2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */; };
 		2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A741DC123639A9700840ADF /* TodayExtension.storyboard */; };
 		2A741DC323639C7E00840ADF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -1015,6 +1016,8 @@
 		2A6808A825EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFullScreenModalControllerViewController.m; sourceTree = "<group>"; };
 		2A6808B025EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDeviceSpecificBottomPadding.h; sourceTree = "<group>"; };
 		2A6808B125EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDeviceSpecificBottomPadding.m; sourceTree = "<group>"; };
+		2A68090925ED30C000829FC8 /* DWInvitationPreviewViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationPreviewViewController.h; sourceTree = "<group>"; };
+		2A68090A25ED30C000829FC8 /* DWInvitationPreviewViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationPreviewViewController.m; sourceTree = "<group>"; };
 		2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptions.h; sourceTree = "<group>"; };
 		2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptions.m; sourceTree = "<group>"; };
 		2A741DC02363993600840ADF /* DWTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTodayViewController.h; sourceTree = "<group>"; };
@@ -2689,6 +2692,15 @@
 				2A6300482328EA8900827825 /* DWLockActionButton.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		2A68091225ED30C900829FC8 /* Preview */ = {
+			isa = PBXGroup;
+			children = (
+				2A68090925ED30C000829FC8 /* DWInvitationPreviewViewController.h */,
+				2A68090A25ED30C000829FC8 /* DWInvitationPreviewViewController.m */,
+			);
+			path = Preview;
 			sourceTree = "<group>";
 		};
 		2A74EFEA2305316A00C475EB /* RecoverWallet */ = {
@@ -4423,6 +4435,7 @@
 		2AECB52025E3DEAB005B1041 /* Invites */ = {
 			isa = PBXGroup;
 			children = (
+				2A68091225ED30C900829FC8 /* Preview */,
 				2A2692CA25EBD69400835B30 /* Invitation */,
 				2A2692AF25EBD2D700835B30 /* Confirmation */,
 				2AECB53F25E3EFD0005B1041 /* Additions */,
@@ -5577,6 +5590,7 @@
 				2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */,
 				2A44AAF525C6DA0A00671AC3 /* DWImgurInfoChildView.m in Sources */,
 				2A7AF3502482374D001D74F9 /* DWDPBasicCell.m in Sources */,
+				2A68090B25ED30C000829FC8 /* DWInvitationPreviewViewController.m in Sources */,
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,

@@ -533,6 +533,9 @@
 "Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
+"Join Now" = "Join Now";
+
+/* No comment provided by engineer. */
 "Keypair %ld" = "Paire de clés %ld";
 
 /* No comment provided by engineer. */
@@ -1329,6 +1332,9 @@
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+
+/* No comment provided by engineer. */
+"You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Vous avez choisi \"%@\" comme nom d'utilisateur. Votre nom d'utilisateur ne peut pas être changé une fois enregistré.";
