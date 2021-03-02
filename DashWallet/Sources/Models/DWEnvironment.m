@@ -49,7 +49,7 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         //        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
         // TODO: DP specific (for use in DashPay only)
-        [userDefaults setInteger:DSChainType_TestNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:DSChainType_DevNet forKey:CURRENT_CHAIN_TYPE_KEY];
         // END TODO
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
@@ -231,20 +231,47 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 
 - (NSOrderedSet *)palinkaDevnetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"35.160.208.146"];
-    [serviceLocations addObject:@"52.25.119.181"];
-    [serviceLocations addObject:@"34.217.123.47"];
-    [serviceLocations addObject:@"54.187.180.191"];
-    [serviceLocations addObject:@"54.218.238.240"];
-    [serviceLocations addObject:@"54.214.223.133"];
-    [serviceLocations addObject:@"34.216.205.76"];
-    [serviceLocations addObject:@"34.217.44.188"];
-    [serviceLocations addObject:@"54.212.184.233"];
-    [serviceLocations addObject:@"34.216.221.94"];
-    [serviceLocations addObject:@"34.219.217.150"];
-    [serviceLocations addObject:@"34.222.170.91"];
-    [serviceLocations addObject:@"54.213.188.235"];
-    [serviceLocations addObject:@"44.230.162.12"];
+    [serviceLocations addObject:@"54.213.104.142"];
+    [serviceLocations addObject:@"35.166.218.241"];
+    [serviceLocations addObject:@"34.220.185.186"];
+    [serviceLocations addObject:@"52.34.170.173"];
+    [serviceLocations addObject:@"34.209.17.188"];
+    [serviceLocations addObject:@"54.202.65.107"];
+    [serviceLocations addObject:@"35.162.26.9"];
+    [serviceLocations addObject:@"34.221.120.157"];
+    [serviceLocations addObject:@"34.211.82.76"];
+    [serviceLocations addObject:@"18.236.221.244"];
+    [serviceLocations addObject:@"34.221.152.195"];
+    [serviceLocations addObject:@"34.223.236.172"];
+    [serviceLocations addObject:@"54.187.237.108"];
+    [serviceLocations addObject:@"34.211.227.165"];
+    [serviceLocations addObject:@"52.43.2.66"];
+    [serviceLocations addObject:@"54.70.41.101"];
+    [serviceLocations addObject:@"34.212.177.62"];
+    [serviceLocations addObject:@"54.189.195.70"];
+    [serviceLocations addObject:@"54.201.1.97"];
+    [serviceLocations addObject:@"34.218.48.84"];
+    [serviceLocations addObject:@"35.155.198.247"];
+    [serviceLocations addObject:@"34.217.126.174"];
+    [serviceLocations addObject:@"34.214.174.215"];
+    [serviceLocations addObject:@"34.223.1.1"];
+    [serviceLocations addObject:@"34.216.87.26"];
+    [serviceLocations addObject:@"18.236.128.42"];
+    [serviceLocations addObject:@"54.70.59.107"];
+    [serviceLocations addObject:@"34.219.104.11"];
+    [serviceLocations addObject:@"34.219.188.44"];
+    [serviceLocations addObject:@"54.218.7.240"];
+    [serviceLocations addObject:@"18.236.173.38"];
+    [serviceLocations addObject:@"54.184.16.202"];
+    [serviceLocations addObject:@"34.212.251.172"];
+    [serviceLocations addObject:@"54.218.76.245"];
+    [serviceLocations addObject:@"54.187.249.82"];
+    [serviceLocations addObject:@"34.213.180.200"];
+    [serviceLocations addObject:@"35.165.8.80"];
+    [serviceLocations addObject:@"18.237.12.238"];
+    [serviceLocations addObject:@"54.191.206.78"];
+    [serviceLocations addObject:@"34.219.208.105"];
+    [serviceLocations addObject:@"54.218.222.184"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -319,11 +346,11 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 }
 
 - (NSString *)currentDevnetIdentifier {
-    return DWEvoDevnetIdentifier;
+    return DWPalinkaDevnetIdentifier;
 }
 
 - (DSChain *)currentDevnetChain {
-    return [self evoDevnetChain];
+    return [self palinkaDevnetChain];
 }
 
 - (DSChain *)mobileDevnetChain {
@@ -350,8 +377,8 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                              standardPort:20001
                              dapiJRPCPort:3000
                              dapiGRPCPort:3010
-                           dpnsContractID:@"H9AxLAvgxEpq72pDg41nsqR3bY5Cv9hTT6yZdKzY3PaE".base58ToData.UInt256
-                        dashpayContractID:@"Fxf3w1rsUvRxW8WsVnQcUNgtgVn8w47BwZtQPAsJWkkH".base58ToData.UInt256
+                           dpnsContractID:@"FZ2MkyR8YigXX7K7m9sq3PikzubV8i4rwUMheAQTLLCw".base58ToData.UInt256
+                        dashpayContractID:@"GmCL5grcMBHumKVXvWpRZU4BaGzGC7p6mbsJSR4K6yhd".base58ToData.UInt256
                           protocolVersion:70218
                        minProtocolVersion:70218
                              sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
