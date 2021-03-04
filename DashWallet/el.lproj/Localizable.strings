@@ -47,7 +47,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" δεν είναι μια φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" δεν είναι μια λέξη ανάκτησης. Θα θέλατε να προσπαθήσετε να ανακτήσετε τη σωστή λέξη που θα πρέπει να είναι στη θέση της;";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nπροσπαθήστε ξανά σε %@";
@@ -65,7 +65,7 @@
 "Activity" = "Δραστηριότητα";
 
 /* Add <username> as your contact... */
-"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Προσθέστε τον/την%@ ως επαφή σας για άμεση πληρωμή στο Όνομα Χρήστη και για την διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Προσθέστε τον/την %@ ως επαφή σας για άμεση πληρωμή στο Όνομα Χρήστη και για την διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Προσθήκη Νέας Επαφής";
@@ -242,13 +242,13 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Δεν ήταν δυνατή η αυτόματη ανάκτηση των χαμένων λέξεων ";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Δεν μπορούσα να προβώ σε πληρωμή";
+"Couldn't make payment" = "Δεν ήταν δυνατή η πληρωμή";
 
 /* No comment provided by engineer. */
-"Couldn't sweep balance" = "Δεν μπορούσα να σαρώσω τα χρήματα";
+"Couldn't sweep balance" = "Δεν ήταν δυνατή η σαρώση των χρήματων";
 
 /* No comment provided by engineer. */
 "Couldn't transmit payment to Dash network" = "Δεν μπορούσα να μεταδώσω την πληρωμή στο δίκτυο Dash";
@@ -353,13 +353,13 @@
 "Forgot PIN?" = "Ξεχάσατε το PIN;";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Βρέθηκε η χαμένη λέξη:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Βρέθηκαν οι χαμένες λέξεις:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "Βρέθηκαν οι πιθανές λέξεις που λείπουν:\n%@";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
@@ -437,10 +437,10 @@
 "Invalid QR Code" = "Μη έγκυρος κωδικός QR";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Φαίνεται ότι προσπαθείτε να επαναφέρετε το πορτοφόλι σας χρησιμοποιώντας μια φράση ανάκτησης 12 λέξεων, ωστόσο έχετε εισαγάγει μόνο 10 λέξεις, θα θέλατε να ανακτήσετε αυτόματα τις λέξεις που λείπουν; Αυτό μπορεί να διαρκέσει περίπου μια ώρα. Σας συνιστούμε να συνδέσετε τη συσκευή σας στην φόρτιση.";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Φαίνεται ότι προσπαθείτε να επαναφέρετε το πορτοφόλι σας χρησιμοποιώντας μια φράση ανάκτησης 12 λέξεων, ωστόσο έχετε εισαγάγει μόνο 11 λέξεις, θα θέλατε να ανακτήσετε αυτόματα τη λέξη που λείπει;";
 
 /* No comment provided by engineer. */
 "It's Important" = "Είναι σημαντικό";
@@ -500,7 +500,7 @@
 "Manage Trusted Node" = "Διαχείριση Έμπιστου Κόμβου";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "Λίστα masternode #%1$d of %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Εγγραφή Masternode";
@@ -555,6 +555,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Η συσκευή NFC δεν μεταδίδει έγκυρη διεύθυνση Dash";
+
+/* No comment provided by engineer. */
+"No address copied" = "Δεν αντιγράφηκε καμία διεύθυνση";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Κόμβου";
@@ -692,13 +695,13 @@
 "Received from" = "Ελήφθησαν από";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "Επαναφορά";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Επαναφορά Πορτοφολιού";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "Γίνεται Επαναφορά...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Φράση Ανάκτησης";
@@ -707,7 +710,7 @@
 "Recovery phrase doesn't match" = "Δεν ταιριάζει η φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Η φράση ανάκτησης πρέπει να έχει 12, 15, 18, 21 ή 24 λέξεις";
 
 /* Button title, Register (username) */
 "Register" = "Εγγραφή";
@@ -831,6 +834,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Αποστολή στη διεύθυνση";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "Αποστολή στη αντιγραμμένη διεύθυνση";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Αποστολή μέσω NFC";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "εκκαθάριση";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Το πορτοφόλι σας είναι ασφαλές τώρα. Μπορείτε να χρησιμοποιήσετε τη φράση ανάκτησης ανά πάσα στιγμή για να ανακτήσετε το λογαριασμό σας σε άλλη συσκευή.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";

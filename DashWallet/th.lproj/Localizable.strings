@@ -47,7 +47,7 @@
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" ไม่ใช่คำวลีการกู้คืน คุณต้องการที่จะพยายามกู้คืนคำที่ถูกต้องที่ควรเป็นที่ของมันหรือไม่";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nลองเข้าอีกครั้ง%@";
@@ -242,7 +242,7 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "ไม่สามารถกู้คืนคำที่หายไปหรือไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "ไม่สามารถชำระเงินได้";
@@ -353,13 +353,13 @@
 "Forgot PIN?" = "ลืม PIN ใช่หรือไม่";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "พบคำที่หายไป:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "พบคำที่หายไป:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "พบคำที่หายไปที่อาจเกิดขึ้น:\n%@";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "สร้างขยายกุญแจสาธารณะหรือไม่";
@@ -437,10 +437,10 @@
 "Invalid QR Code" = "QR Code ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "ดูเหมือนว่าคุณกำลังพยายามที่จะกู้คืนกระเป๋าเงินของคุณโดยใช้วลีการกู้คืนคำ 12 คำ แต่คุณได้ป้อน 10 คำเท่านั้นคุณต้องการกู้คืนคำที่หายไปโดยอัตโนมัติหรือไม่ อาจใช้เวลาประมาณหนึ่งชั่วโมง เราขอแนะนำให้เสียบเข้ากับอุปกรณ์ของคุณ";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "ดูเหมือนว่าคุณกำลังพยายามกู้คืนกระเป๋าเงินของคุณโดยใช้วลีการกู้คืน 12 คำ แต่คุณได้ป้อน 11 คำเท่านั้นคุณต้องการกู้คืนคำที่หายไปโดยอัตโนมัติหรือไม่";
 
 /* No comment provided by engineer. */
 "It's Important" = "สำคัญ";
@@ -500,7 +500,7 @@
 "Manage Trusted Node" = "จัดการโหนดที่เชื่อถือได้";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "รายการมาสเตอร์โหนด #%1$d of %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "การลงทะเบียนมาสเตอร์โหนด";
@@ -555,6 +555,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"No address copied" = "ไม่มีที่อยู่คัดลอก";
 
 /* No comment provided by engineer. */
 "Node IP" = "โหนด IP";
@@ -692,13 +695,13 @@
 "Received from" = "ได้รับจาก";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "กู้คืน";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "กู้คืน wallet";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "กำลังกู้คืน...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "วลีกู้คืน";
@@ -707,7 +710,7 @@
 "Recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "วลีการกู้คืนต้องมี 12, 15, 18, 21 หรือ 24 ค";
 
 /* Button title, Register (username) */
 "Register" = "ลงทะเบียน";
@@ -831,6 +834,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "ส่งไปยังที่อยู่";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "ส่งไปยังที่อยู่ที่คัดลอก";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "ส่งกับ NFC";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "ทำไมฉันจึงไม่ควรใช้การบันทึกภาพหน้าจอ";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "ลบล้าง";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";

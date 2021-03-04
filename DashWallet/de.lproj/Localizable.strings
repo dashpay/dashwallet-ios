@@ -557,6 +557,9 @@
 "NFC device didn't transmit a valid Dash address" = "NFC-Gerät hat keine gültige Dash-Adresse übermittelt";
 
 /* No comment provided by engineer. */
+"No address copied" = "Keine Adresse kopiert";
+
+/* No comment provided by engineer. */
 "Node IP" = "Knoten-IP";
 
 /* adjective, security level */
@@ -677,7 +680,7 @@
 "Rate: %@ = %@" = "Kurs: %1$@ = %2$@";
 
 /* No comment provided by engineer. */
-"Receive" = "Empfangen";
+"Receive" = "Empfange";
 
 /* Received transaction */
 "Received" = "Empfangen";
@@ -764,10 +767,10 @@
 "Scan QR Code" = "QR-Code scannen";
 
 /* A title of the quick receive screen */
-"Scan this to Pay" = "Zur Zahlung scannen";
+"Scan this to Pay" = "Scannen";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Zur Zahlung scannen";
+"Scan to Pay" = "Scannen";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Zum Senden scannen";
@@ -830,7 +833,10 @@
 "Send to" = "Senden an";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Send to Address" = "Zur Adresse senden";
+"Send to Address" = "An Adresse senden";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "An kopierte Adresse senden";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Mit NFC senden";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Warum sollte ich keinen Screenshot machen?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "Leeren";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Deine Wallet ist jetzt gesichert. Du kannst die Phrase jederzeit nutzen, um die Wallet auf einem anderen Gerät wiederherzustellen.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";

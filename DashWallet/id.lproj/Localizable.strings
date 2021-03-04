@@ -47,7 +47,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" bukan kata frasa pemulihan";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" bukanlah kata frasa pemulihan. Apakah Anda ingin mencoba mendapatkan kembali kata yang benar yang seharusnya ada pada tempatnya?";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ncoba lagi dalam %@";
@@ -242,7 +242,7 @@
 "Copyright © 2020 Dash Core" = "Hak Cipta © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+"Could not automatically recover missing or incorrect words" = "Tidak dapat secara otomatis memulihkan kata yang hilang atau salah";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Tidak dapat melakukan pembayaran";
@@ -353,13 +353,13 @@
 "Forgot PIN?" = "Lupa PIN?";
 
 /* No comment provided by engineer. */
-"Found missing word:\n%@" = "Found missing word:\n%@";
+"Found missing word:\n%@" = "Menemukan kata yang hilang:\n%@";
 
 /* No comment provided by engineer. */
-"Found missing words:\n%@" = "Found missing words:\n%@";
+"Found missing words:\n%@" = "Menemukan kata-kata yang hilang:\n%@";
 
 /* No comment provided by engineer. */
-"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+"Found potential missing words:\n%@" = "Menemukan kata-kata potensial yang hilang:\n%@";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Hasilkan kunci publik yang diperluas?";
@@ -437,10 +437,10 @@
 "Invalid QR Code" = "Kode QR tidak valid";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Sepertinya Anda mencoba mengembalikan dompet Anda menggunakan frasa pemulihan 12 kata, namun Anda hanya memasukkan 10 kata, apakah Anda ingin memulihkan kata yang hilang secara otomatis? Ini mungkin membutuhkan waktu sekitar satu jam. Kami merekomendasikan untuk mencolokkan perangkat Anda.";
 
 /* No comment provided by engineer. */
-"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Sepertinya Anda mencoba mengembalikan dompet Anda menggunakan frasa pemulihan 12 kata, namun Anda hanya memasukkan 11 kata, apakah Anda ingin memulihkan kata yang hilang secara otomatis?";
 
 /* No comment provided by engineer. */
 "It's Important" = "Ini penting";
@@ -500,7 +500,7 @@
 "Manage Trusted Node" = "Kelola Node Tepercaya";
 
 /* No comment provided by engineer. */
-"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+"masternode list #%d of %d" = "daftar masternode #%1$d of %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Pendaftaran Masternode";
@@ -555,6 +555,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Perangkat NFC tidak mengirimkan alamat Dash yang valid";
+
+/* No comment provided by engineer. */
+"No address copied" = "Tak ada alamat tersalin";
 
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
@@ -692,13 +695,13 @@
 "Received from" = "Diterima dari";
 
 /* No comment provided by engineer. */
-"Recover" = "Recover";
+"Recover" = "Pemulihan";
 
 /* No comment provided by engineer. */
 "Recover Wallet" = "Pulihkan Dompet";
 
 /* No comment provided by engineer. */
-"Recovering..." = "Recovering...";
+"Recovering..." = "Memulihkan...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Frasa pemulihan";
@@ -707,7 +710,7 @@
 "Recovery phrase doesn't match" = "Frasa pemulihan tidak sama";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Frasa pemulihan harus memiliki 12, 15, 18, 21, atau 24 kata";
 
 /* Button title, Register (username) */
 "Register" = "Daftar";
@@ -831,6 +834,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Kirim ke alamat";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "Kirim ke alamat yang disalin";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Kirim dengan NFC";
@@ -1097,9 +1103,6 @@
 "Why I should not take a screenshot?" = "Mengapa saya harus tidak mengambil tangkapan layar?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
-
-/* No comment provided by engineer. */
 "Wipe" = "Menghapus";
 
 /* No comment provided by engineer. */
@@ -1158,6 +1161,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Dompet Anda aman sekarang. Anda dapat menggunakan frasa pemulihan kapan saja untuk memulihkan akun di perangkat lain.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
