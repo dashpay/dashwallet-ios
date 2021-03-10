@@ -377,6 +377,7 @@
 		2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
 		2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
 		2AB510BA25EA61DE00392683 /* DWInvitationSuggestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB510B925EA61DE00392683 /* DWInvitationSuggestionView.m */; };
+		2AB59C8F25F8122800AB8C9C /* DWInvitationMessageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB59C8E25F8122800AB8C9C /* DWInvitationMessageView.m */; };
 		2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DD123546746007BE825 /* DWTxDetailListView.m */; };
 		2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DFB2355BF59007BE825 /* DWTxDetailHeaderView.m */; };
 		2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AB66DFD2355BF67007BE825 /* DWTxDetailHeaderView.xib */; };
@@ -1416,6 +1417,8 @@
 		2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseAdvancedSecurityModel.m; sourceTree = "<group>"; };
 		2AB510B825EA61DE00392683 /* DWInvitationSuggestionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationSuggestionView.h; sourceTree = "<group>"; };
 		2AB510B925EA61DE00392683 /* DWInvitationSuggestionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSuggestionView.m; sourceTree = "<group>"; };
+		2AB59C8D25F8122800AB8C9C /* DWInvitationMessageView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationMessageView.h; sourceTree = "<group>"; };
+		2AB59C8E25F8122800AB8C9C /* DWInvitationMessageView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationMessageView.m; sourceTree = "<group>"; };
 		2AB66DD023546746007BE825 /* DWTxDetailListView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailListView.h; sourceTree = "<group>"; };
 		2AB66DD123546746007BE825 /* DWTxDetailListView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailListView.m; sourceTree = "<group>"; };
 		2AB66DFA2355BF59007BE825 /* DWTxDetailHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailHeaderView.h; sourceTree = "<group>"; };
@@ -2202,6 +2205,8 @@
 				2A2692F025EBF0C100835B30 /* DWSuccessInvitationTopView.m */,
 				2A68089E25EC2C3200829FC8 /* DWInvitationActionsView.h */,
 				2A68089F25EC2C3200829FC8 /* DWInvitationActionsView.m */,
+				2AB59C8D25F8122800AB8C9C /* DWInvitationMessageView.h */,
+				2AB59C8E25F8122800AB8C9C /* DWInvitationMessageView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5585,6 +5590,7 @@
 				2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */,
 				2A7AF35624824F97001D74F9 /* DWDPImageStatusCell.m in Sources */,
 				2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */,
+				2AB59C8F25F8122800AB8C9C /* DWInvitationMessageView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */,

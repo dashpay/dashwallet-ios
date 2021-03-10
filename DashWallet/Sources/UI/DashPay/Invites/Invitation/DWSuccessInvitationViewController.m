@@ -17,12 +17,14 @@
 
 #import "DWSuccessInvitationViewController.h"
 
+#import <LinkPresentation/LinkPresentation.h>
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
 #import "DPAlertViewController+DWInvite.h"
 #import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWInvitationActionsView.h"
+#import "DWInvitationMessageView.h"
 #import "DWInvitationPreviewViewController.h"
 #import "DWScrollingViewController.h"
 #import "DWSuccessInvitationTopView.h"
@@ -38,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) UIView *buttonsView;
 
 @property (nonatomic, strong) NSLayoutConstraint *bottomConstraint;
+
+@property (nonatomic, strong) NSURL *invitationURL;
 
 @end
 
@@ -125,6 +129,9 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    // TODO: invitation
+    self.invitationURL = [NSURL URLWithString:@"https://dash.org"];
+
     UIView *contentView = [[UIView alloc] init];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:contentView];
@@ -177,9 +184,22 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendButtonAction {
-    NSURL *invitationURL = [NSURL URLWithString:@"https://dash.org"];
+    NSURL *invitationURL = self.invitationURL;
+
+    const CGSize imageSize = CGSizeMake(320, 440);
+    DWInvitationMessageView *messageView = [[DWInvitationMessageView alloc] initWithFrame:CGRectMake(0, -1000, imageSize.width, imageSize.height)];
+    [self.view.window addSubview:messageView];
+
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageSize];
+    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
+        [messageView drawViewHierarchyInRect:messageView.bounds afterScreenUpdates:YES];
+    }];
+
+    [messageView removeFromSuperview];
+
+
     UIActivityViewController *sharingController =
-        [[UIActivityViewController alloc] initWithActivityItems:@[ invitationURL ]
+        [[UIActivityViewController alloc] initWithActivityItems:@[ invitationURL, image ]
                                           applicationActivities:nil];
     [self presentViewController:sharingController animated:YES completion:nil];
 }
