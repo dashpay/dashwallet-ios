@@ -20,7 +20,6 @@
 #import <LinkPresentation/LinkPresentation.h>
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
-#import "DPAlertViewController+DWInvite.h"
 #import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWInvitationActionsView.h"
@@ -226,9 +225,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)invitationActionsViewCopyButtonAction:(DWInvitationActionsView *)view {
-#warning "Demo"
-    DPAlertViewController *alert = [DPAlertViewController insufficientFundsForInvitationAlert];
-    [self presentViewController:alert animated:YES completion:nil];
+    [UIPasteboard generalPasteboard].string = self.invitationURL;
 }
 
 @end
