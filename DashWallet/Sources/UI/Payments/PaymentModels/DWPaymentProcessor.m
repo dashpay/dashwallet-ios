@@ -205,9 +205,16 @@ static NSString *sanitizeString(NSString *s) {
         signedCompletion:self.signedCompletionBlock
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
             if (error) {
-                [self failedWithError:error
-                                title:NSLocalizedString(@"Couldn't make payment", nil)
-                              message:nil];
+                if (error.code == -1009) {
+                    [self failedWithError:error
+                                    title:NSLocalizedString(@"Could not connect to the Dash network, please check that you are connected to the internet.", nil)
+                                  message:nil];
+                }
+                else {
+                    [self failedWithError:error
+                                    title:NSLocalizedString(@"Couldn't make payment", nil)
+                                  message:nil];
+                }
             }
             else {
                 [self txManagerPublishedCompletion:address

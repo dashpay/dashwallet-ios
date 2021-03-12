@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Les mots incorrects ou manquants n'ont pas pu être retrouvés automatiquement";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Impossible d'effectuer le paiement";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "l'appareil NFC n'a pas transmis une adresse Dash valide";
 
 /* No comment provided by engineer. */
-"No address copied" = "Aucune adresse copiée";
-
-/* No comment provided by engineer. */
 "Node IP" = "IP du nœud";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Envoyer à l'adresse";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Envoyer à l'adresse copiée";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Envoyer avec NFC";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "Pourquoi ne dois-je pas prendre de capture d'écran ?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Effacer";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Votre portefeuille est désormais sécurisé. Vous pouvez utiliser cette phrase de récupération à tout moment pour récupérer votre compte sur un autre appareil.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
 
 /* No comment provided by engineer. */
-"No address copied" = "No address copied";
-
-/* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Send to copied address";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Send with NFC";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

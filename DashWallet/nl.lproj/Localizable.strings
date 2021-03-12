@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Kon niet automatisch ontbrekende of incorrecte woorden herstellen";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Kon betaling niet maken";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC apparaat heeft geen geldig Dash-adres verzonden";
 
 /* No comment provided by engineer. */
-"No address copied" = "Geen adres gekopieerd";
-
-/* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Versturen naar adres";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Versturen naar gekopieerd adres";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Versturen met NFC";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "Waarom moet ik geen screenshot maken?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Verwijderen";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Uw portemonnee is nu beveiligd. U kunt uw herstelzin op elk gewenst moment gebruiken om uw account op een ander apparaat te herstellen.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

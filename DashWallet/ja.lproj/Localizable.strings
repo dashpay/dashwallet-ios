@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "支払いを完了できませんでした";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFCデバイスは有効なDashアドレスを送信しませんでした";
 
 /* No comment provided by engineer. */
-"No address copied" = "アドレスがコピーされていません";
-
-/* No comment provided by engineer. */
 "Node IP" = "ノードIP";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "アドレスへ送金する";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "コピーしたアドレスへ送金する";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "NFCで送金する";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "なぜスクリーンショットを撮ってはいけませんか？";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "削除する";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "現在あなたのウォレットは安全です。復元フレーズを使えばいつでも\n他の端末であなたのアカウントを復元できます。";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";
