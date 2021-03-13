@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Плащането не може да се изпълни";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC устройството не предава валиден Dash адрес";
 
 /* No comment provided by engineer. */
-"No address copied" = "Няма копиран адрес";
-
-/* No comment provided by engineer. */
 "Node IP" = "Нод IP";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Изпрати до адрес";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Изпрати до копираният адрес";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Изпрати с NFC";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "Why I should not take a screenshot?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Изчисти";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Вашият портфейл сега е защитен. Можете да използвате вашата фраза за възстановяване по всяко време, за да възстановите акаунта си на друго устройство.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

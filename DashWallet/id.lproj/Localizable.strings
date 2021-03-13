@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Tidak dapat secara otomatis memulihkan kata yang hilang atau salah";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Tidak dapat melakukan pembayaran";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "Perangkat NFC tidak mengirimkan alamat Dash yang valid";
 
 /* No comment provided by engineer. */
-"No address copied" = "Tak ada alamat tersalin";
-
-/* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Kirim ke alamat";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Kirim ke alamat yang disalin";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Kirim dengan NFC";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "Mengapa saya harus tidak mengambil tangkapan layar?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Menghapus";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Dompet Anda aman sekarang. Anda dapat menggunakan frasa pemulihan kapan saja untuk memulihkan akun di perangkat lain.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

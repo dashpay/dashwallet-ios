@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "Otomatik olarak eksik veya hatalı sözcükleri yedekleyememektedir";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Ödeme yapılamadı";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC cihazı geçerli bir Dash adresi göndermedi";
 
 /* No comment provided by engineer. */
-"No address copied" = "Kopyalanan adres yok";
-
-/* No comment provided by engineer. */
 "Node IP" = "Düğüm IP'si";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Adrese Gönder";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Kopyalanan adrese gönder";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "NFC ile Gönder";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "Neden ekran görüntüsü almamalıyım?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "Sil";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Cüzdanınız artık güvende. Hesabınızı başka bir cihaza aktarmak için kurtarma sözcük grubunuzu istediğiniz zaman kullanabilirsiniz.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

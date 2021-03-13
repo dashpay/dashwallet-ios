@@ -245,6 +245,9 @@
 "Could not automatically recover missing or incorrect words" = "입력되지 않거나 잘못 입력된 단어를 자동을 복구할 수 없었습니다.";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "지불에 실패하였습니다";
 
 /* No comment provided by engineer. */
@@ -557,9 +560,6 @@
 "NFC device didn't transmit a valid Dash address" = "NFC 장치가 유효한 대시 주소를 전송하지 못했습니다";
 
 /* No comment provided by engineer. */
-"No address copied" = "클립보드에 복사된 주소가 없습니다";
-
-/* No comment provided by engineer. */
 "Node IP" = "노드 IP";
 
 /* adjective, security level */
@@ -835,9 +835,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "주소로 전송합니다";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "복사된 주소로 전송합니다";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "NFC를 통해 전송합니다";
 
@@ -1103,6 +1100,9 @@
 "Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
 
 /* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
+
+/* No comment provided by engineer. */
 "Wipe" = "지우기";
 
 /* No comment provided by engineer. */
@@ -1161,3 +1161,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "이제 당신의 지갑은 안전합니다. 언제든 당신의 복원 문구를 사용하셔서 당신의 계정을 다른 기기에서 복원하실 수 있습니다.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";
