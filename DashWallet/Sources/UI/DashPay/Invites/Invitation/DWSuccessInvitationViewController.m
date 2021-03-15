@@ -225,7 +225,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)invitationActionsViewCopyButtonAction:(DWInvitationActionsView *)view {
-    [UIPasteboard generalPasteboard].string = self.invitationURL;
+    [UIPasteboard generalPasteboard].string = [self.invitationURL absoluteString];
 }
 
 @end
