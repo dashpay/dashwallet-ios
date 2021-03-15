@@ -91,6 +91,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSUInteger)unreadNotificationsCount {
+    if ([DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {
+        return 1;
+    }
     return [DWNotificationsProvider sharedInstance].data.unreadItems.count;
 }
 
@@ -137,6 +140,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)completeRegistration {
+    [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = YES;
     [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
     [DWGlobalOptions sharedInstance].persistedDashPayUsername = nil;
     NSAssert(self.username != nil, @"Default DSBlockchainIdentity has an empty username");

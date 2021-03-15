@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_END
         label.text = NSLocalizedString(@"There are no new notifications", nil);
         [self.contentView addSubview:label];
 
-        [iconImageView setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
+        [iconImageView setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                        forAxis:UILayoutConstraintAxisVertical];
         [label setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                forAxis:UILayoutConstraintAxisVertical];
@@ -62,9 +62,8 @@ NS_ASSUME_NONNULL_END
         const CGFloat spacing = 30.0;
         UILayoutGuide *guide = self.contentView.layoutMarginsGuide;
 
-        NSLayoutConstraint *labelIconConstraint = [label.topAnchor constraintGreaterThanOrEqualToAnchor:iconImageView.bottomAnchor
-                                                                                               constant:spacing];
-        labelIconConstraint.priority = UILayoutPriorityRequired - 2;
+        NSLayoutConstraint *labelIconConstraint = [label.topAnchor constraintEqualToAnchor:iconImageView.bottomAnchor
+                                                                                  constant:spacing];
 
         [NSLayoutConstraint activateConstraints:@[
             [iconImageView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor

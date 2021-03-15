@@ -518,6 +518,9 @@
 "Invite your friends & family" = "Invite your friends & family";
 
 /* No comment provided by engineer. */
+"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
+
+/* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Pokoušíte se obnovit peněženku pomocí 12 slovní fráze pro obnovení, ale zadali jste pouze 10 slov, chcete automaticky obnovit chybějící slova? Může to trvat až hodinu. Doporočujeme připojit zařízení ke zdroji.";
 
 /* No comment provided by engineer. */

@@ -44,6 +44,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic confirmationAcceptContactRequestIsOn;
 @dynamic resyncingWallet;
 @dynamic dashPayRegistrationOpenedOnce;
+@dynamic shouldShowInvitationsBadge;
 
 #pragma mark - Init
 

@@ -55,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL dashPayRegistrationOpenedOnce;
 
+@property (nonatomic, assign) BOOL shouldShowInvitationsBadge;
+
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;
