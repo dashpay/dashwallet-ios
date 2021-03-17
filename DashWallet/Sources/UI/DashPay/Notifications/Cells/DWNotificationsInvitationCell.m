@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_END
 
         UILabel *titleLabel = [[UILabel alloc] init];
         titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        titleLabel.textColor = [UIColor dw_darkTitleColor];
+        titleLabel.textColor = [UIColor blackColor];
         titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
         titleLabel.text = NSLocalizedString(@"Invite your friends and family to the Dash Network", nil);
         titleLabel.numberOfLines = 0;
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_END
         closeButton.translatesAutoresizingMaskIntoConstraints = NO;
         [closeButton setTitle:@"X" forState:UIControlStateNormal];
         closeButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-        [closeButton setTitleColor:[UIColor dw_darkTitleColor] forState:UIControlStateNormal];
+        [closeButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [closeButton addTarget:self
                         action:@selector(closeButtonAction)
               forControlEvents:UIControlEventTouchUpInside];

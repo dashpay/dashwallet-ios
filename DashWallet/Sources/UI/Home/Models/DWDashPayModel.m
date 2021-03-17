@@ -34,6 +34,7 @@ NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification = @"DWDa
 
 @property (nullable, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
+@property (nonatomic, assign) BOOL isInvitationNotificationAllowed;
 
 @end
 
@@ -91,7 +92,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSUInteger)unreadNotificationsCount {
-    if ([DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {
+    if (self.isInvitationNotificationAllowed &&
+        [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {
         return 1;
     }
     return [DWNotificationsProvider sharedInstance].data.unreadItems.count;
@@ -164,6 +166,10 @@ NS_ASSUME_NONNULL_END
         }
     }
     [self didChangeValueForKey:key];
+}
+
+- (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value {
+    self.isInvitationNotificationAllowed = value;
 }
 
 #pragma mark - Notifications

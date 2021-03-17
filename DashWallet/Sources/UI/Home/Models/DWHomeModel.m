@@ -238,6 +238,11 @@ static BOOL IsJailbroken(void) {
     self.isDashPayReady = [self isDashPayReadyValue];
 
     [self.shortcutsModel reloadShortcuts];
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    const uint64_t balanceValue = wallet.balance;
+    BOOL isEnoughBalance = balanceValue > DWDP_MIN_BALANCE_TO_CREATE_INVITE;
+    [self.dashPayModel setHasEnoughBalanceForInvitationNotification:isEnoughBalance];
 }
 
 - (void)registerForPushNotifications {

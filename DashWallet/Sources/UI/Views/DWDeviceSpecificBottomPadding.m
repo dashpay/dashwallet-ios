@@ -19,7 +19,7 @@
 
 #import "DevicesCompatibility.h"
 
-CGFloat deviceSpecificBottomPadding() {
+CGFloat deviceSpecificBottomPadding(void) {
     if (IS_IPAD) { // All iPads including ones with home indicator
         return 24.0;
     }

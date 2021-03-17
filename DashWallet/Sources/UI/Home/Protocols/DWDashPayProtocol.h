@@ -43,6 +43,7 @@ extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 - (void)retry;
 - (void)completeRegistration;
 - (void)updateUsernameStatus;
+- (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value;
 
 @end
 

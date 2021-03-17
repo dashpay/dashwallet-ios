@@ -19,6 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern CGFloat deviceSpecificBottomPadding();
+extern CGFloat deviceSpecificBottomPadding(void);
 
 NS_ASSUME_NONNULL_END
