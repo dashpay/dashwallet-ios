@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL dashPayRegistrationOpenedOnce;
 
 @property (nonatomic, assign) BOOL shouldShowInvitationsBadge;
+@property (nonatomic, assign) BOOL dpInvitationFlowEnabled;
 
 // Non-dynamic
 

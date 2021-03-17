@@ -18,6 +18,7 @@
 #import "DWSearchStateViewController.h"
 
 #import "DWActionButton.h"
+#import "DWGlobalOptions.h"
 #import "DWInvitationSuggestionView.h"
 #import "DWUIKit.h"
 
@@ -175,6 +176,7 @@ NS_ASSUME_NONNULL_END
         [_invitationView.inviteButton addTarget:self
                                          action:@selector(inviteButtonAction:)
                                forControlEvents:UIControlEventTouchUpInside];
+        _invitationView.alpha = [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? 1.0 : 0.0;
     }
     return _invitationView;
 }

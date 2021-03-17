@@ -67,6 +67,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)invitationMessageHidden {
+    if ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled == NO) {
+        return YES;
+    }
     return [[NSUserDefaults standardUserDefaults] boolForKey:NotificationsInvitationMessageHiddenKey];
 }
 

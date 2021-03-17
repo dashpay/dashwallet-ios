@@ -18,6 +18,7 @@
 #import "DWNoContactsViewController.h"
 
 #import "DWActionButton.h"
+#import "DWGlobalOptions.h"
 #import "DWInvitationSuggestionView.h"
 #import "DWUIKit.h"
 
@@ -39,6 +40,7 @@
     if (!_invitationView) {
         _invitationView = [[DWInvitationSuggestionView alloc] init];
         _invitationView.translatesAutoresizingMaskIntoConstraints = NO;
+        _invitationView.alpha = [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? 1.0 : 0.0;
     }
     return _invitationView;
 }

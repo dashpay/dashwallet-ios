@@ -21,6 +21,7 @@
 
 #import "DWAboutModel.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWSecurityMenuModel.h"
 #import "DWUIKit.h"
 #import "DWWindow.h"
@@ -170,6 +171,21 @@ NS_ASSUME_NONNULL_BEGIN
                     [self setFixedPeer];
                 }];
     [alert addAction:setPeerAction];
+
+    NSString *invitationTitle = [NSString
+        stringWithFormat:
+            @"Turn %@ 'Invitations feature'",
+            [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? @"OFF" : @"ON"];
+    UIAlertAction *invitationAction = [UIAlertAction
+        actionWithTitle:invitationTitle
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *_Nonnull action) {
+                    [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = ![DWGlobalOptions sharedInstance].dpInvitationFlowEnabled;
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        exit(0);
+                    });
+                }];
+    [alert addAction:invitationAction];
 
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:UIAlertActionStyleCancel

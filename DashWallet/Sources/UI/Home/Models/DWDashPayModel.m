@@ -169,7 +169,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value {
-    self.isInvitationNotificationAllowed = value;
+    self.isInvitationNotificationAllowed =
+        ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && value);
 }
 
 #pragma mark - Notifications
