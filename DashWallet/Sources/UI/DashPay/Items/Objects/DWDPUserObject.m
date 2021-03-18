@@ -72,9 +72,9 @@
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:
-                                              @"sourceContact.associatedBlockchainIdentity.uniqueID == %@",
+                                              @"destinationContact.associatedBlockchainIdentity.uniqueID == %@",
                                               uint256_data(myBlockchainIdentity.uniqueID)];
-    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:predicate] anyObject];
+    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:predicate] anyObject];
     return friendRequest;
 }
 
