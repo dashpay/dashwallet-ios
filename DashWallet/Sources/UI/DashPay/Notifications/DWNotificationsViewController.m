@@ -19,6 +19,8 @@
 
 #import "DWDPBasicCell.h"
 #import "DWDPNewIncomingRequestItem.h"
+#import "DWDashPayConstants.h"
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWListCollectionLayout.h"
 #import "DWNoNotificationsCell.h"
@@ -70,6 +72,14 @@ NS_ASSUME_NONNULL_END
     if ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled == NO) {
         return YES;
     }
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    const uint64_t balanceValue = wallet.balance;
+    BOOL isEnoughBalance = balanceValue > DWDP_MIN_BALANCE_TO_CREATE_INVITE;
+    if (!isEnoughBalance) {
+        return YES;
+    }
+
     return [[NSUserDefaults standardUserDefaults] boolForKey:NotificationsInvitationMessageHiddenKey];
 }
 
