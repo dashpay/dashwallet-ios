@@ -98,6 +98,10 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
+    if (myBlockchainIdentity.registered == NO) {
+        return;
+    }
+
     if (!initiatedInternally) {
         self.fetchCompletion = completion;
     }
