@@ -86,6 +86,9 @@
 "Add Shortcut" = "Dodaj skrót";
 
 /* No comment provided by engineer. */
+"Add your Friends & Family" = "Add your Friends & Family";
+
+/* No comment provided by engineer. */
 "Address" = "Adres";
 
 /* No comment provided by engineer. */
@@ -195,6 +198,9 @@
 
 /* Choose your Dash username */
 "Choose your" = "Wybierz swój";
+
+/* No comment provided by engineer. */
+"Choose Your Username" = "Choose Your Username";
 
 /* No comment provided by engineer. */
 "Clear" = "Wyczyść";
@@ -419,6 +425,9 @@
 "Get Started" = "Zacznij";
 
 /* No comment provided by engineer. */
+"Get you Username" = "Get you Username";
+
+/* No comment provided by engineer. */
 "Go to Website" = "Przejdź do strony internetowej";
 
 /* Username has requested to be your friend */
@@ -515,6 +524,9 @@
 "Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
 
 /* No comment provided by engineer. */
+"Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
+
+/* No comment provided by engineer. */
 "Invite your friends & family" = "Invite your friends & family";
 
 /* No comment provided by engineer. */
@@ -552,6 +564,9 @@
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+
+/* No comment provided by engineer. */
+"Let’s Get Started" = "Let’s Get Started";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Podlinkuj konto Uphold";
@@ -719,6 +734,9 @@
 "Pay Directly to Username" = "Płać Użytkownikowi ";
 
 /* No comment provided by engineer. */
+"Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+
+/* No comment provided by engineer. */
 "Pay with Ease" = "Płać z Łatwością";
 
 /* 1 out of 4 in the Paying Animation */
@@ -741,6 +759,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Oczekujący";
+
+/* No comment provided by engineer. */
+"Personalize" = "Personalize";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN jest zawsze wymagany by dokonać płatności";
@@ -938,6 +959,9 @@
 "Secure Wallet Now" = "Zabezpiecz Portfel Teraz";
 
 /* No comment provided by engineer. */
+"Secure Your Wallet" = "Secure Your Wallet";
+
+/* No comment provided by engineer. */
 "Security" = "Bezpieczeństwo";
 
 /* No comment provided by engineer. */
@@ -1019,6 +1043,9 @@
 "Set PIN" = "Ustaw PIN";
 
 /* No comment provided by engineer. */
+"Set Your PIN" = "Set Your PIN";
+
+/* No comment provided by engineer. */
 "Settings" = "Ustawienia";
 
 /* No comment provided by engineer. */
@@ -1053,6 +1080,9 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Potwierdzenie Wysłania";
+
+/* Step 1 */
+"Step %ld" = "Step %ld";
 
 /* No comment provided by engineer. */
 "Support" = "Wsparcie";
@@ -1211,6 +1241,9 @@
 "Upload Error" = "Upload Error";
 
 /* No comment provided by engineer. */
+"Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
+
+/* No comment provided by engineer. */
 "Uploading your picture to the network" = "Uploading your picture to the network";
 
 /* No comment provided by engineer. */
@@ -1287,6 +1320,9 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "Witaj";
+
+/* No comment provided by engineer. */
+"Welcome to DashPay" = "Welcome to DashPay";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Po potwierdzeniu transakcji, drugi portfel będzie bezwartościowy i nie powinien być ponownie wykorzystywany ze względów bezpieczeństwa.";

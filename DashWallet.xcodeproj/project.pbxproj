@@ -506,6 +506,15 @@
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
 		2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */; };
+		2AF40561260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF40560260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.m */; };
+		2AF40576260F4CED000A8DAB /* DWDPWelcomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF40575260F4CED000A8DAB /* DWDPWelcomePageViewController.m */; };
+		2AF40580260F73D3000A8DAB /* DWPassthroughView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF4057F260F73D3000A8DAB /* DWPassthroughView.m */; };
+		2AF4058F260F759E000A8DAB /* DWInvitationFlowViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF4058E260F759E000A8DAB /* DWInvitationFlowViewController.m */; };
+		2AF40598260F7C9C000A8DAB /* DWDPWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF40597260F7C9C000A8DAB /* DWDPWelcomeViewController.m */; };
+		2AF405A7260F8B3C000A8DAB /* DWPassthroughStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405A6260F8B3C000A8DAB /* DWPassthroughStackView.m */; };
+		2AF405B2260F9B18000A8DAB /* DWGetStartedItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405B1260F9B18000A8DAB /* DWGetStartedItemView.m */; };
+		2AF405C1260FE90C000A8DAB /* DWGetStartedContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405C0260FE90C000A8DAB /* DWGetStartedContentViewController.m */; };
+		2AF405CA260FF046000A8DAB /* DWGetStartedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405C9260FF046000A8DAB /* DWGetStartedViewController.m */; };
 		2AF60D09250FA63F00FB3E71 /* DWBalanceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF60D06250FA63E00FB3E71 /* DWBalanceView.m */; };
 		2AF60D0A250FA63F00FB3E71 /* DWBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF60D08250FA63F00FB3E71 /* DWBalanceView.xib */; };
 		2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */; };
@@ -1674,6 +1683,25 @@
 		2AF26F40230C1F9D007F9228 /* DWAmountView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountView.m; sourceTree = "<group>"; };
 		2AF26F42230C2232007F9228 /* DWAmountDescriptionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountDescriptionView.h; sourceTree = "<group>"; };
 		2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountDescriptionView.m; sourceTree = "<group>"; };
+		2AF4055F260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeCollectionViewController.h; sourceTree = "<group>"; };
+		2AF40560260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeCollectionViewController.m; sourceTree = "<group>"; };
+		2AF40574260F4CED000A8DAB /* DWDPWelcomePageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomePageViewController.h; sourceTree = "<group>"; };
+		2AF40575260F4CED000A8DAB /* DWDPWelcomePageViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomePageViewController.m; sourceTree = "<group>"; };
+		2AF4057E260F73D3000A8DAB /* DWPassthroughView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPassthroughView.h; sourceTree = "<group>"; };
+		2AF4057F260F73D3000A8DAB /* DWPassthroughView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughView.m; sourceTree = "<group>"; };
+		2AF4058D260F759E000A8DAB /* DWInvitationFlowViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationFlowViewController.h; sourceTree = "<group>"; };
+		2AF4058E260F759E000A8DAB /* DWInvitationFlowViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationFlowViewController.m; sourceTree = "<group>"; };
+		2AF40596260F7C9C000A8DAB /* DWDPWelcomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeViewController.h; sourceTree = "<group>"; };
+		2AF40597260F7C9C000A8DAB /* DWDPWelcomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeViewController.m; sourceTree = "<group>"; };
+		2AF405A5260F8B3C000A8DAB /* DWPassthroughStackView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPassthroughStackView.h; sourceTree = "<group>"; };
+		2AF405A6260F8B3C000A8DAB /* DWPassthroughStackView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughStackView.m; sourceTree = "<group>"; };
+		2AF405B0260F9B18000A8DAB /* DWGetStartedItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGetStartedItemView.h; sourceTree = "<group>"; };
+		2AF405B1260F9B18000A8DAB /* DWGetStartedItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedItemView.m; sourceTree = "<group>"; };
+		2AF405BF260FE90C000A8DAB /* DWGetStartedContentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGetStartedContentViewController.h; sourceTree = "<group>"; };
+		2AF405C0260FE90C000A8DAB /* DWGetStartedContentViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedContentViewController.m; sourceTree = "<group>"; };
+		2AF405C8260FF046000A8DAB /* DWGetStartedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGetStartedViewController.h; sourceTree = "<group>"; };
+		2AF405C9260FF046000A8DAB /* DWGetStartedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedViewController.m; sourceTree = "<group>"; };
+		2AF405D1260FF09B000A8DAB /* DWGetStarted.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGetStarted.h; sourceTree = "<group>"; };
 		2AF60D06250FA63E00FB3E71 /* DWBalanceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBalanceView.m; sourceTree = "<group>"; };
 		2AF60D07250FA63E00FB3E71 /* DWBalanceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBalanceView.h; sourceTree = "<group>"; };
 		2AF60D08250FA63F00FB3E71 /* DWBalanceView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWBalanceView.xib; sourceTree = "<group>"; };
@@ -4241,6 +4269,7 @@
 		2AE8B63D23CDB94E0016F221 /* DashPay */ = {
 			isa = PBXGroup;
 			children = (
+				2AF4055E260F4C8D000A8DAB /* Welcome */,
 				2AECB52025E3DEAB005B1041 /* Invites */,
 				2A4EB4882598D67400892E4D /* Error */,
 				2AEC5CBF2497558900F4A689 /* Global */,
@@ -4462,6 +4491,56 @@
 				2AECB54125E3F002005B1041 /* DPAlertViewController+DWInvite.m */,
 			);
 			path = Additions;
+			sourceTree = "<group>";
+		};
+		2AF4055E260F4C8D000A8DAB /* Welcome */ = {
+			isa = PBXGroup;
+			children = (
+				2AF405AE260F9AFB000A8DAB /* GetStarted */,
+				2AF4057D260F73BE000A8DAB /* Views */,
+				2AF4055F260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.h */,
+				2AF40560260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.m */,
+				2AF40574260F4CED000A8DAB /* DWDPWelcomePageViewController.h */,
+				2AF40575260F4CED000A8DAB /* DWDPWelcomePageViewController.m */,
+				2AF4058D260F759E000A8DAB /* DWInvitationFlowViewController.h */,
+				2AF4058E260F759E000A8DAB /* DWInvitationFlowViewController.m */,
+				2AF40596260F7C9C000A8DAB /* DWDPWelcomeViewController.h */,
+				2AF40597260F7C9C000A8DAB /* DWDPWelcomeViewController.m */,
+			);
+			path = Welcome;
+			sourceTree = "<group>";
+		};
+		2AF4057D260F73BE000A8DAB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2AF4057E260F73D3000A8DAB /* DWPassthroughView.h */,
+				2AF4057F260F73D3000A8DAB /* DWPassthroughView.m */,
+				2AF405A5260F8B3C000A8DAB /* DWPassthroughStackView.h */,
+				2AF405A6260F8B3C000A8DAB /* DWPassthroughStackView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2AF405AE260F9AFB000A8DAB /* GetStarted */ = {
+			isa = PBXGroup;
+			children = (
+				2AF405AF260F9B04000A8DAB /* Views */,
+				2AF405BF260FE90C000A8DAB /* DWGetStartedContentViewController.h */,
+				2AF405C0260FE90C000A8DAB /* DWGetStartedContentViewController.m */,
+				2AF405C8260FF046000A8DAB /* DWGetStartedViewController.h */,
+				2AF405C9260FF046000A8DAB /* DWGetStartedViewController.m */,
+				2AF405D1260FF09B000A8DAB /* DWGetStarted.h */,
+			);
+			path = GetStarted;
+			sourceTree = "<group>";
+		};
+		2AF405AF260F9B04000A8DAB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2AF405B0260F9B18000A8DAB /* DWGetStartedItemView.h */,
+				2AF405B1260F9B18000A8DAB /* DWGetStartedItemView.m */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
@@ -5462,6 +5541,7 @@
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */,
 				2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */,
+				2AF40576260F4CED000A8DAB /* DWDPWelcomePageViewController.m in Sources */,
 				2ACCD85D231939FE00A96B62 /* DWRequestAmountContentView.m in Sources */,
 				2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
@@ -5532,6 +5612,7 @@
 				2A32AA312552A14B0080138E /* DWSecrets.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
+				2AF4058F260F759E000A8DAB /* DWInvitationFlowViewController.m in Sources */,
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
 				2AEC24B6251D06A600AC86F6 /* DWProfileDisplayNameCellModel.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
@@ -5574,6 +5655,7 @@
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
+				2AF405B2260F9B18000A8DAB /* DWGetStartedItemView.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
@@ -5603,6 +5685,7 @@
 				2A7AF3502482374D001D74F9 /* DWDPBasicCell.m in Sources */,
 				2A68090B25ED30C000829FC8 /* DWInvitationPreviewViewController.m in Sources */,
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
+				2AF40598260F7C9C000A8DAB /* DWDPWelcomeViewController.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
 				2AC1EE202566C37900410917 /* DWAvatarGravatarViewController.m in Sources */,
@@ -5640,6 +5723,7 @@
 				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2ADDF99F251B7F6500DA8926 /* DWEditProfileTextFieldCell.m in Sources */,
 				2AEC24BF251D3E8D00AC86F6 /* DWRootEditProfileViewController.m in Sources */,
+				2AF40580260F73D3000A8DAB /* DWPassthroughView.m in Sources */,
 				2AE63CBF25D6E20F0051E341 /* DWSaveAlertChildView.m in Sources */,
 				2A856CFD24EB30680040BD61 /* DWVerticalContactCell.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
@@ -5673,6 +5757,7 @@
 				2ADDF98A251B2F0E00DA8926 /* DWCurrentUserProfileView.m in Sources */,
 				2A6808A925EC2F7F00829FC8 /* DWFullScreenModalControllerViewController.m in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
+				2AF40561260F4CAE000A8DAB /* DWDPWelcomeCollectionViewController.m in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
@@ -5705,6 +5790,7 @@
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */,
 				2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */,
+				2AF405C1260FE90C000A8DAB /* DWGetStartedContentViewController.m in Sources */,
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,
 				2A0FF69E2513A305006B6801 /* DWInfoPopupViewController.m in Sources */,
 				2A2692E825EBF08600835B30 /* DWSuccessInvitationViewController.m in Sources */,
@@ -5750,6 +5836,7 @@
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,
+				2AF405CA260FF046000A8DAB /* DWGetStartedViewController.m in Sources */,
 				2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
@@ -5803,6 +5890,7 @@
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
 				2AB2373824488DB80081B62C /* DWUserSearchViewController.m in Sources */,
+				2AF405A7260F8B3C000A8DAB /* DWPassthroughStackView.m in Sources */,
 				2A7AF38F2482BDF1001D74F9 /* UIFont+DWDPItem.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,

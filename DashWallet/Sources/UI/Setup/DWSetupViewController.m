@@ -28,6 +28,8 @@
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
 
+#import "DWInvitationFlowViewController.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
@@ -96,6 +98,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (IBAction)createWalletButtonAction:(id)sender {
     self.recoverWalletCommand = nil;
+
+
+    DWInvitationFlowViewController *invitation = [[DWInvitationFlowViewController alloc] init];
+    [self.navigationController setViewControllers:@[ self, invitation ] animated:YES];
+
+    return;
 
     [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
