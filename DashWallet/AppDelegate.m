@@ -31,6 +31,7 @@
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
@@ -92,6 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Setup Firebase Dynamic Links
     [FIRApp configure];
+
+    [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = YES;
     
     [DSLogger sharedInstance];
     
