@@ -37,7 +37,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @interface DWSetupViewController () <DWSetPinViewControllerDelegate,
                                      DWBiometricAuthViewControllerDelegate,
                                      DWSecureWalletDelegate,
-                                     DWRecoverViewControllerDelegate>
+                                     DWRecoverViewControllerDelegate,
+                                     DWInvitationFlowViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
 
@@ -94,22 +95,27 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     return UIStatusBarStyleLightContent;
 }
 
-#pragma mark - Actions
-
-- (IBAction)createWalletButtonAction:(id)sender {
-    self.recoverWalletCommand = nil;
-
-
-    DWInvitationFlowViewController *invitation = [[DWInvitationFlowViewController alloc] init];
-    [self.navigationController setViewControllers:@[ self, invitation ] animated:YES];
-
-    return;
-
+- (void)createWallet {
     [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
     UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
     NSParameterAssert(newViewController);
     [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
+}
+
+#pragma mark - Actions
+
+- (IBAction)createWalletButtonAction:(id)sender {
+    self.recoverWalletCommand = nil;
+
+    if ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled) {
+        DWInvitationFlowViewController *invitation = [[DWInvitationFlowViewController alloc] init];
+        invitation.delegate = self;
+        [self.navigationController setViewControllers:@[ self, invitation ] animated:YES];
+    }
+    else {
+        [self createWallet];
+    }
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
@@ -119,6 +125,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     controller.action = DWRecoverAction_Recover;
     controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
+}
+
+#pragma mark - DWInvitationFlowViewController
+
+- (void)invitationFlowViewControllerDidFinish:(DWInvitationFlowViewController *)controller {
+    [self createWallet];
 }
 
 #pragma mark - DWSetPinViewControllerDelegate

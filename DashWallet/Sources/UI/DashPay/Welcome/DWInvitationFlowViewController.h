@@ -21,7 +21,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWInvitationFlowViewController;
+
+@protocol DWInvitationFlowViewControllerDelegate <NSObject>
+
+- (void)invitationFlowViewControllerDidFinish:(DWInvitationFlowViewController *)controller;
+
+@end
+
 @interface DWInvitationFlowViewController : UIViewController <DWNavigationFullscreenable>
+
+@property (nullable, nonatomic, weak) id<DWInvitationFlowViewControllerDelegate> delegate;
 
 @end
 

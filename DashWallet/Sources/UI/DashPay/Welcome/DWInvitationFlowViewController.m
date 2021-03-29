@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_END
         [self.navController setViewControllers:@[ getStarted ] animated:YES];
     }
     else {
-        // DONE
+        [self.delegate invitationFlowViewControllerDidFinish:self];
     }
 }
 

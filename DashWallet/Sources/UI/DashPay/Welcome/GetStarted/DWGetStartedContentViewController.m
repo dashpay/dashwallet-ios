@@ -58,12 +58,22 @@
     lineView.backgroundColor = [UIColor dw_tertiaryTextColor];
     [self.view addSubview:lineView];
 
+
+    UIView *blueView = [[UIView alloc] init];
+    blueView.translatesAutoresizingMaskIntoConstraints = NO;
+    blueView.backgroundColor = [UIColor dw_lightBlueColor];
+    [self.view addSubview:blueView];
+
     NSMutableArray<UIView *> *itemViews = [NSMutableArray array];
     NSArray<NSNumber *> *items = [self items];
     NSArray<NSNumber *> *completedItems = [self completedItems];
     for (NSUInteger i = 0; i < 3; i++) {
         NSNumber *item = items[i];
         NSNumber *completed = completedItems[i];
+
+        if (i == 1) {
+            blueView.hidden = !completed.boolValue;
+        }
 
         DWGetStartedItemView *itemView =
             [[DWGetStartedItemView alloc] initWithItemType:item.unsignedIntegerValue
@@ -99,6 +109,12 @@
         [lineView.leadingAnchor constraintEqualToAnchor:parent.leadingAnchor
                                                constant:30],
         [lineView.widthAnchor constraintEqualToConstant:3],
+
+        [blueView.topAnchor constraintEqualToAnchor:lineView.topAnchor],
+        [blueView.leadingAnchor constraintEqualToAnchor:lineView.leadingAnchor],
+        [blueView.widthAnchor constraintEqualToConstant:3],
+        [blueView.heightAnchor constraintEqualToAnchor:lineView.heightAnchor
+                                            multiplier:0.5],
     ]];
 }
 
