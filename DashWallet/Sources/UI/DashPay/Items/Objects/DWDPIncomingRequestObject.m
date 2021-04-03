@@ -60,7 +60,7 @@
 
 - (NSAttributedString *)title {
     NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : [UIFont dw_itemTitleFont]};
-    return [[NSAttributedString alloc] initWithString:(self.displayName ?: self.username) ?: @"<unknown>" attributes:attributes];
+    return [[NSAttributedString alloc] initWithString:(self.displayName ?: self.username) ?: @"<Fetching Contact>" attributes:attributes];
 }
 
 - (NSString *)subtitle {

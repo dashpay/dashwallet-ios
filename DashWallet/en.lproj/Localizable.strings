@@ -1121,6 +1121,9 @@
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
 /* No comment provided by engineer. */
+"them (Fetching Info)" = "them (Fetching Info)";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
@@ -1251,6 +1254,9 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Used at IP address";
+
+/* No comment provided by engineer. */
+"User (Fetching Info)" = "User (Fetching Info)";
 
 /* No comment provided by engineer. */
 "Username available" = "Username available";

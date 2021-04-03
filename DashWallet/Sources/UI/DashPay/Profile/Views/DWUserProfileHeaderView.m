@@ -296,7 +296,7 @@ NS_ASSUME_NONNULL_END
     NSString *title = hasDisplayName ? blockchainIdentity.displayName : blockchainIdentity.currentDashpayUsername;
 
     NSAttributedString *titleString = [[NSAttributedString alloc]
-        initWithString:title
+        initWithString:title ? title : @"<Fetching Contact>"
             attributes:@{
                 NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline],
                 NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
