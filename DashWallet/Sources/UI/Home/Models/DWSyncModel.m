@@ -72,8 +72,8 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
-                               selector:@selector(chainManagerSyncStartedNotification:)
-                                   name:DSChainManagerSyncStartedNotification
+                               selector:@selector(chainManagerSyncWillStartNotification:)
+                                   name:DSChainManagerSyncWillStartNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainManagerSyncParametersUpdatedNotification:)
@@ -118,7 +118,7 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
 
 #pragma mark Notifications
 
-- (void)chainManagerSyncStartedNotification:(NSNotification *)sender {
+- (void)chainManagerSyncWillStartNotification:(NSNotification *)sender {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     if (![self shouldAcceptSyncNotification:sender]) {

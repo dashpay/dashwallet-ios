@@ -169,7 +169,7 @@ NS_ASSUME_NONNULL_END
 - (void)configureForIncomingStatus {
     NSMutableAttributedString *mutableTitle = [[NSMutableAttributedString alloc] init];
 
-    NSAttributedString *username = [[NSAttributedString alloc] initWithString:self.model.username
+    NSAttributedString *username = [[NSAttributedString alloc] initWithString:self.model.username ? self.model.username : @"<Fetching Contact>"
                                                                    attributes:@{
                                                                        NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline],
                                                                    }];
