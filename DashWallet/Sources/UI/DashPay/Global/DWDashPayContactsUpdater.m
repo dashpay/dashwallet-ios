@@ -32,6 +32,8 @@ static NSTimeInterval const UPDATE_INTERVAL = 30;
 
 @property (nullable, nonatomic, copy) void (^fetchCompletion)(BOOL success, NSArray<NSError *> *errors);
 
+@property (nonatomic, strong) NSDate *lastFetch;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -95,10 +97,12 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     if (myBlockchainIdentity == nil) {
+        completion(YES, nil);
         return;
     }
 
     if (myBlockchainIdentity.registered == NO) {
+        completion(YES, nil);
         return;
     }
 
@@ -106,10 +110,20 @@ NS_ASSUME_NONNULL_END
         self.fetchCompletion = completion;
     }
 
+    if (self.lastFetch && [[NSDate date] timeIntervalSinceDate:self.lastFetch] < UPDATE_INTERVAL) {
+        if (completion) {
+            completion(YES, nil);
+        }
+
+        return;
+    }
+
     if (self.isFetching) {
         return;
     }
     self.fetching = YES;
+
+    self.lastFetch = [NSDate date];
 
     // Cancel any scheduled calls if fetch is called manually
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
