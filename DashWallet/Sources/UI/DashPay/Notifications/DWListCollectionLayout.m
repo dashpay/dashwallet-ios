@@ -23,7 +23,8 @@
     self = [super init];
     if (self) {
         self.scrollDirection = UICollectionViewScrollDirectionVertical;
-        self.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize;
+        // Using UICollectionViewFlowLayoutAutomaticSize leads to layout issues on reloadData
+        self.estimatedItemSize = CGSizeMake(320, 150);
         self.sectionInset = UIEdgeInsetsZero;
         self.minimumInteritemSpacing = 0;
         self.minimumLineSpacing = 0;

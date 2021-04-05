@@ -37,11 +37,15 @@ NS_ASSUME_NONNULL_END
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         self.contentView.backgroundColor = self.backgroundColor;
 
+        UIView *contentView = [[UIView alloc] init];
+        contentView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.contentView addSubview:contentView];
+
         UIImage *image = [UIImage imageNamed:@"dp_no_notifications"];
         UIImageView *iconImageView = [[UIImageView alloc] initWithImage:image];
         iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
         iconImageView.contentMode = UIViewContentModeScaleAspectFit;
-        [self.contentView addSubview:iconImageView];
+        [contentView addSubview:iconImageView];
 
         UILabel *label = [[UILabel alloc] init];
         label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -52,29 +56,41 @@ NS_ASSUME_NONNULL_END
         label.adjustsFontForContentSizeCategory = YES;
         label.textColor = [UIColor dw_tertiaryTextColor];
         label.text = NSLocalizedString(@"There are no new notifications", nil);
-        [self.contentView addSubview:label];
+        [contentView addSubview:label];
 
         [iconImageView setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                        forAxis:UILayoutConstraintAxisVertical];
         [label setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                forAxis:UILayoutConstraintAxisVertical];
+        [iconImageView setContentHuggingPriority:UILayoutPriorityRequired
+                                         forAxis:UILayoutConstraintAxisVertical];
+        [label setContentHuggingPriority:UILayoutPriorityRequired
+                                 forAxis:UILayoutConstraintAxisVertical];
 
         const CGFloat spacing = 30.0;
-        UILayoutGuide *guide = self.contentView.layoutMarginsGuide;
 
-        NSLayoutConstraint *labelIconConstraint = [label.topAnchor constraintEqualToAnchor:iconImageView.bottomAnchor
-                                                                                  constant:spacing];
+        NSLayoutConstraint *heightConstraint = [contentView.heightAnchor constraintLessThanOrEqualToConstant:200];
+        heightConstraint.priority = UILayoutPriorityRequired - 1;
 
         [NSLayoutConstraint activateConstraints:@[
-            [iconImageView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                                    constant:spacing],
-            [iconImageView.centerXAnchor constraintEqualToAnchor:self.contentView.centerXAnchor],
+            [contentView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+            [contentView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor
+                                                      constant:16],
+            [self.contentView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+            [self.contentView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
+                                                            constant:16],
+            heightConstraint,
 
-            labelIconConstraint,
-            [label.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
-            [guide.bottomAnchor constraintEqualToAnchor:label.bottomAnchor
-                                               constant:spacing],
-            [guide.trailingAnchor constraintEqualToAnchor:label.trailingAnchor],
+            [iconImageView.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                                    constant:spacing],
+            [iconImageView.centerXAnchor constraintEqualToAnchor:contentView.centerXAnchor],
+
+            [label.topAnchor constraintEqualToAnchor:iconImageView.bottomAnchor
+                                            constant:spacing],
+            [label.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+            [contentView.bottomAnchor constraintEqualToAnchor:label.bottomAnchor
+                                                     constant:spacing],
+            [contentView.trailingAnchor constraintEqualToAnchor:label.trailingAnchor],
 
             (_contentWidthConstraint = [self.contentView.widthAnchor constraintEqualToConstant:200]),
         ]];

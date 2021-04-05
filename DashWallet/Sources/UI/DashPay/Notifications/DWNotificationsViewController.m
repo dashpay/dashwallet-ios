@@ -95,6 +95,13 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     [self.view addSubview:self.collectionView];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [self.collectionView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [self.collectionView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.view.trailingAnchor constraintEqualToAnchor:self.collectionView.trailingAnchor],
+        [self.view.safeAreaLayoutGuide.bottomAnchor constraintEqualToAnchor:self.collectionView.bottomAnchor],
+    ]];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -286,7 +293,7 @@ NS_ASSUME_NONNULL_END
 
         UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
                                                               collectionViewLayout:layout];
-        collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        collectionView.translatesAutoresizingMaskIntoConstraints = NO;
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
         collectionView.delegate = self;
         collectionView.dataSource = self;
