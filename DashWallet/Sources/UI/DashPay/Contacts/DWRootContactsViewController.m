@@ -29,6 +29,7 @@
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 @property (readonly, nonatomic, strong) id<DWDashPayReadyProtocol> dashPayReady;
+@property (nullable, nonatomic, weak) UIViewController *currentController;
 
 @end
 
@@ -66,6 +67,12 @@
                              object:nil];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self updateIfNeeded];
+}
+
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
 }
@@ -77,12 +84,34 @@
                                                   dataProvider:self.dataProvider];
         [self dw_embedChild:contactsController];
         self.navigationItem.rightBarButtonItem = contactsController.navigationItem.rightBarButtonItem;
+        self.currentController = contactsController;
     }
     else {
         DWContactsPlaceholderViewController *placeholderController =
             [[DWContactsPlaceholderViewController alloc] initWithDashPayModel:self.dashPayModel
                                                                  dashPayReady:self.dashPayReady];
         [self dw_embedChild:placeholderController];
+        self.currentController = placeholderController;
+    }
+}
+
+- (void)updateIfNeeded {
+    BOOL updateNeeded = NO;
+    BOOL contactsAvailable = [self contactsAvailable];
+    if (self.currentController != nil) {
+        if (contactsAvailable) {
+            updateNeeded = ![self.currentController isKindOfClass:DWContactsViewController.class];
+        }
+        else {
+            updateNeeded = ![self.currentController isKindOfClass:DWContactsPlaceholderViewController.class];
+        }
+    }
+    else {
+        updateNeeded = YES;
+    }
+
+    if (updateNeeded) {
+        [self update];
     }
 }
 
