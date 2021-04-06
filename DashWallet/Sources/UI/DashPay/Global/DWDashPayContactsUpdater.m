@@ -97,12 +97,18 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     if (myBlockchainIdentity == nil) {
-        completion(YES, nil);
+        if (completion) {
+            completion(YES, nil);
+        }
+
         return;
     }
 
     if (myBlockchainIdentity.registered == NO) {
-        completion(YES, nil);
+        if (completion) {
+            completion(YES, nil);
+        }
+
         return;
     }
 
