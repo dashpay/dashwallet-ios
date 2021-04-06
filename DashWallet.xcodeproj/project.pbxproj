@@ -82,6 +82,7 @@
 		2A2692CD25EBD9D500835B30 /* DWSuccessInvitationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692CC25EBD9D500835B30 /* DWSuccessInvitationView.m */; };
 		2A2692E825EBF08600835B30 /* DWSuccessInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692E725EBF08600835B30 /* DWSuccessInvitationViewController.m */; };
 		2A2692F125EBF0C100835B30 /* DWSuccessInvitationTopView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2692F025EBF0C100835B30 /* DWSuccessInvitationTopView.m */; };
+		2A288160261C422D0014C212 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A28815F261C422D0014C212 /* GoogleService-Info.plist */; };
 		2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */; };
 		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
@@ -827,6 +828,7 @@
 		2A2692F025EBF0C100835B30 /* DWSuccessInvitationTopView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSuccessInvitationTopView.m; sourceTree = "<group>"; };
 		2A2692F825EBF74900835B30 /* DWScrollingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScrollingViewController.h; sourceTree = "<group>"; };
 		2A2692F925EBF74900835B30 /* DWScrollingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWScrollingViewController.m; sourceTree = "<group>"; };
+		2A28815F261C422D0014C212 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceModel.h; sourceTree = "<group>"; };
 		2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceModel.m; sourceTree = "<group>"; };
 		2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsView.h; sourceTree = "<group>"; };
@@ -4691,6 +4693,7 @@
 		75D5F3C8191EC270004AB296 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				2A28815F261C422D0014C212 /* GoogleService-Info.plist */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
 				757E09971ADB8EEB006FD352 /* Localizable.strings */,
@@ -5138,6 +5141,7 @@
 				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
 				2A856CFE24EB30680040BD61 /* DWVerticalContactCell.xib in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
+				2A288160261C422D0014C212 /* GoogleService-Info.plist in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
 				2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */,

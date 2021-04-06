@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
+#import <Firebase/Firebase.h>
 
 #import "DWInitialViewController.h"
 #import "DWDataMigrationManager.h"
@@ -88,6 +89,9 @@ NS_ASSUME_NONNULL_BEGIN
         SecItemDelete((__bridge CFDictionaryRef)spec);
     }
 #endif /* FRESH_INSTALL */
+
+    // Setup Firebase Dynamic Links
+    [FIRApp configure];
     
     [DSLogger sharedInstance];
     

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1039839682638-0afhtpkavvpqhllr7dqrknl5dklavano.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1039839682638-0afhtpkavvpqhllr7dqrknl5dklavano</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1039839682638-6id1tpsmu6tdilsjsmjr6klum421pgjo.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCK3_a7F6tT1P5-JpsH7FfooqanQ1OOXAg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1039839682638</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.dashfoundation.dashpaytn</string>
+	<key>PROJECT_ID</key>
+	<string>dash-wallet-firebase</string>
+	<key>STORAGE_BUCKET</key>
+	<string>dash-wallet-firebase.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1039839682638:ios:c12c9737508e3c1dea631f</string>
+	<key>DATABASE_URL</key>
+	<string>https://dash-wallet-firebase.firebaseio.com</string>
+</dict>
+</plist>
