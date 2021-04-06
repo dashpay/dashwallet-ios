@@ -109,6 +109,9 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
+/* Error message */
+"Already retrieving link" = "Already retrieving link";
+
 /* No comment provided by engineer. */
 "Amount Received" = "Amount Received";
 
@@ -120,6 +123,9 @@
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
+
+/* Error reason message when API key is missing */
+"API key is missing." = "API key is missing.";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
@@ -577,6 +583,9 @@
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Link Uphold Account";
 
+/* Error message */
+"Link was already retrieved" = "Link was already retrieved";
+
 /* No comment provided by engineer. */
 "Load more" = "Load more";
 
@@ -765,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Pending";
+
+/* Message when dynamic link was not found */
+"Pending dynamic link not found" = "Pending dynamic link not found";
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
@@ -1210,6 +1222,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Unable to get new QR code";
 
+/* Error reason when long url can't be produced */
+"Unable to produce long URL" = "Unable to produce long URL";
+
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Unable to provide suggestions";
 
@@ -1221,6 +1236,9 @@
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+
+/* Error reason message when server response can't be parsed */
+"Unrecognized server response" = "Unrecognized server response";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";

@@ -1,9 +1,14 @@
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://cdn.cocoapods.org/'
+
 target 'dashwallet' do
   platform :ios, '12.0'
   
   pod 'DashSync', :path => '../DashSync/'
 
   pod 'CloudInAppMessaging', '0.1.0'
+
+  pod 'Firebase/DynamicLinks', '7.6.0'
   
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'

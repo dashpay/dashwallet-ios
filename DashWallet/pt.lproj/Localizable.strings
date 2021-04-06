@@ -109,6 +109,9 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Permita o acesso a Touch ID em Configurações";
 
+/* Error message */
+"Already retrieving link" = "Already retrieving link";
+
 /* No comment provided by engineer. */
 "Amount Received" = "Valor Recebido";
 
@@ -120,6 +123,9 @@
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Uma experiência familiar e através de todos os seus dispositivos";
+
+/* Error reason message when API key is missing */
+"API key is missing." = "API key is missing.";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Aplicação %@está requerindo um pagamento para";
@@ -577,6 +583,9 @@
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Conectar Conta Uphold";
 
+/* Error message */
+"Link was already retrieved" = "Link was already retrieved";
+
 /* No comment provided by engineer. */
 "Load more" = "Carregar mais";
 
@@ -765,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Pendente";
+
+/* Message when dynamic link was not found */
+"Pending dynamic link not found" = "Pending dynamic link not found";
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
@@ -1210,6 +1222,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Não foi possível obter um novo código QR";
 
+/* Error reason when long url can't be produced */
+"Unable to produce long URL" = "Unable to produce long URL";
+
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Unable to provide suggestions";
 
@@ -1221,6 +1236,9 @@
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+
+/* Error reason message when server response can't be parsed */
+"Unrecognized server response" = "Unrecognized server response";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Documento não suportado ou corrompido";

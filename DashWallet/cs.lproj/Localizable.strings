@@ -109,6 +109,9 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Povolote přístup k Touch ID v nastavení";
 
+/* Error message */
+"Already retrieving link" = "Already retrieving link";
+
 /* No comment provided by engineer. */
 "Amount Received" = "Přijatá částka";
 
@@ -120,6 +123,9 @@
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Intuitivní používání napříč všemi tvými zařízeními";
+
+/* Error reason message when API key is missing */
+"API key is missing." = "API key is missing.";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Aplikace %@ žádá o platbu";
@@ -577,6 +583,9 @@
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Připojit účet Uphold";
 
+/* Error message */
+"Link was already retrieved" = "Link was already retrieved";
+
 /* No comment provided by engineer. */
 "Load more" = "Načíst více";
 
@@ -765,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Čeká na vyřízení";
+
+/* Message when dynamic link was not found */
+"Pending dynamic link not found" = "Pending dynamic link not found";
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
@@ -1210,6 +1222,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Nelze získat nový QR kód";
 
+/* Error reason when long url can't be produced */
+"Unable to produce long URL" = "Unable to produce long URL";
+
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Unable to provide suggestions";
 
@@ -1221,6 +1236,9 @@
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+
+/* Error reason message when server response can't be parsed */
+"Unrecognized server response" = "Unrecognized server response";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nepodporovaný nebo poškozený dokument";

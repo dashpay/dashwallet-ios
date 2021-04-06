@@ -109,6 +109,9 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Cho phép truy cập Touch ID trong Settings";
 
+/* Error message */
+"Already retrieving link" = "Already retrieving link";
+
 /* No comment provided by engineer. */
 "Amount Received" = "Số tiền nhận được";
 
@@ -120,6 +123,9 @@
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Một giao diện trực quan và quen thuộc trên tất cả các thiết bị của bạn";
+
+/* Error reason message when API key is missing */
+"API key is missing." = "API key is missing.";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Ứng dụng 1%@ đang yêu cầu thanh toán cho";
@@ -577,6 +583,9 @@
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Liên kết với tài khoản Uphold";
 
+/* Error message */
+"Link was already retrieved" = "Link was already retrieved";
+
 /* No comment provided by engineer. */
 "Load more" = "Nạp thêm";
 
@@ -765,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Đang chờ";
+
+/* Message when dynamic link was not found */
+"Pending dynamic link not found" = "Pending dynamic link not found";
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
@@ -1210,6 +1222,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Không thể lấy mã QR mới";
 
+/* Error reason when long url can't be produced */
+"Unable to produce long URL" = "Unable to produce long URL";
+
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Unable to provide suggestions";
 
@@ -1221,6 +1236,9 @@
 
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+
+/* Error reason message when server response can't be parsed */
+"Unrecognized server response" = "Unrecognized server response";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Tài liệu không được hỗ trợ hoặc bị hỏng";
