@@ -57,8 +57,10 @@ NS_ASSUME_NONNULL_END
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)showSuccessInvitation {
-    DWSuccessInvitationViewController *invitationController = [[DWSuccessInvitationViewController alloc] init];
+- (void)showSuccessInvitation:(DSBlockchainInvitation *)invitation fullLink:(NSString *)fullLink {
+    DWSuccessInvitationViewController *invitationController =
+        [[DWSuccessInvitationViewController alloc] initWithInvitation:invitation
+                                                             fullLink:fullLink];
     invitationController.delegate = self;
     DWFullScreenModalControllerViewController *modal =
         [[DWFullScreenModalControllerViewController alloc] initWithController:invitationController];
@@ -78,10 +80,12 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWConfirmInvitationViewControllerDelegate
 
-- (void)confirmInvitationViewControllerDidConfirm:(DWConfirmInvitationViewController *)controller {
+- (void)confirmInvitationViewController:(DWConfirmInvitationViewController *)controller
+               didConfirmWithInvitation:(DSBlockchainInvitation *)invitation
+                                   link:(NSString *)link {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       [self showSuccessInvitation];
+                                       [self showSuccessInvitation:invitation fullLink:link];
                                    }];
 }
 

@@ -19,6 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSBlockchainInvitation;
 @class DWSuccessInvitationViewController;
 
 @protocol DWSuccessInvitationViewControllerDelegate <NSObject>
@@ -30,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSuccessInvitationViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWSuccessInvitationViewControllerDelegate> delegate;
+
+- (instancetype)initWithInvitation:(DSBlockchainInvitation *)invitation fullLink:(NSString *)fullLink;
 
 @end
 

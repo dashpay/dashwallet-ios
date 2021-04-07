@@ -509,6 +509,7 @@
 		2AECB52325E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB52225E3DEE9005B1041 /* DWSendInviteFirstStepViewController.m */; };
 		2AECB53825E3EDB4005B1041 /* DWSendInviteFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */; };
 		2AECB54225E3F002005B1041 /* DPAlertViewController+DWInvite.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AECB54125E3F002005B1041 /* DPAlertViewController+DWInvite.m */; };
+		2AEF8C47261E48050018719C /* DWInvitationLinkBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF8C46261E48050018719C /* DWInvitationLinkBuilder.m */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
@@ -1695,6 +1696,8 @@
 		2AECB53725E3EDB4005B1041 /* DWSendInviteFlowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFlowController.m; sourceTree = "<group>"; };
 		2AECB54025E3F002005B1041 /* DPAlertViewController+DWInvite.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DPAlertViewController+DWInvite.h"; sourceTree = "<group>"; };
 		2AECB54125E3F002005B1041 /* DPAlertViewController+DWInvite.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DPAlertViewController+DWInvite.m"; sourceTree = "<group>"; };
+		2AEF8C45261E48050018719C /* DWInvitationLinkBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationLinkBuilder.h; sourceTree = "<group>"; };
+		2AEF8C46261E48050018719C /* DWInvitationLinkBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationLinkBuilder.m; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
 		2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
 		2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
@@ -2254,6 +2257,8 @@
 				2A2692DA25EBD9DB00835B30 /* Views */,
 				2A2692E625EBF08600835B30 /* DWSuccessInvitationViewController.h */,
 				2A2692E725EBF08600835B30 /* DWSuccessInvitationViewController.m */,
+				2AEF8C45261E48050018719C /* DWInvitationLinkBuilder.h */,
+				2AEF8C46261E48050018719C /* DWInvitationLinkBuilder.m */,
 			);
 			path = Invitation;
 			sourceTree = "<group>";
@@ -5669,6 +5674,7 @@
 				2AEC24B6251D06A600AC86F6 /* DWProfileDisplayNameCellModel.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */,
+				2AEF8C47261E48050018719C /* DWInvitationLinkBuilder.m in Sources */,
 				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */,
 				2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */,

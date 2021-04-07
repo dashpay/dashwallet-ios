@@ -1409,6 +1409,9 @@
 "You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
+"You have been invited by %@. Start using Dash..." = "You have been invited by %@. Start using Dash...";
+
+/* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";
 
 /* No comment provided by engineer. */

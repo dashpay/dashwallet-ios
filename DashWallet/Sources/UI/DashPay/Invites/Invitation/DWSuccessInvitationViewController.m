@@ -17,12 +17,14 @@
 
 #import "DWSuccessInvitationViewController.h"
 
+#import <Firebase/Firebase.h>
 #import <LinkPresentation/LinkPresentation.h>
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
 #import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWInvitationActionsView.h"
+#import "DWInvitationLinkBuilder.h"
 #import "DWInvitationMessageView.h"
 #import "DWInvitationPreviewViewController.h"
 #import "DWScrollingViewController.h"
@@ -40,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSLayoutConstraint *bottomConstraint;
 
+@property (nonatomic, strong) DSBlockchainInvitation *invitation;
+@property (nonatomic, copy) NSString *fullLink;
 @property (nonatomic, strong) NSURL *invitationURL;
 
 @end
@@ -47,6 +51,31 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWSuccessInvitationViewController
+
+- (instancetype)initWithInvitation:(DSBlockchainInvitation *)invitation fullLink:(NSString *)fullLink {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _invitation = invitation;
+        _fullLink = fullLink;
+
+
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+        __weak typeof(self) weakSelf = self;
+        [DWInvitationLinkBuilder
+                 dynamicLinkFrom:fullLink
+            myBlockchainIdentity:myBlockchainIdentity
+                      completion:^(NSURL *_Nullable url) {
+                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                          if (!strongSelf) {
+                              return;
+                          }
+
+                          strongSelf.invitationURL = url ?: [NSURL URLWithString:strongSelf.fullLink];
+                      }];
+    }
+    return self;
+}
 
 - (DWSuccessInvitationTopView *)topView {
     if (_topView == nil) {
@@ -127,9 +156,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    // TODO: invitation
-    self.invitationURL = [NSURL URLWithString:@"https://dash.org"];
 
     UIView *contentView = [[UIView alloc] init];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;

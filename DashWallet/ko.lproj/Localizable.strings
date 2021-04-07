@@ -1409,6 +1409,9 @@
 "You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
+"You have been invited by %@. Start using Dash..." = "You have been invited by %@. Start using Dash...";
+
+/* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
 
 /* No comment provided by engineer. */

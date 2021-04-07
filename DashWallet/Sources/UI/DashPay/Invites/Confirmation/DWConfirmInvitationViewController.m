@@ -18,6 +18,7 @@
 #import "DWConfirmInvitationViewController.h"
 
 #import "DWConfirmInvitationContentView.h"
+#import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,7 +57,32 @@ NS_ASSUME_NONNULL_END
 
 - (void)actionButtonAction:(id)sender {
     self.actionButton.enabled = NO;
-    [self.delegate confirmInvitationViewControllerDidConfirm:self];
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSBlockchainInvitation *invitation = [wallet createBlockchainInvitation];
+    __weak typeof(self) weakSelf = self;
+    [invitation
+        createInvitationFullLinkFromIdentity:myBlockchainIdentity
+                                  completion:^(BOOL cancelled, NSString *_Nonnull invitationFullLink) {
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
+
+                                      // skip?
+                                      if (cancelled == NO && invitationFullLink == nil) {
+                                          return;
+                                      }
+
+                                      dispatch_async(dispatch_get_main_queue(), ^{
+                                          strongSelf.actionButton.enabled = cancelled;
+
+                                          if (!cancelled) {
+                                              [strongSelf.delegate confirmInvitationViewController:strongSelf didConfirmWithInvitation:invitation link:invitationFullLink];
+                                          }
+                                      });
+                                  }];
 }
 
 - (void)confirmationCheckboxAction:(DWCheckbox *)sender {
