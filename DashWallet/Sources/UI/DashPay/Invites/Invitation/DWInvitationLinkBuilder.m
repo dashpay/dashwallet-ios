@@ -23,6 +23,8 @@
 #import "DSBlockchainIdentity+DWDisplayName.h"
 
 static NSString *const AndroidBundleID = @"hashengineering.darkcoin.wallet_test";
+// TODO: DP set app store id
+static NSString *const iOSAppStoreID = @"1560401158";
 
 @implementation DWInvitationLinkBuilder
 
@@ -36,7 +38,7 @@ static NSString *const AndroidBundleID = @"hashengineering.darkcoin.wallet_test"
                                        domainURIPrefix:dynamicLinksDomainURIPrefix];
     linkBuilder.iOSParameters =
         [[FIRDynamicLinkIOSParameters alloc] initWithBundleID:[[NSBundle mainBundle] bundleIdentifier]];
-    // TODO: DP set app store id
+    linkBuilder.iOSParameters.appStoreID = iOSAppStoreID;
     linkBuilder.androidParameters =
         [[FIRDynamicLinkAndroidParameters alloc] initWithPackageName:AndroidBundleID];
 
@@ -44,12 +46,16 @@ static NSString *const AndroidBundleID = @"hashengineering.darkcoin.wallet_test"
         [[FIRDynamicLinkSocialMetaTagParameters alloc] init];
     linkBuilder.socialMetaTagParameters.title = NSLocalizedString(@"Join Now", nil);
     NSString *encodedName = [[myBlockchainIdentity dw_displayNameOrUsername] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    NSString *encodedAvatar = [myBlockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 
+    NSString *avatarParam = @"";
+    if (myBlockchainIdentity.avatarPath.length > 0) {
+        NSString *encodedAvatar = [myBlockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        avatarParam = [NSString stringWithFormat:@"&avatar-url=%@", encodedAvatar];
+    }
     NSString *urlFormat =
         [NSString
-            stringWithFormat:@"https://invitations.dashpay.io/fun/invite-preview?display-name=%@&avatar-url=%@",
-                             encodedName, encodedAvatar];
+            stringWithFormat:@"https://invitations.dashpay.io/fun/invite-preview?display-name=%@%@",
+                             encodedName, avatarParam];
     linkBuilder.socialMetaTagParameters.imageURL = [NSURL URLWithString:urlFormat];
     linkBuilder.socialMetaTagParameters.descriptionText =
         [NSString stringWithFormat:NSLocalizedString(@"You have been invited by %@. Start using Dash...", nil),

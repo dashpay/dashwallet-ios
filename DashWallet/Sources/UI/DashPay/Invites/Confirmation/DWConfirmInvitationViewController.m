@@ -18,7 +18,9 @@
 #import "DWConfirmInvitationViewController.h"
 
 #import "DWConfirmInvitationContentView.h"
+#import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+#import "UIViewController+DWDisplayError.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,8 +61,38 @@ NS_ASSUME_NONNULL_END
     self.actionButton.enabled = NO;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     DSBlockchainInvitation *invitation = [wallet createBlockchainInvitation];
+
+    DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
+    [invitation generateBlockchainInvitationsExtendedPublicKeysWithPrompt:NSLocalizedString(@"Create invitation", nil)
+                                                               completion:^(BOOL registered) {
+                                                                   [invitation.identity createFundingPrivateKeyForInvitationWithPrompt:NSLocalizedString(@"Create invitation", nil)
+                                                                                                                            completion:^(BOOL success, BOOL cancelled) {
+                                                                                                                                if (success && !cancelled) {
+                                                                                                                                    [invitation.identity
+                                                                                                                                        registerOnNetwork:steps
+                                                                                                                                        withFundingAccount:account
+                                                                                                                                        forTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_INVITE
+                                                                                                                                        stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+                                                                                                                                        }
+                                                                                                                                        completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                                                                                                                                            if (error) {
+                                                                                                                                                [self dw_displayErrorModally:error];
+                                                                                                                                            }
+                                                                                                                                            else {
+                                                                                                                                                [self generateLinkForInvitationAndFinish:invitation];
+                                                                                                                                            }
+                                                                                                                                        }];
+                                                                                                                                }
+                                                                                                                            }];
+                                                               }];
+}
+
+- (void)generateLinkForInvitationAndFinish:(DSBlockchainInvitation *)invitation {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+
     __weak typeof(self) weakSelf = self;
     [invitation
         createInvitationFullLinkFromIdentity:myBlockchainIdentity
