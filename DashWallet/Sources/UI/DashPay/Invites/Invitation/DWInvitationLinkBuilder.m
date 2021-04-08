@@ -58,7 +58,7 @@ static NSString *const iOSAppStoreID = @"1560401158";
                              encodedName, avatarParam];
     linkBuilder.socialMetaTagParameters.imageURL = [NSURL URLWithString:urlFormat];
     linkBuilder.socialMetaTagParameters.descriptionText =
-        [NSString stringWithFormat:NSLocalizedString(@"You have been invited by %@. Start using Dash...", nil),
+        [NSString stringWithFormat:NSLocalizedString(@"You have been invited by %@. Start using Dash cryptocurrency.", nil),
                                    [myBlockchainIdentity dw_displayNameOrUsername]];
 
     [linkBuilder shortenWithCompletion:^(NSURL *_Nullable shortURL,
