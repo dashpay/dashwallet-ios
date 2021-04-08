@@ -31,7 +31,22 @@ static NSString *const iOSAppStoreID = @"1560401158";
 + (void)dynamicLinkFrom:(NSString *)linkString
     myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity
               completion:(void (^)(NSURL *_Nullable url))completion {
-    NSURL *link = [[NSURL alloc] initWithString:linkString];
+    NSString *encodedName = [[myBlockchainIdentity dw_displayNameOrUsername] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+    NSString *displayNameParam = @"";
+    if (myBlockchainIdentity.displayName.length != 0) {
+        displayNameParam = [NSString stringWithFormat:@"&display-name=%@", encodedName];
+    }
+
+    NSString *avatarParam = @"";
+    if (myBlockchainIdentity.avatarPath.length > 0) {
+        NSString *encodedAvatar = [myBlockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        avatarParam = [NSString stringWithFormat:@"&avatar-url=%@", encodedAvatar];
+    }
+
+    NSString *fullLink = [NSString stringWithFormat:@"%@%@%@", linkString, displayNameParam, avatarParam];
+
+    NSURL *link = [[NSURL alloc] initWithString:fullLink];
     NSString *dynamicLinksDomainURIPrefix = @"https://invitations.dashpay.io/link";
     FIRDynamicLinkComponents *linkBuilder =
         [[FIRDynamicLinkComponents alloc] initWithLink:link
@@ -45,13 +60,7 @@ static NSString *const iOSAppStoreID = @"1560401158";
     linkBuilder.socialMetaTagParameters =
         [[FIRDynamicLinkSocialMetaTagParameters alloc] init];
     linkBuilder.socialMetaTagParameters.title = NSLocalizedString(@"Join Now", nil);
-    NSString *encodedName = [[myBlockchainIdentity dw_displayNameOrUsername] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 
-    NSString *avatarParam = @"";
-    if (myBlockchainIdentity.avatarPath.length > 0) {
-        NSString *encodedAvatar = [myBlockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        avatarParam = [NSString stringWithFormat:@"&avatar-url=%@", encodedAvatar];
-    }
     NSString *urlFormat =
         [NSString
             stringWithFormat:@"https://invitations.dashpay.io/fun/invite-preview?display-name=%@%@",
