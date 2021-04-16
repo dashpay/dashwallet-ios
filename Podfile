@@ -1,4 +1,3 @@
-source 'https://github.com/CocoaPods/Specs.git'
 source 'https://cdn.cocoapods.org/'
 
 target 'dashwallet' do
@@ -8,7 +7,7 @@ target 'dashwallet' do
 
   pod 'CloudInAppMessaging', '0.1.0'
 
-  pod 'Firebase/DynamicLinks', '7.6.0'
+  pod 'Firebase/DynamicLinks'
   
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'

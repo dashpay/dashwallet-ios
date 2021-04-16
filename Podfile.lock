@@ -488,7 +488,7 @@ DEPENDENCIES:
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
-  - Firebase/DynamicLinks (= 7.6.0)
+  - Firebase/DynamicLinks
   - KVO-MVVM (= 0.5.6)
   - MBProgressHUD (= 1.1.0)
   - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
@@ -585,6 +585,6 @@ SPEC CHECKSUMS:
   TOCropViewController: da59f531f8ac8a94ef6d6c0fc34009350f9e8bfe
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 317135557a4d8d42f82550981f93c5ebd62cf35a
+PODFILE CHECKSUM: f6abc796a2d91eb8febb6ae4c4cf53eabcbdf075
 
 COCOAPODS: 1.10.1
