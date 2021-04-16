@@ -21,6 +21,7 @@
 #import "DWDashPaySetupFlowController.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWInvitationHistoryViewController.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWNavigationController.h"
@@ -163,6 +164,9 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Invite: {
+            DWInvitationHistoryViewController *controller = [[DWInvitationHistoryViewController alloc] init];
+            controller.hidesBottomBarWhenPushed = YES;
+            [self.navigationController pushViewController:controller animated:YES];
             break;
         }
     }

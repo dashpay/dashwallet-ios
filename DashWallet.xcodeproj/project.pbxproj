@@ -523,6 +523,14 @@
 		2AF405B2260F9B18000A8DAB /* DWGetStartedItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405B1260F9B18000A8DAB /* DWGetStartedItemView.m */; };
 		2AF405C1260FE90C000A8DAB /* DWGetStartedContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405C0260FE90C000A8DAB /* DWGetStartedContentViewController.m */; };
 		2AF405CA260FF046000A8DAB /* DWGetStartedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF405C9260FF046000A8DAB /* DWGetStartedViewController.m */; };
+		2AF55E4526297774001974C4 /* DWInvitationHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55E4426297774001974C4 /* DWInvitationHistoryViewController.m */; };
+		2AF55E552629797B001974C4 /* DWCreateInvitationButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55E542629797B001974C4 /* DWCreateInvitationButton.m */; };
+		2AF55E652629834B001974C4 /* NSArray+DWFlatten.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55E642629834B001974C4 /* NSArray+DWFlatten.m */; };
+		2AF55E7426298427001974C4 /* NSLayoutConstraint+DWAutolayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55E7326298427001974C4 /* NSLayoutConstraint+DWAutolayout.m */; };
+		2AF55E832629863C001974C4 /* UIView+DWAutolayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55E822629863C001974C4 /* UIView+DWAutolayout.m */; };
+		2AF55E8C26299502001974C4 /* DWInvitationTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55E8B26299502001974C4 /* DWInvitationTableViewCell.m */; };
+		2AF55EB52629AE96001974C4 /* DWInvitationHistoryModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55EB42629AE96001974C4 /* DWInvitationHistoryModel.m */; };
+		2AF55EBE2629DA72001974C4 /* DWHistoryHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF55EBD2629DA72001974C4 /* DWHistoryHeaderView.m */; };
 		2AF60D09250FA63F00FB3E71 /* DWBalanceView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF60D06250FA63E00FB3E71 /* DWBalanceView.m */; };
 		2AF60D0A250FA63F00FB3E71 /* DWBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF60D08250FA63F00FB3E71 /* DWBalanceView.xib */; };
 		2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */; };
@@ -1725,6 +1733,23 @@
 		2AF405C8260FF046000A8DAB /* DWGetStartedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGetStartedViewController.h; sourceTree = "<group>"; };
 		2AF405C9260FF046000A8DAB /* DWGetStartedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedViewController.m; sourceTree = "<group>"; };
 		2AF405D1260FF09B000A8DAB /* DWGetStarted.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGetStarted.h; sourceTree = "<group>"; };
+		2AF55E4326297774001974C4 /* DWInvitationHistoryViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationHistoryViewController.h; sourceTree = "<group>"; };
+		2AF55E4426297774001974C4 /* DWInvitationHistoryViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationHistoryViewController.m; sourceTree = "<group>"; };
+		2AF55E532629797B001974C4 /* DWCreateInvitationButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateInvitationButton.h; sourceTree = "<group>"; };
+		2AF55E542629797B001974C4 /* DWCreateInvitationButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateInvitationButton.m; sourceTree = "<group>"; };
+		2AF55E632629834B001974C4 /* NSArray+DWFlatten.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSArray+DWFlatten.h"; sourceTree = "<group>"; };
+		2AF55E642629834B001974C4 /* NSArray+DWFlatten.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSArray+DWFlatten.m"; sourceTree = "<group>"; };
+		2AF55E7226298427001974C4 /* NSLayoutConstraint+DWAutolayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLayoutConstraint+DWAutolayout.h"; sourceTree = "<group>"; };
+		2AF55E7326298427001974C4 /* NSLayoutConstraint+DWAutolayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLayoutConstraint+DWAutolayout.m"; sourceTree = "<group>"; };
+		2AF55E812629863C001974C4 /* UIView+DWAutolayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWAutolayout.h"; sourceTree = "<group>"; };
+		2AF55E822629863C001974C4 /* UIView+DWAutolayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWAutolayout.m"; sourceTree = "<group>"; };
+		2AF55E8A26299502001974C4 /* DWInvitationTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationTableViewCell.h; sourceTree = "<group>"; };
+		2AF55E8B26299502001974C4 /* DWInvitationTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationTableViewCell.m; sourceTree = "<group>"; };
+		2AF55E942629A43D001974C4 /* DWInvitationItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationItem.h; sourceTree = "<group>"; };
+		2AF55EB32629AE96001974C4 /* DWInvitationHistoryModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationHistoryModel.h; sourceTree = "<group>"; };
+		2AF55EB42629AE96001974C4 /* DWInvitationHistoryModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationHistoryModel.m; sourceTree = "<group>"; };
+		2AF55EBC2629DA72001974C4 /* DWHistoryHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHistoryHeaderView.h; sourceTree = "<group>"; };
+		2AF55EBD2629DA72001974C4 /* DWHistoryHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHistoryHeaderView.m; sourceTree = "<group>"; };
 		2AF60D06250FA63E00FB3E71 /* DWBalanceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBalanceView.m; sourceTree = "<group>"; };
 		2AF60D07250FA63E00FB3E71 /* DWBalanceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBalanceView.h; sourceTree = "<group>"; };
 		2AF60D08250FA63F00FB3E71 /* DWBalanceView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWBalanceView.xib; sourceTree = "<group>"; };
@@ -4057,6 +4082,7 @@
 		2AD1CE7D22DC928C00C99324 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				2AF55E622629832D001974C4 /* Autolayout */,
 				2A913E8D23A31362006A2A59 /* Embedding */,
 				2AD1CE7E22DC92BF00C99324 /* NSString+DWTextSize.h */,
 				2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */,
@@ -4525,6 +4551,7 @@
 		2AECB52025E3DEAB005B1041 /* Invites */ = {
 			isa = PBXGroup;
 			children = (
+				2AF55E422629775F001974C4 /* History */,
 				2A68091225ED30C900829FC8 /* Preview */,
 				2A2692CA25EBD69400835B30 /* Invitation */,
 				2A2692AF25EBD2D700835B30 /* Confirmation */,
@@ -4594,6 +4621,53 @@
 				2AF405B1260F9B18000A8DAB /* DWGetStartedItemView.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		2AF55E422629775F001974C4 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				2AF55E932629A427001974C4 /* Models */,
+				2AF55E5226297954001974C4 /* Views */,
+				2AF55E4326297774001974C4 /* DWInvitationHistoryViewController.h */,
+				2AF55E4426297774001974C4 /* DWInvitationHistoryViewController.m */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		2AF55E5226297954001974C4 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2AF55E532629797B001974C4 /* DWCreateInvitationButton.h */,
+				2AF55E542629797B001974C4 /* DWCreateInvitationButton.m */,
+				2AF55E8A26299502001974C4 /* DWInvitationTableViewCell.h */,
+				2AF55E8B26299502001974C4 /* DWInvitationTableViewCell.m */,
+				2AF55EBC2629DA72001974C4 /* DWHistoryHeaderView.h */,
+				2AF55EBD2629DA72001974C4 /* DWHistoryHeaderView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2AF55E622629832D001974C4 /* Autolayout */ = {
+			isa = PBXGroup;
+			children = (
+				2AF55E632629834B001974C4 /* NSArray+DWFlatten.h */,
+				2AF55E642629834B001974C4 /* NSArray+DWFlatten.m */,
+				2AF55E7226298427001974C4 /* NSLayoutConstraint+DWAutolayout.h */,
+				2AF55E7326298427001974C4 /* NSLayoutConstraint+DWAutolayout.m */,
+				2AF55E812629863C001974C4 /* UIView+DWAutolayout.h */,
+				2AF55E822629863C001974C4 /* UIView+DWAutolayout.m */,
+			);
+			path = Autolayout;
+			sourceTree = "<group>";
+		};
+		2AF55E932629A427001974C4 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2AF55E942629A43D001974C4 /* DWInvitationItem.h */,
+				2AF55EB32629AE96001974C4 /* DWInvitationHistoryModel.h */,
+				2AF55EB42629AE96001974C4 /* DWInvitationHistoryModel.m */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
@@ -5528,6 +5602,7 @@
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
+				2AF55E8C26299502001974C4 /* DWInvitationTableViewCell.m in Sources */,
 				2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
@@ -5582,6 +5657,7 @@
 				2AE8B66B23CF0F390016F221 /* DWUsernamePendingViewController.m in Sources */,
 				2A0C69BD23140779001B8C90 /* DWModalInteractiveTransition.m in Sources */,
 				2AFCB9AC23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m in Sources */,
+				2AF55E552629797B001974C4 /* DWCreateInvitationButton.m in Sources */,
 				2AD6E5632487E16400B52F14 /* DWRequestsViewController.m in Sources */,
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				2A877CA225116F1800AB14FC /* DWContactsPlaceholderViewController.m in Sources */,
@@ -5598,6 +5674,7 @@
 				2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */,
 				2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */,
 				2AF40576260F4CED000A8DAB /* DWDPWelcomePageViewController.m in Sources */,
+				2AF55E4526297774001974C4 /* DWInvitationHistoryViewController.m in Sources */,
 				2ACCD85D231939FE00A96B62 /* DWRequestAmountContentView.m in Sources */,
 				2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
@@ -5655,6 +5732,7 @@
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */,
+				2AF55EBE2629DA72001974C4 /* DWHistoryHeaderView.m in Sources */,
 				2A7AF380248280CE001D74F9 /* DWDPSearchItemsFactory.m in Sources */,
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
 				2AE310FE2527A4450054266D /* DWTxListHomeCell.m in Sources */,
@@ -5716,6 +5794,7 @@
 				2AF405B2260F9B18000A8DAB /* DWGetStartedItemView.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
+				2AF55E832629863C001974C4 /* UIView+DWAutolayout.m in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
@@ -5748,6 +5827,7 @@
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
 				2AC1EE202566C37900410917 /* DWAvatarGravatarViewController.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
+				2AF55E652629834B001974C4 /* NSArray+DWFlatten.m in Sources */,
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
@@ -5902,6 +5982,7 @@
 				2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */,
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
+				2AF55E7426298427001974C4 /* NSLayoutConstraint+DWAutolayout.m in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A4EB4812598CFF200892E4D /* DWNetworkUnavailableView.m in Sources */,
@@ -5972,6 +6053,7 @@
 				2ADDF9A2251B807600DA8926 /* DWTextFieldFormCellModel.m in Sources */,
 				2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */,
 				2A5F1027255C80AC001A94B1 /* DWErrorUpdatingUserProfileView.m in Sources */,
+				2AF55EB52629AE96001974C4 /* DWInvitationHistoryModel.m in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,

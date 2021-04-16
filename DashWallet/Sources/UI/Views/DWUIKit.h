@@ -32,6 +32,9 @@
 
 #import "DWDeviceSpecificBottomPadding.h"
 
+#import "NSLayoutConstraint+DWAutolayout.h"
+#import "UIView+DWAutolayout.h"
+
 // Global UI Constants
 
 #define DW_TABBAR_HEIGHT (DEVICE_HAS_HOME_INDICATOR ? 77.0 : 64.0)

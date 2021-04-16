@@ -293,6 +293,9 @@
 "Create a new Invitation" = "Create a new Invitation";
 
 /* No comment provided by engineer. */
+"Create a new invitation" = "Create a new invitation";
+
+/* No comment provided by engineer. */
 "Create a New Wallet" = "Maak een nieuwe portemonnee aan";
 
 /* No comment provided by engineer. */
@@ -526,11 +529,17 @@
 /* No comment provided by engineer. */
 "Invitation" = "Invitation";
 
+/* Invitation #3 */
+"Invitation %ld" = "Invitation %ld";
+
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Invitation Created Successfully";
 
 /* No comment provided by engineer. */
 "Invitation Fee" = "Invitation Fee";
+
+/* No comment provided by engineer. */
+"Invitations History" = "Invitations History";
 
 /* No comment provided by engineer. */
 "Invite" = "Invite";
@@ -543,6 +552,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends & family" = "Invite your friends & family";
+
+/* No comment provided by engineer. */
+"Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
 
 /* No comment provided by engineer. */
 "Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
