@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>1039839682638-0afhtpkavvpqhllr7dqrknl5dklavano.apps.googleusercontent.com</string>
+	<string>1039839682638-rf0qhhtser657srvofa0vlsa6t63rnr6.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.1039839682638-0afhtpkavvpqhllr7dqrknl5dklavano</string>
+	<string>com.googleusercontent.apps.1039839682638-rf0qhhtser657srvofa0vlsa6t63rnr6</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>1039839682638-6id1tpsmu6tdilsjsmjr6klum421pgjo.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>org.dashfoundation.dashpaytn</string>
+	<string>org.dashfoundation.dashpaytnt</string>
 	<key>PROJECT_ID</key>
 	<string>dash-wallet-firebase</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1039839682638:ios:c12c9737508e3c1dea631f</string>
+	<string>1:1039839682638:ios:7ee1f87721ebb5ebea631f</string>
 	<key>DATABASE_URL</key>
 	<string>https://dash-wallet-firebase.firebaseio.com</string>
 </dict>
