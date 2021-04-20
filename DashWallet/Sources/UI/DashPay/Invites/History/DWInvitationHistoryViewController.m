@@ -17,6 +17,7 @@
 
 #import "DWInvitationHistoryViewController.h"
 
+#import "DWHistoryFilterViewController.h"
 #import "DWHistoryHeaderView.h"
 #import "DWInvitationHistoryModel.h"
 #import "DWInvitationTableViewCell.h"
@@ -25,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWInvitationHistoryViewController () <DWInvitationHistoryModelDelegate, UITableViewDelegate, UITableViewDataSource>
+@interface DWInvitationHistoryViewController () <DWInvitationHistoryModelDelegate, UITableViewDelegate, UITableViewDataSource, DWHistoryFilterViewControllerDelegate>
 
 @property (nonatomic, strong) DWInvitationHistoryModel *model;
 @property (null_resettable, nonatomic, strong) UITableView *tableView;
@@ -74,7 +75,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)optionsButtonAction:(UIControl *)sender {
-    //
+    DWHistoryFilterViewController *controller = [[DWHistoryFilterViewController alloc] init];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (UITableView *)tableView {
@@ -129,6 +132,13 @@ NS_ASSUME_NONNULL_END
 
 - (void)invitationHistoryModelDidUpdate:(DWInvitationHistoryModel *)model {
     [self.tableView reloadData];
+}
+
+#pragma mark - DWHistoryFilterViewControllerDelegate
+
+- (void)historyFilterViewController:(DWHistoryFilterViewController *)controller
+                    didSelectFilter:(DWInvitationHistoryFilter)filter {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

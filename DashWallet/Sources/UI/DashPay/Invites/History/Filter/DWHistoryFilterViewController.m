@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWAvatarEditSelectorViewController.h"
+#import "DWHistoryFilterViewController.h"
 
-#import "DWAvatarEditSelectorContentView.h"
+#import "DWHistoryFilterContentView.h"
 #import "DWModalPopupTransition.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAvatarEditSelectorViewController () <DWAvatarEditSelectorContentViewDelegate>
+@interface DWHistoryFilterViewController () <DWHistoryFilterContentViewDelegate>
 
 @property (nonatomic, strong) DWModalPopupTransition *modalTransition;
 
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-@implementation DWAvatarEditSelectorViewController
+@implementation DWHistoryFilterViewController
 
 - (instancetype)init {
     self = [super initWithNibName:nil bundle:nil];
@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_END
     UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapRecognizerAction)];
     [self.view addGestureRecognizer:tapRecognizer];
 
-    DWAvatarEditSelectorContentView *contentView = [[DWAvatarEditSelectorContentView alloc] initWithFrame:CGRectZero];
+    DWHistoryFilterContentView *contentView = [[DWHistoryFilterContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.delegate = self;
     [self.view addSubview:contentView];
@@ -82,22 +82,10 @@ NS_ASSUME_NONNULL_END
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - DWAvatarEditSelectorContentViewDelegate <NSObject>
+#pragma mark - DWHistoryFilterContentViewDelegate
 
-- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view photoButtonAction:(UIButton *)sender {
-    [self.delegate avatarEditSelectorViewController:self photoButtonAction:sender];
-}
-
-- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view galleryButtonAction:(UIButton *)sender {
-    [self.delegate avatarEditSelectorViewController:self galleryButtonAction:sender];
-}
-
-- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view publicURLButtonAction:(UIButton *)sender {
-    [self.delegate avatarEditSelectorViewController:self urlButtonAction:sender];
-}
-
-- (void)avatarEditSelectorContentView:(DWAvatarEditSelectorContentView *)view gravatarButtonAction:(UIButton *)sender {
-    [self.delegate avatarEditSelectorViewController:self gravatarButtonAction:sender];
+- (void)historyFilterView:(DWHistoryFilterContentView *)view didSelectFilter:(DWInvitationHistoryFilter)filter {
+    [self.delegate historyFilterViewController:self didSelectFilter:filter];
 }
 
 @end

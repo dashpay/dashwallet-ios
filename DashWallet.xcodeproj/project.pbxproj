@@ -299,6 +299,8 @@
 		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
 		2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
 		2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */; };
+		2A8DB8BF262F5B44009094BD /* DWHistoryFilterContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DB8BE262F5B44009094BD /* DWHistoryFilterContentView.m */; };
+		2A8DB9B226300D98009094BD /* DWHistoryFilterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DB9B126300D98009094BD /* DWHistoryFilterViewController.m */; };
 		2A8DBA702630A609009094BD /* DWExtendedPublicKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */; };
 		2A8DBA7A2630A6D6009094BD /* DWExtendedPublicKeysModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBA792630A6D6009094BD /* DWExtendedPublicKeysModel.m */; };
 		2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBAAE2630CC2D009094BD /* DWDerivationPathKeysItemObject.m */; };
@@ -1263,6 +1265,11 @@
 		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
 		2A8C24B72333A85E00000D43 /* DWModalNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalNavigationController.h; sourceTree = "<group>"; };
 		2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalNavigationController.m; sourceTree = "<group>"; };
+		2A8DB8BD262F5B44009094BD /* DWHistoryFilterContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHistoryFilterContentView.h; sourceTree = "<group>"; };
+		2A8DB8BE262F5B44009094BD /* DWHistoryFilterContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHistoryFilterContentView.m; sourceTree = "<group>"; };
+		2A8DB97826300B6D009094BD /* DWInvitationHistoryFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationHistoryFilter.h; sourceTree = "<group>"; };
+		2A8DB9B026300D98009094BD /* DWHistoryFilterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHistoryFilterViewController.h; sourceTree = "<group>"; };
+		2A8DB9B126300D98009094BD /* DWHistoryFilterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHistoryFilterViewController.m; sourceTree = "<group>"; };
 		2A8DBA6E2630A609009094BD /* DWExtendedPublicKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedPublicKeysViewController.h; sourceTree = "<group>"; };
 		2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedPublicKeysViewController.m; sourceTree = "<group>"; };
 		2A8DBA782630A6D6009094BD /* DWExtendedPublicKeysModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedPublicKeysModel.h; sourceTree = "<group>"; };
@@ -3330,6 +3337,17 @@
 			path = QuickReceive;
 			sourceTree = "<group>";
 		};
+		2A8DB8BC262F5B26009094BD /* Filter */ = {
+			isa = PBXGroup;
+			children = (
+				2A8DB8BD262F5B44009094BD /* DWHistoryFilterContentView.h */,
+				2A8DB8BE262F5B44009094BD /* DWHistoryFilterContentView.m */,
+				2A8DB9B026300D98009094BD /* DWHistoryFilterViewController.h */,
+				2A8DB9B126300D98009094BD /* DWHistoryFilterViewController.m */,
+			);
+			path = Filter;
+			sourceTree = "<group>";
+		};
 		2A8DBA772630A6BE009094BD /* ExtendedKeys */ = {
 			isa = PBXGroup;
 			children = (
@@ -4626,6 +4644,7 @@
 		2AF55E422629775F001974C4 /* History */ = {
 			isa = PBXGroup;
 			children = (
+				2A8DB8BC262F5B26009094BD /* Filter */,
 				2AF55E932629A427001974C4 /* Models */,
 				2AF55E5226297954001974C4 /* Views */,
 				2AF55E4326297774001974C4 /* DWInvitationHistoryViewController.h */,
@@ -4666,6 +4685,7 @@
 				2AF55E942629A43D001974C4 /* DWInvitationItem.h */,
 				2AF55EB32629AE96001974C4 /* DWInvitationHistoryModel.h */,
 				2AF55EB42629AE96001974C4 /* DWInvitationHistoryModel.m */,
+				2A8DB97826300B6D009094BD /* DWInvitationHistoryFilter.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -5705,6 +5725,7 @@
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
+				2A8DB9B226300D98009094BD /* DWHistoryFilterViewController.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */,
 				2A2692F125EBF0C100835B30 /* DWSuccessInvitationTopView.m in Sources */,
@@ -5795,6 +5816,7 @@
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				2AF55E832629863C001974C4 /* UIView+DWAutolayout.m in Sources */,
+				2A8DB8BF262F5B44009094BD /* DWHistoryFilterContentView.m in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
