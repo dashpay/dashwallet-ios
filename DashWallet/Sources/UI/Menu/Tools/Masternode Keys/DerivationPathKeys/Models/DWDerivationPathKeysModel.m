@@ -20,21 +20,12 @@
 #import <DashSync/DSAuthenticationKeysDerivationPath.h>
 #import <DashSync/DashSync.h>
 
+#import "DWDerivationPathKeysItemObject.h"
 #import "DWEnvironment.h"
 #import "DWSelectorFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDerivationPathKeysItemObject : NSObject <DWDerivationPathKeysItem>
-
-@property (nonatomic, copy) NSString *title;
-@property (nonatomic, copy) NSString *detail;
-
-@end
-
-@implementation DWDerivationPathKeysItemObject
-
-@end
 
 #pragma mark -
 

@@ -2,7 +2,6 @@ target 'dashwallet' do
   platform :ios, '12.0'
   
   pod 'DashSync', :path => '../DashSync/'
-  pod 'DAPI-GRPC', :path => '../DashSync/'
 
   pod 'CloudInAppMessaging', '0.1.0'
   
