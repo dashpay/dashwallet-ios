@@ -190,7 +190,15 @@ NS_ASSUME_NONNULL_END
 
 - (void)inviteButtonAction {
     DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
+    controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
+
+#pragma mark - DWSendInviteFlowControllerDelegate
+
+- (void)sendInviteFlowControllerDidFinish:(DWSendInviteFlowController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
 
 @end

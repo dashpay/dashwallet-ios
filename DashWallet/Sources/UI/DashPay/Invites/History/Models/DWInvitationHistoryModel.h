@@ -17,6 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWInvitationHistoryFilter.h"
 #import "DWInvitationItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,8 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWInvitationHistoryModel : NSObject
 
+@property (nonatomic, assign) DWInvitationHistoryFilter filter;
 @property (readonly, nonatomic, copy) NSArray<id<DWInvitationHistoryItem>> *items;
 @property (nullable, nonatomic, weak) id<DWInvitationHistoryModelDelegate> delegate;
+
+- (void)reload;
 
 @end
 

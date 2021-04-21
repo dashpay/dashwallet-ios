@@ -92,6 +92,7 @@ NS_ASSUME_NONNULL_END
     self = [super init];
     if (self) {
         _items = @[];
+        _filter = DWInvitationHistoryFilter_All;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(blockchainIdentityDidUpdateNotification)
@@ -101,6 +102,12 @@ NS_ASSUME_NONNULL_END
         [self reload];
     }
     return self;
+}
+
+- (void)setFilter:(DWInvitationHistoryFilter)filter {
+    _filter = filter;
+
+    [self reload];
 }
 
 - (void)reload {
@@ -116,12 +123,29 @@ NS_ASSUME_NONNULL_END
     NSUInteger index = 1;
     NSMutableArray<DWInvitationHistoryItemImpl *> *mutableItems = [NSMutableArray arrayWithCapacity:invitations.count];
     for (DSBlockchainInvitation *invitation in invitations) {
-        DWInvitationHistoryItemImpl *item =
-            [[DWInvitationHistoryItemImpl alloc] initWithInvitation:invitation
-                                                              index:index];
-        [mutableItems addObject:item];
+        BOOL shouldInclude = NO;
+        switch (self.filter) {
+            case DWInvitationHistoryFilter_All:
+                shouldInclude = YES;
+                break;
+            case DWInvitationHistoryFilter_Pending:
+                shouldInclude = invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown ||
+                                invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_NotRegistered;
+                break;
+            case DWInvitationHistoryFilter_Claimed:
+                shouldInclude = invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registering ||
+                                invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered;
+                break;
+        }
 
-        index += 1;
+        if (shouldInclude) {
+            DWInvitationHistoryItemImpl *item =
+                [[DWInvitationHistoryItemImpl alloc] initWithInvitation:invitation
+                                                                  index:index];
+            [mutableItems addObject:item];
+
+            index += 1;
+        }
     }
     self.items = mutableItems;
 

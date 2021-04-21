@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const NotificationsInvitationMessageHiddenKey = @"NotificationsInvitationMessageHiddenKey";
 
-@interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPNewIncomingRequestItemDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, DWNotificationsInvitationCellDelegate>
+@interface DWNotificationsViewController () <DWNotificationsModelDelegate, DWDPNewIncomingRequestItemDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, DWNotificationsInvitationCellDelegate, DWSendInviteFlowControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
@@ -192,6 +192,7 @@ NS_ASSUME_NONNULL_END
 
     if (indexPath.section == 0) {
         DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
+        controller.delegate = self;
         [self presentViewController:controller animated:YES completion:nil];
 
         return;
@@ -259,6 +260,13 @@ NS_ASSUME_NONNULL_END
 
     return size;
 }
+
+#pragma mark - DWSendInviteFlowControllerDelegate
+
+- (void)sendInviteFlowControllerDidFinish:(DWSendInviteFlowController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
 
 #pragma mark - DWNotificationsModelDelegate
 

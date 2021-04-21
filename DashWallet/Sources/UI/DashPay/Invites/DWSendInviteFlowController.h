@@ -19,7 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWSendInviteFlowController;
+
+@protocol DWSendInviteFlowControllerDelegate <NSObject>
+
+- (void)sendInviteFlowControllerDidFinish:(DWSendInviteFlowController *)controller;
+
+@end
+
 @interface DWSendInviteFlowController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWSendInviteFlowControllerDelegate> delegate;
 
 @end
 

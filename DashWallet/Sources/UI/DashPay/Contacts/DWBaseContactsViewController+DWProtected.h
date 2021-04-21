@@ -21,10 +21,11 @@
 #import "DWBaseContactsModel.h"
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWSearchStateViewController.h"
+#import "DWSendInviteFlowController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseContactsViewController () <DWContactsModelDelegate, DWSearchStateViewControllerDelegate, DWDPNewIncomingRequestItemDelegate>
+@interface DWBaseContactsViewController () <DWContactsModelDelegate, DWSearchStateViewControllerDelegate, DWDPNewIncomingRequestItemDelegate, DWSendInviteFlowControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;

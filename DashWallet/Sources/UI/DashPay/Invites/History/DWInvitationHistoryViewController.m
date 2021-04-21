@@ -26,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWInvitationHistoryViewController () <DWInvitationHistoryModelDelegate, UITableViewDelegate, UITableViewDataSource, DWHistoryFilterViewControllerDelegate>
+@interface DWInvitationHistoryViewController () <DWInvitationHistoryModelDelegate, UITableViewDelegate, UITableViewDataSource, DWHistoryFilterViewControllerDelegate, DWSendInviteFlowControllerDelegate>
 
 @property (nonatomic, strong) DWInvitationHistoryModel *model;
 @property (null_resettable, nonatomic, strong) UITableView *tableView;
@@ -71,6 +71,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)createInvitationAction:(UIControl *)sender {
     DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
+    controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
@@ -128,6 +129,13 @@ NS_ASSUME_NONNULL_END
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+#pragma mark - DWSendInviteFlowControllerDelegate
+
+- (void)sendInviteFlowControllerDidFinish:(DWSendInviteFlowController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+    [self.model reload];
+}
+
 #pragma mark - DWInvitationHistoryModelDelegate
 
 - (void)invitationHistoryModelDidUpdate:(DWInvitationHistoryModel *)model {
@@ -139,6 +147,7 @@ NS_ASSUME_NONNULL_END
 - (void)historyFilterViewController:(DWHistoryFilterViewController *)controller
                     didSelectFilter:(DWInvitationHistoryFilter)filter {
     [controller dismissViewControllerAnimated:YES completion:nil];
+    self.model.filter = filter;
 }
 
 @end

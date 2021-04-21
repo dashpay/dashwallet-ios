@@ -94,10 +94,7 @@ NS_ASSUME_NONNULL_END
 - (void)fullScreenModalControllerViewControllerDidCancel:(DWFullScreenModalControllerViewController *)controller {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       [self dismissViewControllerAnimated:YES
-                                                                completion:^{
-                                                                    // TOOD: show history?
-                                                                }];
+                                       [self.delegate sendInviteFlowControllerDidFinish:self];
                                    }];
 }
 
@@ -106,10 +103,7 @@ NS_ASSUME_NONNULL_END
 - (void)successInvitationViewControllerDidSelectLater:(DWSuccessInvitationViewController *)controller {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       [self dismissViewControllerAnimated:YES
-                                                                completion:^{
-                                                                    // TOOD: show history?
-                                                                }];
+                                       [self.delegate sendInviteFlowControllerDidFinish:self];
                                    }];
 }
 
