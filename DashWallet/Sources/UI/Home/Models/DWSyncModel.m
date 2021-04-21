@@ -73,7 +73,7 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                selector:@selector(chainManagerSyncStartedNotification:)
-                                   name:DSChainManagerSyncStartedNotification
+                                   name:DSChainManagerSyncWillStartNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainManagerSyncParametersUpdatedNotification:)
