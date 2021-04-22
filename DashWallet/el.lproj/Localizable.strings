@@ -272,6 +272,9 @@
 "Could not automatically recover missing or incorrect words" = "Δεν ήταν δυνατή η αυτόματη ανάκτηση των χαμένων λέξεων ";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Δεν ήταν δυνατή η πληρωμή";
 
 /* No comment provided by engineer. */
@@ -381,6 +384,9 @@
 
 /* No comment provided by engineer. */
 "Exit" = "Έξοδος";
+
+/* No comment provided by engineer. */
+"Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "όριο Face ID ";

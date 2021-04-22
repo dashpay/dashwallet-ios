@@ -272,6 +272,9 @@
 "Could not automatically recover missing or incorrect words" = "Les mots incorrects ou manquants n'ont pas pu être retrouvés automatiquement";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Impossible d'effectuer le paiement";
 
 /* No comment provided by engineer. */
@@ -381,6 +384,9 @@
 
 /* No comment provided by engineer. */
 "Exit" = "Quitter";
+
+/* No comment provided by engineer. */
+"Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Limite pour Face ID";

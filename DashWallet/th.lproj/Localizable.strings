@@ -272,6 +272,9 @@
 "Could not automatically recover missing or incorrect words" = "ไม่สามารถกู้คืนคำที่หายไปหรือไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "ไม่สามารถชำระเงินได้";
 
 /* No comment provided by engineer. */
@@ -381,6 +384,9 @@
 
 /* No comment provided by engineer. */
 "Exit" = "ออก";
+
+/* No comment provided by engineer. */
+"Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "ขีดจำกัด Face ID";
