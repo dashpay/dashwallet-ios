@@ -1018,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Gửi %1$@ (%2$@) từ khoá riêng này đến ví của bạn? Mạng lưới Dash sẽ nhận một khoản phí là %3$@ (%4$@).";
 
+/* No comment provided by engineer. */
+"Send again" = "Send again";
+
 /* Send by (scanning QR code) */
 "Send by" = "Gửi bởi";
 

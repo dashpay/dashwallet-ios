@@ -17,11 +17,13 @@
 
 #import "DWInvitationHistoryViewController.h"
 
+#import "DWEnvironment.h"
 #import "DWHistoryFilterViewController.h"
 #import "DWHistoryHeaderView.h"
 #import "DWInvitationHistoryModel.h"
 #import "DWInvitationTableViewCell.h"
 #import "DWSendInviteFlowController.h"
+#import "DWSuccessInvitationViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -127,6 +129,37 @@ NS_ASSUME_NONNULL_END
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+
+    id<DWInvitationHistoryItem> item = self.model.items[indexPath.row];
+
+    __weak typeof(self) weakSelf = self;
+    [item.blockchainInvitation
+        createInvitationFullLinkFromIdentity:myBlockchainIdentity
+                                  completion:^(BOOL cancelled, NSString *_Nonnull invitationFullLink) {
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
+
+                                      // skip?
+                                      if (cancelled == NO && invitationFullLink == nil) {
+                                          return;
+                                      }
+
+                                      dispatch_async(dispatch_get_main_queue(), ^{
+                                          DWSuccessInvitationViewController *controller =
+                                              [[DWSuccessInvitationViewController alloc] initWithInvitation:item.blockchainInvitation
+                                                                                                   fullLink:invitationFullLink];
+                                          controller.title = NSLocalizedString(@"Invite", nil);
+                                          controller.hidesBottomBarWhenPushed = YES;
+                                          controller.displayAsDetails = YES;
+                                          controller.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+                                          [self.navigationController pushViewController:controller animated:YES];
+                                      });
+                                  }];
 }
 
 #pragma mark - DWSendInviteFlowControllerDelegate

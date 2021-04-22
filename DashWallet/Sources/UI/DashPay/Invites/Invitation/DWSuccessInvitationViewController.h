@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSuccessInvitationViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWSuccessInvitationViewControllerDelegate> delegate;
+@property (nonatomic, assign) BOOL displayAsDetails;
 
 - (instancetype)initWithInvitation:(DSBlockchainInvitation *)invitation fullLink:(NSString *)fullLink;
 

@@ -130,7 +130,12 @@ NS_ASSUME_NONNULL_END
     if (_buttonsView == nil) {
         DWActionButton *sendButton = [[DWActionButton alloc] init];
         sendButton.translatesAutoresizingMaskIntoConstraints = NO;
-        [sendButton setTitle:NSLocalizedString(@"Send Invitation", nil) forState:UIControlStateNormal];
+        if (self.displayAsDetails) {
+            [sendButton setTitle:NSLocalizedString(@"Send again", nil) forState:UIControlStateNormal];
+        }
+        else {
+            [sendButton setTitle:NSLocalizedString(@"Send Invitation", nil) forState:UIControlStateNormal];
+        }
         [sendButton addTarget:self action:@selector(sendButtonAction) forControlEvents:UIControlEventTouchUpInside];
 
         DWActionButton *laterButton = [[DWActionButton alloc] init];
@@ -139,7 +144,9 @@ NS_ASSUME_NONNULL_END
         [laterButton setTitle:NSLocalizedString(@"Maybe later", nil) forState:UIControlStateNormal];
         [laterButton addTarget:self action:@selector(laterButtonAction) forControlEvents:UIControlEventTouchUpInside];
 
-        UIStackView *actionsView = [[UIStackView alloc] initWithArrangedSubviews:@[ sendButton, laterButton ]];
+        NSArray<UIView *> *actions = self.displayAsDetails ? @[ sendButton ] : @[ sendButton, laterButton ];
+
+        UIStackView *actionsView = [[UIStackView alloc] initWithArrangedSubviews:actions];
         actionsView.translatesAutoresizingMaskIntoConstraints = NO;
         actionsView.spacing = 8.0;
         actionsView.axis = UILayoutConstraintAxisVertical;
@@ -164,7 +171,7 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:self.buttonsView];
 
     UILayoutGuide *parent = self.view.layoutMarginsGuide;
-    self.bottomConstraint = [parent.bottomAnchor constraintEqualToAnchor:self.buttonsView.bottomAnchor];
+    self.bottomConstraint = [parent.bottomAnchor constraintEqualToAnchor:self.buttonsView.bottomAnchor constant:16];
     [NSLayoutConstraint activateConstraints:@[
         [contentView.topAnchor constraintEqualToAnchor:parent.topAnchor],
         [contentView.leadingAnchor constraintEqualToAnchor:parent.leadingAnchor],
@@ -192,20 +199,34 @@ NS_ASSUME_NONNULL_END
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self.topView viewWillAppear];
+    if (!self.displayAsDetails) {
+        [self.topView viewWillAppear];
+    }
+
     [self ka_startObservingKeyboardNotifications];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self.topView viewDidAppear];
+    if (!self.displayAsDetails) {
+        [self.topView viewDidAppear];
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
 
     [self ka_stopObservingKeyboardNotifications];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    if (self.displayAsDetails) {
+        return UIStatusBarStyleLightContent;
+    }
+    else {
+        return UIStatusBarStyleDefault;
+    }
 }
 
 - (void)sendButtonAction {
@@ -241,7 +262,7 @@ NS_ASSUME_NONNULL_END
 - (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
                                animationDuration:(NSTimeInterval)animationDuration
                                   animationCurve:(UIViewAnimationCurve)animationCurve {
-    self.bottomConstraint.constant = height;
+    self.bottomConstraint.constant = height > 0 ? height : 16;
     [self.view layoutIfNeeded];
 }
 

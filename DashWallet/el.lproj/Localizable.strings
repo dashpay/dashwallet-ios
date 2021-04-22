@@ -1018,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Θα στείλετε %1$@ (%2$@) από το ιδιωτικό κλειδί σας στο πορτοφόλι σας; Το δίκτυο Dash θα λάβει ένα τέλος %3$@ (%4$@).";
 
+/* No comment provided by engineer. */
+"Send again" = "Send again";
+
 /* Send by (scanning QR code) */
 "Send by" = "Εστάλη από";
 

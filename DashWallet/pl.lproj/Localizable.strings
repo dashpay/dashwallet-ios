@@ -1018,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Wysłać %1$@ (%2$@) z tego klucza prywatnego do twojego portfela? Sieć Dash otrzyma prowizje w wysokości %3$@ (%4$@).";
 
+/* No comment provided by engineer. */
+"Send again" = "Send again";
+
 /* Send by (scanning QR code) */
 "Send by" = "Wyślij przez";
 

@@ -1018,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) versturen van deze persoonlijke sleutel naar jouw portemonnee? Het Dash-netwerk zal een vergoeding krijgen van %3$@ (%4$@).";
 
+/* No comment provided by engineer. */
+"Send again" = "Send again";
+
 /* Send by (scanning QR code) */
 "Send by" = "Verstuurd door";
 

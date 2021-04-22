@@ -1018,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "이 개인 키에서 %1$@(%2$@)를 당신의 지갑으로 전송하시겠습니까? 대시 네트워크에 %3$@(%4$@)의 수수료가 지급됩니다.";
 
+/* No comment provided by engineer. */
+"Send again" = "Send again";
+
 /* Send by (scanning QR code) */
 "Send by" = "다음에서 전송하였습니다";
 

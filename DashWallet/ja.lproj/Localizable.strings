@@ -1018,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高%1$@ （%2$@） をあなたのウォレット宛に送金してもよろしいですか？Dashネットワークへの手数料が %3$@ （%4$@） です。";
 
+/* No comment provided by engineer. */
+"Send again" = "Send again";
+
 /* Send by (scanning QR code) */
 "Send by" = "で送金する";
 
