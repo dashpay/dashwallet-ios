@@ -296,10 +296,10 @@
 		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
 		2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
 		2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */; };
-		2A8E74C8258960710075407B /* DWGlobalMatchHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8E74C7258960710075407B /* DWGlobalMatchHeaderView.m */; };
 		2A8DBA702630A609009094BD /* DWExtendedPublicKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */; };
 		2A8DBA7A2630A6D6009094BD /* DWExtendedPublicKeysModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBA792630A6D6009094BD /* DWExtendedPublicKeysModel.m */; };
 		2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBAAE2630CC2D009094BD /* DWDerivationPathKeysItemObject.m */; };
+		2A8E74C8258960710075407B /* DWGlobalMatchHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8E74C7258960710075407B /* DWGlobalMatchHeaderView.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
@@ -1245,14 +1245,14 @@
 		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
 		2A8C24B72333A85E00000D43 /* DWModalNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalNavigationController.h; sourceTree = "<group>"; };
 		2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalNavigationController.m; sourceTree = "<group>"; };
-		2A8E74C6258960710075407B /* DWGlobalMatchHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGlobalMatchHeaderView.h; sourceTree = "<group>"; };
-		2A8E74C7258960710075407B /* DWGlobalMatchHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchHeaderView.m; sourceTree = "<group>"; };
 		2A8DBA6E2630A609009094BD /* DWExtendedPublicKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedPublicKeysViewController.h; sourceTree = "<group>"; };
 		2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedPublicKeysViewController.m; sourceTree = "<group>"; };
 		2A8DBA782630A6D6009094BD /* DWExtendedPublicKeysModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedPublicKeysModel.h; sourceTree = "<group>"; };
 		2A8DBA792630A6D6009094BD /* DWExtendedPublicKeysModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedPublicKeysModel.m; sourceTree = "<group>"; };
 		2A8DBAAD2630CC2D009094BD /* DWDerivationPathKeysItemObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDerivationPathKeysItemObject.h; sourceTree = "<group>"; };
 		2A8DBAAE2630CC2D009094BD /* DWDerivationPathKeysItemObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDerivationPathKeysItemObject.m; sourceTree = "<group>"; };
+		2A8E74C6258960710075407B /* DWGlobalMatchHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGlobalMatchHeaderView.h; sourceTree = "<group>"; };
+		2A8E74C7258960710075407B /* DWGlobalMatchHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchHeaderView.m; sourceTree = "<group>"; };
 		2A8E79B9240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = sk; path = sk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2A8E79BA240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A8E79BB2406772900AA7C3D /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Interface.strings; sourceTree = "<group>"; };
