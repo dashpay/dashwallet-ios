@@ -66,12 +66,27 @@ NS_ASSUME_NONNULL_BEGIN
                                                         self.model.ownerDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+            if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf showOwnerKeys];
             }
-
-            [strongSelf showOwnerKeys];
+            else {
+                [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                    usingBiometricAuthentication:NO
+                                                                  alertIfLockout:YES
+                                                                      completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                          if (!strongSelf) {
+                                                                              return;
+                                                                          }
+                                                                          if (authenticatedOrSuccess) {
+                                                                              [strongSelf showOwnerKeys];
+                                                                          }
+                                                                      }];
+            }
         };
         [items addObject:cellModel];
     }
@@ -82,12 +97,27 @@ NS_ASSUME_NONNULL_BEGIN
                                                         self.model.votingDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+            if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf showVotingKeys];
             }
-
-            [strongSelf showVotingKeys];
+            else {
+                [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                    usingBiometricAuthentication:NO
+                                                                  alertIfLockout:YES
+                                                                      completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                          if (!strongSelf) {
+                                                                              return;
+                                                                          }
+                                                                          if (authenticatedOrSuccess) {
+                                                                              [strongSelf showVotingKeys];
+                                                                          }
+                                                                      }];
+            }
         };
         [items addObject:cellModel];
     }
@@ -98,12 +128,27 @@ NS_ASSUME_NONNULL_BEGIN
                                                         self.model.operatorDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+            if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf showOperatorKeys];
             }
-
-            [strongSelf showOperatorKeys];
+            else {
+                [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                    usingBiometricAuthentication:NO
+                                                                  alertIfLockout:YES
+                                                                      completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                          if (!strongSelf) {
+                                                                              return;
+                                                                          }
+                                                                          if (authenticatedOrSuccess) {
+                                                                              [strongSelf showOperatorKeys];
+                                                                          }
+                                                                      }];
+            }
         };
         [items addObject:cellModel];
     }
