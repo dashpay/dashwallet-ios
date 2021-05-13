@@ -17,6 +17,7 @@
 
 #import "DWInvitationHistoryModel.h"
 
+#import "DWDateFormatter.h"
 #import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -65,21 +66,12 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)subtitle {
-    // TODO: return date instead
-    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-
-    if (self.blockchainInvitation.identity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
-        return [NSString stringWithFormat:
-                             @"%@ (%@)",
-                             self.blockchainInvitation.identity.localizedRegistrationStatusString,
-                             @"unconfirmed"];
-    }
-    else {
-        return [NSString stringWithFormat:
-                             @"%@ (%u)",
-                             self.blockchainInvitation.identity.localizedRegistrationStatusString,
-                             (chainManager.chain.lastSyncBlockHeight - self.blockchainInvitation.identity.registrationCreditFundingTransaction.blockHeight + 1)];
-    }
+    DSTransaction *transaction = self.blockchainInvitation.identity.registrationCreditFundingTransaction;
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
+    NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
+    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
+    return [[DWDateFormatter sharedInstance] shortStringFromDate:txDate];
 }
 
 @end
