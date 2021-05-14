@@ -33,6 +33,30 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWInvitationSourceItem : NSObject <UIActivityItemSource>
+
+@property (nonatomic, strong) NSURL *url;
+
+@end
+
+@implementation DWInvitationSourceItem
+
+- (NSString *)activityViewController:(UIActivityViewController *)activityViewController subjectForActivityType:(nullable UIActivityType)activityType {
+    return NSLocalizedString(@"DashPay Invitation", nil);
+}
+
+- (nullable id)activityViewController:(nonnull UIActivityViewController *)activityViewController itemForActivityType:(nullable UIActivityType)activityType {
+    return self.url;
+}
+
+- (nonnull id)activityViewControllerPlaceholderItem:(nonnull UIActivityViewController *)activityViewController {
+    return self.url;
+}
+
+@end
+
+#pragma mark -
+
 @interface DWSuccessInvitationViewController () <DWInvitationActionsViewDelegate>
 
 @property (null_resettable, nonatomic, strong) DWSuccessInvitationTopView *topView;
@@ -244,8 +268,11 @@ NS_ASSUME_NONNULL_END
     [messageView removeFromSuperview];
 
 
+    DWInvitationSourceItem *shareItem = [[DWInvitationSourceItem alloc] init];
+    shareItem.url = invitationURL;
+
     UIActivityViewController *sharingController =
-        [[UIActivityViewController alloc] initWithActivityItems:@[ invitationURL, image ]
+        [[UIActivityViewController alloc] initWithActivityItems:@[ shareItem, image ]
                                           applicationActivities:nil];
     [self presentViewController:sharingController animated:YES completion:nil];
 }
