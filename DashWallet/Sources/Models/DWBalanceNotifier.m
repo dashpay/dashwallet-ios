@@ -24,6 +24,7 @@
 #import "DWGlobalOptions.h"
 #import "DWPhoneWCSessionManager.h"
 #import <DashSync/DSLogger.h>
+#import <DashSync/DSPermissionNotification.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -68,11 +69,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)registerForPushNotifications {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DSWillRequestOSPermissionNotification object:nil];
     const UNAuthorizationOptions options =
         (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
     [[UNUserNotificationCenter currentNotificationCenter]
         requestAuthorizationWithOptions:options
                       completionHandler:^(BOOL granted, NSError *_Nullable error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
+        });
                           [DWGlobalOptions sharedInstance].localNotificationsEnabled = granted;
                           DSLog(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
                       }];
