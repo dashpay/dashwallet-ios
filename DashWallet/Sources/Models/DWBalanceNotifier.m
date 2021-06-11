@@ -75,9 +75,9 @@ NS_ASSUME_NONNULL_BEGIN
     [[UNUserNotificationCenter currentNotificationCenter]
         requestAuthorizationWithOptions:options
                       completionHandler:^(BOOL granted, NSError *_Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
-        });
+                          dispatch_async(dispatch_get_main_queue(), ^{
+                              [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
+                          });
                           [DWGlobalOptions sharedInstance].localNotificationsEnabled = granted;
                           DSLog(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
                       }];

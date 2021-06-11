@@ -22,9 +22,9 @@
 #import "DWDPRegistrationStatus.h"
 #import "DWDPRegistrationStatusTableViewCell.h"
 #import "DWDashPayProtocol.h"
-#import "DWFilterHeaderView.h"
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
+#import "DWSyncingHeaderView.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
 #import "DWTxListTableViewCell.h"
@@ -36,12 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
                           UITableViewDataSource,
                           UITableViewDelegate,
                           DWHomeModelUpdatesObserver,
-                          DWFilterHeaderViewDelegate,
+                          DWSyncingHeaderViewDelegate,
                           DWDPRegistrationErrorRetryDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
+
+@property (nullable, nonatomic, weak) DWSyncingHeaderView *syncingHeaderView;
 
 // strong ref to current datasource to make sure it always exists while tableView uses it
 @property (nonatomic, strong) DWTransactionListDataSource *currentDataSource;
@@ -96,6 +98,24 @@ NS_ASSUME_NONNULL_BEGIN
                                                  selector:@selector(setNeedsLayout)
                                                      name:UIContentSizeCategoryDidChangeNotification
                                                    object:nil];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          if (!value) {
+                              return;
+                          }
+
+                          [self.syncingHeaderView setSyncState:self.model.syncModel.state];
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.progress)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          if (!value) {
+                              return;
+                          }
+
+                          [self.syncingHeaderView setProgress:self.model.syncModel.progress];
+                      }];
     }
     return self;
 }
@@ -171,24 +191,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UITableViewDelegate
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    DWFilterHeaderView *headerView = [[DWFilterHeaderView alloc] initWithFrame:CGRectZero];
-    headerView.titleLabel.text = NSLocalizedString(@"History", nil);
+    DWSyncingHeaderView *headerView = [[DWSyncingHeaderView alloc] initWithFrame:CGRectZero];
     headerView.delegate = self;
-    UIButton *button = headerView.filterButton;
-    switch (self.model.displayMode) {
-        case DWHomeTxDisplayMode_All:
-            [button setTitle:NSLocalizedString(@"All", nil) forState:UIControlStateNormal];
-            break;
-        case DWHomeTxDisplayMode_Received:
-            [button setTitle:NSLocalizedString(@"Received", nil) forState:UIControlStateNormal];
-            break;
-        case DWHomeTxDisplayMode_Sent:
-            [button setTitle:NSLocalizedString(@"Sent", nil) forState:UIControlStateNormal];
-            break;
-        case DWHomeTxDisplayMode_Rewards:
-            [button setTitle:NSLocalizedString(@"Rewards", nil) forState:UIControlStateNormal];
-            break;
-    }
+    [headerView setSyncState:self.model.syncModel.state];
+    [headerView setProgress:self.model.syncModel.progress];
+    self.syncingHeaderView = headerView;
     return headerView;
 }
 
@@ -214,9 +221,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
-#pragma mark - DWFilterHeaderViewDelegate
+#pragma mark - DWSyncingHeaderViewDelegate
 
-- (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
+- (void)syncingHeaderView:(DWSyncingHeaderView *)view syncingButtonAction:(UIButton *)sender {
+    //
+}
+
+- (void)syncingHeaderView:(DWSyncingHeaderView *)view filterButtonAction:(UIButton *)sender {
     [self.delegate homeView:self showTxFilter:sender];
 }
 

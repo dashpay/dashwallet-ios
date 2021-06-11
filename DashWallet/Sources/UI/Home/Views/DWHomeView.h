@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
 #import "DWHomeProtocol.h"
 #import "DWShortcutsActionDelegate.h"
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWHomeView : UIView
+@interface DWHomeView : KVOUIView
 
 @property (nonatomic, strong) id<DWHomeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWHomeViewDelegate> delegate;
