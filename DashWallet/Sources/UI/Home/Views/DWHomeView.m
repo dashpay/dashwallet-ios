@@ -224,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWSyncingHeaderViewDelegate
 
 - (void)syncingHeaderView:(DWSyncingHeaderView *)view syncingButtonAction:(UIButton *)sender {
-    //
+    [self.delegate homeView:self showSyncingStatus:sender];
 }
 
 - (void)syncingHeaderView:(DWSyncingHeaderView *)view filterButtonAction:(UIButton *)sender {
