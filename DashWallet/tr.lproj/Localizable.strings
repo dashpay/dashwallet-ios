@@ -931,6 +931,9 @@
 /* No comment provided by engineer. */
 "Syncing" = "Senkronize ediliyor";
 
+/* No comment provided by engineer. */
+"Syncing Balance" = "Syncing Balance";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Dokun";
 
