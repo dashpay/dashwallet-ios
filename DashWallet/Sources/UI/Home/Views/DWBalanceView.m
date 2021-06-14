@@ -81,8 +81,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 
     self.backgroundColor = [UIColor dw_backgroundColor];
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-    self.titleLabel.textColor = [UIColor dw_darkBlueColor];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.titleLabel.textColor = [UIColor colorWithRed:166.0 / 255.0 green:215.0 / 255.0 blue:245.0 / 255.0 alpha:1.0];
 
     self.eyeSlashImageView.tintColor = [UIColor dw_darkBlueColor];
 
@@ -116,6 +116,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
                   with:^(typeof(self) self, NSNumber *value) {
                       [self hideBalance:self.model.balanceDisplayOptions.balanceHidden];
                   }];
+
+    [self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
+                  with:^(typeof(self) self, NSNumber *value) {
+                      [self updateBalanceTitle];
+                  }];
 }
 
 - (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
@@ -146,22 +151,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 - (void)reloadAttributedData {
     UIColor *balanceColor = [UIColor dw_lightTitleColor];
     DWBalanceModel *balanceModel = self.model.balanceModel;
-    if (balanceModel) {
-        UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
 
-        self.dashBalanceLabel.attributedText = [balanceModel dashAmountStringWithFont:font
-                                                                            tintColor:balanceColor];
-        self.fiatBalanceLabel.hidden = NO;
-        self.fiatBalanceLabel.text = [balanceModel fiatAmountString];
-    }
-    else {
-        // 😭 UI designes states so:
-        self.dashBalanceLabel.textColor = [balanceColor colorWithAlphaComponent:0.44];
-        self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-
-        self.dashBalanceLabel.text = NSLocalizedString(@"Please wait for the sync to complete", nil);
-        self.fiatBalanceLabel.hidden = YES;
-    }
+    self.dashBalanceLabel.attributedText = [balanceModel dashAmountStringWithFont:font
+                                                                        tintColor:balanceColor];
+    self.fiatBalanceLabel.text = [balanceModel fiatAmountString];
+    self.fiatBalanceLabel.hidden = balanceModel == nil;
 }
 
 - (void)hideBalance:(BOOL)hidden {
@@ -176,10 +171,24 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
                                                           ? NSLocalizedString(@"Tap to unhide balance", nil)
                                                           : NSLocalizedString(@"Tap to hide balance", nil);
 
-                         self.titleLabel.text = hidden
-                                                    ? NSLocalizedString(@"Balance hidden", nil)
-                                                    : NSLocalizedString(@"Available balance", nil);
+                         [self updateBalanceTitle];
                      }];
+}
+
+- (void)updateBalanceTitle {
+    if (self.model.balanceDisplayOptions.balanceHidden) {
+        self.titleLabel.text = NSLocalizedString(@"Balance hidden", nil);
+    }
+    else {
+        switch (self.model.syncModel.state) {
+            case DWSyncModelState_Syncing:
+                self.titleLabel.text = NSLocalizedString(@"Syncing Balance", nil);
+                break;
+            default:
+                self.titleLabel.text = NSLocalizedString(@"Available balance", nil);
+                break;
+        }
+    }
 }
 
 @end

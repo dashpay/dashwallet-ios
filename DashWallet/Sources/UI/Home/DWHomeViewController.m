@@ -27,6 +27,7 @@
 #import "DWNavigationController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
+#import "DWSyncingAlertViewController.h"
 #import "DWTxDetailPopupViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
@@ -91,6 +92,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
     [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:YES];
+}
+
+- (void)homeView:(DWHomeView *)homeView showSyncingStatus:(UIView *)sender {
+    DWSyncingAlertViewController *controller = [[DWSyncingAlertViewController alloc] init];
+    controller.model = self.model;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
