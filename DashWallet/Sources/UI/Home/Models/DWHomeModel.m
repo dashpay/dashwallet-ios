@@ -104,7 +104,7 @@ static BOOL IsJailbroken(void) {
 
         _syncModel = [[DWSyncModel alloc] initWithReachability:_reachability];
 
-        _dashPayModel = [[DWDashPayModel alloc] init];
+        _dashPayModel = nil; // [[DWDashPayModel alloc] init];
 
         // set empty datasource
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
@@ -294,7 +294,7 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)walletDidWipe {
-    self.dashPayModel = [[DWDashPayModel alloc] init];
+    self.dashPayModel = nil; // [[DWDashPayModel alloc] init];
 }
 
 #pragma mark - DWShortcutsModelDataSource
