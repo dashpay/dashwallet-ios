@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_END
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil) {
+    if (myBlockchainIdentity == nil || myBlockchainIdentity.registered == NO) {
         return;
     }
 
@@ -94,20 +94,16 @@ NS_ASSUME_NONNULL_END
 - (void)fetchIntiatedInternally:(BOOL)initiatedInternally completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
+
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil) {
+    if (myBlockchainIdentity == nil || myBlockchainIdentity.registered == NO) {
         if (completion) {
             completion(YES, nil);
         }
 
-        return;
-    }
-
-    if (myBlockchainIdentity.registered == NO) {
-        if (completion) {
-            completion(YES, nil);
-        }
+        [self performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
 
         return;
     }
@@ -121,6 +117,8 @@ NS_ASSUME_NONNULL_END
             completion(YES, nil);
         }
 
+        [self performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
+
         return;
     }
 
@@ -131,9 +129,6 @@ NS_ASSUME_NONNULL_END
 
     self.lastFetch = [NSDate date];
 
-    // Cancel any scheduled calls if fetch is called manually
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
-
     __weak typeof(self) weakSelf = self;
     [myBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -142,6 +137,10 @@ NS_ASSUME_NONNULL_END
         }
 
         strongSelf.fetching = NO;
+
+        if (strongSelf.isUpdating == NO) {
+            return;
+        }
 
         DSLog(@"DWDP: Fetch contact requests %@: %@",
               success ? @"Succeeded" : @"Failed",
