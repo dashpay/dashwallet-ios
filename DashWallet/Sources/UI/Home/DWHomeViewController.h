@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) id<DWHomeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate, DWWipeDelegate> delegate;
 
+- (void)handleDeeplink:(NSURL *)url;
+
 @end
 
 NS_ASSUME_NONNULL_END

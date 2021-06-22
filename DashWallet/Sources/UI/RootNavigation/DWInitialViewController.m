@@ -68,6 +68,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.rootController setLaunchingAsDeferredController];
 }
 
+- (void)handleDeeplink:(NSURL *)url {
+    [self.rootController handleDeeplink:url];
+}
+
 - (void)handleURL:(NSURL *)url {
     [self.rootController handleURL:url];
 }

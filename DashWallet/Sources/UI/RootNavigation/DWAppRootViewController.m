@@ -48,6 +48,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
+@property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -75,6 +76,18 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)setLaunchingAsDeferredController {
     self.launchingWasDeferred = YES;
+}
+
+- (void)handleDeeplink:(NSURL *)url {
+    // Defer URL until unlocked.
+    // This also prevents an issue with too fast unlocking via Face ID.
+    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
+    if (isLocked && self.deferredDeeplinkToProcess == nil) {
+        self.deferredDeeplinkToProcess = url;
+        return;
+    }
+
+    [self.mainController handleDeeplink:url];
 }
 
 - (void)handleURL:(NSURL *)url {
@@ -291,9 +304,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.hidden = YES;
             self.lockWindow.alpha = 1.0;
 
-            if (self.deferredURLToProcess) {
+            if (self.deferredDeeplinkToProcess) {
+                [self handleDeeplink:self.deferredDeeplinkToProcess];
+            }
+            else if (self.deferredURLToProcess) {
                 [self handleURL:self.deferredURLToProcess];
             }
+            self.deferredDeeplinkToProcess = nil;
             self.deferredURLToProcess = nil;
         }];
 }

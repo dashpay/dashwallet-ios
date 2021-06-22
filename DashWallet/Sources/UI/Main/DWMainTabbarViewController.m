@@ -99,6 +99,14 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self tabBarViewDidClosePayments:self.tabBarView];
 }
 
+- (void)handleDeeplink:(NSURL *)url {
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
+    [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
+
+    [self.homeController handleDeeplink:url];
+}
+
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {

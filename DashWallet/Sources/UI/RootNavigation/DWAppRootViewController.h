@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setLaunchingAsDeferredController;
 
+- (void)handleDeeplink:(NSURL *)url;
 - (void)handleURL:(NSURL *)url;
 - (void)handleFile:(NSData *)file;
 

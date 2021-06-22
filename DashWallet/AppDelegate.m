@@ -178,11 +178,21 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
 continueUserActivity:(nonnull NSUserActivity *)userActivity
  restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
+    __weak typeof(self) weakSelf = self;
         BOOL handled = [[FIRDynamicLinks dynamicLinks] handleUniversalLink:userActivity.webpageURL
                                                                 completion:^(FIRDynamicLink * _Nullable dynamicLink,
                                                                              NSError * _Nullable error) {
-            NSLog(@">>>>> LINK %@", dynamicLink.description);
-            NSLog(@">>>>> LINK ERR %@", error);
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            if (dynamicLink.url) {
+                DWInitialViewController *controller = (DWInitialViewController *)strongSelf.window.rootViewController;
+                if ([controller isKindOfClass:DWInitialViewController.class]) {
+                    [controller handleDeeplink:dynamicLink.url];
+                }
+            }
         }];
         return handled;
 }

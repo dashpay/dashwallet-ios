@@ -173,6 +173,44 @@ NS_ASSUME_NONNULL_END
         ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && value);
 }
 
+- (void)handleDeeplink:(NSURL *)url
+            completion:(void (^)(BOOL success,
+                                 NSString *_Nullable errorTitle,
+                                 NSString *_Nullable errorMessage))completion {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    [DSBlockchainInvitation
+        verifyInvitationLink:url.absoluteString
+                     onChain:chain
+                  completion:^(DSTransaction *_Nonnull transaction, bool spent, NSError *_Nonnull error) {
+                      NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+                      NSString *username = @"<unknown user>";
+                      for (NSURLQueryItem *item in components.queryItems) {
+                          if ([item.name isEqualToString:@"user"]) {
+                              username = item.value;
+                              break;
+                          }
+                      }
+                      if (transaction != nil) {
+                          completion(YES, nil, nil);
+                      }
+                      else {
+                          if (spent) {
+                              completion(
+                                  NO,
+                                  NSLocalizedString(@"Invitation already claimed", nil),
+                                  [NSString stringWithFormat:NSLocalizedString(@"Your invitation from %@ has been already claimed", nil), username]);
+                          }
+                          else {
+                              completion(
+                                  NO,
+                                  NSLocalizedString(@"Invalid Inviation", nil),
+                                  [NSString stringWithFormat:NSLocalizedString(@"Your invitation from %@ is not valid", nil), username]);
+                          }
+                      }
+                  }
+             completionQueue:dispatch_get_main_queue()];
+}
+
 #pragma mark - Notifications
 
 - (void)notificationsWillUpdate {

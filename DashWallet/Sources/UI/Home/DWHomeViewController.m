@@ -17,6 +17,7 @@
 
 #import "DWHomeViewController.h"
 
+#import "DPAlertViewController.h"
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWDashPaySetupFlowController.h"
 #import "DWEnvironment.h"
@@ -89,6 +90,29 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewWillDisappear:animated];
 
     [self.model.balanceDisplayOptions hideBalanceIfNeeded];
+}
+
+- (void)handleDeeplink:(NSURL *)url {
+    __weak typeof(self) weakSelf = self;
+    [self.model
+        handleDeeplink:url
+            completion:^(BOOL success, NSString *_Nullable errorTitle, NSString *_Nullable errorMessage) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                if (success) {
+                    NSLog(@">>>>>>>>> Deeplink is OK");
+                }
+                else {
+                    DPAlertViewController *alert =
+                        [[DPAlertViewController alloc] initWithIcon:[UIImage imageNamed:@"icon_invitation_error"]
+                                                              title:errorTitle
+                                                        description:errorMessage];
+                    [strongSelf presentViewController:alert animated:YES completion:nil];
+                }
+            }];
 }
 
 #pragma mark - DWHomeViewDelegate

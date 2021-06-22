@@ -341,6 +341,13 @@ static BOOL IsJailbroken(void) {
     return canRegisterUsername && isSynced && isEnoughBalance;
 }
 
+- (void)handleDeeplink:(NSURL *)url
+            completion:(void (^)(BOOL success,
+                                 NSString *_Nullable errorTitle,
+                                 NSString *_Nullable errorMessage))completion {
+    [self.dashPayModel handleDeeplink:url completion:completion];
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {

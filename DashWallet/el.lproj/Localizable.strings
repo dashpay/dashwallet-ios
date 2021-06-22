@@ -527,6 +527,9 @@
 "Invalid" = "Μη έγκυρο";
 
 /* No comment provided by engineer. */
+"Invalid Inviation" = "Invalid Inviation";
+
+/* No comment provided by engineer. */
 "Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
 
 /* No comment provided by engineer. */
@@ -537,6 +540,9 @@
 
 /* Invitation #3 */
 "Invitation %ld" = "Invitation %ld";
+
+/* No comment provided by engineer. */
+"Invitation already claimed" = "Invitation already claimed";
 
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Invitation Created Successfully";
@@ -1458,6 +1464,12 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* No comment provided by engineer. */
+"Your invitation from %@ has been already claimed" = "Your invitation from %@ has been already claimed";
+
+/* No comment provided by engineer. */
+"Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";

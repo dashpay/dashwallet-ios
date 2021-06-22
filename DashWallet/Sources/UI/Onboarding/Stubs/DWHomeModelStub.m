@@ -139,6 +139,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletDidWipe {
 }
 
+- (void)handleDeeplink:(NSURL *)url
+            completion:(void (^)(BOOL success,
+                                 NSString *_Nullable errorTitle,
+                                 NSString *_Nullable errorMessage))completion {
+}
+
 #pragma mark - DWDashPayReadyProtocol
 
 - (BOOL)isDashPayReady {
