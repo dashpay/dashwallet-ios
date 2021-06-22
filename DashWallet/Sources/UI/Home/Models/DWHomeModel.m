@@ -104,7 +104,9 @@ static BOOL IsJailbroken(void) {
 
         _syncModel = [[DWSyncModel alloc] initWithReachability:_reachability];
 
-        // _dashPayModel = [[DWDashPayModel alloc] init];
+#if DASHPAY_ENABLED
+        _dashPayModel = [[DWDashPayModel alloc] init];
+#endif /* DASHPAY_ENABLED */
 
         // set empty datasource
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
@@ -294,7 +296,9 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)walletDidWipe {
-    // self.dashPayModel = [[DWDashPayModel alloc] init];
+#if DASHPAY_ENABLED
+    self.dashPayModel = [[DWDashPayModel alloc] init];
+#endif /* DASHPAY_ENABLED */
 }
 
 #pragma mark - DWShortcutsModelDataSource
