@@ -176,8 +176,37 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (BOOL)application:(UIApplication *)application
+continueUserActivity:(nonnull NSUserActivity *)userActivity
+ restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
+        BOOL handled = [[FIRDynamicLinks dynamicLinks] handleUniversalLink:userActivity.webpageURL
+                                                                completion:^(FIRDynamicLink * _Nullable dynamicLink,
+                                                                             NSError * _Nullable error) {
+            NSLog(@">>>>> LINK %@", dynamicLink.description);
+            NSLog(@">>>>> LINK ERR %@", error);
+        }];
+        return handled;
+}
+
+- (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    FIRDynamicLink *dynamicLink = [[FIRDynamicLinks dynamicLinks] dynamicLinkFromCustomSchemeURL:url];
+    if (dynamicLink) {
+        if (dynamicLink.url) {
+            // Handle the deep link. For example, show the deep-linked content,
+            // apply a promotional offer to the user's account or show customized onboarding view.
+            // ...
+        } else {
+            // Dynamic link has empty deep link. This situation will happens if
+            // Firebase Dynamic Links iOS SDK tried to retrieve pending dynamic link,
+            // but pending link is not available for this device/App combination.
+            // At this point you may display default onboarding view.
+        }
+        return YES;
+    }
+
+    // Handle URL Scheme instead
+
     if (![DWURLParser allowsURLHandling]) {
         return NO;
     }
