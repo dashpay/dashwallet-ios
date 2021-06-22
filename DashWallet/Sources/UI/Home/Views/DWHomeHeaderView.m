@@ -99,21 +99,12 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
                           [self.syncView setSyncState:state];
 
-                          if (state == DWSyncModelState_SyncDone) {
-                              [self hideSyncView];
-                          }
-                          else {
+                          if (state == DWSyncModelState_SyncFailed || state == DWSyncModelState_NoConnection) {
                               [self showSyncView];
                           }
-                      }];
-
-        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.progress)
-                      with:^(typeof(self) self, NSNumber *value) {
-                          if (!value) {
-                              return;
+                          else {
+                              [self hideSyncView];
                           }
-
-                          [self.syncView setProgress:self.model.syncModel.progress animated:YES];
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.registrationStatus)

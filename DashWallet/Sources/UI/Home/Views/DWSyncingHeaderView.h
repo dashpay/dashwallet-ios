@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,28 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-#import "DWBalanceDisplayOptionsProtocol.h"
-#import "DWSyncContainerProtocol.h"
+#import "DWSyncModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWBalanceModel;
+@class DWSyncingHeaderView;
 
-@protocol DWBalanceProtocol <DWSyncContainerProtocol>
+@protocol DWSyncingHeaderViewDelegate <NSObject>
 
-@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
-@property (readonly, nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
+- (void)syncingHeaderView:(DWSyncingHeaderView *)view filterButtonAction:(UIButton *)sender;
+- (void)syncingHeaderView:(DWSyncingHeaderView *)view syncingButtonAction:(UIButton *)sender;
+
+@end
+
+@interface DWSyncingHeaderView : UIView
+
+@property (nullable, nonatomic, weak) id<DWSyncingHeaderViewDelegate> delegate;
+
+@property (assign, nonatomic) DWSyncModelState syncState;
+
+- (void)setProgress:(float)progress;
 
 @end
 

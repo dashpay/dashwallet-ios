@@ -17,15 +17,16 @@
 
 #import "DWWindow.h"
 
+#import <DashSync/DSPermissionNotification.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 NSString *const DWDeviceDidShakeNotification = @"DWDeviceDidShakeNotification";
 
-static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
-
 @interface DWWindow ()
 
 @property (nullable, nonatomic, strong) UIVisualEffectView *blurView;
+@property (nullable, nonatomic, strong) NSDate *lastPermissionRequestDate;
 
 @end
 
@@ -36,12 +37,20 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
     if (self) {
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
-                               selector:@selector(applicationDidEnterBackgroundNotification)
-                                   name:UIApplicationDidEnterBackgroundNotification
+                               selector:@selector(applicationWillResignActiveNotification)
+                                   name:UIApplicationWillResignActiveNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(applicationDidBecomeActiveNotification)
                                    name:UIApplicationDidBecomeActiveNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(willRequestOSPermissionNotification)
+                                   name:DSWillRequestOSPermissionNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(didRequestOSPermissionNotification)
+                                   name:DSDidRequestOSPermissionNotification
                                  object:nil];
     }
     return self;
@@ -58,8 +67,13 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
 
 #pragma mark - Notifications
 
-- (void)applicationDidEnterBackgroundNotification {
+- (void)applicationWillResignActiveNotification {
     if (self.blurView) {
+        return;
+    }
+
+    const NSTimeInterval allowedGap = 1;
+    if (self.lastPermissionRequestDate && -[self.lastPermissionRequestDate timeIntervalSinceNow] < allowedGap) {
         return;
     }
 
@@ -69,21 +83,18 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
 }
 
 - (void)applicationDidBecomeActiveNotification {
-    if (!self.blurView) {
-        return;
-    }
+    [self.blurView removeFromSuperview];
+    self.blurView = nil;
+}
 
-    UIViewPropertyAnimator *animator =
-        [[UIViewPropertyAnimator alloc] initWithDuration:BLUR_ANIMATION_DURATION
-                                                   curve:UIViewAnimationCurveLinear
-                                              animations:^{
-                                                  self.blurView.alpha = 0.0;
-                                              }];
-    [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-        [self.blurView removeFromSuperview];
-        self.blurView = nil;
-    }];
-    [animator startAnimation];
+- (void)willRequestOSPermissionNotification {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    self.lastPermissionRequestDate = [NSDate date];
+}
+
+- (void)didRequestOSPermissionNotification {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    self.lastPermissionRequestDate = nil;
 }
 
 #pragma mark - Private

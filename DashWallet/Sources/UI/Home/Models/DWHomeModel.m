@@ -517,18 +517,12 @@ static BOOL IsJailbroken(void) {
 - (void)updateBalance {
     [self.receiveModel updateReceivingInfo];
 
-    if (self.syncModel.state == DWSyncModelState_Syncing &&
-        self.syncModel.progress < DW_SYNCING_COMPLETED_PROGRESS) {
-        self.balanceModel = nil;
-
-        return;
-    }
-
     uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
     if (self.balanceModel &&
         balanceValue > self.balanceModel.value &&
         self.balanceModel.value > 0 &&
-        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground &&
+        self.syncModel.progress > 0.995) {
         [[UIDevice currentDevice] dw_playCoinSound];
     }
 

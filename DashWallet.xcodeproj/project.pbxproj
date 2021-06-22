@@ -47,6 +47,8 @@
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */; };
 		2A1551A025890996005A1999 /* DWContactsSearchPlaceholderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A15519F25890996005A1999 /* DWContactsSearchPlaceholderView.m */; };
+		2A1A60BC2674084F003DAC65 /* DWSyncingAlertContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A60BB2674084F003DAC65 /* DWSyncingAlertContentView.m */; };
+		2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A60BE26740E27003DAC65 /* DWSyncingAlertViewController.m */; };
 		2A1AE78E23F4668B00179A6E /* DWUsernameHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */; };
 		2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */; };
 		2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
@@ -451,6 +453,7 @@
 		2AD6E5602487E13F00B52F14 /* DWRequestsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6E55F2487E13F00B52F14 /* DWRequestsContentViewController.m */; };
 		2AD6E5632487E16400B52F14 /* DWRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6E5622487E16400B52F14 /* DWRequestsViewController.m */; };
 		2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6E5692487E1DB00B52F14 /* DWRequestsModel.m */; };
+		2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD7BCBD2673BDE9008FF133 /* DWSyncingHeaderView.m */; };
 		2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD85A9E245881740045B480 /* DWQRScanStatusView.m */; };
 		2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADB396824223D9B00A6F898 /* DWDashPayAnimationView.m */; };
 		2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADB396B242615C200A6F898 /* CALayer+MBAnimationPersistence.m */; };
@@ -754,6 +757,10 @@
 		2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWExtendedContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
 		2A15519E25890996005A1999 /* DWContactsSearchPlaceholderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchPlaceholderView.h; sourceTree = "<group>"; };
 		2A15519F25890996005A1999 /* DWContactsSearchPlaceholderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchPlaceholderView.m; sourceTree = "<group>"; };
+		2A1A60BA2674084F003DAC65 /* DWSyncingAlertContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncingAlertContentView.h; sourceTree = "<group>"; };
+		2A1A60BB2674084F003DAC65 /* DWSyncingAlertContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncingAlertContentView.m; sourceTree = "<group>"; };
+		2A1A60BD26740E27003DAC65 /* DWSyncingAlertViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncingAlertViewController.h; sourceTree = "<group>"; };
+		2A1A60BE26740E27003DAC65 /* DWSyncingAlertViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncingAlertViewController.m; sourceTree = "<group>"; };
 		2A1AE78C23F4668B00179A6E /* DWUsernameHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameHeaderView.h; sourceTree = "<group>"; };
 		2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameHeaderView.m; sourceTree = "<group>"; };
 		2A1AE79023F468CD00179A6E /* DWPlanetarySystemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPlanetarySystemView.h; sourceTree = "<group>"; };
@@ -1578,6 +1585,8 @@
 		2AD6E5622487E16400B52F14 /* DWRequestsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestsViewController.m; sourceTree = "<group>"; };
 		2AD6E5682487E1DB00B52F14 /* DWRequestsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRequestsModel.h; sourceTree = "<group>"; };
 		2AD6E5692487E1DB00B52F14 /* DWRequestsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestsModel.m; sourceTree = "<group>"; };
+		2AD7BCBC2673BDE9008FF133 /* DWSyncingHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncingHeaderView.h; sourceTree = "<group>"; };
+		2AD7BCBD2673BDE9008FF133 /* DWSyncingHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncingHeaderView.m; sourceTree = "<group>"; };
 		2AD85A9C245874B30045B480 /* DWCaptureSessionFrameDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCaptureSessionFrameDelegate.h; sourceTree = "<group>"; };
 		2AD85A9D245881740045B480 /* DWQRScanStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanStatusView.h; sourceTree = "<group>"; };
 		2AD85A9E245881740045B480 /* DWQRScanStatusView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanStatusView.m; sourceTree = "<group>"; };
@@ -2123,6 +2132,17 @@
 			path = DataMigration;
 			sourceTree = "<group>";
 		};
+		2A1A60B92674083B003DAC65 /* SyncingAlert */ = {
+			isa = PBXGroup;
+			children = (
+				2A1A60BA2674084F003DAC65 /* DWSyncingAlertContentView.h */,
+				2A1A60BB2674084F003DAC65 /* DWSyncingAlertContentView.m */,
+				2A1A60BD26740E27003DAC65 /* DWSyncingAlertViewController.h */,
+				2A1A60BE26740E27003DAC65 /* DWSyncingAlertViewController.m */,
+			);
+			path = SyncingAlert;
+			sourceTree = "<group>";
+		};
 		2A1AE78B23F463FB00179A6E /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -2323,6 +2343,8 @@
 				2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */,
 				2A25A9882578255500BBD5C5 /* DWDPWelcomeView.h */,
 				2A25A9892578255500BBD5C5 /* DWDPWelcomeView.m */,
+				2AD7BCBC2673BDE9008FF133 /* DWSyncingHeaderView.h */,
+				2AD7BCBD2673BDE9008FF133 /* DWSyncingHeaderView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3480,6 +3502,7 @@
 		2A9CEBB622E1FA0000A50237 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				2A1A60B92674083B003DAC65 /* SyncingAlert */,
 				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
 				2A307CB322E6FA7F00A18347 /* Views */,
@@ -5572,6 +5595,7 @@
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
 				2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */,
+				2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
@@ -5902,6 +5926,7 @@
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				2AC1EDEC2565C49700410917 /* DWExternalSourceViewController.m in Sources */,
+				2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
 				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
@@ -5940,6 +5965,8 @@
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
+				2A4E1D5325056297008AC53F /* DWPaymentsButton.m in Sources */,
+				2A1A60BC2674084F003DAC65 /* DWSyncingAlertContentView.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */,
 				2A25A98A2578255500BBD5C5 /* DWDPWelcomeView.m in Sources */,
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
