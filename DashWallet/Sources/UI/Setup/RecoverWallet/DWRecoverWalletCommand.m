@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
 
     // START_SYNC_ENTRY_POINT
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+    [[DWEnvironment sharedInstance].currentChainManager startSync];
 }
 
 @end
