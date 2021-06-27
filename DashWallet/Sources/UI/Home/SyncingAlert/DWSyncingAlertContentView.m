@@ -135,22 +135,28 @@ NS_ASSUME_NONNULL_END
             DWEnvironment *environment = [DWEnvironment sharedInstance];
             DSChain *chain = environment.currentChain;
             DSChainManager *chainManager = environment.currentChainManager;
-            if (chainManager.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
-                if (chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight && chainManager.masternodeManager.masternodeListRetrievalQueueCount) {
-                    self.subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"masternode list #%d of %d", nil),
-                                                                         (int)(chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount),
-                                                                         (int)chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount];
-                }
-                else {
+            // We give a 6 block window, just in case a new block comes in
+            BOOL atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList = chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager.masternodeListRetrievalQueueCount &&
+                                                                           chainManager.syncPhase == DSChainSyncPhase_InitialTerminalBlocks;
+            BOOL atTheEndOfSyncBlocksAndSyncingMasternodeList = chain.lastSyncBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager.masternodeListRetrievalQueueCount &&
+                                                                chainManager.syncPhase == DSChainSyncPhase_Synced;
+            if (atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList || atTheEndOfSyncBlocksAndSyncingMasternodeList) {
+                self.subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"masternode list #%d of %d", nil),
+                                                                     (int)(chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount),
+                                                                     (int)chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount];
+            }
+            else {
+                if (chainManager.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+
                     self.subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"header #%d of %d", nil),
                                                                          chain.lastTerminalBlockHeight,
                                                                          chain.estimatedBlockHeight];
                 }
-            }
-            else {
-                self.subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                                                                     chain.lastSyncBlockHeight,
-                                                                     chain.estimatedBlockHeight];
+                else {
+                    self.subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                                                                         chain.lastSyncBlockHeight,
+                                                                         chain.estimatedBlockHeight];
+                }
             }
 
             break;

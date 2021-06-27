@@ -91,7 +91,7 @@ static BOOL IsJailbroken(void) {
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [self connectIfNeeded];
+        [self startSyncIfNeeded];
 
         _queue = dispatch_queue_create("DWHomeModel.queue", DISPATCH_QUEUE_SERIAL);
 
@@ -245,7 +245,7 @@ static BOOL IsJailbroken(void) {
         [self.reachability startMonitoring];
     }
 
-    [self connectIfNeeded];
+    [self startSyncIfNeeded];
 }
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider {
@@ -339,7 +339,7 @@ static BOOL IsJailbroken(void) {
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
 
-        [self connectIfNeeded];
+        [self startSyncIfNeeded];
     }
 
     DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
@@ -358,7 +358,7 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)applicationWillEnterForegroundNotification {
-    [self connectIfNeeded];
+    [self startSyncIfNeeded];
     [self.balanceDisplayOptions hideBalanceIfNeeded];
 }
 
@@ -433,12 +433,12 @@ static BOOL IsJailbroken(void) {
     return _rewardsDataSource;
 }
 
-- (void)connectIfNeeded {
+- (void)startSyncIfNeeded {
     // This method might be called from init. Don't use any instance variables
 
     if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
         // START_SYNC_ENTRY_POINT
-        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+        [[DWEnvironment sharedInstance].currentChainManager startSync];
     }
 }
 
