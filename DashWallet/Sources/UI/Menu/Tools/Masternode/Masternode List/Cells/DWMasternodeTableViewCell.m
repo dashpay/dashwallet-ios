@@ -189,7 +189,7 @@ static CGSize const ACCESSORY_SIZE = {ACCESSORY_RADIUS * 2, ACCESSORY_RADIUS * 2
 
     UIFont *availabilityFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     UIColor *availabilityColor = [UIColor dw_quaternaryTextColor];
-    self.availabilityLabel.attributedText = [NSAttributedString attributedText:self.model.validUppercaseString
+    self.availabilityLabel.attributedText = [NSAttributedString attributedText:self.model.validString
                                                                           font:availabilityFont
                                                                      textColor:availabilityColor
                                                                highlightedText:highlightedText

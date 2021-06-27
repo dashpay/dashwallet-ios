@@ -62,48 +62,93 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Owner Keys", nil)];
-        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used(s)", @"#bc-ignore!"),
                                                         self.model.ownerDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+            if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf showOwnerKeys];
             }
-
-            [strongSelf showOwnerKeys];
+            else {
+                [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                    usingBiometricAuthentication:NO
+                                                                  alertIfLockout:YES
+                                                                      completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                          if (!strongSelf) {
+                                                                              return;
+                                                                          }
+                                                                          if (authenticatedOrSuccess) {
+                                                                              [strongSelf showOwnerKeys];
+                                                                          }
+                                                                      }];
+            }
         };
         [items addObject:cellModel];
     }
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Voting Keys", nil)];
-        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used(s)", @"#bc-ignore!"),
                                                         self.model.votingDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+            if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf showVotingKeys];
             }
-
-            [strongSelf showVotingKeys];
+            else {
+                [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                    usingBiometricAuthentication:NO
+                                                                  alertIfLockout:YES
+                                                                      completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                          if (!strongSelf) {
+                                                                              return;
+                                                                          }
+                                                                          if (authenticatedOrSuccess) {
+                                                                              [strongSelf showVotingKeys];
+                                                                          }
+                                                                      }];
+            }
         };
         [items addObject:cellModel];
     }
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Operator Keys", nil)];
-        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used(s)", @"#bc-ignore!"),
                                                         self.model.operatorDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+            if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf showOperatorKeys];
             }
-
-            [strongSelf showOperatorKeys];
+            else {
+                [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                    usingBiometricAuthentication:NO
+                                                                  alertIfLockout:YES
+                                                                      completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                          if (!strongSelf) {
+                                                                              return;
+                                                                          }
+                                                                          if (authenticatedOrSuccess) {
+                                                                              [strongSelf showOperatorKeys];
+                                                                          }
+                                                                      }];
+            }
         };
         [items addObject:cellModel];
     }
@@ -126,11 +171,7 @@ NS_ASSUME_NONNULL_BEGIN
     DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     [formController setSections:[self sections] placeholderText:nil];
 
-    [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
-    [formController didMoveToParentViewController:self];
+    [self dw_embedChild:formController];
     self.formController = formController;
 }
 

@@ -1,4 +1,3 @@
-
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
 
@@ -244,9 +243,6 @@
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Download peer: %@";
-
-/* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
@@ -651,9 +647,6 @@
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
-
-/* No comment provided by engineer. */
 "Register" = "Register";
 
 /* No comment provided by engineer. */
@@ -753,16 +746,10 @@
 "Send by" = "Send by";
 
 /* No comment provided by engineer. */
-"Send crash report" = "Send crash report";
-
-/* No comment provided by engineer. */
 "Send to" = "Send to";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
-
-/* No comment provided by engineer. */
-"Send to copied address" = "Send to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Send with NFC";
@@ -1044,9 +1031,6 @@
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
-
-/* No comment provided by engineer. */
 "We Upgraded" = "We Upgraded";
 
 /* No comment provided by engineer. */
@@ -1102,3 +1086,291 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
+
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "";
+
+"(1/3) Processing Payment" = "";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "";
+
+/* No comment provided by engineer. */
+"(2/3) Creating Dash Identity" = "";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create Dash Identity" = "";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "";
+
+/* No comment provided by engineer. */
+"Accept" = "";
+
+/* No comment provided by engineer. */
+"Activity" = "";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "";
+
+/* Choose your Dash username */
+"Choose your" = "";
+
+/* No comment provided by engineer. */
+"Confirm & Pay" = "";
+
+/* No comment provided by engineer. */
+"Connecting to payment server" = "";
+
+/* No comment provided by engineer. */
+"Contact Request Pending" = "";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "";
+
+/* No comment provided by engineer. */
+"Contacts" = "";
+
+/* No comment provided by engineer. */
+"Could not automatically recover missing or incorrect words" = "";
+
+/* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "";
+
+/* No comment provided by engineer. */
+"Current user: %@" = "";
+
+/* No comment provided by engineer. */
+"Dash username" = "";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "";
+
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "";
+
+/* No comment provided by engineer. */
+"Error" = "";
+
+/* No comment provided by engineer. */
+"Error Upgrading" = "";
+
+"Extended Public Keys" = "";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "";
+
+/* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "";
+
+/* No comment provided by engineer. */
+"header #%d of %d" = "";
+
+/* Hello username, */
+"Hello %@," = "";
+
+"I Accept" = "";
+
+"Invalid Payment Request" = "";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "";
+
+"Join Evolution" = "";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "";
+
+/* Validation rule */
+"Letters and numbers only" = "";
+
+"masternode list #%d of %d" = "";
+
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "";
+
+/* Validation rule */
+"Minimum 3 characters" = "";
+
+"My Contacts" = "";
+
+/* No comment provided by engineer. */
+"Name" = "";
+
+/* (List of) New (notifications) */
+"New" = "";
+
+/* No comment provided by engineer. */
+"Notifications" = "";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "";
+
+"Pay" = "";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "";
+
+"Pending" = "";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "";
+
+/* No comment provided by engineer. */
+"Please Wait" = "";
+
+/* No comment provided by engineer. */
+"Please wait" = "";
+
+/* No comment provided by engineer. */
+"Recover" = "";
+
+/* No comment provided by engineer. */
+"Recovering..." = "";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "";
+
+/* No comment provided by engineer. */
+"Register?" = "";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "";
+
+/* No comment provided by engineer. */
+"Search for a contact" = "";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Search for a username" = "";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Send Contact Request" = "";
+
+/* No comment provided by engineer. */
+"Sending to" = "";
+
+/* No comment provided by engineer. */
+"Sort by" = "";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "";
+
+"Support" = "";
+
+/* No comment provided by engineer. */
+"Syncing Balance" = "";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "";
+
+/* No comment provided by engineer. */
+"Upgrade Fee" = "";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "";
+
+/* No comment provided by engineer. */
+"Username taken" = "";
+
+/* No comment provided by engineer. */
+"Validating username done" = "";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "";
+
+/* No comment provided by engineer. */
+"Validating username…" = "";
+
+/* No comment provided by engineer. */
+"View All" = "";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "";
+
+/* No comment provided by engineer. */
+"WIF Private key" = "";
+
+"You accepted the contact request from %@" = "";
+
+/* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "";
+
+"Your DashPay Username is ready to use" = "";
+
+/* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "";

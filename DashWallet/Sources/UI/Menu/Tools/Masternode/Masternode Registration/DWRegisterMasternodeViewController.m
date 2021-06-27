@@ -212,12 +212,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
                     NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
                                                                           withPassphrase:nil];
                     DSKey *key = [ownerDerivationPath firstUnusedPrivateKeyFromSeed:seed];
-                    if ([key isKindOfClass:[DSECDSAKey class]]) {
-                        strongModel.valueText = [((DSECDSAKey *)key) privateKeyStringForChain:ownerDerivationPath.chain];
-                    }
-                    else {
-                        strongModel.valueText = key.secretKeyString;
-                    }
+                    strongModel.valueText = key.secretKeyString;
                 }
             };
         case DWMasternodeRegistrationCell_OperatorKey:
@@ -330,7 +325,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
                                if (!strongModel) {
                                    return;
                                }
-                               strongModel.operatorKey = [DSBLSKey blsKeyWithPublicKey:[value hexToData].UInt384 onChain:[[DWEnvironment sharedInstance] currentChain]];
+                               strongModel.operatorKey = [DSBLSKey keyWithPublicKey:[value hexToData].UInt384];
                            }];
             break;
         }
@@ -341,7 +336,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
                                if (!strongModel) {
                                    return;
                                }
-                               strongModel.votingKey = [DSECDSAKey keyWithPublicKey:[value hexToData]];
+                               strongModel.votingKey = [DSECDSAKey keyWithPublicKeyData:[value hexToData]];
                            }];
             break;
         }
