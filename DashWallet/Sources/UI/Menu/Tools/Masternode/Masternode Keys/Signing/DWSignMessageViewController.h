@@ -17,9 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
+@class DSKey;
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWKeysOverviewViewController : UIViewController
+@interface DWSignMessageViewController : UIViewController
+
+@property (nonatomic, strong) DSKey *key;
 
 @end
 

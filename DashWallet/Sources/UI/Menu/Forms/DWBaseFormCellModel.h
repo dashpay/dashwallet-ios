@@ -16,10 +16,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <KVO-MVVM/KVONSObject.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseFormCellModel : NSObject
+@interface DWBaseFormCellModel : KVONSObject
 
 @property (nullable, copy, nonatomic) NSString *title;
 @property (assign, nonatomic) NSUInteger tag;

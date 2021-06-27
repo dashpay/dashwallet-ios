@@ -1,0 +1,1376 @@
+/* No comment provided by engineer. */
+"%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@غير مسموح بالوصول إلى الكاميرا";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
+
+/* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
+"1 hour" = "1 hour";
+
+/* Shorten version of minute */
+"1 min" = "1 min";
+
+/* No comment provided by engineer. */
+"24 hours" = "24 hours";
+
+/* Shorten version of minutes */
+"5 min" = "5 min";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "%@إنها ليست كلمة الإستراد";
+
+/* No comment provided by engineer. */
+"\ntry again in %@" = "\nأعد المحاولة في %@";
+
+/* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
+"About" = "عن";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
+
+/* No comment provided by engineer. */
+"Advanced Security" = "Advanced Security";
+
+/* No comment provided by engineer. */
+"All" = "All";
+
+/* No comment provided by engineer. */
+"Allow camera access in Settings" = "Allow camera access in Settings";
+
+/* No comment provided by engineer. */
+"Allow Face ID access in Settings" = "Allow Face ID access in Settings";
+
+/* No comment provided by engineer. */
+"Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
+
+/* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
+"An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "التطبيق %@ يطلب الدفع إلى";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "التطبيق %@ يطلب عنوانًا حتى يمكنه الدفع لك. هل ترغب في اعتماد هذا؟";
+
+/* No comment provided by engineer. */
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "التطبيق %@ ترغب في استلام مفتاحك الرئيسي. هذا يمكن أن تستخدم لتتبع محفظتك ، وهذا لا يمكن أن تستخدم لتحريك داش الخاص بك.";
+
+/* No comment provided by engineer. */
+"Are you sure?" = "هل انت متأكد ؟ ";
+
+/* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
+"Auto Logout" = "Auto Logout";
+
+/* No comment provided by engineer. */
+"Autohide Balance" = "Autohide Balance";
+
+/* lowercase, ex. 4 Dash available */
+"available" = "available";
+
+/* No comment provided by engineer. */
+"Available balance" = "Available balance";
+
+/* No comment provided by engineer. */
+"Backup Wallet" = "Backup Wallet";
+
+/* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
+"Balance hidden" = "Balance hidden";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "كتلة # %1$d من %2$d";
+
+/* No comment provided by engineer. */
+"Block #%d of %d" = "Block #%1$d of %2$d";
+
+/* No comment provided by engineer. */
+"Buy & Sell Dash" = "Buy & Sell Dash";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
+
+/* No comment provided by engineer. */
+"Buy Dash" = "شراء داش ";
+
+/* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
+
+/* No comment provided by engineer. */
+"Cancel" = "إلغاء ";
+
+/* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
+"Change Operator" = "Change Operator";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
+
+/* No comment provided by engineer. */
+"Change Payout Address" = "Change Payout Address";
+
+/* No comment provided by engineer. */
+"Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
+
+/* No comment provided by engineer. */
+"Clear" = "Clear";
+
+/* No comment provided by engineer. */
+"Clear trusted node?" = "Clear trusted node?";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
+
+/* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
+"Collateral Index" = "Collateral Index";
+
+/* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
+
+/* Confirm */
+"Confirm" = "تأكد";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
+
+/* No comment provided by engineer. */
+"Confirming" = "Confirming";
+
+/* No comment provided by engineer. */
+"Connect with third party exchanges" = "Connect with third party exchanges";
+
+/* No comment provided by engineer. */
+"Connected peers: %d" = "Connected peers: %d";
+
+/* No comment provided by engineer. */
+"Contact Support" = "Contact Support";
+
+/* No comment provided by engineer. */
+"Continue" = "Continue";
+
+/* No comment provided by engineer. */
+"Control" = "Control";
+
+/* No comment provided by engineer. */
+"Copied" = "Copied";
+
+/* No comment provided by engineer. */
+"Copy" = "Copy";
+
+/* No comment provided by engineer. */
+"Copy Logs" = "Copy Logs";
+
+/* No comment provided by engineer. */
+"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
+"Couldn't sweep balance" = "Couldn't sweep balance";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to Dash network" = "Couldn't transmit payment to Dash network";
+
+/* No comment provided by engineer. */
+"Create a New Wallet" = "Create a New Wallet";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
+
+/* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
+"Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+
+/* No comment provided by engineer. */
+"Done" = "تم";
+
+/* ex., Download peer: 127.0.0.1:9999 */
+"Download peer: %@" = "Download peer: %@";
+
+/* No comment provided by engineer. */
+"Enable Face ID" = "Enable Face ID";
+
+/* No comment provided by engineer. */
+"Enable Receive Notifications" = "Enable Receive Notifications";
+
+/* No comment provided by engineer. */
+"Enable Touch ID" = "Enable Touch ID";
+
+/* No comment provided by engineer. */
+"Enter" = "Enter";
+
+/* No comment provided by engineer. */
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
+
+/* No comment provided by engineer. */
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Private Key" = "Enter Owner Private Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Enter the amount to transfer" = "Enter the amount to transfer";
+
+/* No comment provided by engineer. */
+"Enter Transaction Hash" = "Enter Transaction Hash";
+
+/* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Enter your 2FA code below";
+
+/* No comment provided by engineer. */
+"Exit" = "Exit";
+
+/* No comment provided by engineer. */
+"External Sign" = "External Sign";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "محدد وجه التعريف";
+
+/* No comment provided by engineer. */
+"Failed wallet update" = "فشل في تحديث المحفظة";
+
+/* No comment provided by engineer. */
+"Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
+
+/* No comment provided by engineer. */
+"Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Forgot PIN?";
+
+/* No comment provided by engineer. */
+"Get Started" = "Get Started";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Go to Website";
+
+/* No comment provided by engineer. */
+"Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
+
+/* No comment provided by engineer. */
+"Help us improve your experience" = "Help us improve your experience";
+
+/* No comment provided by engineer. */
+"High" = "High";
+
+/* No comment provided by engineer. */
+"History" = "History";
+
+/* No comment provided by engineer. */
+"Host" = "Host";
+
+/* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "أقبل أنني سأفقد عملاتي إذا لم أعد أمتلك كلمة الإستراد";
+
+/* No comment provided by engineer. */
+"I wrote it down" = "I wrote it down";
+
+/* No comment provided by engineer. */
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+
+/* No comment provided by engineer. */
+"If you still would like to wipe it please input: \"%@\"" = "إذا كنت لا تزال ترغب في مسحها ، فيرجى إدخال: \"%@\"";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* No comment provided by engineer. */
+"Immediately" = "Immediately";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
+
+/* No comment provided by engineer. */
+"Import private key…" = "Import private key…";
+
+/* No comment provided by engineer. */
+"Incorrect collateral" = "Incorrect collateral";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Insufficient funds";
+
+/* Transaction within the wallet, transfer of own funds */
+"Internal Transfer" = "Internal Transfer";
+
+/* No comment provided by engineer. */
+"Internally moved to" = "Internally moved to";
+
+/* No comment provided by engineer. */
+"Invalid" = "Invalid";
+
+/* No comment provided by engineer. */
+"IP Address" = "IP Address";
+
+/* No comment provided by engineer. */
+"It's Important" = "It's Important";
+
+/* No comment provided by engineer. */
+"Key to use" = "Key to use";
+
+/* No comment provided by engineer. */
+"Keypair %ld" = "Keypair %ld";
+
+/* No comment provided by engineer. */
+"Link Uphold Account" = "Link Uphold Account";
+
+/* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
+
+/* No comment provided by engineer. */
+"Local Name" = "Local Name";
+
+/* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
+"Locked" = "Locked";
+
+/* No comment provided by engineer. */
+"Log Out" = "Log Out";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Log out from Uphold";
+
+/* No comment provided by engineer. */
+"Login with Face ID" = "Login with Face ID";
+
+/* No comment provided by engineer. */
+"Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Logout" = "Logout";
+
+/* No comment provided by engineer. */
+"Logout after" = "Logout after";
+
+/* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
+
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
+
+/* No comment provided by engineer. */
+"Low" = "Low";
+
+/* No comment provided by engineer. */
+"Manage Trusted Node" = "Manage Trusted Node";
+
+/* No comment provided by engineer. */
+"Masternode Features" = "Masternode Features";
+
+/* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Masternode Registration";
+
+/* No comment provided by engineer. */
+"Masternode Revocation" = "Masternode Revocation";
+
+/* No comment provided by engineer. */
+"Masternode Update" = "Masternode Update";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
+/* No comment provided by engineer. */
+"Medium" = "Medium";
+
+/* No comment provided by engineer. */
+"More" = "More";
+
+/* No comment provided by engineer. */
+"More Control" = "More Control";
+
+/* No comment provided by engineer. */
+"Moved from" = "Moved from";
+
+/* No comment provided by engineer. */
+"Moved to Address" = "Moved to Address";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
+
+/* No comment provided by engineer. */
+"Network error" = "Network error";
+
+/* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
+"NFC device" = "NFC device";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
+
+/* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
+
+/* No comment provided by engineer. */
+"Node IP" = "Node IP";
+
+/* No comment provided by engineer. */
+"None" = "None";
+
+/* No comment provided by engineer. */
+"Not a Dash QR code" = "Not a Dash QR code";
+
+/* No comment provided by engineer. */
+"Not a Dash URL" = "Not a Dash URL";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
+
+/* No comment provided by engineer. */
+"Not yet used" = "Not yet used";
+
+/* No comment provided by engineer. */
+"OK" = "حسنا";
+
+/* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
+
+/* No comment provided by engineer. */
+"Owner Address" = "Owner Address";
+
+/* No comment provided by engineer. */
+"Owner Key" = "Owner Key";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
+"Owner Private Key" = "Owner Private Key";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
+
+/* No comment provided by engineer. */
+"Pay and get paid instantly with easy to use payment flows" = "Pay and get paid instantly with easy to use payment flows";
+
+/* No comment provided by engineer. */
+"Pay with Ease" = "Pay with Ease";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
+
+/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
+
+/* No comment provided by engineer. */
+"PIN is always required to make a payment" = "PIN is always required to make a payment";
+
+/* No comment provided by engineer. */
+"Please copy the following message." = "Please copy the following message.";
+
+/* No comment provided by engineer. */
+"Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
+
+/* No comment provided by engineer. */
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
+
+/* No comment provided by engineer. */
+"Please place your phone near NFC device." = "يرجى وضع هاتفك بالقرب من جهاز NFC.";
+
+/* No comment provided by engineer. */
+"Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
+
+/* No comment provided by engineer. */
+"Please try again" = "Please try again";
+
+/* No comment provided by engineer. */
+"Please wait for the sync to complete" = "Please wait for the sync to complete";
+
+/* No comment provided by engineer. */
+"Please write it down" = "Please write it down";
+
+/* No comment provided by engineer. */
+"Port" = "Port";
+
+/* No comment provided by engineer. */
+"Previously used at IP address" = "Previously used at IP address";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Private Key" = "Private Key";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"Provider Address" = "Provider Address";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
+
+/* No comment provided by engineer. */
+"Quick Receive" = "Quick Receive";
+
+/* No comment provided by engineer. */
+"Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
+
+/* ex., Rate 1 US $ = 0.000009 Dash */
+"Rate: %@ = %@" = "Rate: %1$@ = %2$@";
+
+/* No comment provided by engineer. */
+"Receive" = "Receive";
+
+/* No comment provided by engineer. */
+"Received" = "تم الاستلام";
+
+/* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Received at" = "Received at";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
+
+/* No comment provided by engineer. */
+"Recover Wallet" = "Recover Wallet";
+
+/* No comment provided by engineer. */
+"Recovery Phrase" = "Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
+"Registered from" = "Registered from";
+
+/* No comment provided by engineer. */
+"Registered Masternode" = "Registered Masternode";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
+/* No comment provided by engineer. */
+"Rescan" = "Rescan";
+
+/* No comment provided by engineer. */
+"Rescan Blockchain" = "Rescan Blockchain";
+
+/* No comment provided by engineer. */
+"Reset" = "Reset";
+
+/* No comment provided by engineer. */
+"Reset to Default" = "Reset to Default";
+
+/* No comment provided by engineer. */
+"Reset Wallet" = "Reset Wallet";
+
+/* No comment provided by engineer. */
+"Retry" = "Retry";
+
+/* No comment provided by engineer. */
+"Review & Rate the app" = "Review & Rate the app";
+
+/* No comment provided by engineer. */
+"Reward" = "Reward";
+
+/* No comment provided by engineer. */
+"Rewards" = "Rewards";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
+
+/* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
+"Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Scan QR Code";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
+/* No comment provided by engineer. */
+"Scan to Send" = "Scan to Send";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
+
+/* No comment provided by engineer. */
+"Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "تكون لقطات الشاشة مرئية للتطبيقات والأجهزة الأخرى. إنشاء كلمة الإستراد جديدة والحفاظ على سريتها.";
+
+/* No comment provided by engineer. */
+"Secure now" = "Secure now";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Secure Wallet Now" = "Secure Wallet Now";
+
+/* No comment provided by engineer. */
+"Security" = "Security";
+
+/* No comment provided by engineer. */
+"Security Level" = "Security Level";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "See on Uphold";
+
+/* No comment provided by engineer. */
+"Send" = "Send";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
+
+/* Pay by (scanning QR code) */
+"Send by" = "Send by";
+
+/* No comment provided by engineer. */
+"Send to" = "Send to";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Address" = "Send to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send with NFC" = "Send with NFC";
+
+/* 1 out of 4 in the Sending Animation */
+"Sending" = "Sending";
+
+/* 2 out of 4 in the Sending Animation */
+"Sending." = "Sending.";
+
+/* 3 out of 4 in the Sending Animation */
+"Sending.." = "Sending..";
+
+/* 4 out of 4 in the Sending Animation */
+"Sending..." = "Sending...";
+
+/* No comment provided by engineer. */
+"Sent" = "أرسلت ";
+
+/* No comment provided by engineer. */
+"Sent from" = "Sent from";
+
+/* No comment provided by engineer. */
+"Sent successfully" = "Sent successfully";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
+
+/* No comment provided by engineer. */
+"Set a trusted node" = "Set a trusted node";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
+"Settings" = "الإعدادات";
+
+/* No comment provided by engineer. */
+"Setup Wallet" = "Setup Wallet";
+
+/* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
+
+/* No comment provided by engineer. */
+"Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
+"Skip" = "Skip";
+
+/* No comment provided by engineer. */
+"skip" = "skip";
+
+/* No comment provided by engineer. */
+"Something went wrong" = "Something went wrong";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
+
+/* No comment provided by engineer. */
+"Spending Confirmation" = "Spending Confirmation";
+
+/* No comment provided by engineer. */
+"Step 1" = "Step 1";
+
+/* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
+"Swept!" = "Swept!";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* No comment provided by engineer. */
+"Sync Failed" = "Sync Failed";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
+
+/* No comment provided by engineer. */
+"Syncing" = "Syncing";
+
+/* Pay using NFC (should be as short as possible) */
+"Tap" = "Tap";
+
+/* No comment provided by engineer. */
+"Tap to hide balance" = "Tap to hide balance";
+
+/* No comment provided by engineer. */
+"Tap to unhide balance" = "Tap to unhide balance";
+
+/* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
+"This app is open source:" = "This app is open source:";
+
+/* No comment provided by engineer. */
+"This PIN will be required to unlock your app every time when you use it." = "This PIN will be required to unlock your app every time when you use it.";
+
+/* No comment provided by engineer. */
+"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "هذه المحفظة ليست فارغة أو لم تنتهِ المزامنة ، ولا يجوز مسحها بدون كلمة الإستراد";
+
+/* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+
+/* No comment provided by engineer. */
+"Tools" = "Tools";
+
+/* No comment provided by engineer. */
+"Total" = "Total";
+
+/* No comment provided by engineer. */
+"Touch ID limit" = "إلمس لمعرفة الحد";
+
+/* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Transaction id";
+
+/* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
+
+/* No comment provided by engineer. */
+"Transfer" = "Transfer";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Transfer from Uphold";
+
+/* No comment provided by engineer. */
+"Try again" = "Try again";
+
+/* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
+
+/* No comment provided by engineer. */
+"Unable to connect" = "Unable to connect";
+
+/* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
+
+/* No comment provided by engineer. */
+"Unable to get new QR code" = "Unable to get new QR code";
+
+/* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
+
+/* No comment provided by engineer. */
+"Unsupported URL" = "Unsupported URL";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
+
+/* ex., Updated: 27.12, 8:30 */
+"Updated: %@" = "Updated: %@";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Use Wallet" = "Use Wallet";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
+
+/* No comment provided by engineer. */
+"Used at IP address" = "Used at IP address";
+
+/* No comment provided by engineer. */
+"Verified Successfully" = "Verified Successfully";
+
+/* No comment provided by engineer. */
+"Verify" = "Verify";
+
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
+
+/* No comment provided by engineer. */
+"Very High" = "Very High";
+
+/* No comment provided by engineer. */
+"View in Block Explorer" = "View in Block Explorer";
+
+/* No comment provided by engineer. */
+"View passphrase, backup wallet…" = "View passphrase, backup wallet…";
+
+/* No comment provided by engineer. */
+"View Recovery Phrase" = "View Recovery Phrase";
+
+/* No comment provided by engineer. */
+"View Signing Info" = "View Signing Info";
+
+/* No comment provided by engineer. */
+"Voting Address" = "Voting Address";
+
+/* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
+
+/* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
+"Voting Private Key" = "Voting Private Key";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
+
+/* No comment provided by engineer. */
+"WARNING" = "تحذير";
+
+/* No comment provided by engineer. */
+"Warning" = "Warning";
+
+/* No comment provided by engineer. */
+"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
+
+/* No comment provided by engineer. */
+"We do not store this recovery phrase." = "We do not store this recovery phrase.";
+
+/* No comment provided by engineer. */
+"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+
+/* No comment provided by engineer. */
+"We Upgraded" = "We Upgraded";
+
+/* No comment provided by engineer. */
+"Welcome" = "Welcome";
+
+/* No comment provided by engineer. */
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
+"Wipe Wallet" = "Wipe Wallet";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
+
+/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash Wallet." = "You are about to sweep funds from another Dash Wallet.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
+
+/* No comment provided by engineer. */
+"You can authenticate with Face ID for payments below" = "You can authenticate with Face ID for payments below";
+
+/* No comment provided by engineer. */
+"You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
+
+/* No comment provided by engineer. */
+"You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+
+/* No comment provided by engineer. */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+
+/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+
+/* No comment provided by engineer. */
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
+
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "";
+
+"(1/3) Processing Payment" = "";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "";
+
+/* No comment provided by engineer. */
+"(2/3) Creating Dash Identity" = "";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create Dash Identity" = "";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "";
+
+/* No comment provided by engineer. */
+"Accept" = "";
+
+/* No comment provided by engineer. */
+"Activity" = "";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "";
+
+/* Choose your Dash username */
+"Choose your" = "";
+
+/* No comment provided by engineer. */
+"Confirm & Pay" = "";
+
+/* No comment provided by engineer. */
+"Connecting to payment server" = "";
+
+/* No comment provided by engineer. */
+"Contact Request Pending" = "";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "";
+
+/* No comment provided by engineer. */
+"Contacts" = "";
+
+/* No comment provided by engineer. */
+"Could not automatically recover missing or incorrect words" = "";
+
+/* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "";
+
+/* No comment provided by engineer. */
+"Current user: %@" = "";
+
+/* No comment provided by engineer. */
+"Dash username" = "";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "";
+
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "";
+
+/* No comment provided by engineer. */
+"Error" = "";
+
+/* No comment provided by engineer. */
+"Error Upgrading" = "";
+
+"Extended Public Keys" = "";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "";
+
+/* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "";
+
+/* No comment provided by engineer. */
+"header #%d of %d" = "";
+
+/* Hello username, */
+"Hello %@," = "";
+
+"I Accept" = "";
+
+"Invalid Payment Request" = "";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "";
+
+"Join Evolution" = "";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "";
+
+/* Validation rule */
+"Letters and numbers only" = "";
+
+"masternode list #%d of %d" = "";
+
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "";
+
+/* Validation rule */
+"Minimum 3 characters" = "";
+
+"My Contacts" = "";
+
+/* No comment provided by engineer. */
+"Name" = "";
+
+/* (List of) New (notifications) */
+"New" = "";
+
+/* No comment provided by engineer. */
+"Notifications" = "";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "";
+
+"Pay" = "";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "";
+
+"Pending" = "";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "";
+
+/* No comment provided by engineer. */
+"Please Wait" = "";
+
+/* No comment provided by engineer. */
+"Please wait" = "";
+
+/* No comment provided by engineer. */
+"Recover" = "";
+
+/* No comment provided by engineer. */
+"Recovering..." = "";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "";
+
+/* No comment provided by engineer. */
+"Register?" = "";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "";
+
+/* No comment provided by engineer. */
+"Search for a contact" = "";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Search for a username" = "";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Send Contact Request" = "";
+
+/* No comment provided by engineer. */
+"Sending to" = "";
+
+/* No comment provided by engineer. */
+"Sort by" = "";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "";
+
+"Support" = "";
+
+/* No comment provided by engineer. */
+"Syncing Balance" = "";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "";
+
+/* No comment provided by engineer. */
+"Upgrade Fee" = "";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "";
+
+/* No comment provided by engineer. */
+"Username taken" = "";
+
+/* No comment provided by engineer. */
+"Validating username done" = "";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "";
+
+/* No comment provided by engineer. */
+"Validating username…" = "";
+
+/* No comment provided by engineer. */
+"View All" = "";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "";
+
+/* No comment provided by engineer. */
+"WIF Private key" = "";
+
+"You accepted the contact request from %@" = "";
+
+/* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "";
+
+"Your DashPay Username is ready to use" = "";
+
+/* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "";

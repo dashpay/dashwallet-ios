@@ -13,7 +13,8 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ tidak diizinkan mengakses Pengenal Sentuh";
 
-/* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
 "(1/3) Processing Payment" = "(1/3) Memproses Pembayaran";
 
 /* No comment provided by engineer. */
@@ -163,17 +164,26 @@
 /* No comment provided by engineer. */
 "Cancel" = "Batalkan";
 
-/* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "Ubah";
+/* No comment provided by engineer. */
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Ubah jumlah pembayaran?";
+"Change Operator" = "Change Operator";
 
 /* No comment provided by engineer. */
-"Change PIN" = "Ubah PIN";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Periksa koneksi anda";
+"Change Payout Address" = "Change Payout Address";
+
+/* No comment provided by engineer. */
+"Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
 
 /* Choose your Dash username */
 "Choose your" = "Pilih Anda";
@@ -194,24 +204,33 @@
 "Close App" = "Tutup aplikasi";
 
 /* No comment provided by engineer. */
-"Confirm" = "Memastikan";
+"Collateral Index" = "Collateral Index";
 
 /* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
+
+/* Confirm */
+"Confirm" = "Memastikan";
+
 "Confirm & Pay" = "konfirmasi & bayar";
+
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Pastikan PIN";
 
 /* No comment provided by engineer. */
-"Confirming" = "Mengkonfirmasikan";
+"Confirming" = "Confirming";
 
 /* No comment provided by engineer. */
-"Connect with third party exchanges" = "Terhubung dengan pertukaran pihak ketiga";
+"Connect with third party exchanges" = "Connect with third party exchanges";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Peers yang terhubung: %d";
 
-/* No comment provided by engineer. */
 "Connecting to payment server" = "Mengghubungkan ke server pembayaran";
 
 /* No comment provided by engineer. */
@@ -220,6 +239,8 @@
 /* No comment provided by engineer. */
 "Contact Requests" = "Permintaan Kontak";
 
+"Contact Support" = "Contact Support";
+
 /* No comment provided by engineer. */
 "Contact Support" = "Hubungi Dukungan";
 
@@ -227,10 +248,16 @@
 "Contacts" = "Kontak";
 
 /* No comment provided by engineer. */
+"Continue" = "Continue";
+
+/* No comment provided by engineer. */
 "Continue" = "Teruskan";
 
 /* No comment provided by engineer. */
-"Copied" = "Disalin";
+"Control" = "Control";
+
+/* No comment provided by engineer. */
+"Copied" = "Copied";
 
 /* No comment provided by engineer. */
 "Copy" = "Salin";
@@ -275,6 +302,9 @@
 "Date" = "Tanggal";
 
 /* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Mata uang standar, pintasan, tentang ...";
 
 /* No comment provided by engineer. */
@@ -311,13 +341,40 @@
 "Enter" = "Masuk";
 
 /* No comment provided by engineer. */
-"Enter PIN" = "Masukkan PIN";
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
 
 /* No comment provided by engineer. */
-"Enter Recovery Phrase" = "Masukkan Frasa pemulihan";
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Private Key" = "Enter Owner Private Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer" = "Masukkan jumlah yang akan ditransfer";
+
+/* No comment provided by engineer. */
+"Enter Transaction Hash" = "Enter Transaction Hash";
+
+/* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Masukkan kode 2FA Anda di bawah ini";
@@ -331,8 +388,9 @@
 /* No comment provided by engineer. */
 "Exit" = "Keluar";
 
-/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
+
+"External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Identitas wajah terbatas";
@@ -397,7 +455,8 @@
 /* No comment provided by engineer. */
 "History" = "Riwayat";
 
-/* No comment provided by engineer. */
+"Host" = "Host";
+
 "I Accept" = "Saya terima";
 
 /* No comment provided by engineer. */
@@ -419,10 +478,13 @@
 "Immediately" = "Segera";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Import Private Key" = "Impor kunci pribadi";
+"Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Impor kunci pribadi…";
+"Import private key…" = "Import private key…";
+
+/* No comment provided by engineer. */
+"Incorrect collateral" = "Incorrect collateral";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Dana tidak mencukupi";
@@ -436,11 +498,12 @@
 /* Invalid transaction */
 "Invalid" = "Tidak valid";
 
-/* No comment provided by engineer. */
 "Invalid Payment Request" = "Permintaan pembayaran tidak valid";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Kode QR tidak valid";
+
+"IP Address" = "IP Address";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Sepertinya Anda mencoba mengembalikan dompet Anda menggunakan frasa pemulihan 12 kata, namun Anda hanya memasukkan 10 kata, apakah Anda ingin memulihkan kata yang hilang secara otomatis? Ini mungkin membutuhkan waktu sekitar satu jam. Kami merekomendasikan untuk mencolokkan perangkat Anda.";
@@ -451,8 +514,9 @@
 /* No comment provided by engineer. */
 "It's Important" = "Ini penting";
 
-/* No comment provided by engineer. */
 "Join Evolution" = "bergabunglah dengan evolusi";
+
+"Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
@@ -473,7 +537,10 @@
 "Local Currency" = "Mata uang lokal";
 
 /* No comment provided by engineer. */
-"Local requested amount: %@" = "Jumlah lokal yang diminta: %@";
+"Local Name" = "Local Name";
+
+/* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
 
 /* No comment provided by engineer. */
 "Locked" = "Terkunci";
@@ -499,14 +566,24 @@
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Tekan lama untuk menyalin ID";
 
-/* adjective, security level */
-"Low" = "Rendah";
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
+
+/* No comment provided by engineer. */
+"Low" = "Low";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Kelola Node Tepercaya";
 
+"Masternode Features" = "Masternode Features";
+
 /* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
 "masternode list #%d of %d" = "daftar masternode #%1$d of %2$d";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Pendaftaran Masternode";
@@ -516,6 +593,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Pembaruan Masternode";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -541,8 +621,9 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Terpindah ke Alamat";
 
-/* No comment provided by engineer. */
 "My Contacts" = "Kontak saya";
+
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Name" = "Nama";
@@ -551,18 +632,25 @@
 "Network" = "Jaringan";
 
 /* No comment provided by engineer. */
-"Network fee" = "Biaya jaringan";
+"Network error" = "Network error";
+
+/* No comment provided by engineer. */
+"Network fee" = "Network fee";
 
 /* (List of) New (notifications) */
 "New" = "Baru";
 
 /* No comment provided by engineer. */
-"NFC device" = "Perangkat NFC";
+"NFC device" = "NFC device";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Perangkat NFC tidak mengirimkan alamat Dash yang valid";
 
+"No address copied" = "No address copied";
+
 /* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
+
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -590,15 +678,31 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "Setelah %@ menerima permintaan Anda, Anda dapat Membayar Langsung ke Nama Pengguna";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Kunci Operator";
 
 /* No comment provided by engineer. */
-"Owner Address" = "Alamat pemilik";
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
+
+/* No comment provided by engineer. */
+"Owner Address" = "Owner Address";
+
+/* No comment provided by engineer. */
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Kunci Pemilik";
 
+"Owner Private Key" = "Owner Private Key";
+
 /* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
+
 "Pay" = "Bayar";
 
 /* No comment provided by engineer. */
@@ -623,7 +727,10 @@
 "Paying..." = "Membayar...";
 
 /* No comment provided by engineer. */
-"Payments" = "Pembayaran";
+"Payments" = "Payments";
+
+/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
 
 /* No comment provided by engineer. */
 "Pending" = "Tertunda";
@@ -632,7 +739,13 @@
 "PIN is always required to make a payment" = "PIN selalu diperlukan untuk melakukan pembayaran";
 
 /* No comment provided by engineer. */
+"Please copy the following message." = "Please copy the following message.";
+
+/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Silakan masukkan PIN untuk meningkatkan dompet";
+
+/* No comment provided by engineer. */
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Silakan letakkan ponsel Anda di dekat perangkat NFC.";
@@ -659,10 +772,16 @@
 "Please write it down" = "Tolong catat";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "Sebelumnya digunakan di alamat IP";
+"Port" = "Port";
+
+/* No comment provided by engineer. */
+"Previously used at IP address" = "Previously used at IP address";
 
 /* No comment provided by engineer. */
 "Private key" = "Kunci pribadi";
+
+/* No comment provided by engineer. */
+"Private Key" = "Private Key";
 
 /* No comment provided by engineer. */
 "Processing" = "Sedang diproses";
@@ -672,6 +791,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Kunci publik";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Terima Cepat";
@@ -719,13 +841,22 @@
 "Register" = "Daftar";
 
 /* No comment provided by engineer. */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
 "Register?" = "Daftar?";
 
 /* No comment provided by engineer. */
-"Registered from" = "Terdaftar dari";
+"Registered from" = "Registered from";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Masternode Terdaftar";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Laporkan masalah";
@@ -759,6 +890,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Hadiah";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Pindai";
@@ -890,6 +1024,9 @@
 "Show Recovery Phrase" = "Tampilkan Frasa pemulihan";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "Skip" = "Lewati";
 
 /* No comment provided by engineer. */
@@ -910,7 +1047,17 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Konfirmasi Pengiriman";
 
+"Step 1" = "Step 1";
+
 /* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Langkah-langkah untuk mereproduksi kerusakan";
+
 "Support" = "Dukungan";
 
 /* No comment provided by engineer. */
@@ -986,7 +1133,13 @@
 "Touch ID limit" = "ID sentuhan terbatas";
 
 /* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
 "Transaction id" = "ID transaksi";
+
+/* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
 
 /* A verb, button title. */
 "Transfer" = "Transfer";
@@ -1007,13 +1160,43 @@
 "Unable to connect" = "Tidak dapat terhubung";
 
 /* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Tidak dapat mendapat kode QR baru";
+
+/* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Dokumen yang tidak didukung atau rusak";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "URL tidak didukung";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Diperbarui: %@";
@@ -1028,10 +1211,13 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Used" = "Digunakan";
+"Use Wallet" = "Use Wallet";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "Digunakan di alamat IP";
+"Used" = "Used";
+
+/* No comment provided by engineer. */
+"Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
 "Username taken" = "Nama pengguna telah diambil";
@@ -1051,8 +1237,11 @@
 /* No comment provided by engineer. */
 "Verify" = "Memeriksa";
 
-/* adjective, security level */
-"Very High" = "Sangat tinggi";
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
+
+/* No comment provided by engineer. */
+"Very High" = "Very High";
 
 /* No comment provided by engineer. */
 "View All" = "Lihat semua";
@@ -1067,13 +1256,25 @@
 "View Recovery Phrase" = "Lihat frasa pemulihan";
 
 /* No comment provided by engineer. */
-"Voting Address" = "Alamat pemungutan suara";
+"View Signing Info" = "View Signing Info";
+
+/* No comment provided by engineer. */
+"Voting Address" = "Voting Address";
+
+/* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Kunci pemungutan suara";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Dompet dinonaktifkan";
+"Voting Private Key" = "Voting Private Key";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Kunci Dompet";
@@ -1117,7 +1318,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "dengan Dash blockchain";
 
-/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
+
 "You accepted the contact request from %@" = "Anda menerima permintaan kontak dari %@";
 
 /* No comment provided by engineer. */
@@ -1150,7 +1352,8 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Anda akan memerlukan frasa pemulihan ini untuk mengakses dana Anda jika perangkat ini hilang, rusak, atau jika Dash Wallet secara tidak sengaja dihapus dari perangkat ini.";
 
-/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
 "Your DashPay Username is ready to use" = "Nama Pengguna DashPay Anda siap digunakan";
 
 /* No comment provided by engineer. */

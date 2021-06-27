@@ -20,7 +20,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern CGFloat const DW_FORM_CELL_VERTICAL_PADDING;
+extern CGFloat const DW_FORM_CELL_TWOLINE_VERTICAL_PADDING;
 extern CGFloat const DW_FORM_CELL_SPACING;
+extern CGFloat const DW_FORM_CELL_TWOLINE_CONTENT_VERTICAL_SPACING;
+
 
 typedef NS_ENUM(NSUInteger, DWFormCellRoundMask) {
     DWFormCellRoundMask_Top = 1 << 0,

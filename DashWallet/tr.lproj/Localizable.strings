@@ -13,7 +13,8 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ Dokunmatik Kimliğe erişim izni verilmiyor";
 
-/* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
 "(1/3) Processing Payment" = "(1/3) Ödeme İşleniyor";
 
 /* No comment provided by engineer. */
@@ -163,17 +164,26 @@
 /* No comment provided by engineer. */
 "Cancel" = "İptal";
 
-/* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "Değiştir";
+/* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
+"Change Operator" = "Change Operator";
 
 /* No comment provided by engineer. */
 "Change payment amount?" = "Ödeme tutarı değişsin mi?";
 
 /* No comment provided by engineer. */
-"Change PIN" = "PİN Değiştir";
+"Change Payout Address" = "Change Payout Address";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Bağlantınızı kontrol edin";
+"Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
 
 /* Choose your Dash username */
 "Choose your" = "Seçin";
@@ -192,6 +202,15 @@
 
 /* No comment provided by engineer. */
 "Close App" = "Uygulamayı kapat";
+
+/* No comment provided by engineer. */
+"Collateral Index" = "Collateral Index";
+
+/* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
 
 /* No comment provided by engineer. */
 "Confirm" = "Onayla";
@@ -230,7 +249,10 @@
 "Continue" = "Devam";
 
 /* No comment provided by engineer. */
-"Copied" = "Kopyalandı";
+"Control" = "Control";
+
+/* No comment provided by engineer. */
+"Copied" = "Copied";
 
 /* No comment provided by engineer. */
 "Copy" = "Kopyala";
@@ -275,6 +297,9 @@
 "Date" = "Tarih";
 
 /* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Varsayılan para birimi, kısayollar, hakkında…";
 
 /* No comment provided by engineer. */
@@ -311,13 +336,40 @@
 "Enter" = "Gir";
 
 /* No comment provided by engineer. */
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
+
+/* No comment provided by engineer. */
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Private Key" = "Enter Owner Private Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
 "Enter PIN" = "PIN Girin";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Kurtarma sözcük grubunu gir";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer" = "Aktarılacak tutarı girin";
+
+/* No comment provided by engineer. */
+"Enter Transaction Hash" = "Enter Transaction Hash";
+
+/* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "2FA kodunu aşağıya girin";
@@ -331,8 +383,9 @@
 /* No comment provided by engineer. */
 "Exit" = "Çıkış";
 
-/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
+
+"External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limiti";
@@ -397,7 +450,8 @@
 /* No comment provided by engineer. */
 "History" = "Geçmiş";
 
-/* No comment provided by engineer. */
+"Host" = "Host";
+
 "I Accept" = "Kabul ediyorum";
 
 /* No comment provided by engineer. */
@@ -425,6 +479,9 @@
 "Import private key…" = "Özel anahtar içeri al…";
 
 /* No comment provided by engineer. */
+"Incorrect collateral" = "Incorrect collateral";
+
+/* No comment provided by engineer. */
 "Insufficient funds" = "Yetersiz bakiye";
 
 /* Transaction within the wallet, transfer of own funds */
@@ -433,14 +490,15 @@
 /* No comment provided by engineer. */
 "Internally moved to" = "Dahili olarak taşındı";
 
-/* Invalid transaction */
-"Invalid" = "Geçersiz";
-
 /* No comment provided by engineer. */
+"Invalid" = "Invalid";
+
 "Invalid Payment Request" = "Geçersiz Ödeme Talebi";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Geçersiz QR Kodu";
+
+"IP Address" = "IP Address";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Görünüşe göre cüzdanınızın 12 kelimelik bir kurtarma sözcük grubu kullanarak geri kurtarmaya çalışıyorsunuz, ancak yalnızca 10 kelime girdiniz, eksik kelimeleri otomatik olarak kurtarmak ister misiniz? Bu yaklaşık bir saat sürebilir. Cihazınızı fişe takmanızı öneririz.";
@@ -449,10 +507,16 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Görünüşe göre cüzdanınızın 12 kelimelik bir kurtarma sözcük grubu kullanarak geri kurtarmaya çalışıyorsunuz, ancak yalnızca 11 kelime girdiniz, eksik kelimeyi otomatik olarak kurtarmak ister misiniz?";
 
 /* No comment provided by engineer. */
+"It's Important" = "It's Important";
+
+/* No comment provided by engineer. */
 "It's Important" = "Bu önemli";
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Evolution'a katıl";
+
+/* No comment provided by engineer. */
+"Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Anahtar çifti %ld";
@@ -473,7 +537,10 @@
 "Local Currency" = "Yerel Para Birimi";
 
 /* No comment provided by engineer. */
-"Local requested amount: %@" = "Yerel istenilen miktar: %@";
+"Local Name" = "Local Name";
+
+/* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
 
 /* No comment provided by engineer. */
 "Locked" = "Kilitlendi";
@@ -499,14 +566,24 @@
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Kimliği kopyalamak için uzun tıklayın";
 
-/* adjective, security level */
-"Low" = "Düşük";
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
+
+/* No comment provided by engineer. */
+"Low" = "Low";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Güvenilen Düğümü Yönet";
 
+"Masternode Features" = "Masternode Features";
+
 /* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
 "masternode list #%d of %d" = "Anadüğüm listesi #%1$d / %2$d";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Anadüğüm Kayıt İşlemi";
@@ -516,6 +593,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Anadüğüm Güncellemesi";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Maksimum";
@@ -541,8 +621,9 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Adrese Taşındı";
 
-/* No comment provided by engineer. */
 "My Contacts" = "Kişilerim";
+
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Name" = "İsim";
@@ -551,18 +632,25 @@
 "Network" = "Ağ";
 
 /* No comment provided by engineer. */
-"Network fee" = "Ağ ücreti";
+"Network error" = "Network error";
+
+/* No comment provided by engineer. */
+"Network fee" = "Network fee";
 
 /* (List of) New (notifications) */
 "New" = "Yeni";
 
 /* No comment provided by engineer. */
-"NFC device" = "NFC cihazı";
+"NFC device" = "NFC device";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC cihazı geçerli bir Dash adresi göndermedi";
 
+"No address copied" = "Kopyalanan adres yok";
+
 /* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
+
 "Node IP" = "Düğüm IP'si";
 
 /* adjective, security level */
@@ -590,15 +678,31 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "%@ isteğinizi kabul ettiğinizde Kullanıcı Adına Doğrudan Ödeme yapabilirsiniz";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operatör Anahtarları";
 
 /* No comment provided by engineer. */
-"Owner Address" = "Sahip Adresi";
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
+
+/* No comment provided by engineer. */
+"Owner Address" = "Owner Address";
+
+/* No comment provided by engineer. */
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Sahip Anahtarları";
 
+"Owner Private Key" = "Owner Private Key";
+
 /* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
+
 "Pay" = "Ödeme";
 
 /* No comment provided by engineer. */
@@ -623,7 +727,10 @@
 "Paying..." = "Ödeniyor...";
 
 /* No comment provided by engineer. */
-"Payments" = "Ödemeler";
+"Payments" = "Payments";
+
+/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
 
 /* No comment provided by engineer. */
 "Pending" = "Bekliyor";
@@ -632,7 +739,13 @@
 "PIN is always required to make a payment" = "Ödeme yapmak için her zaman PIN gereklidir";
 
 /* No comment provided by engineer. */
+"Please copy the following message." = "Please copy the following message.";
+
+/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Cüzdanı yükseltmek için lütfen PİN kodunu girin";
+
+/* No comment provided by engineer. */
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Lütfen telefonunuzu bir NFC cihazının yakınına yerleştirin.";
@@ -659,10 +772,16 @@
 "Please write it down" = "Lütfen bir yere yazın";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "Daha önce kullanılmış IP adresi";
+"Port" = "Port";
+
+/* No comment provided by engineer. */
+"Previously used at IP address" = "Previously used at IP address";
 
 /* No comment provided by engineer. */
 "Private key" = "Özel anahtar";
+
+/* No comment provided by engineer. */
+"Private Key" = "Private Key";
 
 /* No comment provided by engineer. */
 "Processing" = "İşleniyor";
@@ -672,6 +791,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Herkese açık anahtar";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Hızlı Al";
@@ -719,13 +841,22 @@
 "Register" = "Kayıt ol";
 
 /* No comment provided by engineer. */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
 "Register?" = "Kayıt ol?";
 
 /* No comment provided by engineer. */
-"Registered from" = "Tarafından kaydedildi";
+"Registered from" = "Registered from";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Kayıtlı Anadüğüm";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Sorun rapor et";
@@ -759,6 +890,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Ödüller";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Tara";
@@ -890,6 +1024,9 @@
 "Show Recovery Phrase" = "Kurtarma Sözcük Grubunu Göster";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "Skip" = "Atla";
 
 /* No comment provided by engineer. */
@@ -910,7 +1047,17 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Harcama Onayı";
 
+"Step 1" = "Step 1";
+
 /* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Çökmeyi yeniden oluşturma adımları";
+
 "Support" = "Destek";
 
 /* No comment provided by engineer. */
@@ -986,7 +1133,13 @@
 "Touch ID limit" = "Touch ID limiti";
 
 /* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
 "Transaction id" = "İşlem kimliği";
+
+/* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
 
 /* A verb, button title. */
 "Transfer" = "Aktarma";
@@ -1007,13 +1160,43 @@
 "Unable to connect" = "Bağlanılamıyor";
 
 /* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Yeni QR kod alınamıyor";
+
+/* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Desteklenmeyen veya bozuk belge";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Desteklenmeyen bağlantı";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Güncellendi: %@";
@@ -1028,10 +1211,13 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Used" = "Kullanıldı";
+"Use Wallet" = "Use Wallet";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "IP adresinde kullanıldı";
+"Used" = "Used";
+
+/* No comment provided by engineer. */
+"Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
 "Username taken" = "Kullanıcı adı alınmış";
@@ -1051,8 +1237,11 @@
 /* No comment provided by engineer. */
 "Verify" = "Onayla";
 
-/* adjective, security level */
-"Very High" = "Çok Yüksek";
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
+
+/* No comment provided by engineer. */
+"Very High" = "Very High";
 
 /* No comment provided by engineer. */
 "View All" = "Hepsini gör";
@@ -1067,13 +1256,25 @@
 "View Recovery Phrase" = "Kurtarma Sözcük Grubunu Göster";
 
 /* No comment provided by engineer. */
-"Voting Address" = "Oy Verme Adresi";
+"View Signing Info" = "View Signing Info";
+
+/* No comment provided by engineer. */
+"Voting Address" = "Voting Address";
+
+/* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Oy Verme Anahtarları";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Cüzdan devredışı";
+"Voting Private Key" = "Voting Private Key";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Cüzdan Anahtarları";
@@ -1117,7 +1318,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "Dash blok zinciri ile";
 
-/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
+
 "You accepted the contact request from %@" = "%@'den gelen kişi talebini kabul ettiniz.";
 
 /* No comment provided by engineer. */
@@ -1150,7 +1352,8 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Bu cihazın kaybolması / hasar görmesi, Dash cüzdanının bu cihazdan yanlışlıkla silinmesi durumunda paranıza erişmek için bu kurtarma ifadesine ihtiyacınız olacaktır.";
 
-/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
 "Your DashPay Username is ready to use" = "DashPay Kullanıcı Adınız kullanıma hazır";
 
 /* No comment provided by engineer. */

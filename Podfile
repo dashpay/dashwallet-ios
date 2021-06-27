@@ -2,7 +2,7 @@ target 'dashwallet' do
   platform :ios, '12.0'
   
   pod 'DashSync', :path => '../DashSync/'
-
+  
   pod 'CloudInAppMessaging', '0.1.0'
   
   pod 'KVO-MVVM', '0.5.6'
@@ -72,7 +72,8 @@ post_install do |installer|
       config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
     
+end
     # update info about current DashSync version
     # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
-    system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
-end
+#    system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
+#end

@@ -13,7 +13,8 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
-/* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
 "(1/3) Processing Payment" = "(1/3) Processing Payment";
 
 /* No comment provided by engineer. */
@@ -167,10 +168,19 @@
 "Change" = "Change";
 
 /* No comment provided by engineer. */
+"Change Operator" = "Change Operator";
+
+/* No comment provided by engineer. */
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
+"Change Payout Address" = "Change Payout Address";
+
+/* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -192,6 +202,15 @@
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
+
+/* No comment provided by engineer. */
+"Collateral Index" = "Collateral Index";
+
+/* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirm";
@@ -228,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Continue";
+
+/* No comment provided by engineer. */
+"Control" = "Control";
 
 /* No comment provided by engineer. */
 "Copied" = "Copied";
@@ -275,6 +297,9 @@
 "Date" = "Date";
 
 /* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
 
 /* No comment provided by engineer. */
@@ -311,13 +336,40 @@
 "Enter" = "Enter";
 
 /* No comment provided by engineer. */
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
+
+/* No comment provided by engineer. */
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Private Key" = "Enter Owner Private Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
 "Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer" = "Enter the amount to transfer";
+
+/* No comment provided by engineer. */
+"Enter Transaction Hash" = "Enter Transaction Hash";
+
+/* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Enter your 2FA code below";
@@ -331,8 +383,9 @@
 /* No comment provided by engineer. */
 "Exit" = "Exit";
 
-/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
+
+"External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
@@ -397,7 +450,8 @@
 /* No comment provided by engineer. */
 "History" = "History";
 
-/* No comment provided by engineer. */
+"Host" = "Host";
+
 "I Accept" = "I Accept";
 
 /* No comment provided by engineer. */
@@ -425,6 +479,9 @@
 "Import private key…" = "Import private key…";
 
 /* No comment provided by engineer. */
+"Incorrect collateral" = "Incorrect collateral";
+
+/* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
 /* Transaction within the wallet, transfer of own funds */
@@ -436,11 +493,12 @@
 /* Invalid transaction */
 "Invalid" = "Invalid";
 
-/* No comment provided by engineer. */
 "Invalid Payment Request" = "Invalid Payment Request";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
+
+"IP Address" = "IP Address";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
@@ -451,8 +509,9 @@
 /* No comment provided by engineer. */
 "It's Important" = "It's Important";
 
-/* No comment provided by engineer. */
 "Join Evolution" = "Join Evolution";
+
+"Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
@@ -471,6 +530,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
+
+/* No comment provided by engineer. */
+"Local Name" = "Local Name";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -499,13 +561,20 @@
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Long press to copy ID";
 
-/* adjective, security level */
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
+
+/* No comment provided by engineer. */
 "Low" = "Low";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Manage Trusted Node";
 
+"Masternode Features" = "Masternode Features";
+
 /* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
 "masternode list #%d of %d" = "masternode list #%1$d of %2$d";
 
 /* No comment provided by engineer. */
@@ -516,6 +585,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Masternode Update";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -541,8 +613,9 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Moved to Address";
 
-/* No comment provided by engineer. */
 "My Contacts" = "My Contacts";
+
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Name" = "Name";
@@ -551,7 +624,10 @@
 "Network" = "Network";
 
 /* No comment provided by engineer. */
-"Network fee" = "Tarifa e rrjetit";
+"Network error" = "Network error";
+
+/* No comment provided by engineer. */
+"Network fee" = "Network fee";
 
 /* (List of) New (notifications) */
 "New" = "New";
@@ -562,7 +638,11 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
 
+"No address copied" = "No address copied";
+
 /* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
+
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -590,15 +670,31 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+"Owner Private Key" = "Owner Private Key";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
+
 "Pay" = "Paguaj";
 
 /* No comment provided by engineer. */
@@ -625,14 +721,21 @@
 /* No comment provided by engineer. */
 "Payments" = "Payments";
 
-/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
+
 "Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
 
 /* No comment provided by engineer. */
+"Please copy the following message." = "Please copy the following message.";
+
+/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
+
+/* No comment provided by engineer. */
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -659,10 +762,16 @@
 "Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
+"Port" = "Port";
+
+/* No comment provided by engineer. */
 "Previously used at IP address" = "Previously used at IP address";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Private Key" = "Private Key";
 
 /* No comment provided by engineer. */
 "Processing" = "Processing";
@@ -672,6 +781,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Quick Receive";
@@ -719,6 +831,12 @@
 "Register" = "Register";
 
 /* No comment provided by engineer. */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
 "Register?" = "Register?";
 
 /* No comment provided by engineer. */
@@ -726,6 +844,9 @@
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registered Masternode";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Report an Issue";
@@ -759,6 +880,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Rewards";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Skano";
@@ -890,6 +1014,9 @@
 "Show Recovery Phrase" = "Show Recovery Phrase";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "Skip" = "Skip";
 
 /* No comment provided by engineer. */
@@ -910,7 +1037,17 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Spending Confirmation";
 
+"Step 1" = "Step 1";
+
 /* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
 "Support" = "Support";
 
 /* No comment provided by engineer. */
@@ -986,7 +1123,13 @@
 "Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
+
+/* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
 
 /* A verb, button title. */
 "Transfer" = "Transfer";
@@ -1007,13 +1150,43 @@
 "Unable to connect" = "Unable to connect";
 
 /* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Unable to get new QR code";
+
+/* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Unsupported URL";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Updated: %@";
@@ -1026,6 +1199,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Use Wallet" = "Use Wallet";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
@@ -1051,6 +1227,9 @@
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
+
 /* adjective, security level */
 "Very High" = "Very High";
 
@@ -1067,10 +1246,22 @@
 "View Recovery Phrase" = "View Recovery Phrase";
 
 /* No comment provided by engineer. */
+"View Signing Info" = "View Signing Info";
+
+/* No comment provided by engineer. */
 "Voting Address" = "Voting Address";
 
 /* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
+
+/* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
+"Voting Private Key" = "Voting Private Key";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";
@@ -1117,7 +1308,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "with Dash blockchain";
 
-/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
+
 "You accepted the contact request from %@" = "You accepted the contact request from %@";
 
 /* No comment provided by engineer. */
@@ -1150,7 +1342,8 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
 
-/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
 
 /* No comment provided by engineer. */

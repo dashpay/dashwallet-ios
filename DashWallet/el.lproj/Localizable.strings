@@ -13,7 +13,8 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Touch ID";
 
-/* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
 "(1/3) Processing Payment" = "(1/3) Επεξεργασία Πληρωμής";
 
 /* No comment provided by engineer. */
@@ -167,10 +168,19 @@
 "Change" = "Αλλαγή";
 
 /* No comment provided by engineer. */
+"Change Operator" = "Change Operator";
+
+/* No comment provided by engineer. */
 "Change payment amount?" = "Αλλαγή του ποσού πληρωμής?";
 
 /* No comment provided by engineer. */
+"Change Payout Address" = "Change Payout Address";
+
+/* No comment provided by engineer. */
 "Change PIN" = "Αλλαγή PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Ελέγξτε την σύνδεση σας";
@@ -192,6 +202,15 @@
 
 /* No comment provided by engineer. */
 "Close App" = "Κλείσιμο Εφαρμογής";
+
+/* No comment provided by engineer. */
+"Collateral Index" = "Collateral Index";
+
+/* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
 
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
@@ -228,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Συνέχεια";
+
+/* No comment provided by engineer. */
+"Control" = "Control";
 
 /* No comment provided by engineer. */
 "Copied" = "Αντιγράφηκε";
@@ -275,6 +297,9 @@
 "Date" = "Ημερομηνία";
 
 /* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Προεπιλεγμένο νόμισμα, συντομεύσεις, σχετικά με...";
 
 /* No comment provided by engineer. */
@@ -311,13 +336,40 @@
 "Enter" = "Είσοδος";
 
 /* No comment provided by engineer. */
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
+
+/* No comment provided by engineer. */
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Private Key" = "Enter Owner Private Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
 "Enter PIN" = "Εισάγετε PIN";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Εισάγετε την φράσης ανάκτησης";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer" = "Εισάγετε το ποσό που θα μεταφερθεί";
+
+/* No comment provided by engineer. */
+"Enter Transaction Hash" = "Enter Transaction Hash";
+
+/* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
@@ -331,8 +383,9 @@
 /* No comment provided by engineer. */
 "Exit" = "Έξοδος";
 
-/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
+
+"External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "όριο Face ID ";
@@ -397,7 +450,8 @@
 /* No comment provided by engineer. */
 "History" = "Ιστορικό";
 
-/* No comment provided by engineer. */
+"Host" = "Host";
+
 "I Accept" = "Αποδέχομαι";
 
 /* No comment provided by engineer. */
@@ -425,6 +479,9 @@
 "Import private key…" = "Εισάγετε το ιδιωτικό κλειδί…";
 
 /* No comment provided by engineer. */
+"Incorrect collateral" = "Incorrect collateral";
+
+/* No comment provided by engineer. */
 "Insufficient funds" = "Ανεπαρκή χρήματα";
 
 /* Transaction within the wallet, transfer of own funds */
@@ -436,11 +493,12 @@
 /* Invalid transaction */
 "Invalid" = "Μη έγκυρο";
 
-/* No comment provided by engineer. */
 "Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Μη έγκυρος κωδικός QR";
+
+"IP Address" = "IP Address";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Φαίνεται ότι προσπαθείτε να επαναφέρετε το πορτοφόλι σας χρησιμοποιώντας μια φράση ανάκτησης 12 λέξεων, ωστόσο έχετε εισαγάγει μόνο 10 λέξεις, θα θέλατε να ανακτήσετε αυτόματα τις λέξεις που λείπουν; Αυτό μπορεί να διαρκέσει περίπου μια ώρα. Σας συνιστούμε να συνδέσετε τη συσκευή σας στην φόρτιση.";
@@ -451,8 +509,9 @@
 /* No comment provided by engineer. */
 "It's Important" = "Είναι σημαντικό";
 
-/* No comment provided by engineer. */
 "Join Evolution" = "Εγγραφείτε στο Evolution";
+
+"Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
@@ -471,6 +530,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Τοπικό νόμισμα";
+
+/* No comment provided by engineer. */
+"Local Name" = "Local Name";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Τοπικό ποσό που ζητήθηκε: %@";
@@ -499,13 +561,20 @@
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Πατήστε παρατεταμένα για να αντιγραψετε το ID";
 
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
+
 /* adjective, security level */
 "Low" = "χαμηλά";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Διαχείριση Έμπιστου Κόμβου";
 
+"Masternode Features" = "Masternode Features";
+
 /* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
 "masternode list #%d of %d" = "Λίστα masternode #%1$d of %2$d";
 
 /* No comment provided by engineer. */
@@ -516,6 +585,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Ανανέωση Masternode";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Μέγιστο";
@@ -541,14 +613,18 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Μετακινήθηκε στην διεύθυνση";
 
-/* No comment provided by engineer. */
 "My Contacts" = "Οι Επαφές μου";
+
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Name" = "Όνομα";
 
 /* No comment provided by engineer. */
 "Network" = "Δίκτυο";
+
+/* No comment provided by engineer. */
+"Network error" = "Network error";
 
 /* No comment provided by engineer. */
 "Network fee" = "Τέλος δικτύου";
@@ -562,7 +638,11 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Η συσκευή NFC δεν μεταδίδει έγκυρη διεύθυνση Dash";
 
+"No address copied" = "Δεν αντιγράφηκε καμία διεύθυνση";
+
 /* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
+
 "Node IP" = "IP Κόμβου";
 
 /* adjective, security level */
@@ -590,15 +670,31 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "Μόλις ο/η %@ αποδεχτεί το αίτημα σας, θα μπορείτε να πληρώσετε απευθείας στο όνομα χρήστη";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Κλειδιά Χειριστή";
+
+/* No comment provided by engineer. */
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Διεύθυνση Κατόχου";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Κλειδιά Κατόχου";
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
+"Owner Keys" = "Κλειδιά Κατόχου";
+
+"Owner Private Key" = "Owner Private Key";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
+
 "Pay" = "πληρώστε";
 
 /* No comment provided by engineer. */
@@ -625,14 +721,21 @@
 /* No comment provided by engineer. */
 "Payments" = "Πληρωμές";
 
-/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
+
 "Pending" = "Εκκρεμεί";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
 
 /* No comment provided by engineer. */
+"Please copy the following message." = "Please copy the following message.";
+
+/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Παρακαλώ εισάγετε το PIN για να αναβαθμίσετε το πορτοφόλι";
+
+/* No comment provided by engineer. */
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Τοποθετήστε το τηλέφωνό σας κοντά στη συσκευή NFC.";
@@ -659,10 +762,16 @@
 "Please write it down" = "Παρακαλώ να το γράψετε";
 
 /* No comment provided by engineer. */
+"Port" = "Port";
+
+/* No comment provided by engineer. */
 "Previously used at IP address" = "Χρησιμοποιήθηκε προηγουμένως στη διεύθυνση IP";
 
 /* No comment provided by engineer. */
 "Private key" = "Ιδιωτικό κλειδί";
+
+/* No comment provided by engineer. */
+"Private Key" = "Private Key";
 
 /* No comment provided by engineer. */
 "Processing" = "Επεξεργασία";
@@ -672,6 +781,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Δημόσιο κλειδί";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Γρήγορη Λήψη";
@@ -719,6 +831,12 @@
 "Register" = "Εγγραφή";
 
 /* No comment provided by engineer. */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
 "Register?" = "Εγγραφή;";
 
 /* No comment provided by engineer. */
@@ -726,6 +844,9 @@
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Εγγεγραμμένο Masternode";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Αναφέρετε το πρόβλημα";
@@ -759,6 +880,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Ανταμοιβές";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Ανίχνευση";
@@ -890,6 +1014,9 @@
 "Show Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "Skip" = "Παράλειψη";
 
 /* No comment provided by engineer. */
@@ -910,7 +1037,17 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Επιβεβαίωση Ξοδέματος";
 
+"Step 1" = "Step 1";
+
 /* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Βήματα για να αναπαραχθεί η κατάρρευση";
+
 "Support" = "Υποστήριξη";
 
 /* No comment provided by engineer. */
@@ -986,7 +1123,13 @@
 "Touch ID limit" = "Όριο Touch ID ";
 
 /* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
 "Transaction id" = "Ταυτότητα συναλλαγής";
+
+/* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
 
 /* A verb, button title. */
 "Transfer" = "Μεταφορά";
@@ -1007,13 +1150,43 @@
 "Unable to connect" = "Δεν είναι δυνατή η σύνδεση";
 
 /* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Δεν είναι δυνατή η λήψη νέου QR κωδικού";
+
+/* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Μη υποστηριζόμενο ή κατεστραμμένο έγγραφο";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Μη υποστηριζόμενο url";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Ανανεώθηκε: %@";
@@ -1026,6 +1199,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Use Wallet" = "Use Wallet";
 
 /* No comment provided by engineer. */
 "Used" = "Χρησιμοποιήθηκε";
@@ -1051,6 +1227,9 @@
 /* No comment provided by engineer. */
 "Verify" = "Επιβεβαίωση";
 
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
+
 /* adjective, security level */
 "Very High" = "Πολύ Υψηλά";
 
@@ -1067,10 +1246,22 @@
 "View Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";
 
 /* No comment provided by engineer. */
+"View Signing Info" = "View Signing Info";
+
+/* No comment provided by engineer. */
 "Voting Address" = "Διεύθυνση Ψήφου";
 
 /* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
+
+/* No comment provided by engineer. */
 "Voting Keys" = "Κλειδιά ψήφου";
+
+/* No comment provided by engineer. */
+"Voting Private Key" = "Voting Private Key";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Το πορτοφόλι απενεργοποιήθηκε";
@@ -1117,7 +1308,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "Μεσώ του Dash blockchain";
 
-/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
+
 "You accepted the contact request from %@" = "Αποδεχθήκατε το αίτημα επαφής από %@";
 
 /* No comment provided by engineer. */
@@ -1150,7 +1342,8 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Θα χρειαστείτε αυτή τη φράση ανάκτησης για να αποκτήσετε πρόσβαση στα χρήματά σας εάν αυτή η συσκευή χαθεί, καταστραφεί ή εάν το Πορτοφόλι Dash απεγκατασταθει τυχαία από αυτήν τη συσκευή.";
 
-/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
 
 /* No comment provided by engineer. */

@@ -13,7 +13,8 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ nemá povolený prístup k Touch ID";
 
-/* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
 "(1/3) Processing Payment" = "(1/3) Spracovanie platby";
 
 /* No comment provided by engineer. */
@@ -163,17 +164,26 @@
 /* No comment provided by engineer. */
 "Cancel" = "Zrušiť";
 
-/* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "Zmeniť";
+/* No comment provided by engineer. */
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Zmeniť sumu platby?";
+"Change Operator" = "Change Operator";
 
 /* No comment provided by engineer. */
-"Change PIN" = "Zmeniť PIN";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Skontrolujte pripojenie";
+"Change Payout Address" = "Change Payout Address";
+
+/* No comment provided by engineer. */
+"Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
 
 /* Choose your Dash username */
 "Choose your" = "Vybrať vaše";
@@ -192,6 +202,15 @@
 
 /* No comment provided by engineer. */
 "Close App" = "Ukončiť Applikáciu";
+
+/* No comment provided by engineer. */
+"Collateral Index" = "Collateral Index";
+
+/* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
 
 /* No comment provided by engineer. */
 "Confirm" = "Potvrdiť";
@@ -230,7 +249,10 @@
 "Continue" = "Pokračovať";
 
 /* No comment provided by engineer. */
-"Copied" = "Skopírované";
+"Control" = "Control";
+
+/* No comment provided by engineer. */
+"Copied" = "Copied";
 
 /* No comment provided by engineer. */
 "Copy" = "Kopírovať";
@@ -275,6 +297,9 @@
 "Date" = "Dátum";
 
 /* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Predvolená mena, skratky, o programe...";
 
 /* No comment provided by engineer. */
@@ -311,7 +336,25 @@
 "Enter" = "Zadať";
 
 /* No comment provided by engineer. */
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
+
+/* No comment provided by engineer. */
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Private Key" = "Enter Owner Private Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
 "Enter PIN" = "Zadať PIN";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Zadať frázu pre obnovenie";
@@ -320,19 +363,32 @@
 "Enter the amount to transfer" = "Zadajte sumu, ktorú chcete previesť";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Nižšie zadajte váš 2FA kód";
+"Enter Transaction Hash" = "Enter Transaction Hash";
 
 /* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Nižšie zadajte váš 2FA kód";
+
 "Error" = "Chyba";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Chyba pri inovácii";
+
+"Exit" = "Exit";
 
 /* No comment provided by engineer. */
 "Exit" = "Ukončiť";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
+
+/* No comment provided by engineer. */
+"External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Limit pre Face ID";
@@ -397,7 +453,8 @@
 /* No comment provided by engineer. */
 "History" = "História";
 
-/* No comment provided by engineer. */
+"Host" = "Host";
+
 "I Accept" = "Súhlasím";
 
 /* No comment provided by engineer. */
@@ -425,6 +482,9 @@
 "Import private key…" = "Importovať privátny kľúč…";
 
 /* No comment provided by engineer. */
+"Incorrect collateral" = "Incorrect collateral";
+
+/* No comment provided by engineer. */
 "Insufficient funds" = "Nedostatok prostriedkov";
 
 /* Transaction within the wallet, transfer of own funds */
@@ -436,11 +496,12 @@
 /* Invalid transaction */
 "Invalid" = "Neplatná";
 
-/* No comment provided by engineer. */
 "Invalid Payment Request" = "Neplatná žiadosť o platbu:";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Neplatný QR kód";
+
+"IP Address" = "IP Address";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Zdá sa, že sa pokúšate obnoviť svoju peňaženku pomocou 12-slovnej frázy na obnovenie, avšak zadali ste iba 10 slov. Chcete automaticky obnoviť chýbajúce slová? Môže to trvať asi hodinu. Vaše zariadenie odporúčame pripojiť do siete.";
@@ -451,8 +512,9 @@
 /* No comment provided by engineer. */
 "It's Important" = "Je to dôležité";
 
-/* No comment provided by engineer. */
 "Join Evolution" = "Pridajte sa k evolúcii";
+
+"Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Pár kľúčov %ld";
@@ -473,7 +535,10 @@
 "Local Currency" = "Miestna mena";
 
 /* No comment provided by engineer. */
-"Local requested amount: %@" = "Miestna vyžadovaná suma: %@";
+"Local Name" = "Local Name";
+
+/* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
 
 /* No comment provided by engineer. */
 "Locked" = "Uzamknuté";
@@ -499,14 +564,24 @@
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Dlhým stlačením kopírovať ID";
 
-/* adjective, security level */
-"Low" = "Nízke";
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
+
+/* No comment provided by engineer. */
+"Low" = "Low";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Spravovať dôveryhodný uzol";
 
+"Masternode Features" = "Masternode Features";
+
 /* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
 "masternode list #%d of %d" = "zoznam mastenódov: %1$d z %2$d";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Registracia masternódu";
@@ -516,6 +591,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Aktualizácia masternódu";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -541,8 +619,9 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Presunuté k adrese";
 
-/* No comment provided by engineer. */
 "My Contacts" = "Moje kontakty";
+
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Name" = "Meno";
@@ -551,7 +630,10 @@
 "Network" = "Sieť";
 
 /* No comment provided by engineer. */
-"Network fee" = "Sieťový poplatok ";
+"Network error" = "Network error";
+
+/* No comment provided by engineer. */
+"Network fee" = "Network fee";
 
 /* (List of) New (notifications) */
 "New" = "nových";
@@ -562,7 +644,11 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC zariadenie nevyslalo validnú Dash adresu";
 
+"No address copied" = "Nebola skopírovaná žiadna adresa";
+
 /* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
+
 "Node IP" = "IP uzla";
 
 /* adjective, security level */
@@ -590,15 +676,31 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "Hneď ako %@ akceptuje vašu žiadosť, môžete platiť priamo na meno používateľa";
 
 /* No comment provided by engineer. */
+"Operator Key" = "Operator Key";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Kľúče operátora";
+
+/* No comment provided by engineer. */
+"Operator Private Key" = "Operator Private Key";
+
+/* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Adresa vlastníka";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Kľúče vlastníka";
+"Owner Key" = "Owner Key";
 
 /* No comment provided by engineer. */
+"Owner Keys" = "Kľúče vlastníka";
+
+"Owner Private Key" = "Owner Private Key";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
+
 "Pay" = "Zaplatiť";
 
 /* No comment provided by engineer. */
@@ -625,17 +727,24 @@
 /* No comment provided by engineer. */
 "Payments" = "Platby";
 
-/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
+
 "Pending" = "Čakajúce";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Na vykonanie platby je vždy potrebný PIN";
 
 /* No comment provided by engineer. */
+"Please copy the following message." = "Please copy the following message.";
+
+/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pre inováciu peňaženky zadajte PIN";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Umiestnite váš telefón blízko NFC zariadenia.";
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
+
+/* No comment provided by engineer. */
+"Please place your phone near NFC device." = "Umiestnite Váš telefón blízko NFC zariadenia.";
 
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "Klepnite na slová z obnovovacej frázy v správnom poradí";
@@ -659,10 +768,16 @@
 "Please write it down" = "Prosím, zapíšte si ju";
 
 /* No comment provided by engineer. */
+"Port" = "Port";
+
+/* No comment provided by engineer. */
 "Previously used at IP address" = "Predtým použité na IP adrese";
 
 /* No comment provided by engineer. */
 "Private key" = "Privátny kľúč";
+
+/* No comment provided by engineer. */
+"Private Key" = "Private Key";
 
 /* No comment provided by engineer. */
 "Processing" = "Spracováva sa";
@@ -672,6 +787,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Verejný kľúč";
+
+/* No comment provided by engineer. */
+"Public Key" = "Public Key";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Rýchlo prijať";
@@ -719,13 +837,22 @@
 "Register" = "Registrovať";
 
 /* No comment provided by engineer. */
+"Register" = "Register";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
 "Register?" = "Registrovať?";
 
 /* No comment provided by engineer. */
-"Registered from" = "Registrované z";
+"Registered from" = "Registered from";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registrovaný masternód";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Nahlásiť problém";
@@ -759,6 +886,9 @@
 
 /* No comment provided by engineer. */
 "Rewards" = "Odmeny";
+
+/* Should be understood as `same as owner key` */
+"Same as owner" = "Same as owner";
 
 /* No comment provided by engineer. */
 "Scan" = "Skenovať";
@@ -890,6 +1020,9 @@
 "Show Recovery Phrase" = "Zobraziť frázu obnovenia";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "Skip" = "Preskočiť";
 
 /* No comment provided by engineer. */
@@ -910,11 +1043,21 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Potvrdenie minutia";
 
+"Step 1" = "Step 1";
+
 /* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Kroky na reprodukciu chyby";
+
 "Support" = "Podpora";
 
 /* No comment provided by engineer. */
-"Swept!" = "Načítať!";
+"Swept!" = "Swept!";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Mainnet" = "Prepnúť na hlavnú sieť";
@@ -986,7 +1129,13 @@
 "Touch ID limit" = "Limit pre Touch ID";
 
 /* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
 "Transaction id" = "Id transakcie";
+
+/* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
 
 /* A verb, button title. */
 "Transfer" = "Presun";
@@ -1007,13 +1156,43 @@
 "Unable to connect" = "Nedá sa pripojiť";
 
 /* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
+
+/* No comment provided by engineer. */
 "Unable to get new QR code" = "Nepodarilo sa získať nový QR kód";
+
+/* No comment provided by engineer. */
+"Unknown Operator Private Key" = "Unknown Operator Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Public Key" = "Unknown Owner Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Private Key" = "Unknown Voting Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nepodporovaný alebo poškodený dokument";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Nepodporovaná URL";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Aktualizované: %@";
@@ -1026,6 +1205,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Use Wallet" = "Use Wallet";
 
 /* No comment provided by engineer. */
 "Used" = "Použité";
@@ -1051,6 +1233,9 @@
 /* No comment provided by engineer. */
 "Verify" = "Overiť";
 
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
+
 /* adjective, security level */
 "Very High" = "Veľmi vysoké";
 
@@ -1067,10 +1252,22 @@
 "View Recovery Phrase" = "Zobraziť frázu pre obnovenie";
 
 /* No comment provided by engineer. */
+"View Signing Info" = "View Signing Info";
+
+/* No comment provided by engineer. */
 "Voting Address" = "Adresa pre hlasovanie";
 
 /* No comment provided by engineer. */
+"Voting Key" = "Voting Key";
+
+/* No comment provided by engineer. */
 "Voting Keys" = "Hlasovacie kľúče";
+
+/* No comment provided by engineer. */
+"Voting Private Key" = "Voting Private Key";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Peňaženka neaktívna";
@@ -1117,7 +1314,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "s Dash blockchainom";
 
-/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
+
 "You accepted the contact request from %@" = "Prijali ste kontaktnú žiadosť od %@";
 
 /* No comment provided by engineer. */
@@ -1150,8 +1348,12 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Túto frázu pre obnovenie budete potrebovať na prístup k vašim finančným prostriedkom, ak dôjde k strate či poškodeniu tohto zariadenia alebo k náhodnému odinštalovaniu Dash Wallet z tohto zariadenia.";
 
-/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
 "Your DashPay Username is ready to use" = "Vaše používateľské DashPay meno je pripravené";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Vaša transakcia bola odoslaná a čiastka by sa mala objaviť vo vašej peňaženke v priebehu niekoľkých minút.";

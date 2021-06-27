@@ -16,7 +16,10 @@
 //
 #import <UIKit/UIKit.h>
 
+#import "DWActionFormCellModel.h"
 #import "DWFormSectionModel.h"
+#import "DWKeyValueFormCellModel.h"
+#import "DWPublicKeyGenerationCellModel.h"
 #import "DWSelectorFormCellModel.h"
 #import "DWSwitcherFormCellModel.h"
 
