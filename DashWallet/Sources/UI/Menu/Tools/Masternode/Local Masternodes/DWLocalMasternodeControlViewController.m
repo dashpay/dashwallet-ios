@@ -506,7 +506,8 @@ typedef NS_ENUM(NSUInteger, DWMasternodeControlViewState) {
 }
 
 - (void)showSignMessageForKey:(DSKey *)key {
-    DWSignMessageViewController *signMessageViewController = [[DWSignMessageViewController alloc] init];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Masternode" bundle:nil];
+    DWSignMessageViewController *signMessageViewController = (DWSignMessageViewController *)[storyboard instantiateViewControllerWithIdentifier:@"DWSignMessageViewControllerIdentifier"];
     signMessageViewController.key = key;
     [self.navigationController pushViewController:signMessageViewController animated:YES];
 }

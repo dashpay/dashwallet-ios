@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -20,7 +20,7 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="93" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Nb6-5z-r4N">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                     </tableView>
                     <navigationItem key="navigationItem" title="Masternodes" id="P9c-09-eP5">
                         <barButtonItem key="backBarButtonItem" title=" " id="La7-Je-S0J"/>
@@ -38,12 +38,12 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="HNA-ZA-UcF">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
                             <tableViewSection headerTitle="Information" id="cGa-57-18y">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="T2b-AQ-sN9" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="55.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="49.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="T2b-AQ-sN9" id="7h6-MK-Oxa">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -72,7 +72,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="40" id="I3q-Oc-gSW" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="99.5" width="375" height="40"/>
+                                        <rect key="frame" x="0.0" y="93.5" width="375" height="40"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="I3q-Oc-gSW" id="tFo-3x-qgH">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="40"/>
@@ -101,7 +101,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="40" id="b5B-at-v1r" userLabel="InfoCell" customClass="DSTransactionIdentifierTableViewCell">
-                                        <rect key="frame" x="0.0" y="139.5" width="375" height="40"/>
+                                        <rect key="frame" x="0.0" y="133.5" width="375" height="40"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="b5B-at-v1r" id="gua-hv-jb2">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="40"/>
@@ -133,7 +133,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="71" id="pHG-d3-Ftx" userLabel="InfoCell" customClass="DSTransactionIdentifierTableViewCell">
-                                        <rect key="frame" x="0.0" y="179.5" width="375" height="71"/>
+                                        <rect key="frame" x="0.0" y="173.5" width="375" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="pHG-d3-Ftx" id="Zao-e9-c7W">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="71"/>
@@ -174,7 +174,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="71" id="Z8E-t3-eKH" userLabel="InfoCell" customClass="DSTransactionIdentifierTableViewCell">
-                                        <rect key="frame" x="0.0" y="250.5" width="375" height="71"/>
+                                        <rect key="frame" x="0.0" y="244.5" width="375" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Z8E-t3-eKH" id="TI2-xf-dyf">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="71"/>
@@ -214,14 +214,14 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="Nis-po-wKT" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="321.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="315.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Nis-po-wKT" id="qnc-rs-SVq">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Funds in Holding" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8BB-mb-uaZ">
-                                                    <rect key="frame" x="16" y="12" width="128.5" height="21"/>
+                                                    <rect key="frame" x="16" y="12" width="128" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -243,7 +243,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="pOP-yp-IwL" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="365.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="359.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="pOP-yp-IwL" id="r9G-6A-CdT">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -276,7 +276,7 @@
                             <tableViewSection headerTitle="Actions" id="FhC-Wj-6fB">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="ZQr-zK-ZLJ" style="IBUITableViewCellStyleDefault" id="Grz-Pp-pOE">
-                                        <rect key="frame" x="0.0" y="465.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="453.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Grz-Pp-pOE" id="vWo-bZ-n2F">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -296,7 +296,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="U1L-6Z-P5l" style="IBUITableViewCellStyleDefault" id="Ikq-eV-alt">
-                                        <rect key="frame" x="0.0" y="509.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="497.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ikq-eV-alt" id="uv7-r5-zyD">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -316,7 +316,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="dHD-Pe-gu5" style="IBUITableViewCellStyleDefault" id="SkG-dJ-mbw">
-                                        <rect key="frame" x="0.0" y="553.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="541.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="SkG-dJ-mbw" id="92B-2L-M92">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -333,7 +333,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="cRO-Sb-dri" style="IBUITableViewCellStyleDefault" id="5Ry-HF-Ls3">
-                                        <rect key="frame" x="0.0" y="597.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="585.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="5Ry-HF-Ls3" id="ak6-ty-GZI">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -357,7 +357,7 @@
                             <tableViewSection headerTitle="Local Masternode Info" id="xOg-j2-8B2" userLabel="Local Masternode Info">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="66" id="irB-sq-AXN" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="697.5" width="375" height="66"/>
+                                        <rect key="frame" x="0.0" y="679.5" width="375" height="66"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="irB-sq-AXN" id="4o7-V9-491">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="66"/>
@@ -386,7 +386,7 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="VRJ-p9-mgf" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="763.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="745.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="VRJ-p9-mgf" id="9qo-EC-Rps">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -418,7 +418,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="ueZ-0X-o3Q" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="807.5" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="789.5" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ueZ-0X-o3Q" id="IK1-MZ-sFz">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -470,6 +470,7 @@
                         <outlet property="proUpServTxLabel" destination="5lC-cg-gFY" id="xug-NQ-RiM"/>
                         <outlet property="votingAddressLabel" destination="NuW-HE-JAG" id="5bO-gq-ewb"/>
                         <outlet property="votingKeyLabel" destination="jRM-CP-alz" id="SQd-sh-Xp7"/>
+                        <segue destination="g4h-Ca-sLc" kind="show" identifier="SignMessageSegue" id="I0u-dd-Jc6"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pEU-aL-dmq" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -503,7 +504,8 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                         </subviews>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <viewLayoutGuide key="safeArea" id="yyA-YA-5xp"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="yyA-YA-5xp" firstAttribute="trailing" secondItem="uTj-YU-r0B" secondAttribute="trailing" constant="20" id="7ds-w1-Cfm"/>
                             <constraint firstItem="uTr-9y-as1" firstAttribute="trailing" secondItem="uTj-YU-r0B" secondAttribute="trailing" id="Qtb-mD-HE4"/>
@@ -512,7 +514,6 @@
                             <constraint firstItem="uTj-YU-r0B" firstAttribute="top" secondItem="yyA-YA-5xp" secondAttribute="top" constant="20" id="wFg-DB-IgN"/>
                             <constraint firstItem="uTr-9y-as1" firstAttribute="top" secondItem="uTj-YU-r0B" secondAttribute="bottom" constant="18" id="zwk-Af-ihm"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="yyA-YA-5xp"/>
                     </view>
                     <navigationItem key="navigationItem" title="Title" id="R9b-pF-oBB">
                         <barButtonItem key="rightBarButtonItem" title="Sign" id="IDo-Ea-Dem">
@@ -537,10 +538,10 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="126" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="EhV-m3-3f9">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="RegistrarTransactionCellIdentifier" rowHeight="126" id="H4V-5P-Dco" customClass="DWProviderUpdateRegistrarTableViewCell">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="126"/>
+                                <rect key="frame" x="0.0" y="49.5" width="375" height="126"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="H4V-5P-Dco" id="4z4-Nn-EG3">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="126"/>
@@ -571,7 +572,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Block height:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fHb-L7-J38">
-                                            <rect key="frame" x="16" y="77.5" width="100" height="21"/>
+                                            <rect key="frame" x="16" y="77.5" width="99" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -625,17 +626,17 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="5YB-iT-idx">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeCollateralTransactionCellIdentifier" id="YXJ-gT-Odl" userLabel="CollateralTransactionCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="49.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="YXJ-gT-Odl" id="y2s-XS-qRi">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Collateral Tx" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DwI-cO-f4A">
-                                            <rect key="frame" x="16" y="12" width="94.5" height="21"/>
+                                            <rect key="frame" x="16" y="12" width="94" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -662,7 +663,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeCollateralIndexCellIdentifier" id="kj8-KD-7jp" userLabel="CollateralIndexCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="99" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="93" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="kj8-KD-7jp" id="NXe-8q-iwn">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -696,7 +697,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeIPAddressCellIdentifier" id="e0v-Ca-6hz" userLabel="IPAddressCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="142.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="136.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="e0v-Ca-6hz" id="iGd-ru-SEf">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -730,7 +731,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodePortCellIdentifier" id="WYj-q4-CJa" userLabel="PortCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="186" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="180" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="WYj-q4-CJa" id="yTY-28-Qdy">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -764,14 +765,14 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeOwnerIndexCellIdentifier" rowHeight="128" id="0FY-2H-BSP" userLabel="OwnerIndexCell" customClass="DWPublicKeyGenerationTableViewCell">
-                                <rect key="frame" x="0.0" y="229.5" width="375" height="128"/>
+                                <rect key="frame" x="0.0" y="223.5" width="375" height="128"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0FY-2H-BSP" id="Q4N-hl-YZD">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="128"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Owner Public Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rss-Z5-weT">
-                                            <rect key="frame" x="16" y="12" width="134.5" height="21"/>
+                                            <rect key="frame" x="16" y="12" width="134" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -782,7 +783,7 @@
                                             <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="ASCIICapableNumberPad" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                         </textField>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Path Index" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fBI-er-qxH">
-                                            <rect key="frame" x="16" y="91" width="81" height="21"/>
+                                            <rect key="frame" x="16" y="91" width="80" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -841,14 +842,14 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeOperatorIndexCellIdentifier" id="AwM-Lt-bFh" userLabel="OperatorIndexCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="357.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="351.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="AwM-Lt-bFh" id="GrR-ho-fX7">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Operator Public Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bEH-IV-kCN">
-                                            <rect key="frame" x="16" y="12" width="152.5" height="21"/>
+                                            <rect key="frame" x="16" y="12" width="151.5" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -875,7 +876,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeVotingIndexCellIdentifier" id="nxl-xm-Cvc" userLabel="VotingIndexCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="401" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="395" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="nxl-xm-Cvc" id="1Ni-KH-rHG">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -909,14 +910,14 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodePayoutAddressCellIdentifier" id="FKo-zd-Sgl" userLabel="PayoutAddressCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="444.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="438.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="FKo-zd-Sgl" id="LRc-D2-Bm8">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Payout Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a27-IC-NUB">
-                                            <rect key="frame" x="16" y="12" width="119.5" height="21"/>
+                                            <rect key="frame" x="16" y="12" width="119" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -974,10 +975,10 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="aFP-IB-MtV">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodeIPAddressCellIdentifier" id="sQS-Gv-cyG" userLabel="IPAddressCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="49.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="sQS-Gv-cyG" id="xjp-3w-5l3">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -1011,7 +1012,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodePortCellIdentifier" id="Nfb-7r-Eef" userLabel="PortCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="99" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="93" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Nfb-7r-Eef" id="coL-6o-tlf">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
@@ -1093,17 +1094,17 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="9RY-Pv-ihf">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodePayoutAddressCellIdentifier" id="DqS-Nt-Vdh" userLabel="PayoutAddressCell" customClass="DWKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="49.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="DqS-Nt-Vdh" id="0A7-hi-Lo0">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Payout Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mel-x4-PsQ">
-                                            <rect key="frame" x="16" y="12" width="119.5" height="21"/>
+                                            <rect key="frame" x="16" y="12" width="119" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1178,17 +1179,17 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="tyW-rw-e8L">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" reuseIdentifier="MasternodeReclaimingAccountCellIdentifier" id="aZI-DQ-7mV" userLabel="AccountCell" customClass="DSAccountChooserTableViewCell">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="43.5"/>
+                                <rect key="frame" x="0.0" y="49.5" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="aZI-DQ-7mV" id="eRs-v3-69N">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Destination Account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Quq-hI-Fab">
-                                            <rect key="frame" x="16" y="12" width="154.5" height="21"/>
+                                            <rect key="frame" x="16" y="12" width="154" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1261,17 +1262,17 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="126" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="E0W-w6-qIa">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ServiceTransactionCellIdentifier" rowHeight="126" id="uCi-xL-jQ6" customClass="DWProviderUpdateServiceTableViewCell">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="126"/>
+                                <rect key="frame" x="0.0" y="49.5" width="375" height="126"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uCi-xL-jQ6" id="mRD-Dc-iBn">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="126"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EDE-JL-Bc7">
-                                            <rect key="frame" x="16" y="16" width="70.5" height="20.5"/>
+                                            <rect key="frame" x="16" y="16" width="70" height="20.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1295,7 +1296,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Block height:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bg5-dq-LWa">
-                                            <rect key="frame" x="16" y="77.5" width="100" height="21"/>
+                                            <rect key="frame" x="16" y="77.5" width="99" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1345,9 +1346,9 @@
         <!--Title-->
         <scene sceneID="WUr-yT-JH8">
             <objects>
-                <viewController id="g4h-Ca-sLc" customClass="DWSignMessageViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DWSignMessageViewControllerIdentifier" id="g4h-Ca-sLc" customClass="DWSignMessageViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="pIY-ox-LIi">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="cuK-a1-Zxq">
@@ -1369,7 +1370,8 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                         </subviews>
-                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <viewLayoutGuide key="safeArea" id="smI-5w-XlQ"/>
+                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="cuK-a1-Zxq" firstAttribute="leading" secondItem="smI-5w-XlQ" secondAttribute="leading" constant="20" id="Pxx-Wc-6kg"/>
                             <constraint firstItem="wYM-U0-Tqp" firstAttribute="top" secondItem="cuK-a1-Zxq" secondAttribute="bottom" constant="18" id="WEh-Gu-xHF"/>
@@ -1378,7 +1380,6 @@
                             <constraint firstItem="cuK-a1-Zxq" firstAttribute="top" secondItem="smI-5w-XlQ" secondAttribute="top" constant="20" id="pnh-TA-Wa3"/>
                             <constraint firstItem="wYM-U0-Tqp" firstAttribute="trailing" secondItem="cuK-a1-Zxq" secondAttribute="trailing" id="u6a-bT-Eeb"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="smI-5w-XlQ"/>
                     </view>
                     <navigationItem key="navigationItem" title="Title" id="HHb-EW-ehM">
                         <barButtonItem key="rightBarButtonItem" title="Sign" id="T0j-u3-wEC">
@@ -1398,8 +1399,11 @@
         </scene>
     </scenes>
     <resources>
-        <image name="arrowshape.turn.up.left" catalog="system" width="64" height="52"/>
-        <image name="arrowshape.turn.up.right" catalog="system" width="64" height="52"/>
+        <image name="arrowshape.turn.up.left" catalog="system" width="128" height="106"/>
+        <image name="arrowshape.turn.up.right" catalog="system" width="128" height="106"/>
         <image name="icon_copy" width="14" height="14"/>
+        <systemColor name="groupTableViewBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>
