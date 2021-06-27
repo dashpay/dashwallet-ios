@@ -30,10 +30,10 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
         [contentSizeCategory isEqualToString:UIContentSizeCategorySmall] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategoryMedium] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategoryLarge]) {
-        size = CGSizeMake(80.0, 80.0);
+        size = CGSizeMake(80.0, 95.0);
     }
     else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraLarge]) {
-        size = CGSizeMake(88.0, 88.0);
+        size = CGSizeMake(88.0, 95.0);
     }
     else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraExtraLarge]) {
         size = CGSizeMake(100.0, 100.0);
@@ -99,6 +99,13 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
     ]];
 
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+    self.collectionView.layer.cornerRadius = 8.0;
+    self.collectionView.layer.masksToBounds = YES;
+
+    if (IS_IPAD) {
+        self.collectionView.contentInset = UIEdgeInsetsMake(0, 16.0, 0, 0);
+    }
 
     NSString *cellId = DWShortcutCollectionViewCell.dw_reuseIdentifier;
     UINib *nib = [UINib nibWithNibName:cellId bundle:nil];

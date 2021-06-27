@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern CGFloat DWBottomButtonHeight(void);
+
 @protocol DWActionButtonProtocol <NSObject>
 
 @property (nonatomic, assign, getter=isEnabled) BOOL enabled;
@@ -27,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBaseActionButtonViewController : DWBaseViewController
 
+@property (nonatomic, assign, getter=isKeyboardNotificationsEnabled) BOOL keyboardNotificationsEnabled;
 @property (readonly, nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
 
 + (BOOL)showsActionButton;

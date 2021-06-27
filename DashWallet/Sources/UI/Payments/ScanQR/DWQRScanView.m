@@ -25,17 +25,24 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+#import "DWCaptureSessionFrameDelegate.h"
 #import "DWQRScanModel.h"
+#import "DWQRScanStatusView.h"
 #import "DWQRScanView.h"
 #import "DWUIKit.h"
+#import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWQRScanView ()
+@interface DWQRScanView () <DWCaptureSessionFrameDelegate>
 
-@property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
-@property (nonatomic, strong) CAShapeLayer *qrCodeLayer;
-@property (nonatomic, strong) CATextLayer *qrCodeTextLayer;
+@property (readonly, nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
+@property (readonly, nonatomic, strong) AVSampleBufferDisplayLayer *sampleBufferDisplayLayer;
+
+@property (readonly, nonatomic, strong) DWQRScanStatusView *statusView;
+@property (nullable, nonatomic, strong) CAShapeLayer *qrCodeLayer;
+
+@property (atomic, assign) BOOL pauseAcceptingSampleBuffers;
 
 @end
 
@@ -51,9 +58,22 @@ NS_ASSUME_NONNULL_BEGIN
         [self.layer addSublayer:previewLayer];
         _previewLayer = previewLayer;
 
+        AVSampleBufferDisplayLayer *sampleBufferDisplayLayer = [AVSampleBufferDisplayLayer layer];
+        sampleBufferDisplayLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        sampleBufferDisplayLayer.opacity = 0.95;
+        [self.layer addSublayer:sampleBufferDisplayLayer];
+        _sampleBufferDisplayLayer = sampleBufferDisplayLayer;
+
         UIImageView *frameImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"qr_frame"]];
         frameImageView.translatesAutoresizingMaskIntoConstraints = NO;
         [self addSubview:frameImageView];
+
+        DWQRScanStatusView *statusView = [[DWQRScanStatusView alloc] initWithFrame:CGRectZero];
+        statusView.translatesAutoresizingMaskIntoConstraints = NO;
+        statusView.layer.cornerRadius = 8.0;
+        statusView.layer.masksToBounds = YES;
+        [self addSubview:statusView];
+        _statusView = statusView;
 
         NSArray *toolbarItems;
         UIBarButtonItem *cancelButton =
@@ -90,13 +110,31 @@ NS_ASSUME_NONNULL_BEGIN
 
         // Layout
 
+        [frameImageView setContentHuggingPriority:UILayoutPriorityRequired
+                                          forAxis:UILayoutConstraintAxisVertical];
+        [frameImageView setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
+                                                        forAxis:UILayoutConstraintAxisVertical];
+
+        [statusView setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                                    forAxis:UILayoutConstraintAxisVertical];
+
+        UILayoutGuide *guide = self.layoutMarginsGuide;
+
         [NSLayoutConstraint activateConstraints:@[
             [frameImageView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
             [frameImageView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
 
+            [statusView.topAnchor constraintEqualToAnchor:frameImageView.bottomAnchor
+                                                 constant:16.0],
+            [statusView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
+            [guide.trailingAnchor constraintEqualToAnchor:statusView.trailingAnchor],
+
+            [toolbar.topAnchor constraintEqualToAnchor:statusView.bottomAnchor
+                                              constant:16.0],
             [toolbar.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [toolbar.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
             [toolbar.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor],
+            [toolbar.heightAnchor constraintEqualToConstant:44.0],
         ]];
 
         // KVO
@@ -108,16 +146,22 @@ NS_ASSUME_NONNULL_BEGIN
 
         [self mvvm_observe:DW_KEYPATH(self, model.qrCodeObject.type)
                       with:^(typeof(self) self, NSNumber *value) {
-                          [self updateQRCodeLayer:self.qrCodeLayer forObject:self.model.qrCodeObject];
+                          [self handleQRCodeObject:self.model.qrCodeObject];
                       }];
     }
     return self;
+}
+
+- (void)setModel:(DWQRScanModel *)model {
+    _model = model;
+    _model.frameDelegate = self;
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
 
     self.previewLayer.frame = self.bounds;
+    self.sampleBufferDisplayLayer.frame = self.bounds;
 }
 
 - (void)connectCaptureSession {
@@ -140,89 +184,127 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model switchTorch];
 }
 
+#pragma mark DWCaptureSessionFrameDelegate
+
+- (void)didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    if (!sampleBuffer) {
+        return;
+    }
+
+    if (self.pauseAcceptingSampleBuffers) {
+        return;
+    }
+
+    if (self.sampleBufferDisplayLayer.status == AVQueuedSampleBufferRenderingStatusFailed) {
+        DSLog(@"Failed to display frame: %@", self.sampleBufferDisplayLayer.error);
+        [self.sampleBufferDisplayLayer flush];
+    }
+
+    [self.sampleBufferDisplayLayer enqueueSampleBuffer:sampleBuffer];
+}
+
 #pragma mark Private
 
 - (void)handleQRCodeObject:(QRCodeObject *)qrCodeObject {
-    [self.qrCodeLayer removeFromSuperlayer];
-
-    if (!qrCodeObject) {
-        return;
+    if (qrCodeObject) {
+        self.pauseAcceptingSampleBuffers = YES;
+    }
+    else {
+        self.pauseAcceptingSampleBuffers = NO;
     }
 
-    AVMetadataMachineReadableCodeObject *transformedObject =
-        (AVMetadataMachineReadableCodeObject *)[self.previewLayer
-            transformedMetadataObjectForMetadataObject:qrCodeObject.metadataObject];
-    CGMutablePathRef path = CGPathCreateMutable();
-    if (transformedObject.corners.count > 0) {
-        for (NSDictionary *pointDictionary in transformedObject.corners) {
-            CGPoint point;
-            CGPointMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)pointDictionary, &point);
-
-            if (pointDictionary == transformedObject.corners.firstObject) {
-                CGPathMoveToPoint(path, NULL, point.x, point.y);
-            }
-
-            CGPathAddLineToPoint(path, NULL, point.x, point.y);
-        }
-
-        CGPathCloseSubpath(path);
-    }
-
-    CAShapeLayer *qrCodeLayer = [CAShapeLayer layer];
-    qrCodeLayer.path = path;
-    qrCodeLayer.lineJoin = kCALineJoinRound;
-    qrCodeLayer.lineWidth = 4.0;
-
-    [self updateQRCodeLayer:qrCodeLayer forObject:qrCodeObject];
-
-    [CATransaction begin];
-    [CATransaction setDisableActions:YES];
-    [self.previewLayer addSublayer:qrCodeLayer];
-    [CATransaction commit];
-    self.qrCodeLayer = qrCodeLayer;
+    [self updateQRCodeLayerWithObject:qrCodeObject];
+    [self updateStatusViewWithObject:qrCodeObject];
 }
 
-- (void)updateQRCodeLayer:(CAShapeLayer *)layer forObject:(QRCodeObject *)qrCodeObject {
-    UIColor *color = nil;
-    switch (qrCodeObject.type) {
-        case QRCodeObjectTypeProcessing:
-        case QRCodeObjectTypeValid:
-            color = [UIColor dw_greenColor];
-            break;
-        case QRCodeObjectTypeInvalid:
-            color = [UIColor dw_redColor];
-            break;
-    }
+- (void)updateQRCodeLayerWithObject:(QRCodeObject *)qrCodeObject {
+    if (!qrCodeObject) {
+        [self.qrCodeLayer removeFromSuperlayer];
+        self.qrCodeLayer = nil;
 
-    layer.strokeColor = [color colorWithAlphaComponent:0.7].CGColor;
-    layer.fillColor = [color colorWithAlphaComponent:0.3].CGColor;
-
-    [self.qrCodeTextLayer removeFromSuperlayer];
-    if (!qrCodeObject.errorMessage) {
         return;
     }
 
-    CGRect boundingBox = CGPathGetBoundingBox(layer.path);
-    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-    NSDictionary *attributes = @{
-        NSFontAttributeName : font,
-        NSForegroundColorAttributeName : [UIColor dw_lightTitleColor],
-    };
-    CGRect textRect = [qrCodeObject.errorMessage boundingRectWithSize:boundingBox.size
-                                                              options:NSStringDrawingUsesLineFragmentOrigin
-                                                           attributes:attributes
-                                                              context:nil];
-    CATextLayer *textLayer = [CATextLayer layer];
-    textLayer.alignmentMode = kCAAlignmentCenter;
-    textLayer.frame = textRect;
-    textLayer.contentsScale = [UIScreen mainScreen].scale;
-    textLayer.font = (__bridge CFTypeRef _Nullable)(font.fontName);
-    textLayer.position = CGPointMake(CGRectGetMidX(boundingBox), CGRectGetMidY(boundingBox));
-    textLayer.string = [[NSAttributedString alloc] initWithString:qrCodeObject.errorMessage
-                                                       attributes:attributes];
-    textLayer.wrapped = YES;
-    [layer addSublayer:textLayer];
-    self.qrCodeTextLayer = textLayer;
+    if (!self.qrCodeLayer) {
+        AVMetadataMachineReadableCodeObject *transformedObject =
+            (AVMetadataMachineReadableCodeObject *)[self.previewLayer
+                transformedMetadataObjectForMetadataObject:qrCodeObject.metadataObject];
+        CGMutablePathRef path = CGPathCreateMutable();
+        if (transformedObject.corners.count > 0) {
+            for (NSDictionary *pointDictionary in transformedObject.corners) {
+                CGPoint point;
+                CGPointMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)pointDictionary, &point);
+
+                if (pointDictionary == transformedObject.corners.firstObject) {
+                    CGPathMoveToPoint(path, NULL, point.x, point.y);
+                }
+
+                CGPathAddLineToPoint(path, NULL, point.x, point.y);
+            }
+
+            CGPathCloseSubpath(path);
+        }
+
+        CAShapeLayer *qrCodeLayer = [CAShapeLayer layer];
+        qrCodeLayer.path = path;
+        qrCodeLayer.lineJoin = kCALineJoinRound;
+        qrCodeLayer.lineWidth = 4.0;
+
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        [self.sampleBufferDisplayLayer addSublayer:qrCodeLayer];
+        [CATransaction commit];
+        self.qrCodeLayer = qrCodeLayer;
+    }
+
+    UIColor *color = [self qrCodeLayerColorForType:qrCodeObject.type];
+    UIColor *strokeColor = [color colorWithAlphaComponent:0.7];
+    UIColor *fillColor = [color colorWithAlphaComponent:0.3];
+    self.qrCodeLayer.strokeColor = strokeColor.CGColor;
+    self.qrCodeLayer.fillColor = fillColor.CGColor;
+}
+
+- (void)updateStatusViewWithObject:(QRCodeObject *)qrCodeObject {
+    BOOL hidden = NO;
+    DWQRScanStatus status = DWQRScanStatus_None;
+    switch (qrCodeObject.type) {
+        case QRCodeObjectTypeProcessing:
+        case QRCodeObjectTypeValid: {
+            hidden = YES;
+
+            break;
+        }
+        case QRCodeObjectTypeValidPaymentRequest: {
+            status = DWQRScanStatus_Connecting;
+
+            break;
+        }
+        case QRCodeObjectTypePaymentRequestFailed: {
+            status = DWQRScanStatus_InvalidPaymentRequest;
+
+            break;
+        }
+        case QRCodeObjectTypeInvalid: {
+            status = DWQRScanStatus_InvalidQR;
+
+            break;
+        }
+    }
+
+    self.statusView.hidden = hidden;
+    [self.statusView updateStatus:status errorMessage:qrCodeObject.errorMessage];
+}
+
+- (UIColor *)qrCodeLayerColorForType:(QRCodeObjectType)type {
+    switch (type) {
+        case QRCodeObjectTypeProcessing:
+        case QRCodeObjectTypeValid:
+        case QRCodeObjectTypeValidPaymentRequest:
+            return [UIColor dw_greenColor];
+        case QRCodeObjectTypePaymentRequestFailed:
+        case QRCodeObjectTypeInvalid:
+            return [UIColor dw_redColor];
+    }
 }
 
 @end

@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBackupInfoHeaderView : UIView
 
+@property (nonatomic, assign) BOOL descriptionIsHidden;
+
 @end
 
 NS_ASSUME_NONNULL_END

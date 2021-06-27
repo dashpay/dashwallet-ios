@@ -24,6 +24,7 @@
 #import "DWGlobalOptions.h"
 #import "DWPhoneWCSessionManager.h"
 #import <DashSync/DSLogger.h>
+#import <DashSync/DSPermissionNotification.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -68,13 +69,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)registerForPushNotifications {
+    [[NSNotificationCenter defaultCenter] postNotificationName:DSWillRequestOSPermissionNotification object:nil];
     const UNAuthorizationOptions options =
         (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
     [[UNUserNotificationCenter currentNotificationCenter]
         requestAuthorizationWithOptions:options
                       completionHandler:^(BOOL granted, NSError *_Nullable error) {
+                          dispatch_async(dispatch_get_main_queue(), ^{
+                              [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
+                          });
                           [DWGlobalOptions sharedInstance].localNotificationsEnabled = granted;
-                          DSLogVerbose(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
+                          DSLog(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
                       }];
 }
 
@@ -92,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
                                            [priceManager stringForDashAmount:wallet.balance - self.balance],
                                            [priceManager localCurrencyStringForDashAmount:wallet.balance - self.balance]];
 
-        DSLogVerbose(@"DWBalanceNotifier: local notifications enabled = %d", notificationsEnabled);
+        DSLog(@"DWBalanceNotifier: local notifications enabled = %d", notificationsEnabled);
 
         // send a local notification if in the background
         if (application.applicationState == UIApplicationStateBackground ||
@@ -116,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
                 [center addNotificationRequest:request
                          withCompletionHandler:^(NSError *_Nullable error) {
                              if (!error) {
-                                 DSLogVerbose(@"DWBalanceNotifier: sent local notification %@", note);
+                                 DSLog(@"DWBalanceNotifier: sent local notification %@", note);
                              }
                          }];
             }

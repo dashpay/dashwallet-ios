@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zh6-OB-CNe">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zh6-OB-CNe">
     <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -27,7 +27,7 @@
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AaY-d3-NZT" userLabel="Left Dummy View">
                                         <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
-                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="44" id="7ED-hN-Zge"/>
                                             <constraint firstAttribute="height" constant="44" id="WpZ-kk-gp3"/>
@@ -35,14 +35,14 @@
                                     </view>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NsT-lW-QFC">
                                         <rect key="frame" x="44" y="0.0" width="255" height="44"/>
-                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                         <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
                                         <color key="textColor" name="DarkTitleColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dWN-QP-uyD">
                                         <rect key="frame" x="299" y="0.0" width="44" height="44"/>
-                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="44" id="54K-LK-OrA"/>
                                             <constraint firstAttribute="height" constant="44" id="iTr-gm-dHW"/>
@@ -53,7 +53,7 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="NsT-lW-QFC" firstAttribute="top" secondItem="his-9a-KlT" secondAttribute="top" id="2fx-oL-Ajv"/>
                                     <constraint firstAttribute="height" constant="44" id="HoW-Ig-0SF"/>
@@ -72,13 +72,13 @@
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5nS-sr-YzK" customClass="DWSegmentedControl">
                                         <rect key="frame" x="0.0" y="2" width="343" height="40"/>
-                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <color key="backgroundColor" name="TabbarBorderColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="Sfx-me-bTJ"/>
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="5nS-sr-YzK" firstAttribute="leading" secondItem="1hT-sr-wN7" secondAttribute="leading" id="8iL-3t-5Zn"/>
                                     <constraint firstAttribute="trailing" secondItem="5nS-sr-YzK" secondAttribute="trailing" id="G76-Ib-QzH"/>
@@ -88,7 +88,7 @@
                             </view>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="ZtR-LU-F8z" customClass="DWControllerCollectionView">
                                 <rect key="frame" x="0.0" y="156" width="375" height="622"/>
-                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="Cwf-Gm-cxH">
                                     <size key="itemSize" width="50" height="50"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -98,7 +98,7 @@
                                 <cells/>
                             </collectionView>
                         </subviews>
-                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="ZtR-LU-F8z" secondAttribute="trailing" id="4lH-DZ-DrY"/>
                             <constraint firstItem="his-9a-KlT" firstAttribute="leading" secondItem="sqo-JG-nXd" secondAttribute="leadingMargin" id="CgB-6C-M0x"/>
@@ -126,11 +126,14 @@
     </scenes>
     <resources>
         <image name="payments_nav_cross" width="10" height="10"/>
-        <namedColor name="BackgroundColor">
-            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <namedColor name="DarkTitleColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="TabbarBorderColor">
+            <color red="0.91764705882352937" green="0.91764705882352937" blue="0.91764705882352937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

@@ -46,16 +46,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if SNAPSHOT
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
-    [self displayViewController:controller];
+    [self transitionToController:controller];
 #else
     if ([self shouldDisplayOnboarding]) {
         DWOnboardingViewController *onboarding = [DWOnboardingViewController controller];
         onboarding.delegate = self;
-        [self displayViewController:onboarding];
+        [self transitionToController:onboarding];
     }
     else {
         DWAppRootViewController *rootController = [self createRootController];
-        [self displayViewController:rootController];
+        [self transitionToController:rootController];
         self.rootController = rootController;
     }
 #endif /* SNAPSHOT */
@@ -83,7 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWAppRootViewController *rootController = [self createRootController];
     [rootController setLaunchingAsDeferredController]; // always deferred after onboarding
-    [self transitionToViewController:rootController withType:DWContainerTransitionType_CrossDissolve];
+    [self transitionToController:rootController];
     self.rootController = rootController;
 }
 

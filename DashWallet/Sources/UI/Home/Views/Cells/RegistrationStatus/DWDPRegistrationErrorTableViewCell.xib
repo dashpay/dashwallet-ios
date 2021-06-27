@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="DWDPRegistrationErrorTableViewCell" rowHeight="80" id="Beb-qh-adr" userLabel="DWDPRegistrationStatusTableViewCell" customClass="DWDPRegistrationErrorTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Beb-qh-adr" id="cAZ-go-bM7">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HbW-Iw-ovT" userLabel="Shadow View" customClass="DWShadowView">
+                        <rect key="frame" x="16" y="5" width="288" height="70"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MBr-UC-zcT" userLabel="Rounded View">
+                                <rect key="frame" x="0.0" y="0.0" width="288" height="70"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sMf-4l-Gwv" userLabel="Center View">
+                                        <rect key="frame" x="10" y="2.5" width="266" height="65.5"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_error" translatesAutoresizingMaskIntoConstraints="NO" id="gxu-X7-EfP">
+                                                <rect key="frame" x="0.0" y="10" width="45" height="45"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="45" id="VEy-U2-miU"/>
+                                                    <constraint firstAttribute="height" constant="45" id="d1I-VA-XWM"/>
+                                                </constraints>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="248" verticalHuggingPriority="255" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="97k-b1-Th0" userLabel="Direction State Label">
+                                                <rect key="frame" x="53" y="17" width="128" height="15"/>
+                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                <color key="textColor" name="RedColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="246" verticalHuggingPriority="254" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="U7V-Tn-Mue" userLabel="Date Label">
+                                                <rect key="frame" x="53" y="34" width="128" height="13.5"/>
+                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                                <color key="textColor" name="TertiaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="300" horizontalCompressionResistancePriority="755" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pLL-Ky-pDe" customClass="DWDPImageTitleButton">
+                                                <rect key="frame" x="189" y="18" width="69" height="29"/>
+                                                <inset key="titleEdgeInsets" minX="6" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                                <state key="normal" title="Retry" image="icon_reload">
+                                                    <color key="titleColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="retryButtonAction:" destination="Beb-qh-adr" eventType="touchUpInside" id="BLf-Wr-S2w"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="U7V-Tn-Mue" firstAttribute="leading" secondItem="gxu-X7-EfP" secondAttribute="trailing" constant="8" id="1fx-O7-VfI"/>
+                                            <constraint firstItem="97k-b1-Th0" firstAttribute="top" secondItem="sMf-4l-Gwv" secondAttribute="top" constant="17" id="8FP-jC-Hzb"/>
+                                            <constraint firstItem="gxu-X7-EfP" firstAttribute="leading" secondItem="sMf-4l-Gwv" secondAttribute="leading" id="Cl9-ya-Iev"/>
+                                            <constraint firstAttribute="trailing" secondItem="pLL-Ky-pDe" secondAttribute="trailing" constant="8" id="Jce-ZB-JbZ"/>
+                                            <constraint firstItem="97k-b1-Th0" firstAttribute="leading" secondItem="gxu-X7-EfP" secondAttribute="trailing" constant="8" id="Rsh-Fg-6fh"/>
+                                            <constraint firstItem="pLL-Ky-pDe" firstAttribute="leading" secondItem="97k-b1-Th0" secondAttribute="trailing" constant="8" id="WFF-fF-uWj"/>
+                                            <constraint firstAttribute="bottom" secondItem="U7V-Tn-Mue" secondAttribute="bottom" constant="18" id="ad5-ce-D93"/>
+                                            <constraint firstItem="pLL-Ky-pDe" firstAttribute="centerY" secondItem="sMf-4l-Gwv" secondAttribute="centerY" id="b86-tg-eEB"/>
+                                            <constraint firstItem="pLL-Ky-pDe" firstAttribute="leading" secondItem="U7V-Tn-Mue" secondAttribute="trailing" constant="8" id="d43-Sq-UG8"/>
+                                            <constraint firstItem="gxu-X7-EfP" firstAttribute="centerY" secondItem="sMf-4l-Gwv" secondAttribute="centerY" id="gUG-1b-aB0"/>
+                                            <constraint firstItem="U7V-Tn-Mue" firstAttribute="top" secondItem="97k-b1-Th0" secondAttribute="bottom" constant="2" id="uVk-Xv-z8j"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JrP-b8-0xB" userLabel="Progress View" customClass="DWProgressView">
+                                        <rect key="frame" x="0.0" y="65" width="288" height="5"/>
+                                        <color key="backgroundColor" name="ProgressBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="5" id="Ncd-2z-RIh"/>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="5" id="awA-hz-bwb"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="JrP-b8-0xB" secondAttribute="trailing" id="2AI-fV-ir4"/>
+                                    <constraint firstItem="sMf-4l-Gwv" firstAttribute="top" relation="greaterThanOrEqual" secondItem="MBr-UC-zcT" secondAttribute="top" id="4jy-yd-KHN"/>
+                                    <constraint firstItem="sMf-4l-Gwv" firstAttribute="centerY" secondItem="MBr-UC-zcT" secondAttribute="centerY" id="8S7-F3-5OJ"/>
+                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="sMf-4l-Gwv" secondAttribute="bottom" id="H7g-wd-gja"/>
+                                    <constraint firstItem="sMf-4l-Gwv" firstAttribute="leading" secondItem="MBr-UC-zcT" secondAttribute="leading" constant="10" id="Tct-Yd-se2"/>
+                                    <constraint firstItem="JrP-b8-0xB" firstAttribute="leading" secondItem="MBr-UC-zcT" secondAttribute="leading" id="lMF-Gj-yuc"/>
+                                    <constraint firstAttribute="bottom" secondItem="JrP-b8-0xB" secondAttribute="bottom" id="oEg-WV-3md"/>
+                                    <constraint firstAttribute="trailing" secondItem="sMf-4l-Gwv" secondAttribute="trailing" constant="12" id="p8N-Px-cIW"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="MBr-UC-zcT" secondAttribute="bottom" id="2qY-hi-wJ4"/>
+                            <constraint firstItem="MBr-UC-zcT" firstAttribute="trailing" secondItem="HbW-Iw-ovT" secondAttribute="trailing" id="Fq0-Ss-XKk"/>
+                            <constraint firstItem="MBr-UC-zcT" firstAttribute="leading" secondItem="HbW-Iw-ovT" secondAttribute="leading" id="qmZ-SE-XhL"/>
+                            <constraint firstItem="MBr-UC-zcT" firstAttribute="top" secondItem="HbW-Iw-ovT" secondAttribute="top" id="vkT-qA-Uc0"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="HbW-Iw-ovT" secondAttribute="bottom" constant="5" id="5Q6-Mn-0jY"/>
+                    <constraint firstItem="HbW-Iw-ovT" firstAttribute="top" secondItem="cAZ-go-bM7" secondAttribute="top" constant="5" id="8Ia-ZX-a1Z"/>
+                    <constraint firstItem="HbW-Iw-ovT" firstAttribute="trailing" secondItem="cAZ-go-bM7" secondAttribute="trailingMargin" id="ce3-h5-9RT"/>
+                    <constraint firstItem="HbW-Iw-ovT" firstAttribute="leading" secondItem="cAZ-go-bM7" secondAttribute="leadingMargin" id="nkI-Ke-Gbu"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+            <viewLayoutGuide key="safeArea" id="U1A-rO-Z4x"/>
+            <connections>
+                <outlet property="descriptionLabel" destination="U7V-Tn-Mue" id="HBL-3O-FIB"/>
+                <outlet property="progressView" destination="JrP-b8-0xB" id="84s-Ca-GLB"/>
+                <outlet property="retryButton" destination="pLL-Ky-pDe" id="iyX-Ms-1Dq"/>
+                <outlet property="titleLabel" destination="97k-b1-Th0" id="QSc-FE-GZF"/>
+            </connections>
+            <point key="canvasLocation" x="33.333333333333336" y="30.46875"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="icon_error" width="30" height="30"/>
+        <image name="icon_reload" width="26" height="29"/>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="ProgressBackgroundColor">
+            <color red="0.85882352941176465" green="0.85882352941176465" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="RedColor">
+            <color red="0.81599998474121094" green="0.0080000003799796104" blue="0.10599999874830246" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="TertiaryTextColor">
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

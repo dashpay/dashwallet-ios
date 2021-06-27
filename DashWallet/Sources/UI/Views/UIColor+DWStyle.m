@@ -201,6 +201,18 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_declineButtonColor {
+    UIColor *color = [UIColor colorNamed:@"DeclineButtonColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_blueGradientStartColor {
+    UIColor *color = [UIColor colorNamed:@"BlueGradientStartColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

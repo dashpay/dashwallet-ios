@@ -1,3 +1,8 @@
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ έχει αποδεχτεί το αίτημα επαφής σας";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ σας έστειλε αίτημα επαφής";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Face ID";
@@ -8,8 +13,24 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Touch ID";
 
-/* No comment provided by engineer. */
 "%ld used" = "%ld used";
+
+"(1/3) Processing Payment" = "(1/3) Επεξεργασία Πληρωμής";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "(1/3) Ήταν αδύνατη η επεξεργασία της πληρωμής";
+
+/* No comment provided by engineer. */
+"(2/3) Creating Dash Identity" = "(2/3) Δημιουργία Ταυτότητας Dash";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create Dash Identity" = "(2/3) Ήταν αδύνατη η δημιουργία Ταυτότητας Dash";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "(3/3) Δεν είναι δυνατή η εγγραφή του ονόματος χρήστη";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "(3/3) Εγγραφή Ονόματος Χρήστη";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 ώρα";
@@ -27,6 +48,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" δεν είναι μια φράση ανάκτησης";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" δεν είναι μια λέξη ανάκτησης. Θα θέλατε να προσπαθήσετε να ανακτήσετε τη σωστή λέξη που θα πρέπει να είναι στη θέση της;";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\nπροσπαθήστε ξανά σε %@";
 
 /* No comment provided by engineer. */
@@ -34,6 +58,18 @@
 
 /* No comment provided by engineer. */
 "About" = "Σχετικά";
+
+/* No comment provided by engineer. */
+"Accept" = "Αποδοχή";
+
+/* No comment provided by engineer. */
+"Activity" = "Δραστηριότητα";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Προσθέστε τον/την %@ ως επαφή σας για άμεση πληρωμή στο Όνομα Χρήστη και για την διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Προσθήκη Νέας Επαφής";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Προσθήκη Συντόμευσης";
@@ -129,7 +165,7 @@
 "Cancel" = "Ακύρωση";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "αλλαγή";
+"Change" = "Αλλαγή";
 
 /* No comment provided by engineer. */
 "Change Operator" = "Change Operator";
@@ -148,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Ελέγξτε την σύνδεση σας";
+
+/* Choose your Dash username */
+"Choose your" = "Επιλέξτε ";
 
 /* No comment provided by engineer. */
 "Clear" = "Εκκαθάριση";
@@ -177,6 +216,9 @@
 "Confirm" = "Επιβεβαίωση";
 
 /* No comment provided by engineer. */
+"Confirm & Pay" = "Επιβεβαίωση και Πληρωμή";
+
+/* No comment provided by engineer. */
 "Confirm PIN" = "Επιβεβαίωση PIN";
 
 /* No comment provided by engineer. */
@@ -189,7 +231,19 @@
 "Connected peers: %d" = "Συνδεδεμένοι χρήστες: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Σύνδεση με το διακομιστή πληρωμών";
+
+/* No comment provided by engineer. */
+"Contact Request Pending" = "Εκκρεμεί Αίτημα Επαφής";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Αιτήματα Επαφών";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Επικοινωνήστε με την υποστήριξη";
+
+/* No comment provided by engineer. */
+"Contacts" = "Επαφές";
 
 /* No comment provided by engineer. */
 "Continue" = "Συνέχεια";
@@ -210,10 +264,16 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Δεν μπορούσα να προβώ σε πληρωμή";
+"Could not automatically recover missing or incorrect words" = "Δεν ήταν δυνατή η αυτόματη ανάκτηση των χαμένων λέξεων ";
 
 /* No comment provided by engineer. */
-"Couldn't sweep balance" = "Δεν μπορούσα να σαρώσω τα χρήματα";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Δεν ήταν δυνατή η πληρωμή";
+
+/* No comment provided by engineer. */
+"Couldn't sweep balance" = "Δεν ήταν δυνατή η σαρώση των χρήματων";
 
 /* No comment provided by engineer. */
 "Couldn't transmit payment to Dash network" = "Δεν μπορούσα να μεταδώσω την πληρωμή στο δίκτυο Dash";
@@ -222,7 +282,16 @@
 "Create a New Wallet" = "Δημιουργία Νέου Πορτοφολιού";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Τρέχων χρήστης: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Οι Dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
+
+/* No comment provided by engineer. */
+"Dash username" = "Όνομα Χρήστη Dash";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "Προμήθεια αναβάθμισης σε DashPay";
 
 /* No comment provided by engineer. */
 "Date" = "Ημερομηνία";
@@ -240,13 +309,19 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
 
 /* No comment provided by engineer. */
+"Do not take a screenshot" = "Μην τραβήξετε στιγμιότυπο οθόνης";
+
+/* No comment provided by engineer. */
 "Done" = "Έγινε";
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Λήψη ομότιμου: %@";
 
-/* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Το Email client δεν έχει ρυθμιστεί. Παρακαλώ προσθέστε το λογαριασμό ηλεκτρονικού ταχυδρομείου σας στις Ρυθμίσεις";
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Νωρίτερα";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "πχ: johndoe";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Ενεργοποίηση Face ID";
@@ -300,9 +375,16 @@
 "Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
 
 /* No comment provided by engineer. */
-"Exit" = "Έξοδος";
+"Error" = "Σφάλμα";
 
 /* No comment provided by engineer. */
+"Error Upgrading" = "Σφάλμα Αναβάθμισης";
+
+/* No comment provided by engineer. */
+"Exit" = "Έξοδος";
+
+"Extended Public Keys" = "Extended Public Keys";
+
 "External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
@@ -324,7 +406,22 @@
 "Filter Transactions" = "Φίλτρο Συναλλαγών";
 
 /* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Βρείτε έναν χρήστη στο Δίκτυο του Dash";
+
+/* No comment provided by engineer. */
 "Forgot PIN?" = "Ξεχάσατε το PIN;";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "Βρέθηκε η χαμένη λέξη:\n%@";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "Βρέθηκαν οι χαμένες λέξεις:\n%@";
+
+/* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "Βρέθηκαν οι πιθανές λέξεις που λείπουν:\n%@";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
 
 /* No comment provided by engineer. */
 "Get Started" = "Ξεκινήστε";
@@ -332,8 +429,17 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "αιτήθηκε να γίνει φίλος / φίλη σας";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Έχετε τον πλήρη έλεγχο να προσαρμόσετε το πορτοφόλι σας ανάλογα με τις ανάγκες σας";
+
+/* No comment provided by engineer. */
+"header #%d of %d" = "header #%1$d of %2$d";
+
+/* Hello username, */
+"Hello %@," = "Γεια σας %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Βοηθήστε μας να βελτιώσουμε την εμπειρία σας";
@@ -344,8 +450,9 @@
 /* No comment provided by engineer. */
 "History" = "Ιστορικό";
 
-/* No comment provided by engineer. */
 "Host" = "Host";
+
+"I Accept" = "Αποδέχομαι";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Αποδέχομαι ότι θα χάσω τα νομίσματά μου εάν δεν διαθέτω πλέον τη φράση ανάκτησης";
@@ -381,22 +488,39 @@
 "Internal Transfer" = "Εσωτερική Μεταφορά";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Μετακινήθηκε εσωτερικά στο";
 
 /* Invalid transaction */
 "Invalid" = "Μη έγκυρο";
 
+"Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
+
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Μη έγκυρος κωδικός QR";
+
 "IP Address" = "IP Address";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Φαίνεται ότι προσπαθείτε να επαναφέρετε το πορτοφόλι σας χρησιμοποιώντας μια φράση ανάκτησης 12 λέξεων, ωστόσο έχετε εισαγάγει μόνο 10 λέξεις, θα θέλατε να ανακτήσετε αυτόματα τις λέξεις που λείπουν; Αυτό μπορεί να διαρκέσει περίπου μια ώρα. Σας συνιστούμε να συνδέσετε τη συσκευή σας στην φόρτιση.";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Φαίνεται ότι προσπαθείτε να επαναφέρετε το πορτοφόλι σας χρησιμοποιώντας μια φράση ανάκτησης 12 λέξεων, ωστόσο έχετε εισαγάγει μόνο 11 λέξεις, θα θέλατε να ανακτήσετε αυτόματα τη λέξη που λείπει;";
 
 /* No comment provided by engineer. */
 "It's Important" = "Είναι σημαντικό";
 
-/* No comment provided by engineer. */
+"Join Evolution" = "Εγγραφείτε στο Evolution";
+
 "Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
+
+/* Validation rule */
+"Letters and numbers only" = "Μόνο γράμματα και αριθμοί ";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
@@ -446,11 +570,12 @@
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Διαχείριση Έμπιστου Κόμβου";
 
-/* No comment provided by engineer. */
 "Masternode Features" = "Masternode Features";
 
 /* No comment provided by engineer. */
 "Masternode List" = "Masternode List";
+
+"masternode list #%d of %d" = "Λίστα masternode #%1$d of %2$d";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Εγγραφή Masternode";
@@ -467,8 +592,14 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Μέγιστο";
 
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Μέγιστοι %ld χαρακτήρες";
+
 /* adjective, security level */
 "Medium" = "Μέσο";
+
+/* Validation rule */
+"Minimum 3 characters" = "Ελάχιστο 3 χαρακτήρες";
 
 /* No comment provided by engineer. */
 "More" = "Περισσότερα";
@@ -482,8 +613,12 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Μετακινήθηκε στην διεύθυνση";
 
-/* No comment provided by engineer. */
+"My Contacts" = "Οι Επαφές μου";
+
 "My Masternodes" = "My Masternodes";
+
+/* No comment provided by engineer. */
+"Name" = "Όνομα";
 
 /* No comment provided by engineer. */
 "Network" = "Δίκτυο";
@@ -494,19 +629,20 @@
 /* No comment provided by engineer. */
 "Network fee" = "Τέλος δικτύου";
 
+/* (List of) New (notifications) */
+"New" = "Νέο";
+
 /* No comment provided by engineer. */
 "NFC device" = "Συσκευή NFC";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Η συσκευή NFC δεν μεταδίδει έγκυρη διεύθυνση Dash";
 
-/* No comment provided by engineer. */
 "No address copied" = "Δεν αντιγράφηκε καμία διεύθυνση";
 
 /* No comment provided by engineer. */
 "No Collateral Information" = "No Collateral Information";
 
-/* No comment provided by engineer. */
 "Node IP" = "IP Κόμβου";
 
 /* adjective, security level */
@@ -525,7 +661,13 @@
 "Not yet used" = "Δεν έχουν χρησιμοποιηθεί ακόμη";
 
 /* No comment provided by engineer. */
+"Notifications" = "Ειδοποιήσεις";
+
+/* No comment provided by engineer. */
 "OK" = "OK";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Μόλις ο/η %@ αποδεχτεί το αίτημα σας, θα μπορείτε να πληρώσετε απευθείας στο όνομα χρήστη";
 
 /* No comment provided by engineer. */
 "Operator Key" = "Operator Key";
@@ -548,23 +690,40 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Κλειδιά Κατόχου";
 
-/* No comment provided by engineer. */
 "Owner Private Key" = "Owner Private Key";
 
 /* No comment provided by engineer. */
 "Owner Public Key" = "Owner Public Key";
 
+"Pay" = "πληρώστε";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Πληρώστε και πληρωθείτε άμεσα με εύκολες στην χρήση πληρωμές";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Πληρώστε απευθείας στο όνομα χρήστη";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Πληρώστε με ευκολία";
 
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Πληρωμή";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Πληρωμή.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Πληρωμή..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Πληρωμή...";
+
 /* No comment provided by engineer. */
 "Payments" = "Πληρωμές";
 
-/* No comment provided by engineer. */
 "Payout Address" = "Payout Address";
+
+"Pending" = "Εκκρεμεί";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
@@ -588,10 +747,19 @@
 "Please try again" = "Παρακαλώ προσπαθήστε ξανά";
 
 /* No comment provided by engineer. */
+"Please try scanning again" = "Παρακαλώ προσπαθήστε να σαρώσετε ξανά";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Παρακαλώ περιμένετε";
+
+/* No comment provided by engineer. */
+"Please wait" = "Παρακαλώ περιμένετε";
+
+/* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Περιμένετε να ολοκληρωθεί ο συγχρονισμός";
 
 /* No comment provided by engineer. */
-"Please write it down" = "παρακαλώ να το γράψετε";
+"Please write it down" = "Παρακαλώ να το γράψετε";
 
 /* No comment provided by engineer. */
 "Port" = "Port";
@@ -642,7 +810,13 @@
 "Received from" = "Ελήφθησαν από";
 
 /* No comment provided by engineer. */
+"Recover" = "Επαναφορά";
+
+/* No comment provided by engineer. */
 "Recover Wallet" = "Επαναφορά Πορτοφολιού";
+
+/* No comment provided by engineer. */
+"Recovering..." = "Γίνεται Επαναφορά...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Φράση Ανάκτησης";
@@ -651,13 +825,19 @@
 "Recovery phrase doesn't match" = "Δεν ταιριάζει η φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "Η φράση ανάκτησης πρέπει να έχει %d λέξεις";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Η φράση ανάκτησης πρέπει να έχει 12, 15, 18, 21 ή 24 λέξεις";
+
+/* Button title, Register (username) */
+"Register" = "Εγγραφή";
 
 /* No comment provided by engineer. */
 "Register" = "Register";
 
 /* No comment provided by engineer. */
 "Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
+"Register?" = "Εγγραφή;";
 
 /* No comment provided by engineer. */
 "Registered from" = "Εγγεγραμμένο από";
@@ -685,6 +865,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Επαναφορά Πορτοφολιού";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
 
 /* No comment provided by engineer. */
 "Retry" = "Επανάληψη";
@@ -729,6 +912,24 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές και συσκευές. Δημιουργήστε μια νέα φράση ανάκτησης και κρατήστε την μυστική. ";
 
 /* No comment provided by engineer. */
+"Search for a contact" = "Αναζήτηση επαφής";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Αναζήτηση για αίτημα επαφής";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Αναζήτηση για χρήστη στο Dash Δίκτυο";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Αναζήτηση για Όνομα Χρήστη";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Αποτελέσματα αναζήτησης για \"";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Αναζήτηση για όνομα χρήστη %@ στο Dash Δικτυο";
+
+/* No comment provided by engineer. */
 "Secure now" = "Ασφαλίστε τώρα";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -752,8 +953,8 @@
 /* Send by (scanning QR code) */
 "Send by" = "Εστάλη από";
 
-/* An action */
-"Send crash report" = "Αποστόλη αναφοράς κατάρρευσης";
+/* No comment provided by engineer. */
+"Send Contact Request" = "Αποστολή Αιτήματος Επαφής";
 
 /* No comment provided by engineer. */
 "Send to" = "Εστάλη στο";
@@ -761,14 +962,14 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Αποστολή στη διεύθυνση";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Αποστολή στη αντιγραμμένη διεύθυνση";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Αποστολή μέσω NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Αποστολή";
+
+/* No comment provided by engineer. */
+"Sending to" = "Αποστολή στο";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Αποστολή.";
@@ -798,7 +999,7 @@
 "Set PIN" = "Ορίστε PIN";
 
 /* No comment provided by engineer. */
-"Settings" = "ρυθμίσεις";
+"Settings" = "Ρυθμίσεις";
 
 /* No comment provided by engineer. */
 "Setup Wallet" = "Εγκατάσταση πορτοφολιού";
@@ -825,12 +1026,17 @@
 "Something went wrong" = "Κάτι πήγε στραβά";
 
 /* No comment provided by engineer. */
+"Sort by" = "Ταξινόμηση κατά";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Ταξινόμηση Επαφών";
+
+/* No comment provided by engineer. */
 "Specify Amount" = "Καθορίστε το ποσό";
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Επιβεβαίωση Ξοδέματος";
 
-/* No comment provided by engineer. */
 "Step 1" = "Step 1";
 
 /* No comment provided by engineer. */
@@ -841,6 +1047,8 @@
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Βήματα για να αναπαραχθεί η κατάρρευση";
+
+"Support" = "Υποστήριξη";
 
 /* No comment provided by engineer. */
 "Swept!" = "Σαρώθηκε";
@@ -860,6 +1068,9 @@
 /* No comment provided by engineer. */
 "Syncing" = "Συγχρονισμός";
 
+/* No comment provided by engineer. */
+"Syncing Balance" = "Syncing Balance";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Πατήστε";
 
@@ -870,7 +1081,16 @@
 "Tap to unhide balance" = "Πατήστε για να αποκαλύψετε το υπόλοιπο";
 
 /* No comment provided by engineer. */
+"There are no new notifications" = "Δεν υπάρχουν νέες ειδοποιήσεις";
+
+/* No comment provided by engineer. */
 "There are no transactions to display" = "Δεν υπάρχουν συναλλαγές για προβολή";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "Δεν υπάρχουν χρήστες που να ταιριάζουν με το όνομα %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "Δεν υπάρχουν χρήστες που να ταιριάζουν με το όνομα %@ στις επαφές σας";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Αυτή η εφαρμογή είναι ανοικτού κώδικα";
@@ -972,6 +1192,12 @@
 "Updated: %@" = "Ανανεώθηκε: %@";
 
 /* No comment provided by engineer. */
+"Upgrade Fee" = "Προμήθεια Αναβάθμισης";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "Αναβάθμιση σε DashPay";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
@@ -982,6 +1208,18 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Χρησιμοποιήθηκε στη διεύθυνση IP";
+
+/* No comment provided by engineer. */
+"Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";
+
+/* No comment provided by engineer. */
+"Validating username done" = "Η επικύρωση του ονόματος χρήστη ολοκληρώθηκε";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Η επικύρωση του ονόματος χρήστη απέτυχε";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Επικύρωση του ονόματος χρήστη...";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Επιβεβαιώθηκε με επιτυχία";
@@ -996,7 +1234,10 @@
 "Very High" = "Πολύ Υψηλά";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View All" = "Προβολή Όλων";
+
+/* No comment provided by engineer. */
+"View in Block Explorer" = "Προβολή στον Explorer των Block";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Προβολή φράσης πρόσβασης, εφεδρικού πορτοφολιού ...";
@@ -1044,9 +1285,6 @@
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Εντοπίσαμε ότι το Dash Wallet κατέρρευσε κατά τη διάρκεια της μεταφοράς. Η επανασάρωση του blockchain θα λύσει αυτό το ζήτημα ή μπορείτε να προσπαθήσετε ξανά. Η επανασάρωση  θα πρέπει κατά προτίμηση να εκτελεστει σε wifi και θα διαρκέσει έως και μισή ώρα. Τα χρηματά σας θα είναι διαθέσιμα μόλις ολοκληρωθεί η διαδικασία συγχρονισμού.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Εντοπίσαμε ότι το Dash Wallet κατέρρευσε την τελευταία φορά που άνοιξε. Θα θέλατε να μας βοηθήσετε να επιλύσουμε το πρόβλημα στέλνοντας μας μια αναφορά με τα δεδομένα της κατάρρευσης; Το ιστορικό συναλλαγών σας και οποιεσδήποτε άλλες ιδιωτικές πληροφορίες ΔΕΝ θα μοιραστούν.";
-
-/* No comment provided by engineer. */
 "We Upgraded" = "Αναβαθμίσαμε";
 
 /* No comment provided by engineer. */
@@ -1054,6 +1292,12 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Όταν επιβεβαιωθεί η συναλλαγή, το άλλο πορτοφόλι θα είναι άχρηστο και δεν θα πρέπει να επαναχρησιμοποιηθεί για λόγους ασφαλείας.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
+
+/* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
 
 /* No comment provided by engineer. */
 "Wipe" = "εκκαθάριση";
@@ -1064,8 +1308,9 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "Μεσώ του Dash blockchain";
 
-/* No comment provided by engineer. */
 "Would you like to register this masternode?" = "Would you like to register this masternode?";
+
+"You accepted the contact request from %@" = "Αποδεχθήκατε το αίτημα επαφής από %@";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "Πρόκειται να σκανάρετε χρήματα από άλλο Dash Πορτοφόλι.";
@@ -1080,10 +1325,16 @@
 "You can authenticate with Touch ID for payments below" = "Μπορείτε να επαληθεύσετε το Touch ID για πληρωμές παρακάτω";
 
 /* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Έχετε επιλέξει το \"%@\" ως το όνομα χρήστη σας. Το όνομα χρήστη σας δεν μπορεί να αλλάξει μόλις εγγραφεί.";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Πρέπει να εισάγετε το PIN σας για να μπείτε στο Dash Πορτοφόλι";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Λάβατε Dash! Αν χάσετε αυτή τη συσκευή, θα χάσετε τα χρήματά σας. Πάρτε τη φράση ανάκτησης για να μπορέσετε να επαναφέρετε το πορτοφόλι σας σε άλλη συσκευή.";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "Στείλατε το αίτημα επαφής στο %@";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Θα πρέπει επίσης να αποσυνδεθείτε από την ιστοσελίδα Uphold χρησιμοποιώντας το πρόγραμμα περιήγησης σας";
@@ -1091,8 +1342,9 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Θα χρειαστείτε αυτή τη φράση ανάκτησης για να αποκτήσετε πρόσβαση στα χρήματά σας εάν αυτή η συσκευή χαθεί, καταστραφεί ή εάν το Πορτοφόλι Dash απεγκατασταθει τυχαία από αυτήν τη συσκευή.";
 
-/* No comment provided by engineer. */
 "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
+"Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";
@@ -1101,4 +1353,13 @@
 "Your Uphold account Dash balance is" = "Το υπόλοιπο του Uphold λογαριασμού σας σε Dash είναι";
 
 /* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "Το όνομα χρήστη %@ δημιουργήθηκε με επιτυχία στο Dash Δίκτυο";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "Το όνομα χρήστη %@ δημιουργείται στο Dash Δίκτυο";
+
+/* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Το πορτοφόλι σας είναι ασφαλές τώρα. Μπορείτε να χρησιμοποιήσετε τη φράση ανάκτησης ανά πάσα στιγμή για να ανακτήσετε το λογαριασμό σας σε άλλη συσκευή.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

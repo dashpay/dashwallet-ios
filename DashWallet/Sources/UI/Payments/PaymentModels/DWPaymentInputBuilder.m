@@ -35,7 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     for (NSString *str in array) {
-        DSPaymentRequest *request = [DSPaymentRequest requestWithString:str onChain:chain];
+        NSString *requestString = str;
+        if ([requestString hasPrefix:@"pay:"]) {
+            requestString = [str stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
+        }
+        DSPaymentRequest *request = [DSPaymentRequest requestWithString:requestString onChain:chain];
         NSData *data = str.hexToData.reverse;
 
         i++;
@@ -66,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
                         if (error) { // don't try any more BIP73 urls
                             NSIndexSet *filteredIndexes =
                                 [array indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                                    return (idx >= i && ([obj hasPrefix:@"dash:"] || ![NSURL URLWithString:obj]));
+                                    return (idx >= i && ([obj hasPrefix:@"dash:"] || [obj hasPrefix:@"pay:"] || ![NSURL URLWithString:obj]));
                                 }];
                             NSArray<NSString *> *filteredArray = [array objectsAtIndexes:filteredIndexes];
                             [self payFirstFromArray:filteredArray source:source completion:completion];
@@ -93,7 +97,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSPaymentRequest *request = [DSPaymentRequest requestWithURL:url onChain:chain];
+    DSPaymentRequest *request = nil;
+    if ([url.scheme isEqualToString:@"pay"]) {
+        NSString *path = url.absoluteString;
+        if ([path hasPrefix:@"pay:"]) {
+            path = [path stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
+        }
+        request = [DSPaymentRequest requestWithString:path onChain:chain];
+    }
+    else {
+        request = [DSPaymentRequest requestWithURL:url onChain:chain];
+    }
 
     DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_URL];
     paymentInput.request = request;
@@ -101,6 +115,25 @@ NS_ASSUME_NONNULL_BEGIN
     return paymentInput;
 }
 
+- (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicUserItem>)userItem {
+    DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
+    NSParameterAssert(friendRequest);
+
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    DSIncomingFundsDerivationPath *derivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+    NSAssert(derivationPath.extendedPublicKeyData, @"Extended public key must exist already");
+    NSString *address = derivationPath.receiveAddress;
+
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:address onChain:chain];
+
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_BlockchainUser];
+    paymentInput.userItem = userItem;
+    paymentInput.canChangeAmount = YES;
+    paymentInput.request = paymentRequest;
+
+    return paymentInput;
+}
 
 @end
 

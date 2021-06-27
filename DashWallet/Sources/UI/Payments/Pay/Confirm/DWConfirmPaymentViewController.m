@@ -36,19 +36,33 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Send", nil);
+    return [self.model hasCommonName] ? NSLocalizedString(@"Pay", nil) : NSLocalizedString(@"Send", nil);
 }
 
 - (NSString *)actionButtonDisabledTitle {
-    switch (self.period) {
-        case 1:
-            return NSLocalizedString(@"Sending.", @"2 out of 4 in the Sending Animation");
-        case 2:
-            return NSLocalizedString(@"Sending..", @"3 out of 4 in the Sending Animation");
-        case 3:
-            return NSLocalizedString(@"Sending...", @"4 out of 4 in the Sending Animation");
-        default:
-            return NSLocalizedString(@"Sending", @"1 out of 4 in the Sending Animation");
+    if ([self.model hasCommonName]) {
+        switch (self.period) {
+            case 1:
+                return NSLocalizedString(@"Paying.", @"2 out of 4 in the Paying Animation");
+            case 2:
+                return NSLocalizedString(@"Paying..", @"3 out of 4 in the Paying Animation");
+            case 3:
+                return NSLocalizedString(@"Paying...", @"4 out of 4 in the Paying Animation");
+            default:
+                return NSLocalizedString(@"Paying", @"1 out of 4 in the Paying Animation");
+        }
+    }
+    else {
+        switch (self.period) {
+            case 1:
+                return NSLocalizedString(@"Sending.", @"2 out of 4 in the Sending Animation");
+            case 2:
+                return NSLocalizedString(@"Sending..", @"3 out of 4 in the Sending Animation");
+            case 3:
+                return NSLocalizedString(@"Sending...", @"4 out of 4 in the Sending Animation");
+            default:
+                return NSLocalizedString(@"Sending", @"1 out of 4 in the Sending Animation");
+        }
     }
 }
 
@@ -100,6 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setModel:(nullable id<DWConfirmPaymentViewProtocol>)model {
     self.confirmPaymentView.model = model;
+    [self reloadActionButtonTitles];
 }
 
 #pragma mark - Private

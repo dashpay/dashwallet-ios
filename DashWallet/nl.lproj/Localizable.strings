@@ -1,3 +1,8 @@
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ heeft uw contactverzoek geaccepteerd";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ heeft u een contactverzoek gestuurd";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ heeft geen toegang tot gezichtsherkenning";
@@ -8,8 +13,24 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ heeft geen toegang tot vingeridentificatie";
 
-/* No comment provided by engineer. */
 "%ld used" = "%ld used";
+
+"(1/3) Processing Payment" = "(1/3) Verwerking van betaling";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "(1/3) Kan betaling niet verwerken";
+
+/* No comment provided by engineer. */
+"(2/3) Creating Dash Identity" = "(2/3) Dash identiteit aanmaken";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create Dash Identity" = "(2/3) Kan Dash identiteit niet aanmaken";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "(3/3) Kan gebruikersnaam niet registreren";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "(3/3) Gebruikersnaam registreren";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 uur";
@@ -27,6 +48,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" is geen woord uit de herstelzin";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is geen herstelzinwoord. Wil je het correcte woord herstellen dat er zou moeten staan?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\nprobeer opnieuw over %@";
 
 /* No comment provided by engineer. */
@@ -34,6 +58,18 @@
 
 /* No comment provided by engineer. */
 "About" = "Over";
+
+/* No comment provided by engineer. */
+"Accept" = "Accepteren";
+
+/* No comment provided by engineer. */
+"Activity" = "Activiteit";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Voeg %@ toe als uw contactpersoon om rechtstreeks naar gebruikersnaam te betalen en de geschiedenis van wederzijdse transacties te bewaren";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Voeg een nieuw contact toe";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Voeg snelkoppeling toe";
@@ -149,6 +185,9 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
+/* Choose your Dash username */
+"Choose your" = "Kies uw";
+
 /* No comment provided by engineer. */
 "Clear" = "Wis";
 
@@ -177,6 +216,9 @@
 "Confirm" = "Bevestig";
 
 /* No comment provided by engineer. */
+"Confirm & Pay" = "Bevestig en betaal";
+
+/* No comment provided by engineer. */
 "Confirm PIN" = "Bevestig pin";
 
 /* No comment provided by engineer. */
@@ -189,7 +231,19 @@
 "Connected peers: %d" = "Verbonden peers %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Verbinding maken met betalingsserver";
+
+/* No comment provided by engineer. */
+"Contact Request Pending" = "Contactaanvraag in behandeling";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Contactverzoeken";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Contacteer ondersteuning";
+
+/* No comment provided by engineer. */
+"Contacts" = "Contacten";
 
 /* No comment provided by engineer. */
 "Continue" = "Ga door";
@@ -210,6 +264,12 @@
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
+"Could not automatically recover missing or incorrect words" = "Kon niet automatisch ontbrekende of incorrecte woorden herstellen";
+
+/* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Kon betaling niet maken";
 
 /* No comment provided by engineer. */
@@ -222,7 +282,16 @@
 "Create a New Wallet" = "Maak een nieuwe portemonnee aan";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Huidige gebruiker: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash-betalingen mogen niet kleiner zijn dan %@";
+
+/* No comment provided by engineer. */
+"Dash username" = "Dash gebruikersnaam";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "DashPay upgrade vergoeding";
 
 /* No comment provided by engineer. */
 "Date" = "Datum";
@@ -240,13 +309,19 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen). Verwijder deze portemonnee direct en herstel op een veilig apparaat.";
 
 /* No comment provided by engineer. */
+"Do not take a screenshot" = "Maak geen screenshot";
+
+/* No comment provided by engineer. */
 "Done" = "Klaar";
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Download peer: %@";
 
-/* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mailprogramma is niet geconfigureerd. Voer a.u.b. je e-mailaccount toe aan Instellingen";
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Eerder";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "bv: johndoe";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Gezichtsherkenning inschakelen";
@@ -300,9 +375,16 @@
 "Enter your 2FA code below" = "Voer hieronder uw 2FA code in";
 
 /* No comment provided by engineer. */
-"Exit" = "Afsluiten";
+"Error" = "Fout";
 
 /* No comment provided by engineer. */
+"Error Upgrading" = "Fout bij het upgraden";
+
+/* No comment provided by engineer. */
+"Exit" = "Afsluiten";
+
+"Extended Public Keys" = "Extended Public Keys";
+
 "External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
@@ -324,7 +406,22 @@
 "Filter Transactions" = "Transacties filteren";
 
 /* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Zoek een gebruiker op het Dash netwerk";
+
+/* No comment provided by engineer. */
 "Forgot PIN?" = "PIN vergeten?";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "Ontbrekend woord is gevonden:\n%@";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "Ontbrekende woorden zijn gevonden:\n%@";
+
+/* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "Mogelijkerwijs ontbrekende woorden zijn gevonden:\n%@";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "Genereer uitgebreide publieke sleutels?";
 
 /* No comment provided by engineer. */
 "Get Started" = "Ga aan de slag";
@@ -332,8 +429,17 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Ga naar website";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "heeft gevraagd om je vriend te zijn";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Heb volledige controle en pas uw portemonnee aan op basis van uw behoeften";
+
+/* No comment provided by engineer. */
+"header #%d of %d" = "koptekst #%1$d van %2$d";
+
+/* Hello username, */
+"Hello %@," = "Hallo %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Help ons uw ervaring te verbeteren";
@@ -344,8 +450,9 @@
 /* No comment provided by engineer. */
 "History" = "Geschiedenis";
 
-/* No comment provided by engineer. */
 "Host" = "Host";
+
+"I Accept" = "Ik accepteer";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
@@ -381,22 +488,42 @@
 "Internal Transfer" = "Interne transfer";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Intern verplaatst naar";
 
 /* Invalid transaction */
 "Invalid" = "Ongeldig";
 
+"Invalid Payment Request" = "Ongeldig betalingsverzoek";
+
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Ongeldige QR-code";
+
 "IP Address" = "IP Address";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Het ziet er naar uit dat je probeert een portemonnee te herstellen met een herstelzin van 12 woorden, maar je hebt maar 10 woorden ingevoerd, wil je automatisch de ontbrekende woorden herstellen? Dit kan ongeveer een uur duren. We raden aan je apparaat aan de lader te hangen.";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Het ziet er naar uit dat je probeert een portemonnee te herstellen met een herstelzin van 12 woorden, maar je hebt maar 11 woorden ingevoerd, wil je automatisch de ontbrekende woorden herstellen?";
 
 /* No comment provided by engineer. */
 "It's Important" = "Het is belangrijk";
 
-/* No comment provided by engineer. */
+"Join Evolution" = "Sluit je aan bij Evolution";
+
 "Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
+
+/* No comment provided by engineer. */
+"Keypair %ld" = "Sleutelpaar %ld";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "Laat me weten wanneer het klaar is";
+
+/* Validation rule */
+"Letters and numbers only" = "Alleen letters en nummers";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Koppel Uphold account";
@@ -446,20 +573,24 @@
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Beheer vertrouwde Node";
 
-/* No comment provided by engineer. */
 "Masternode Features" = "Masternode Features";
 
 /* No comment provided by engineer. */
 "Masternode List" = "Masternode List";
 
+"masternode list #%d of %d" = "lijst masternodes #%1$d of %2$d";
+
 /* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
-"Masternode Revocation" = "Masternode herroeping";
+"Masternode Registration" = "Registreren masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update" = "Masternode updaten";
+"Masternode Revocation" = "Herroepen masternode";
+
+/* No comment provided by engineer. */
+"Masternode Update" = "Updaten masternode";
 
 /* No comment provided by engineer. */
 "Masternodes" = "Masternodes";
@@ -467,8 +598,14 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Maximaal %ld karakters";
+
 /* adjective, security level */
 "Medium" = "Medium";
+
+/* Validation rule */
+"Minimum 3 characters" = "Minimum 3 karakters";
 
 /* No comment provided by engineer. */
 "More" = "Meer";
@@ -482,8 +619,12 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Verplaatst naar adres";
 
-/* No comment provided by engineer. */
+"My Contacts" = "Mijn contacten";
+
 "My Masternodes" = "My Masternodes";
+
+/* No comment provided by engineer. */
+"Name" = "Naam";
 
 /* No comment provided by engineer. */
 "Network" = "Netwerk";
@@ -494,19 +635,20 @@
 /* No comment provided by engineer. */
 "Network fee" = "Network fee";
 
+/* (List of) New (notifications) */
+"New" = "Nieuw";
+
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC apparaat heeft geen geldig Dash-adres verzonden";
 
-/* No comment provided by engineer. */
 "No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "No Collateral Information" = "No Collateral Information";
 
-/* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
 /* adjective, security level */
@@ -525,7 +667,13 @@
 "Not yet used" = "Nog niet gebruikt";
 
 /* No comment provided by engineer. */
+"Notifications" = "Notificaties";
+
+/* No comment provided by engineer. */
 "OK" = "Oké";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Zodra%@ uw verzoek accepteert kunt u direct betalen aan Username";
 
 /* No comment provided by engineer. */
 "Operator Key" = "Operator Key";
@@ -548,23 +696,40 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Eigenaar sleutels";
 
-/* No comment provided by engineer. */
 "Owner Private Key" = "Owner Private Key";
 
 /* No comment provided by engineer. */
 "Owner Public Key" = "Owner Public Key";
 
+"Pay" = "Betaal";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Betaal en word betaald met eenvoudig te gebruiken betaalverkeer";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Betaal rechtstreeks aan gebruikersnaam";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Betaal met gemak";
 
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Aan het betalen";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Aan het betalen.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Aan het betalen..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Aan het betalen...";
+
 /* No comment provided by engineer. */
 "Payments" = "Betalingen";
 
-/* No comment provided by engineer. */
 "Payout Address" = "Payout Address";
+
+"Pending" = "Wachtende";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
@@ -586,6 +751,15 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Probeer opnieuw";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Probeer nog een keer te scannen";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Even wachten aub";
+
+/* No comment provided by engineer. */
+"Please wait" = "Even wachten aub";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Wacht tot de synchronisatie is voltooid";
@@ -642,7 +816,13 @@
 "Received from" = "Ontvangen van";
 
 /* No comment provided by engineer. */
+"Recover" = "Herstel";
+
+/* No comment provided by engineer. */
 "Recover Wallet" = "Herstel portemonnee";
+
+/* No comment provided by engineer. */
+"Recovering..." = "Herstellende...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Herstelzin";
@@ -651,7 +831,10 @@
 "Recovery phrase doesn't match" = "De herstelzin komt niet overeen";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "De herstelzin moet %d woorden bevatten";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Herstelzin moet 12, 15, 18, 21 of 24 woorden hebben";
+
+/* Button title, Register (username) */
+"Register" = "Registreren";
 
 /* No comment provided by engineer. */
 "Register" = "Register";
@@ -660,10 +843,14 @@
 "Register Masternode" = "Register Masternode";
 
 /* No comment provided by engineer. */
-"Registered from" = "Geregistreerd van";
+"Register?" = "Registreren?";
 
 /* No comment provided by engineer. */
+"Registered from" = "Geregistreerd van";
+
 "Registered Masternode" = "Registered Masternode";
+
+"Registered Masternode" = "Geregistreerde masternode";
 
 /* No comment provided by engineer. */
 "Registration" = "Registration";
@@ -685,6 +872,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Portemonnee resetten";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Bewaar de geschiedenis van gemeenschappelijke transacties";
 
 /* No comment provided by engineer. */
 "Retry" = "Probeer opnieuw";
@@ -729,6 +919,24 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Genereer een nieuwe herstelzin en houdt deze geheim.";
 
 /* No comment provided by engineer. */
+"Search for a contact" = "Zoek een contactpersoon";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Zoek een contactverzoek";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Zoek naar een gebruiker op het Dash netwerk";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Zoek naar een gebruikersnaam";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Zoekresultaten voor \"";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Zoeken naar gebruikersnaam %@op het Dash netwerk";
+
+/* No comment provided by engineer. */
 "Secure now" = "Beveilig nu";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -752,8 +960,8 @@
 /* Send by (scanning QR code) */
 "Send by" = "Verstuurd door";
 
-/* An action */
-"Send crash report" = "Verstuur crashrapport";
+/* No comment provided by engineer. */
+"Send Contact Request" = "Contactverzoek verzenden";
 
 /* No comment provided by engineer. */
 "Send to" = "Verstuur naar";
@@ -761,14 +969,14 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Versturen naar adres";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Versturen naar gekopieerd adres";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Versturen met NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Bezig met verzenden";
+
+/* No comment provided by engineer. */
+"Sending to" = "Verzenden naar";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Bezig met verzenden.";
@@ -806,8 +1014,9 @@
 /* No comment provided by engineer. */
 "Share" = "Share";
 
-/* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
+
+"Show Masternode Keys" = "Toon sleutels masternode";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Toon herstelzin";
@@ -825,12 +1034,17 @@
 "Something went wrong" = "Er is iets verkeerd gegaan";
 
 /* No comment provided by engineer. */
+"Sort by" = "Sorteer op";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sorteer contacten";
+
+/* No comment provided by engineer. */
 "Specify Amount" = "Specificeer bedrag";
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Bevestiging van de uitgaven";
 
-/* No comment provided by engineer. */
 "Step 1" = "Step 1";
 
 /* No comment provided by engineer. */
@@ -841,6 +1055,8 @@
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Steppen om crash te reproduceren";
+
+"Support" = "Ondersteuning";
 
 /* No comment provided by engineer. */
 "Swept!" = "Geveegd!";
@@ -860,6 +1076,9 @@
 /* No comment provided by engineer. */
 "Syncing" = "Aan het synchroniseren";
 
+/* No comment provided by engineer. */
+"Syncing Balance" = "Syncing Balance";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Tik";
 
@@ -870,7 +1089,16 @@
 "Tap to unhide balance" = "Tik om saldo te zien";
 
 /* No comment provided by engineer. */
+"There are no new notifications" = "Er zijn geen nieuwe meldingen";
+
+/* No comment provided by engineer. */
 "There are no transactions to display" = "Er zijn geen transacties om weer te geven";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "Er zijn geen gebruikers die overeenkomen met de naam %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "Er zijn geen gebruikers die overeenkomen met de naam %@ in uw contacten";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Deze app is open source:";
@@ -972,6 +1200,12 @@
 "Updated: %@" = "Bijgewerkt: %@";
 
 /* No comment provided by engineer. */
+"Upgrade Fee" = "Upgradevergoeding";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "Upgraden naar DashPay";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
@@ -982,6 +1216,18 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Used at IP address";
+
+/* No comment provided by engineer. */
+"Username taken" = "Gebruikersnaam al in gebruik";
+
+/* No comment provided by engineer. */
+"Validating username done" = "Validatie van gebruikersnaam voltooid";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Validatie van gebruikersnaam is mislukt";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Gebruikersnaam valideren…";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Succesvol geverifieerd";
@@ -996,7 +1242,10 @@
 "Very High" = "Very High";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View All" = "Bekijk alles";
+
+/* No comment provided by engineer. */
+"View in Block Explorer" = "Bekijk in Block Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Bekijk wachtwoord, maak backup portemonnee ...";
@@ -1044,9 +1293,6 @@
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We detecteerden dat de Dash portemonnee tijdens de migratie is gecrasht. Opnieuw scannen van de blockchain zal dit probleem oplossen of uw kan het opnieuw proberen. Opnieuw scannen dient bij voorkeur met wifi te worden gedaan en duurt ongeveer een half uur. Uw saldo zal pas beschikbaar zijn zodra het synchronisatieproces is afgerond.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We hebben gedetecteerd dat de Dash portemonnee is gecrasht toen het voor de laatste keer werd gebruikt. Wil je ons helpen dit probleem op te lossen door een crashrapport in te sturen? Je transactiegeschiedenis en andere privé-informatie WORDT NIET gedeeld.";
-
-/* No comment provided by engineer. */
 "We Upgraded" = "We hebben een upgrade uitgevoerd";
 
 /* No comment provided by engineer. */
@@ -1054,6 +1300,12 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Wanneer de transactie is bevestigd, is de andere portemonnee waardeloos en mag deze om veiligheidsredenen niet opnieuw worden gebruikt.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Waarom moet ik geen screenshot maken?";
+
+/* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
 
 /* No comment provided by engineer. */
 "Wipe" = "Verwijderen";
@@ -1064,8 +1316,9 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "met Dash blockchain";
 
-/* No comment provided by engineer. */
 "Would you like to register this masternode?" = "Would you like to register this masternode?";
+
+"You accepted the contact request from %@" = "U heeft het contactverzoek van %@ geaccepteerd";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "U staat op het punt het saldo van een andere Dash portemonnee op te nemen";
@@ -1080,10 +1333,16 @@
 "You can authenticate with Touch ID for payments below" = "U kunt authenticeren met vingerafdruk voor onderstaande betalingen";
 
 /* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "U heeft \"%@\" gekozen als gebruikersnaam. Uw gebruikersnaam kan na registratie niet meer worden gewijzigd.";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "PIN invoeren om in de Dash portemonnee te komen";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Je hebt Dash ontvangen! Als u dit apparaat verliest, verliest u uw Dash. Download de herstelzin zodat u uw portemonnee op een ander apparaat kunt herstellen.";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "U heeft het contactverzoek gestuurd naar %@";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Je dient ook nog uit te loggen bij Uphold website in je webbrowser.";
@@ -1091,8 +1350,9 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "U hebt deze herstelzin nodig om toegang te krijgen tot uw saldo als dit apparaat is verloren of beschadigd, of als Dash Wallet ooit per ongeluk van dit apparaat wordt verwijderd.";
 
-/* No comment provided by engineer. */
 "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
+"Your DashPay Username is ready to use" = "Uw DashPay gebruikersnaam is klaar voor gebruik";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "De transactie is verzonden en het bedrag verschijnt binnen een paar minuten in je de portemonnee.";
@@ -1101,4 +1361,13 @@
 "Your Uphold account Dash balance is" = "Je saldo in Dash bij Uphold is";
 
 /* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "Uw gebruikersnaam %@ is met succes aangemaakt op het Dash netwerk";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "Uw gebruikersnaam %@ wordt aangemaakt op het Dash netwerk";
+
+/* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Uw portemonnee is nu beveiligd. U kunt uw herstelzin op elk gewenst moment gebruiken om uw account op een ander apparaat te herstellen.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

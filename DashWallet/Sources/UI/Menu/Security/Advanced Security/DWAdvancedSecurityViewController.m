@@ -17,8 +17,8 @@
 
 #import "DWAdvancedSecurityViewController.h"
 
+#import "DWActionButton.h"
 #import "DWAdvancedSecurityModel.h"
-#import "DWBlueActionButton.h"
 #import "DWFormTableViewController.h"
 #import "DWSecurityStatusView.h"
 #import "DWSegmentSliderFormTableViewCell.h"
@@ -237,7 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.securityStatusView = securityStatusView;
 
     // button width will be adjusted in viewDidLayoutSubviews
-    DWBlueActionButton *resetButton = [[DWBlueActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
+    DWActionButton *resetButton = [[DWActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
     resetButton.usedOnDarkBackground = NO;
     resetButton.inverted = YES;
     [resetButton setTitle:NSLocalizedString(@"Reset to Default", nil) forState:UIControlStateNormal];

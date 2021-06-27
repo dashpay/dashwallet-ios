@@ -17,6 +17,7 @@
 
 #import "DWToolsMenuViewController.h"
 
+#import "DWExtendedPublicKeysViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
 #import "DWMasternodeFeaturesMenuViewController.h"
@@ -80,6 +81,20 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
+            [strongSelf showExtendedPublicKeys];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show Masternode Keys", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
             [strongSelf showMasternodeFeatures];
         };
         [items addObject:cellModel];
@@ -133,6 +148,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showMasternodeFeatures {
     DWMasternodeFeaturesMenuViewController *masternodeFeaturesMenuViewController = [[DWMasternodeFeaturesMenuViewController alloc] init];
     [self.navigationController pushViewController:masternodeFeaturesMenuViewController animated:YES];
+}
+
+- (void)showExtendedPublicKeys {
+    DWExtendedPublicKeysViewController *controller = [[DWExtendedPublicKeysViewController alloc] init];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 @end

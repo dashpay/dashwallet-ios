@@ -6,6 +6,21 @@
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@used@</string>
+		<key>used</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld použito</string>
+			<key>few</key>
+			<string>%ld použito</string>
+			<key>many</key>
+			<string>%ld použito</string>
+			<key>other</key>
+			<string>%ld použito</string>
+		</dict>
 	</dict>
 </dict>
 </plist>

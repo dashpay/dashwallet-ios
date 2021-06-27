@@ -24,11 +24,19 @@
 
 @implementation DWUpholdTransactionObject (DWView)
 
+- (BOOL)hasCommonName {
+    return NO;
+}
+
 - (uint64_t)amountToDisplay {
     NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
     const uint64_t amountValue = [self.amount decimalNumberByMultiplyingBy:duffs].longLongValue;
 
     return amountValue;
+}
+
+- (nullable id<DWTitleDetailItem>)nameInfo {
+    return nil;
 }
 
 - (nullable id<DWTitleDetailItem>)generalInfo {
@@ -38,7 +46,7 @@
 
     NSString *detail = NSLocalizedString(@"Fee will be deducted from requested amount.", nil);
     DWTitleDetailCellModel *info =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                 title:nil
                                           plainDetail:detail];
 
@@ -57,7 +65,7 @@
                                                                                     font:font];
 
     DWTitleDetailCellModel *fee =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                 title:NSLocalizedString(@"Fee", nil)
                                      attributedDetail:feeString];
 
@@ -71,7 +79,7 @@
                                                                             tintColor:tintColor
                                                                                  font:font];
     DWTitleDetailCellModel *total =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
+        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
                                                 title:NSLocalizedString(@"Total", nil)
                                      attributedDetail:detail];
     return total;

@@ -62,7 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dw_detachFromParent {
-    [self.class dw_detachFromParent:self];
+    if (self.parentViewController) {
+        [self.class dw_detachFromParent:self];
+    }
 }
 
 #pragma mark - Private

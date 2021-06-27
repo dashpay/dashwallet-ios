@@ -19,14 +19,16 @@
 
 #import "DWAmountModel+DWProtected.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
 
 @implementation DWSendAmountModel
 
 - (instancetype)initWithSendingDestination:(nullable NSString *)sendingDestination
-                            paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
-    self = [super init];
+                            paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
+                               contactItem:(nullable id<DWDPBasicUserItem>)contactItem {
+    self = [super initWithContactItem:contactItem];
     if (self) {
         _sendingOptions = [[DWAmountSendingOptionsModel alloc]
             initWithSendingDestination:sendingDestination
@@ -38,6 +40,11 @@
 
 - (BOOL)showsMaxButton {
     return YES;
+}
+
+- (BOOL)isSendAllowed {
+    return ([DWGlobalOptions sharedInstance].isResyncingWallet == NO ||
+            [DWEnvironment sharedInstance].currentChainManager.syncPhase == DSChainSyncPhase_Synced);
 }
 
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
@@ -88,7 +95,6 @@
 
             break;
         }
-        case DWAmountSendOptionsModelState_ProposeInstantSend:
         case DWAmountSendOptionsModelState_AutoLocks: {
             descriptionText = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
 

@@ -17,8 +17,10 @@
 
 #import "DWMainTabbarViewController.h"
 
+#import "DWContactsViewController.h"
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
+#import "DWModalUserProfileViewController.h"
 #import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
@@ -41,6 +43,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentBottomConstraint;
 
 @property (null_resettable, nonatomic, strong) DWNavigationController *homeNavigationController;
+@property (null_resettable, nonatomic, strong) DWNavigationController *contactsNavigationController;
 @property (null_resettable, nonatomic, strong) DWNavigationController *menuNavigationController;
 @property (nonatomic, weak) DWHomeViewController *homeController;
 
@@ -62,22 +65,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - Public
 
 - (void)performScanQRCodeAction {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController performScanQRCodeAction];
 }
 
 - (void)performPayToURL:(NSURL *)url {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController performPayToURL:url];
 }
 
 - (void)handleFile:(NSData *)file {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController handleFile:file];
 }
@@ -102,8 +105,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self transitionToViewController:self.homeNavigationController
-                                    withType:DWContainerTransitionType_WithoutAnimation];
+            [self transitionToController:self.homeNavigationController
+                          transitionType:DWContainerTransitionType_WithoutAnimation];
+
+            break;
+        }
+        case DWTabBarViewButtonType_Contacts: {
+            if (self.currentController == self.contactsNavigationController) {
+                return;
+            }
+
+            [self transitionToController:self.contactsNavigationController
+                          transitionType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -112,8 +125,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self transitionToViewController:self.menuNavigationController
-                                    withType:DWContainerTransitionType_WithoutAnimation];
+            [self transitionToController:self.menuNavigationController
+                          transitionType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -126,7 +139,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
+    [self tabBarViewDidClosePayments:tabBarView completion:nil];
+}
+
+/// helper
+- (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
     if (!self.modalController) {
+        if (completion) {
+            completion();
+        }
+
         return;
     }
 
@@ -135,6 +157,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
     [self hideModalControllerCompletion:^{
         tabBarView.userInteractionEnabled = YES;
+        if (completion) {
+            completion();
+        }
     }];
 }
 
@@ -144,13 +169,25 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self tabBarViewDidClosePayments:self.tabBarView];
 }
 
-#pragma mark - DWHomeViewControllerDelegate
+- (void)paymentsViewControllerDidFinishPayment:(DWPaymentsViewController *)controller
+                                       contact:(nullable id<DWDPBasicUserItem>)contact {
+    [self tabBarViewDidClosePayments:self.tabBarView
+                          completion:^{
+                              if (!contact) {
+                                  return;
+                              }
 
-- (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+                              DWModalUserProfileViewController *profile =
+                                  [[DWModalUserProfileViewController alloc] initWithItem:contact
+                                                                                payModel:self.homeModel.payModel
+                                                                            dataProvider:self.homeModel.getDataProvider];
+                              [self presentViewController:profile animated:YES completion:nil];
+                          }];
 }
 
-- (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender {
+#pragma mark - DWHomeViewControllerDelegate
+
+- (void)homeViewControllerShowReceivePayment:(DWHomeViewController *)controller {
     [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
 
@@ -167,8 +204,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller {
-    [self transitionToViewController:self.homeNavigationController
-                            withType:DWContainerTransitionType_WithoutAnimation];
+    [self transitionToController:self.homeNavigationController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
 }
 
@@ -200,6 +237,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     }
 
     return _homeNavigationController;
+}
+
+- (DWNavigationController *)contactsNavigationController {
+    if (!_contactsNavigationController) {
+        DWContactsViewController *contactsController = [[DWContactsViewController alloc] initWithPayModel:self.homeModel.payModel dataProvider:self.homeModel.getDataProvider];
+
+        _contactsNavigationController = [[DWNavigationController alloc] initWithRootViewController:contactsController];
+        _contactsNavigationController.delegate = self;
+    }
+
+    return _contactsNavigationController;
 }
 
 - (DWNavigationController *)menuNavigationController {
@@ -277,7 +325,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (void)setupControllers {
     DWNavigationController *navigationController = self.homeNavigationController;
-    [self displayViewController:navigationController];
+    [self transitionToController:navigationController];
 }
 
 - (void)setTabBarHiddenAnimated:(BOOL)hidden animated:(BOOL)animated {

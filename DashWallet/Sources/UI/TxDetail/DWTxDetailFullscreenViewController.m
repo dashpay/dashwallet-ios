@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWTxDetailViewControllerDelegate
 
 - (void)txDetailViewController:(DWTxDetailViewController *)controller closeButtonAction:(UIButton *)sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self.delegate detailFullscreenViewControllerDidFinish:self];
 }
 
 #pragma mark - Private

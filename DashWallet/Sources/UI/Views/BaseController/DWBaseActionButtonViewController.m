@@ -17,14 +17,25 @@
 
 #import "DWBaseActionButtonViewController.h"
 
-#import "DWBlueActionButton.h"
+#import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
+
+#import "DWActionButton.h"
 #import "DWUIKit.h"
+#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 static CGFloat const SPACING = 16.0;
-static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
+
+CGFloat DWBottomButtonHeight(void) {
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return 44.0;
+    }
+    else {
+        return 54.0;
+    }
+}
 
 #pragma mark - Helper
 
@@ -78,6 +89,24 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     [self baseActionButtonView_setup];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    if (self.isKeyboardNotificationsEnabled) {
+        // pre-layout view to avoid undesired animation if the keyboard is shown while appearing
+        [self.view layoutIfNeeded];
+        [self ka_startObservingKeyboardNotifications];
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    if (self.isKeyboardNotificationsEnabled) {
+        [self ka_stopObservingKeyboardNotifications];
+    }
+}
+
 - (void)setupContentView:(UIView *)contentView {
     NSParameterAssert(self.stackView);
     NSParameterAssert(contentView);
@@ -89,8 +118,8 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     NSString *actionButtonTitle = [self actionButtonTitle];
     NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
     if (![self.class isActionButtonInNavigationBar]) {
-        [(DWBlueActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
-        [(DWBlueActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
+        [(DWActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+        [(DWActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
     }
 }
 
@@ -127,6 +156,16 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     // NOP
 }
 
+#pragma mark - Keyboard
+
+- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
+                               animationDuration:(NSTimeInterval)animationDuration
+                                  animationCurve:(UIViewAnimationCurve)animationCurve {
+    const CGFloat bottomPadding = [self.class deviceSpecificBottomPadding];
+    self.contentBottomConstraint.constant = height + bottomPadding;
+    [self.view layoutIfNeeded];
+}
+
 #pragma mark - Private
 
 - (void)baseActionButtonView_setup {
@@ -134,7 +173,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
     NSMutableArray<__kindof UIView *> *arrangedSubviews = [NSMutableArray array];
 
-    DWBlueActionButton *bottomActionButton = nil;
+    DWActionButton *bottomActionButton = nil;
     if ([self.class showsActionButton]) {
         NSString *actionButtonTitle = [self actionButtonTitle];
         NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
@@ -151,7 +190,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
             self.barActionButton = barButtonItem;
         }
         else {
-            bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+            bottomActionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
             bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
             [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
             [bottomActionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
@@ -197,7 +236,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     ]];
 
     if (bottomActionButton) {
-        [bottomActionButton.heightAnchor constraintEqualToConstant:BOTTOM_BUTTON_HEIGHT].active = YES;
+        [bottomActionButton.heightAnchor constraintEqualToConstant:DWBottomButtonHeight()].active = YES;
     }
 }
 

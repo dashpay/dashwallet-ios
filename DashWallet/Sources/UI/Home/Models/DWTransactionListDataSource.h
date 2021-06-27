@@ -17,14 +17,23 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDPRegistrationErrorRetryDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSTransaction;
+@class DWDPRegistrationStatus;
 
 @interface DWTransactionListDataSource : NSObject <UITableViewDataSource>
 
+@property (nullable, nonatomic, weak) id<DWDPRegistrationErrorRetryDelegate> retryDelegate;
+
+@property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (readonly, copy, nonatomic) NSArray<DSTransaction *> *items;
 @property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+@property (readonly, nonatomic, assign) BOOL showsRegistrationStatus;
+
+- (nullable DSTransaction *)transactionForIndexPath:(NSIndexPath *)indexPath;
 
 - (instancetype)init NS_UNAVAILABLE;
 

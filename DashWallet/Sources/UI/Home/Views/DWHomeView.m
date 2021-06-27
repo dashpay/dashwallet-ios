@@ -17,11 +17,16 @@
 
 #import "DWHomeView.h"
 
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDashPayProtocol.h"
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
+#import "DWSyncingHeaderView.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
-#import "DWTxListHeaderView.h"
 #import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 
@@ -31,11 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
                           UITableViewDataSource,
                           UITableViewDelegate,
                           DWHomeModelUpdatesObserver,
-                          DWTxListHeaderViewDelegate>
+                          DWSyncingHeaderViewDelegate,
+                          DWDPRegistrationErrorRetryDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
+
+@property (nullable, nonatomic, weak) DWSyncingHeaderView *syncingHeaderView;
 
 // strong ref to current datasource to make sure it always exists while tableView uses it
 @property (nonatomic, strong) DWTransactionListDataSource *currentDataSource;
@@ -76,6 +84,9 @@ NS_ASSUME_NONNULL_BEGIN
         NSArray<NSString *> *cellIds = @[
             DWTxListEmptyTableViewCell.dw_reuseIdentifier,
             DWTxListTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
+            DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
         ];
         for (NSString *cellId in cellIds) {
             UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -87,6 +98,24 @@ NS_ASSUME_NONNULL_BEGIN
                                                  selector:@selector(setNeedsLayout)
                                                      name:UIContentSizeCategoryDidChangeNotification
                                                    object:nil];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          if (!value) {
+                              return;
+                          }
+
+                          [self.syncingHeaderView setSyncState:self.model.syncModel.state];
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.progress)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          if (!value) {
+                              return;
+                          }
+
+                          [self.syncingHeaderView setProgress:self.model.syncModel.progress];
+                      }];
     }
     return self;
 }
@@ -127,6 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeModel:(id<DWHomeProtocol>)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
     self.currentDataSource = dataSource;
+    dataSource.retryDelegate = self;
 
     if (dataSource.isEmpty) {
         self.tableView.dataSource = self;
@@ -135,13 +165,15 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         self.tableView.dataSource = dataSource;
 
-        if (shouldAnimate) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-        else {
-            [self.tableView reloadData];
-        }
+        [self.tableView reloadData];
+
+        //        if (shouldAnimate && self.window) {
+        //            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+        //                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        //        }
+        //        else {
+        //            [self.tableView reloadData];
+        //        }
     }
 }
 
@@ -159,9 +191,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UITableViewDelegate
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    DWTxListHeaderView *headerView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
-    headerView.model = self.model;
+    DWSyncingHeaderView *headerView = [[DWSyncingHeaderView alloc] initWithFrame:CGRectZero];
     headerView.delegate = self;
+    [headerView setSyncState:self.model.syncModel.state];
+    [headerView setProgress:self.model.syncModel.progress];
+    self.syncingHeaderView = headerView;
     return headerView;
 }
 
@@ -172,8 +206,13 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSTransaction *transaction = self.currentDataSource.items[indexPath.row];
-    [self.delegate homeView:self didSelectTransaction:transaction];
+    DSTransaction *transaction = [self.currentDataSource transactionForIndexPath:indexPath];
+    if (transaction) {
+        [self.delegate homeView:self didSelectTransaction:transaction];
+    }
+    else { // registration status cell
+        [self.delegate homeViewShowDashPayRegistrationFlow:self];
+    }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -182,9 +221,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
-#pragma mark - DWTxListHeaderViewDelegate
+#pragma mark - DWSyncingHeaderViewDelegate
 
-- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender {
+- (void)syncingHeaderView:(DWSyncingHeaderView *)view syncingButtonAction:(UIButton *)sender {
+    [self.delegate homeView:self showSyncingStatus:sender];
+}
+
+- (void)syncingHeaderView:(DWSyncingHeaderView *)view filterButtonAction:(UIButton *)sender {
     [self.delegate homeView:self showTxFilter:sender];
 }
 
@@ -194,12 +237,19 @@ NS_ASSUME_NONNULL_BEGIN
     [self setNeedsLayout];
 }
 
-- (void)homeHeaderView:(DWHomeHeaderView *)view payButtonAction:(UIButton *)sender {
-    [self.delegate homeView:self payButtonAction:sender];
+- (void)homeHeaderView:(DWHomeHeaderView *)view profileButtonAction:(UIControl *)sender {
+    [self.delegate homeView:self profileButtonAction:sender];
 }
 
-- (void)homeHeaderView:(DWHomeHeaderView *)view receiveButtonAction:(UIButton *)sender {
-    [self.delegate homeView:self receiveButtonAction:sender];
+#pragma mark - DWDPRegistrationErrorRetryDelegate
+
+- (void)registrationErrorRetryAction {
+    if ([self.model.dashPayModel canRetry]) {
+        [self.model.dashPayModel retry];
+    }
+    else {
+        [self.delegate homeViewShowDashPayRegistrationFlow:self];
+    }
 }
 
 @end

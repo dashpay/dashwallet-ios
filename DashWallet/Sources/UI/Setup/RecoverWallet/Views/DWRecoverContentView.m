@@ -133,6 +133,17 @@ NS_ASSUME_NONNULL_BEGIN
     [self recoverWalletWithCurrentSeedPhrase];
 }
 
+- (void)appendText:(NSString *)text {
+    self.textView.text = [self.textView.text stringByAppendingFormat:@" %@", text];
+}
+
+- (void)replaceText:(NSString *)target replacement:(NSString *)replacement {
+    self.textView.text = [self.textView.text stringByReplacingOccurrencesOfString:target
+                                                                       withString:replacement
+                                                                          options:NSCaseInsensitiveSearch
+                                                                            range:NSMakeRange(0, self.textView.text.length)];
+}
+
 #pragma mark - UITextViewDelegate
 
 - (BOOL)textView:(UITextView *)textView
@@ -152,14 +163,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverWalletWithCurrentSeedPhrase {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
-        NSString *phrase = [self.model cleanupPhrase:textView.text];
+        NSString *phrase = textView.text;
+
         NSString *incorrectWord = nil;
+        uint32_t incorrectWordCount = 0;
 
-        if (![textView.text hasPrefix:DW_WATCH] && ![phrase isEqual:textView.text]) {
-            textView.text = phrase;
+        if (![phrase isEqualToString:DW_WIPE_STRONG]) {
+            phrase = [self.model cleanupPhrase:phrase];
+
+
+            if (![textView.text hasPrefix:DW_WATCH] && ![phrase isEqual:textView.text]) {
+                textView.text = phrase;
+            }
+            phrase = [self.model normalizePhrase:phrase];
         }
-
-        phrase = [self.model normalizePhrase:phrase];
 
         NSArray<NSString *> *words = CFBridgingRelease(
             CFStringCreateArrayBySeparatingStrings(
@@ -167,23 +184,27 @@ NS_ASSUME_NONNULL_BEGIN
                 CFSTR(" ")));
 
         for (NSString *word in words) {
-            if ([[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
-                continue;
+            if (![[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
+                if (incorrectWord == nil) {
+                    incorrectWord = word;
+                }
+                incorrectWordCount++;
             }
-            incorrectWord = word;
-            break;
         }
 
-        if ([phrase isEqualToString:DW_WIPE] ||
+        if ([phrase isEqualToString:DW_WIPE] || [phrase isEqualToString:DW_WIPE_STRONG] ||
             [[phrase lowercaseString] isEqualToString:[self.model.wipeAcceptPhrase lowercaseString]]) {
             [self wipeWithPhrase:phrase];
         }
-        else if (incorrectWord) {
+        else if (incorrectWord && incorrectWordCount > 1) {
             textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
             [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
         }
-        else if (words.count != DW_PHRASE_LENGTH) {
-            [self.delegate recoverContentView:self invalidWordsCountInsteadOf:DW_PHRASE_LENGTH];
+        else if (incorrectWord && incorrectWordCount == 1 && self.model.action == DWRecoverAction_Recover) {
+            [self.delegate recoverContentView:self offerToReplaceIncorrectWord:incorrectWord inPhrase:phrase];
+        }
+        else if (self.model.action == DWRecoverAction_Recover && (words.count < DW_PHRASE_MIN_LENGTH || words.count % DW_PHRASE_MULTIPLE)) {
+            [self.delegate recoverContentView:self usedWordsHaveInvalidCount:words];
         }
         else if (![self.model phraseIsValid:phrase]) {
             [self.delegate recoverContentViewBadRecoveryPhrase:self];
@@ -212,7 +233,7 @@ NS_ASSUME_NONNULL_BEGIN
                 [self.delegate recoverContentViewWipeNotAllowed:self];
             }
         }
-        else if ([phrase.lowercaseString isEqualToString:self.model.wipeAcceptPhrase.lowercaseString]) {
+        else if ([phrase isEqualToString:DW_WIPE_STRONG] || [phrase.lowercaseString isEqualToString:self.model.wipeAcceptPhrase.lowercaseString]) {
             [self.delegate recoverContentViewPerformWipe:self];
         }
         else {

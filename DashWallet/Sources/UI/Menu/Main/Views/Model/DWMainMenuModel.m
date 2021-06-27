@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
         ];
     }
     return self;

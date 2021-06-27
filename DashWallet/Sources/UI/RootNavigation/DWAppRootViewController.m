@@ -47,6 +47,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) DWLockScreenViewController *lockController;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
+@property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
+
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
 @end
@@ -78,6 +80,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)handleURL:(NSURL *)url {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
+    // Defer URL until unlocked.
+    // This also prevents an issue with too fast unlocking via Face ID.
+    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
+    if (isLocked && self.deferredURLToProcess == nil) {
+        self.deferredURLToProcess = url;
+        return;
+    }
+
     DWURLAction *action = [DWURLParser actionForURL:url];
     if (!action) {
         UIAlertController *alert = [UIAlertController
@@ -99,12 +109,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if ([action isKindOfClass:DWURLScanQRAction.class]) {
-        if (self.lockController) {
-            [self.lockController performScanQRCodeAction];
-        }
-        else {
-            [self.mainController performScanQRCodeAction];
-        }
+        [self.mainController performScanQRCodeAction];
     }
     else if ([action isKindOfClass:DWURLUpholdAction.class]) {
         NSURL *url = [(DWURLUpholdAction *)action url];
@@ -115,12 +120,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
     else if ([action isKindOfClass:DWURLPayAction.class]) {
         NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
-        if (self.lockController) {
-            [self.lockController performPayToURL:paymentURL];
-        }
-        else {
-            [self.mainController performPayToURL:paymentURL];
-        }
+        [self.mainController performPayToURL:paymentURL];
     }
     else {
         NSAssert(NO, @"Unhandled action", action);
@@ -183,7 +183,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if (controller) {
-        [self displayViewController:controller];
+        [self transitionToController:controller];
     }
 
     if (hasAWallet) {
@@ -222,8 +222,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         strongSelf->_mainController = nil;
 
         UIViewController *controller = [strongSelf mainController];
-        [strongSelf transitionToViewController:controller
-                                      withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+        [strongSelf transitionToController:controller
+                            transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
     };
 }
 
@@ -253,18 +253,19 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model setupDidFinish];
 
     UIViewController *mainController = self.mainController;
-    [self transitionToViewController:mainController
-                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+    [self transitionToController:mainController
+                  transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 }
 
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
     UIViewController *setupController = [self setupController];
-    [self transitionToViewController:setupController
-                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+    [self transitionToController:setupController
+                  transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
 
+    [self.model.homeModel walletDidWipe];
     // reset main controller stack
     _mainController = nil;
 }
@@ -278,7 +279,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     if (self.currentController == nil) {
         UIViewController *controller = [self mainController];
-        [self displayViewController:controller];
+        [self transitionToController:controller];
     }
 
     [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
@@ -289,7 +290,25 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.rootViewController = nil;
             self.lockWindow.hidden = YES;
             self.lockWindow.alpha = 1.0;
+
+            if (self.deferredURLToProcess) {
+                [self handleURL:self.deferredURLToProcess];
+            }
+            self.deferredURLToProcess = nil;
         }];
+}
+
+- (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller {
+    NSParameterAssert(self.displayedLockNavigationController);
+
+    [self hideAndRemoveOverlayImageView];
+
+    self.lockWindow.rootViewController = nil;
+    self.lockWindow.hidden = YES;
+    self.lockWindow.alpha = 1.0;
+
+    [self.model wipeWallet];
+    [self didWipeWallet];
 }
 
 #pragma mark - Notifications

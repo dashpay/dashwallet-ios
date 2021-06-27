@@ -19,6 +19,7 @@
 
 #import "DWBalanceDisplayOptionsStub.h"
 #import "DWBalanceModel.h"
+#import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
@@ -30,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub ()
+@interface DWHomeModelStub () <DWShortcutsModelDataSource>
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 
@@ -49,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
+@synthesize dashPayModel = _dashPayModel;
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
@@ -62,7 +64,10 @@ NS_ASSUME_NONNULL_BEGIN
         _stubTxs = [DWTransactionStub stubs];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
-        _shortcutsModel = [[DWShortcutsModel alloc] init];
+#if DASHPAY_ENABLED
+        _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
+#endif                                                 /* DASHPAY_ENABLED */
+        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
 
@@ -132,6 +137,15 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
+- (void)walletDidWipe {
+}
+
+#pragma mark - DWShortcutsModelDataSource
+
+- (BOOL)shouldShowCreateUserNameButton {
+    return NO;
+}
+
 #pragma mark - Private
 
 - (void)walletBalanceDidChangeNotification {
@@ -146,6 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadTxDataSource {
     self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:self.stubTxs
+                                                                registrationStatus:[self.dashPayModel registrationStatus]
                                                                       dataProvider:self.dataProvider];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];

@@ -21,10 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWPayModelProtocol;
 @class DWPayViewController;
+@protocol DWDPBasicUserItem;
 
 @protocol DWPayViewControllerDelegate <NSObject>
 
-- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller;
+- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller contact:(nullable id<DWDPBasicUserItem>)contact;
 
 @end
 

@@ -21,11 +21,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSAttributedString (DWHighlightText)
 
-+ (NSAttributedString *)attributedText:(NSString *)text
-                                  font:(UIFont *)font
-                             textColor:(UIColor *)textColor
-                       highlightedText:(nullable NSString *)highlightedText
-                  highlightedTextColor:(UIColor *)highlightedTextColor;
++ (nullable NSAttributedString *)attributedText:(NSString *)text
+                                           font:(UIFont *)font
+                                      textColor:(UIColor *)textColor
+                                highlightedText:(nullable NSString *)highlightedText
+                           highlightedTextColor:(UIColor *)highlightedTextColor;
+
++ (nullable NSAttributedString *)attributedText:(NSAttributedString *)text
+                                      textColor:(UIColor *)textColor
+                                highlightedText:(nullable NSString *)highlightedText
+                           highlightedTextColor:(UIColor *)highlightedTextColor;
 
 @end
 

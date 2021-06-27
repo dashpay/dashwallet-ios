@@ -1,3 +1,8 @@
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ đã chấp nhận yêu cầu liên hệ của bạn";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ đã gửi bạn một yêu cầu liên hệ";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ không được cho phép truy cập Face ID";
@@ -8,8 +13,24 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ không được cho phép truy cập chức năng Touch ID";
 
-/* No comment provided by engineer. */
 "%ld used" = "%ld used";
+
+"(1/3) Processing Payment" = "(1/3) Đang xử lý giao dịch";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "(1/3) Không thể xử lý giao dịch";
+
+/* No comment provided by engineer. */
+"(2/3) Creating Dash Identity" = "(2/3) Đang tạo danh tính Dash";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create Dash Identity" = "(2/3) Không thể tạo danh tính Dash";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "(3/3) Không thể đăng ký tên người dùng";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "(3/3) Đang đăng ký tên người dùng";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 giờ";
@@ -27,6 +48,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" không phải là một cụm từ khôi phục";
 
 /* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
+
+/* No comment provided by engineer. */
 "\ntry again in %@" = "\nthử lại trong vòng %@";
 
 /* No comment provided by engineer. */
@@ -34,6 +58,18 @@
 
 /* No comment provided by engineer. */
 "About" = "Giới thiệu";
+
+/* No comment provided by engineer. */
+"Accept" = "Chấp nhận";
+
+/* No comment provided by engineer. */
+"Activity" = "Các hoạt động";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Thêm %@ như là một liên hệ để chuyển tiền trực tiếp theo Tên Người dùng và Giữ lại Lịch sử giao dịch";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Thêm một liên hệ";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Thêm shortcut";
@@ -149,6 +185,9 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
+/* Choose your Dash username */
+"Choose your" = "Chọn của bạn";
+
 /* No comment provided by engineer. */
 "Clear" = "Xoá";
 
@@ -177,6 +216,9 @@
 "Confirm" = "Xác thực";
 
 /* No comment provided by engineer. */
+"Confirm & Pay" = "Xác nhận & Thanh toán";
+
+/* No comment provided by engineer. */
 "Confirm PIN" = "Xác nhận mã PIN";
 
 /* No comment provided by engineer. */
@@ -189,7 +231,19 @@
 "Connected peers: %d" = "Số kết nối ngang hàng: %d";
 
 /* No comment provided by engineer. */
+"Connecting to payment server" = "Đang kết nối với máy chủ thanh toán";
+
+/* No comment provided by engineer. */
+"Contact Request Pending" = "Yêu cầu liên hệ đang chờ";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Các yêu cầu liên hệ";
+
+/* No comment provided by engineer. */
 "Contact Support" = "Liên hệ hỗ trợ";
+
+/* No comment provided by engineer. */
+"Contacts" = "Các liên hệ";
 
 /* No comment provided by engineer. */
 "Continue" = "Tiếp tục";
@@ -210,6 +264,12 @@
 "Copyright © 2020 Dash Core" = "Bản quyền © 2020 Dash Core";
 
 /* No comment provided by engineer. */
+"Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+
+/* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Không thể thực hiện giao dịch";
 
 /* No comment provided by engineer. */
@@ -222,7 +282,16 @@
 "Create a New Wallet" = "Tạo một ví mới";
 
 /* No comment provided by engineer. */
+"Current user: %@" = "Người dùng hiện tại: %@";
+
+/* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Số Dash cho giao dịch không thể nhỏ hơn %@";
+
+/* No comment provided by engineer. */
+"Dash username" = "Tên người dùng Dash";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "Chi phí nâng cấp DashPay";
 
 /* No comment provided by engineer. */
 "Date" = "Ngày";
@@ -240,13 +309,19 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "THIẾT BỊ NÀY KHÔNG CÒN BẢO MẬT\nBất kỳ ứng dụng 'jailbreak' nào đều có thể truy cập vào dữ liệu chìa khoá của tất cả các ứng dụng khác (và đánh cắp Dash của bạn). Hãy xoá sạch ví ngày ngay lập trức và khôi phục tính năng bảo mật của thiết bị.";
 
 /* No comment provided by engineer. */
+"Do not take a screenshot" = "Đừng chụp ảnh màn hình";
+
+/* No comment provided by engineer. */
 "Done" = "Xong";
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Nút tải xuống: %@";
 
-/* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Phần mềm email chưa được cấu hình. Hãy thêm tài khoản email của bạn trong phần Setting của iPhone";
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Trước đó";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "ví dụ: johndoe";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Cho phép Face ID";
@@ -300,9 +375,16 @@
 "Enter your 2FA code below" = "Hãy nhập mà xác thực 2 lớp vào dưới đây";
 
 /* No comment provided by engineer. */
-"Exit" = "Thoát";
+"Error" = "Lỗi";
 
 /* No comment provided by engineer. */
+"Error Upgrading" = "Lỗi nâng cấp";
+
+/* No comment provided by engineer. */
+"Exit" = "Thoát";
+
+"Extended Public Keys" = "Extended Public Keys";
+
 "External Sign" = "External Sign";
 
 /* No comment provided by engineer. */
@@ -324,7 +406,22 @@
 "Filter Transactions" = "Lọc các giao dịch";
 
 /* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Tìm một người dùng trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
 "Forgot PIN?" = "Quên mã PIN";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "Found missing word:\n%@";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "Found missing words:\n%@";
+
+/* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "Found potential missing words:\n%@";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "Tạo khoá công khai mở rộng?";
 
 /* No comment provided by engineer. */
 "Get Started" = "Bắt đầu";
@@ -332,8 +429,17 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Đến Website";
 
+/* Username has requested to be your friend */
+"has requested to be your friend" = "đã yêu cầu làm bạn với bạn";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Bạn có toàn quyền kiểm soát và tuỳ chỉnh ví dựa trên nhu cầu của mình";
+
+/* No comment provided by engineer. */
+"header #%d of %d" = "phần đầu # %1$d của %2$d";
+
+/* Hello username, */
+"Hello %@," = "Chào %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Hãy giúp chúng tôi cải thiện trải nghiệm cho bạn";
@@ -344,8 +450,9 @@
 /* No comment provided by engineer. */
 "History" = "Lịch sử";
 
-/* No comment provided by engineer. */
 "Host" = "Host";
+
+"I Accept" = "Tôi chấp nhận";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tôi chấp nhận rằng tôi sẽ mất các coin của mình nếu không còn sở hữu cụm từ phục hồi";
@@ -381,22 +488,44 @@
 "Internal Transfer" = "Giao dịch nội bộ";
 
 /* No comment provided by engineer. */
-"Internally moved to" = "Internally moved to";
+"Internally moved to" = "Được di chuyển nội bộ đến";
 
 /* No comment provided by engineer. */
 "Invalid" = "Invalid";
 
+"Invalid Payment Request" = "Yêu cầu thanh toán không hợp lệ";
+
 /* No comment provided by engineer. */
+"Invalid QR Code" = "Mã QR không hợp lệ";
+
 "IP Address" = "IP Address";
 
 /* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
+
+/* No comment provided by engineer. */
 "It's Important" = "It's Important";
+
+/* No comment provided by engineer. */
+"It's Important" = "Điều này là quan trọng";
+
+/* No comment provided by engineer. */
+"Join Evolution" = "Tham gia Evolution";
 
 /* No comment provided by engineer. */
 "Key to use" = "Key to use";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Cặp khoá %ld";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "Hãy cho tôi biết khi nó xong";
+
+/* Validation rule */
+"Letters and numbers only" = "Chỉ dùng chữ cái và chữ số";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Liên kết với tài khoản Uphold";
@@ -446,14 +575,18 @@
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Quản lý nút tin cậy";
 
-/* No comment provided by engineer. */
 "Masternode Features" = "Masternode Features";
 
 /* No comment provided by engineer. */
 "Masternode List" = "Masternode List";
 
+"masternode list #%d of %d" = "masternode list #%1$d of %2$d";
+
 /* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Đăng ký Masternode";
 
 /* No comment provided by engineer. */
 "Masternode Revocation" = "Thu hồi Masternode";
@@ -467,8 +600,14 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Tối đa";
 
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Tối đa %ld ký tự";
+
 /* adjective, security level */
 "Medium" = "Trung bình";
+
+/* Validation rule */
+"Minimum 3 characters" = "Tối thiểu 3 ký tự";
 
 /* No comment provided by engineer. */
 "More" = "Thêm";
@@ -482,8 +621,12 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Được chuyển đến Địa chỉ";
 
-/* No comment provided by engineer. */
+"My Contacts" = "Các liên hệ của tôi";
+
 "My Masternodes" = "My Masternodes";
+
+/* No comment provided by engineer. */
+"Name" = "Tên";
 
 /* No comment provided by engineer. */
 "Network" = "Mạng";
@@ -494,19 +637,20 @@
 /* No comment provided by engineer. */
 "Network fee" = "Network fee";
 
+/* (List of) New (notifications) */
+"New" = "Thêm mới";
+
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Thiết bị NFC không gửi một địa chỉ Dash hợp lệ";
 
-/* No comment provided by engineer. */
 "No address copied" = "Không có địa chỉ nào được copy";
 
 /* No comment provided by engineer. */
 "No Collateral Information" = "No Collateral Information";
 
-/* No comment provided by engineer. */
 "Node IP" = "Địa chỉ IP của nút";
 
 /* adjective, security level */
@@ -525,7 +669,13 @@
 "Not yet used" = "Chưa từng được dùng";
 
 /* No comment provided by engineer. */
+"Notifications" = "Các thông báo";
+
+/* No comment provided by engineer. */
 "OK" = "OK";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Một khi %@ chấp nhận yêu cầu của bạn thì bạn có thể gửi tiền trực tiếp theo tên người dùng đó";
 
 /* No comment provided by engineer. */
 "Operator Key" = "Operator Key";
@@ -548,23 +698,42 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Khoá của chủ sở hữu";
 
-/* No comment provided by engineer. */
 "Owner Private Key" = "Owner Private Key";
 
 /* No comment provided by engineer. */
 "Owner Public Key" = "Owner Public Key";
 
+"Pay" = "thanh toán";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Trả và nhận một cách tức thời một cách dễ dàng bằng cách sử dụng các quy trình thanh toán";
 
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Trả trực tiếp cho Tên Người dùng";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Giao dịch một cách đơn giản";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Đang gửi";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Đang gửi.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Đang gửi..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Đang gửi...";
 
 /* No comment provided by engineer. */
 "Payments" = "Payments";
 
 /* No comment provided by engineer. */
 "Payout Address" = "Payout Address";
+
+/* No comment provided by engineer. */
+"Pending" = "Đang chờ";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Mã PIN luôn được cần đến khi thực hiện giao dịch";
@@ -586,6 +755,15 @@
 
 /* No comment provided by engineer. */
 "Please try again" = "Hãy thử lại";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Hãy thử quét lại lần nữa";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Vui lòng đợi";
+
+/* No comment provided by engineer. */
+"Please wait" = "Vui lòng đợi";
 
 /* No comment provided by engineer. */
 "Please wait for the sync to complete" = "Vui lòng đợi quá trình đồng bộ hoàn thành";
@@ -642,7 +820,13 @@
 "Received from" = "Nhận được từ";
 
 /* No comment provided by engineer. */
+"Recover" = "Recover";
+
+/* No comment provided by engineer. */
 "Recover Wallet" = "Khôi phục Ví";
+
+/* No comment provided by engineer. */
+"Recovering..." = "Recovering...";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Cụm từ phục hồi";
@@ -651,13 +835,19 @@
 "Recovery phrase doesn't match" = "Cụm từ phục hồi không đúng";
 
 /* No comment provided by engineer. */
-"Recovery phrase must have %d words" = "Cụm từ phục hồi phải có %dtừ";
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
+
+/* Button title, Register (username) */
+"Register" = "Đăng ký";
 
 /* No comment provided by engineer. */
 "Register" = "Register";
 
 /* No comment provided by engineer. */
 "Register Masternode" = "Register Masternode";
+
+/* No comment provided by engineer. */
+"Register?" = "Đăng ký?";
 
 /* No comment provided by engineer. */
 "Registered from" = "Registered from";
@@ -685,6 +875,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Thiết lập lại ví";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Giữ lại lịch sử các giao dịch qua lại";
 
 /* No comment provided by engineer. */
 "Retry" = "Thử lại";
@@ -729,6 +922,24 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Hãy sinh ra một cụm từ phục hồi mới và giữ nó bí mật.";
 
 /* No comment provided by engineer. */
+"Search for a contact" = "Tìm một liên lạc";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Tìm một yêu cầu liên lạc";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Tìm một tên người dùng trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Tìm một tên người dùng";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Kết quả tìm kiếm cho \"";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Tìm kiếm tên người dùng %@ trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
 "Secure now" = "Bảo mật ngay";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -752,8 +963,8 @@
 /* Send by (scanning QR code) */
 "Send by" = "Gửi bởi";
 
-/* An action */
-"Send crash report" = "Gửi thông báo lỗi";
+/* No comment provided by engineer. */
+"Send Contact Request" = "Gửi yêu cầu liên hệ";
 
 /* No comment provided by engineer. */
 "Send to" = "Gửi đến";
@@ -761,14 +972,14 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Gửi đến địa chỉ";
 
-/* No comment provided by engineer. */
-"Send to copied address" = "Gửi đến địa chỉ đã được copy";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Gửi với NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Đang gửi";
+
+/* No comment provided by engineer. */
+"Sending to" = "Gửi tới";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Đang gửi.";
@@ -825,12 +1036,17 @@
 "Something went wrong" = "Có vấn đề gì đó";
 
 /* No comment provided by engineer. */
+"Sort by" = "Sắp xếp theo";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sắp xếp các liên lạc";
+
+/* No comment provided by engineer. */
 "Specify Amount" = "Xác định số lượng";
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Xác nhận chi tiêu";
 
-/* No comment provided by engineer. */
 "Step 1" = "Step 1";
 
 /* No comment provided by engineer. */
@@ -841,6 +1057,8 @@
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Các bước để tái tạo lại lỗi";
+
+"Support" = "Hỗ trợ";
 
 /* No comment provided by engineer. */
 "Swept!" = "Đã quét!";
@@ -860,6 +1078,9 @@
 /* No comment provided by engineer. */
 "Syncing" = "Đang đồng bộ";
 
+/* No comment provided by engineer. */
+"Syncing Balance" = "Syncing Balance";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Bấm";
 
@@ -870,7 +1091,16 @@
 "Tap to unhide balance" = "Bấm để hiện số dư";
 
 /* No comment provided by engineer. */
+"There are no new notifications" = "Không có thông báo mới";
+
+/* No comment provided by engineer. */
 "There are no transactions to display" = "Không có giao dịch nào để hiển thị";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "Không có người dùng nào có tên trùng với %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "Không có người dùng nào có tên trùng với %@ trong danh sách liên hệ của bạn";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ứng dụng này là mã nguồn mở:";
@@ -972,6 +1202,12 @@
 "Updated: %@" = "Đã cập nhật: %@";
 
 /* No comment provided by engineer. */
+"Upgrade Fee" = "Phí nâng cấp";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "Đang nâng cấp cho DashPay";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
@@ -982,6 +1218,18 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Used at IP address";
+
+/* No comment provided by engineer. */
+"Username taken" = "Tên người dùng đã được chọn";
+
+/* No comment provided by engineer. */
+"Validating username done" = "Thực hiện xong việc Kiểm tra tính hợp lệ của tên người dùng";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Kiểm tra tính hợp lệ của tên người dùng không thành công";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Đang kiểm tra tên người dùng...";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Đã kiểm tra thành công";
@@ -996,7 +1244,10 @@
 "Very High" = "Very High";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "View in Block Explorer";
+"View All" = "Xem tất cả";
+
+/* No comment provided by engineer. */
+"View in Block Explorer" = "Xem trên công cụ khám phá khối";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Xem mật khẩu, sao lưu ví...";
@@ -1044,9 +1295,6 @@
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Chúng tôi phát hiện thấy ví Dash bị lỗi trong quá trình nhập dữ liệu. Quét lại blockchain sẽ giải quyết được vấn đề hoặc bạn có thể thử lại. Việc quét lại nên được thực hiện với kết nối wifi và nó sẽ mất khoảng nửa giờ đồng hồ. Số tiền của bạn sẽ được sẵn sàng cho chi tiêu một khi việc đồng bộ hoàn tất.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Chúng tôi phát hiện thấy ví Dash bị lỗi lần cuối khi nó được mở. Bạn có muốn giúp chúng tôi giải quyết vấn đề này bằng việc gửi chúng tôi dữ liệu báo cáo về lỗi vừa rồi? Lịch sử giao dịch của bạn và những thông tin riêng tư khác SẼ KHÔNG bị chia sẻ.";
-
-/* No comment provided by engineer. */
 "We Upgraded" = "Chúng tôi đã Nâng cấp";
 
 /* No comment provided by engineer. */
@@ -1054,6 +1302,12 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Khi các giao dịch được xác thực, ví kia sẽ trở nên vô giá trị và không nên được tiếp tục sử dụng vì những lý do an toàn.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Tại sao tôi không nên chụp ảnh màn hình?";
+
+/* No comment provided by engineer. */
+"WIF Private key" = "WIF Private key";
 
 /* No comment provided by engineer. */
 "Wipe" = "Xoá";
@@ -1064,8 +1318,9 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "với blockchain của Dash";
 
-/* No comment provided by engineer. */
 "Would you like to register this masternode?" = "Would you like to register this masternode?";
+
+"You accepted the contact request from %@" = "Bạn đã chấp nhận yêu cầu liên hệ từ %@";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash Wallet." = "Bạn sẽ quét số tiền từ một ví Dash khác.";
@@ -1080,10 +1335,16 @@
 "You can authenticate with Touch ID for payments below" = "Bạn có thể xác thực với Touch ID cho giao dịch bên dưới";
 
 /* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Bạn đã chọn \"%@\" làm tên người dùng của mình. Tên người dùng của bnaj không thể thay đổi một khi đã được đăng ký.";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Bạn cần phải nhập mã PIN để truy cập vào ví Dash";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Bạn đã nhận được Dash! Nếu bạn mất thiết bị này, bạn sẽ mất số tiền của mình. Hãy chọn cụm từ phục hồi để bạn có thể khôi phục ví của mình trên một thiết bị khác.";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "Bạn đã gửi yêu cầu liên hệ với %@";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Bạn sẽ cần phải đăng xuất khỏi tài khoản từ trang web Uphold với trình duyệt của mình";
@@ -1091,8 +1352,9 @@
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Bạn cần cụm từ phục hồi để truy cập đến khoản tiền của bạn nếu thiết bị này bị mất, hỏng hoặc ví Dash Wallet vô tình bị gỡ bỏ khỏi thiết bị này.";
 
-/* No comment provided by engineer. */
 "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
+
+"Your DashPay Username is ready to use" = "Tên người dùng DashPay của bạn đã sẵn sàng để sử dụng";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Giao dịch của bạn đã được gửi và số tiền sẽ xuất hiện trong ví của bạn trong vài phút.";
@@ -1101,4 +1363,13 @@
 "Your Uphold account Dash balance is" = "Số dư tài khoản Uphold bằng Dash là";
 
 /* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "Tên người dùng của bạn %@ đã được tạo lập thành công trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "Tên người dùng của bạn %@ đang được tạo trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Bây giờ ví của bạn đã được an toàn. Bạn có thể sử dụng dòng chữ phục hồi bất kỳ khi nào để khôi phục số tiền của mình trên một thiết bị khác.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Сopied address or QR";

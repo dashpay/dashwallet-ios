@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_9" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWBalanceView">
+            <connections>
+                <outlet property="amountsView" destination="a19-pf-lti" id="iY8-bG-Sdi"/>
+                <outlet property="balanceButton" destination="Eje-aF-LFe" id="mhP-2o-YjU"/>
+                <outlet property="balanceViewHeightContraint" destination="p2n-oJ-XJI" id="62L-6s-OUV"/>
+                <outlet property="contentView" destination="iN0-l3-epB" id="qz5-pT-jzT"/>
+                <outlet property="dashBalanceLabel" destination="hzD-1y-Vru" id="FhN-mM-oBi"/>
+                <outlet property="eyeSlashImageView" destination="tWo-qc-7g0" id="MRE-9W-yxc"/>
+                <outlet property="fiatBalanceLabel" destination="QGt-Lq-fJB" id="Abq-d5-RR2"/>
+                <outlet property="hidingView" destination="nmB-Kb-Zbl" id="THs-wX-kmS"/>
+                <outlet property="tapToUnhideLabel" destination="veC-5Z-8ER" id="zfC-y4-SFo"/>
+                <outlet property="titleLabel" destination="chD-8m-nbL" id="QdS-vN-Q9N"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="211"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hLW-nv-HXU" userLabel="Balance View">
+                    <rect key="frame" x="20" y="8" width="374" height="181.66666666666666"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Eje-aF-LFe" userLabel="Centered Balance Control" customClass="UIControl">
+                            <rect key="frame" x="0.0" y="58.333333333333336" width="374" height="65.333333333333314"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="chD-8m-nbL" userLabel="Title Label">
+                                    <rect key="frame" x="0.0" y="0.0" width="374" height="13.333333333333334"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                    <color key="textColor" red="0.65098039215686276" green="0.84313725490196079" blue="0.96078431372549022" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nmB-Kb-Zbl" userLabel="Hiding View">
+                                    <rect key="frame" x="0.0" y="13.333333333333343" width="374" height="52"/>
+                                    <subviews>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="eye_slash" translatesAutoresizingMaskIntoConstraints="NO" id="tWo-qc-7g0">
+                                            <rect key="frame" x="163.66666666666666" y="0.0" width="47" height="52"/>
+                                            <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </imageView>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="tWo-qc-7g0" firstAttribute="top" secondItem="nmB-Kb-Zbl" secondAttribute="top" id="2dM-63-DYt"/>
+                                        <constraint firstAttribute="bottom" secondItem="tWo-qc-7g0" secondAttribute="bottom" id="KAe-SY-UEx"/>
+                                        <constraint firstItem="tWo-qc-7g0" firstAttribute="centerX" secondItem="nmB-Kb-Zbl" secondAttribute="centerX" id="YB9-Ml-tKl"/>
+                                    </constraints>
+                                </view>
+                                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="a19-pf-lti" userLabel="Amounts View">
+                                    <rect key="frame" x="0.0" y="13.333333333333343" width="374" height="52"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hzD-1y-Vru" userLabel="Dash Label">
+                                            <rect key="frame" x="0.0" y="5" width="374" height="30"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QGt-Lq-fJB" userLabel="Fiat Label">
+                                            <rect key="frame" x="0.0" y="35" width="374" height="17"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                            <color key="textColor" name="LightTitleColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="QGt-Lq-fJB" firstAttribute="top" secondItem="hzD-1y-Vru" secondAttribute="bottom" id="ByJ-AG-tOl"/>
+                                        <constraint firstItem="QGt-Lq-fJB" firstAttribute="leading" secondItem="a19-pf-lti" secondAttribute="leading" id="K3B-Pj-rNh"/>
+                                        <constraint firstItem="hzD-1y-Vru" firstAttribute="leading" secondItem="a19-pf-lti" secondAttribute="leading" id="YUK-tB-fuN"/>
+                                        <constraint firstAttribute="bottom" secondItem="QGt-Lq-fJB" secondAttribute="bottom" id="ZTh-aG-cEd"/>
+                                        <constraint firstAttribute="trailing" secondItem="QGt-Lq-fJB" secondAttribute="trailing" id="bps-h5-rQv"/>
+                                        <constraint firstAttribute="trailing" secondItem="hzD-1y-Vru" secondAttribute="trailing" id="g72-TG-6Ak"/>
+                                        <constraint firstItem="hzD-1y-Vru" firstAttribute="top" secondItem="a19-pf-lti" secondAttribute="top" constant="5" id="pYK-OL-bem"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="trailing" secondItem="a19-pf-lti" secondAttribute="trailing" id="0ne-La-Xca"/>
+                                <constraint firstItem="nmB-Kb-Zbl" firstAttribute="height" secondItem="a19-pf-lti" secondAttribute="height" id="6lZ-iR-cQw"/>
+                                <constraint firstItem="nmB-Kb-Zbl" firstAttribute="top" secondItem="chD-8m-nbL" secondAttribute="bottom" id="Apw-Cx-Jrw"/>
+                                <constraint firstItem="a19-pf-lti" firstAttribute="leading" secondItem="Eje-aF-LFe" secondAttribute="leading" id="C6a-dn-Q9E"/>
+                                <constraint firstAttribute="bottom" secondItem="a19-pf-lti" secondAttribute="bottom" id="HZq-Gw-HSu"/>
+                                <constraint firstItem="chD-8m-nbL" firstAttribute="leading" secondItem="Eje-aF-LFe" secondAttribute="leading" id="R1J-3Q-NX9"/>
+                                <constraint firstItem="nmB-Kb-Zbl" firstAttribute="leading" secondItem="Eje-aF-LFe" secondAttribute="leading" id="Yn9-S2-X4y"/>
+                                <constraint firstItem="a19-pf-lti" firstAttribute="top" secondItem="chD-8m-nbL" secondAttribute="bottom" id="nXU-uo-Y1V"/>
+                                <constraint firstAttribute="bottom" secondItem="nmB-Kb-Zbl" secondAttribute="bottom" id="pge-9j-ECA"/>
+                                <constraint firstAttribute="trailing" secondItem="chD-8m-nbL" secondAttribute="trailing" id="vG7-ST-jnS"/>
+                                <constraint firstItem="chD-8m-nbL" firstAttribute="top" secondItem="Eje-aF-LFe" secondAttribute="top" id="wdQ-OK-CE3"/>
+                                <constraint firstAttribute="trailing" secondItem="nmB-Kb-Zbl" secondAttribute="trailing" id="zn6-G7-ChD"/>
+                            </constraints>
+                            <connections>
+                                <action selector="balanceButtonAction:" destination="-1" eventType="touchUpInside" id="Rbl-je-DpX"/>
+                            </connections>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Eje-aF-LFe" secondAttribute="bottom" id="8zI-Tf-w5J"/>
+                        <constraint firstAttribute="trailing" secondItem="Eje-aF-LFe" secondAttribute="trailing" id="Khc-Jc-fpe"/>
+                        <constraint firstItem="Eje-aF-LFe" firstAttribute="leading" secondItem="hLW-nv-HXU" secondAttribute="leading" id="Lln-Vp-JzZ"/>
+                        <constraint firstItem="Eje-aF-LFe" firstAttribute="top" relation="greaterThanOrEqual" secondItem="hLW-nv-HXU" secondAttribute="top" id="QHY-PA-vLe"/>
+                        <constraint firstItem="Eje-aF-LFe" firstAttribute="centerY" secondItem="hLW-nv-HXU" secondAttribute="centerY" id="VCP-km-lpH"/>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="990" constant="120" id="p2n-oJ-XJI"/>
+                    </constraints>
+                </view>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="248" verticalCompressionResistancePriority="752" text="Tap to unhide balance" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="veC-5Z-8ER">
+                    <rect key="frame" x="20" y="189.66666666666666" width="374" height="13.333333333333343"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" name="DashNavigationBarBlueColor"/>
+            <constraints>
+                <constraint firstItem="hLW-nv-HXU" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="61J-LS-i83"/>
+                <constraint firstItem="veC-5Z-8ER" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="69r-9j-OjW"/>
+                <constraint firstItem="veC-5Z-8ER" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailingMargin" id="Rzs-iG-f2s"/>
+                <constraint firstItem="veC-5Z-8ER" firstAttribute="top" secondItem="hLW-nv-HXU" secondAttribute="bottom" id="kNd-g7-SRf"/>
+                <constraint firstAttribute="bottom" secondItem="veC-5Z-8ER" secondAttribute="bottom" constant="8" id="pQu-en-8Wu"/>
+                <constraint firstItem="hLW-nv-HXU" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="qSj-CK-nao"/>
+                <constraint firstAttribute="trailingMargin" secondItem="hLW-nv-HXU" secondAttribute="trailing" id="sXe-PJ-mqd"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <edgeInsets key="layoutMargins" top="0.0" left="16" bottom="0.0" right="16"/>
+            <variation key="widthClass=regular">
+                <edgeInsets key="layoutMargins" top="0.0" left="20" bottom="0.0" right="20"/>
+            </variation>
+            <point key="canvasLocation" x="137.59999999999999" y="115.64039408866995"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="eye_slash" width="47" height="39"/>
+        <namedColor name="DashNavigationBarBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="LightTitleColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

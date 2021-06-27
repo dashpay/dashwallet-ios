@@ -109,9 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (migrationManager.shouldMigrate) {
         // start updating prices earlier than migration to update `secureTime`
         // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
-        if (migrationManager.shouldMigrate) {
-            [[DSPriceManager sharedInstance] startExchangeRateFetching];
-        }
+        [[DSPriceManager sharedInstance] startExchangeRateFetching];
         
         [self performDeferredStartWithLaunchOptions:launchOptions];
     }
@@ -204,7 +202,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     }
     else {
         // TODO: defer action when start controller finish
-        DSLogVerbose(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
+        DSLog(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
 
     return YES;
@@ -242,7 +240,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             }
             else {
                 // TODO: defer action when start controller finish
-                DSLogVerbose(@"Ignoring handle file. Root controller hasn't been set up yet");
+                DSLog(@"Ignoring handle file. Root controller hasn't been set up yet");
             }
         }
     }
@@ -288,7 +286,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     if (shouldRescanBlockchain) {
         DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-        [chainManager rescan];
+        [chainManager masternodeListAndBlocksRescan];
     }
 }
 

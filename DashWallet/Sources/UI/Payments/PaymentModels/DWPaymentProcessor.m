@@ -17,9 +17,12 @@
 
 #import "DWPaymentProcessor.h"
 
+#import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWPaymentInput+Private.h"
 #import "DWPaymentInput.h"
+#import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,7 +42,7 @@ static NSString *sanitizeString(NSString *s) {
 
 @property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
 
-@property (readonly, nullable, nonatomic, strong) DWPaymentInput *paymentInput;
+@property (nullable, nonatomic, strong) DWPaymentInput *paymentInput;
 
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, assign) BOOL canChangeAmount;
@@ -106,6 +109,32 @@ static NSString *sanitizeString(NSString *s) {
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
 
+
+    // re-build input if it's DashPay-compatible
+    NSString *requestUsername = paymentInput.request.dashpayUsername;
+    if (requestUsername) {
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+
+        if (myBlockchainIdentity) {
+            NSManagedObjectContext *context = NSManagedObjectContext.viewContext;
+            DSDashpayUserEntity *dashpayUserEntity = [myBlockchainIdentity matchingDashpayUserInContext:context];
+            DSBlockchainIdentity *requestIdentity = nil;
+            for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
+                if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:requestUsername]) {
+                    requestIdentity = [friendRequest.sourceContact.associatedBlockchainIdentity blockchainIdentity];
+                    break;
+                }
+            }
+
+            if (requestIdentity) {
+                paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
+            }
+        }
+    }
+
+    self.paymentInput = paymentInput;
+
     self.shouldClearPasteboard = paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     if (paymentInput.request) {
@@ -116,6 +145,10 @@ static NSString *sanitizeString(NSString *s) {
         self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmProtocolRequest:paymentInput.protocolRequest];
     }
+    else if (paymentInput.source == DWPaymentInputSource_BlockchainUser) {
+        self.canChangeAmount = paymentInput.canChangeAmount;
+        [self confirmRequest:paymentInput.request];
+    }
 }
 
 - (void)processFile:(NSData *)file {
@@ -124,13 +157,11 @@ static NSString *sanitizeString(NSString *s) {
     [self handleFile:file];
 }
 
-- (void)provideAmount:(uint64_t)amount usedInstantSend:(BOOL)usedInstantSend {
+- (void)provideAmount:(uint64_t)amount {
     self.amount = amount;
 
     NSParameterAssert(self.request);
 
-    [self.request updateForRequestsInstantSend:usedInstantSend
-                           requiresInstantSend:self.request.requiresInstantSend];
     [self confirmProtocolRequest:self.request];
 }
 
@@ -174,9 +205,16 @@ static NSString *sanitizeString(NSString *s) {
         signedCompletion:self.signedCompletionBlock
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
             if (error) {
-                [self failedWithError:error
-                                title:NSLocalizedString(@"Couldn't make payment", nil)
-                              message:nil];
+                if (error.code == -1009) {
+                    [self failedWithError:error
+                                    title:NSLocalizedString(@"Could not connect to the Dash network, please check that you are connected to the internet.", nil)
+                                  message:nil];
+                }
+                else {
+                    [self failedWithError:error
+                                    title:NSLocalizedString(@"Couldn't make payment", nil)
+                                  message:nil];
+                }
             }
             else {
                 [self txManagerPublishedCompletion:address
@@ -197,7 +235,7 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)confirmRequest:(DSPaymentRequest *)request {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (!request.isValid) {
+    if (!request.isValidAsNonDashpayPaymentRequest) {
         if ([request.paymentAddress isValidDashPrivateKeyOnChain:chain] ||
             [request.paymentAddress isValidDashBIP38Key]) {
             [self confirmSweep:request];
@@ -234,7 +272,19 @@ static NSString *sanitizeString(NSString *s) {
             }];
     }
     else {
-        [self confirmProtocolRequest:request.protocolRequest];
+        // `request.protocolRequest` is a legacy method and shouldn't be used directly.
+        // `myBlockchainIdentity` can be nil.
+
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
+        DSPaymentProtocolRequest *protocolRequest =
+            [self.paymentInput.request protocolRequestForBlockchainIdentity:myBlockchainIdentity
+                                                                  onAccount:account
+                                                                  inContext:context];
+
+        [self confirmProtocolRequest:protocolRequest];
     }
 }
 
@@ -425,7 +475,7 @@ static NSString *sanitizeString(NSString *s) {
                                 sent:(BOOL)sent
                                   tx:(DSTransaction *_Nonnull)tx {
     if (sent) {
-        [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx];
+        [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx contactItem:self.paymentInput.userItem];
 
         self.didSendRequestDelegateNotified = YES;
 
@@ -441,7 +491,7 @@ static NSString *sanitizeString(NSString *s) {
                                      tx:(DSTransaction *_Nonnull)tx {
     if (relayedToServer) {
         if (!self.didSendRequestDelegateNotified) {
-            [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx];
+            [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx contactItem:self.paymentInput.userItem];
         }
 
         [self handleCallbackSchemeIfNeeded:protocolRequest address:address tx:tx];
@@ -467,7 +517,8 @@ static NSString *sanitizeString(NSString *s) {
                                                                     name:name
                                                                     memo:memo
                                                                 isSecure:isSecure
-                                                           localCurrency:localCurrency];
+                                                           localCurrency:localCurrency
+                                                                userItem:self.paymentInput.userItem];
     [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
 }
 
@@ -496,7 +547,8 @@ static NSString *sanitizeString(NSString *s) {
 
     [self.delegate paymentProcessor:self
         requestAmountWithDestination:sendingDestination
-                             details:request.details];
+                             details:request.details
+                         contactItem:self.paymentInput.userItem];
 }
 
 - (void)requestUserActionTitle:(nullable NSString *)title
@@ -632,6 +684,7 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (void)reset {
+    self.paymentInput = nil;
     self.request = nil;
     if (self.shouldClearPasteboard) {
         UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];

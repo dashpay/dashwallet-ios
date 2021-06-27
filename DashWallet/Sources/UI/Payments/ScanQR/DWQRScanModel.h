@@ -25,6 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWCaptureSessionFrameDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class AVCaptureSession;
@@ -34,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
     QRCodeObjectTypeProcessing,
     QRCodeObjectTypeValid,
+    QRCodeObjectTypeValidPaymentRequest,
+    QRCodeObjectTypePaymentRequestFailed,
     QRCodeObjectTypeInvalid,
 };
 
@@ -55,7 +59,8 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 
 @property (readonly, class, getter=isTorchAvailable) BOOL torchAvailable;
 
-@property (weak, nonatomic) id<DWQRScanModelDelegate> delegate;
+@property (nullable, weak, nonatomic) id<DWQRScanModelDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWCaptureSessionFrameDelegate> frameDelegate;
 
 @property (readonly, strong, nonatomic) AVCaptureSession *captureSession;
 @property (readonly, assign, nonatomic, getter=isCameraDeniedOrRestricted) BOOL cameraDeniedOrRestricted;
@@ -73,11 +78,6 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 @protocol DWQRScanModelDelegate <NSObject>
 
 - (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput;
-
-- (void)qrScanModel:(DWQRScanModel *)viewModel
-     showErrorTitle:(nullable NSString *)title
-            message:(nullable NSString *)message;
-
 - (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel;
 
 @end

@@ -24,9 +24,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAmountModel
 
-- (instancetype)init {
+- (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem {
     self = [super init];
     if (self) {
+        _contactItem = contactItem;
+
         _dashValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash];
         _localCurrencyValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency];
 

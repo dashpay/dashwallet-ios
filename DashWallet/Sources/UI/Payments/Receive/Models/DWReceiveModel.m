@@ -21,6 +21,7 @@
 
 #import "DWAppGroupOptions.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "UIImage+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, nonatomic, copy) NSString *paymentAddress;
 @property (nullable, nonatomic, strong) DSPaymentRequest *paymentRequest;
+@property (nonatomic, strong) dispatch_queue_t updateQueue;
 
 @end
 
@@ -38,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithAmount:(uint64_t)amount {
     self = [super initWithAmount:amount];
     if (self) {
+        _updateQueue = dispatch_queue_create("org.dash.wallet.DWReceiveModel.queue", DISPATCH_QUEUE_SERIAL);
+
         [self updateReceivingInfo];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -49,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (NSString *)paymentAddressOrRequestToShare {
@@ -107,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
         total += [wallet amountReceivedFromTransaction:tx];
 
         if (total + fuzz >= request.amount) {
-            DSLogVerbose(@"DWReceiveModel: Received %@", @(total));
+            DSLog(@"DWReceiveModel: Received %@", @(total));
 
             // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
             // (`total` is not calculated properly for very small amounts like 0.000257)
@@ -133,7 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)updateReceivingInfo {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(self.updateQueue, ^{
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
         if (!account) {
             // wallet has been wiped
@@ -141,9 +145,6 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
         NSString *paymentAddress = account.receiveAddress;
-        if (self.paymentAddress && [self.paymentAddress isEqualToString:paymentAddress]) {
-            return;
-        }
 
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];
@@ -161,7 +162,8 @@ NS_ASSUME_NONNULL_BEGIN
             }
             paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
         }
-        self.paymentRequest = paymentRequest;
+
+        paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
 
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
@@ -179,7 +181,7 @@ NS_ASSUME_NONNULL_BEGIN
         UIImage *qrCodeImage = [self qrCodeImageWithRawQRImage:rawQRImage hasAmount:hasAmount];
 
         NSData *rawQRImageData = UIImagePNGRepresentation(rawQRImage);
-        if (paymentRequest && paymentRequest.isValid && rawQRImageData) {
+        if (paymentRequest && paymentRequest.isValidAsNonDashpayPaymentRequest && rawQRImageData) {
             if (!hasAmount) {
                 appGroupOptions.receiveQRImageData = rawQRImageData;
                 appGroupOptions.receiveAddress = paymentAddress;
@@ -198,6 +200,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            self.paymentRequest = paymentRequest;
             self.qrCodeImage = qrCodeImage;
             self.paymentAddress = paymentAddress;
         });

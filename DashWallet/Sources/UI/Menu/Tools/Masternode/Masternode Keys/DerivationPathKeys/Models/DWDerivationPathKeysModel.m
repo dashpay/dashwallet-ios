@@ -18,22 +18,14 @@
 #import "DWDerivationPathKeysModel.h"
 
 #import <DashSync/DSAuthenticationKeysDerivationPath.h>
+#import <DashSync/DashSync.h>
 
+#import "DWDerivationPathKeysItemObject.h"
 #import "DWEnvironment.h"
 #import "DWSelectorFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDerivationPathKeysItemObject : NSObject <DWDerivationPathKeysItem>
-
-@property (nonatomic, copy) NSString *title;
-@property (nonatomic, copy) NSString *detail;
-
-@end
-
-@implementation DWDerivationPathKeysItemObject
-
-@end
 
 #pragma mark -
 
@@ -78,12 +70,18 @@ NS_ASSUME_NONNULL_BEGIN
                 NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
                                                                       withPassphrase:nil];
                 DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
-                if ([key isKindOfClass:[DSECDSAKey class]]) {
-                    item.detail = [((DSECDSAKey *)key) privateKeyStringForChain:self.derivationPath.chain];
-                }
-                else {
-                    item.detail = key.secretKeyString;
-                }
+                item.detail = key.secretKeyString;
+            }
+
+            break;
+        }
+        case DWDerivationPathInfo_WIFPrivateKey: {
+            item.title = NSLocalizedString(@"WIF Private key", nil);
+            @autoreleasepool {
+                NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
+                                                                      withPassphrase:nil];
+                DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
+                item.detail = [key serializedPrivateKeyForChain:wallet.chain];
             }
 
             break;

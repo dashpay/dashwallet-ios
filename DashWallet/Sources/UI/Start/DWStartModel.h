@@ -32,14 +32,7 @@ typedef NS_ENUM(NSUInteger, DWStartModelState) {
 - (void)cancelMigration;
 - (void)cancelMigrationAndRescanBlockchain;
 
-// Crash Reporting:
-
-@property (readonly, assign, nonatomic) BOOL shouldHandleCrashReports;
-- (NSArray<NSString *> *)crashReportFiles;
-- (void)removeCrashReportFiles;
-- (void)updateLastCrashReportAskDate;
-- (NSString *)gatherUserDeviceInfo;
-- (void)finalizeCrashReporting;
+- (void)finalizeAsIs;
 
 @end
 

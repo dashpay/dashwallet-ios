@@ -26,6 +26,7 @@
 #import "DSEventManager.h"
 #import "DWQRScanModel.h"
 #import "DWQRScanView.h"
+#import <DashSync/DSPermissionNotification.h>
 
 #import "DWQRScanViewController.h"
 
@@ -60,12 +61,15 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.model = self.model;
 
     if (!self.model.isCameraDeniedOrRestricted) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWillRequestOSPermissionNotification object:nil];
         __weak typeof(self) weakSelf = self;
         [self.model startPreviewCompletion:^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
 
             [strongSelf.view connectCaptureSession];
         }];

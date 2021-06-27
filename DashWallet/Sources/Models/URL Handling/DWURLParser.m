@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    return [url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"dashwallet"];
+    return [url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"dashwallet"] || [url.scheme isEqual:@"pay"];
 }
 
 + (nullable DWURLAction *)actionForURL:(NSURL *)url {
@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
             return action;
         }
     }
-    else if ([url.scheme isEqual:@"dash"]) {
+    else if ([url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"pay"]) {
         DWURLPayAction *action = [[DWURLPayAction alloc] init];
         action.paymentURL = url;
 

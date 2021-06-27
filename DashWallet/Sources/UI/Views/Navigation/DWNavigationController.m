@@ -19,6 +19,7 @@
 
 #import "DWNavigationFullscreenable.h"
 #import "DWUIKit.h"
+#import "UINavigationBar+DWAppearance.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [super setDelegate:self];
-    [self dwNavigationControllerSetup];
+    [self.navigationBar dw_configureForDefaultAppearance];
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {
@@ -65,11 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
     [navigationController setNavigationBarHidden:hidden animated:animated];
 
     // Hide back button title
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@" "
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@""
                                                              style:UIBarButtonItemStylePlain
                                                             target:nil
                                                             action:nil];
-    item.tintColor = [UIColor dw_tintColor];
     viewController.navigationItem.backBarButtonItem = item;
 
     id<UINavigationControllerDelegate> delegate = self.realDelegate;
@@ -78,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
                 willShowViewController:viewController
                               animated:animated];
     }
+
 
     // https://stackoverflow.com/questions/23484310/canceling-interactive-uinavigationcontroller-pop-gesture-does-not-call-uinavigat
     [navigationController.transitionCoordinator
@@ -96,40 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
                                });
             }
         }];
-}
-
-#pragma mark - Private
-
-- (void)dwNavigationControllerSetup {
-    UINavigationBar *navigationBar = self.navigationBar;
-    navigationBar.barStyle = UIBarStyleDefault;
-    navigationBar.barTintColor = [UIColor dw_dashNavigationBlueColor];
-    navigationBar.tintColor = [UIColor dw_tintColor];
-    navigationBar.translucent = NO;
-
-    navigationBar.titleTextAttributes = @{
-        NSForegroundColorAttributeName : [UIColor dw_lightTitleColor],
-        NSFontAttributeName : [UIFont dw_navigationBarTitleFont],
-    };
-
-    navigationBar.shadowImage = [[UIImage alloc] init];
-
-    if (@available(iOS 13.0, *)) {
-        UINavigationBarAppearance *standardAppearance = navigationBar.standardAppearance;
-        NSParameterAssert(standardAppearance);
-        standardAppearance.backgroundColor = navigationBar.barTintColor;
-        standardAppearance.titleTextAttributes = navigationBar.titleTextAttributes;
-        standardAppearance.shadowImage = navigationBar.shadowImage;
-        standardAppearance.shadowColor = [UIColor clearColor];
-
-        UIBarButtonItemAppearance *buttonAppearance = standardAppearance.buttonAppearance;
-        NSParameterAssert(buttonAppearance);
-        UIBarButtonItemStateAppearance *stateApperance = buttonAppearance.normal;
-        stateApperance.titleTextAttributes = navigationBar.titleTextAttributes;
-
-        navigationBar.scrollEdgeAppearance = standardAppearance;
-        navigationBar.compactAppearance = standardAppearance;
-    }
 }
 
 #pragma mark - Delegate Forwarder

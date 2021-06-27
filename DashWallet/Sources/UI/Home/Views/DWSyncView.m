@@ -140,9 +140,24 @@ NS_ASSUME_NONNULL_BEGIN
         if (self.viewStateSeeingBlocks) {
             DWEnvironment *environment = [DWEnvironment sharedInstance];
             DSChain *chain = environment.currentChain;
-            self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                                                                    chain.lastBlockHeight,
-                                                                    chain.estimatedBlockHeight];
+            DSChainManager *chainManager = environment.currentChainManager;
+            if (chainManager.syncPhase == DSChainSyncPhase_InitialTerminalBlocks) {
+                if (chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight && chainManager.masternodeManager.masternodeListRetrievalQueueCount) {
+                    self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"masternode list #%d of %d", nil),
+                                                                            (int)(chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount),
+                                                                            (int)chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount];
+                }
+                else {
+                    self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"header #%d of %d", nil),
+                                                                            chain.lastTerminalBlockHeight,
+                                                                            chain.estimatedBlockHeight];
+                }
+            }
+            else {
+                self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                                                                        chain.lastSyncBlockHeight,
+                                                                        chain.estimatedBlockHeight];
+            }
         }
         else {
             self.descriptionLabel.text = NSLocalizedString(@"with Dash blockchain", nil);

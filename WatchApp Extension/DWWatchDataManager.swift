@@ -86,7 +86,8 @@ final class DWWatchDataManager: NSObject {
 
     func requestQRCodeForBalance(_ bits: String,
                                  responseHandler: @escaping (_ qrImage: UIImage?, _ error: NSError?)
-                                     -> Void) {
+                                     -> Void)
+    {
         if session.isReachable {
             let msg = [
                 AW_SESSION_REQUEST_TYPE: NSNumber(value: AWSessionRquestTypeFetchData.rawValue as UInt32),
@@ -97,8 +98,9 @@ final class DWWatchDataManager: NSObject {
                 msg,
                 replyHandler: { ctx -> Void in
                     if let dat = ctx[AW_QR_CODE_BITS_KEY],
-                        let datDat = dat as? Data,
-                        let img = UIImage(data: datDat) {
+                       let datDat = dat as? Data,
+                       let img = UIImage(data: datDat)
+                    {
                         responseHandler(img, nil)
                         return
                     }
@@ -180,7 +182,8 @@ final class DWWatchDataManager: NSObject {
             session.sendMessage(messageToSend, replyHandler: { [unowned self] replyMessage in
                 if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? Data {
                     if let unwrappedAppleWatchData
-                        = NSKeyedUnarchiver.unarchiveObject(with: data) as? BRAppleWatchData {
+                        = NSKeyedUnarchiver.unarchiveObject(with: data) as? BRAppleWatchData
+                    {
                         let previousAppleWatchData = self.appleWatchData
                         let previousWalletStatus = self.walletStatus
                         self.appleWatchData = unwrappedAppleWatchData
@@ -225,7 +228,8 @@ final class DWWatchDataManager: NSObject {
 extension DWWatchDataManager: WCSessionDelegate {
     func session(_ session: WCSession,
                  activationDidCompleteWith activationState: WCSessionActivationState,
-                 error: Error?) {
+                 error: Error?)
+    {
         // TODO: proper error handling
         setupTimerAndReloadIfActive()
     }
@@ -233,7 +237,8 @@ extension DWWatchDataManager: WCSessionDelegate {
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         if let applicationContextData = applicationContext[AW_APPLICATION_CONTEXT_KEY] as? Data {
             if let transferedAppleWatchData
-                = NSKeyedUnarchiver.unarchiveObject(with: applicationContextData) as? BRAppleWatchData {
+                = NSKeyedUnarchiver.unarchiveObject(with: applicationContextData) as? BRAppleWatchData
+            {
                 let previousWalletStatus = walletStatus
                 appleWatchData = transferedAppleWatchData
                 archiveData(transferedAppleWatchData)
@@ -254,13 +259,15 @@ extension DWWatchDataManager: WCSessionDelegate {
 
     func session(_ session: WCSession,
                  didReceiveMessage message: [String: Any],
-                 replyHandler: @escaping ([String: Any]) -> Void) {
+                 replyHandler: @escaping ([String: Any]) -> Void)
+    {
         print("Handle message from phone \(message)")
         if let noteV = message[AW_PHONE_NOTIFICATION_KEY],
-            let noteStr = noteV as? String,
-            let noteTypeV = message[AW_PHONE_NOTIFICATION_TYPE_KEY],
-            let noteTypeN = noteTypeV as? NSNumber,
-            noteTypeN.uint32Value == AWPhoneNotificationTypeTxReceive.rawValue {
+           let noteStr = noteV as? String,
+           let noteTypeV = message[AW_PHONE_NOTIFICATION_TYPE_KEY],
+           let noteTypeN = noteTypeV as? NSNumber,
+           noteTypeN.uint32Value == AWPhoneNotificationTypeTxReceive.rawValue
+        {
             let note = Notification(
                 name: DWWatchDataManager.WalletTxReceiveNotification,
                 object: nil,

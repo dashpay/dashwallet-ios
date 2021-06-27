@@ -23,6 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWTitleDetailCellModel : NSObject <DWTitleDetailItem>
 
+- (instancetype)initWithTitle:(nullable NSString *)title
+                     userItem:(id<DWDPBasicUserItem>)userItem
+                 copyableData:(nullable NSString *)copyableData;
+
+- (instancetype)initWithStyle:(DWTitleDetailItemStyle)style plainCenteredDetail:(NSString *)plainDetail;
+
+- (instancetype)initWithStyle:(DWTitleDetailItemStyle)style plainLeftAlignedDetail:(NSString *)plainDetail;
+
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
                   plainDetail:(NSString *)plainDetail;
@@ -40,7 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
                         title:(nullable NSString *)title
                   plainDetail:(nullable NSString *)plainDetail
              attributedDetail:(nullable NSAttributedString *)attributedDetail
-                 copyableData:(nullable NSString *)copyableData NS_DESIGNATED_INITIALIZER;
+                 copyableData:(nullable NSString *)copyableData
+              detailAlignment:(NSTextAlignment)detailAlignment;
 
 - (instancetype)init NS_UNAVAILABLE;
 

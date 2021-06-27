@@ -17,15 +17,18 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDPBasicUserItem.h"
 #import "DWDemoDelegate.h"
+#import "DWNavigationChildViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPaymentProcessor;
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
+@protocol DWDPBasicUserItem;
 
-@interface DWBasePayViewController : UIViewController
+@interface DWBasePayViewController : DWNavigationChildViewController
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
@@ -35,14 +38,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
 - (void)performScanQRCodeAction;
+/// Check pasteboard and pay
+- (void)payToAddressAction;
+/// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+- (void)performPayToUser:(id<DWDPBasicUserItem>)userItem;
 
 - (void)handleFile:(NSData *)file;
 
-/// This method is called after presentation of payment result controller.
-- (void)payViewControllerDidShowPaymentResult;
+/// This method is called after dismissal of payment result controller.
+- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact;
+
+- (id<DWDPBasicUserItem>)contactItem;
 
 @end
 

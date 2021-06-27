@@ -53,7 +53,8 @@ extension WKInterfaceController: DWTxInfoDisplayableInterfaceController {
         print("receive view controller received notification: \(String(describing: notification))")
 
         guard let userData = (notification as NSNotification?)?.userInfo,
-            let noteString = userData[NSLocalizedDescriptionKey] as? String else {
+              let noteString = userData[NSLocalizedDescriptionKey] as? String
+        else {
             return
         }
 
@@ -63,7 +64,7 @@ extension WKInterfaceController: DWTxInfoDisplayableInterfaceController {
                                         style: .cancel,
                                         handler: {
                                             self.dismiss()
-        })
+                                        })
         presentAlert(withTitle: noteString,
                      message: nil,
                      preferredStyle: .alert,

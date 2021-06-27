@@ -26,6 +26,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
+#define MIN_FAIL_COUNT_TO_WIPE 6
 
 static NSTimeInterval const CHECK_INTERVAL = 1.0;
 
@@ -113,6 +114,18 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
     }
 
     return message;
+}
+
+- (BOOL)isAllowedToWipe {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+
+    NSError *error = nil;
+    uint64_t failCount = [authManager getFailCount:&error];
+    if (error) {
+        return NO;
+    }
+
+    return failCount >= MIN_FAIL_COUNT_TO_WIPE;
 }
 
 #pragma mark - Private

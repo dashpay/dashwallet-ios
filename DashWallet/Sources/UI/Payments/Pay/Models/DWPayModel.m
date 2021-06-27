@@ -19,7 +19,7 @@
 
 #import <CoreNFC/CoreNFC.h>
 
-#import "DWPasteboardAddressObserver.h"
+#import "DWPasteboardAddressExtractor.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
 
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPayModel () <NFCNDEFReaderSessionDelegate>
 
 @property (readonly, nonatomic, strong) DWPaymentInputBuilder *inputBuilder;
-@property (readonly, nonatomic, strong) DWPasteboardAddressObserver *pasteboardObserver;
+@property (readonly, nonatomic, strong) DWPasteboardAddressExtractor *pasteboardExtractor;
 @property (readonly, nonatomic, strong) DWPayOptionModel *pasteboardOption;
 
 @property (nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
@@ -44,12 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _inputBuilder = [[DWPaymentInputBuilder alloc] init];
-        _pasteboardObserver = [[DWPasteboardAddressObserver alloc] init];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(pasteboardObserverNotification)
-                                                     name:DWPasteboardObserverNotification
-                                                   object:nil];
+        _pasteboardExtractor = [[DWPasteboardAddressExtractor alloc] init];
 
         NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
 
@@ -76,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
@@ -92,34 +87,41 @@ NS_ASSUME_NONNULL_BEGIN
     [session beginSession];
 }
 
-- (void)startPasteboardIntervalObserving {
-    [self.pasteboardObserver startIntervalObserving];
-}
+- (void)payToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
+    NSArray<NSString *> *contents = [self.pasteboardExtractor extractAddresses];
+    if (contents.count == 0) {
+        self.pasteboardPaymentInput = nil;
 
-- (void)stopPasteboardIntervalObserving {
-    [self.pasteboardObserver stopIntervalObserving];
-}
-
-- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
-    __weak typeof(self) weakSelf = self;
-    [self.pasteboardObserver checkPasteboardContentsCompletion:^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
+        if (completion) {
+            completion(NO);
         }
+    }
+    else {
+        __weak typeof(self) weakSelf = self;
+        [self.inputBuilder payFirstFromArray:contents
+                                      source:DWPaymentInputSource_Pasteboard
+                                  completion:^(DWPaymentInput *_Nonnull paymentInput) {
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
 
-        [strongSelf processPasteboardContentsWithCompletion:completion];
-    }];
+                                      strongSelf.pasteboardPaymentInput = paymentInput;
+
+                                      if (completion) {
+                                          BOOL success = paymentInput.request || paymentInput.protocolRequest;
+                                          completion(success);
+                                      }
+                                  }];
+    }
 }
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
     return [self.inputBuilder paymentInputWithURL:url];
 }
 
-#pragma mark - Notifications
-
-- (void)pasteboardObserverNotification {
-    [self processPasteboardContentsWithCompletion:nil];
+- (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicUserItem>)userItem {
+    return [self.inputBuilder paymentInputWithUserItem:userItem];
 }
 
 #pragma mark - NFCNDEFReaderSessionDelegate
@@ -128,14 +130,14 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<NSString *> *array = [NSMutableArray array];
     for (NFCNDEFMessage *message in messages) {
         for (NFCNDEFPayload *payload in message.records) {
-            DSLogVerbose(@"NFC payload.payload %@", payload.payload);
+            DSLogPrivate(@"NFC payload.payload %@", payload.payload);
             NSData *data = payload.payload;
             const unsigned char *bytes = data.bytes;
 
             if (bytes[0] == 0) {
                 data = [data subdataWithRange:NSMakeRange(1, data.length - 1)];
             }
-            DSLogVerbose(@"NFC Payload data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            DSLogPrivate(@"NFC Payload data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             [array addObject:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
         }
     }
@@ -171,37 +173,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
-
-- (void)processPasteboardContentsWithCompletion:(nullable void (^)(BOOL success))completion {
-    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-
-    NSArray<NSString *> *contents = self.pasteboardObserver.contents;
-    if (contents.count == 0) {
-        self.pasteboardPaymentInput = nil;
-
-        if (completion) {
-            completion(NO);
-        }
-    }
-    else {
-        __weak typeof(self) weakSelf = self;
-        [self.inputBuilder payFirstFromArray:contents
-                                      source:DWPaymentInputSource_Pasteboard
-                                  completion:^(DWPaymentInput *_Nonnull paymentInput) {
-                                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                                      if (!strongSelf) {
-                                          return;
-                                      }
-
-                                      strongSelf.pasteboardPaymentInput = paymentInput;
-
-                                      if (completion) {
-                                          BOOL success = paymentInput.request || paymentInput.protocolRequest;
-                                          completion(success);
-                                      }
-                                  }];
-    }
-}
 
 - (void)setPasteboardPaymentInput:(nullable DWPaymentInput *)pasteboardPaymentInput {
     _pasteboardPaymentInput = pasteboardPaymentInput;

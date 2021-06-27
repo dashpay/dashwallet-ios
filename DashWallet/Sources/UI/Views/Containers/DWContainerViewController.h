@@ -32,9 +32,11 @@ typedef NS_ENUM(NSUInteger, DWContainerTransitionType) {
 @property (readonly, nonatomic, assign) NSTimeInterval transitionAnimationDuration;
 @property (readonly, nonatomic, strong) UIView *containerView;
 
-- (void)displayViewController:(UIViewController *)controller;
-- (void)transitionToViewController:(UIViewController *)toViewController
-                          withType:(DWContainerTransitionType)transitionType;
+/// Default cross-dissolve transition
+- (void)transitionToController:(UIViewController *)controller;
+
+- (void)transitionToController:(UIViewController *)toViewController
+                transitionType:(DWContainerTransitionType)transitionType;
 
 @end
 

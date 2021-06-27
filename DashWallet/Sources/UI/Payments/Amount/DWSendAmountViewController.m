@@ -29,14 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSendAmountViewController
 
-+ (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
-                               paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
+- (instancetype)initWithDestination:(NSString *)sendingDestination
+                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails
+                        contactItem:(nullable id<DWDPBasicUserItem>)contactItem {
     DWSendAmountModel *model = [[DWSendAmountModel alloc] initWithSendingDestination:sendingDestination
-                                                                      paymentDetails:paymentDetails];
-
-    DWSendAmountViewController *controller = [[DWSendAmountViewController alloc] initWithModel:model];
-
-    return controller;
+                                                                      paymentDetails:paymentDetails
+                                                                         contactItem:contactItem];
+    self = [super initWithModel:model];
+    return self;
 }
 
 - (DWSendAmountModel *)sendAmountModel {
@@ -77,15 +77,20 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    if (!self.sendAmountModel.isSendAllowed) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Please wait for the sync to complete", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *ok = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:ok];
+        [self presentViewController:alert animated:YES completion:nil];
+
+        return;
+    }
+
     DWSendAmountModel *sendModel = (DWSendAmountModel *)self.model;
     NSAssert([sendModel isKindOfClass:DWSendAmountModel.class], @"Inconsistent state");
 
-    const DWAmountSendOptionsModelState state = sendModel.sendingOptions.state;
-    const BOOL usedInstantSend = state == DWAmountSendOptionsModelState_ProposeInstantSend &&
-                                 sendModel.sendingOptions.useInstantSend;
     [self.delegate sendAmountViewController:self
-                             didInputAmount:self.model.amount.plainAmount
-                            usedInstantSend:usedInstantSend];
+                             didInputAmount:sendModel.amount.plainAmount];
 }
 
 @end

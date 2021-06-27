@@ -25,10 +25,12 @@
 #import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
+#import "DWDashPayConstants.h"
+#import "DWDashPayContactsUpdater.h"
+#import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
-#import "DWPayModelProtocol.h"
 #import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
@@ -56,13 +58,14 @@ static BOOL IsJailbroken(void) {
     return jailbroken;
 }
 
-@interface DWHomeModel ()
+@interface DWHomeModel () <DWShortcutsModelDataSource>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
@@ -80,6 +83,7 @@ static BOOL IsJailbroken(void) {
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
+@synthesize dashPayModel = _dashPayModel;
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
@@ -100,14 +104,19 @@ static BOOL IsJailbroken(void) {
 
         _syncModel = [[DWSyncModel alloc] initWithReachability:_reachability];
 
+#if DASHPAY_ENABLED
+        _dashPayModel = [[DWDashPayModel alloc] init];
+#endif /* DASHPAY_ENABLED */
+
         // set empty datasource
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
+                                                                registrationStatus:[_dashPayModel registrationStatus]
                                                                       dataProvider:_dataProvider];
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-        _shortcutsModel = [[DWShortcutsModel alloc] init];
+        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];
 
@@ -138,6 +147,14 @@ static BOOL IsJailbroken(void) {
                                selector:@selector(chainWalletsDidChangeNotification:)
                                    name:DSChainWalletsDidChangeNotification
                                  object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(dashPayRegistrationStatusUpdatedNotification)
+                                   name:DWDashPayRegistrationStatusUpdatedNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(willWipeWalletNotification)
+                                   name:DWWillWipeWalletNotification
+                                 object:nil];
 
         [self reloadTxDataSource];
     }
@@ -145,7 +162,7 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)dealloc {
-    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+    DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {
@@ -278,9 +295,47 @@ static BOOL IsJailbroken(void) {
     [syncModel forceStartSyncingActivity];
 }
 
+- (void)walletDidWipe {
+#if DASHPAY_ENABLED
+    self.dashPayModel = [[DWDashPayModel alloc] init];
+#endif /* DASHPAY_ENABLED */
+}
+
+#pragma mark - DWShortcutsModelDataSource
+
+- (BOOL)shouldShowCreateUserNameButton {
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
+        return NO;
+    }
+
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    if (chain.isEvolutionEnabled == NO) {
+        return NO;
+    }
+
+    // username is registered / in progress
+    if (self.dashPayModel.registrationStatus != nil) {
+        return NO;
+    }
+
+    if (self.dashPayModel.registrationCompleted) {
+        return NO;
+    }
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    // TODO: add check if appropriate spork is on
+    BOOL canRegisterUsername = YES;
+    const uint64_t balanceValue = wallet.balance;
+    BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
+    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
+    return canRegisterUsername && isSynced && isEnoughBalance;
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
+    [self reloadShortcuts];
+
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
 
@@ -308,6 +363,16 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)syncStateChangedNotification {
+    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
+    if (isSynced) {
+        [self.dashPayModel updateUsernameStatus];
+
+        if (self.dashPayModel.username != nil) {
+            [self.receiveModel updateReceivingInfo];
+            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+        }
+    }
+
     [self updateBalance];
     [self reloadTxDataSource];
 }
@@ -320,6 +385,16 @@ static BOOL IsJailbroken(void) {
     }
 }
 
+- (void)dashPayRegistrationStatusUpdatedNotification {
+    [self reloadTxDataSource];
+
+    [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+}
+
+- (void)willWipeWalletNotification {
+    [[DWDashPayContactsUpdater sharedInstance] endUpdating];
+}
+
 #pragma mark - Private
 
 - (DWTransactionListDataSource *)receivedDataSource {
@@ -327,6 +402,7 @@ static BOOL IsJailbroken(void) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
                                                            forDisplayMode:DWHomeTxDisplayMode_Received];
         _receivedDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                     registrationStatus:[self.dashPayModel registrationStatus]
                                                                            dataProvider:self.dataProvider];
     }
 
@@ -338,6 +414,7 @@ static BOOL IsJailbroken(void) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
                                                            forDisplayMode:DWHomeTxDisplayMode_Sent];
         _sentDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                 registrationStatus:[self.dashPayModel registrationStatus]
                                                                        dataProvider:self.dataProvider];
     }
 
@@ -349,6 +426,7 @@ static BOOL IsJailbroken(void) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
                                                            forDisplayMode:DWHomeTxDisplayMode_Rewards];
         _rewardsDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                    registrationStatus:[self.dashPayModel registrationStatus]
                                                                           dataProvider:self.dataProvider];
     }
 
@@ -369,7 +447,26 @@ static BOOL IsJailbroken(void) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
         NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
-        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey ascending:NO];
+
+        //Timestamps are set to 0 if the transaction hasn't yet been confirmed, they should be at the top of the list if this is the case
+        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey
+                                                                         ascending:NO
+                                                                        comparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
+                                                                            if ([obj1 unsignedIntValue] == 0) {
+                                                                                if ([obj2 unsignedIntValue] == 0) {
+                                                                                    return NSOrderedSame;
+                                                                                }
+                                                                                else {
+                                                                                    return NSOrderedDescending;
+                                                                                }
+                                                                            }
+                                                                            else if ([obj2 unsignedIntValue] == 0) {
+                                                                                return NSOrderedAscending;
+                                                                            }
+                                                                            else {
+                                                                                return [(NSNumber *)obj1 compare:obj2];
+                                                                            }
+                                                                        }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
         BOOL shouldAnimate = YES;
@@ -379,6 +476,7 @@ static BOOL IsJailbroken(void) {
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                    registrationStatus:self.dashPayModel.registrationStatus
                                                                           dataProvider:self.dataProvider];
         self.receivedDataSource = nil;
         self.sentDataSource = nil;
@@ -405,18 +503,12 @@ static BOOL IsJailbroken(void) {
 - (void)updateBalance {
     [self.receiveModel updateReceivingInfo];
 
-    if (self.syncModel.state == DWSyncModelState_Syncing &&
-        self.syncModel.progress < DW_SYNCING_COMPLETED_PROGRESS) {
-        self.balanceModel = nil;
-
-        return;
-    }
-
     uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
     if (self.balanceModel &&
         balanceValue > self.balanceModel.value &&
         self.balanceModel.value > 0 &&
-        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground &&
+        self.syncModel.progress > 0.995) {
         [[UIDevice currentDevice] dw_playCoinSound];
     }
 
@@ -426,6 +518,8 @@ static BOOL IsJailbroken(void) {
     if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
         options.balanceChangedDate = [NSDate date];
     }
+
+    [self reloadShortcuts];
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions

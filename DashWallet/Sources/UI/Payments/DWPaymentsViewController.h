@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWReceiveModelProtocol;
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
+@protocol DWDPBasicUserItem;
 
 typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
     DWPaymentsViewControllerIndex_None = -1,
@@ -36,6 +37,8 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 @protocol DWPaymentsViewControllerDelegate <NSObject>
 
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller;
+- (void)paymentsViewControllerDidFinishPayment:(DWPaymentsViewController *)controller
+                                       contact:(nullable id<DWDPBasicUserItem>)contact;
 
 @end
 

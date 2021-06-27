@@ -27,17 +27,17 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat const DW_TABBAR_HEIGHT = 64.0;
 static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
-static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
+static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
 
 @interface DWTabBarView ()
 
 @property (nonatomic, strong) CALayer *topLineLayer;
-@property (nonatomic, strong) CAShapeLayer *centerCircleLayer;
-@property (nonatomic, strong) CALayer *circleOverlayLayer;
 
 @property (nonatomic, copy) NSArray<UIView *> *buttons;
 @property (nonatomic, strong) DWTabBarButton *homeButton;
+@property (nonatomic, strong) DWTabBarButton *contactsButton;
 @property (nonatomic, strong) DWPaymentsButton *paymentsButton;
+@property (nonatomic, strong) DWTabBarButton *discoverButton;
 @property (nonatomic, strong) DWTabBarButton *othersButton;
 
 @end
@@ -55,25 +55,6 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         [self.layer addSublayer:topLineLayer];
         _topLineLayer = topLineLayer;
 
-        CAShapeLayer *centerCircleLayer = [CAShapeLayer layer];
-        centerCircleLayer.fillColor = self.backgroundColor.CGColor;
-        centerCircleLayer.strokeColor = [UIColor dw_tabbarBorderColor].CGColor;
-        centerCircleLayer.lineWidth = TABBAR_BORDER_WIDTH;
-        const CGFloat radius = CENTER_CIRCLE_SIZE / 2.0;
-        UIBezierPath *circlePath = [UIBezierPath bezierPathWithArcCenter:CGPointMake(radius, radius)
-                                                                  radius:radius
-                                                              startAngle:0
-                                                                endAngle:M_PI
-                                                               clockwise:NO];
-        centerCircleLayer.path = circlePath.CGPath;
-        [self.layer addSublayer:centerCircleLayer];
-        _centerCircleLayer = centerCircleLayer;
-
-        CALayer *circleOverlayLayer = [CALayer layer];
-        circleOverlayLayer.backgroundColor = self.backgroundColor.CGColor;
-        [self.layer addSublayer:circleOverlayLayer];
-        _circleOverlayLayer = circleOverlayLayer;
-
         NSMutableArray<UIView *> *buttons = [NSMutableArray array];
 
         {
@@ -86,8 +67,22 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             _homeButton = button;
         }
 
+        //        {
+        //            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Contacts];
+        //            [button addTarget:self
+        //                          action:@selector(tabBarButtonAction:)
+        //                forControlEvents:UIControlEventTouchUpInside];
+        //            [self addSubview:button];
+        //            [buttons addObject:button];
+        //            _contactsButton = button;
+        //        }
+
         {
             DWPaymentsButton *button = [[DWPaymentsButton alloc] initWithFrame:CGRectZero];
+            button.backgroundColor = [UIColor dw_dashBlueColor];
+            [button setImage:[UIImage imageNamed:@"tabbar_pay_button"] forState:UIControlStateNormal];
+            button.layer.cornerRadius = CENTER_CIRCLE_SIZE / 2.0;
+            button.layer.masksToBounds = YES;
             [button addTarget:self
                           action:@selector(paymentsButtonAction:)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -99,6 +94,16 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             button.accessibilityIdentifier = @"tabbar_payments_button";
 #endif /* SNAPSHOT */
         }
+
+        //        {
+        //            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Discover];
+        //            [button addTarget:self
+        //                          action:@selector(tabBarButtonAction:)
+        //                forControlEvents:UIControlEventTouchUpInside];
+        //            [self addSubview:button];
+        //            [buttons addObject:button];
+        //            _discoverButton = button;
+        //        }
 
         {
             DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Others];
@@ -144,34 +149,18 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
     self.topLineLayer.frame = CGRectMake(0, 0, size.width, TABBAR_BORDER_WIDTH);
 
-    const CGSize arcSize = CGSizeMake(CENTER_CIRCLE_SIZE, CENTER_CIRCLE_SIZE / 2.0);
-    self.centerCircleLayer.frame = CGRectMake((size.width - arcSize.width) / 2.0,
-                                              -DW_TABBAR_NOTCH,
-                                              arcSize.width,
-                                              arcSize.height);
-
-    const CGSize overlaySize = CGSizeMake(CENTER_CIRCLE_SIZE + TABBAR_BORDER_WIDTH * 2,
-                                          DW_TABBAR_HEIGHT - TABBAR_BORDER_WIDTH * 2);
-    self.circleOverlayLayer.frame = CGRectMake((size.width - overlaySize.width) / 2.0,
-                                               TABBAR_BORDER_WIDTH,
-                                               overlaySize.width,
-                                               overlaySize.height);
-
-    self.paymentsButton.frame = CGRectMake((size.width - DW_PAYMENTS_BUTTON_SIZE.width) / 2.0,
-                                           0.0,
-                                           DW_PAYMENTS_BUTTON_SIZE.width,
-                                           DW_PAYMENTS_BUTTON_SIZE.height);
+    self.paymentsButton.frame = CGRectMake((size.width - CENTER_CIRCLE_SIZE) / 2.0,
+                                           (size.height - CENTER_CIRCLE_SIZE) / 2.0 - 5.0,
+                                           CENTER_CIRCLE_SIZE,
+                                           CENTER_CIRCLE_SIZE);
 }
 
 - (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
     [super traitCollectionDidChange:previousTraitCollection];
 
     self.backgroundColor = [UIColor dw_backgroundColor];
-    self.centerCircleLayer.fillColor = self.backgroundColor.CGColor;
-    self.circleOverlayLayer.backgroundColor = self.backgroundColor.CGColor;
 
     UIColor *borderColor = [UIColor dw_tabbarBorderColor];
-    self.centerCircleLayer.strokeColor = borderColor.CGColor;
     self.topLineLayer.backgroundColor = borderColor.CGColor;
 }
 
@@ -203,8 +192,15 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         if (sender == self.homeButton) {
             type = DWTabBarViewButtonType_Home;
         }
+        else if (sender == self.contactsButton) {
+            type = DWTabBarViewButtonType_Contacts;
+        }
         else if (sender == self.othersButton) {
             type = DWTabBarViewButtonType_Others;
+        }
+        else if (sender == self.discoverButton) {
+            // TODO: DP fix me
+            type = DWTabBarViewButtonType_Contacts;
         }
         else {
             type = DWTabBarViewButtonType_Home;
@@ -216,16 +212,24 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 }
 
 - (void)updateSelectedTabButton:(DWTabBarViewButtonType)type {
+    self.othersButton.selected = NO;
+    self.contactsButton.selected = NO;
+    self.discoverButton.selected = NO;
+    self.homeButton.selected = NO;
+
     switch (type) {
         case DWTabBarViewButtonType_Home: {
-            self.othersButton.selected = NO;
             self.homeButton.selected = YES;
+
+            break;
+        }
+        case DWTabBarViewButtonType_Contacts: {
+            self.contactsButton.selected = YES;
 
             break;
         }
         case DWTabBarViewButtonType_Others: {
             self.othersButton.selected = YES;
-            self.homeButton.selected = NO;
 
             break;
         }

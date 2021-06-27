@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidAppear;
 - (void)setSpecifyAmountButtonHidden:(BOOL)hidden;
+- (void)setUsernameAttributedText:(NSAttributedString *)string;
 
 - (instancetype)initWithModel:(id<DWReceiveModelProtocol>)model;
 
