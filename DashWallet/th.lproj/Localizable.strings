@@ -230,9 +230,6 @@
 "Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "ยืนยันและชำระเงิน";
-
-/* No comment provided by engineer. */
 "Confirm PIN" = "ยืนยัน PIN";
 
 /* No comment provided by engineer. */
@@ -1286,9 +1283,6 @@
 "Upgrade" = "Upgrade";
 
 /* No comment provided by engineer. */
-"Upgrade Fee" = "อัพเกรดค่าธรรมเนียม";
-
-/* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
@@ -1439,7 +1433,7 @@
 "You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "คุณได้เลือก \"%@\" เป็นชื่อผู้ใช้ของคุณ ชื่อผู้ใช้ของคุณจะไม่สามารถเปลี่ยนแปลงได้เมื่อลงทะเบียนแล้ว";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "คุณต้องใส่รหัสผ่านเพื่อทำการเข้า Dash Wallet";

@@ -230,9 +230,6 @@
 "Confirm" = "Potwierdź";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "Potwierdź i Zapłać";
-
-/* No comment provided by engineer. */
 "Confirm PIN" = "Potwierdź kod PIN";
 
 /* No comment provided by engineer. */
@@ -1286,9 +1283,6 @@
 "Upgrade" = "Upgrade";
 
 /* No comment provided by engineer. */
-"Upgrade Fee" = "Opłata za Ulepszenie";
-
-/* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
@@ -1439,7 +1433,7 @@
 "You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Wybrałeś \"%@\" jako swoją nazwę użytkownika. Jeżeli ją zarejestrujesz to nie może zostać ona później zmieniona.";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Musisz podać swój PIN, aby wejść do Portfela Dash";

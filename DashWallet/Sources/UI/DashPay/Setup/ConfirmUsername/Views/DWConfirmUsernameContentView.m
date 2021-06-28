@@ -18,7 +18,6 @@
 #import "DWConfirmUsernameContentView.h"
 
 #import "DWCheckbox.h"
-#import "DWDashPayConstants.h"
 #import "DWUIKit.h"
 #import "NSAttributedString+DWBuilder.h"
 #import <DashSync/DashSync.h>
@@ -30,9 +29,6 @@ static CGSize const DashSymbolMainSize = {35.0, 27.0};
 @interface DWConfirmUsernameContentView ()
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
-@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
-@property (weak, nonatomic) IBOutlet UILabel *mainAmountLabel;
-@property (weak, nonatomic) IBOutlet UILabel *supplementaryAmountLabel;
 @property (weak, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (weak, nonatomic) IBOutlet DWCheckbox *confirmationCheckbox;
 
@@ -72,16 +68,6 @@ NS_ASSUME_NONNULL_END
 
     self.backgroundColor = [UIColor dw_backgroundColor];
 
-    self.titleLabel.text = NSLocalizedString(@"Upgrade Fee", nil);
-
-    // These two labels doesn't support Dynamic Type and have same hardcoded values as in DWAmountInputControl
-    self.mainAmountLabel.font = [UIFont dw_regularFontOfSize:34.0];
-    self.supplementaryAmountLabel.font = [UIFont dw_regularFontOfSize:16.0];
-
-    const uint64_t amount = DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
-    self.mainAmountLabel.attributedText = [self mainAmountAttributedStringForAmount:amount];
-    self.supplementaryAmountLabel.text = [self supplementaryAmountStringForAmount:amount];
-
     self.confirmationCheckbox.title = NSLocalizedString(@"I Accept", nil);
     self.confirmationCheckbox.backgroundColor = self.backgroundColor;
 
@@ -113,7 +99,7 @@ NS_ASSUME_NONNULL_END
     }
 
     UIColor *color = [UIColor dw_secondaryTextColor];
-    NSString *format = NSLocalizedString(@"You have chosen \"%@\" as your username. Your username cannot be changed once registered.", nil);
+    NSString *format = NSLocalizedString(@"You have chose \"%@\" as your username. Username cannot be changed once it is registered.", nil);
     NSString *text = [NSString stringWithFormat:format, self.username];
 
     NSDictionary<NSAttributedStringKey, id> *attributes = @{

@@ -230,9 +230,6 @@
 "Confirm" = "Xác thực";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "Xác nhận & Thanh toán";
-
-/* No comment provided by engineer. */
 "Confirm PIN" = "Xác nhận mã PIN";
 
 /* No comment provided by engineer. */
@@ -1286,9 +1283,6 @@
 "Upgrade" = "Upgrade";
 
 /* No comment provided by engineer. */
-"Upgrade Fee" = "Phí nâng cấp";
-
-/* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
@@ -1439,7 +1433,7 @@
 "You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Bạn đã chọn \"%@\" làm tên người dùng của mình. Tên người dùng của bnaj không thể thay đổi một khi đã được đăng ký.";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Bạn cần phải nhập mã PIN để truy cập vào ví Dash";

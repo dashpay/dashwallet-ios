@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Confirm & Pay", nil);
+    return NSLocalizedString(@"Confirm", nil);
 }
 
 - (void)viewDidLoad {

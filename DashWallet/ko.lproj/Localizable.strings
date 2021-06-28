@@ -230,9 +230,6 @@
 "Confirm" = "승인";
 
 /* No comment provided by engineer. */
-"Confirm & Pay" = "승인 & 지불";
-
-/* No comment provided by engineer. */
 "Confirm PIN" = "PIN 확인";
 
 /* No comment provided by engineer. */
@@ -1286,9 +1283,6 @@
 "Upgrade" = "Upgrade";
 
 /* No comment provided by engineer. */
-"Upgrade Fee" = "업그레이드 수수료";
-
-/* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
 
 /* No comment provided by engineer. */
@@ -1439,7 +1433,7 @@
 "You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
-"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "대시 지갑에 접근하시려면 PIN을 입력해야 합니다";
