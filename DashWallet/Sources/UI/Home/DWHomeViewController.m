@@ -93,6 +93,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)handleDeeplink:(NSURL *)url {
+    if (self.model.dashPayModel.blockchainIdentity != nil) {
+        NSString *title = NSLocalizedString(@"Username already found", nil);
+        NSString *message = NSLocalizedString(@"You cannot claim this invite since you already have a Dash username", nil);
+        DPAlertViewController *alert =
+            [[DPAlertViewController alloc] initWithIcon:[UIImage imageNamed:@"icon_invitation_error"]
+                                                  title:title
+                                            description:message];
+        [self presentViewController:alert animated:YES completion:nil];
+
+        return;
+    }
+
     __weak typeof(self) weakSelf = self;
     [self.model
         handleDeeplink:url

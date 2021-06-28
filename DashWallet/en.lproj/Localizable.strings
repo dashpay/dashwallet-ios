@@ -1310,6 +1310,9 @@
 "User (Fetching Info)" = "User (Fetching Info)";
 
 /* No comment provided by engineer. */
+"Username already found" = "Username already found";
+
+/* No comment provided by engineer. */
 "Username available" = "Username available";
 
 /* No comment provided by engineer. */
@@ -1425,6 +1428,9 @@
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+
+/* No comment provided by engineer. */
+"You cannot claim this invite since you already have a Dash username" = "You cannot claim this invite since you already have a Dash username";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
