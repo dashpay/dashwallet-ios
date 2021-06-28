@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     // START_SYNC_ENTRY_POINT
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+    [[DWEnvironment sharedInstance].currentChainManager startSync];
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     NSString *seedPhrase = wallet.seedPhraseIfAuthenticated;

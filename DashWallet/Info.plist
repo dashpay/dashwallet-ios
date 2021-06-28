@@ -113,6 +113,7 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>dashcontrol</string>
+        <string>dashdirect</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
