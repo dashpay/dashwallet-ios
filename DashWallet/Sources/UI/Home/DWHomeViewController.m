@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
                 }
 
                 if (success) {
-                    NSLog(@">>>>>>>>> Deeplink is OK");
+                    [strongSelf showInvitationFlowWithInvitation:url];
                 }
                 else {
                     DPAlertViewController *alert =
@@ -163,12 +163,17 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:profileController animated:YES];
 }
 
-- (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
-    [DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce = YES;
+- (void)showInvitationFlowWithInvitation:(nullable NSURL *)invitationURL {
     DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
-        initWithDashPayModel:self.model.dashPayModel];
+        initWithDashPayModel:self.model.dashPayModel
+                  invitation:invitationURL];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
+    [DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce = YES;
+    [self showInvitationFlowWithInvitation:nil];
 }
 
 #pragma mark - DWTxDetailPopupViewControllerDelegate

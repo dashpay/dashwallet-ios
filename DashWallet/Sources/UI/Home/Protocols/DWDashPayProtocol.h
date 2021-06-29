@@ -38,14 +38,14 @@ extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 @property (readonly, nonatomic, assign) NSUInteger unreadNotificationsCount;
 
 - (BOOL)shouldPresentRegistrationPaymentConfirmation;
-- (void)createUsername:(NSString *)username;
+- (void)createUsername:(NSString *)username invitation:(NSURL *)invitation;
 - (BOOL)canRetry;
 - (void)retry;
 - (void)completeRegistration;
 - (void)updateUsernameStatus;
 - (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value;
 
-- (void)handleDeeplink:(NSURL *)url
+- (void)verifyDeeplink:(NSURL *)url
             completion:(void (^)(BOOL success,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion;

@@ -35,6 +35,7 @@ NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification = @"DWDa
 @property (nullable, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
 @property (nonatomic, assign) BOOL isInvitationNotificationAllowed;
+@property (nullable, nonatomic, strong) NSURL *invitation;
 
 @end
 
@@ -105,11 +106,46 @@ NS_ASSUME_NONNULL_END
     return blockchainIdentity == nil;
 }
 
-- (void)createUsername:(NSString *)username {
+- (void)createUsername:(NSString *)username invitation:(NSURL *)invitationURL {
+    self.invitation = invitationURL;
     self.lastRegistrationError = nil;
     [DWGlobalOptions sharedInstance].persistedDashPayUsername = username;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+
+    if (invitationURL != nil) {
+        DSBlockchainInvitation *invitation = [[DSBlockchainInvitation alloc] initWithInvitationLink:invitationURL.absoluteString
+                                                                                           inWallet:wallet];
+
+        __weak typeof(self) weakSelf = self;
+        [invitation
+            acceptInvitationUsingWalletIndex:0
+            setDashpayUsername:username
+            authenticationPrompt:NSLocalizedString(@"Would you like to accept the invitation?", nil)
+            identityRegistrationSteps:[self invitationSteps]
+            stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                [strongSelf handleSteps:stepCompleted error:nil];
+            }
+            completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                NSLog(@">>> completed invitation %@ - %@", @(stepsCompleted), error);
+                [strongSelf handleSteps:stepsCompleted error:error];
+            }
+            completionQueue:dispatch_get_main_queue()];
+
+        return;
+    }
+
+
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
 
     if (blockchainIdentity) {
@@ -138,7 +174,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)retry {
-    [self createUsername:self.username];
+    [self createUsername:self.username invitation:self.invitation];
 }
 
 - (void)completeRegistration {
@@ -173,7 +209,7 @@ NS_ASSUME_NONNULL_END
         ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && value);
 }
 
-- (void)handleDeeplink:(NSURL *)url
+- (void)verifyDeeplink:(NSURL *)url
             completion:(void (^)(BOOL success,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
@@ -296,6 +332,12 @@ NS_ASSUME_NONNULL_END
 
 - (DSBlockchainIdentityRegistrationStep)steps {
     return DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername;
+}
+
+- (DSBlockchainIdentityRegistrationStep)invitationSteps {
+    return (DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence |
+            DSBlockchainIdentityRegistrationStep_Identity |
+            DSBlockchainIdentityRegistrationStep_Username);
 }
 
 - (void)handleSteps:(DSBlockchainIdentityRegistrationStep)stepsCompleted error:(nullable NSError *)error {

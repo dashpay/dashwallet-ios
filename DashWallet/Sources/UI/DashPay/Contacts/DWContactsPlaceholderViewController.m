@@ -107,8 +107,10 @@
 }
 
 - (void)actionButtonAction:(id)sender {
-    DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
-        initWithDashPayModel:self.dashPayModel];
+    DWDashPaySetupFlowController *controller =
+        [[DWDashPaySetupFlowController alloc]
+            initWithDashPayModel:self.dashPayModel
+                      invitation:nil];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
 }

@@ -345,7 +345,7 @@ static BOOL IsJailbroken(void) {
             completion:(void (^)(BOOL success,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
-    [self.dashPayModel handleDeeplink:url completion:completion];
+    [self.dashPayModel verifyDeeplink:url completion:completion];
 }
 
 #pragma mark - Notifications
