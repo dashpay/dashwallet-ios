@@ -652,9 +652,10 @@ static NSString *sanitizeString(NSString *s) {
     if (protocolRequest.callbackScheme) {
         NSData *txidData = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)].reverse;
         NSString *txid = [NSString hexWithData:txidData];
+        NSString *encodedAddress = [address stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         NSString *callbackString = [protocolRequest.callbackScheme
             stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",
-                                    address,
+                                    encodedAddress,
                                     txid];
         NSURL *callbackURL = [NSURL URLWithString:callbackString];
         if (callbackURL) {
