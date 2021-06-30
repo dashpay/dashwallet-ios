@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ has accepted your contact request" = "%@ heeft uw contactverzoek geaccepteerd";
+"%@ has accepted your contact request" = "%@ heeft je contactverzoek geaccepteerd";
 
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ heeft u een contactverzoek gestuurd";
@@ -65,7 +65,7 @@
 "Activity" = "Activiteit";
 
 /* Add <username> as your contact... */
-"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Voeg %@ toe als uw contactpersoon om rechtstreeks naar gebruikersnaam te betalen en de geschiedenis van wederzijdse transacties te bewaren";
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Voeg %@ toe als je contactpersoon om rechtstreeks naar gebruikersnaam te betalen en de geschiedenis van wederzijdse transacties te bewaren";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Voeg een nieuw contact toe";
@@ -101,7 +101,7 @@
 "Amount too small" = "Bedrag te klein";
 
 /* No comment provided by engineer. */
-"An intuitive and familiar experience across all your devices" = "Een intuïtieve en vertrouwde ervaring op al uw apparaten";
+"An intuitive and familiar experience across all your devices" = "Een intuïtieve en vertrouwde ervaring op al je apparaten";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Applicatie %@ verzoekt een betaling aan";
@@ -176,7 +176,7 @@
 "Check your connection" = "Controleer je verbinding";
 
 /* Choose your Dash username */
-"Choose your" = "Kies uw";
+"Choose your" = "Kies je";
 
 /* No comment provided by engineer. */
 "Clear" = "Wis";
@@ -245,7 +245,7 @@
 "Could not automatically recover missing or incorrect words" = "Kon niet automatisch ontbrekende of incorrecte woorden herstellen";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Kon niet verbinden met Dash-netwerk, controleer of je verbonden bent met het internet.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Kon betaling niet maken";
@@ -320,7 +320,7 @@
 "Enter the amount to transfer" = "Voer het bedrag in om te verplaatsen";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Voer hieronder uw 2FA code in";
+"Enter your 2FA code below" = "Voer hieronder je 2FA-code in";
 
 /* No comment provided by engineer. */
 "Error" = "Fout";
@@ -380,7 +380,7 @@
 "has requested to be your friend" = "heeft gevraagd om je vriend te zijn";
 
 /* No comment provided by engineer. */
-"Have complete control and customize your wallet based on your needs" = "Heb volledige controle en pas uw portemonnee aan op basis van uw behoeften";
+"Have complete control and customize your wallet based on your needs" = "Heb volledige controle en pas uw portemonnee aan op basis van je behoeften";
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "koptekst #%1$d van %2$d";
@@ -389,7 +389,7 @@
 "Hello %@," = "Hallo %@,";
 
 /* No comment provided by engineer. */
-"Help us improve your experience" = "Help ons uw ervaring te verbeteren";
+"Help us improve your experience" = "Help ons je ervaring te verbeteren";
 
 /* adjective, security level */
 "High" = "Hoog";
@@ -407,7 +407,7 @@
 "I wrote it down" = "ik heb het opgeschreven";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Als u dit apparaat verliest, verliest u uw Dash. Download de herstelzin zodat u uw portemonnee op een ander apparaat kunt herstellen.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Als u dit apparaat verliest, verliest  je jouw Dash. Download de herstelzin zodat je jouw portemonnee op een ander apparaat kunt herstellen.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Als je het nog steeds wilt wissen, voer a.u.b. in: \"%@\"";
@@ -557,10 +557,10 @@
 "New" = "Nieuw";
 
 /* No comment provided by engineer. */
-"NFC device" = "NFC apparaat";
+"NFC device" = "NFC-apparaat";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid Dash address" = "NFC apparaat heeft geen geldig Dash-adres verzonden";
+"NFC device didn't transmit a valid Dash address" = "NFC-apparaat heeft geen geldig Dash-adres verzonden";
 
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
@@ -587,7 +587,7 @@
 "OK" = "Oké";
 
 /* Once <username> accepts your request... */
-"Once %@ accepts your request you can Pay Directly to Username" = "Zodra%@ uw verzoek accepteert kunt u direct betalen aan Username";
+"Once %@ accepts your request you can Pay Directly to Username" = "Zodra%@ jouw verzoek accepteert kunt je direct betalen aan Username";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operator sleutels";
@@ -632,31 +632,31 @@
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
 
 /* No comment provided by engineer. */
-"Please enter PIN to upgrade wallet" = "Voer PIN in om de portemonnee bij te werken";
+"Please enter PIN to upgrade wallet" = "Voer a.u.b. PIN in om de portemonnee bij te werken";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";
+"Please place your phone near NFC device." = "Houd a.u.b. je  telefoon bij een NFC-apparaat";
 
 /* No comment provided by engineer. */
-"Please tap on the words from your recovery phrase in the right order" = "Tik op de woorden van uw herstelzin in de juiste volgorde";
+"Please tap on the words from your recovery phrase in the right order" = "Tik a.u.b. op de woorden van je herstelzin in de juiste volgorde";
 
 /* No comment provided by engineer. */
-"Please try again" = "Probeer opnieuw";
+"Please try again" = "Probeer a.u.b. opnieuw";
 
 /* No comment provided by engineer. */
-"Please try scanning again" = "Probeer nog een keer te scannen";
+"Please try scanning again" = "Probeer a.u.b. nog een keer te scannen";
 
 /* No comment provided by engineer. */
-"Please Wait" = "Even wachten aub";
+"Please Wait" = "Even wachten a.u.b.";
 
 /* No comment provided by engineer. */
-"Please wait" = "Even wachten aub";
+"Please wait" = "Even wachten a.u.b.";
 
 /* No comment provided by engineer. */
-"Please wait for the sync to complete" = "Wacht tot de synchronisatie is voltooid";
+"Please wait for the sync to complete" = "Wacht a.u.b. tot de synchronisatie is voltooid";
 
 /* No comment provided by engineer. */
-"Please write it down" = "schrijf het alsjeblieft op";
+"Please write it down" = "Schrijf het a.u.b. op";
 
 /* No comment provided by engineer. */
 "Previously used at IP address" = "Eerder gebruikt op IP-adres";
@@ -932,7 +932,7 @@
 "Syncing" = "Aan het synchroniseren";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Saldo aan het synchroniseren";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Tik";
@@ -1106,7 +1106,7 @@
 "Why I should not take a screenshot?" = "Waarom moet ik geen screenshot maken?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "WIF-privésleutel";
 
 /* No comment provided by engineer. */
 "Wipe" = "Verwijderen";
@@ -1169,4 +1169,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Uw portemonnee is nu beveiligd. U kunt uw herstelzin op elk gewenst moment gebruiken om uw account op een ander apparaat te herstellen.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Adres is naar QR gekopieerd";

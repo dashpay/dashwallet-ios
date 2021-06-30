@@ -245,7 +245,7 @@
 "Could not automatically recover missing or incorrect words" = "Не удалось автоматически восстановить отсутствующие или неправильные слова";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Невозможно подключиться к сети Dash. Пожалуйста, проверьте подключены ли вы к Интернету. ";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Не удалось совершить платёж";
@@ -932,7 +932,7 @@
 "Syncing" = "Синхронизация";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Синхронизация баланса";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Вкл.";
@@ -1106,7 +1106,7 @@
 "Why I should not take a screenshot?" = "Почему я не могу сделать скриншот?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "Приватный ключ WIF";
 
 /* No comment provided by engineer. */
 "Wipe" = "Удалить";
@@ -1169,4 +1169,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему кошельку на другом устройстве.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Скопированный адрес или QR";

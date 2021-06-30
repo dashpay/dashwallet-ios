@@ -245,7 +245,7 @@
 "Could not automatically recover missing or incorrect words" = "입력되지 않거나 잘못 입력된 단어를 자동을 복구할 수 없었습니다.";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "대시 네트워크에 연결할 수 없습니다. 인터넷 연결 상태를 확인하십시오.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "지불에 실패하였습니다";
@@ -932,7 +932,7 @@
 "Syncing" = "동기화 중";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "잔고 동기화 중";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "탭";
@@ -1106,7 +1106,7 @@
 "Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "WIF 프라이빗 키";
 
 /* No comment provided by engineer. */
 "Wipe" = "지우기";
@@ -1169,4 +1169,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "이제 당신의 지갑은 안전합니다. 언제든 당신의 복원 문구를 사용하셔서 당신의 계정을 다른 기기에서 복원하실 수 있습니다.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "복사된 주소 혹은 QR";
