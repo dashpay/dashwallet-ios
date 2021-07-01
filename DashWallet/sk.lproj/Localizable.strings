@@ -245,7 +245,7 @@
 "Could not automatically recover missing or incorrect words" = "Chýbajúce alebo nesprávne slová sa nepodarilo automaticky obnoviť.";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Nepodarilo sa pripojiť k sieti Dash. Skontrolujte, či ste pripojení k internetu.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Platba sa nedá uskutočniť ";
@@ -404,7 +404,7 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
 
 /* No comment provided by engineer. */
-"I wrote it down" = "Zapísal som si to";
+"I wrote it down" = "Zapísal som si ju";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Ak toto zariadenie stratíte, stratíte vaše prostriedky. Získajte frázu pre obnovenie, aby ste mohli peňaženku obnoviť na inom zariadení.";
@@ -932,7 +932,7 @@
 "Syncing" = "Synchronizuje sa";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Synchronizuje sa zostatok";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Klepnúť";
@@ -1106,7 +1106,7 @@
 "Why I should not take a screenshot?" = "Prečo by som nemal robiť snímku obrazovky?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "Súkromný kľúč WIF";
 
 /* No comment provided by engineer. */
 "Wipe" = "Vymazať";
@@ -1148,7 +1148,7 @@
 "You will also need to log out from the Uphold website using your browser" = "Budete sa tiež musieť odhlásiť z webovej stránky Upholdu pomocou svojho prehliadača";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Túto frázu pre obnovenie budete potrebovať na prístup k vašim finančným prostriedkom, ak dôjde k strate či poškodeniu tohto zariadenia alebo k náhodnému odinštalovaniu Dash Wallet z tohto zariadenia.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Túto frázu pre obnovenie budete potrebovať na prístup k vašim finančným prostriedkom, ak dôjde k strate či poškodeniu tohto zariadenia, alebo k náhodnému odinštalovaniu Dash Wallet z tohoto zariadenia.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Vaše používateľské DashPay meno je pripravené";
@@ -1169,4 +1169,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Vaša peňaženka je zabezpečená. Frázu pre obnovenie môžete kedykoľvek použiť na obnovenie svojho účtu na inom zariadení.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Skopírovaná adresa alebo QR";

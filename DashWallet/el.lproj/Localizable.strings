@@ -245,7 +245,7 @@
 "Could not automatically recover missing or incorrect words" = "Δεν ήταν δυνατή η αυτόματη ανάκτηση των χαμένων λέξεων ";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Δεν ήταν δυνατή η σύνδεση στο δίκτυο Dash, ελέγξτε ότι είστε συνδεδεμένοι στο Διαδίκτυο.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Δεν ήταν δυνατή η πληρωμή";
@@ -932,7 +932,7 @@
 "Syncing" = "Συγχρονισμός";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Συγχρονισμός Υπολοίπου";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Πατήστε";
@@ -1106,7 +1106,7 @@
 "Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "Ιδιωτικό κλειδί WIF";
 
 /* No comment provided by engineer. */
 "Wipe" = "εκκαθάριση";
@@ -1169,4 +1169,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Το πορτοφόλι σας είναι ασφαλές τώρα. Μπορείτε να χρησιμοποιήσετε τη φράση ανάκτησης ανά πάσα στιγμή για να ανακτήσετε το λογαριασμό σας σε άλλη συσκευή.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Αντιγραμμένη διεύθυνση ή QR";
