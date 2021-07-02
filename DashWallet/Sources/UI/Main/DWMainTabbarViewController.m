@@ -65,6 +65,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - Public
 
 - (void)performScanQRCodeAction {
+    [self dismissViewControllerAnimated:false completion:nil];
     [self transitionToController:self.homeNavigationController
                   transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
@@ -72,6 +73,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)performPayToURL:(NSURL *)url {
+    [self dismissViewControllerAnimated:false completion:nil];
     [self transitionToController:self.homeNavigationController
                   transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
@@ -79,6 +81,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)handleFile:(NSData *)file {
+    [self dismissViewControllerAnimated:false completion:nil];
     [self transitionToController:self.homeNavigationController
                   transitionType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
