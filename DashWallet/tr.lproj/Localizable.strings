@@ -272,7 +272,7 @@
 "Could not automatically recover missing or incorrect words" = "Otomatik olarak eksik veya hatalı sözcükleri yedekleyememektedir";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Dash ağına bağlanılmadı, lütfen internete bağlı olup olmadığınızı kontrol edin.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Ödeme yapılamadı";
@@ -1112,7 +1112,7 @@
 "Syncing" = "Senkronize ediliyor";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Bakiye senkronize ediliyor";
 
 /* No comment provided by engineer. */
 "Tag for your reference" = "Tag for your reference";
@@ -1346,7 +1346,7 @@
 "Why I should not take a screenshot?" = "Neden ekran görüntüsü almamalıyım?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "WIF Özel Anahtarı";
 
 /* No comment provided by engineer. */
 "Wipe" = "Sil";
@@ -1433,4 +1433,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Cüzdanınız artık güvende. Hesabınızı başka bir cihaza aktarmak için kurtarma sözcük grubunuzu istediğiniz zaman kullanabilirsiniz.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Adres veya QR kopyalandı";

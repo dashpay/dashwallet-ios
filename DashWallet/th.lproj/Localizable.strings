@@ -272,7 +272,7 @@
 "Could not automatically recover missing or incorrect words" = "ไม่สามารถกู้คืนคำที่หายไปหรือไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "ไม่สามารถเชื่อมต่อกับเครือข่าย DASH โปรดตรวจสอบว่าคุณเชื่อมต่อกับอินเทอร์เน็ต";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "ไม่สามารถชำระเงินได้";
@@ -1112,7 +1112,7 @@
 "Syncing" = "กำลังซิงค์";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "กำลังซิงค์ยอดคงเหลือ";
 
 /* No comment provided by engineer. */
 "Tag for your reference" = "Tag for your reference";
@@ -1346,7 +1346,7 @@
 "Why I should not take a screenshot?" = "ทำไมฉันจึงไม่ควรใช้การบันทึกภาพหน้าจอ";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "กุญแจส่วนตัว WIF";
 
 /* No comment provided by engineer. */
 "Wipe" = "ลบล้าง";
@@ -1433,4 +1433,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "คัดลอกที่อยู่หรือ QR";

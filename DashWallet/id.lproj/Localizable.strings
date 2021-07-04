@@ -272,7 +272,7 @@
 "Could not automatically recover missing or incorrect words" = "Tidak dapat secara otomatis memulihkan kata yang hilang atau salah";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Tidak dapat terhubung ke jaringan Dash, harap periksa apakah Anda terhubung ke internet.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Tidak dapat melakukan pembayaran";
@@ -1112,7 +1112,7 @@
 "Syncing" = "Menyingkronkan:";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Menyinkronkan Saldo";
 
 /* No comment provided by engineer. */
 "Tag for your reference" = "Tag for your reference";
@@ -1346,7 +1346,7 @@
 "Why I should not take a screenshot?" = "Mengapa saya harus tidak mengambil tangkapan layar?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "Kunci pribadi WIF";
 
 /* No comment provided by engineer. */
 "Wipe" = "Menghapus";
@@ -1433,4 +1433,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Dompet Anda aman sekarang. Anda dapat menggunakan frasa pemulihan kapan saja untuk memulihkan akun di perangkat lain.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "copy alamat atau QR";

@@ -173,6 +173,7 @@ static NSString *sanitizeString(NSString *s) {
     NSString *address = paymentOutput.address;
     DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
 
+    self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;
 
     const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
@@ -251,28 +252,24 @@ static NSString *sanitizeString(NSString *s) {
     }
     else if (request.r.length > 0) { // payment protocol over HTTP
         __weak typeof(self) weakSelf = self;
-        [DSPaymentRequest
-                 fetch:request.r
-                scheme:request.scheme
-               onChain:chain
-               timeout:20.0
-            completion:^(DSPaymentProtocolRequest *protocolRequest, NSError *error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    __strong typeof(weakSelf) strongSelf = weakSelf;
-                    if (!strongSelf) {
-                        return;
-                    }
+        [request fetchBIP70WithTimeout:20.0
+                            completion:^(DSPaymentProtocolRequest *_Nonnull protocolRequest, NSError *_Nonnull error) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    __strong typeof(weakSelf) strongSelf = weakSelf;
+                                    if (!strongSelf) {
+                                        return;
+                                    }
 
-                    if (error && !([request.paymentAddress isValidDashAddressOnChain:chain])) {
-                        [strongSelf failedWithError:error
-                                              title:NSLocalizedString(@"Couldn't make payment", nil)
-                                            message:error.localizedDescription];
-                    }
-                    else {
-                        [strongSelf confirmProtocolRequest:error ? request.protocolRequest : protocolRequest];
-                    }
-                });
-            }];
+                                    if (error && !([request.paymentAddress isValidDashAddressOnChain:chain])) {
+                                        [strongSelf failedWithError:error
+                                                              title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                            message:error.localizedDescription];
+                                    }
+                                    else {
+                                        [strongSelf confirmProtocolRequest:error ? request.protocolRequest : protocolRequest];
+                                    }
+                                });
+                            }];
     }
     else {
         // `request.protocolRequest` is a legacy method and shouldn't be used directly.
@@ -660,9 +657,10 @@ static NSString *sanitizeString(NSString *s) {
     if (protocolRequest.callbackScheme) {
         NSData *txidData = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)].reverse;
         NSString *txid = [NSString hexWithData:txidData];
+        NSString *encodedAddress = [address stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         NSString *callbackString = [protocolRequest.callbackScheme
             stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",
-                                    address,
+                                    encodedAddress,
                                     txid];
         NSURL *callbackURL = [NSURL URLWithString:callbackString];
         if (callbackURL) {

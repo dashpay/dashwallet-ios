@@ -272,7 +272,7 @@
 "Could not automatically recover missing or incorrect words" = "Konnte fehlende / falsche Wörter nicht automatisch wiederherstellen";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Verbindung zum Dash-Netzwerk konnte nicht hergestellt werden. Überprüfe bitte, ob du mit dem Internet verbunden bist.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Zahlung konnte nicht durchgeführt werden";
@@ -1112,7 +1112,7 @@
 "Syncing" = "Synchronisiere";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Synchronisiere Guthaben";
 
 /* No comment provided by engineer. */
 "Tag for your reference" = "Tag for your reference";
@@ -1346,7 +1346,7 @@
 "Why I should not take a screenshot?" = "Warum sollte ich keinen Screenshot machen?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "WIF Privater Schlüssel";
 
 /* No comment provided by engineer. */
 "Wipe" = "Leeren";
@@ -1433,4 +1433,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Deine Wallet ist jetzt gesichert. Du kannst die Phrase jederzeit nutzen, um die Wallet auf einem anderen Gerät wiederherzustellen.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Adresse oder QR kopiert";

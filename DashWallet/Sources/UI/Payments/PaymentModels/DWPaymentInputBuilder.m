@@ -60,30 +60,26 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
         else if (request.r.length > 0) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
-            [DSPaymentRequest
-                     fetch:request.r
-                    scheme:request.scheme
-                   onChain:chain
-                   timeout:5.0
-                completion:^(DSPaymentProtocolRequest *protocolRequest, NSError *error) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (error) { // don't try any more BIP73 urls
-                            NSIndexSet *filteredIndexes =
-                                [array indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                                    return (idx >= i && ([obj hasPrefix:@"dash:"] || [obj hasPrefix:@"pay:"] || ![NSURL URLWithString:obj]));
+            [request fetchBIP70WithTimeout:5.0
+                                completion:^(DSPaymentProtocolRequest *_Nonnull protocolRequest, NSError *_Nonnull error) {
+                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                        if (error) { // don't try any more BIP73 urls
+                                            NSIndexSet *filteredIndexes =
+                                                [array indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                                                    return (idx >= i && ([obj hasPrefix:@"dash:"] || [obj hasPrefix:@"pay:"] || ![NSURL URLWithString:obj]));
+                                                }];
+                                            NSArray<NSString *> *filteredArray = [array objectsAtIndexes:filteredIndexes];
+                                            [self payFirstFromArray:filteredArray source:source completion:completion];
+                                        }
+                                        else {
+                                            if (completion) {
+                                                DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
+                                                paymentInput.protocolRequest = protocolRequest;
+                                                completion(paymentInput);
+                                            }
+                                        }
+                                    });
                                 }];
-                            NSArray<NSString *> *filteredArray = [array objectsAtIndexes:filteredIndexes];
-                            [self payFirstFromArray:filteredArray source:source completion:completion];
-                        }
-                        else {
-                            if (completion) {
-                                DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
-                                paymentInput.protocolRequest = protocolRequest;
-                                completion(paymentInput);
-                            }
-                        }
-                    });
-                }];
 
             return;
         }
