@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)openPaymentsScreen;
 - (void)closePaymentsScreen;
 
-- (void)handleDeeplink:(NSURL *)url;
+- (void)handleDeeplink:(NSURL *)url definedUsername:(nullable NSString *)definedUsername;
 
 @end
 

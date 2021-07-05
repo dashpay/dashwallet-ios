@@ -94,7 +94,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
-    [self.mainController handleDeeplink:url];
+    [self.mainController handleDeeplink:url definedUsername:nil];
 }
 
 - (void)handleURL:(NSURL *)url {
@@ -294,6 +294,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     UIViewController *mainController = self.mainController;
     [self transitionToController:mainController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
+
+    if (self.invitationSetup.invitation != nil) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.mainController handleDeeplink:self.invitationSetup.invitation
+                                definedUsername:self.invitationSetup.chosenUsername];
+            self.invitationSetup = nil;
+        });
+    }
 }
 
 #pragma mark - DWWipeDelegate

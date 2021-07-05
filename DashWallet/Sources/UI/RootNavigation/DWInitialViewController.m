@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWInitialViewController () <DWOnboardingViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
+@property (nullable, nonatomic, strong) NSURL *deferredDeeplink;
 @property (nullable, nonatomic, strong) DWAppRootViewController *rootController;
 
 @end
@@ -69,7 +70,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)handleDeeplink:(NSURL *)url {
-    [self.rootController handleDeeplink:url];
+    if (self.rootController) {
+        [self.rootController handleDeeplink:url];
+    }
+    else {
+        self.deferredDeeplink = url;
+    }
 }
 
 - (void)handleURL:(NSURL *)url {
@@ -105,6 +111,10 @@ NS_ASSUME_NONNULL_BEGIN
     DWAppRootViewController *controller = [[DWAppRootViewController alloc] init];
     if (self.launchingWasDeferred) {
         [controller setLaunchingAsDeferredController];
+    }
+    if (self.deferredDeeplink) {
+        [controller handleDeeplink:self.deferredDeeplink];
+        self.deferredDeeplink = nil;
     }
 
     return controller;

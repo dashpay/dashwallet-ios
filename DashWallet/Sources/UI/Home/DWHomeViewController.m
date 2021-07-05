@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model.balanceDisplayOptions hideBalanceIfNeeded];
 }
 
-- (void)handleDeeplink:(NSURL *)url {
+- (void)handleDeeplink:(NSURL *)url definedUsername:(NSString *)definedUsername {
     if (self.model.dashPayModel.blockchainIdentity != nil) {
         NSString *title = NSLocalizedString(@"Username already found", nil);
         NSString *message = NSLocalizedString(@"You cannot claim this invite since you already have a Dash username", nil);
@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
                 }
 
                 if (success) {
-                    [strongSelf showInvitationFlowWithInvitation:url];
+                    [strongSelf showInvitationFlowWithInvitation:url definedUsername:definedUsername];
                 }
                 else {
                     DPAlertViewController *alert =
@@ -163,17 +163,19 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:profileController animated:YES];
 }
 
-- (void)showInvitationFlowWithInvitation:(nullable NSURL *)invitationURL {
+- (void)showInvitationFlowWithInvitation:(nullable NSURL *)invitationURL
+                         definedUsername:(nullable NSString *)definedUsername {
     DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
         initWithDashPayModel:self.model.dashPayModel
-                  invitation:invitationURL];
+                  invitation:invitationURL
+             definedUsername:definedUsername];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     [DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce = YES;
-    [self showInvitationFlowWithInvitation:nil];
+    [self showInvitationFlowWithInvitation:nil definedUsername:nil];
 }
 
 #pragma mark - DWTxDetailPopupViewControllerDelegate

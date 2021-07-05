@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 @property (nullable, nonatomic, readonly, strong) NSURL *invitationURL;
+@property (nullable, nonatomic, readonly, copy) NSString *definedUsername;
 @property (nullable, nonatomic, weak) id<DWDashPaySetupFlowControllerDelegate> confirmationDelegate;
 
 @property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
@@ -66,11 +67,14 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDashPaySetupFlowController
 
-- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel invitation:(NSURL *)invitationURL {
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
+                          invitation:(NSURL *)invitationURL
+                     definedUsername:(NSString *)definedUsername {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _dashPayModel = dashPayModel;
         _invitationURL = invitationURL;
+        _definedUsername = definedUsername;
     }
     return self;
 }
@@ -168,6 +172,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setCurrentStateController {
+    if (self.definedUsername != nil) {
+        [self createUsername:self.definedUsername];
+        return;
+    }
+
     if (self.dashPayModel.registrationStatus == nil || self.dashPayModel.registrationStatus.failed) {
         [self showCreateUsernameController];
 

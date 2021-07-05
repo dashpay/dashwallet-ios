@@ -33,7 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDashPaySetupFlowController : UIViewController <DWNavigationFullscreenable>
 
-- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel invitation:(nullable NSURL *)invitationURL;
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
+                          invitation:(nullable NSURL *)invitationURL
+                     definedUsername:(nullable NSString *)definedUsername;
 
 - (instancetype)initWithConfirmationDelegate:(id<DWDashPaySetupFlowControllerDelegate>)delegate;
 

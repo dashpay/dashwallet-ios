@@ -110,7 +110,8 @@
     DWDashPaySetupFlowController *controller =
         [[DWDashPaySetupFlowController alloc]
             initWithDashPayModel:self.dashPayModel
-                      invitation:nil];
+                      invitation:nil
+                 definedUsername:nil];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
 }
