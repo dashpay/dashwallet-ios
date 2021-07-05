@@ -164,6 +164,8 @@
 		2A4EB48B2598D69800892E4D /* DWNetworkErrorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB48A2598D69800892E4D /* DWNetworkErrorViewController.m */; };
 		2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */; };
 		2A4EB4E92599F50B00892E4D /* UIImageView+DWDPAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */; };
+		2A4F72C7269228CF00A75D2D /* DWDashPaySetupModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4F72C6269228CF00A75D2D /* DWDashPaySetupModel.m */; };
+		2A4F72C826922E3300A75D2D /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4F72C42692210400A75D2D /* DWInvitationSetupState.m */; };
 		2A511F202531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */; };
 		2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A520C8C25BF093E00FC5650 /* DWPendingContactInfoView.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -994,6 +996,10 @@
 		2A4EB4B0259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchFailedHeaderView.m; sourceTree = "<group>"; };
 		2A4EB4E72599F50B00892E4D /* UIImageView+DWDPAvatar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImageView+DWDPAvatar.h"; sourceTree = "<group>"; };
 		2A4EB4E82599F50B00892E4D /* UIImageView+DWDPAvatar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+DWDPAvatar.m"; sourceTree = "<group>"; };
+		2A4F72C32692210400A75D2D /* DWInvitationSetupState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
+		2A4F72C42692210400A75D2D /* DWInvitationSetupState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
+		2A4F72C5269228CF00A75D2D /* DWDashPaySetupModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupModel.h; sourceTree = "<group>"; };
+		2A4F72C6269228CF00A75D2D /* DWDashPaySetupModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupModel.m; sourceTree = "<group>"; };
 		2A511F1E2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayName.h"; sourceTree = "<group>"; };
 		2A511F1F2531782F00CC04C3 /* DSBlockchainIdentity+DWDisplayName.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSBlockchainIdentity+DWDisplayName.m"; sourceTree = "<group>"; };
 		2A520C8B25BF093E00FC5650 /* DWPendingContactInfoView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPendingContactInfoView.h; sourceTree = "<group>"; };
@@ -2487,6 +2493,8 @@
 				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
 				2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */,
 				2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */,
+				2A4F72C32692210400A75D2D /* DWInvitationSetupState.h */,
+				2A4F72C42692210400A75D2D /* DWInvitationSetupState.m */,
 			);
 			path = RootNavigation;
 			sourceTree = "<group>";
@@ -3997,6 +4005,8 @@
 				2AE8B63E23CDB9570016F221 /* CreateUsername */,
 				2AC52AD4241BB5FC00D9A829 /* DWDashPaySetupFlowController.h */,
 				2AC52AD5241BB5FC00D9A829 /* DWDashPaySetupFlowController.m */,
+				2A4F72C5269228CF00A75D2D /* DWDashPaySetupModel.h */,
+				2A4F72C6269228CF00A75D2D /* DWDashPaySetupModel.m */,
 			);
 			path = Setup;
 			sourceTree = "<group>";
@@ -5747,6 +5757,7 @@
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
 				2ACD53EB234BCFAA00650AD3 /* DWWeakContainer.m in Sources */,
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
+				2A4F72C7269228CF00A75D2D /* DWDashPaySetupModel.m in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */,
@@ -5815,6 +5826,7 @@
 				2AF405B2260F9B18000A8DAB /* DWGetStartedItemView.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
+				2A4F72C826922E3300A75D2D /* DWInvitationSetupState.m in Sources */,
 				2AF55E832629863C001974C4 /* UIView+DWAutolayout.m in Sources */,
 				2A8DB8BF262F5B44009094BD /* DWHistoryFilterContentView.m in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,

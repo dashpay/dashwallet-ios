@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWSetupViewControllerDelegate <NSObject>
 
+- (BOOL)setupViewControllerHasPendingInvitation:(DWSetupViewController *)controller;
+- (void)setupViewControllerDidFinish:(DWSetupViewController *)controller didPickUsername:(nullable NSString *)username;
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller;
 
 @end

@@ -18,12 +18,24 @@
 #import <UIKit/UIKit.h>
 
 #import "DWDashPayProtocol.h"
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDashPaySetupFlowController : UIViewController
+@class DWDashPaySetupFlowController;
+
+@protocol DWDashPaySetupFlowControllerDelegate <NSObject>
+
+- (void)dashPaySetupFlowController:(DWDashPaySetupFlowController *)controller
+                didConfirmUsername:(NSString *)username;
+
+@end
+
+@interface DWDashPaySetupFlowController : UIViewController <DWNavigationFullscreenable>
 
 - (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel invitation:(nullable NSURL *)invitationURL;
+
+- (instancetype)initWithConfirmationDelegate:(id<DWDashPaySetupFlowControllerDelegate>)delegate;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

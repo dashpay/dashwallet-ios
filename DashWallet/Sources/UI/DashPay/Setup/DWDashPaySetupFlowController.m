@@ -21,6 +21,7 @@
 #import "DWContainerViewController.h"
 #import "DWCreateUsernameViewController.h"
 #import "DWDPRegistrationStatus.h"
+#import "DWDashPaySetupModel.h"
 #import "DWRegistrationCompletedViewController.h"
 #import "DWUIKit.h"
 #import "DWUsernameHeaderView.h"
@@ -50,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 @property (nullable, nonatomic, readonly, strong) NSURL *invitationURL;
+@property (nullable, nonatomic, weak) id<DWDashPaySetupFlowControllerDelegate> confirmationDelegate;
 
 @property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
 @property (null_resettable, nonatomic, strong) UIView *contentView;
@@ -69,6 +71,16 @@ NS_ASSUME_NONNULL_END
     if (self) {
         _dashPayModel = dashPayModel;
         _invitationURL = invitationURL;
+    }
+    return self;
+}
+
+- (instancetype)initWithConfirmationDelegate:(id<DWDashPaySetupFlowControllerDelegate>)delegate {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _dashPayModel = [[DWDashPaySetupModel alloc] init];
+        _invitationURL = nil;
+        _confirmationDelegate = delegate;
     }
     return self;
 }
@@ -139,6 +151,12 @@ NS_ASSUME_NONNULL_END
     [self.headerView showInitialAnimation];
 }
 
+#pragma mark - DWNavigationFullscreenable
+
+- (BOOL)requiresNoNavigationBar {
+    return YES;
+}
+
 #pragma mark - Private
 
 - (void)registrationStatusUpdatedNotification {
@@ -183,6 +201,7 @@ NS_ASSUME_NONNULL_END
         _headerView = [[DWUsernameHeaderView alloc] initWithFrame:CGRectZero];
         _headerView.translatesAutoresizingMaskIntoConstraints = NO;
         _headerView.preservesSuperviewLayoutMargins = YES;
+        _headerView.cancelButton.hidden = self.confirmationDelegate != nil;
         [_headerView.cancelButton addTarget:self
                                      action:@selector(cancelButtonAction)
                            forControlEvents:UIControlEventTouchUpInside];
@@ -261,9 +280,14 @@ NS_ASSUME_NONNULL_END
     NSString *username = controller.username;
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       // initiate creation process once confirmation is dismissed because
-                                       // DashSync will be showing pin request modally
-                                       [self createUsername:username];
+                                       if (self.confirmationDelegate) {
+                                           [self.confirmationDelegate dashPaySetupFlowController:self didConfirmUsername:username];
+                                       }
+                                       else {
+                                           // initiate creation process once confirmation is dismissed because
+                                           // DashSync will be showing pin request modally
+                                           [self createUsername:username];
+                                       }
                                    }];
 }
 

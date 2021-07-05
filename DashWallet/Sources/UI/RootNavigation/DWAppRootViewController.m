@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 
+#import "DWInvitationSetupState.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
 #import "DWNavigationController.h"
@@ -49,6 +50,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+@property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -79,6 +81,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (void)handleDeeplink:(NSURL *)url {
+    if (self.model.hasAWallet == NO) {
+        self.invitationSetup.invitation = url;
+        return;
+    }
+
     // Defer URL until unlocked.
     // This also prevents an issue with too fast unlocking via Face ID.
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
@@ -91,6 +98,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (void)handleURL:(NSURL *)url {
+    if (self.model.hasAWallet == NO) {
+        return;
+    }
+
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     // Defer URL until unlocked.
@@ -141,6 +152,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (void)handleFile:(NSData *)file {
+    if (self.model.hasAWallet == NO) {
+        return;
+    }
+
     if (self.lockController) {
         [self.lockController handleFile:file];
     }
@@ -261,6 +276,17 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 #pragma mark - DWSetupViewControllerDelegate
+
+- (BOOL)setupViewControllerHasPendingInvitation:(DWSetupViewController *)controller {
+    return self.invitationSetup.invitation != nil;
+}
+
+- (void)setupViewControllerDidFinish:(DWSetupViewController *)controller didPickUsername:(nullable NSString *)username {
+    self.invitationSetup.chosenUsername = username;
+    if (username == nil) {
+        self.invitationSetup.invitation = nil;
+    }
+}
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
     [self.model setupDidFinish];
@@ -438,6 +464,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
+}
+
+- (DWInvitationSetupState *)invitationSetup {
+    if (_invitationSetup == nil) {
+        _invitationSetup = [[DWInvitationSetupState alloc] init];
+    }
+    return _invitationSetup;
 }
 
 @end

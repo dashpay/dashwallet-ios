@@ -28,7 +28,9 @@
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
 
-#import "DWInvitationFlowViewController.h"
+#import "DWDPWelcomeViewController.h"
+#import "DWDashPaySetupFlowController.h"
+#import "DWGetStartedViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,7 +40,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                                      DWBiometricAuthViewControllerDelegate,
                                      DWSecureWalletDelegate,
                                      DWRecoverViewControllerDelegate,
-                                     DWInvitationFlowViewControllerDelegate>
+                                     DWDPWelcomeViewControllerDelegate,
+                                     DWGetStartedViewControllerDelegate,
+                                     DWDashPaySetupFlowControllerDelegate>
 
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
 
@@ -108,10 +112,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (IBAction)createWalletButtonAction:(id)sender {
     self.recoverWalletCommand = nil;
 
-    if ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled) {
-        DWInvitationFlowViewController *invitation = [[DWInvitationFlowViewController alloc] init];
-        invitation.delegate = self;
-        [self.navigationController setViewControllers:@[ self, invitation ] animated:YES];
+    BOOL hasPendingInvitation = [self.delegate setupViewControllerHasPendingInvitation:self];
+    if (hasPendingInvitation) {
+        DWDPWelcomeViewController *welcomeController = [[DWDPWelcomeViewController alloc] init];
+        welcomeController.delegate = self;
+        [self.navigationController setViewControllers:@[ self, welcomeController ] animated:YES];
     }
     else {
         [self createWallet];
@@ -127,17 +132,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
-#pragma mark - DWInvitationFlowViewController
-
-- (void)invitationFlowViewControllerDidFinish:(DWInvitationFlowViewController *)controller {
-    [self createWallet];
-}
-
 #pragma mark - DWSetPinViewControllerDelegate
 
 - (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller {
     self.recoverWalletCommand = nil;
 
+    [self.delegate setupViewControllerDidFinish:self didPickUsername:nil]; // reset
     [self.navigationController popViewControllerAnimated:YES];
 }
 
@@ -153,7 +153,14 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 #pragma mark - DWBiometricAuthViewControllerDelegate
 
 - (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller {
-    [self continueOrCompleteWalletSetup];
+    BOOL hasPendingInvitation = [self.delegate setupViewControllerHasPendingInvitation:self];
+    if (hasPendingInvitation) {
+        UIViewController *next = [self getStartedControllerWithPage:DWGetStartedPage_3];
+        [self.navigationController setViewControllers:@[ self, next ] animated:YES];
+    }
+    else {
+        [self continueOrCompleteWalletSetup];
+    }
 }
 
 #pragma mark - DWSecureWalletDelegate
@@ -184,6 +191,34 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark - DWGetStartedViewControllerDelegate
+
+- (void)getStartedViewControllerDidContinue:(DWGetStartedViewController *)controller {
+    if (controller.page == DWGetStartedPage_1) {
+        DWDashPaySetupFlowController *next = [[DWDashPaySetupFlowController alloc] initWithConfirmationDelegate:self];
+        [self.navigationController setViewControllers:@[ self, next ] animated:YES];
+    }
+    else {
+        [self continueOrCompleteWalletSetup];
+    }
+}
+
+#pragma mark - DWDPWelcomeViewControllerDelegate
+
+- (void)welcomeViewControllerDidFinish:(DWDPWelcomeViewController *)controller {
+    UIViewController *getStarted = [self getStartedControllerWithPage:DWGetStartedPage_1];
+    [self.navigationController setViewControllers:@[ self, getStarted ] animated:YES];
+}
+
+#pragma mark - DWDashPaySetupFlowControllerDelegate
+
+- (void)dashPaySetupFlowController:(DWDashPaySetupFlowController *)controller didConfirmUsername:(NSString *)username {
+    [self.delegate setupViewControllerDidFinish:self didPickUsername:username];
+
+    UIViewController *next = [self getStartedControllerWithPage:DWGetStartedPage_2];
+    [self.navigationController setViewControllers:@[ self, next ] animated:YES];
 }
 
 #pragma mark - DWNavigationFullscreenable
@@ -233,6 +268,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     controller.delegate = self;
 
     return controller;
+}
+
+- (UIViewController *)getStartedControllerWithPage:(DWGetStartedPage)page {
+    DWGetStartedViewController *getStarted = [[DWGetStartedViewController alloc] initWithPage:page];
+    getStarted.delegate = self;
+    return getStarted;
 }
 
 - (void)continueOrCompleteWalletSetup {
