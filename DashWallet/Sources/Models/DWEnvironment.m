@@ -49,7 +49,7 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         //        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
         // TODO: DP specific (for use in DashPay only)
-        [userDefaults setInteger:DSChainType_TestNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:DSChainType_DevNet forKey:CURRENT_CHAIN_TYPE_KEY];
         // END TODO
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
@@ -231,47 +231,16 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 
 - (NSOrderedSet *)palinkaDevnetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"54.213.104.142"];
-    [serviceLocations addObject:@"35.166.218.241"];
-    [serviceLocations addObject:@"34.220.185.186"];
-    [serviceLocations addObject:@"52.34.170.173"];
-    [serviceLocations addObject:@"34.209.17.188"];
-    [serviceLocations addObject:@"54.202.65.107"];
-    [serviceLocations addObject:@"35.162.26.9"];
-    [serviceLocations addObject:@"34.221.120.157"];
-    [serviceLocations addObject:@"34.211.82.76"];
-    [serviceLocations addObject:@"18.236.221.244"];
-    [serviceLocations addObject:@"34.221.152.195"];
-    [serviceLocations addObject:@"34.223.236.172"];
-    [serviceLocations addObject:@"54.187.237.108"];
-    [serviceLocations addObject:@"34.211.227.165"];
-    [serviceLocations addObject:@"52.43.2.66"];
-    [serviceLocations addObject:@"54.70.41.101"];
-    [serviceLocations addObject:@"34.212.177.62"];
-    [serviceLocations addObject:@"54.189.195.70"];
-    [serviceLocations addObject:@"54.201.1.97"];
-    [serviceLocations addObject:@"34.218.48.84"];
-    [serviceLocations addObject:@"35.155.198.247"];
-    [serviceLocations addObject:@"34.217.126.174"];
-    [serviceLocations addObject:@"34.214.174.215"];
-    [serviceLocations addObject:@"34.223.1.1"];
-    [serviceLocations addObject:@"34.216.87.26"];
-    [serviceLocations addObject:@"18.236.128.42"];
-    [serviceLocations addObject:@"54.70.59.107"];
-    [serviceLocations addObject:@"34.219.104.11"];
-    [serviceLocations addObject:@"34.219.188.44"];
-    [serviceLocations addObject:@"54.218.7.240"];
-    [serviceLocations addObject:@"18.236.173.38"];
-    [serviceLocations addObject:@"54.184.16.202"];
-    [serviceLocations addObject:@"34.212.251.172"];
-    [serviceLocations addObject:@"54.218.76.245"];
-    [serviceLocations addObject:@"54.187.249.82"];
-    [serviceLocations addObject:@"34.213.180.200"];
-    [serviceLocations addObject:@"35.165.8.80"];
-    [serviceLocations addObject:@"18.237.12.238"];
-    [serviceLocations addObject:@"54.191.206.78"];
-    [serviceLocations addObject:@"34.219.208.105"];
-    [serviceLocations addObject:@"54.218.222.184"];
+    [serviceLocations addObject:@"54.202.53.159"];
+    [serviceLocations addObject:@"52.12.118.171"];
+    [serviceLocations addObject:@"34.215.142.194"];
+    [serviceLocations addObject:@"34.219.48.227"];
+    [serviceLocations addObject:@"54.244.202.193"];
+    [serviceLocations addObject:@"34.223.252.101"];
+    [serviceLocations addObject:@"54.188.0.113"];
+    [serviceLocations addObject:@"54.200.18.37"];
+    [serviceLocations addObject:@"34.213.11.229"];
+    [serviceLocations addObject:@"34.220.174.81"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
