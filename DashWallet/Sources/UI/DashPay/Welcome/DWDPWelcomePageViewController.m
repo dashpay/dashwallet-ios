@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_END
         _titleLabel.adjustsFontForContentSizeCategory = YES;
         NSString *text = nil;
         if (self.index == 0) {
-            text = NSLocalizedString(@"Get you Username", nil);
+            text = NSLocalizedString(@"Get your Username", nil);
         }
         else if (self.index == 1) {
             text = NSLocalizedString(@"Add your Friends & Family", nil);
