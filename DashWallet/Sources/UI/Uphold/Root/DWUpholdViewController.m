@@ -27,6 +27,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSString *const DWUpholdLogoutURLString = @"https://wallet.uphold.com/dashboard/more";
+
 @interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate, DWUpholdMainViewControllerDelegate, DWUpholdLogoutTutorialViewControllerDelegate>
 
 @end
@@ -94,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)upholdLogoutTutorialViewControllerOpenUpholdWebsite:(DWUpholdLogoutTutorialViewController *)controller {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       NSURL *url = [NSURL URLWithString:[DWUpholdConstants logoutURLString]];
+                                       NSURL *url = [NSURL URLWithString:DWUpholdLogoutURLString];
                                        NSParameterAssert(url);
                                        [self openSafariAppWithURL:url];
                                    }];
