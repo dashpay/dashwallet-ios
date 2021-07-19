@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)clientSecret;
 + (NSString *)buyCardURLFormat;
 + (NSString *)transactionURLFormat;
-+ (NSString *)logoutURLString;
 
 - (instancetype)init NS_UNAVAILABLE;
 
