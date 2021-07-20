@@ -84,16 +84,6 @@ NS_ASSUME_NONNULL_BEGIN
     return @"";
 }
 
-+ (NSString *)logoutURLString {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
-        return @"https://sandbox.uphold.com/";
-    }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
-        return [DWUpholdMainnetConstants logoutURLString];
-    }
-    return @"";
-}
-
 @end
 
 NS_ASSUME_NONNULL_END
