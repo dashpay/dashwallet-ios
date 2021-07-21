@@ -54,8 +54,8 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
 
 // Wait for 2.5 seconds to update progress to the new peak value.
 // Peak is considered to be a difference between progress values more than 10%.
-static NSTimeInterval const PROGRESS_PEAK_DELAY = 2.5; // 2.5 sec
-static float const MAX_PROGRESS_DELTA = 0.1;           // 10%
+static NSTimeInterval const PROGRESS_PEAK_DELAY = 3.25; // 3.25 sec
+static float const MAX_PROGRESS_DELTA = 0.1;            // 10%
 
 @interface DWSyncModel ()
 
