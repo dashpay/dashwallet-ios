@@ -22,7 +22,7 @@
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
 static NSString *const DWMobileDevnetIdentifier = @"devnet-mobile-2";
-static NSString *const DWPalinkaDevnetIdentifier = @"devnet-palinka";
+static NSString *const DWSchnappsDevnetIdentifier = @"devnet-schnapps";
 static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 
 @implementation DWEnvironment
@@ -229,18 +229,18 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
     return [NSOrderedSet orderedSetWithArray:serviceLocations];
 }
 
-- (NSOrderedSet *)palinkaDevnetServiceLocation {
+- (NSOrderedSet *)schnappsDevnetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"54.202.53.159"];
-    [serviceLocations addObject:@"52.12.118.171"];
-    [serviceLocations addObject:@"34.215.142.194"];
-    [serviceLocations addObject:@"34.219.48.227"];
-    [serviceLocations addObject:@"54.244.202.193"];
-    [serviceLocations addObject:@"34.223.252.101"];
-    [serviceLocations addObject:@"54.188.0.113"];
-    [serviceLocations addObject:@"54.200.18.37"];
-    [serviceLocations addObject:@"34.213.11.229"];
-    [serviceLocations addObject:@"34.220.174.81"];
+    [serviceLocations addObject:@"34.220.142.11"];
+    [serviceLocations addObject:@"35.165.226.18"];
+    [serviceLocations addObject:@"34.213.172.28"];
+    [serviceLocations addObject:@"54.186.163.198"];
+    [serviceLocations addObject:@"35.165.78.181"];
+    [serviceLocations addObject:@"34.208.97.20"];
+    [serviceLocations addObject:@"18.236.96.101"];
+    [serviceLocations addObject:@"34.208.108.211"];
+    [serviceLocations addObject:@"34.221.197.92"];
+    [serviceLocations addObject:@"34.220.142.11"];
     //shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
@@ -315,11 +315,11 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 }
 
 - (NSString *)currentDevnetIdentifier {
-    return DWPalinkaDevnetIdentifier;
+    return DWSchnappsDevnetIdentifier;
 }
 
 - (DSChain *)currentDevnetChain {
-    return [self palinkaDevnetChain];
+    return [self schnappsDevnetChain];
 }
 
 - (DSChain *)mobileDevnetChain {
@@ -341,10 +341,10 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                        platformQuorumType:DSLLMQType_50_60];
 }
 
-- (DSChain *)palinkaDevnetChain {
+- (DSChain *)schnappsDevnetChain {
     return [[DSChainsManager sharedInstance]
-        registerDevnetChainWithIdentifier:DWPalinkaDevnetIdentifier
-                      forServiceLocations:[self palinkaDevnetServiceLocation]
+        registerDevnetChainWithIdentifier:DWSchnappsDevnetIdentifier
+                      forServiceLocations:[self schnappsDevnetServiceLocation]
               withMinimumDifficultyBlocks:UINT32_MAX
                              standardPort:20001
                              dapiJRPCPort:3000
