@@ -366,7 +366,10 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                           protocolVersion:70216
                        minProtocolVersion:70216
                              sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
-                          sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
+                          sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"
+                instantSendLockQuorumType:DSLLMQType_50_60
+                      chainLockQuorumType:DSLLMQType_50_60
+                       platformQuorumType:DSLLMQType_50_60];
 }
 
 - (DSChain *)palinkaDevnetChain {
@@ -382,7 +385,10 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                           protocolVersion:70218
                        minProtocolVersion:70218
                              sporkAddress:@"yMtULrhoxd8vRZrsnFobWgRTidtjg2Rnjm"
-                          sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"];
+                          sporkPrivateKey:@"cRsR7ywG6bhb5JsnpeRJ4c1fACabmYtK6WUVPiGG3GG4a5iYk6iL"
+                instantSendLockQuorumType:DSLLMQType_50_60
+                      chainLockQuorumType:DSLLMQType_50_60
+                       platformQuorumType:DSLLMQType_50_60];
 }
 
 - (DSChain *)evoDevnetChain {
@@ -398,7 +404,10 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                           protocolVersion:70218
                        minProtocolVersion:70218
                              sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
-                          sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
+                          sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"
+                instantSendLockQuorumType:DSLLMQType_50_60
+                      chainLockQuorumType:DSLLMQType_50_60
+                       platformQuorumType:DSLLMQType_50_60];
 }
 
 @end
