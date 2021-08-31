@@ -62,6 +62,12 @@
 "Accept" = "Accepter";
 
 /* No comment provided by engineer. */
+"Account # %u" = "Account # %u";
+
+/* No comment provided by engineer. */
+"Account Index" = "Account Index";
+
+/* No comment provided by engineer. */
 "Activity" = "Activité";
 
 /* Add <username> as your contact... */
@@ -69,6 +75,9 @@
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Ajouter un nouveau contact";
+
+/* No comment provided by engineer. */
+"Add New Account" = "Add New Account";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Ajouter un raccourci";
@@ -198,6 +207,9 @@
 
 /* No comment provided by engineer. */
 "Confirm & Pay" = "Confirmer & payer";
+
+/* No comment provided by engineer. */
+"Confirm adding new account" = "Confirm adding new account";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirmer le code PIN";
@@ -819,6 +831,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Voir sur Uphold";
+
+/* No comment provided by engineer. */
+"Select Account" = "Select Account";
 
 /* No comment provided by engineer. */
 "Send" = "Envoyer";

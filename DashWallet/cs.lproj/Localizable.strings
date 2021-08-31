@@ -62,6 +62,12 @@
 "Accept" = "Přijmout";
 
 /* No comment provided by engineer. */
+"Account # %u" = "Account # %u";
+
+/* No comment provided by engineer. */
+"Account Index" = "Account Index";
+
+/* No comment provided by engineer. */
 "Activity" = "Aktivita";
 
 /* Add <username> as your contact... */
@@ -69,6 +75,9 @@
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Přidat nový kontakt";
+
+/* No comment provided by engineer. */
+"Add New Account" = "Add New Account";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Přidat zkratku";
@@ -198,6 +207,9 @@
 
 /* No comment provided by engineer. */
 "Confirm & Pay" = "Potvrdit a zaplatit";
+
+/* No comment provided by engineer. */
+"Confirm adding new account" = "Confirm adding new account";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Potvrdit PIN";
@@ -819,6 +831,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Prohlédnout na Uphold";
+
+/* No comment provided by engineer. */
+"Select Account" = "Select Account";
 
 /* No comment provided by engineer. */
 "Send" = "Odeslat";

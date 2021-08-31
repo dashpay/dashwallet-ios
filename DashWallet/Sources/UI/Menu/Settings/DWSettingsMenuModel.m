@@ -32,6 +32,19 @@ NS_ASSUME_NONNULL_BEGIN
     return [DSPriceManager sharedInstance].localCurrencyCode;
 }
 
+- (NSInteger)accountIndex {
+    return [DWGlobalOptions sharedInstance].currentAccountIndex;
+}
+
+- (void)setAccountIndex:(NSInteger)accountIndex {
+    BOOL hasChanged = [DWGlobalOptions sharedInstance].currentAccountIndex != accountIndex;
+    [DWGlobalOptions sharedInstance].currentAccountIndex = accountIndex;
+    if (hasChanged) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification
+                                                            object:nil];
+    }
+}
+
 - (BOOL)notificationsEnabled {
     return [DWGlobalOptions sharedInstance].localNotificationsEnabled;
 }

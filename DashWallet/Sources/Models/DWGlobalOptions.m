@@ -42,6 +42,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
 @dynamic resyncingWallet;
+@dynamic currentAccountIndex;
 
 #pragma mark - Init
 
@@ -51,6 +52,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
+        DW_KEYPATH(self, currentAccountIndex) : @0,
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -119,6 +121,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dashpayRegistrationCompleted = NO;
     self.mostRecentViewedNotificationDate = nil;
     self.resyncingWallet = NO;
+    self.currentAccountIndex = 0;
 }
 
 @end

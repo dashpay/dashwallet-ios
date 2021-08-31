@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWAboutViewController.h"
+#import "DWEnvironment.h"
 #import "DWFormTableViewController.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWSettingsMenuModel.h"
@@ -33,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DWFormTableViewController *formController;
 @property (strong, nonatomic) DWSelectorFormCellModel *localCurrencyCellModel;
 @property (strong, nonatomic) DWSelectorFormCellModel *switchNetworkCellModel;
+@property (strong, nonatomic) DWSelectorFormCellModel *switchAccountCellModel;
 
 @end
 
@@ -86,6 +88,24 @@ NS_ASSUME_NONNULL_BEGIN
             }
 
             strongSelf.model.notificationsEnabled = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Account Index", nil)];
+        self.switchAccountCellModel = cellModel;
+        [self updateSwitchAccountCellModel];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            UITableView *tableView = self.formController.tableView;
+            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            [strongSelf showChangeAccountFromSourceView:tableView sourceRect:cell.frame];
         };
         [items addObject:cellModel];
     }
@@ -185,6 +205,10 @@ NS_ASSUME_NONNULL_BEGIN
     self.switchNetworkCellModel.subTitle = self.model.networkName;
 }
 
+- (void)updateSwitchAccountCellModel {
+    self.switchAccountCellModel.subTitle = [NSString stringWithFormat:@"%ld", self.model.accountIndex];
+}
+
 - (void)rescanBlockchainActionFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
     [DWSettingsMenuModel rescanBlockchainActionFromController:self
                                                    sourceView:sourceView
@@ -207,6 +231,50 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:aboutViewController animated:YES];
 }
 
+- (void)showChangeAccountFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    uint32_t lastAccount = wallet.lastAccountNumber;
+
+    UIAlertController *actionSheet = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Select Account", nil)
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+
+    for (uint32_t i = 0; i <= lastAccount; i++) {
+        NSString *title = [NSString stringWithFormat:NSLocalizedString(@"Account # %u", nil), i];
+        UIAlertAction *selectAccount = [UIAlertAction
+            actionWithTitle:title
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.accountIndex = i;
+                        [self updateSwitchAccountCellModel];
+                    }];
+        [actionSheet addAction:selectAccount];
+    }
+
+    UIAlertAction *addAccount = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Add New Account", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self addNewAccount];
+                }];
+    [addAccount setValue:[UIColor dw_greenColor]
+                  forKey:[@"title" stringByAppendingString:@"TextColor"]];
+    [actionSheet addAction:addAccount];
+
+    UIAlertAction *cancel = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [actionSheet addAction:cancel];
+
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
+    [self presentViewController:actionSheet animated:YES completion:nil];
+}
+
 - (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
     UIAlertController *actionSheet = [UIAlertController
         alertControllerWithTitle:NSLocalizedString(@"Network", nil)
@@ -218,6 +286,7 @@ NS_ASSUME_NONNULL_BEGIN
                 handler:^(UIAlertAction *action) {
                     [DWSettingsMenuModel switchToMainnetWithCompletion:^(BOOL success) {
                         if (success) {
+                            self.model.accountIndex = 0;
                             [self updateSwitchNetworkCellModel];
                         }
                     }];
@@ -228,6 +297,7 @@ NS_ASSUME_NONNULL_BEGIN
                 handler:^(UIAlertAction *action) {
                     [DWSettingsMenuModel switchToTestnetWithCompletion:^(BOOL success) {
                         if (success) {
+                            self.model.accountIndex = 0;
                             [self updateSwitchNetworkCellModel];
                         }
                     }];
@@ -257,6 +327,38 @@ NS_ASSUME_NONNULL_BEGIN
         actionSheet.popoverPresentationController.sourceRect = sourceRect;
     }
     [self presentViewController:actionSheet animated:YES completion:nil];
+}
+
+- (void)addNewAccount {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSChain *chain = wallet.chain;
+    uint32_t addAccountNumber = wallet.lastAccountNumber + 1;
+    NSArray *derivationPaths = [wallet.chain standardDerivationPathsForAccountNumber:addAccountNumber];
+    DSAccount *addAccount = [DSAccount accountWithAccountNumber:addAccountNumber
+                                            withDerivationPaths:derivationPaths
+                                                      inContext:wallet.chain.chainManagedObjectContext];
+    [wallet seedPhraseAfterAuthenticationWithPrompt:NSLocalizedString(@"Confirm adding new account", nil)
+                                         completion:^(NSString *_Nullable seedPhrase) {
+                                             if (seedPhrase == nil) {
+                                                 return;
+                                             }
+
+                                             NSData *derivedKeyData = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+                                             for (DSDerivationPath *derivationPath in addAccount.fundDerivationPaths) {
+                                                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
+                                                                          storeUnderWalletUniqueId:wallet.uniqueIDString];
+                                             }
+                                             if ([chain isEvolutionEnabled]) {
+                                                 [addAccount.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData
+                                                                                                   storeUnderWalletUniqueId:wallet.uniqueIDString];
+                                             }
+
+                                             [wallet addAccount:addAccount];
+                                             [addAccount loadDerivationPaths];
+
+                                             self.model.accountIndex = addAccountNumber;
+                                             [self updateSwitchAccountCellModel];
+                                         }];
 }
 
 @end
