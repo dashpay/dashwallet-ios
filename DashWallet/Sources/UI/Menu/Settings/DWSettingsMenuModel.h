@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *networkName;
 @property (readonly, copy, nonatomic) NSString *localCurrencyCode;
 
+@property (assign, nonatomic) NSInteger accountIndex;
+
 @property (assign, nonatomic) BOOL notificationsEnabled;
 
 + (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;

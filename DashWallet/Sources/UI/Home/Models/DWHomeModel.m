@@ -293,6 +293,9 @@ static BOOL IsJailbroken(void) {
     DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
     NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
     [syncModel forceStartSyncingActivity];
+
+    [self updateBalance];
+    [self reloadTxDataSource];
 }
 
 - (void)walletDidWipe {
@@ -467,7 +470,8 @@ static BOOL IsJailbroken(void) {
                                                                                 return [(NSNumber *)obj1 compare:obj2];
                                                                             }
                                                                         }];
-        NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
+        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+        NSArray<DSTransaction *> *transactions = [account.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
         BOOL shouldAnimate = YES;
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;

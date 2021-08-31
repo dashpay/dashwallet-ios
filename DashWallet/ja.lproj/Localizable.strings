@@ -62,6 +62,12 @@
 "Accept" = "Accept";
 
 /* No comment provided by engineer. */
+"Account # %u" = "Account # %u";
+
+/* No comment provided by engineer. */
+"Account Index" = "Account Index";
+
+/* No comment provided by engineer. */
 "Activity" = "Activity";
 
 /* Add <username> as your contact... */
@@ -69,6 +75,9 @@
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
+
+/* No comment provided by engineer. */
+"Add New Account" = "Add New Account";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "ショートカットを追加する";
@@ -198,6 +207,9 @@
 
 /* No comment provided by engineer. */
 "Confirm & Pay" = "Confirm & Pay";
+
+/* No comment provided by engineer. */
+"Confirm adding new account" = "Confirm adding new account";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "PINを確認する";
@@ -819,6 +831,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Upholdで確認する";
+
+/* No comment provided by engineer. */
+"Select Account" = "Select Account";
 
 /* No comment provided by engineer. */
 "Send" = "送金";
