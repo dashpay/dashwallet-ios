@@ -187,7 +187,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
                                       protocolVersion:70216
                                    minProtocolVersion:70216
                                          sporkAddress:@"yQuAu9YAMt4yEiXBeDp3q5bKpo7jsC2eEj"
-                                      sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"];
+                                      sporkPrivateKey:@"cVk6u16fT1Pwd9MugowSt7VmNzN8ozE4wJjfJGC97Hf43oxRMjar"
+                            instantSendLockQuorumType:DSLLMQType_5_60
+                                  chainLockQuorumType:DSLLMQType_5_60
+                                   platformQuorumType:DSLLMQType_5_60];
                 [destinationChain setDevnetNetworkName:@"Evonet"];
             }
             break;

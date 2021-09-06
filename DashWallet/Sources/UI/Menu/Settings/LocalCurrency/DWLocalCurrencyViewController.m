@@ -100,19 +100,15 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 #pragma mark - UITableViewDataSource
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.model.items.count;
-}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 1;
+    return self.model.items.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *cellId = DWLocalCurrencyTableViewCell.dw_reuseIdentifier;
     DWLocalCurrencyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
 
-    const NSInteger index = indexPath.section;
+    const NSInteger index = indexPath.row;
     id<DWCurrencyItem> item = self.model.items[index];
     const BOOL selected = index == self.model.selectedIndex;
     [cell configureWithModel:item selected:selected searchQuery:self.model.trimmedQuery];
@@ -125,7 +121,7 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    const NSInteger index = indexPath.section;
+    const NSInteger index = indexPath.row;
     id<DWCurrencyItem> item = self.model.items[index];
     [self.model selectItem:item];
 
@@ -187,9 +183,11 @@ static CGFloat const SECTION_SPACING = 10.0;
 
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 74.0;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+    self.tableView.separatorInset = UIEdgeInsetsZero;
     self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
     self.tableView.sectionHeaderHeight = SECTION_SPACING;
+    self.tableView.tableFooterView = [[UIView alloc] init];
 
     [self.tableView registerClass:DWLocalCurrencyTableViewCell.class
            forCellReuseIdentifier:DWLocalCurrencyTableViewCell.dw_reuseIdentifier];

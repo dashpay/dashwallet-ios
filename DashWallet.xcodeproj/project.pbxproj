@@ -329,6 +329,7 @@
 		2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */; };
 		2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */; };
 		2AA08534237D6CF500797F95 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AA08533237D6CF500797F95 /* CloudKit.framework */; };
+		2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
@@ -1243,6 +1244,9 @@
 		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AA08533237D6CF500797F95 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyObject.h; sourceTree = "<group>"; };
+		2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCurrencyObject.m; sourceTree = "<group>"; };
+		2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyItemPriceProvider.h; sourceTree = "<group>"; };
 		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
 		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
@@ -2528,7 +2532,10 @@
 				2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */,
 				2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */,
 				2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */,
+				2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */,
+				2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */,
 				2ACD53E6234BADD300650AD3 /* DWCurrencyItem.h */,
+				2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */,
 			);
 			path = LocalCurrency;
 			sourceTree = "<group>";
@@ -4878,6 +4885,7 @@
 				2ACD53EB234BCFAA00650AD3 /* DWWeakContainer.m in Sources */,
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
+				2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,

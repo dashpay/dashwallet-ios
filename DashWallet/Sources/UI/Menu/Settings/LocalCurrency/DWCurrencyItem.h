@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, copy, nonatomic) NSString *code;
 @property (readonly, copy, nonatomic) NSString *name;
+@property (readonly, copy, nonatomic) NSString *flagName;
 @property (nullable, readonly, copy, nonatomic) NSString *priceString;
 
 @end
