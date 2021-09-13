@@ -175,6 +175,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+- (void)localCurrencyViewControllerDidCancel:(DWLocalCurrencyViewController *)controller {
+    NSAssert(NO, @"Not supported");
+}
+
 #pragma mark - Private
 
 - (void)updateLocalCurrencyCellModel {
@@ -197,7 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCurrencySelector {
-    DWLocalCurrencyViewController *controller = [[DWLocalCurrencyViewController alloc] init];
+    DWLocalCurrencyViewController *controller = [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_Default];
     controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }

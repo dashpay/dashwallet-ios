@@ -76,6 +76,19 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateCurrentAmount];
 }
 
+- (void)rebuildAmounts {
+    if (self.activeType == DWAmountTypeMain) {
+        self.amountEnteredInDash = [[DWAmountObject alloc] initWithDashAmountString:self.amountEnteredInDash.amountInternalRepresentation];
+        self.amountEnteredInLocalCurrency = nil;
+    }
+    else {
+        self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initWithLocalAmountString:self.amountEnteredInLocalCurrency.amountInternalRepresentation];
+        self.amountEnteredInDash = nil;
+    }
+
+    [self updateCurrentAmount];
+}
+
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
     NSString *lastInputString = self.amount.amountInternalRepresentation;
     NSString *validatedResult = [self validatedStringFromLastInputString:lastInputString range:range replacementString:string];

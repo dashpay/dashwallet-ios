@@ -33,7 +33,7 @@ static CGFloat const SEPARATOR_HEIGHT = 1.0;
 static CGFloat const DESC_KEYBOARD_PADDING = 8.0;
 static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
-@interface DWAmountView () <UITextFieldDelegate>
+@interface DWAmountView () <UITextFieldDelegate, DWAmountInputControlDelegate>
 
 @property (readonly, nonatomic, strong) DWAmountModel *model;
 
@@ -58,6 +58,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         DWAmountInputControl *inputControl = [[DWAmountInputControl alloc] initWithFrame:CGRectZero];
         inputControl.translatesAutoresizingMaskIntoConstraints = NO;
         inputControl.backgroundColor = self.backgroundColor;
+        inputControl.delegate = self;
         [inputControl setControlColor:[UIColor dw_darkTitleColor]];
         [inputControl addTarget:self
                          action:@selector(switchAmountCurrencyAction:)
@@ -210,6 +211,12 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
     [self.model updateAmountWithReplacementString:string range:range];
 
     return NO;
+}
+
+#pragma mark - DWAmountInputControlDelegate
+
+- (void)amountInputControl:(DWAmountInputControl *)control currencySelectorAction:(UIButton *)sender {
+    [self.delegate amountView:self currencySelectorAction:sender];
 }
 
 #pragma mark - Actions

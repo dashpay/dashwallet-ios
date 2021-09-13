@@ -18,6 +18,7 @@
 #import "DWAmountInputControl.h"
 
 #import "DWUIKit.h"
+#import "UIView+DWFindConstraints.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -64,6 +65,7 @@ static CGFloat AmountHeight(BOOL small) {
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *convertAmountImageViewTopConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *convertAmountImageViewBottomConstraint;
 @property (strong, nonatomic) NSLayoutConstraint *contentViewHeightConstraint;
+@property (strong, nonatomic) UIButton *selectorButton;
 
 @end
 
@@ -122,6 +124,29 @@ static CGFloat AmountHeight(BOOL small) {
     self.supplementaryAmountLabelHeightConstraint.constant = AmountHeight(smallSize);
     self.convertAmountImageViewTopConstraint.constant = ConvertImageTopPadding(smallSize);
     self.convertAmountImageViewBottomConstraint.constant = ConvertImageBottomPadding(smallSize);
+
+    if (smallSize == NO && self.selectorButton == nil) {
+        self.selectorButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.selectorButton.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.selectorButton setImage:[UIImage imageNamed:@"icon_selector"] forState:UIControlStateNormal];
+        [self.selectorButton addTarget:self action:@selector(selectorButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [self.contentView addSubview:self.selectorButton];
+
+        NSLayoutConstraint *labelTrailing = [self.supplementaryAmountLabel dw_findConstraintWithAttribute:NSLayoutAttributeTrailing];
+        labelTrailing.active = NO;
+
+        [NSLayoutConstraint activateConstraints:@[
+            [self.selectorButton.heightAnchor constraintEqualToConstant:42.0],
+            [self.selectorButton.widthAnchor constraintEqualToConstant:42.0],
+            [self.selectorButton.leadingAnchor constraintEqualToAnchor:self.supplementaryAmountLabel.trailingAnchor],
+            [self.selectorButton.centerYAnchor constraintEqualToAnchor:self.supplementaryAmountLabel.centerYAnchor],
+            [self.contentView.trailingAnchor constraintEqualToAnchor:self.selectorButton.trailingAnchor],
+        ]];
+
+        // Initial scaling
+        const CGFloat scale = SupplementaryAmountFontSize(smallSize) / MainAmountFontSize(smallSize);
+        self.selectorButton.transform = CGAffineTransformMakeScale(scale, scale);
+    }
 }
 
 - (void)setControlColor:(UIColor *)controlColor {
@@ -150,6 +175,7 @@ static CGFloat AmountHeight(BOOL small) {
     bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
     smallLabel.font = [UIFont dw_regularFontOfSize:MainAmountFontSize(smallSize)];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
+    self.selectorButton.transform = wasSwapped ? smallLabel.transform : CGAffineTransformIdentity;
 
     [UIView animateWithDuration:0.1
         delay:0.0
@@ -191,6 +217,10 @@ static CGFloat AmountHeight(BOOL small) {
 
 - (void)switchAmountCurrencyAction:(id)sender {
     [self sendActionsForControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)selectorButtonAction:(UIButton *)sender {
+    [self.delegate amountInputControl:self currencySelectorAction:sender];
 }
 
 @end

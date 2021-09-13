@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWAmountViewDelegate <NSObject>
 
 - (void)amountView:(DWAmountView *)view setActionButtonEnabled:(BOOL)enabled;
+- (void)amountView:(DWAmountView *)view currencySelectorAction:(UIButton *)sender;
 
 @end
 

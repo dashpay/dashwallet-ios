@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)minimumOutputAmountFormattedString;
 
 - (void)reloadAttributedData;
+- (void)rebuildAmounts;
 
 - (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem NS_DESIGNATED_INITIALIZER;
 

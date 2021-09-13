@@ -23,6 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 // This control doesn't support Dynamic Type because it has already really large fonts in use
 
+@class DWAmountInputControl;
+
+@protocol DWAmountInputControlDelegate <NSObject>
+
+- (void)amountInputControl:(DWAmountInputControl *)control currencySelectorAction:(UIButton *)sender;
+
+@end
+
 @interface DWAmountInputControl : UIControl
 
 /**
@@ -30,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (assign, nonatomic) IBInspectable BOOL smallSize;
 @property (strong, nonatomic) IBInspectable UIColor *controlColor;
+@property (nullable, nonatomic, weak) id<DWAmountInputControlDelegate> delegate;
 
 @property (strong, nonatomic) id<DWAmountInputControlSource> source;
 

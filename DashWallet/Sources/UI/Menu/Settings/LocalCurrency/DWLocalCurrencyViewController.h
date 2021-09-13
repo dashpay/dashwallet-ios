@@ -17,6 +17,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWNavigationAppearance.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWLocalCurrencyViewController;
@@ -24,12 +26,15 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWLocalCurrencyViewControllerDelegate <NSObject>
 
 - (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller;
+- (void)localCurrencyViewControllerDidCancel:(DWLocalCurrencyViewController *)controller;
 
 @end
 
 @interface DWLocalCurrencyViewController : UITableViewController
 
 @property (nullable, nonatomic, weak) id<DWLocalCurrencyViewControllerDelegate> delegate;
+
+- (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance;
 
 @end
 
