@@ -17,8 +17,6 @@
 
 #import "DWPaymentProcessor.h"
 
-#import <DashSync/DSTransactionOutput.h>
-
 #import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -602,8 +600,8 @@ static NSString *sanitizeString(NSString *s) {
     }
     else if (tx) {
         uint64_t amount = fee;
-        for (DSTransactionOutput *output in tx.outputs) {
-            amount += output.amount;
+        for (NSNumber *amountNumber in tx.outputAmounts) {
+            amount += amountNumber.unsignedLongLongValue;
         }
         NSString *format =
             NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@).", nil);
