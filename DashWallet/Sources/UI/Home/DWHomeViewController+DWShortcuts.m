@@ -153,7 +153,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showLocalCurrencyAction {
-    DWLocalCurrencyViewController *controller = [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_White];
+    DWLocalCurrencyViewController *controller =
+        [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_White
+                                                               currencyCode:nil];
     controller.delegate = self;
     [self presentControllerModallyInNavigationController:controller];
 }
@@ -207,7 +209,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWLocalCurrencyViewControllerDelegate
 
-- (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller {
+- (void)localCurrencyViewController:(DWLocalCurrencyViewController *)controller
+                  didSelectCurrency:(nonnull NSString *)currencyCode {
     [controller.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 

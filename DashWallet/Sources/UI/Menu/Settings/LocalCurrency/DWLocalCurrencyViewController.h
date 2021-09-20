@@ -25,7 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWLocalCurrencyViewControllerDelegate <NSObject>
 
-- (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller;
+- (void)localCurrencyViewController:(DWLocalCurrencyViewController *)controller
+                  didSelectCurrency:(NSString *)currencyCode;
 - (void)localCurrencyViewControllerDidCancel:(DWLocalCurrencyViewController *)controller;
 
 @end
@@ -33,8 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWLocalCurrencyViewController : UITableViewController
 
 @property (nullable, nonatomic, weak) id<DWLocalCurrencyViewControllerDelegate> delegate;
+@property (nonatomic, assign) BOOL isGlobal;
 
-- (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance;
+- (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance
+                                currencyCode:(nullable NSString *)currencyCode;
 
 @end
 

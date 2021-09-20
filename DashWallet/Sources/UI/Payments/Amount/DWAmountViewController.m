@@ -74,7 +74,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)amountView:(DWAmountView *)view currencySelectorAction:(UIButton *)sender {
-    DWLocalCurrencyViewController *currencyController = [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_White];
+    DWLocalCurrencyViewController *currencyController =
+        [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_White
+                                                               currencyCode:self.model.currencyCode];
+    currencyController.isGlobal = NO;
     currencyController.delegate = self;
     DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:currencyController];
     [self presentViewController:navigationController animated:YES completion:nil];
@@ -82,8 +85,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWLocalCurrencyViewControllerDelegate
 
-- (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller {
-    [self.model rebuildAmounts];
+- (void)localCurrencyViewController:(DWLocalCurrencyViewController *)controller
+                  didSelectCurrency:(nonnull NSString *)currencyCode {
+    [self.model setupCurrencyCode:currencyCode];
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 

@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInDash;
 @property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInLocalCurrency;
 
+@property (copy, nonatomic) NSNumberFormatter *localFormatter;
+@property (nonatomic, copy) NSString *currencyCode;
+
 - (void)updateCurrentAmount NS_REQUIRES_SUPER;
 
 @end

@@ -17,6 +17,7 @@
 
 #import "DWAmountObject.h"
 
+#import <DashSync/DSCurrencyPriceObject.h>
 #import <DashSync/DashSync.h>
 
 #import "DWAmountInputValidator.h"
@@ -35,6 +36,8 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
 @interface DWAmountObject ()
 
 @property (readonly, assign, nonatomic) DWAmountObjectInternalType internalType;
+@property (readonly, strong, nonatomic) NSNumberFormatter *localFormatter;
+@property (nonatomic, copy) NSString *currencyCode;
 
 @end
 
@@ -43,10 +46,14 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
 @synthesize dashAttributedString = _dashAttributedString;
 @synthesize localCurrencyAttributedString = _localCurrencyAttributedString;
 
-- (instancetype)initWithDashAmountString:(NSString *)dashAmountString {
+- (instancetype)initWithDashAmountString:(NSString *)dashAmountString
+                          localFormatter:(NSNumberFormatter *)localFormatter
+                            currencyCode:(NSString *)currencyCode {
     self = [super init];
     if (self) {
         _internalType = DWAmountObjectInternalType_Dash;
+        _localFormatter = localFormatter;
+        _currencyCode = currencyCode;
 
         _amountInternalRepresentation = [dashAmountString copy];
 
@@ -66,17 +73,27 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
         _dashFormatted = [self.class formattedAmountWithInputString:dashAmountString
                                                     formattedString:dashFormatted
                                                     numberFormatter:priceManager.dashFormat];
-        _localCurrencyFormatted = [priceManager localCurrencyStringForDashAmount:plainAmount];
+        NSNumber *localNum = [priceManager fiatCurrencyNumber:currencyCode forDashAmount:plainAmount];
+        if (localNum == nil) {
+            _localCurrencyFormatted = DSLocalizedString(@"Updating Price", @"Updating Price");
+        }
+        else {
+            _localCurrencyFormatted = [localFormatter stringFromNumber:localNum];
+        }
 
         [self reloadAttributedData];
     }
     return self;
 }
 
-- (nullable instancetype)initWithLocalAmountString:(NSString *)localAmountString {
+- (nullable instancetype)initWithLocalAmountString:(NSString *)localAmountString
+                                    localFormatter:(NSNumberFormatter *)localFormatter
+                                      currencyCode:(NSString *)currencyCode {
     self = [super init];
     if (self) {
         _internalType = DWAmountObjectInternalType_Local;
+        _localFormatter = localFormatter;
+        _currencyCode = currencyCode;
 
         _amountInternalRepresentation = [localAmountString copy];
 
@@ -89,8 +106,11 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         NSAssert(priceManager.localCurrencyDashPrice, @"Prices should be loaded");
-        NSString *localCurrencyFormatted = [priceManager.localFormat stringFromNumber:localNumber];
-        uint64_t plainAmount = [priceManager amountForLocalCurrencyString:localCurrencyFormatted];
+        NSString *localCurrencyFormatted = [localFormatter stringFromNumber:localNumber];
+        NSNumber *localPrice = [priceManager priceForCurrencyCode:currencyCode].price;
+        uint64_t plainAmount = [priceManager amountForLocalCurrencyString:localCurrencyFormatted
+                                                           localFormatter:localFormatter
+                                                               localPrice:localPrice];
         if (plainAmount == 0 && ![localNumber isEqual:NSDecimalNumber.zero]) {
             return nil;
         }
@@ -99,7 +119,7 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
         _dashFormatted = [priceManager stringForDashAmount:plainAmount];
         _localCurrencyFormatted = [self.class formattedAmountWithInputString:localAmountString
                                                              formattedString:localCurrencyFormatted
-                                                             numberFormatter:priceManager.localFormat];
+                                                             numberFormatter:localFormatter];
 
         [self reloadAttributedData];
     }
@@ -107,15 +127,19 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
 }
 
 - (instancetype)initAsLocalWithPreviousAmount:(DWAmountObject *)previousAmount
-                       localCurrencyValidator:(DWAmountInputValidator *)localCurrencyValidator {
+                       localCurrencyValidator:(DWAmountInputValidator *)localCurrencyValidator
+                               localFormatter:(NSNumberFormatter *)localFormatter
+                                 currencyCode:(NSString *)currencyCode {
     self = [super init];
     if (self) {
         _internalType = DWAmountObjectInternalType_Local;
+        _localFormatter = localFormatter;
+        _currencyCode = currencyCode;
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         _plainAmount = previousAmount.plainAmount;
         NSString *rawAmount = [self.class rawAmountStringFromFormattedString:previousAmount.localCurrencyFormatted
-                                                             numberFormatter:priceManager.localFormat
+                                                             numberFormatter:localFormatter
                                                                    validator:localCurrencyValidator];
         NSParameterAssert(rawAmount);
         _amountInternalRepresentation = rawAmount;
@@ -128,10 +152,14 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
 }
 
 - (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount
-                               dashValidator:(DWAmountInputValidator *)dashValidator {
+                               dashValidator:(DWAmountInputValidator *)dashValidator
+                              localFormatter:(NSNumberFormatter *)localFormatter
+                                currencyCode:(NSString *)currencyCode {
     self = [super init];
     if (self) {
         _internalType = DWAmountObjectInternalType_Dash;
+        _localFormatter = localFormatter;
+        _currencyCode = currencyCode;
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         _plainAmount = previousAmount.plainAmount;
@@ -148,13 +176,15 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
     return self;
 }
 
-- (instancetype)initWithPlainAmount:(uint64_t)plainAmount {
+- (instancetype)initWithPlainAmount:(uint64_t)plainAmount
+                     localFormatter:(NSNumberFormatter *)localFormatter
+                       currencyCode:(NSString *)currencyCode {
     NSDecimalNumber *plainNumber = (NSDecimalNumber *)[NSDecimalNumber numberWithUnsignedLongLong:plainAmount];
     NSDecimalNumber *duffsNumber = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
     NSDecimalNumber *dashNumber = [plainNumber decimalNumberByDividingBy:duffsNumber];
     NSString *dashAmountString = [dashNumber descriptionWithLocale:[NSLocale currentLocale]];
 
-    return [self initWithDashAmountString:dashAmountString];
+    return [self initWithDashAmountString:dashAmountString localFormatter:localFormatter currencyCode:currencyCode];
 }
 
 - (void)reloadAttributedData {

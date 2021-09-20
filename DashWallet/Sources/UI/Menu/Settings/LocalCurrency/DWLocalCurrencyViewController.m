@@ -41,7 +41,8 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 @implementation DWLocalCurrencyViewController
 
-- (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance {
+- (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance
+                                currencyCode:(nullable NSString *)currencyCode {
     self = [super initWithStyle:UITableViewStylePlain];
     if (self) {
         self.navigationAppearance = navigationAppearance;
@@ -49,6 +50,8 @@ static CGFloat const SECTION_SPACING = 10.0;
             self.title = NSLocalizedString(@"Local Currency", nil);
         }
         self.hidesBottomBarWhenPushed = YES;
+        self.isGlobal = YES;
+        self.model = [[DWLocalCurrencyModel alloc] initWithCurrencyCode:currencyCode];
     }
 
     return self;
@@ -56,8 +59,6 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    self.model = [[DWLocalCurrencyModel alloc] init];
 
     switch (self.navigationAppearance) {
         case DWNavigationAppearance_Default:
@@ -157,13 +158,13 @@ static CGFloat const SECTION_SPACING = 10.0;
 
     const NSInteger index = indexPath.row;
     id<DWCurrencyItem> item = self.model.items[index];
-    [self.model selectItem:item];
+    [self.model selectItem:item shouldChangeGlobalSettings:self.isGlobal];
 
     [self.tableView reloadRowsAtIndexPaths:self.tableView.indexPathsForVisibleRows
                           withRowAnimation:UITableViewRowAnimationNone];
 
     if (self.delegate) {
-        [self.delegate localCurrencyViewControllerDidSelectCurrency:self];
+        [self.delegate localCurrencyViewController:self didSelectCurrency:item.code];
     }
     else {
         [self dismissViewControllerAnimated:YES completion:nil];

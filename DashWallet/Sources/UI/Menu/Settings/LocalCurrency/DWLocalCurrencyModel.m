@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @synthesize flagByCode = _flagByCode;
 
-- (instancetype)init {
+- (instancetype)initWithCurrencyCode:(nullable NSString *)currencyCode {
     self = [super init];
     if (self) {
         NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
         _numberFormatter = numberFormatter;
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-        DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
+        DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:currencyCode ?: priceManager.localCurrencyCode];
         _selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;
 
         NSMutableArray<DWCurrencyObject *> *allItems = [NSMutableArray array];
@@ -80,9 +80,11 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)selectItem:(id<DWCurrencyItem>)item {
+- (void)selectItem:(id<DWCurrencyItem>)item shouldChangeGlobalSettings:(BOOL)shouldChangeGlobalSettings {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    priceManager.localCurrencyCode = item.code;
+    if (shouldChangeGlobalSettings) {
+        priceManager.localCurrencyCode = item.code;
+    }
 
     DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
     self.selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;

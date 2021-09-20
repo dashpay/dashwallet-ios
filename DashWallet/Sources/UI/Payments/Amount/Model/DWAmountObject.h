@@ -36,27 +36,37 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  @return Object that internally represents Dash amount
  */
-- (instancetype)initWithDashAmountString:(NSString *)dashAmountString;
+- (instancetype)initWithDashAmountString:(NSString *)dashAmountString
+                          localFormatter:(NSNumberFormatter *)localFormatter
+                            currencyCode:(NSString *)currencyCode;
 /**
  @return Object that internally represents local currency amount
  */
-- (nullable instancetype)initWithLocalAmountString:(NSString *)localAmountString;
+- (nullable instancetype)initWithLocalAmountString:(NSString *)localAmountString
+                                    localFormatter:(NSNumberFormatter *)localFormatter
+                                      currencyCode:(NSString *)currencyCode;
 
 /**
  @return Object that internally represents local currency amount
  */
 - (instancetype)initAsLocalWithPreviousAmount:(DWAmountObject *)previousAmount
-                       localCurrencyValidator:(DWAmountInputValidator *)localCurrencyValidator;
+                       localCurrencyValidator:(DWAmountInputValidator *)localCurrencyValidator
+                               localFormatter:(NSNumberFormatter *)localFormatter
+                                 currencyCode:(NSString *)currencyCode;
 /**
  @return Object that internally represents Dash amount
  */
 - (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount
-                               dashValidator:(DWAmountInputValidator *)dashValidator;
+                               dashValidator:(DWAmountInputValidator *)dashValidator
+                              localFormatter:(NSNumberFormatter *)localFormatter
+                                currencyCode:(NSString *)currencyCode;
 
 /**
  @return Object that internally represents Dash amount
  */
-- (instancetype)initWithPlainAmount:(uint64_t)plainAmount;
+- (instancetype)initWithPlainAmount:(uint64_t)plainAmount
+                     localFormatter:(NSNumberFormatter *)localFormatter
+                       currencyCode:(NSString *)currencyCode;
 
 - (instancetype)init NS_UNAVAILABLE;
 

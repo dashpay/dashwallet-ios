@@ -19,6 +19,7 @@
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import <DashSync/DSCurrencyPriceObject.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,10 +30,15 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _contactItem = contactItem;
 
+        _localFormatter = [[DSPriceManager sharedInstance].localFormat copy];
+        _currencyCode = [DSPriceManager sharedInstance].localCurrencyCode;
+
         _dashValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash];
         _localCurrencyValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency];
 
-        DWAmountObject *amount = [[DWAmountObject alloc] initWithDashAmountString:@"0"];
+        DWAmountObject *amount = [[DWAmountObject alloc] initWithDashAmountString:@"0"
+                                                                   localFormatter:_localFormatter
+                                                                     currencyCode:_currencyCode];
         _amountEnteredInDash = amount;
         _amount = amount;
 
@@ -62,14 +68,18 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.activeType == DWAmountTypeMain) {
         if (!self.amountEnteredInLocalCurrency) {
             self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initAsLocalWithPreviousAmount:self.amountEnteredInDash
-                                                                               localCurrencyValidator:self.localCurrencyValidator];
+                                                                               localCurrencyValidator:self.localCurrencyValidator
+                                                                                       localFormatter:self.localFormatter
+                                                                                         currencyCode:self.currencyCode];
         }
         self.activeType = DWAmountTypeSupplementary;
     }
     else {
         if (!self.amountEnteredInDash) {
             self.amountEnteredInDash = [[DWAmountObject alloc] initAsDashWithPreviousAmount:self.amountEnteredInLocalCurrency
-                                                                              dashValidator:self.dashValidator];
+                                                                              dashValidator:self.dashValidator
+                                                                             localFormatter:self.localFormatter
+                                                                               currencyCode:self.currencyCode];
         }
         self.activeType = DWAmountTypeMain;
     }
@@ -78,15 +88,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)rebuildAmounts {
     if (self.activeType == DWAmountTypeMain) {
-        self.amountEnteredInDash = [[DWAmountObject alloc] initWithDashAmountString:self.amountEnteredInDash.amountInternalRepresentation];
+        self.amountEnteredInDash = [[DWAmountObject alloc] initWithDashAmountString:self.amountEnteredInDash.amountInternalRepresentation
+                                                                     localFormatter:self.localFormatter
+                                                                       currencyCode:self.currencyCode];
         self.amountEnteredInLocalCurrency = nil;
     }
     else {
-        self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initWithLocalAmountString:self.amountEnteredInLocalCurrency.amountInternalRepresentation];
+        self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initWithLocalAmountString:self.amountEnteredInLocalCurrency.amountInternalRepresentation
+                                                                               localFormatter:self.localFormatter
+                                                                                 currencyCode:self.currencyCode];
         self.amountEnteredInDash = nil;
     }
 
     [self updateCurrentAmount];
+}
+
+- (void)setupCurrencyCode:(NSString *)currencyCode {
+    self.localFormatter.currencyCode = currencyCode;
+    self.currencyCode = currencyCode;
+
+    DSCurrencyPriceObject *priceObject = [[DSPriceManager sharedInstance] priceForCurrencyCode:currencyCode];
+
+    self.localFormatter.maximum =
+        [[NSDecimalNumber decimalNumberWithDecimal:priceObject.price.decimalValue]
+            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:MAX_MONEY / DUFFS]];
+
+    [self rebuildAmounts];
 }
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
@@ -97,11 +124,15 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (self.activeType == DWAmountTypeMain) {
-        self.amountEnteredInDash = [[DWAmountObject alloc] initWithDashAmountString:validatedResult];
+        self.amountEnteredInDash = [[DWAmountObject alloc] initWithDashAmountString:validatedResult
+                                                                     localFormatter:self.localFormatter
+                                                                       currencyCode:self.currencyCode];
         self.amountEnteredInLocalCurrency = nil;
     }
     else {
-        DWAmountObject *amount = [[DWAmountObject alloc] initWithLocalAmountString:validatedResult];
+        DWAmountObject *amount = [[DWAmountObject alloc] initWithLocalAmountString:validatedResult
+                                                                    localFormatter:self.localFormatter
+                                                                      currencyCode:self.currencyCode];
         if (!amount) { // entered amount is invalid (Dash amount exceeds limit)
             return;
         }

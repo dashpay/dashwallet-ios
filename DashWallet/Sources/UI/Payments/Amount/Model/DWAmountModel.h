@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
 @property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> contactItem;
 @property (readonly, nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
+@property (readonly, nonatomic, copy) NSString *currencyCode;
 
 - (BOOL)amountIsValidForProceeding NS_REQUIRES_SUPER;
 - (BOOL)isSwapToLocalCurrencyAllowed;
@@ -45,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadAttributedData;
 - (void)rebuildAmounts;
+- (void)setupCurrencyCode:(NSString *)currencyCode;
 
 - (instancetype)initWithContactItem:(nullable id<DWDPBasicUserItem>)contactItem NS_DESIGNATED_INITIALIZER;
 
