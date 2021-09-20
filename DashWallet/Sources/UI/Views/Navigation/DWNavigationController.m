@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [super setDelegate:self];
     [self.navigationBar dw_configureForDefaultAppearance];
+    [self.navigationBar dw_applyStandardAppearance];
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {
