@@ -25,6 +25,8 @@
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
 
+#import <DashSync/DSTransactionOutput.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
@@ -605,8 +607,8 @@ static NSString *sanitizeString(NSString *s) {
     }
     else if (tx) {
         uint64_t amount = fee;
-        for (NSNumber *amt in tx.outputAmounts) {
-            amount += amt.unsignedLongLongValue;
+        for (DSTransactionOutput *amt in tx.outputs) {
+            amount += amt.amount;
         }
 
         NSString *format =

@@ -17,11 +17,13 @@
 
 #import "DWDPAvatarView.h"
 
+#import "DWEnvironment.h"
 #import "DWUIKit.h"
 #import "UIColor+DWDashPay.h"
 
 #import "UIImageView+DWDPAvatar.h"
 #import <DashSync/DashSync.h>
+#import <SDWebImage/SDWebImage.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,6 +33,7 @@ NSString *const DPCropParameterName = @"dashpay-profile-pic-zoom";
 
 @property (readonly, nonatomic, strong) UIImageView *imageView;
 @property (readonly, nonatomic, strong) UILabel *letterLabel;
+@property (nonatomic, assign) CGSize imageSize;
 
 @end
 
@@ -69,29 +72,74 @@ NS_ASSUME_NONNULL_END
     [self updateBackgroundColor];
 }
 
+- (NSString *)thumbnailURLStringForBlockchainIdentity:(DSBlockchainIdentity *_Nullable)blockchainIdentity
+                                            signature:(NSString *)signature {
+    NSString *urlString =
+        [blockchainIdentity.avatarPath
+            stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSBlockchainIdentity *myBlockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+
+    return [NSString stringWithFormat:
+                         @"%@=/%ldx%ld/dashauth:requester(%@):contract(%@):document(thumbnailField):field(avatarUrl):owner(%@):updatedAt(%llu)/filters:format(jpeg)/%@",
+                         signature,
+                         (NSInteger)self.imageSize.width,
+                         (NSInteger)self.imageSize.height,
+                         myBlockchainIdentity.uniqueIdString,
+                         uint256_base58(chain.dashpayContractID),
+                         blockchainIdentity.uniqueIdString,
+                         blockchainIdentity.dashpayProfileUpdatedAt,
+                         urlString];
+}
+
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
 
+    [self.imageView sd_cancelCurrentImageLoad];
+
     NSString *username = blockchainIdentity.currentDashpayUsername;
-    NSString *urlString = blockchainIdentity.avatarPath;
+    NSString *thumbnailURLStringUnsigned = [self thumbnailURLStringForBlockchainIdentity:blockchainIdentity
+                                                                               signature:@"0"];
+    UInt256 requestHash = [[thumbnailURLStringUnsigned dataUsingEncoding:NSUTF8StringEncoding] SHA256];
 
     __weak typeof(self) weakSelf = self;
-    [self.imageView dw_setAvatarWithURLString:urlString
-                                   completion:^(UIImage *_Nullable image) {
-                                       __strong typeof(weakSelf) strongSelf = weakSelf;
-                                       if (!strongSelf) {
-                                           return;
-                                       }
+    [blockchainIdentity signMessageDigest:requestHash
+                              forKeyIndex:0
+                                   ofType:DSKeyType_ECDSA
+                               completion:^(BOOL success, NSData *_Nonnull signature) {
+                                   __strong typeof(weakSelf) strongSelf = weakSelf;
+                                   if (!strongSelf) {
+                                       return;
+                                   }
 
-                                       if (image) {
-                                           strongSelf.imageView.hidden = NO;
-                                           strongSelf.letterLabel.hidden = YES;
-                                           strongSelf.imageView.image = image;
-                                       }
-                                       else {
-                                           [strongSelf setUsername:username];
-                                       }
-                                   }];
+                                   if (success == NO) {
+                                       [strongSelf setUsername:username];
+                                       return;
+                                   }
+
+                                   // TODO: check if it's base58 or base64
+                                   NSString *thumbnailURLString = [strongSelf
+                                       thumbnailURLStringForBlockchainIdentity:blockchainIdentity
+                                                                     signature:signature.base58String];
+
+                                   __weak typeof(self) weakSelf = strongSelf;
+                                   [strongSelf.imageView dw_setAvatarWithURLString:thumbnailURLString
+                                                                        completion:^(UIImage *_Nullable image) {
+                                                                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                            if (!strongSelf) {
+                                                                                return;
+                                                                            }
+
+                                                                            if (image) {
+                                                                                strongSelf.imageView.hidden = NO;
+                                                                                strongSelf.letterLabel.hidden = YES;
+                                                                                strongSelf.imageView.image = image;
+                                                                            }
+                                                                            else {
+                                                                                [strongSelf setUsername:username];
+                                                                            }
+                                                                        }];
+                               }];
 }
 
 - (void)configureWithUsername:(NSString *)username {
@@ -152,6 +200,8 @@ NS_ASSUME_NONNULL_END
     letterLabel.textColor = [UIColor dw_lightTitleColor];
     [self addSubview:letterLabel];
     _letterLabel = letterLabel;
+
+    _imageSize = CGSizeMake(256, 256);
 }
 
 - (void)updateBackgroundColor {
