@@ -126,6 +126,10 @@ static CGFloat AmountHeight(BOOL small) {
     self.convertAmountImageViewBottomConstraint.constant = ConvertImageBottomPadding(smallSize);
 
     if (smallSize == NO && self.selectorButton == nil) {
+        UIView *dummyView = [[UIView alloc] init];
+        dummyView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.contentView addSubview:dummyView];
+
         self.selectorButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.selectorButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.selectorButton setImage:[UIImage imageNamed:@"icon_selector"] forState:UIControlStateNormal];
@@ -136,7 +140,16 @@ static CGFloat AmountHeight(BOOL small) {
         NSLayoutConstraint *labelTrailing = [self.supplementaryAmountLabel dw_findConstraintWithAttribute:NSLayoutAttributeTrailing];
         labelTrailing.active = NO;
 
+        NSLayoutConstraint *labelLeading = [self.supplementaryAmountLabel dw_findConstraintWithAttribute:NSLayoutAttributeLeading];
+        labelLeading.active = NO;
+
         [NSLayoutConstraint activateConstraints:@[
+            [dummyView.heightAnchor constraintEqualToConstant:42.0],
+            [dummyView.widthAnchor constraintEqualToConstant:42.0],
+            [dummyView.centerYAnchor constraintEqualToAnchor:self.supplementaryAmountLabel.centerYAnchor],
+            [dummyView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
+            [self.supplementaryAmountLabel.leadingAnchor constraintEqualToAnchor:dummyView.trailingAnchor],
+
             [self.selectorButton.heightAnchor constraintEqualToConstant:42.0],
             [self.selectorButton.widthAnchor constraintEqualToConstant:42.0],
             [self.selectorButton.leadingAnchor constraintEqualToAnchor:self.supplementaryAmountLabel.trailingAnchor],
