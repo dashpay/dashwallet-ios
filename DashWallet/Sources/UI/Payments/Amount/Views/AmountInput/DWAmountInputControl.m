@@ -129,6 +129,7 @@ static CGFloat AmountHeight(BOOL small) {
         self.selectorButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.selectorButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.selectorButton setImage:[UIImage imageNamed:@"icon_selector"] forState:UIControlStateNormal];
+        self.selectorButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         [self.selectorButton addTarget:self action:@selector(selectorButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:self.selectorButton];
 
