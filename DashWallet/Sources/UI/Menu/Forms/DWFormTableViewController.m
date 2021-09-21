@@ -49,7 +49,12 @@ static CGFloat const SECTION_SPACING = 10.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.tableFooterView = [[UIView alloc] init];
     self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
-    self.tableView.sectionHeaderHeight = SECTION_SPACING;
+    if (@available(iOS 15.0, *)) {
+        self.tableView.sectionHeaderHeight = 1;
+    }
+    else {
+        self.tableView.sectionHeaderHeight = SECTION_SPACING;
+    }
 
     NSArray<Class> *cellClasses = @[
         DWSelectorFormTableViewCell.class,

@@ -600,10 +600,9 @@ static NSString *sanitizeString(NSString *s) {
     }
     else if (tx) {
         uint64_t amount = fee;
-        for (NSNumber *amt in tx.outputAmounts) {
-            amount += amt.unsignedLongLongValue;
+        for (NSNumber *amountNumber in tx.outputAmounts) {
+            amount += amountNumber.unsignedLongLongValue;
         }
-
         NSString *format =
             NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@).", nil);
         NSString *message = [NSString stringWithFormat:format,

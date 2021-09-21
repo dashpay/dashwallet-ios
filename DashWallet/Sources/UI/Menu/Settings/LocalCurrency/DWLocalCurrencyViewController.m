@@ -33,6 +33,7 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 @interface DWLocalCurrencyViewController () <UISearchBarDelegate, UISearchResultsUpdating>
 
+@property (nonatomic, assign) DWNavigationAppearance navigationAppearance;
 @property (nonatomic, strong) DWLocalCurrencyModel *model;
 @property (nonatomic, strong) UILabel *priceSourceLabel;
 
@@ -40,11 +41,17 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 @implementation DWLocalCurrencyViewController
 
-- (instancetype)init {
+- (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance
+                                currencyCode:(nullable NSString *)currencyCode {
     self = [super initWithStyle:UITableViewStylePlain];
     if (self) {
-        self.title = NSLocalizedString(@"Local Currency", nil);
+        self.navigationAppearance = navigationAppearance;
+        if (navigationAppearance == DWNavigationAppearance_Default) {
+            self.title = NSLocalizedString(@"Local Currency", nil);
+        }
         self.hidesBottomBarWhenPushed = YES;
+        self.isGlobal = YES;
+        self.model = [[DWLocalCurrencyModel alloc] initWithCurrencyCode:currencyCode];
     }
 
     return self;
@@ -53,9 +60,35 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.model = [[DWLocalCurrencyModel alloc] init];
+    switch (self.navigationAppearance) {
+        case DWNavigationAppearance_Default:
+            break;
+        case DWNavigationAppearance_White: {
+            [self.navigationController.navigationBar dw_configureForWhiteAppearance];
 
+            if (@available(iOS 13.0, *)) {
+                UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
+                self.navigationItem.rightBarButtonItem = barButton;
+            }
+            else {
+                UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(closeButtonAction)];
+                self.navigationItem.rightBarButtonItem = barButton;
+            }
+
+            UILabel *label = [[UILabel alloc] init];
+            label.textColor = [UIColor dw_darkTitleColor];
+            label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
+            label.text = NSLocalizedString(@"Local Currency", nil);
+            [label sizeToFit];
+
+            UIBarButtonItem *leftTitleItem = [[UIBarButtonItem alloc] initWithCustomView:label];
+            self.navigationItem.leftBarButtonItem = leftTitleItem;
+
+            break;
+        }
+    }
     [self.navigationController.navigationBar dw_applyStandardAppearance];
+
     [self setupView];
     [self setupSearchController];
 
@@ -70,7 +103,7 @@ static CGFloat const SECTION_SPACING = 10.0;
 
     const NSUInteger selectedIndex = self.model.selectedIndex;
     if (selectedIndex != NSNotFound && selectedIndex < self.model.items.count) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:selectedIndex];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:selectedIndex inSection:0];
         [self.tableView scrollToRowAtIndexPath:indexPath
                               atScrollPosition:UITableViewScrollPositionMiddle
                                       animated:NO];
@@ -86,12 +119,14 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    // hide semi-transparent overlays above UITextField in UISearchBar to achive basic white color
-    UISearchController *searchController = self.navigationItem.searchController;
-    UISearchBar *searchBar = searchController.searchBar;
-    UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
-    UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
-    [searchTextFieldBackground.subviews makeObjectsPerformSelector:@selector(setHidden:) withObject:@YES];
+    if (self.navigationAppearance == DWNavigationAppearance_Default) {
+        // hide semi-transparent overlays above UITextField in UISearchBar to achive basic white color
+        UISearchController *searchController = self.navigationItem.searchController;
+        UISearchBar *searchBar = searchController.searchBar;
+        UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
+        UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
+        [searchTextFieldBackground.subviews makeObjectsPerformSelector:@selector(setHidden:) withObject:@YES];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -100,19 +135,15 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 #pragma mark - UITableViewDataSource
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.model.items.count;
-}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 1;
+    return self.model.items.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *cellId = DWLocalCurrencyTableViewCell.dw_reuseIdentifier;
     DWLocalCurrencyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
 
-    const NSInteger index = indexPath.section;
+    const NSInteger index = indexPath.row;
     id<DWCurrencyItem> item = self.model.items[index];
     const BOOL selected = index == self.model.selectedIndex;
     [cell configureWithModel:item selected:selected searchQuery:self.model.trimmedQuery];
@@ -125,14 +156,19 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    const NSInteger index = indexPath.section;
+    const NSInteger index = indexPath.row;
     id<DWCurrencyItem> item = self.model.items[index];
-    [self.model selectItem:item];
+    [self.model selectItem:item shouldChangeGlobalSettings:self.isGlobal];
 
     [self.tableView reloadRowsAtIndexPaths:self.tableView.indexPathsForVisibleRows
                           withRowAnimation:UITableViewRowAnimationNone];
 
-    [self.delegate localCurrencyViewControllerDidSelectCurrency:self];
+    if (self.delegate) {
+        [self.delegate localCurrencyViewController:self didSelectCurrency:item.code];
+    }
+    else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
 }
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
@@ -156,6 +192,15 @@ static CGFloat const SECTION_SPACING = 10.0;
 
 #pragma mark - Private
 
+- (void)closeButtonAction {
+    if (self.delegate) {
+        [self.delegate localCurrencyViewControllerDidCancel:self];
+    }
+    else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+}
+
 - (void)setupSearchController {
     self.definesPresentationContext = YES;
 
@@ -169,27 +214,39 @@ static CGFloat const SECTION_SPACING = 10.0;
     searchBar.searchBarStyle = UISearchBarStyleMinimal;
     searchBar.delegate = self;
     searchBar.tintColor = [UIColor dw_tintColor];
-    searchBar.barTintColor = [UIColor dw_dashNavigationBlueColor];
 
-    UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
-    searchTextField.tintColor = [UIColor dw_dashNavigationBlueColor];
-    searchTextField.textColor = [UIColor dw_darkTitleColor];
-    searchTextField.backgroundColor = [UIColor dw_backgroundColor];
+    if (self.navigationAppearance == DWNavigationAppearance_Default) {
+        searchBar.barTintColor = [UIColor dw_dashNavigationBlueColor];
 
-    UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
-    searchTextFieldBackground.backgroundColor = [UIColor dw_backgroundColor];
-    searchTextFieldBackground.layer.cornerRadius = 10.0;
-    searchTextFieldBackground.layer.masksToBounds = YES;
+        UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
+        searchTextField.tintColor = [UIColor dw_dashNavigationBlueColor];
+        searchTextField.textColor = [UIColor dw_darkTitleColor];
+        searchTextField.backgroundColor = [UIColor dw_backgroundColor];
+
+        UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
+        searchTextFieldBackground.backgroundColor = [UIColor dw_backgroundColor];
+        searchTextFieldBackground.layer.cornerRadius = 10.0;
+        searchTextFieldBackground.layer.masksToBounds = YES;
+    }
 }
 
 - (void)setupView {
-    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    switch (self.navigationAppearance) {
+        case DWNavigationAppearance_Default:
+            self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+            self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
+            break;
+        case DWNavigationAppearance_White:
+            self.view.backgroundColor = [UIColor dw_backgroundColor];
+            break;
+    }
 
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 74.0;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+    self.tableView.separatorInset = UIEdgeInsetsZero;
     self.tableView.sectionHeaderHeight = SECTION_SPACING;
+    self.tableView.tableFooterView = [[UIView alloc] init];
 
     [self.tableView registerClass:DWLocalCurrencyTableViewCell.class
            forCellReuseIdentifier:DWLocalCurrencyTableViewCell.dw_reuseIdentifier];

@@ -56,7 +56,9 @@
         const uint64_t allAvailableFunds = account.maxOutputAmount;
 
         if (allAvailableFunds > 0) {
-            self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
+            self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds
+                                                                    localFormatter:self.localFormatter
+                                                                      currencyCode:self.currencyCode];
             self.amountEnteredInLocalCurrency = nil;
             [self updateCurrentAmount];
         }
