@@ -219,6 +219,19 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_buttonBlackColor {
+    UIColor *color = [UIColor colorNamed:@"ButtonBlackColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_buttonBlackTitleColor {
+    UIColor *color = [UIColor colorNamed:@"ButtonBlackTitleColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
+
 @end
 
 NS_ASSUME_NONNULL_END

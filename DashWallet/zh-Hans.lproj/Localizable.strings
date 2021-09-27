@@ -401,6 +401,9 @@
 "Exit" = "Exit";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -446,6 +449,9 @@
 "Get Started" = "Get Started";
 
 /* No comment provided by engineer. */
+"Get Test Dash" = "Get Test Dash";
+
+/* No comment provided by engineer. */
 "Get your Username" = "Get your Username";
 
 /* No comment provided by engineer. */
@@ -471,6 +477,9 @@
 
 /* No comment provided by engineer. */
 "History" = "History";
+
+/* No comment provided by engineer. */
+"How do I get Test Dash?" = "How do I get Test Dash?";
 
 /* No comment provided by engineer. */
 "I Accept" = "I Accept";
@@ -1164,6 +1173,12 @@
 
 /* No comment provided by engineer. */
 "Tap to unhide balance" = "Tap to unhide balance";
+
+/* No comment provided by engineer. */
+"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users.";
+
+/* No comment provided by engineer. */
+"Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";

@@ -331,6 +331,10 @@
 		2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */; };
 		2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */; };
 		2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */; };
+		2A95D60E2702791E00B0BF5C /* DWExploreHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A95D60D2702791E00B0BF5C /* DWExploreHeaderView.m */; };
+		2A95D61127027DEE00B0BF5C /* DWExploreTestnetContentsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A95D61027027DEE00B0BF5C /* DWExploreTestnetContentsView.m */; };
+		2A95D614270280F800B0BF5C /* DWColoredButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A95D613270280F800B0BF5C /* DWColoredButton.m */; };
+		2A95D6172702835700B0BF5C /* DWExploreTestnetViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A95D6162702835700B0BF5C /* DWExploreTestnetViewController.m */; };
 		2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
@@ -1346,6 +1350,14 @@
 		2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPAmountContactView.m; sourceTree = "<group>"; };
 		2A951CE223D1B92C00602824 /* DWBaseContactsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsModel.h; sourceTree = "<group>"; };
 		2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsModel.m; sourceTree = "<group>"; };
+		2A95D60C2702791E00B0BF5C /* DWExploreHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreHeaderView.h; sourceTree = "<group>"; };
+		2A95D60D2702791E00B0BF5C /* DWExploreHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreHeaderView.m; sourceTree = "<group>"; };
+		2A95D60F27027DEE00B0BF5C /* DWExploreTestnetContentsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreTestnetContentsView.h; sourceTree = "<group>"; };
+		2A95D61027027DEE00B0BF5C /* DWExploreTestnetContentsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreTestnetContentsView.m; sourceTree = "<group>"; };
+		2A95D612270280F800B0BF5C /* DWColoredButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWColoredButton.h; sourceTree = "<group>"; };
+		2A95D613270280F800B0BF5C /* DWColoredButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWColoredButton.m; sourceTree = "<group>"; };
+		2A95D6152702835700B0BF5C /* DWExploreTestnetViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreTestnetViewController.h; sourceTree = "<group>"; };
+		2A95D6162702835700B0BF5C /* DWExploreTestnetViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreTestnetViewController.m; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBA622E1D5A200A50237 /* DWMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainTabbarViewController.m; sourceTree = "<group>"; };
@@ -2966,6 +2978,8 @@
 				2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */,
 				2A25A99A2578C3B600BBD5C5 /* DWBasePressableControl.h */,
 				2A25A99B2578C3B600BBD5C5 /* DWBasePressableControl.m */,
+				2A95D612270280F800B0BF5C /* DWColoredButton.h */,
+				2A95D613270280F800B0BF5C /* DWColoredButton.m */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -3503,6 +3517,27 @@
 				2A80F39424D86201003E3B1E /* DWModalUserProfileViewController.m */,
 			);
 			path = Profile;
+			sourceTree = "<group>";
+		};
+		2A95D60A27008AD400B0BF5C /* Explore */ = {
+			isa = PBXGroup;
+			children = (
+				2A95D60B2702790A00B0BF5C /* Views */,
+				2A95D6152702835700B0BF5C /* DWExploreTestnetViewController.h */,
+				2A95D6162702835700B0BF5C /* DWExploreTestnetViewController.m */,
+			);
+			path = Explore;
+			sourceTree = "<group>";
+		};
+		2A95D60B2702790A00B0BF5C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A95D60C2702791E00B0BF5C /* DWExploreHeaderView.h */,
+				2A95D60D2702791E00B0BF5C /* DWExploreHeaderView.m */,
+				2A95D60F27027DEE00B0BF5C /* DWExploreTestnetContentsView.h */,
+				2A95D61027027DEE00B0BF5C /* DWExploreTestnetContentsView.m */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		2A9CEBA322E1C25700A50237 /* SecureWallet */ = {
@@ -4376,6 +4411,7 @@
 		2AE8B63D23CDB94E0016F221 /* DashPay */ = {
 			isa = PBXGroup;
 			children = (
+				2A95D60A27008AD400B0BF5C /* Explore */,
 				2AF4055E260F4C8D000A8DAB /* Welcome */,
 				2AECB52025E3DEAB005B1041 /* Invites */,
 				2A4EB4882598D67400892E4D /* Error */,
@@ -5762,6 +5798,7 @@
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
+				2A95D614270280F800B0BF5C /* DWColoredButton.m in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */,
 				2AF55EBE2629DA72001974C4 /* DWHistoryHeaderView.m in Sources */,
@@ -5822,6 +5859,7 @@
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
+				2A95D6172702835700B0BF5C /* DWExploreTestnetViewController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
 				2AF405B2260F9B18000A8DAB /* DWGetStartedItemView.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
@@ -5852,6 +5890,7 @@
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */,
+				2A95D61127027DEE00B0BF5C /* DWExploreTestnetContentsView.m in Sources */,
 				2A44AAF525C6DA0A00671AC3 /* DWImgurInfoChildView.m in Sources */,
 				2A7AF3502482374D001D74F9 /* DWDPBasicCell.m in Sources */,
 				2A68090B25ED30C000829FC8 /* DWInvitationPreviewViewController.m in Sources */,
@@ -6068,6 +6107,7 @@
 				2AF405A7260F8B3C000A8DAB /* DWPassthroughStackView.m in Sources */,
 				2A7AF38F2482BDF1001D74F9 /* UIFont+DWDPItem.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
+				2A95D60E2702791E00B0BF5C /* DWExploreHeaderView.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				2A612AB724409D6E0060CC77 /* DWDashPayProfileView.m in Sources */,

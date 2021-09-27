@@ -196,8 +196,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
             type = DWTabBarViewButtonType_Others;
         }
         else if (sender == self.discoverButton) {
-            // TODO: DP fix me
-            type = DWTabBarViewButtonType_Contacts;
+            type = DWTabBarViewButtonType_Explore;
         }
         else {
             type = DWTabBarViewButtonType_Home;
