@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWBaseFormTableViewCell.h"
+#import <UIKit/UIKit.h>
 
 #import "DWCurrencyItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWLocalCurrencyTableViewCell : DWBaseFormTableViewCell
+@interface DWLocalCurrencyTableViewCell : UITableViewCell
 
 - (void)configureWithModel:(id<DWCurrencyItem>)model
                   selected:(BOOL)selected

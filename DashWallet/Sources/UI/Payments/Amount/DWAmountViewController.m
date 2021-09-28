@@ -19,10 +19,12 @@
 
 #import "DWAmountModel.h"
 #import "DWAmountView.h"
+#import "DWLocalCurrencyViewController.h"
+#import "DWNavigationController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountViewController () <DWAmountViewDelegate>
+@interface DWAmountViewController () <DWAmountViewDelegate, DWLocalCurrencyViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWAmountView *contentView;
 
@@ -69,6 +71,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)amountView:(DWAmountView *)view setActionButtonEnabled:(BOOL)enabled {
     self.actionButton.enabled = enabled;
+}
+
+- (void)amountView:(DWAmountView *)view currencySelectorAction:(UIButton *)sender {
+    DWLocalCurrencyViewController *currencyController =
+        [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_White
+                                                               currencyCode:self.model.currencyCode];
+    currencyController.isGlobal = NO;
+    currencyController.delegate = self;
+    DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:currencyController];
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+#pragma mark - DWLocalCurrencyViewControllerDelegate
+
+- (void)localCurrencyViewController:(DWLocalCurrencyViewController *)controller
+                  didSelectCurrency:(nonnull NSString *)currencyCode {
+    [self.model setupCurrencyCode:currencyCode];
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)localCurrencyViewControllerDidCancel:(DWLocalCurrencyViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private

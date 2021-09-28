@@ -73,7 +73,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSURL *url = [[DWUpholdClient sharedInstance] startAuthRoutineByURL];
 
-    NSString *callbackURLScheme = @"dashwallet://";
+    // Starting iOS 14.5 `callbackURLScheme` is required to have the following format:
+    // "The provided scheme is not valid. A scheme should not include special characters such as ":" or "/"."
+    // See https://developer.apple.com/forums/thread/679251
+    NSString *callbackURLScheme = [@"dashwallet://" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
     __weak typeof(self) weakSelf = self;
     void (^completionHandler)(NSURL *_Nullable callbackURL, NSError *_Nullable error) = ^(NSURL *_Nullable callbackURL, NSError *_Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;

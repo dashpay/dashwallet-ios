@@ -52,12 +52,18 @@ NSString *const DWSyncStateChangedFromStateKey = @"DWSyncStateChangedFromStateKe
 static NSTimeInterval const SYNC_LOOP_INTERVAL = 0.2;
 float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
 
+// Wait for 2.5 seconds to update progress to the new peak value.
+// Peak is considered to be a difference between progress values more than 10%.
+static NSTimeInterval const PROGRESS_PEAK_DELAY = 3.25; // 3.25 sec
+static float const MAX_PROGRESS_DELTA = 0.1;            // 10%
+
 @interface DWSyncModel ()
 
 @property (readonly, nonatomic, strong) DSReachabilityManager *reachability;
 
 @property (nonatomic, assign) DWSyncModelState state;
 @property (nonatomic, assign) float progress;
+@property (nullable, nonatomic, strong) NSDate *lastPeakDate;
 
 @property (nonatomic, assign, getter=isSyncing) BOOL syncing;
 
@@ -235,6 +241,9 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
         return;
     }
 
+    self.progress = 0;
+    self.lastPeakDate = nil;
+
     DWSyncLog(@"[DW Sync] startSyncingActivity");
 
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncLoop) object:nil];
@@ -276,7 +285,30 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 1.0;
     if (progress < DW_SYNCING_COMPLETED_PROGRESS) {
         self.syncing = YES;
 
-        self.progress = progress;
+        if (fabs(self.progress - progress) > MAX_PROGRESS_DELTA) {
+            if (self.lastPeakDate) {
+                // consider peak is true and accept it.
+                if (-[self.lastPeakDate timeIntervalSinceNow] > PROGRESS_PEAK_DELAY) {
+                    self.lastPeakDate = nil;
+                }
+                else {
+                    // do nothing, until the next sync loop
+                }
+            }
+            else {
+                // first peak is detected
+                self.lastPeakDate = [NSDate date];
+            }
+        }
+        else {
+            // peak has gone
+            self.lastPeakDate = nil;
+        }
+
+        if (self.lastPeakDate == nil) {
+            self.progress = progress;
+        }
+
         self.state = DWSyncModelState_Syncing;
 
         [self performSelector:@selector(syncLoop) withObject:nil afterDelay:SYNC_LOOP_INTERVAL];

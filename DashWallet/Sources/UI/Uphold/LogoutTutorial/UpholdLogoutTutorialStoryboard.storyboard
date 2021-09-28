@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="kuo-DD-Is9">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="kuo-DD-Is9">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -42,7 +40,7 @@
                                         <rect key="frame" x="0.0" y="22" width="270" height="298"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fOi-pK-BoG" userLabel="Content View">
-                                                <rect key="frame" x="0.0" y="12.5" width="270" height="273"/>
+                                                <rect key="frame" x="0.0" y="6" width="270" height="286"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="800" text="You also need to logout from Uphold website in your browser" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="ka4-XH-c2V">
                                                         <rect key="frame" x="0.0" y="0.0" width="270" height="34.5"/>
@@ -53,10 +51,10 @@
                                                             <fragment content="#bc-ignore!"/>
                                                         </attributedString>
                                                     </label>
-                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-logout-tutorial" translatesAutoresizingMaskIntoConstraints="NO" id="awr-2h-UQZ">
-                                                        <rect key="frame" x="0.0" y="50.5" width="270" height="222.5"/>
+                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-logout.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="awr-2h-UQZ">
+                                                        <rect key="frame" x="0.0" y="50.5" width="270" height="235.5"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" secondItem="awr-2h-UQZ" secondAttribute="width" multiplier="0.825" id="PIp-lc-gIC"/>
+                                                            <constraint firstAttribute="height" secondItem="awr-2h-UQZ" secondAttribute="width" multiplier="0.871" id="PIp-lc-gIC"/>
                                                         </constraints>
                                                     </imageView>
                                                 </subviews>
@@ -101,6 +99,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="KoG-0N-XK1"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="r6B-E1-65H" firstAttribute="leading" secondItem="KoG-0N-XK1" secondAttribute="leading" id="B14-IW-ldY"/>
@@ -108,7 +107,6 @@
                             <constraint firstItem="r6B-E1-65H" firstAttribute="top" secondItem="KoG-0N-XK1" secondAttribute="top" id="TNn-yq-O9D"/>
                             <constraint firstItem="KoG-0N-XK1" firstAttribute="bottom" secondItem="r6B-E1-65H" secondAttribute="bottom" id="oCm-EZ-9zN"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="KoG-0N-XK1"/>
                     </view>
                     <size key="freeformSize" width="270" height="320"/>
                     <connections>
@@ -122,6 +120,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="uphold-logout-tutorial" width="360" height="297"/>
+        <image name="uphold-logout.jpg" width="412" height="473"/>
     </resources>
 </document>

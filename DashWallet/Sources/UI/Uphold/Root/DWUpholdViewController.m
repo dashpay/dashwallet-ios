@@ -19,15 +19,24 @@
 
 #import <DWAlertController/DWAlertController.h>
 
+#import <AuthenticationServices/AuthenticationServices.h>
+#import <SafariServices/SafariServices.h>
+
+
 #import "DWUpholdAuthViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdConstants.h"
 #import "DWUpholdLogoutTutorialViewController.h"
 #import "DWUpholdMainViewController.h"
+#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate, DWUpholdMainViewControllerDelegate, DWUpholdLogoutTutorialViewControllerDelegate>
+static NSString *const DWUpholdLogoutURLString = @"https://wallet.uphold.com/dashboard/more";
+
+@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate, DWUpholdMainViewControllerDelegate, DWUpholdLogoutTutorialViewControllerDelegate, ASWebAuthenticationPresentationContextProviding>
+
+@property (nullable, strong, nonatomic) id authenticationSession;
 
 @end
 
@@ -94,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)upholdLogoutTutorialViewControllerOpenUpholdWebsite:(DWUpholdLogoutTutorialViewController *)controller {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       NSURL *url = [NSURL URLWithString:[DWUpholdConstants logoutURLString]];
+                                       NSURL *url = [NSURL URLWithString:DWUpholdLogoutURLString];
                                        NSParameterAssert(url);
                                        [self openSafariAppWithURL:url];
                                    }];
@@ -128,7 +137,32 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)openSafariAppWithURL:(NSURL *)url {
-    [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    NSString *callbackURLScheme = [@"dashwallet://" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    __weak typeof(self) weakSelf = self;
+    void (^completionHandler)(NSURL *_Nullable callbackURL, NSError *_Nullable error) = ^(NSURL *_Nullable callbackURL, NSError *_Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        strongSelf.authenticationSession = nil;
+    };
+
+    ASWebAuthenticationSession *authenticationSession =
+        [[ASWebAuthenticationSession alloc] initWithURL:url
+                                      callbackURLScheme:callbackURLScheme
+                                      completionHandler:completionHandler];
+    if (@available(iOS 13.0, *)) {
+        authenticationSession.presentationContextProvider = self;
+    }
+    [authenticationSession start];
+    self.authenticationSession = authenticationSession;
+}
+
+#pragma mark - ASWebAuthenticationPresentationContextProviding
+
+- (ASPresentationAnchor)presentationAnchorForWebAuthenticationSession:(ASWebAuthenticationSession *)session API_AVAILABLE(ios(13.0)) {
+    return self.view.window;
 }
 
 @end

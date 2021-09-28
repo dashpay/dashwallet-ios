@@ -262,6 +262,7 @@
 		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
 		2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A80F39424D86201003E3B1E /* DWModalUserProfileViewController.m */; };
 		2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */; };
+		2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2A811558269CE09300215F81 /* uphold-logout.jpg */; };
 		2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A827B7124B5CA1800A42042 /* DWListCollectionLayout.m */; };
 		2A856CEF24EB1E400040BD61 /* DWUserPayTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A856CED24EB1E400040BD61 /* DWUserPayTableViewCell.m */; };
 		2A856CF024EB1E400040BD61 /* DWUserPayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A856CEE24EB1E400040BD61 /* DWUserPayTableViewCell.xib */; };
@@ -378,6 +379,7 @@
 		2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */; };
 		2AA08534237D6CF500797F95 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AA08533237D6CF500797F95 /* CloudKit.framework */; };
 		2AABD62D258CCCB800723855 /* BaseCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AABD62C258CCCB800723855 /* BaseCollectionReusableView.m */; };
+		2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
@@ -904,6 +906,7 @@
 		2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.m"; sourceTree = "<group>"; };
 		2A429A8F25B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFirstUsernameSymbolValidationRule.h; sourceTree = "<group>"; };
 		2A429A9025B85FE600A847F7 /* DWFirstUsernameSymbolValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFirstUsernameSymbolValidationRule.m; sourceTree = "<group>"; };
+		2A430F0B26EF5A0F00D8A196 /* DWNavigationAppearance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNavigationAppearance.h; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		2A4430EA22CBBA82009BAF7F /* Setup.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Setup.storyboard; sourceTree = "<group>"; };
@@ -1201,6 +1204,7 @@
 		2A80F39424D86201003E3B1E /* DWModalUserProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalUserProfileViewController.m; sourceTree = "<group>"; };
 		2A80F3D724DC55CC003E3B1E /* DWUserProfileSendRequestCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserProfileSendRequestCell.h; sourceTree = "<group>"; };
 		2A80F3D824DC55CC003E3B1E /* DWUserProfileSendRequestCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileSendRequestCell.m; sourceTree = "<group>"; };
+		2A811558269CE09300215F81 /* uphold-logout.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "uphold-logout.jpg"; sourceTree = "<group>"; };
 		2A827B7024B5CA1800A42042 /* DWListCollectionLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWListCollectionLayout.h; sourceTree = "<group>"; };
 		2A827B7124B5CA1800A42042 /* DWListCollectionLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWListCollectionLayout.m; sourceTree = "<group>"; };
 		2A827B7324B729C400A42042 /* DWBaseContactsContentViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsContentViewController+DWProtected.h"; sourceTree = "<group>"; };
@@ -1447,6 +1451,9 @@
 		2AA08533237D6CF500797F95 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		2AABD62B258CCCB800723855 /* BaseCollectionReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseCollectionReusableView.h; sourceTree = "<group>"; };
 		2AABD62C258CCCB800723855 /* BaseCollectionReusableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BaseCollectionReusableView.m; sourceTree = "<group>"; };
+		2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyObject.h; sourceTree = "<group>"; };
+		2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCurrencyObject.m; sourceTree = "<group>"; };
+		2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyItemPriceProvider.h; sourceTree = "<group>"; };
 		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
 		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
@@ -2992,7 +2999,10 @@
 				2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */,
 				2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */,
 				2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */,
+				2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */,
+				2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */,
 				2ACD53E6234BADD300650AD3 /* DWCurrencyItem.h */,
+				2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */,
 			);
 			path = LocalCurrency;
 			sourceTree = "<group>";
@@ -3575,6 +3585,7 @@
 				2A44314D22CF8BF5009BAF7F /* DWNavigationFullscreenable.h */,
 				2ADC9D11245FFC5B001D7C0D /* UINavigationBar+DWAppearance.h */,
 				2ADC9D12245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m */,
+				2A430F0B26EF5A0F00D8A196 /* DWNavigationAppearance.h */,
 			);
 			path = Navigation;
 			sourceTree = "<group>";
@@ -3774,6 +3785,7 @@
 		2A9FFE642230FF4600956D5F /* LogoutTutorial */ = {
 			isa = PBXGroup;
 			children = (
+				2A811558269CE09300215F81 /* uphold-logout.jpg */,
 				2A9FFE672230FF4600956D5F /* DWUpholdLogoutTutorialViewController.h */,
 				2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */,
 				2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */,
@@ -5299,6 +5311,7 @@
 				2A7A7BBF2347950700451078 /* DWMainMenuTableViewCell.xib in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
+				2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */,
 				2ACCD865231959CD00A96B62 /* DWAmountPreviewView.xib in Resources */,
 				2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */,
 			);
@@ -5795,6 +5808,7 @@
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
 				2A4F72C7269228CF00A75D2D /* DWDashPaySetupModel.m in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
+				2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,

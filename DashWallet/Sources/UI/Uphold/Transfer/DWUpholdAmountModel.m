@@ -84,7 +84,10 @@ NS_ASSUME_NONNULL_END
     uint64_t allAvailableFunds = [self.card.available decimalNumberByMultiplyingBy:duffs].longLongValue;
 
     if (allAvailableFunds > 0) {
-        self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
+        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+        self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds
+                                                                localFormatter:priceManager.localFormat
+                                                                  currencyCode:priceManager.localCurrencyCode];
         self.amountEnteredInLocalCurrency = nil;
         [self updateCurrentAmount];
     }

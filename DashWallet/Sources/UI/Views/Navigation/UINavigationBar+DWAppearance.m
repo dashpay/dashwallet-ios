@@ -68,6 +68,10 @@
 
         navigationBar.scrollEdgeAppearance = standardAppearance;
         navigationBar.compactAppearance = standardAppearance;
+
+        if (@available(iOS 15.0, *)) {
+            navigationBar.compactScrollEdgeAppearance = standardAppearance;
+        }
     }
 }
 

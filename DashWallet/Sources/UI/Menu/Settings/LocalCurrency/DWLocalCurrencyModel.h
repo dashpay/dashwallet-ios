@@ -27,9 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (readonly, nonatomic, assign) NSUInteger selectedIndex;
 
-- (void)selectItem:(id<DWCurrencyItem>)item;
+- (void)selectItem:(id<DWCurrencyItem>)item shouldChangeGlobalSettings:(BOOL)shouldChangeGlobalSettings;
 
 - (void)filterItemsWithSearchQuery:(NSString *)query;
+
+- (instancetype)initWithCurrencyCode:(nullable NSString *)currencyCode;
 
 @end
 
