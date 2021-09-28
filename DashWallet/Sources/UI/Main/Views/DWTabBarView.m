@@ -224,6 +224,11 @@ static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
 
             break;
         }
+        case DWTabBarViewButtonType_Explore: {
+            self.discoverButton.selected = YES;
+
+            break;
+        }
         case DWTabBarViewButtonType_Others: {
             self.othersButton.selected = YES;
 

@@ -18,6 +18,7 @@
 #import "DWExploreTestnetViewController.h"
 
 #import "DWColoredButton.h"
+#import "DWEnvironment.h"
 #import "DWExploreHeaderView.h"
 #import "DWExploreTestnetContentsView.h"
 #import "DWScrollingViewController.h"
@@ -113,8 +114,20 @@
     ]];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 - (void)buttonAction {
-    //
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    NSString *paymentAddress = account.receiveAddress;
+    if (paymentAddress == nil) {
+        return;
+    }
+
+    [UIPasteboard generalPasteboard].string = paymentAddress;
+    NSURL *url = [NSURL URLWithString:@"https://testnet-faucet.dash.org/"];
+    [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 }
 
 @end
