@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWGlobalOptions : DSDynamicOptions
 
 @property (nonatomic, assign) BOOL walletNeedsBackup;
+@property (nonatomic, assign) BOOL userHasBalance;
 @property (nullable, nonatomic, strong) NSDate *balanceChangedDate;
 @property (nonatomic, assign) BOOL walletBackupReminderWasShown;
 

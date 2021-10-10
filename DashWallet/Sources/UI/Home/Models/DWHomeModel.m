@@ -519,6 +519,8 @@ static BOOL IsJailbroken(void) {
         options.balanceChangedDate = [NSDate date];
     }
 
+    options.userHasBalance = balanceValue > 0;
+
     [self reloadShortcuts];
 }
 
