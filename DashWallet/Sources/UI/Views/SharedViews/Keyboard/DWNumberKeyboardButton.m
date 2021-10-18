@@ -162,7 +162,8 @@ static CGFloat const CORNER_RADIUS = 8.0;
     if (touch) {
         [self.delegate numberButton:self touchBegan:touch];
     }
-    [super touchesBegan:touches withEvent:event];
+    [super touchesBegan:touches
+              withEvent:event];
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
@@ -170,7 +171,8 @@ static CGFloat const CORNER_RADIUS = 8.0;
     if (touch) {
         [self.delegate numberButton:self touchMoved:touch];
     }
-    [super touchesMoved:touches withEvent:event];
+    [super touchesMoved:touches
+              withEvent:event];
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
@@ -178,7 +180,8 @@ static CGFloat const CORNER_RADIUS = 8.0;
     if (touch) {
         [self.delegate numberButton:self touchEnded:touch];
     }
-    [super touchesEnded:touches withEvent:event];
+    [super touchesEnded:touches
+              withEvent:event];
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
@@ -186,7 +189,8 @@ static CGFloat const CORNER_RADIUS = 8.0;
     if (touch) {
         [self.delegate numberButton:self touchCancelled:touch];
     }
-    [super touchesCancelled:touches withEvent:event];
+    [super touchesCancelled:touches
+                  withEvent:event];
 }
 
 #pragma mark - Private

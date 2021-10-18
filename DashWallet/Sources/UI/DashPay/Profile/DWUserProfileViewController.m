@@ -373,7 +373,8 @@ NS_ASSUME_NONNULL_END
         _measuringFilterHeaderView.padding = FILTER_PADDING;
         _measuringFilterHeaderView.titleLabel.text = NSLocalizedString(@"Activity", nil);
     }
-    [_measuringFilterHeaderView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
+    [_measuringFilterHeaderView.filterButton setTitle:[self titleForFilterButton]
+                                             forState:UIControlStateNormal];
     return _measuringFilterHeaderView;
 }
 

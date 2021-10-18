@@ -187,7 +187,8 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
         return;
     }
 
-    [self.delegate txDetailListView:self longPressActionOnView:view];
+    [self.delegate txDetailListView:self
+              longPressActionOnView:view];
 }
 
 #pragma mark - Private

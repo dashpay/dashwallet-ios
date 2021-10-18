@@ -128,7 +128,8 @@ NS_ASSUME_NONNULL_END
             strongSelf.fetchCompletion = nil;
         }
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayContactsDidUpdateNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayContactsDidUpdateNotification
+                                                            object:nil];
 
         [strongSelf performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
     }];

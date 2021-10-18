@@ -348,7 +348,8 @@ static NSString *sanitizeString(NSString *s) {
         return;
     }
 
-    [self.delegate paymentProcessor:self showProgressHUDWithMessage:@"Checking private key balance..."];
+    [self.delegate paymentProcessor:self
+         showProgressHUDWithMessage:@"Checking private key balance..."];
 
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
@@ -435,7 +436,9 @@ static NSString *sanitizeString(NSString *s) {
 
     // Currently, only errors from DashSync are handled.
     // TODO: provide an error (app-specific domain)
-    [self failedWithError:nil title:NSLocalizedString(@"Unsupported or corrupted document", nil) message:nil];
+    [self failedWithError:nil
+                    title:NSLocalizedString(@"Unsupported or corrupted document", nil)
+                  message:nil];
 
     [self.delegate paymentProcessorDidFinishProcessingFile:self];
 }
@@ -491,7 +494,9 @@ static NSString *sanitizeString(NSString *s) {
             [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx contactItem:self.paymentInput.userItem];
         }
 
-        [self handleCallbackSchemeIfNeeded:protocolRequest address:address tx:tx];
+        [self handleCallbackSchemeIfNeeded:protocolRequest
+                                   address:address
+                                        tx:tx];
     }
 
     [self reset];

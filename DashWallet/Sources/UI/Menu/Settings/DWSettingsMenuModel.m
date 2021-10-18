@@ -127,7 +127,9 @@ NS_ASSUME_NONNULL_BEGIN
         actionSheet.popoverPresentationController.sourceView = sourceView;
         actionSheet.popoverPresentationController.sourceRect = sourceRect;
     }
-    [controller presentViewController:actionSheet animated:YES completion:nil];
+    [controller presentViewController:actionSheet
+                             animated:YES
+                           completion:nil];
 }
 
 @end

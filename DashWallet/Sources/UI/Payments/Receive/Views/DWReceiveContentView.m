@@ -119,7 +119,8 @@ static CGFloat ActionButtonsTopPadding(void) {
             break;
         }
     }
-    [self.secondButton setTitle:title forState:UIControlStateNormal];
+    [self.secondButton setTitle:title
+                       forState:UIControlStateNormal];
     self.backgroundColor = backgroundColor;
     self.contentView.backgroundColor = backgroundColor;
 }

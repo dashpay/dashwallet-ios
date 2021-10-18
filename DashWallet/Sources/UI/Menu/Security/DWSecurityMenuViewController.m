@@ -286,7 +286,8 @@ NS_ASSUME_NONNULL_BEGIN
                                   }
                               }
 
-                              [strongSelf.formController setSections:[strongSelf sections] placeholderText:nil];
+                              [strongSelf.formController setSections:[strongSelf sections]
+                                                     placeholderText:nil];
                           }];
 }
 

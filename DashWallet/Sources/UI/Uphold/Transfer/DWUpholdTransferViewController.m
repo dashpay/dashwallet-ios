@@ -180,7 +180,9 @@ NS_ASSUME_NONNULL_END
         presenting = self.presentedViewController;
     }
 
-    [presenting presentViewController:alertOTPController animated:YES completion:nil];
+    [presenting presentViewController:alertOTPController
+                             animated:YES
+                           completion:nil];
 }
 
 #pragma mark - Private
