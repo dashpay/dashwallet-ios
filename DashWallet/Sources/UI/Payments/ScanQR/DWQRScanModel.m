@@ -238,7 +238,8 @@ NS_ASSUME_NONNULL_END
                                             paymentInput.protocolRequest = protocolRequest;
                                         }
 
-                                        [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
+                                        [strongSelf.delegate qrScanModel:strongSelf
+                                                     didScanPaymentInput:paymentInput];
                                     });
                                 }];
         }

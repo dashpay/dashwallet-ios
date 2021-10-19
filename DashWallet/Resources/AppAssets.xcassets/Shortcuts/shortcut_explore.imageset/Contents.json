@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "shortcut_secureWalletNow.png",
+      "filename" : "shortcut_explore.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "shortcut_secureWalletNow@2x.png",
+      "filename" : "shortcut_explore@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "shortcut_secureWalletNow@3x.png",
+      "filename" : "shortcut_explore@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

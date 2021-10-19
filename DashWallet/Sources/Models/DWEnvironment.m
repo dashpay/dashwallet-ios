@@ -205,7 +205,8 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
         if (self.currentChain) {
             [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
         }
-        [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:chainType
+                          forKey:CURRENT_CHAIN_TYPE_KEY];
         [self reset];
         [self.currentChainManager.peerManager connect];
         [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification

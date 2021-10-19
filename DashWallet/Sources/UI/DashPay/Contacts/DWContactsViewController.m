@@ -112,7 +112,9 @@ NS_ASSUME_NONNULL_END
         alert.popoverPresentationController.sourceRect = sender.bounds;
     }
 
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:alert
+                       animated:YES
+                     completion:nil];
 }
 
 - (void)contactsContentController:(DWContactsContentViewController *)controller

@@ -69,7 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSDidRequestOSPermissionNotification
+                                                                object:nil];
 
             [strongSelf.view connectCaptureSession];
         }];

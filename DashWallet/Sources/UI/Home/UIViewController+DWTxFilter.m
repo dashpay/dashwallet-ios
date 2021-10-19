@@ -86,7 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
         alert.popoverPresentationController.sourceRect = sender.bounds;
     }
 
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:alert
+                       animated:YES
+                     completion:nil];
 }
 
 @end

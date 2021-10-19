@@ -169,7 +169,9 @@ NS_ASSUME_NONNULL_BEGIN
             [alert addAction:resetButton];
         }
     }
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:alert
+                       animated:YES
+                     completion:nil];
 }
 
 - (void)showNewWalletController {

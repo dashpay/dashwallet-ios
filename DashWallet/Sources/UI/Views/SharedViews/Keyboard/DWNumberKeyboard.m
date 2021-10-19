@@ -355,7 +355,8 @@ static const NSUInteger SECTIONS_COUNT = 3;
                 [[UIDevice currentDevice] playInputClick];
             }
 
-            [self performClearButtonAction:self.clearButton textInput:textInput];
+            [self performClearButtonAction:self.clearButton
+                                 textInput:textInput];
             [self performSelector:@selector(performClearButtonLongPressIsFirstCall:) withObject:@(NO) afterDelay:0.1]; // delay like in iOS keyboard
         }
         else {

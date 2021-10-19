@@ -85,7 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    [self.currentController beginAppearanceTransition:YES animated:YES];
+    [self.currentController beginAppearanceTransition:YES
+                                             animated:YES];
 
     UIView *childView = modalController.view;
     [modalController willMoveToParentViewController:nil];

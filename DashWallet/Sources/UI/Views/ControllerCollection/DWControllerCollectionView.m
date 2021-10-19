@@ -183,7 +183,8 @@ static NSString *const CELL_ID = @"DWControllerCollectionViewCell";
         [self.controllerDelegate controllerCollectionView:self willHideController:controller];
     }
 
-    [controller beginAppearanceTransition:NO animated:NO];
+    [controller beginAppearanceTransition:NO
+                                 animated:NO];
     [controller willMoveToParentViewController:nil];
     [controller.view removeFromSuperview];
     [controller removeFromParentViewController];

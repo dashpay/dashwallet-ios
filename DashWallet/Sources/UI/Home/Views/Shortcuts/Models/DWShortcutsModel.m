@@ -80,26 +80,32 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
     NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
 
     isShowingCreateUserName = NO;
+
     if (isShowingCreateUserName) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_CreateUsername]];
     }
 
     const BOOL walletNeedsBackup = options.walletNeedsBackup;
+    const BOOL userHasBalance = options.userHasBalance;
     if (walletNeedsBackup) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SecureWallet]];
+    }
+
+    if (userHasBalance) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
-        if (!IS_IPHONE_5_OR_LESS) {
-            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
-        }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+    }
+
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+
+    if (userHasBalance) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
     }
     else {
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
-        if (!IS_IPHONE_5_OR_LESS) {
-            [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
-        }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+    }
+
+    if (!IS_IPHONE_5_OR_LESS) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Explore]];
     }
 
     return mutableItems;
@@ -111,22 +117,35 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
              @"User not allowed to configure shortcuts if backup is not done");
     NSParameterAssert(options.shortcuts);
 
+    const BOOL userHasBalance = options.userHasBalance;
+
     NSArray<NSNumber *> *shortcutsSettings = options.shortcuts;
 
     NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
 
-    for (NSNumber *shortcutActionNumber in shortcutsSettings) {
-        DWShortcutActionType action = shortcutActionNumber.integerValue;
-        BOOL actionValid = (action >= DWShortcutActionType_SecureWallet &&
-                            action <= DWShortcutActionType_ReportAnIssue) ||
-                           action == DWShortcutActionType_AddShortcut;
-        NSAssert(actionValid, @"Invalid shortcut");
-        if (!actionValid) {
-            continue;
-        }
+    const BOOL walletNeedsBackup = options.walletNeedsBackup;
 
-        [mutableItems addObject:[DWShortcutAction action:action]];
+    if (walletNeedsBackup) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SecureWallet]];
     }
+
+    if (userHasBalance) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
+    }
+
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Receive]];
+
+    if (userHasBalance) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+    }
+    else {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
+    }
+
+    if (!IS_IPHONE_5_OR_LESS) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Explore]];
+    }
+
 
     return mutableItems;
 }

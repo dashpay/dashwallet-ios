@@ -48,6 +48,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 - (instancetype)init {
     NSDictionary *defaults = @{
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
+        DW_KEYPATH(self, userHasBalance) : @NO,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
@@ -110,6 +111,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 
 - (void)restoreToDefaults {
     self.walletNeedsBackup = YES;
+    self.userHasBalance = NO;
     self.balanceChangedDate = nil;
     self.walletBackupReminderWasShown = NO;
     self.shortcuts = nil;

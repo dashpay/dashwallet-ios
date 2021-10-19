@@ -207,7 +207,8 @@ static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
             NSAssert(NO, @"Invalid sender");
         }
 
-        [self.delegate tabBarView:self didTapButtonType:type];
+        [self.delegate tabBarView:self
+                 didTapButtonType:type];
     }
 }
 

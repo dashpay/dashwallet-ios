@@ -90,7 +90,8 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
             [rows addObject:currentRow];
         }
 
-        [currentRow addWord:wordModel size:wordSize];
+        [currentRow addWord:wordModel
+                       size:wordSize];
     }
 
     const CGFloat contentPadding = ContentVerticalPadding(type);

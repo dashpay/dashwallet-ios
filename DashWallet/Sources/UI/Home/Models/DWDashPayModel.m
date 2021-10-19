@@ -54,7 +54,8 @@ NS_ASSUME_NONNULL_END
             }
 
             // username can be nil at this point
-            [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity username:username];
+            [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity
+                                                       username:username];
         }
 
         DSLogPrivate(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
@@ -194,7 +195,8 @@ NS_ASSUME_NONNULL_END
                 return;
             }
 
-            [strongSelf handleSteps:stepCompleted error:nil];
+            [strongSelf handleSteps:stepCompleted
+                              error:nil];
         }
         completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -220,7 +222,8 @@ NS_ASSUME_NONNULL_END
                 return;
             }
 
-            [strongSelf handleSteps:stepCompleted error:nil];
+            [strongSelf handleSteps:stepCompleted
+                              error:nil];
         }
         completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;

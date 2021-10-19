@@ -225,7 +225,8 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
         if ([self.captureSession canAddOutput:output]) {
             [self.captureSession addOutput:output];
         }
-        [output setMetadataObjectsDelegate:self queue:self.metadataQueue];
+        [output setMetadataObjectsDelegate:self
+                                     queue:self.metadataQueue];
         if ([output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
             output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
         }

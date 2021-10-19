@@ -226,7 +226,8 @@ NS_ASSUME_NONNULL_END
         }
     }
 
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self dismissViewControllerAnimated:YES
+                             completion:nil];
 }
 
 - (void)cancel {

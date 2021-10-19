@@ -62,6 +62,8 @@ static NSString *TitleForAction(DWShortcutAction *action) {
             return NSLocalizedString(@"Join Evolution", nil);
         case DWShortcutActionType_Receive:
             return NSLocalizedString(@"Receive", nil);
+        case DWShortcutActionType_Explore:
+            return NSLocalizedString(@"Explore", nil);
         case DWShortcutActionType_AddShortcut:
             return NSLocalizedString(@"Add Shortcut",
                                      @"Translate it as short as possible! (24 symbols max)");
@@ -137,6 +139,11 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
             NSCParameterAssert(image);
             return image;
         }
+        case DWShortcutActionType_Explore: {
+            UIImage *image = [UIImage imageNamed:@"shortcut_explore"];
+            NSCParameterAssert(image);
+            return image;
+        }
         case DWShortcutActionType_AddShortcut: {
             UIImage *image = [UIImage imageNamed:@"shortcut_addShortcut"];
             NSCParameterAssert(image);
@@ -144,7 +151,7 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
         }
     }
 
-    NSCAssert(NO, @"Unsupported action type");
+    // NSCAssert(NO, @"Unsupported action type");
     return nil;
 }
 

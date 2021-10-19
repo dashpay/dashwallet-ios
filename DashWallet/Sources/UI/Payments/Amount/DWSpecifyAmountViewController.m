@@ -51,7 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    [self.delegate specifyAmountViewController:self didInputAmount:self.model.amount.plainAmount];
+    [self.delegate specifyAmountViewController:self
+                                didInputAmount:self.model.amount.plainAmount];
 }
 
 @end

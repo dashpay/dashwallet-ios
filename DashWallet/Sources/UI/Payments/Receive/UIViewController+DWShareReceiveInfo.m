@@ -47,7 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
         activityViewController.popoverPresentationController.sourceView = sender;
         activityViewController.popoverPresentationController.sourceRect = sender.bounds;
     }
-    [self presentViewController:activityViewController animated:YES completion:nil];
+    [self presentViewController:activityViewController
+                       animated:YES
+                     completion:nil];
 }
 
 @end
