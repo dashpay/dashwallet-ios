@@ -123,19 +123,6 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 
     NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
 
-    //    for (NSNumber *shortcutActionNumber in shortcutsSettings) {
-    //        DWShortcutActionType action = shortcutActionNumber.integerValue;
-    //        BOOL actionValid = (action >= DWShortcutActionType_SecureWallet &&
-    //                            action <= DWShortcutActionType_ReportAnIssue) ||
-    //                           action == DWShortcutActionType_AddShortcut;
-    //        NSAssert(actionValid, @"Invalid shortcut");
-    //        if (!actionValid) {
-    //            continue;
-    //        }
-    //
-    //        [mutableItems addObject:[DWShortcutAction action:action]];
-    //    }
-
     const BOOL walletNeedsBackup = options.walletNeedsBackup;
 
     if (walletNeedsBackup) {
