@@ -31,6 +31,8 @@ static UIImage *ImageByType(DWMainMenuItemType type) {
             return [UIImage imageNamed:@"menu_settings"];
         case DWMainMenuItemType_Tools:
             return [UIImage imageNamed:@"menu_tools"];
+        case DWMainMenuItemType_Explore:
+            return [UIImage imageNamed:@"menu_explore"];
         case DWMainMenuItemType_Support:
             return [UIImage imageNamed:@"menu_support"];
     }
@@ -46,6 +48,8 @@ static NSString *TitleByType(DWMainMenuItemType type) {
             return NSLocalizedString(@"Settings", nil);
         case DWMainMenuItemType_Tools:
             return NSLocalizedString(@"Tools", nil);
+        case DWMainMenuItemType_Explore:
+            return NSLocalizedString(@"Explore", nil);
         case DWMainMenuItemType_Support:
             return NSLocalizedString(@"Support", nil);
     }
@@ -61,6 +65,8 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
             return NSLocalizedString(@"Default currency, shortcuts, about…", nil);
         case DWMainMenuItemType_Tools:
             return NSLocalizedString(@"Import private key…", nil);
+        case DWMainMenuItemType_Explore:
+            return NSLocalizedString(@"Locations and online merchants", nil);
         case DWMainMenuItemType_Support:
             return NSLocalizedString(@"Report an Issue", nil);
     }

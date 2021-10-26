@@ -116,6 +116,9 @@
 "Are you sure?" = "Bạn chắc chứ?";
 
 /* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Xác thực không sẵn sàng";
 
 /* No comment provided by engineer. */
@@ -295,6 +298,9 @@
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Trước đó";
 
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "ví dụ: johndoe";
 
@@ -332,6 +338,12 @@
 "Exit" = "Thoát";
 
 /* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -354,6 +366,12 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Tìm một người dùng trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Quên mã PIN";
@@ -474,6 +492,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Số lượng được yêu cầu: %@";
+
+/* No comment provided by engineer. */
+"Locations and online merchants" = "Locations and online merchants";
 
 /* No comment provided by engineer. */
 "Locked" = "Đã khoá";
@@ -1101,6 +1122,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Khi các giao dịch được xác thực, ví kia sẽ trở nên vô giá trị và không nên được tiếp tục sử dụng vì những lý do an toàn.";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Tại sao tôi không nên chụp ảnh màn hình?";

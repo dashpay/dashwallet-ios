@@ -116,6 +116,9 @@
 "Are you sure?" = "Jste si tím jistí?";
 
 /* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Autentizace není dostupná";
 
 /* No comment provided by engineer. */
@@ -295,6 +298,9 @@
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Dřívější";
 
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "např.: johndoe";
 
@@ -332,6 +338,12 @@
 "Exit" = "Odejít";
 
 /* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -354,6 +366,12 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Najdi uživatele na Dash Network";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Zapomenutý PIN?";
@@ -474,6 +492,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Požadovaná částka: %@";
+
+/* No comment provided by engineer. */
+"Locations and online merchants" = "Locations and online merchants";
 
 /* No comment provided by engineer. */
 "Locked" = "Blokováno";
@@ -1101,6 +1122,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Po potvrzení transakce bude druhá peněženka bezcenná, z bezpečnostních důvodů by neměla být znovu používána.";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Proč bych neměl pořizovat snímek obrazovky?";

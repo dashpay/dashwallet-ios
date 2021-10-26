@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWAboutModel.h"
+#import "DWExploreViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
@@ -109,6 +110,13 @@ NS_ASSUME_NONNULL_BEGIN
         case DWMainMenuItemType_Tools: {
             DWToolsMenuViewController *controller = [[DWToolsMenuViewController alloc] init];
             controller.delegate = self;
+            [self.navigationController pushViewController:controller animated:YES];
+
+            break;
+        }
+        case DWMainMenuItemType_Explore: {
+            DWExploreViewController *controller = [[DWExploreViewController alloc] init];
+            controller.hidesBottomBarWhenPushed = true;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;

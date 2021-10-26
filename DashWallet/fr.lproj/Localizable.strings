@@ -116,6 +116,9 @@
 "Are you sure?" = "Êtes-vous certain ?";
 
 /* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "L'authentification n'est pas disponible";
 
 /* No comment provided by engineer. */
@@ -295,6 +298,9 @@
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Plus tôt";
 
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+
 /* Input username textfield placeholder */
 "eg: johndoe" = "par ex. : alexandremartin";
 
@@ -332,6 +338,12 @@
 "Exit" = "Quitter";
 
 /* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -354,6 +366,12 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Cherchez un utilisateur sur le réseau Dash";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Code PIN oublié ?";
@@ -474,6 +492,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Montant local demandé : %@";
+
+/* No comment provided by engineer. */
+"Locations and online merchants" = "Locations and online merchants";
 
 /* No comment provided by engineer. */
 "Locked" = "Verrouillé";
@@ -1101,6 +1122,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Quand la transaction sera confirmée, l'autre portefeuille ne contiendra plus de fonds, et il ne devra pas être réutilisé pour des raisons de sécurité.";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Pourquoi ne dois-je pas prendre de capture d'écran ?";
