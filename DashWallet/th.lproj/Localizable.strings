@@ -1028,9 +1028,6 @@
 "Unable to connect" = "ไม่สามารถเชื่อมต่อ";
 
 /* No comment provided by engineer. */
-"Unable to get new QR code" = "ไม่สามารถได้รับโค้ด QR ใหม่";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "ไม่รับรอง หรือเอกสารได้รับความเสียหาย";
 
 /* No comment provided by engineer. */

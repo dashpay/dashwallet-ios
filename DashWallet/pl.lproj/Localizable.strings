@@ -1028,9 +1028,6 @@
 "Unable to connect" = "Połączenie jest niemożliwe";
 
 /* No comment provided by engineer. */
-"Unable to get new QR code" = "Pobranie nowego kodu QR niemożliwe";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nieobsługiwany lub uszkodzony dokument";
 
 /* No comment provided by engineer. */

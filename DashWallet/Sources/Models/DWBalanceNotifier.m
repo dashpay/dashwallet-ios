@@ -22,7 +22,6 @@
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
-#import "DWPhoneWCSessionManager.h"
 #import <DashSync/DSLogger.h>
 #import <DashSync/DSPermissionNotification.h>
 
@@ -126,11 +125,6 @@ NS_ASSUME_NONNULL_BEGIN
                          }];
             }
         }
-
-#ifndef IGNORE_WATCH_TARGET
-        // send a custom notification to the watch if the watch app is up
-        [[DWPhoneWCSessionManager sharedInstance] notifyTransactionString:noteText];
-#endif
     }
 
     self.balance = wallet.balance;

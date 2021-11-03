@@ -31,10 +31,6 @@
 #import "DWURLParser.h"
 #import "DWEnvironment.h"
 
-#ifndef IGNORE_WATCH_TARGET
-#import "DWPhoneWCSessionManager.h"
-#endif /* IGNORE_WATCH_TARGET */
-
 #if DASH_TESTNET
 #pragma message "testnet build"
 #endif /* DASH_TESTNET */
@@ -268,10 +264,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     // TODO_outdated: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
-
-#ifndef IGNORE_WATCH_TARGET
-    [DWPhoneWCSessionManager sharedInstance];
-#endif
     
     [DSShapeshiftManager sharedInstance];
 

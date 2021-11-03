@@ -1028,9 +1028,6 @@
 "Unable to connect" = "接続できません";
 
 /* No comment provided by engineer. */
-"Unable to get new QR code" = "新しいQRコードが取得できません";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "サポートされていないか破損しているドキュメント";
 
 /* No comment provided by engineer. */

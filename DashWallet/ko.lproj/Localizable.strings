@@ -1028,9 +1028,6 @@
 "Unable to connect" = "연결할 수 없습니다";
 
 /* No comment provided by engineer. */
-"Unable to get new QR code" = "새로운 QR 코드를 불러올 수 없습니다";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "지원되지 않거나 손상된 문서";
 
 /* No comment provided by engineer. */
