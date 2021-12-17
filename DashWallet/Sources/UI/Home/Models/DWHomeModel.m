@@ -448,7 +448,7 @@ static BOOL IsJailbroken(void) {
 
         NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
 
-        //Timestamps are set to 0 if the transaction hasn't yet been confirmed, they should be at the top of the list if this is the case
+        // Timestamps are set to 0 if the transaction hasn't yet been confirmed, they should be at the top of the list if this is the case
         NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey
                                                                          ascending:NO
                                                                         comparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
