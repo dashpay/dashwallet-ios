@@ -16,12 +16,13 @@
 //
 
 #import <DSDynamicOptions/DSDynamicOptions.h>
+#import "DWPaymentCurrency.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
  A centralized place of User Defaults shared among several parts of the app
- 
+
  To add a new option: add a property with UsedDefaults-supported type and mark it as @dynamic
  in the implementation
  */
@@ -52,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
 
 @property (nonatomic, assign, getter=isResyncingWallet) BOOL resyncingWallet;
+
+@property (nonatomic, assign) DWPaymentCurrency selectedPaymentCurrency;
 
 // Non-dynamic
 
