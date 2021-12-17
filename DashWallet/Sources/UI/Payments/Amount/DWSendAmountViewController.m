@@ -17,6 +17,7 @@
 
 #import "DWSendAmountViewController.h"
 
+#import "DWGlobalOptions.h"
 #import "DWSendAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -88,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWSendAmountModel *sendModel = (DWSendAmountModel *)self.model;
     NSAssert([sendModel isKindOfClass:DWSendAmountModel.class], @"Inconsistent state");
-
+    [DWGlobalOptions sharedInstance].selectedPaymentCurrency = [sendModel isLocalCurrencySelected] ? DWPaymentCurrencyFiat : DWPaymentCurrencyDash;
     [self.delegate sendAmountViewController:self
                              didInputAmount:sendModel.amount.plainAmount];
 }
