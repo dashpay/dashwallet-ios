@@ -55,6 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self.amount.plainAmount > 0;
 }
 
+- (BOOL)isLocalCurrencySelected {
+    return self.activeType == DWAmountTypeSupplementary;
+}
+
 - (BOOL)isSwapToLocalCurrencyAllowed {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     BOOL allowed = priceManager.localCurrencyDashPrice != nil;

@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) NSString *currencyCode;
 
 - (BOOL)amountIsValidForProceeding NS_REQUIRES_SUPER;
+- (BOOL)isLocalCurrencySelected;
 - (BOOL)isSwapToLocalCurrencyAllowed;
 - (void)swapActiveAmountType;
 
