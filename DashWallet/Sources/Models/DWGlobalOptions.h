@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-#import <DSDynamicOptions/DSDynamicOptions.h>
 #import "DWPaymentCurrency.h"
+#import <DSDynamicOptions/DSDynamicOptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -16,8 +16,6 @@
 //
 
 #import "DWGlobalOptions.h"
-
-#import "DWPaymentCurrency.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
