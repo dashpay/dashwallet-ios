@@ -171,7 +171,7 @@ static CGFloat AmountHeight(BOOL small) {
     self.convertAmountImageView.tintColor = controlColor;
 }
 
-- (void)setActiveTypeAnimated:(DWAmountType)activeType completion:(void (^)(void))completion {
+- (void)setActiveType:(DWAmountType)activeType animated:(BOOL)animated completion:(void (^)(void))completion {
     const BOOL wasSwapped = activeType != DWAmountTypeSupplementary;
     const BOOL smallSize = self.smallSize;
     UILabel *bigLabel = nil;
@@ -191,40 +191,64 @@ static CGFloat AmountHeight(BOOL small) {
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
     self.selectorButton.transform = wasSwapped ? smallLabel.transform : CGAffineTransformIdentity;
 
-    [UIView animateWithDuration:0.1
-        delay:0.0
-        options:UIViewAnimationOptionCurveEaseOut
-        animations:^{
-            bigLabel.alpha = SmallAmountTextAlpha;
-            smallLabel.alpha = BigAmountTextAlpha;
-            bigLabel.transform = CGAffineTransformIdentity;
-            smallLabel.transform = CGAffineTransformIdentity;
-        }
-        completion:^(BOOL finished) {
-            const CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
-            const CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
-            const CGFloat translation = maxY - labelHeight;
-            self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
-            self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
-            [UIView animateWithDuration:0.7
-                                  delay:0.0
-                 usingSpringWithDamping:0.5
-                  initialSpringVelocity:1.0
-                                options:UIViewAnimationOptionCurveEaseOut
-                             animations:^{
-                                 [self layoutIfNeeded];
-                             }
-                             completion:nil];
-            [UIView animateWithDuration:0.4
-                animations:^{
-                    self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
-                }
-                completion:^(BOOL finished) {
-                    if (completion) {
-                        completion();
+    void (^updateAlphaAndTransform)(void) = ^(void) {
+        bigLabel.alpha = SmallAmountTextAlpha;
+        smallLabel.alpha = BigAmountTextAlpha;
+        bigLabel.transform = CGAffineTransformIdentity;
+        smallLabel.transform = CGAffineTransformIdentity;
+    };
+
+    void (^updateConstraints)(void) = ^(void) {
+        const CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
+        const CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
+        const CGFloat translation = maxY - labelHeight;
+        self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
+        self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
+    };
+
+    void (^updateConvertAmountImageView)(void) = ^(void) {
+        self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
+    };
+
+    if (animated) {
+        [UIView animateWithDuration:0.1
+            delay:0.0
+            options:UIViewAnimationOptionCurveEaseOut
+            animations:^{
+                updateAlphaAndTransform();
+            }
+            completion:^(BOOL finished) {
+                updateConstraints();
+                [UIView animateWithDuration:0.7
+                                      delay:0.0
+                     usingSpringWithDamping:0.5
+                      initialSpringVelocity:1.0
+                                    options:UIViewAnimationOptionCurveEaseOut
+                                 animations:^{
+                                     [self layoutIfNeeded];
+                                 }
+                                 completion:nil];
+                [UIView animateWithDuration:0.4
+                    animations:^{
+                        updateConvertAmountImageView();
                     }
-                }];
-        }];
+                    completion:^(BOOL finished) {
+                        if (completion) {
+                            completion();
+                        }
+                    }];
+            }];
+    }
+    else {
+        updateAlphaAndTransform();
+        updateConstraints();
+        updateConvertAmountImageView();
+
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
+
+        completion();
+    }
 }
 
 #pragma mark - Private

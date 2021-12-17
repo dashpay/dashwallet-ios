@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) id<DWAmountInputControlSource> source;
 
-- (void)setActiveTypeAnimated:(DWAmountType)activeType completion:(void (^)(void))completion;
+- (void)setActiveType:(DWAmountType)activeType animated:(BOOL)animated completion:(void (^)(void))completion;
 
 @end
 
