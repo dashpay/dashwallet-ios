@@ -21,6 +21,7 @@
 #import "DWAmountInputControl.h"
 #import "DWAmountModel.h"
 #import "DWDPAmountContactView.h"
+#import "DWGlobalOptions.h"
 #import "DWMaxButton.h"
 #import "DWNumberKeyboard.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
@@ -192,6 +193,10 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
 - (void)viewWillAppear {
     [self resetTextFieldPosition];
+
+    if (self.model.activeType == DWAmountTypeSupplementary) {
+        [self switchAmountCurrency:NO];
+    }
 }
 
 - (void)viewWillDisappear {
@@ -228,16 +233,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
     [self.model swapActiveAmountType];
 
-    __weak typeof(self) weakSelf = self;
-    [self.inputControl setActiveTypeAnimated:self.model.activeType
-                                  completion:^{
-                                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                                      if (!strongSelf) {
-                                          return;
-                                      }
-
-                                      [strongSelf resetTextFieldPosition];
-                                  }];
+    [self switchAmountCurrency:YES];
 }
 
 - (void)maxButtonAction:(id)sender {
@@ -263,6 +259,19 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                                                                   toPosition:endOfDocumentPosition];
 }
 
+- (void)switchAmountCurrency:(BOOL)animated {
+    __weak typeof(self) weakSelf = self;
+    [self.inputControl setActiveType:self.model.activeType
+                            animated:animated
+                          completion:^{
+                              __strong typeof(weakSelf) strongSelf = weakSelf;
+                              if (!strongSelf) {
+                                  return;
+                              }
+
+                              [strongSelf resetTextFieldPosition];
+                          }];
+}
 @end
 
 NS_ASSUME_NONNULL_END

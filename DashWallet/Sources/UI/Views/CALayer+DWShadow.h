@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Convinience method to apply shadow values as they set in Sketch.app
- 
+
  @warning 'spread' value should be set in `layoutSubviews` as `shadowPath`.
  See `DWShadowView`
  */

@@ -16,7 +16,6 @@
 //
 
 #import "DWGlobalOptions.h"
-
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -42,11 +41,13 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
 @dynamic resyncingWallet;
+@dynamic selectedPaymentCurrency;
 
 #pragma mark - Init
 
 - (instancetype)init {
     NSDictionary *defaults = @{
+        DW_KEYPATH(self, selectedPaymentCurrency) : [NSNumber numberWithUnsignedInt:DWPaymentCurrencyDash],
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
         DW_KEYPATH(self, userHasBalance) : @NO,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
@@ -121,6 +122,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dashpayRegistrationCompleted = NO;
     self.mostRecentViewedNotificationDate = nil;
     self.resyncingWallet = NO;
+    self.shouldDisplayOnboarding = DWPaymentCurrencyDash;
 }
 
 @end

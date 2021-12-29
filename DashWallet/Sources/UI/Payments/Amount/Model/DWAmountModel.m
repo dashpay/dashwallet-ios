@@ -36,10 +36,26 @@ NS_ASSUME_NONNULL_BEGIN
         _dashValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash];
         _localCurrencyValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency];
 
-        DWAmountObject *amount = [[DWAmountObject alloc] initWithDashAmountString:@"0"
-                                                                   localFormatter:_localFormatter
-                                                                     currencyCode:_currencyCode];
-        _amountEnteredInDash = amount;
+        DWPaymentCurrency selectedCurrency = [DWGlobalOptions sharedInstance].selectedPaymentCurrency;
+
+        DWAmountObject *amount;
+
+        if (selectedCurrency == DWPaymentCurrencyDash) {
+            amount = [[DWAmountObject alloc] initWithDashAmountString:@"0"
+                                                       localFormatter:_localFormatter
+                                                         currencyCode:_currencyCode];
+            _activeType = DWAmountTypeMain;
+            _amountEnteredInDash = amount;
+        }
+        else {
+            amount = [[DWAmountObject alloc] initWithLocalAmountString:@"0"
+                                                        localFormatter:_localFormatter
+                                                          currencyCode:_currencyCode];
+
+            _activeType = DWAmountTypeSupplementary;
+            _amountEnteredInLocalCurrency = amount;
+        }
+
         _amount = amount;
 
         [self updateCurrentAmount];
@@ -53,6 +69,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)amountIsValidForProceeding {
     return self.amount.plainAmount > 0;
+}
+
+- (BOOL)isLocalCurrencySelected {
+    return self.activeType == DWAmountTypeSupplementary;
 }
 
 - (BOOL)isSwapToLocalCurrencyAllowed {

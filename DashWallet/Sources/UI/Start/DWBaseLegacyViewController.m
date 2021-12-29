@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
                         [self protectedViewDidAppear];
                     }];
         [alert addAction:exitButton];
-        [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+        [alert addAction:enterButton]; // ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
     }
     else {
         __block NSUInteger wait = [[DSAuthenticationManager sharedInstance] lockoutWaitTime];
@@ -156,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
                             [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
                         }];
             [alert addAction:resetButton];
-            [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+            [alert addAction:exitButton]; // ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
         }
         else {
             UIAlertAction *wipeButton = [UIAlertAction

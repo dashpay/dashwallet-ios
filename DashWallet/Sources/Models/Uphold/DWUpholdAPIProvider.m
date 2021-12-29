@@ -323,7 +323,7 @@ static NSSet<NSString *> *FiatCurrencyCodes() {
     // Uphold supports only "." as delimeter
     amount = [amount stringByReplacingOccurrencesOfString:@"," withString:@"."];
 
-    NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", @"6c6d1fea-7ed1-4417-9108-a2ac0252288e"]; //card.identifier];
+    NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", @"6c6d1fea-7ed1-4417-9108-a2ac0252288e"]; // card.identifier];
     NSURL *url = [[self baseURL] URLByAppendingPathComponent:urlPath];
     NSParameterAssert(url);
     HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url

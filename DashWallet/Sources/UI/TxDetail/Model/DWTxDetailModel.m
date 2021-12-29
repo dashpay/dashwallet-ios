@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
             title = NSLocalizedString(@"Internally moved to", nil);
             break;
         case DSTransactionDirection_NotAccountFunds:
-            title = @""; //this should not be possible
+            title = @""; // this should not be possible
             break;
     }
 

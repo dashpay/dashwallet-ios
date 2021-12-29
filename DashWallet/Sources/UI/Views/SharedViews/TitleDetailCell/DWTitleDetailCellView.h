@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Content padding
- 
+
  - DWTitleDetailCellViewPadding_None: 0 pt
  - DWTitleDetailCellViewPadding_Small: 12 pt
  */

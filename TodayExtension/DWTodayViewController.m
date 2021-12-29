@@ -185,7 +185,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
         self.bubbleView.font = font;
         self.bubbleView.backgroundColor = [UIColor colorWithWhite:0.15 alpha:1.0];
         [self.addressLabel.superview addSubview:self.bubbleView];
-        [self.bubbleView becomeFirstResponder]; //this will cause bubbleview to hide when it loses firstresponder status
+        [self.bubbleView becomeFirstResponder]; // this will cause bubbleview to hide when it loses firstresponder status
         [UIView animateWithDuration:0.2
                          animations:^{
                              self.bubbleView.alpha = 1.0;

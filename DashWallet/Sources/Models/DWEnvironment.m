@@ -47,8 +47,8 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
     }
-    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
-    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
+    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; // initialization
+    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; // initialization
     DSChain *evonet = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
     if (evonet) {
         [evonet setDevnetNetworkName:@"Evonet"];
@@ -69,7 +69,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
         case DSChainType_TestNet:
             self.currentChain = [DSChain testnet];
             break;
-        case DSChainType_DevNet: //we will only have evonet
+        case DSChainType_DevNet: // we will only have evonet
             self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
             if (!self.currentChain) {
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -110,7 +110,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     }
 
     if (shouldRemovePin) {
-        [[DSAuthenticationManager sharedInstance] removePin]; //this can only work if there are no wallets
+        [[DSAuthenticationManager sharedInstance] removePin]; // this can only work if there are no wallets
     }
 }
 
@@ -144,7 +144,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     [serviceLocations addObject:@"34.212.127.218"];
     [serviceLocations addObject:@"34.217.130.113"];
     [serviceLocations addObject:@"34.222.113.168"];
-    //shuffle them
+    // shuffle them
     NSUInteger count = [serviceLocations count];
     for (NSUInteger i = 0; i < count - 1; ++i) {
         NSInteger remainingCount = count - i;
@@ -159,7 +159,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     DSChainType originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     if (originalChainType == chainType) {
         // Notification isn't send here as the chain remains the same
-        completion(YES); //didn't really switch but good enough
+        completion(YES); // didn't really switch but good enough
         return;
     }
     DSWallet *wallet = [self currentWallet];

@@ -132,7 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
         dataItem.inputSendAddresses = [inputAddressesWithNulls allObjects];
     }
     else {
-        //Don't show input addresses for coinbase
+        // Don't show input addresses for coinbase
         dataItem.inputSendAddresses = [NSArray array];
     }
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
@@ -147,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else if (transactionDirection == DSTransactionDirection_Received) {
         if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
-            //should be very hard to get here, a miner would have to include a non standard transaction into a block
+            // should be very hard to get here, a miner would have to include a non standard transaction into a block
             dataItem.state = DWTransactionState_Locked;
         }
         else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
@@ -157,7 +157,7 @@ NS_ASSUME_NONNULL_BEGIN
             dataItem.state = DWTransactionState_Locked;
         }
         else if (!instantSendReceived && !confirmed) {
-            NSTimeInterval transactionAge = [NSDate timeIntervalSince1970] - transaction.timestamp; //we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
+            NSTimeInterval transactionAge = [NSDate timeIntervalSince1970] - transaction.timestamp; // we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
             if (confirms == 0 && (processingInstantSend || transactionAge < 1.0)) {
                 dataItem.state = DWTransactionState_Processing;
             }
