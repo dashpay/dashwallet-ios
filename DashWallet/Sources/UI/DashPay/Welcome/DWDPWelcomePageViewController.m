@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_END
     if (_titleLabel == nil) {
         _titleLabel = [[UILabel alloc] init];
         _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        _titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
+        _titleLabel.font = [UIFont dw_mediumFontOfSize:20];
         _titleLabel.textColor = [UIColor dw_darkTitleColor];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.numberOfLines = 0;
@@ -111,8 +111,8 @@ NS_ASSUME_NONNULL_END
     if (_descLabel == nil) {
         _descLabel = [[UILabel alloc] init];
         _descLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        _descLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-        _descLabel.textColor = [UIColor dw_darkTitleColor];
+        _descLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+        _descLabel.textColor = [UIColor dw_subheaderTextColor];
         _descLabel.textAlignment = NSTextAlignmentCenter;
         _descLabel.numberOfLines = 0;
         _descLabel.adjustsFontForContentSizeCategory = YES;

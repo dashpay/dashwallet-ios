@@ -37,7 +37,7 @@
 
     UILabel *titleLabel = [[UILabel alloc] init];
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+    titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
     titleLabel.textColor = [UIColor dw_secondaryTextColor];
     titleLabel.text = NSLocalizedString(@"Welcome to DashPay", nil);
     titleLabel.numberOfLines = 0;
@@ -46,7 +46,7 @@
 
     UILabel *subtitleLabel = [[UILabel alloc] init];
     subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+	subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleLargeTitle];
     subtitleLabel.textColor = [UIColor dw_darkTitleColor];
     subtitleLabel.text = NSLocalizedString(@"Let’s Get Started", nil);
     subtitleLabel.numberOfLines = 0;
