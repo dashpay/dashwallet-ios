@@ -81,6 +81,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_subheaderTextColor {
+    UIColor *color = [UIColor colorNamed:@"SubheaderTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_redColor {
     UIColor *color = [UIColor colorNamed:@"RedColor"];
     NSParameterAssert(color);
