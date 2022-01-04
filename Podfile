@@ -1,7 +1,7 @@
 source 'https://cdn.cocoapods.org/'
 
 target 'dashwallet' do
-  platform :ios, '12.0'
+  platform :ios, '13.0'
   
   pod 'DashSync', :path => '../DashSync/'
 
@@ -32,7 +32,7 @@ target 'dashwallet' do
 end
 
 target 'TodayExtension' do
-  platform :ios, '12.0'
+  platform :ios, '13.0'
   
   pod 'DSDynamicOptions', '0.1.2'
 
