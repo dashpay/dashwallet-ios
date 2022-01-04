@@ -26,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
-
-@property (null_resettable, nonatomic, strong) UIScrollView *scrollView;
 @property (null_resettable, nonatomic, strong) DWInputUsernameViewController *inputUsername;
 
 @end
@@ -83,36 +81,15 @@ NS_ASSUME_NONNULL_END
     self.view.clipsToBounds = YES;
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    [self.view addSubview:self.scrollView];
+    [self dw_embedChild:self.inputUsername inContainer:self.view];
 
-    const BOOL isLandscape = CGRectGetWidth(self.view.bounds) > CGRectGetHeight(self.view.bounds);
-
-    [NSLayoutConstraint activateConstraints:@[
-        [self.scrollView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [self.scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [self.view.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
-        [self.view.bottomAnchor constraintEqualToAnchor:self.scrollView.bottomAnchor],
-        [self.scrollView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    ]];
-
-    [self dw_embedChild:self.inputUsername inContainer:self.scrollView];
-
-    NSLayoutConstraint *heightConstraint = [self.inputUsername.view.heightAnchor constraintEqualToAnchor:self.scrollView.heightAnchor];
+    NSLayoutConstraint *heightConstraint = [self.inputUsername.view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor];
     heightConstraint.priority = UILayoutPriorityRequired - 1;
 
     [NSLayoutConstraint activateConstraints:@[
         heightConstraint,
-        [self.inputUsername.view.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor]
+        [self.inputUsername.view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor]
     ]];
-}
-
-- (UIScrollView *)scrollView {
-    if (_scrollView == nil) {
-        _scrollView = [[UIScrollView alloc] initWithFrame:CGRectZero];
-        _scrollView.translatesAutoresizingMaskIntoConstraints = NO;
-    }
-
-    return _scrollView;
 }
 
 - (DWInputUsernameViewController *)inputUsername {

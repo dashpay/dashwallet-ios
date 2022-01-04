@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWInputUsernameViewController () <UITextFieldDelegate, DWCheckExistenceUsernameValidationRuleDelegate>
 
+@property (null_resettable, nonatomic, strong) UIStackView *stackView;
 @property (null_resettable, nonatomic, strong) UITextField *textField;
 @property (null_resettable, nonatomic, strong) UIStackView *validationContentView;
 @property (nonatomic, copy) NSArray<DWUsernameValidationView *> *validationViews;
@@ -89,9 +90,12 @@ NS_ASSUME_NONNULL_END
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     stackView.alignment = UIStackViewAlignmentTop;
 
-    [self.view addSubview:self.textField];
-    [self.view addSubview:stackView];
-    [self.view addSubview:self.registerButton];
+	[self.view addSubview:self.stackView];
+	
+	[self.stackView addArrangedSubview: self.textField];
+	[self.stackView addArrangedSubview: stackView];
+	[self.stackView addArrangedSubview: [UIView new]];
+	[self.stackView addArrangedSubview: self.registerButton];
 
     [self updateValidationContentViewForSize:self.view.bounds.size];
 
@@ -100,27 +104,19 @@ NS_ASSUME_NONNULL_END
 
     const CGFloat bottomPadding = [self.class deviceSpecificBottomPadding];
     // constraint relation is inverted so we can use positive padding values
-    self.contentBottomConstraint = [safeAreaGuide.bottomAnchor constraintEqualToAnchor:self.registerButton.bottomAnchor
+    self.contentBottomConstraint = [safeAreaGuide.bottomAnchor constraintEqualToAnchor:self.stackView.bottomAnchor
                                                                               constant:bottomPadding];
 
     [NSLayoutConstraint activateConstraints:@[
-        [self.textField.topAnchor constraintEqualToAnchor:safeAreaGuide.topAnchor
+		[self.textField.heightAnchor constraintLessThanOrEqualToConstant:TEXTFIELD_MAX_HEIGHT],
+		[self.registerButton.heightAnchor constraintEqualToConstant:DWBottomButtonHeight()],
+		
+        [self.stackView.topAnchor constraintEqualToAnchor:safeAreaGuide.topAnchor
                                                  constant:SPACING],
-        [self.textField.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
-        [marginsGuide.trailingAnchor constraintEqualToAnchor:self.textField.trailingAnchor],
-        [self.textField.heightAnchor constraintLessThanOrEqualToConstant:TEXTFIELD_MAX_HEIGHT],
-
-        [stackView.topAnchor constraintEqualToAnchor:self.textField.bottomAnchor
-                                            constant:SPACING],
-        [stackView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
-        [marginsGuide.trailingAnchor constraintEqualToAnchor:stackView.trailingAnchor],
-
-        [self.registerButton.topAnchor constraintEqualToAnchor:stackView.bottomAnchor
-                                                      constant:SPACING],
-        [self.registerButton.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
-        [self.registerButton.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
-        [self.registerButton.heightAnchor constraintEqualToConstant:DWBottomButtonHeight()],
-        self.contentBottomConstraint,
+        [self.stackView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
+        [self.stackView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
+		//[self.stackView.bottomAnchor constraintEqualToAnchor:safeAreaGuide.bottomAnchor],
+		self.contentBottomConstraint
     ]];
 }
 
@@ -199,6 +195,7 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
+
 - (void)updateValidationContentViewForSize:(CGSize)size {
     BOOL isLandscape = size.width > size.height;
     if (isLandscape) {
@@ -207,6 +204,17 @@ NS_ASSUME_NONNULL_END
     else {
         self.validationContentView.axis = UILayoutConstraintAxisVertical;
     }
+}
+
+- (UIScrollView *)stackView {
+	if (_stackView == nil) {
+		_stackView = [[UIStackView alloc] initWithFrame:CGRectZero];
+		_stackView.translatesAutoresizingMaskIntoConstraints = NO;
+		_stackView.axis = UILayoutConstraintAxisVertical;
+		_stackView.spacing = SPACING;
+	}
+	
+	return _stackView;
 }
 
 - (UITextField *)textField {
