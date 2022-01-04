@@ -2,12 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FirebaseDynamicLinksCustomDomains</key>
-	<array>
-		<string>https://invitations.dashpay.io/link</string>
-	</array>
-	<key>FirebaseDeepLinkPasteboardRetrievalEnabled</key>
-	<false/>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>org.dashcore.dashsync.backgroundblocksync</string>
@@ -113,7 +107,13 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>118</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FirebaseDeepLinkPasteboardRetrievalEnabled</key>
+	<false/>
+	<key>FirebaseDynamicLinksCustomDomains</key>
+	<array>
+		<string>https://invitations.dashpay.io/link</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
