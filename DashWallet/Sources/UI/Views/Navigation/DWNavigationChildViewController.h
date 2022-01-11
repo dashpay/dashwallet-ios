@@ -16,6 +16,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIViewController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DWNavigationBarAppearance) {
     DWNavigationBarAppearanceWhite,
 };
 
-@interface DWNavigationChildViewController : UIViewController
+@interface DWNavigationChildViewController : KVOUIViewController
 
 @property (readonly, assign, nonatomic) DWNavigationBarAppearance navigationBarAppearance;
 
