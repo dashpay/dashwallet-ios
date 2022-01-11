@@ -105,6 +105,21 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+	if (self.model.syncModel.state != DWSyncModelState_SyncDone) {
+		__block typeof(self) wSelf = self;
+		
+		[self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
+					  with:^(typeof(self) self, NSNumber *value) {
+			if (value.intValue == DWSyncModelState_SyncDone)
+			{
+				[self mvvm_unobserve:DW_KEYPATH(self, model.syncModel.state)];
+				[self handleDeeplink:url definedUsername:definedUsername];
+			}
+		}];
+		
+		return;
+	}
+	
     __weak typeof(self) weakSelf = self;
     [self.model
         handleDeeplink:url
