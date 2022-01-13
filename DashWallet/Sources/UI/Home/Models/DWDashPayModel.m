@@ -114,8 +114,7 @@ NS_ASSUME_NONNULL_END
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
     if (invitationURL != nil) {
-        DSBlockchainInvitation *invitation = [[DSBlockchainInvitation alloc] initWithInvitationLink:invitationURL.absoluteString
-                                                                                           inWallet:wallet];
+        DSBlockchainInvitation *invitation = [[DSBlockchainInvitation alloc] initWithInvitationLink:invitationURL.absoluteString inWallet:wallet];
 
         __weak typeof(self) weakSelf = self;
         [invitation
@@ -141,10 +140,10 @@ NS_ASSUME_NONNULL_END
                 [strongSelf handleSteps:stepsCompleted error:error];
             }
             completionQueue:dispatch_get_main_queue()];
-
+	
+		[self sendContactRequestToInviterUsingInvitationURL:invitationURL];
         return;
     }
-
 
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
 
@@ -167,6 +166,51 @@ NS_ASSUME_NONNULL_END
                                                             }
                                                         }];
     }
+}
+
+- (void)sendContactRequestToInviterUsingInvitationURL:(NSURL *)invitationURL
+{
+	NSURLComponents *components = [NSURLComponents componentsWithURL:invitationURL resolvingAgainstBaseURL:NO];
+	NSString *username;
+	
+	for (NSURLQueryItem *item in components.queryItems) {
+		if ([item.name isEqualToString:@"du"]) {
+			username = item.value;
+			break;
+		}
+	}
+	
+	if (!username) {
+		return;
+	}
+	
+	DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
+	__weak typeof(self) weakSelf = self;
+	[manager
+					searchIdentitiesByDashpayUsernamePrefix:username
+					offset:0
+					limit:1
+					queryDashpayProfileInfo:YES
+					withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+		__strong typeof(weakSelf) strongSelf = weakSelf;
+		if (!strongSelf) {
+			return;
+		}
+
+		if (success) {
+			DSBlockchainIdentity *blockchainIdentity = blockchainIdentities.firstObject;
+			[strongSelf sendContactRequestToBlockchainIdentity: blockchainIdentity];
+		}
+	}];
+}
+
+- (void)sendContactRequestToBlockchainIdentity:(DSBlockchainIdentity *) blockchainIdentity {
+
+	DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+	DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+	[myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
+														completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+	}];
 }
 
 - (BOOL)canRetry {

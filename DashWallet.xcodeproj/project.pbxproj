@@ -557,6 +557,7 @@
 		2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF01E3243F8625003718DC /* DWDPRegistrationDoneTableViewCell.m */; };
 		2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
+		4782CF5D2790613600B4100C /* NSURL+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4782CF5C2790613600B4100C /* NSURL+DashWallet.m */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
@@ -1814,6 +1815,8 @@
 		2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationDoneTableViewCell.xib; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
+		4782CF5B2790611500B4100C /* NSURL+DashWallet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL+DashWallet.h"; sourceTree = "<group>"; };
+		4782CF5C2790613600B4100C /* NSURL+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL+DashWallet.m"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -4046,6 +4049,7 @@
 		2AC52AD3241BB5CC00D9A829 /* Setup */ = {
 			isa = PBXGroup;
 			children = (
+				4782CF5A27902F7000B4100C /* Model */,
 				2A3CCEF6242BB0AF00300AF8 /* RegistrationCompleted */,
 				2AE8B66823CF0EEA0016F221 /* UsernamePending */,
 				2AE8B66123CF08C50016F221 /* ConfirmUsername */,
@@ -4177,6 +4181,8 @@
 				2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */,
 				C3DAD2CD247585C10001624F /* NSPredicate+DWFullTextSearch.h */,
 				C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */,
+				4782CF5B2790611500B4100C /* NSURL+DashWallet.h */,
+				4782CF5C2790613600B4100C /* NSURL+DashWallet.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -4766,6 +4772,13 @@
 				2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */,
 			);
 			path = Receive;
+			sourceTree = "<group>";
+		};
+		4782CF5A27902F7000B4100C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		75D5F3B5191EC270004AB296 = {
@@ -6015,6 +6028,7 @@
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2ADDF991251B562B00DA8926 /* DWUserProfileModalQRViewController.m in Sources */,
 				2A5BD5982451DD0700688A8D /* DWLengthUsernameValidationRule.m in Sources */,
+				4782CF5D2790613600B4100C /* NSURL+DashWallet.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
 				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,

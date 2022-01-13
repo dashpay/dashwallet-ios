@@ -1,9 +1,9 @@
 PODS:
-  - "!ProtoCompiler (3.15.8)":
+  - "!ProtoCompiler (3.17.3)":
     - Protobuf (~> 3.0)
-  - "!ProtoCompiler-gRPCPlugin (1.40.0)":
-    - "!ProtoCompiler (= 3.15.8)"
-    - gRPC-ProtoRPC (= 1.40.0)
+  - "!ProtoCompiler-gRPCPlugin (1.41.1)":
+    - "!ProtoCompiler (= 3.17.3)"
+    - gRPC-ProtoRPC (= 1.41.1)
   - abseil/algorithm/algorithm (1.20210324.0):
     - abseil/base/config
   - abseil/algorithm/container (1.20210324.0):
@@ -358,17 +358,17 @@ PODS:
     - abseil/base/config
     - abseil/meta/type_traits
   - bls-signatures-pod (0.2.11)
-  - BoringSSL-GRPC (0.0.19):
-    - BoringSSL-GRPC/Implementation (= 0.0.19)
-    - BoringSSL-GRPC/Interface (= 0.0.19)
-  - BoringSSL-GRPC/Implementation (0.0.19):
-    - BoringSSL-GRPC/Interface (= 0.0.19)
-  - BoringSSL-GRPC/Interface (0.0.19)
+  - BoringSSL-GRPC (0.0.21):
+    - BoringSSL-GRPC/Implementation (= 0.0.21)
+    - BoringSSL-GRPC/Interface (= 0.0.21)
+  - BoringSSL-GRPC/Implementation (0.0.21):
+    - BoringSSL-GRPC/Interface (= 0.0.21)
+  - BoringSSL-GRPC/Interface (0.0.21)
   - CloudInAppMessaging (0.1.0)
   - CocoaImageHashing (1.9.0)
-  - CocoaLumberjack (3.6.0):
-    - CocoaLumberjack/Core (= 3.6.0)
-  - CocoaLumberjack/Core (3.6.0)
+  - CocoaLumberjack (3.7.2):
+    - CocoaLumberjack/Core (= 3.7.2)
+  - CocoaLumberjack/Core (3.7.2)
   - DAPI-GRPC (0.21.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages (= 0.21.0-dev.8)
@@ -380,44 +380,46 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
+  - DashSharedCore (0.1.2)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.11)
-    - CocoaLumberjack (= 3.6.0)
+    - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.21.0-dev.8)
+    - DashSharedCore (= 0.1.2)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
     - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
-  - Firebase/CoreOnly (7.6.0):
-    - FirebaseCore (= 7.6.0)
-  - Firebase/DynamicLinks (7.6.0):
+  - Firebase/CoreOnly (8.10.0):
+    - FirebaseCore (= 8.10.0)
+  - Firebase/DynamicLinks (8.10.0):
     - Firebase/CoreOnly
-    - FirebaseDynamicLinks (~> 7.6.0)
-  - FirebaseCore (7.6.0):
-    - FirebaseCoreDiagnostics (~> 7.4)
-    - GoogleUtilities/Environment (~> 7.0)
-    - GoogleUtilities/Logger (~> 7.0)
-  - FirebaseCoreDiagnostics (7.11.0):
-    - GoogleDataTransport (~> 8.4)
-    - GoogleUtilities/Environment (~> 7.0)
-    - GoogleUtilities/Logger (~> 7.0)
+    - FirebaseDynamicLinks (~> 8.10.0)
+  - FirebaseCore (8.10.0):
+    - FirebaseCoreDiagnostics (~> 8.0)
+    - GoogleUtilities/Environment (~> 7.6)
+    - GoogleUtilities/Logger (~> 7.6)
+  - FirebaseCoreDiagnostics (8.10.0):
+    - GoogleDataTransport (~> 9.1)
+    - GoogleUtilities/Environment (~> 7.6)
+    - GoogleUtilities/Logger (~> 7.6)
     - nanopb (~> 2.30908.0)
-  - FirebaseDynamicLinks (7.6.0):
-    - FirebaseCore (~> 7.0)
-  - GoogleDataTransport (8.4.0):
+  - FirebaseDynamicLinks (8.10.0):
+    - FirebaseCore (~> 8.0)
+  - GoogleDataTransport (9.1.2):
     - GoogleUtilities/Environment (~> 7.2)
     - nanopb (~> 2.30908.0)
-    - PromisesObjC (~> 1.2)
-  - GoogleUtilities/Environment (7.5.0):
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.5.0):
+  - GoogleUtilities/Environment (7.6.0):
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.6.0):
     - GoogleUtilities/Environment
-  - gRPC-Core (1.40.0):
-    - gRPC-Core/Implementation (= 1.40.0)
-    - gRPC-Core/Interface (= 1.40.0)
-  - gRPC-Core/Implementation (1.40.0):
+  - gRPC-Core (1.41.1):
+    - gRPC-Core/Implementation (= 1.41.1)
+    - gRPC-Core/Interface (= 1.41.1)
+  - gRPC-Core/Implementation (1.41.1):
     - abseil/base/base (= 1.20210324.0)
     - abseil/base/core_headers (= 1.20210324.0)
     - abseil/container/flat_hash_map (= 1.20210324.0)
@@ -432,39 +434,40 @@ PODS:
     - abseil/synchronization/synchronization (= 1.20210324.0)
     - abseil/time/time (= 1.20210324.0)
     - abseil/types/optional (= 1.20210324.0)
-    - BoringSSL-GRPC (= 0.0.19)
-    - gRPC-Core/Interface (= 1.40.0)
-  - gRPC-Core/Interface (1.40.0)
-  - gRPC-ProtoRPC (1.40.0):
-    - gRPC-ProtoRPC/Legacy (= 1.40.0)
-    - gRPC-ProtoRPC/Legacy-Header (= 1.40.0)
-    - gRPC-ProtoRPC/Main (= 1.40.0)
-  - gRPC-ProtoRPC/Legacy (1.40.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.40.0)
-    - gRPC-ProtoRPC/Main (= 1.40.0)
-    - gRPC-RxLibrary (= 1.40.0)
-    - gRPC/GRPCCore (= 1.40.0)
+    - abseil/types/variant (= 1.20210324.0)
+    - BoringSSL-GRPC (= 0.0.21)
+    - gRPC-Core/Interface (= 1.41.1)
+  - gRPC-Core/Interface (1.41.1)
+  - gRPC-ProtoRPC (1.41.1):
+    - gRPC-ProtoRPC/Legacy (= 1.41.1)
+    - gRPC-ProtoRPC/Legacy-Header (= 1.41.1)
+    - gRPC-ProtoRPC/Main (= 1.41.1)
+  - gRPC-ProtoRPC/Legacy (1.41.1):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.41.1)
+    - gRPC-ProtoRPC/Main (= 1.41.1)
+    - gRPC-RxLibrary (= 1.41.1)
+    - gRPC/GRPCCore (= 1.41.1)
     - Protobuf (~> 3.0)
-  - gRPC-ProtoRPC/Legacy-Header (1.40.0)
-  - gRPC-ProtoRPC/Main (1.40.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.40.0)
-    - gRPC/Interface (= 1.40.0)
+  - gRPC-ProtoRPC/Legacy-Header (1.41.1)
+  - gRPC-ProtoRPC/Main (1.41.1):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.41.1)
+    - gRPC/Interface (= 1.41.1)
     - Protobuf (~> 3.0)
-  - gRPC-RxLibrary (1.40.0):
-    - gRPC-RxLibrary/Implementation (= 1.40.0)
-    - gRPC-RxLibrary/Interface (= 1.40.0)
-  - gRPC-RxLibrary/Implementation (1.40.0):
+  - gRPC-RxLibrary (1.41.1):
+    - gRPC-RxLibrary/Implementation (= 1.41.1)
+    - gRPC-RxLibrary/Interface (= 1.41.1)
+  - gRPC-RxLibrary/Implementation (1.41.1):
     - gRPC-RxLibrary/Interface
-  - gRPC-RxLibrary/Interface (1.40.0)
-  - gRPC/GRPCCore (1.40.0):
-    - gRPC-Core (= 1.40.0)
-    - gRPC-RxLibrary (= 1.40.0)
-    - gRPC/Interface (= 1.40.0)
-    - gRPC/Interface-Legacy (= 1.40.0)
-  - gRPC/Interface (1.40.0):
-    - gRPC/Interface-Legacy (= 1.40.0)
-  - gRPC/Interface-Legacy (1.40.0):
-    - gRPC-RxLibrary/Interface (= 1.40.0)
+  - gRPC-RxLibrary/Interface (1.41.1)
+  - gRPC/GRPCCore (1.41.1):
+    - gRPC-Core (= 1.41.1)
+    - gRPC-RxLibrary (= 1.41.1)
+    - gRPC/Interface (= 1.41.1)
+    - gRPC/Interface-Legacy (= 1.41.1)
+  - gRPC/Interface (1.41.1):
+    - gRPC/Interface-Legacy (= 1.41.1)
+  - gRPC/Interface-Legacy (1.41.1):
+    - gRPC-RxLibrary/Interface (= 1.41.1)
   - KVO-MVVM (0.5.6)
   - MBProgressHUD (1.1.0)
   - MMSegmentSlider (1.0.3)
@@ -473,8 +476,8 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
-  - PromisesObjC (1.2.12)
-  - Protobuf (3.18.0)
+  - PromisesObjC (2.0.0)
+  - Protobuf (3.19.1)
   - SDWebImage (5.9.4):
     - SDWebImage/Core (= 5.9.4)
   - SDWebImage/Core (5.9.4)
@@ -499,11 +502,6 @@ DEPENDENCIES:
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
-    - Firebase
-    - FirebaseDynamicLinks
-    - GoogleDataTransport
-    - nanopb
   trunk:
     - "!ProtoCompiler"
     - "!ProtoCompiler-gRPCPlugin"
@@ -513,10 +511,14 @@ SPEC REPOS:
     - CloudInAppMessaging
     - CocoaLumberjack
     - DAPI-GRPC
+    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
+    - Firebase
     - FirebaseCore
     - FirebaseCoreDiagnostics
+    - FirebaseDynamicLinks
+    - GoogleDataTransport
     - GoogleUtilities
     - gRPC
     - gRPC-Core
@@ -524,6 +526,7 @@ SPEC REPOS:
     - gRPC-RxLibrary
     - KVO-MVVM
     - MBProgressHUD
+    - nanopb
     - PromisesObjC
     - Protobuf
     - SDWebImage
@@ -552,34 +555,35 @@ CHECKOUT OPTIONS:
     :git: https://github.com/podkovyrin/MMSegmentSlider
 
 SPEC CHECKSUMS:
-  "!ProtoCompiler": ab1933e59740069332a2270cc82edb17c43e74cb
-  "!ProtoCompiler-gRPCPlugin": 8c2d7b95fcb0b2e55b0086ec3c4d2ae54a45576c
+  "!ProtoCompiler": 41c929df93bb3823c25418053f5105a1c401b907
+  "!ProtoCompiler-gRPCPlugin": 019f80229c1a537c4d84b4ec36fb54bc01bd31a8
   abseil: c12cac4b0b499c3335ac47ac46adf303f0618d13
   bls-signatures-pod: 6bca9f1d2c67d321d935713d49c272880989f169
-  BoringSSL-GRPC: a1ddc6446c98c7a0766cd2bab41a0713e80fa7d0
+  BoringSSL-GRPC: 4a3d8c5bfb88cedaf5e46711fedfd8dc92272a63
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
-  CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
+  CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: a33d808446476b6db8429ddcdbc4c1c7872f5501
-  DashSync: 6ad6e79fe9ae9180ef2d09e89850ace4dc4adef8
+  DashSharedCore: 41621b6322b66c07a9f78d6ef8b428defb21fd8b
+  DashSync: 7bc6d0fec3c7c17efecc9a3b7295aca9a31b4eaa
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
-  Firebase: e1e089d9aac215a52442583f818ab61de3c4581b
-  FirebaseCore: 0a43b7f1c5b36f3358cd703011ca4c7e0df55870
-  FirebaseCoreDiagnostics: 68ad972f99206cef818230f3f3179d52ccfb7f8c
-  FirebaseDynamicLinks: 1ba27bcead0c55cb3fa48db7e1ca75005f8123d0
-  GoogleDataTransport: cd9db2180fcecd8da1b561aea31e3e56cf834aa7
-  GoogleUtilities: eea970f4a389963963bffe8d8fabe43540678b9c
-  gRPC: 6aff07f1454c5a3d0216085ee45641453a0fd699
-  gRPC-Core: 1f83b2d3879c6b3ae7d6fd9a93b3a05c473a6186
-  gRPC-ProtoRPC: 3874566e2aad0268c33c103bcfba6cf062a6d267
-  gRPC-RxLibrary: 12532beae7ea079792b9c0fbce4514d37d206f85
+  Firebase: 44213362f1dcc52555b935dc925ed35ac55f1b20
+  FirebaseCore: 04186597c095da37d90ff9fd3e53bc61a1ff2440
+  FirebaseCoreDiagnostics: 56fb7216d87e0e6ec2feddefa9d8a392fe8b2c18
+  FirebaseDynamicLinks: bb6ac718f763ec43560f0e2bb6b655a798b277af
+  GoogleDataTransport: 629c20a4d363167143f30ea78320d5a7eb8bd940
+  GoogleUtilities: 684ee790a24f73ebb2d1d966e9711c203f2a4237
+  gRPC: f86f7af26edaf0ad17c7a086c1ef4ec57b4836ef
+  gRPC-Core: 7a331610b105db3604f1db57563f3a4380ec4618
+  gRPC-ProtoRPC: ee695ca76fe8ade36408da4303cfb78b861b51bb
+  gRPC-RxLibrary: ab420abf14f3e7c99090aa0e9caf3ce5a6843d7a
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
-  PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
-  Protobuf: 1a37ebea1338949e9ac35a3f06e80b3f536eec8d
+  PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
+  Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
   SDWebImage: b69257f4ab14e9b6a2ef53e910fdf914d8f757c1
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
@@ -587,6 +591,6 @@ SPEC CHECKSUMS:
   TOCropViewController: da59f531f8ac8a94ef6d6c0fc34009350f9e8bfe
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: f6abc796a2d91eb8febb6ae4c4cf53eabcbdf075
+PODFILE CHECKSUM: ed64379c2427e05c9ce4b708b8d4d9598410d312
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.2
