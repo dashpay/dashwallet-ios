@@ -5565,6 +5565,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 5.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -5595,6 +5596,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 5.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -5875,6 +5877,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 5.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -6068,6 +6071,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 5.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
