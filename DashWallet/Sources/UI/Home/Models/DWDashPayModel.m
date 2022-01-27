@@ -137,11 +137,11 @@ NS_ASSUME_NONNULL_END
                 }
 
                 NSLog(@">>> completed invitation %@ - %@", @(stepsCompleted), error);
+				[strongSelf sendContactRequestToInviterUsingInvitationURL:invitationURL];
                 [strongSelf handleSteps:stepsCompleted error:error];
             }
             completionQueue:dispatch_get_main_queue()];
 	
-		[self sendContactRequestToInviterUsingInvitationURL:invitationURL];
         return;
     }
 
@@ -192,14 +192,16 @@ NS_ASSUME_NONNULL_END
 					limit:1
 					queryDashpayProfileInfo:YES
 					withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-		__strong typeof(weakSelf) strongSelf = weakSelf;
-		if (!strongSelf) {
-			return;
-		}
-
 		if (success) {
 			DSBlockchainIdentity *blockchainIdentity = blockchainIdentities.firstObject;
-			[strongSelf sendContactRequestToBlockchainIdentity: blockchainIdentity];
+			
+			DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+			DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+			
+			[myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
+																completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+				DSLog(@"Friend request sent %i", success);
+			}];
 		}
 	}];
 }
@@ -210,6 +212,7 @@ NS_ASSUME_NONNULL_END
 	DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
 	[myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
 														completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+		
 	}];
 }
 
