@@ -137,8 +137,13 @@ NS_ASSUME_NONNULL_END
                 }
 
                 NSLog(@">>> completed invitation %@ - %@", @(stepsCompleted), error);
-				[strongSelf sendContactRequestToInviterUsingInvitationURL:invitationURL];
+				
                 [strongSelf handleSteps:stepsCompleted error:error];
+            
+                if(!error)
+                {
+                    [strongSelf sendContactRequestToInviterUsingInvitationURL:invitationURL];
+                }
             }
             completionQueue:dispatch_get_main_queue()];
 	
@@ -186,8 +191,7 @@ NS_ASSUME_NONNULL_END
 	
 	DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
 	__weak typeof(self) weakSelf = self;
-	[manager
-					searchIdentitiesByDashpayUsernamePrefix:username
+	[manager searchIdentitiesByDashpayUsernamePrefix:username
 					offset:0
 					limit:1
 					queryDashpayProfileInfo:YES
