@@ -24,9 +24,9 @@ NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotifi
 static NSString *const DWMobileDevnetIdentifier = @"devnet-mobile-2";
 static NSString *const DWSchnappsDevnetIdentifier = @"devnet-schnapps";
 static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
+static NSString *const DWKrupnikDevnetIdentifier = @"devnet-krupnik";
 
 @implementation DWEnvironment
-
 
 + (instancetype)sharedInstance {
     static id singleton = nil;
@@ -251,13 +251,36 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
     return [NSOrderedSet orderedSetWithArray:serviceLocations];
 }
 
+- (NSOrderedSet *)krupnikDevnetServiceLocation {
+    NSMutableArray *serviceLocations = [NSMutableArray array];
+    [serviceLocations addObject:@"34.210.237.116"];
+    [serviceLocations addObject:@"54.69.65.231"];
+    [serviceLocations addObject:@"54.185.90.95"];
+    [serviceLocations addObject:@"54.186.234.0"];
+    [serviceLocations addObject:@"35.87.212.139"];
+    [serviceLocations addObject:@"34.212.52.44"];
+    [serviceLocations addObject:@"34.217.47.197"];
+    [serviceLocations addObject:@"34.220.79.131"];
+    [serviceLocations addObject:@"18.237.212.176"];
+    [serviceLocations addObject:@"54.188.17.188"];
+    [serviceLocations addObject:@"34.210.1.159"];
+    //shuffle them
+    NSUInteger count = [serviceLocations count];
+    for (NSUInteger i = 0; i < count - 1; ++i) {
+        NSInteger remainingCount = count - i;
+        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
+        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
+    }
+    return [NSOrderedSet orderedSetWithArray:serviceLocations];
+}
+
 - (NSOrderedSet *)evoDevnetServiceLocation {
     NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"54.188.72.112"];
-    [serviceLocations addObject:@"18.236.235.220"];
-    [serviceLocations addObject:@"54.190.1.129"];
-    [serviceLocations addObject:@"52.88.52.65"];
-    [serviceLocations addObject:@"54.189.121.60"];
+    [serviceLocations addObject:@"34.210.237.116"];
+    [serviceLocations addObject:@"54.69.65.231"];
+    [serviceLocations addObject:@"54.185.90.95"];
+    [serviceLocations addObject:@"54.186.234.0"];
+    [serviceLocations addObject:@"35.87.212.139"];
     [serviceLocations addObject:@"34.219.43.9"];
     [serviceLocations addObject:@"54.69.71.240"];
     [serviceLocations addObject:@"34.219.79.193"];
@@ -315,11 +338,11 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
 }
 
 - (NSString *)currentDevnetIdentifier {
-    return DWSchnappsDevnetIdentifier;
+    return DWKrupnikDevnetIdentifier;
 }
 
 - (DSChain *)currentDevnetChain {
-    return [self schnappsDevnetChain];
+    return [self krupnikDevnetChain];
 }
 
 - (DSChain *)mobileDevnetChain {
@@ -377,6 +400,25 @@ static NSString *const DWEvoDevnetIdentifier = @"devnet-evonet-8";
                 instantSendLockQuorumType:DSLLMQType_50_60
                       chainLockQuorumType:DSLLMQType_50_60
                        platformQuorumType:DSLLMQType_50_60];
+}
+
+- (DSChain *)krupnikDevnetChain {
+    return [[DSChainsManager sharedInstance]
+                registerDevnetChainWithIdentifier:DWKrupnikDevnetIdentifier
+                forServiceLocations:[self krupnikDevnetServiceLocation]
+                withMinimumDifficultyBlocks:UINT32_MAX
+                standardPort:20001
+                dapiJRPCPort:3000
+                dapiGRPCPort:3010
+                dpnsContractID:@"GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec".base58ToData.UInt256
+                dashpayContractID:@"Bwr4WHCPz5rFVAD87RqTs3izo4zpzwsEdKPWUT1NS1C7".base58ToData.UInt256
+                protocolVersion:70218
+                minProtocolVersion:70218
+                sporkAddress:@"yPBtLENPQ6Ri1R7SyjevvvyMdopdFJUsRo"
+                sporkPrivateKey:@"cW4VFwXvjAJusUyygeiCCf2CjnHGEpVkybp7Njg9j2apUZutFyAQ"
+                instantSendLockQuorumType:DSLLMQType_50_60
+                chainLockQuorumType:DSLLMQType_50_60
+                platformQuorumType:DSLLMQType_10_60];
 }
 
 @end
