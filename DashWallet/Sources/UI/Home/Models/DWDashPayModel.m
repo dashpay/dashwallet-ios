@@ -272,7 +272,7 @@ NS_ASSUME_NONNULL_END
                       NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
                       NSString *username = @"<unknown user>";
                       for (NSURLQueryItem *item in components.queryItems) {
-                          if ([item.name isEqualToString:@"user"]) {
+                          if ([item.name isEqualToString:@"du"]) {
                               username = item.value;
                               break;
                           }
