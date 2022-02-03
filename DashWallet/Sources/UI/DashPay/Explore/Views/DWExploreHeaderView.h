@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWExploreHeaderView : UIView
+@interface DWExploreHeaderView : UIStackView
 
 @property (nullable, nonatomic, strong) UIImage *image;
 @property (nullable, nonatomic, copy) NSString *title;

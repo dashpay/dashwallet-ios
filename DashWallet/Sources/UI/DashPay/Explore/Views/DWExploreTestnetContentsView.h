@@ -23,4 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface DWExploreTestnetContentsViewCell : UITableViewCell
+@property (nullable, nonatomic, strong) UIImage *image;
+@property (nullable, nonatomic, copy) NSString *title;
+@property (nullable, nonatomic, copy) NSString *subtitle;
+@end
+
 NS_ASSUME_NONNULL_END

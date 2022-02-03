@@ -37,11 +37,14 @@ NS_ASSUME_NONNULL_END
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor dw_darkBlueColor];
-
+        self.spacing = 4;
+        self.axis = UILayoutConstraintAxisVertical;
+        
         UIImageView *iconImageView = [[UIImageView alloc] init];
         iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
         iconImageView.contentMode = UIViewContentModeCenter;
-        [self addSubview:iconImageView];
+        [self addArrangedSubview:iconImageView];
+        
         _iconImageView = iconImageView;
 
         UILabel *titleLabel = [[UILabel alloc] init];
@@ -50,7 +53,7 @@ NS_ASSUME_NONNULL_END
         titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleLargeTitle];
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.numberOfLines = 0;
-        [self addSubview:titleLabel];
+        [self addArrangedSubview:titleLabel];
         _titleLabel = titleLabel;
 
         UILabel *descLabel = [[UILabel alloc] init];
@@ -59,35 +62,12 @@ NS_ASSUME_NONNULL_END
         descLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
         descLabel.textAlignment = NSTextAlignmentCenter;
         descLabel.numberOfLines = 0;
-        [self addSubview:descLabel];
+        [self addArrangedSubview:descLabel];
         _descLabel = descLabel;
 
         [iconImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
         [titleLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
         [descLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
-
-        CGFloat padding = 16.0;
-        CGFloat spacing = 4.0;
-        [NSLayoutConstraint activateConstraints:@[
-            [iconImageView.topAnchor constraintEqualToAnchor:self.topAnchor],
-            [iconImageView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [self.trailingAnchor constraintEqualToAnchor:iconImageView.trailingAnchor],
-
-            [titleLabel.topAnchor constraintEqualToAnchor:iconImageView.bottomAnchor],
-            [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
-                                                     constant:padding],
-            [self.trailingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor
-                                                constant:padding],
-
-            [descLabel.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
-                                                constant:spacing],
-            [descLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
-                                                    constant:padding],
-            [self.trailingAnchor constraintEqualToAnchor:descLabel.trailingAnchor
-                                                constant:padding],
-            [self.bottomAnchor constraintEqualToAnchor:descLabel.bottomAnchor
-                                              constant:padding],
-        ]];
     }
     return self;
 }
