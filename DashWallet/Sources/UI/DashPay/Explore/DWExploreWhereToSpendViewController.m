@@ -18,6 +18,7 @@
 #import "DWExploreWhereToSpendViewController.h"
 #import "DWExploreWhereToSpendInfoViewController.h"
 #import "DWUIKit.h"
+#import "DWGlobalOptions.h"
 
 @interface DWExploreWhereToSpendViewController ()
 
@@ -25,17 +26,42 @@
 
 @implementation DWExploreWhereToSpendViewController
 
+- (void)infoAction {
+    [self showInfoViewController];
+}
+
+- (void)showInfoViewControllerIfNeeded {
+    if(![DWGlobalOptions sharedInstance].dashpayExploreWhereToSpendInfoShown) {
+        [self showInfoViewController];
+        
+        [DWGlobalOptions sharedInstance].dashpayExploreWhereToSpendInfoShown = YES;
+    }
+}
+
+- (void)showInfoViewController {
+    DWExploreWhereToSpendInfoViewController *vc = [[DWExploreWhereToSpendInfoViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (UIBarButtonItem *)cancelBarButton {
+    UIButton* infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    [infoButton addTarget:self action:@selector(infoAction) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem* infoBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:infoButton];
+    return infoBarButtonItem;
+}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-    DWExploreWhereToSpendInfoViewController *vc = [[DWExploreWhereToSpendInfoViewController alloc] init];
-    [self presentViewController:vc animated:YES completion:nil];
+    [self showInfoViewControllerIfNeeded];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor dw_backgroundColor];
+    
+    self.navigationItem.rightBarButtonItem = [self cancelBarButton];
 }
 
 @end
