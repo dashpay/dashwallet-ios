@@ -19,7 +19,7 @@
 #import "DWExploreWhereToSpendInfoViewController.h"
 #import "DWUIKit.h"
 #import "DWGlobalOptions.h"
-
+#import "DWExploreGiftCardInfoViewController.h"
 @interface DWExploreWhereToSpendViewController ()
 
 @end
@@ -27,7 +27,8 @@
 @implementation DWExploreWhereToSpendViewController
 
 - (void)infoAction {
-    [self showInfoViewController];
+    DWExploreGiftCardInfoViewController *vc = [DWExploreGiftCardInfoViewController new];
+    [self presentViewController:vc animated:YES completion:nil];
 }
 
 - (void)showInfoViewControllerIfNeeded {
