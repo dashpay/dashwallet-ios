@@ -23,8 +23,19 @@
 #import "DWExploreTestnetContentsView.h"
 #import "DWScrollingViewController.h"
 #import "DWUIKit.h"
+#import "DWExploreWhereToSpendViewController.h"
 
 @implementation DWExploreTestnetViewController
+
+- (BOOL)requiresNoNavigationBar {
+    return YES;
+}
+
+- (void)showWhereToSpendViewController
+{
+    DWExploreWhereToSpendViewController *vc = [[DWExploreWhereToSpendViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -43,7 +54,16 @@
     headerView.title = NSLocalizedString(@"Explore Dash", nil);
     headerView.subtitle = NSLocalizedString(@"Easily shop with your DASH at over 155,000 locations and online merchants", nil);
 
+    DWExploreTestnetViewController* __weak weakSelf = self;
+    
     DWExploreTestnetContentsView *contentsView = [[DWExploreTestnetContentsView alloc] init];
+    contentsView.whereToSpendHandler =  ^{
+        [weakSelf showWhereToSpendViewController];
+    };
+    contentsView.atmHandler = ^{
+        
+    };
+    
     contentsView.translatesAutoresizingMaskIntoConstraints = NO;
 
     UIStackView *parentView = [[UIStackView alloc] init];

@@ -46,6 +46,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @property (null_resettable, nonatomic, strong) DWNavigationController *homeNavigationController;
 @property (null_resettable, nonatomic, strong) DWNavigationController *contactsNavigationController;
 @property (null_resettable, nonatomic, strong) DWNavigationController *menuNavigationController;
+@property (null_resettable, nonatomic, strong) DWNavigationController *exploreNavigationController;
 @property (null_resettable, nonatomic, strong) DWExploreTestnetViewController *exploreController;
 @property (nonatomic, weak) DWHomeViewController *homeController;
 
@@ -134,11 +135,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
             break;
         }
         case DWTabBarViewButtonType_Explore: {
-            if (self.currentController == self.exploreController) {
+            if (self.currentController == self.exploreNavigationController) {
                 return;
             }
 
-            [self transitionToController:self.exploreController
+            [self transitionToController:self.exploreNavigationController
                           transitionType:DWContainerTransitionType_WithoutAnimation];
 
             break;
@@ -292,6 +293,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     }
 
     return _menuNavigationController;
+}
+
+- (DWNavigationController *)exploreNavigationController {
+    if (!_menuNavigationController) {
+        DWExploreTestnetViewController *exploreController = [[DWExploreTestnetViewController alloc] init];
+        
+        _exploreNavigationController = [[DWNavigationController alloc] initWithRootViewController:exploreController];
+        _exploreNavigationController.delegate = self;
+    }
+    
+    return _exploreNavigationController;
 }
 
 - (DWExploreTestnetViewController *)exploreController {

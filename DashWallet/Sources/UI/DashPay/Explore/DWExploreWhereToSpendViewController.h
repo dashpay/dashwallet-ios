@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  
+//  Created by Pavel Tikhonenko
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,15 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWExploreTestnetContentsView : UIView
-@property(nonatomic, copy) void (^whereToSpendHandler)(void);
-@property(nonatomic, copy) void (^atmHandler)(void);
-@end
+@interface DWExploreWhereToSpendViewController : UIViewController
 
-@interface DWExploreTestnetContentsViewCell : UITableViewCell
-@property (nullable, nonatomic, strong) UIImage *image;
-@property (nullable, nonatomic, copy) NSString *title;
-@property (nullable, nonatomic, copy) NSString *subtitle;
 @end
 
 NS_ASSUME_NONNULL_END

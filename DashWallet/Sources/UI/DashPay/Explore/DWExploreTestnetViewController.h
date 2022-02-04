@@ -16,10 +16,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWExploreTestnetViewController : UIViewController
+@interface DWExploreTestnetViewController : UIViewController<DWNavigationFullscreenable>
 
 @end
 

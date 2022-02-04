@@ -117,6 +117,12 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    
+    if(indexPath.row == 0) {
+        _whereToSpendHandler();
+    }else{
+        _atmHandler();
+    }
 }
 
 @end
@@ -146,8 +152,7 @@
     return self;
 }
 
--(void)configureHierarchy
-{
+-(void)configureHierarchy {
     UIStackView *stackView = [UIStackView new];
     stackView.axis = UILayoutConstraintAxisHorizontal;
     stackView.spacing = 10;
@@ -178,7 +183,7 @@
     
     UILabel *titleLabel = [[UILabel alloc] init];
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    titleLabel.textColor = [UIColor labelColor]; // always white
+    titleLabel.textColor = [UIColor labelColor];
     titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
     titleLabel.textAlignment = NSTextAlignmentLeft;
     titleLabel.numberOfLines = 0;
@@ -187,7 +192,7 @@
     
     UILabel *descLabel = [[UILabel alloc] init];
     descLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    descLabel.textColor = [UIColor secondaryLabelColor]; // always white
+    descLabel.textColor = [UIColor secondaryLabelColor];
     descLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     descLabel.textAlignment = NSTextAlignmentLeft;
     descLabel.numberOfLines = 0;

@@ -557,6 +557,10 @@
 		2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF01E3243F8625003718DC /* DWDPRegistrationDoneTableViewCell.m */; };
 		2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
+		471EA7C427AC05E1005A2E8A /* DWExploreWhereToSpendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7C327AC05E1005A2E8A /* DWExploreWhereToSpendViewController.m */; };
+		471EA7C727AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7C627AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m */; };
+		471EA7CA27AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */; };
+		471EA7CD27AD2072005A2E8A /* DWExploreBaseInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
@@ -1814,6 +1818,14 @@
 		2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationDoneTableViewCell.xib; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
+		471EA7C227AC05E1005A2E8A /* DWExploreWhereToSpendViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendViewController.h; sourceTree = "<group>"; };
+		471EA7C327AC05E1005A2E8A /* DWExploreWhereToSpendViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendViewController.m; sourceTree = "<group>"; };
+		471EA7C527AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendInfoViewController.h; sourceTree = "<group>"; };
+		471EA7C627AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendInfoViewController.m; sourceTree = "<group>"; };
+		471EA7C827AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreGiftCardInfoViewController.h; sourceTree = "<group>"; };
+		471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreGiftCardInfoViewController.m; sourceTree = "<group>"; };
+		471EA7CB27AD2072005A2E8A /* DWExploreBaseInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreBaseInfoViewController.h; sourceTree = "<group>"; };
+		471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreBaseInfoViewController.m; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -3535,6 +3547,14 @@
 				2A95D60B2702790A00B0BF5C /* Views */,
 				2A95D6152702835700B0BF5C /* DWExploreTestnetViewController.h */,
 				2A95D6162702835700B0BF5C /* DWExploreTestnetViewController.m */,
+				471EA7C227AC05E1005A2E8A /* DWExploreWhereToSpendViewController.h */,
+				471EA7C327AC05E1005A2E8A /* DWExploreWhereToSpendViewController.m */,
+				471EA7C527AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.h */,
+				471EA7C627AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m */,
+				471EA7C827AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.h */,
+				471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */,
+				471EA7CB27AD2072005A2E8A /* DWExploreBaseInfoViewController.h */,
+				471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */,
 			);
 			path = Explore;
 			sourceTree = "<group>";
@@ -5764,6 +5784,7 @@
 				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
 				2AC1EDD42565B92A00410917 /* DWAvatarExternalSourceView.m in Sources */,
+				471EA7CA27AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
@@ -5814,6 +5835,7 @@
 				2A32AA16255127CF0080138E /* DWUploadAvatarChildView.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
 				2AEC598C254A9B3500971D75 /* DWFaceDetector.m in Sources */,
+				471EA7C427AC05E1005A2E8A /* DWExploreWhereToSpendViewController.m in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A32AA312552A14B0080138E /* DWSecrets.m in Sources */,
@@ -5924,6 +5946,7 @@
 				2A477A1425FE532700936243 /* DWNotificationsInvitationCell.m in Sources */,
 				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A913E6B23A15419006A2A59 /* DWUpholdAuthURLNotification.m in Sources */,
+				471EA7CD27AD2072005A2E8A /* DWExploreBaseInfoViewController.m in Sources */,
 				2A6808B225EC3FA200829FC8 /* DWDeviceSpecificBottomPadding.m in Sources */,
 				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
 				2A7AF35324823EC8001D74F9 /* DWDPIncomingRequestCell.m in Sources */,
@@ -6058,6 +6081,7 @@
 				2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */,
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
+				471EA7C727AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m in Sources */,
 				2AF55E7426298427001974C4 /* NSLayoutConstraint+DWAutolayout.m in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
