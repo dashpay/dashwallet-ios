@@ -24,6 +24,7 @@
 #import "DWScrollingViewController.h"
 #import "DWUIKit.h"
 #import "DWExploreWhereToSpendViewController.h"
+#import "UINavigationBar+DWAppearance.h"
 
 @implementation DWExploreTestnetViewController
 
@@ -41,7 +42,19 @@
     [super viewDidLoad];
 
     self.view.backgroundColor = [UIColor dw_darkBlueColor];
-
+    
+    // Setup navigation bar
+    [self.navigationController.navigationBar dw_configureForWhiteAppearance];
+    self.navigationController.navigationBar.shadowImage = nil;
+    self.navigationController.navigationBar.translucent = YES;
+    [self.navigationController.navigationBar dw_applyStandardAppearance];
+    
+    UINavigationBarAppearance *standardAppearance = self.navigationController.navigationBar.standardAppearance;
+    standardAppearance.shadowColor = [UIColor separatorColor];
+    
+    self.navigationController.navigationBar.scrollEdgeAppearance = standardAppearance;
+    self.navigationController.navigationBar.compactAppearance = standardAppearance;
+    
     UIView *contentView = [[UIView alloc] init];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:contentView];
@@ -70,14 +83,16 @@
     parentView.translatesAutoresizingMaskIntoConstraints = NO;
     parentView.distribution = UIStackViewDistributionEqualSpacing;
     parentView.axis = UILayoutConstraintAxisVertical;
-    parentView.spacing = 10;
+    parentView.spacing = 34;
 
     [parentView addArrangedSubview:headerView];
     [parentView addArrangedSubview:contentsView];
     [self.view addSubview:parentView];
     
     [NSLayoutConstraint activateConstraints:@[
-        [parentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [headerView.widthAnchor constraintLessThanOrEqualToConstant:kExploreHeaderViewHeight],
+        
+        [parentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:10],
         [parentView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
         [parentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [parentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]

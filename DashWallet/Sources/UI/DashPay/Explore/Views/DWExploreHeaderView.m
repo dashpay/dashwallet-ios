@@ -19,6 +19,8 @@
 
 #import "DWUIKit.h"
 
+
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWExploreHeaderView ()
@@ -32,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 @implementation DWExploreHeaderView
+
+CGFloat const kExploreHeaderViewHeight = 351.0f;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];

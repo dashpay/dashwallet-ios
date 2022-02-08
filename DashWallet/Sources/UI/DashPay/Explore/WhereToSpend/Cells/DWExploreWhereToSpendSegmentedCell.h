@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  
+//  Created by Pavel Tikhonenko
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,17 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
-
-
-@interface DWExploreHeaderView : UIStackView
-
-extern CGFloat const kExploreHeaderViewHeight;
-
-@property (nullable, nonatomic, strong) UIImage *image;
-@property (nullable, nonatomic, copy) NSString *title;
-@property (nullable, nonatomic, copy) NSString *subtitle;
-
+@interface DWExploreWhereToSpendSegmentedCell : UITableViewCell
+@property(readonly, nonatomic, strong) UISegmentedControl *segmentedControl;
 @end
 
 NS_ASSUME_NONNULL_END

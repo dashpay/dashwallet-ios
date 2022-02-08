@@ -66,7 +66,7 @@
         tableView.dataSource = self;
         tableView.rowHeight = 80.0f;
     
-        [tableView registerClass:[DWExploreTestnetContentsViewCell class] forCellReuseIdentifier:@"Cell"];
+        [tableView registerClass:[DWExploreTestnetContentsViewCell class] forCellReuseIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier];
         [subContentView addSubview:tableView];
         
         CGFloat verticalPadding = 10;
@@ -79,7 +79,7 @@
 
             [subContentView.heightAnchor constraintEqualToConstant:180],
             [subContentView.topAnchor constraintEqualToAnchor:contentView.topAnchor constant:15],
-            [subContentView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:-34],
+            [subContentView.bottomAnchor constraintLessThanOrEqualToAnchor:contentView.bottomAnchor constant:-34],
             [subContentView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:-15],
             [subContentView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:15],
 
@@ -97,7 +97,7 @@
     NSString *title = cellTitles[indexPath.row];
     NSString *subtitle = cellSubtitles[indexPath.row];
     
-    DWExploreTestnetContentsViewCell *cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    DWExploreTestnetContentsViewCell *cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     [cell setImage:[UIImage imageNamed:icon]];
     [cell setTitle:title];
