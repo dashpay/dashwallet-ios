@@ -19,11 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWExploreWhereToSpendSegmentedCell : UITableViewCell
-@property(readonly, nonatomic, strong) UISegmentedControl *segmentedControl;
-@property(nonatomic, copy) void (^segmentDidChangeBlock)(NSInteger index);
+@interface DWExploreWhereToSpendHandlerView : UIView
 
-- (void)updateWithItems:(NSArray<NSString *> *)items andSelectedIndex:(NSInteger)index;
 @end
 
 NS_ASSUME_NONNULL_END

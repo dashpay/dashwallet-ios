@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+@import MapKit;
 #import "DWExploreWhereToSpendViewController.h"
 #import "DWExploreWhereToSpendInfoViewController.h"
 #import "DWUIKit.h"
@@ -25,17 +26,15 @@
 #import "DWExploreWhereToSpendSearchCell.h"
 #import "DWExploreWhereToSpendSegmentedCell.h"
 #import "DWExploreMerchant.h"
-
-@interface DWExploreWhereToSpendViewController () <UITableViewDataSource, UITableViewDelegate>
-
-@property (readonly, nonatomic, strong) UITableView *tableView;
-@property (readonly, nonatomic, strong) NSArray<NSString *> *segmentTitles;
-@property (nonatomic, strong) NSArray<DWExploreMerchant *> *merchants;
-@property (readonly, nonatomic, assign) NSInteger selectedSegmentIdx;
-
-@end
+#import "DWExploreWhereToSpendHandlerView.h"
+#import "DWExploreWhereToSpendMapView.h"
+#import "DWExploreWhereToSpendLocationServicePopup.h"
 
 #define DW_EXPLORE_WHERE_TO_SPEND_SECTION_COUNT 4
+
+static CGFloat const kHandlerHeight = 24.0f;
+static CGFloat const kDefaultOpenedMapPosition = 260.0f;
+static CGFloat const kDefaultClosedMapPosition = -kHandlerHeight;
 
 typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
     DWExploreWhereToSpendSectionsSegments,
@@ -43,6 +42,24 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
     DWExploreWhereToSpendSectionsFilters,
     DWExploreWhereToSpendSectionsItems,
 };
+
+typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
+    DWExploreWhereToSpendSegmentOnline,
+    DWExploreWhereToSpendSegmentNearby,
+    DWExploreWhereToSpendSegmentAll,
+};
+
+@interface DWExploreWhereToSpendViewController () <UITableViewDataSource, UITableViewDelegate>
+
+@property (nonatomic, strong) NSLayoutConstraint *contentViewTopLayoutConstraint;
+@property (readonly, nonatomic, strong) UIView *contentView;
+@property (readonly, nonatomic, strong) UITableView *tableView;
+@property (readonly, nonatomic, strong) DWExploreWhereToSpendMapView *mapView;
+@property (readonly, nonatomic, strong) NSArray<NSString *> *segmentTitles;
+@property (nonatomic, strong) NSArray<DWExploreMerchant *> *merchants;
+@property (readonly, nonatomic, assign) DWExploreWhereToSpendSegment currentSegment;
+@property (nonatomic, strong) UIButton *showMapButton;
+@end
 
 @implementation DWExploreWhereToSpendViewController
 
@@ -54,7 +71,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
 - (void)showInfoViewControllerIfNeeded {
     if(![DWGlobalOptions sharedInstance].dashpayExploreWhereToSpendInfoShown) {
         [self showInfoViewController];
-        
+
         [DWGlobalOptions sharedInstance].dashpayExploreWhereToSpendInfoShown = YES;
     }
 }
@@ -64,6 +81,31 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
     [self presentViewController:vc animated:YES completion:nil];
 }
 
+- (void)showMap {
+    [UIView animateWithDuration:0.3 animations:^{
+        self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition;
+        [self.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        [self updateShowMapButtonVisibility];
+    }];
+}
+
+- (void)hideMapIfNeeded {
+    [UIView animateWithDuration:0.3 animations:^{
+        self.contentViewTopLayoutConstraint.constant = kDefaultClosedMapPosition;
+        [self.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        [self updateShowMapButtonVisibility];
+    }];
+}
+
+- (void)updateShowMapButtonVisibility {
+    BOOL isVisible = _currentSegment == DWExploreWhereToSpendSegmentNearby &&
+                     _contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition;
+            
+    _showMapButton.hidden = !isVisible;
+}
+
 - (UIBarButtonItem *)cancelBarButton {
     UIButton* infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
     [infoButton addTarget:self action:@selector(infoAction) forControlEvents:UIControlEventTouchUpInside];
@@ -71,46 +113,154 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
     return infoBarButtonItem;
 }
 
+- (void)segmentedControlDidChangeWithIndex:(NSInteger)index {
+    if(_currentSegment == index) { return ;}
+
+    _currentSegment = index;
+
+    if(index == DWExploreWhereToSpendSegmentNearby) {
+        [self showMap];
+    }else{
+        [self hideMapIfNeeded];
+    }
+    
+    [_tableView reloadSections:[NSIndexSet indexSetWithIndex:DWExploreWhereToSpendSectionsFilters] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+-(void)move:(UIPanGestureRecognizer*)sender {
+    CGPoint translatedPoint = [sender translationInView:self.view];
+
+    _contentViewTopLayoutConstraint.constant += translatedPoint.x;
+    _contentViewTopLayoutConstraint.constant += translatedPoint.y;
+
+    [sender setTranslation:CGPointZero inView:self.view];
+
+    if(sender.state == UIGestureRecognizerStateEnded) {
+        CGFloat velocityY = (0.2*[sender velocityInView:self.view].y);
+        CGFloat finalY = _contentViewTopLayoutConstraint.constant + velocityY;
+
+        if(finalY < kDefaultOpenedMapPosition/2) {
+            finalY = kDefaultClosedMapPosition;
+        }else if (finalY > self.view.frame.size.height/2) {
+            finalY = self.mapView.frame.size.height - kHandlerHeight;
+        }else{
+            finalY = kDefaultOpenedMapPosition;
+        }
+
+        CGFloat animationDuration = (ABS(velocityY)*.0002)+.2;
+
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            self.contentViewTopLayoutConstraint.constant = finalY;
+            [self.view layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            [self updateShowMapButtonVisibility];
+        }];
+    }
+
+}
 - (void)configureHierarchy {
+    DWExploreWhereToSpendMapView *mapView = [[DWExploreWhereToSpendMapView alloc] initWithFrame:CGRectZero];
+    mapView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:mapView];
+    _mapView = mapView;
+
+    UIView *contentView = [[UIView alloc] init];
+    contentView.backgroundColor = [UIColor dw_backgroundColor];
+    contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    contentView.clipsToBounds = NO;
+    [contentView.layer setMasksToBounds:YES];
+    [contentView.layer setCornerRadius:20.0];
+    [contentView.layer setMaskedCorners:kCALayerMinXMinYCorner|kCALayerMaxXMinYCorner];
+    [self.view addSubview:contentView];
+    _contentView = contentView;
+
+    DWExploreWhereToSpendHandlerView *handlerView = [[DWExploreWhereToSpendHandlerView alloc] initWithFrame:CGRectZero];
+    handlerView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:handlerView];
+
+    UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(move:)];
+    [panRecognizer setMinimumNumberOfTouches:1];
+    [panRecognizer setMaximumNumberOfTouches:1];
+    [handlerView addGestureRecognizer:panRecognizer];
+
     UITableView *tableView = [UITableView new];
     tableView.translatesAutoresizingMaskIntoConstraints = NO;
     tableView.delegate = self;
     tableView.dataSource = self;
+    tableView.clipsToBounds = NO;
     [tableView registerClass:[DWExploreWhereToSpendSegmentedCell class] forCellReuseIdentifier:DWExploreWhereToSpendSegmentedCell.dw_reuseIdentifier];
     [tableView registerClass:[DWExploreWhereToSpendSearchCell class] forCellReuseIdentifier:DWExploreWhereToSpendSearchCell.dw_reuseIdentifier];
     [tableView registerClass:[DWExploreWhereToSpendFiltersCell class] forCellReuseIdentifier:DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier];
     [tableView registerClass:[DWExploreWhereToSpendItemCell class] forCellReuseIdentifier:DWExploreWhereToSpendItemCell.dw_reuseIdentifier];
-    [self.view addSubview:tableView];
+    [contentView addSubview:tableView];
     _tableView = tableView;
+
+    self.showMapButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _showMapButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _showMapButton.hidden = YES;
+    _showMapButton.tintColor = [UIColor whiteColor];
+    _showMapButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
+    [_showMapButton addTarget:self action:@selector(showMap) forControlEvents:UIControlEventTouchUpInside];
+    [_showMapButton setImage:[UIImage systemImageNamed:@"map.fill"] forState:UIControlStateNormal];
+    [_showMapButton setTitle:NSLocalizedString(@"Map", nil) forState:UIControlStateNormal];
+    [_showMapButton.layer setMasksToBounds:YES];
+    [_showMapButton.layer setCornerRadius:20.0];
+    [_showMapButton.layer setBackgroundColor:[UIColor blackColor].CGColor];
+    [contentView addSubview:_showMapButton];
     
+    CGFloat handlerViewHeight = 24;
+
+    _contentViewTopLayoutConstraint = [contentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:-handlerViewHeight];
+
     [NSLayoutConstraint activateConstraints:@[
-        [tableView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [tableView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        [tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]
+            _contentViewTopLayoutConstraint,
+            [contentView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+            [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [contentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+
+            [handlerView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
+            [handlerView.heightAnchor constraintEqualToConstant:handlerViewHeight],
+            [handlerView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+            [handlerView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+
+            [tableView.topAnchor constraintEqualToAnchor:handlerView.bottomAnchor],
+            [tableView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+            [tableView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+            [tableView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+
+            [mapView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+            [mapView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+            [mapView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [mapView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+            
+            [_showMapButton.widthAnchor constraintEqualToConstant:92.0f],
+            [_showMapButton.heightAnchor constraintEqualToConstant:40.0f],
+            [_showMapButton.centerXAnchor constraintEqualToAnchor:_contentView.centerXAnchor],
+            [_showMapButton.bottomAnchor constraintEqualToAnchor:_contentView.bottomAnchor constant:-15],
+            
     ]];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    
+
     [self showInfoViewControllerIfNeeded];
+    
+    [DWExploreWhereToSpendLocationServicePopup show];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.merchants = [DWExploreMerchant mockData];
-    
+
     self.title = NSLocalizedString(@"Where to Spend", nil);
-    
-    _segmentTitles = @[NSLocalizedString(@"Online", nil), NSLocalizedString(@"Nearby", nil), NSLocalizedString(@"All", nil)];
-    _selectedSegmentIdx = 0;
-    
     self.view.backgroundColor = [UIColor dw_backgroundColor];
-    
     self.navigationItem.rightBarButtonItem = [self cancelBarButton];
-    
+
+    _segmentTitles = @[NSLocalizedString(@"Online", nil), NSLocalizedString(@"Nearby", nil), NSLocalizedString(@"All", nil)];
+    _currentSegment = DWExploreWhereToSpendSegmentOnline;
+
     [self configureHierarchy];
 }
 
@@ -121,6 +271,15 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
         {
             DWExploreWhereToSpendSegmentedCell *segmentsCell = [tableView dequeueReusableCellWithIdentifier:DWExploreWhereToSpendSegmentedCell.dw_reuseIdentifier forIndexPath:indexPath];
             segmentsCell.separatorInset = UIEdgeInsetsMake(0, 2000, 0, 0);
+            __block typeof(self) weakSelf = self;
+            segmentsCell.segmentDidChangeBlock = ^(NSInteger index) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf segmentedControlDidChangeWithIndex:index ];
+            };
+            [segmentsCell updateWithItems:_segmentTitles andSelectedIndex:_currentSegment];
             cell = segmentsCell;
             break;
         }
@@ -134,7 +293,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
         case DWExploreWhereToSpendSectionsFilters:
         {
             DWExploreWhereToSpendFiltersCell *filterCell = [tableView dequeueReusableCellWithIdentifier:DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier forIndexPath:indexPath];
-            filterCell.title = _segmentTitles[_selectedSegmentIdx];
+            filterCell.title = _segmentTitles[_currentSegment];
             cell = filterCell;
             break;
         }
@@ -147,17 +306,17 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
             break;
         }
     }
-    
+
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
-    
+
 }
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if(section == DWExploreWhereToSpendSectionsItems) {
         return self.merchants.count;
     }
-    
+
     return 1;
 }
 
@@ -180,7 +339,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSections) {
             return 56.0f;
             break;
     }
-    
+
     return 0.0f;
 }
 

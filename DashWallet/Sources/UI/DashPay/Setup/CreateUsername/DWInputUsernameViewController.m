@@ -115,7 +115,6 @@ NS_ASSUME_NONNULL_END
                                                  constant:SPACING],
         [self.stackView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [self.stackView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
-		//[self.stackView.bottomAnchor constraintEqualToAnchor:safeAreaGuide.bottomAnchor],
 		self.contentBottomConstraint
     ]];
 }

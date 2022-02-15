@@ -18,12 +18,12 @@
 #import "DWExploreWhereToSpendSegmentedCell.h"
 
 @interface DWExploreWhereToSpendSegmentedCell ()
-
+@property (readonly, nonatomic, strong) NSArray<NSString *> *segmentTitles;
 @end
 
 @implementation DWExploreWhereToSpendSegmentedCell
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         [self configureHierarchy];
@@ -39,13 +39,26 @@
     return self;
 }
 
--(void)segmentedControlAction {
+- (void)updateWithItems:(NSArray<NSString *> *)items andSelectedIndex:(NSInteger)index {
+    if([_segmentTitles isEqualToArray:items]) { return; }
     
+    _segmentTitles = items;
+    [_segmentedControl removeAllSegments];
+    
+    for (size_t i = 0; i<items.count; i++) {
+        NSString *item = items[i];
+        [_segmentedControl insertSegmentWithTitle:item atIndex:i animated:NO];
+    }
+    
+    _segmentedControl.selectedSegmentIndex = index;
+}
+
+-(void)segmentedControlAction {
+    _segmentDidChangeBlock(_segmentedControl.selectedSegmentIndex);
 }
 
 -(void)configureHierarchy {
-    NSArray *itemArray = [NSArray arrayWithObjects: @"One", @"Two", @"Three", nil];
-    UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:itemArray];
+    UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] init];
     segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
     [segmentedControl addTarget:self action:@selector(segmentedControlAction) forControlEvents: UIControlEventValueChanged];
     segmentedControl.selectedSegmentIndex = 0;
@@ -54,7 +67,6 @@
     
     [NSLayoutConstraint activateConstraints:@[
         [segmentedControl.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        //[segmentedControl.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
         [segmentedControl.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
         [segmentedControl.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16]
     ]];

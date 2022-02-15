@@ -23,8 +23,7 @@
 @end
 
 @implementation DWExploreWhereToSpendFiltersCell
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         [self configureHierarchy];
@@ -84,8 +83,8 @@
     
     [NSLayoutConstraint activateConstraints:@[
         [filterButton.widthAnchor constraintEqualToConstant:90],
+        
         [stackView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        //[segmentedControl.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
         [stackView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
         [stackView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16]
     ]];

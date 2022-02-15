@@ -566,6 +566,9 @@
 		474CD81F27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */; };
 		474CD82227B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */; };
 		474CD82527B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */; };
+		47CCC7E527BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */; };
+		47CCC7E827BBDBE200B39FC5 /* ExploreMerchantViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */; };
+		47CFDC1727B987830071115E /* DWExploreWhereToSpendHandlerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
@@ -598,6 +601,7 @@
 		C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CB24757A210001624F /* DWContactsSearchDataSourceObject.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */; };
+		CBEC028F12F4D8F197AC54C8 /* DWExploreWhereToSpendMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = CBEC0836ABBABBA9F09ACCD8 /* DWExploreWhereToSpendMapView.m */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
@@ -1841,6 +1845,12 @@
 		474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendSearchCell.m; sourceTree = "<group>"; };
 		474CD82327B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendSegmentedCell.h; sourceTree = "<group>"; };
 		474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendSegmentedCell.m; sourceTree = "<group>"; };
+		47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendLocationServicePopup.h; sourceTree = "<group>"; };
+		47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendLocationServicePopup.m; sourceTree = "<group>"; };
+		47CCC7E627BBDBE200B39FC5 /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
+		47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMerchantViewController.swift; sourceTree = "<group>"; };
+		47CFDC1527B987830071115E /* DWExploreWhereToSpendHandlerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendHandlerView.h; sourceTree = "<group>"; };
+		47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendHandlerView.m; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1932,6 +1942,8 @@
 		C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchInfoHeaderView.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
+		CBEC00B46CF9E4E72732BE59 /* DWExploreWhereToSpendMapView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendMapView.h; sourceTree = "<group>"; };
+		CBEC0836ABBABBA9F09ACCD8 /* DWExploreWhereToSpendMapView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendMapView.m; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2604,6 +2616,7 @@
 		2A44313B22CF62FC009BAF7F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				47CCC7E627BBDBE200B39FC5 /* dashwallet-Bridging-Header.h */,
 				2A858A04237EE89B0097A7B5 /* AppleWatch */,
 				2AD1CE7D22DC928C00C99324 /* Categories */,
 				2A44313D22CF632F009BAF7F /* Models */,
@@ -4818,6 +4831,7 @@
 		474CD81827B1289A009D71A5 /* WhereToSpend */ = {
 			isa = PBXGroup;
 			children = (
+				47CFDC1427B987600071115E /* Views */,
 				474CD81927B167A1009D71A5 /* Cells */,
 				471EA7C227AC05E1005A2E8A /* DWExploreWhereToSpendViewController.h */,
 				471EA7C327AC05E1005A2E8A /* DWExploreWhereToSpendViewController.m */,
@@ -4827,6 +4841,7 @@
 				471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */,
 				471EA7CB27AD2072005A2E8A /* DWExploreBaseInfoViewController.h */,
 				471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */,
+				47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */,
 			);
 			path = WhereToSpend;
 			sourceTree = "<group>";
@@ -4851,6 +4866,19 @@
 			children = (
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		47CFDC1427B987600071115E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				47CFDC1527B987830071115E /* DWExploreWhereToSpendHandlerView.h */,
+				47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */,
+				CBEC0836ABBABBA9F09ACCD8 /* DWExploreWhereToSpendMapView.m */,
+				CBEC00B46CF9E4E72732BE59 /* DWExploreWhereToSpendMapView.h */,
+				47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */,
+				47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		75D5F3B5191EC270004AB296 = {
@@ -5243,7 +5271,7 @@
 						TestTargetID = 75D5F3BD191EC270004AB296;
 					};
 					75D5F3BD191EC270004AB296 = {
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1320;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -5748,6 +5776,7 @@
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2AF55E8C26299502001974C4 /* DWInvitationTableViewCell.m in Sources */,
+				47CFDC1727B987830071115E /* DWExploreWhereToSpendHandlerView.m in Sources */,
 				2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
@@ -5827,6 +5856,7 @@
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
 				2A520C8D25BF093E00FC5650 /* DWPendingContactInfoView.m in Sources */,
+				47CCC7E527BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m in Sources */,
 				2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
@@ -5854,6 +5884,7 @@
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A8DB9B226300D98009094BD /* DWHistoryFilterViewController.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
+				47CCC7E827BBDBE200B39FC5 /* ExploreMerchantViewController.swift in Sources */,
 				2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */,
 				2A2692F125EBF0C100835B30 /* DWSuccessInvitationTopView.m in Sources */,
 				2A7AF37224826CDF001D74F9 /* DWDPAcceptedRequestNotificationObject.m in Sources */,
@@ -6238,6 +6269,7 @@
 				2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
+				CBEC028F12F4D8F197AC54C8 /* DWExploreWhereToSpendMapView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6385,6 +6417,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -6414,6 +6447,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -6441,6 +6475,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A9529BDC33490B8F700E733D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -6468,6 +6503,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -6622,6 +6658,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 125;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -6640,7 +6677,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/Sources/UI/DashPay/Explore/WhereToSpend/dashwallet-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -6653,6 +6692,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 125;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -6670,7 +6710,8 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/Sources/UI/DashPay/Explore/WhereToSpend/dashwallet-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = "arm64 arm64e";
@@ -6682,6 +6723,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 87872BF3D40B38CD0FC246AB /* Pods-DashWalletTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -6709,6 +6751,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC103D2F3C1CE8C7A598E78 /* Pods-DashWalletTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -6930,6 +6973,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 125;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -6947,7 +6991,8 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/Sources/UI/DashPay/Explore/WhereToSpend/dashwallet-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = "arm64 arm64e";
@@ -6983,6 +7028,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B9E5C217A0E8B1689F8307D1 /* Pods-DashWalletTests.testflight.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -7121,6 +7167,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 125;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -7138,7 +7185,9 @@
 				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/Sources/UI/DashPay/Explore/WhereToSpend/dashwallet-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -7171,6 +7220,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B49B8EA157CD1A34396D7677 /* Pods-DashWalletTests.testnet.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

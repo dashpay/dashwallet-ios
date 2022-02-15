@@ -22,8 +22,7 @@
 @end
 
 @implementation DWExploreWhereToSpendSearchCell
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         [self configureHierarchy];
@@ -47,7 +46,6 @@
     
     [NSLayoutConstraint activateConstraints:@[
         [_searchBar.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        //[segmentedControl.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
         [_searchBar.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:9],
         [_searchBar.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-9]
     ]];

@@ -15,15 +15,9 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import UIKit
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWExploreWhereToSpendSegmentedCell : UITableViewCell
-@property(readonly, nonatomic, strong) UISegmentedControl *segmentedControl;
-@property(nonatomic, copy) void (^segmentDidChangeBlock)(NSInteger index);
-
-- (void)updateWithItems:(NSArray<NSString *> *)items andSelectedIndex:(NSInteger)index;
-@end
-
-NS_ASSUME_NONNULL_END
+class ExploreMerchantViewController: UIViewController
+{
+    
+}

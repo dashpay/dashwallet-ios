@@ -86,7 +86,6 @@
     itemStackView.axis = UILayoutConstraintAxisHorizontal;
     itemStackView.spacing = 10;
     itemStackView.translatesAutoresizingMaskIntoConstraints = NO;
-    //itemStackView.distribution = UIStackViewDistributionFillProportionally;
     itemStackView.alignment = UIStackViewAlignmentFirstBaseline;
     
     UIImageView *iconImageView = [[UIImageView alloc] initWithImage:image];
@@ -105,9 +104,7 @@
     
     [NSLayoutConstraint activateConstraints:@[
         [iconImageView.widthAnchor constraintEqualToConstant:50],
-        
         [iconImageView.centerYAnchor constraintEqualToAnchor:itemTitleLabel.topAnchor constant:10],
-        //[itemTitleLabel.topAnchor constraintEqualToAnchor:iconImageView.centerYAnchor constant:5],
     ]];
     
     return itemStackView;
