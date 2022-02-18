@@ -16,9 +16,11 @@
 //
 
 #import "DWExploreWhereToSpendFiltersCell.h"
+#import "UIFont+DWFont.h"
 
 @interface DWExploreWhereToSpendFiltersCell ()
 @property(nonatomic, strong) UILabel *titleLabel;
+@property(nonatomic, strong) UILabel *subLabel;
 @property(nonatomic, strong) UIButton *filterButton;
 @end
 
@@ -47,6 +49,15 @@
     self.titleLabel.text = title;
 }
 
+- (NSString *)subtitle {
+    return self.subLabel.text;
+}
+
+- (void)setSubtitle:(NSString *)title {
+    self.subLabel.text = title;
+    self.subLabel.hidden = title == nil;
+}
+
 -(void)filterButtonAction {
     
 }
@@ -59,11 +70,25 @@
     stackView.alignment = UIStackViewAlignmentCenter;
     [self.contentView addSubview:stackView];
     
+    UIStackView *txtStackView = [[UIStackView alloc] init];
+    txtStackView.axis = UILayoutConstraintAxisVertical;
+    txtStackView.spacing = 1;
+    txtStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    txtStackView.alignment = UIStackViewAlignmentLeading;
+    [stackView addArrangedSubview:txtStackView];
+    
     UILabel *label = [[UILabel alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.font = [UIFont systemFontOfSize:20];
-    [stackView addArrangedSubview:label];
+    [txtStackView addArrangedSubview:label];
     _titleLabel = label;
+    
+    label = [[UILabel alloc] init];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+    label.hidden = YES;
+    [txtStackView addArrangedSubview:label];
+    _subLabel = label;
     
     [stackView addArrangedSubview:[UIView new]];
     

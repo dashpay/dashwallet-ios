@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWExploreWhereToSpendFiltersCell : UITableViewCell
 @property (nullable, nonatomic, copy) NSString *title;
+@property (nullable, nonatomic, copy) NSString *subtitle;
 @end
 
 NS_ASSUME_NONNULL_END

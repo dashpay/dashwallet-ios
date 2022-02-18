@@ -29,6 +29,7 @@
 #import "DWExploreWhereToSpendHandlerView.h"
 #import "DWExploreWhereToSpendMapView.h"
 #import "DWExploreWhereToSpendLocationServicePopup.h"
+#import "dashwallet-Swift.h"
 
 #define DW_EXPLORE_WHERE_TO_SPEND_SECTION_COUNT 4
 
@@ -49,7 +50,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     DWExploreWhereToSpendSegmentAll,
 };
 
-@interface DWExploreWhereToSpendViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface DWExploreWhereToSpendViewController () <UITableViewDataSource, UITableViewDelegate, DWLocationObserver>
 
 @property (nonatomic, strong) NSLayoutConstraint *contentViewTopLayoutConstraint;
 @property (readonly, nonatomic, strong) UIView *contentView;
@@ -81,6 +82,26 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     [self presentViewController:vc animated:YES completion:nil];
 }
 
+- (void)updateMapVisibility {
+    if(_currentSegment != DWExploreWhereToSpendSegmentNearby || DWLocationManager.shared.isPermissionDenied) {
+        [self hideMapIfNeeded];
+    }else{
+        [self showMapIfNeeded];
+    }
+}
+
+- (void)showMapIfNeeded {
+    if(_currentSegment != DWExploreWhereToSpendSegmentNearby) { return; }
+    
+    if(DWLocationManager.shared.needsAuthorization) {
+        [DWExploreWhereToSpendLocationServicePopup showInView:self.view completion:^{
+            [DWLocationManager.shared requestAuthorization];
+        }];
+    }else if(DWLocationManager.shared.isAuthorized) {
+        [self showMap];
+    }
+}
+
 - (void)showMap {
     [UIView animateWithDuration:0.3 animations:^{
         self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition;
@@ -102,7 +123,8 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
 - (void)updateShowMapButtonVisibility {
     BOOL isVisible = _currentSegment == DWExploreWhereToSpendSegmentNearby &&
                      _contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition;
-            
+    isVisible = isVisible && DWLocationManager.shared.isAuthorized;
+    
     _showMapButton.hidden = !isVisible;
 }
 
@@ -119,12 +141,12 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     _currentSegment = index;
 
     if(index == DWExploreWhereToSpendSegmentNearby) {
-        [self showMap];
+        [self showMapIfNeeded];
     }else{
         [self hideMapIfNeeded];
     }
     
-    [_tableView reloadSections:[NSIndexSet indexSetWithIndex:DWExploreWhereToSpendSectionsFilters] withRowAnimation:UITableViewRowAnimationNone];
+    [_tableView reloadData];
 }
 
 -(void)move:(UIPanGestureRecognizer*)sender {
@@ -186,12 +208,15 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     UITableView *tableView = [UITableView new];
     tableView.translatesAutoresizingMaskIntoConstraints = NO;
     tableView.delegate = self;
+    tableView.showsVerticalScrollIndicator = NO;
     tableView.dataSource = self;
     tableView.clipsToBounds = NO;
     [tableView registerClass:[DWExploreWhereToSpendSegmentedCell class] forCellReuseIdentifier:DWExploreWhereToSpendSegmentedCell.dw_reuseIdentifier];
     [tableView registerClass:[DWExploreWhereToSpendSearchCell class] forCellReuseIdentifier:DWExploreWhereToSpendSearchCell.dw_reuseIdentifier];
     [tableView registerClass:[DWExploreWhereToSpendFiltersCell class] forCellReuseIdentifier:DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier];
     [tableView registerClass:[DWExploreWhereToSpendItemCell class] forCellReuseIdentifier:DWExploreWhereToSpendItemCell.dw_reuseIdentifier];
+    [tableView registerClass:[ExploreWhereToSpendLocationOffCell class] forCellReuseIdentifier:ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier];
+    
     [contentView addSubview:tableView];
     _tableView = tableView;
 
@@ -241,12 +266,22 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     ]];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear: animated];
+    
+    [DWLocationManager.shared addWithObserver:self];
+    
+}
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
     [self showInfoViewControllerIfNeeded];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [DWLocationManager.shared removeWithObserver:self];
     
-    [DWExploreWhereToSpendLocationServicePopup show];
+    [super viewWillDisappear:animated];
 }
 
 - (void)viewDidLoad {
@@ -259,7 +294,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     self.navigationItem.rightBarButtonItem = [self cancelBarButton];
 
     _segmentTitles = @[NSLocalizedString(@"Online", nil), NSLocalizedString(@"Nearby", nil), NSLocalizedString(@"All", nil)];
-    _currentSegment = DWExploreWhereToSpendSegmentOnline;
+    _currentSegment = DWLocationManager.shared.isAuthorized ? DWExploreWhereToSpendSegmentNearby : DWExploreWhereToSpendSegmentOnline;
 
     [self configureHierarchy];
 }
@@ -294,16 +329,31 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
         {
             DWExploreWhereToSpendFiltersCell *filterCell = [tableView dequeueReusableCellWithIdentifier:DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier forIndexPath:indexPath];
             filterCell.title = _segmentTitles[_currentSegment];
+            filterCell.subtitle = nil;
+            
+            if(_currentSegment == DWExploreWhereToSpendSegmentNearby) {
+                NSString *location = [DWLocationManager.shared currentReversedLocation];
+                filterCell.title = location ? location : filterCell.title;
+                filterCell.subtitle = NSLocalizedString(@"2 merchants in 20 miles", nil);
+            }
+            
             cell = filterCell;
             break;
         }
         case DWExploreWhereToSpendSectionsItems:
         {
-            DWExploreMerchant *merchant = self.merchants[indexPath.row];
-            DWExploreWhereToSpendItemCell *itemCell = [tableView dequeueReusableCellWithIdentifier:DWExploreWhereToSpendItemCell.dw_reuseIdentifier forIndexPath:indexPath];
-            [itemCell updateWithMerchant:merchant];
-            cell = itemCell;
-            break;
+            if(_currentSegment == DWExploreWhereToSpendSegmentNearby && DWLocationManager.shared.isPermissionDenied)
+            {
+                ExploreWhereToSpendLocationOffCell *itemCell = [tableView dequeueReusableCellWithIdentifier:ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier forIndexPath:indexPath];
+                cell = itemCell;
+                cell.separatorInset = UIEdgeInsetsMake(0, 2000, 0, 0);
+            }else{
+                DWExploreMerchant *merchant = self.merchants[indexPath.row];
+                DWExploreWhereToSpendItemCell *itemCell = [tableView dequeueReusableCellWithIdentifier:DWExploreWhereToSpendItemCell.dw_reuseIdentifier forIndexPath:indexPath];
+                [itemCell updateWithMerchant:merchant];
+                cell = itemCell;
+                break;
+            }
         }
     }
 
@@ -313,10 +363,26 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
 }
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if(section == DWExploreWhereToSpendSectionsItems) {
-        return self.merchants.count;
+    if(section == DWExploreWhereToSpendSectionsFilters || section == DWExploreWhereToSpendSectionsSearch) {
+        if(_currentSegment == DWExploreWhereToSpendSegmentNearby) {
+            return DWLocationManager.shared.isPermissionDenied ? 0 : 1;
+        }
     }
-
+    
+    if(section == DWExploreWhereToSpendSectionsItems) {
+        if(_currentSegment == DWExploreWhereToSpendSegmentNearby) {
+            if(DWLocationManager.shared.isAuthorized){
+                return self.merchants.count;
+            }else if(DWLocationManager.shared.needsAuthorization) {
+                return 0;
+            }else if(DWLocationManager.shared.isPermissionDenied) {
+                return 1;
+            }
+        }else{
+            return self.merchants.count;
+        }
+    }
+    
     return 1;
 }
 
@@ -330,13 +396,13 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
             return 62.0f;
             break;
         case DWExploreWhereToSpendSectionsSearch:
-            return 60.0f;
+            return 50.0f;
             break;
         case DWExploreWhereToSpendSectionsFilters:
             return 50.0f;
             break;
         case DWExploreWhereToSpendSectionsItems:
-            return 56.0f;
+            return (_currentSegment == DWExploreWhereToSpendSegmentNearby && DWLocationManager.shared.isPermissionDenied) ? tableView.frame.size.height : 56.0f;
             break;
     }
 
@@ -345,7 +411,30 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    
+    if(indexPath.section == DWExploreWhereToSpendSectionsItems) {
+        DWExploreMerchant *merchant = self.merchants[indexPath.row];
+        ExploreMerchantViewController *vc = [[ExploreMerchantViewController alloc] initWithMerchant:merchant];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
 }
+- (void)locationManagerDidChangeCurrentLocation:(DWLocationManager * _Nonnull)manager {
+    
+}
+
+- (void)locationManagerDidChangeCurrentReversedLocation:(DWLocationManager * _Nonnull)manager {
+    if(_currentSegment == DWExploreWhereToSpendSegmentNearby) {
+        [_tableView reloadData];
+    }
+}
+
+- (void)locationManagerDidChangeServiceAvailability:(DWLocationManager * _Nonnull)manager {
+    if(_currentSegment == DWExploreWhereToSpendSegmentNearby) {
+        [_tableView reloadData];
+        [self updateMapVisibility];
+    }
+}
+
 @end
 
 

@@ -17,7 +17,39 @@
 
 import UIKit
 
-class ExploreMerchantViewController: UIViewController
-{
+@objc class ExploreMerchantViewController: UIViewController {
+    private let merchant: DWExploreMerchant
+    @objc public init(merchant: DWExploreMerchant) {
+        self.merchant = merchant
+        super.init(nibName: nil, bundle: nil)
+        
+        configureHierarchy()
+    }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        view.backgroundColor = UIColor.dw_background()
+        title = merchant.name
+    }
+}
+
+extension ExploreMerchantViewController
+{
+    func configureHierarchy() {
+        let mapView = DWExploreWhereToSpendMapView()
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mapView)
+        
+        NSLayoutConstraint.activate([
+            mapView.topAnchor.constraint(equalTo: view.topAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+    }
 }

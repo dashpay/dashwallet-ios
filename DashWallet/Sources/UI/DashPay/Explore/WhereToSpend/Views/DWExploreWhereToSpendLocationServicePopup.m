@@ -20,6 +20,10 @@
 #import "DWActionButton.h"
 #import "UIFont+DWFont.h"
 
+@interface DWExploreWhereToSpendLocationServicePopup ()
+@property(nonatomic, copy) void (^continueBlock)(void);
+@end
+
 @implementation DWExploreWhereToSpendLocationServicePopup
 
 -(instancetype)initWithFrame:(CGRect)frame {
@@ -32,6 +36,7 @@
 }
 
 - (void)continueButtonAction {
+    self.continueBlock();
     [self removeFromSuperview];
 }
 
@@ -126,8 +131,9 @@
     ]];
 }
 
-+ (void)showInView:(UIView *)view {
++ (void)showInView:(UIView *)view completion: (void (^)(void))completion {
     DWExploreWhereToSpendLocationServicePopup *popup = [[DWExploreWhereToSpendLocationServicePopup alloc] initWithFrame:CGRectZero];
+    popup.continueBlock = completion;
     [popup showInView:view.window];
 }
 
