@@ -23,6 +23,7 @@
 #import "DWDerivationPathKeysItemObject.h"
 #import "DWEnvironment.h"
 #import "DWSelectorFormCellModel.h"
+#import "DSMasternodeManager+LocalMasternode.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
