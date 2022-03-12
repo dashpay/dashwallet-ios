@@ -104,9 +104,9 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
     }
 
-    if (!IS_IPHONE_5_OR_LESS) {
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Explore]];
-    }
+    //    if (!IS_IPHONE_5_OR_LESS) {
+    //        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Explore]];
+    //    }
 
     return mutableItems;
 }
@@ -142,9 +142,9 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
     }
 
-    if (!IS_IPHONE_5_OR_LESS) {
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Explore]];
-    }
+    //    if (!IS_IPHONE_5_OR_LESS) {
+    //        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_Explore]];
+    //    }
 
 
     return mutableItems;

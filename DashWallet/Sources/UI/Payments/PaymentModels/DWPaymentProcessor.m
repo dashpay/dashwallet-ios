@@ -605,8 +605,8 @@ static NSString *sanitizeString(NSString *s) {
     }
     else if (tx) {
         uint64_t amount = fee;
-        for (NSNumber *amountNumber in tx.outputAmounts) {
-            amount += amountNumber.unsignedLongLongValue;
+        for (DSTransactionOutput *output in tx.outputs) {
+            amount += output.amount;
         }
         NSString *format =
             NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@).", nil);
