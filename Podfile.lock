@@ -538,7 +538,7 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
-  - bls-signatures-pod (0.2.11)
+  - bls-signatures-pod (0.2.12)
   - BoringSSL-GRPC (0.0.24):
     - BoringSSL-GRPC/Implementation (= 0.0.24)
     - BoringSSL-GRPC/Interface (= 0.0.24)
@@ -550,22 +550,22 @@ PODS:
   - CocoaLumberjack (3.7.2):
     - CocoaLumberjack/Core (= 3.7.2)
   - CocoaLumberjack/Core (3.7.2)
-  - DAPI-GRPC (0.21.0-dev.8):
+  - DAPI-GRPC (0.22.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
-    - DAPI-GRPC/Messages (= 0.21.0-dev.8)
-    - DAPI-GRPC/Services (= 0.21.0-dev.8)
-  - DAPI-GRPC/Messages (0.21.0-dev.8):
+    - DAPI-GRPC/Messages (= 0.22.0-dev.8)
+    - DAPI-GRPC/Services (= 0.22.0-dev.8)
+  - DAPI-GRPC/Messages (0.22.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - Protobuf
-  - DAPI-GRPC/Services (0.21.0-dev.8):
+  - DAPI-GRPC/Services (0.22.0-dev.8):
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
   - DashSharedCore (0.1.4)
   - DashSync (0.1.0):
-    - bls-signatures-pod (= 0.2.11)
+    - bls-signatures-pod (= 0.2.12)
     - CocoaLumberjack (= 3.7.2)
-    - DAPI-GRPC (= 0.21.0-dev.8)
+    - DAPI-GRPC (= 0.22.0-dev.8)
     - DashSharedCore (= 0.1.4)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
@@ -703,14 +703,14 @@ SPEC CHECKSUMS:
   "!ProtoCompiler": 48ddba704d8520ff9bcf3faa3f29d4726700f9b9
   "!ProtoCompiler-gRPCPlugin": 150ce7d4f5bdf207db138545dc67e53e6518da63
   abseil: ebe5b5529fb05d93a8bdb7951607be08b7fa71bc
-  bls-signatures-pod: 6bca9f1d2c67d321d935713d49c272880989f169
+  bls-signatures-pod: cb5b50790689d21a516f50af07a7642fc5a845b3
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  DAPI-GRPC: a33d808446476b6db8429ddcdbc4c1c7872f5501
+  DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
   DashSharedCore: 5e1629b13d7ef41d03b5849ad3f56a45ec412c64
-  DashSync: 27e971d7771399164c8c782ba83788ee2a509690
+  DashSync: e8492cc15475d7a0ede9caaecea08ea5e178174f
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: f28b04db68d04d7c7be78bc5c721b7729a253521
@@ -727,6 +727,6 @@ SPEC CHECKSUMS:
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: fe277d684a56eee086c0b6d4dced01cbfbdfc7ff
+PODFILE CHECKSUM: f21e1afacbbf267473a57cd4a8ea608f442665b5
 
 COCOAPODS: 1.11.2
