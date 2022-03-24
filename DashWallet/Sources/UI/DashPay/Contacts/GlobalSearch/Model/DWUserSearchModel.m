@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items;
 @property (nonatomic, assign) BOOL requestInProgress;
 @property (nonatomic, assign) BOOL hasNextPage;
-@property (nonatomic, copy) NSData *lastItem;
+@property (nullable, nonatomic, copy) NSData *lastItem;
 
 @end
 
@@ -189,7 +189,7 @@ NS_ASSUME_NONNULL_END
                                                   }
                                                   strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
                                                   strongSelf.searchRequest.items = items;
-                                                  strongSelf.searchRequest.lastItem = uint256_data([[[items lastObject] blockchainIdentity] uniqueID]);
+                                                  strongSelf.searchRequest.lastItem = [[[items lastObject] blockchainIdentity] uniqueIDData];
                                                   [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
                                               }
                                               else {
