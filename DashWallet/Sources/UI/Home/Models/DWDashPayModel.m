@@ -191,23 +191,18 @@ NS_ASSUME_NONNULL_END
 	
 	DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
 	__weak typeof(self) weakSelf = self;
-	[manager searchIdentitiesByDashpayUsernamePrefix:username
-					offset:0
-					limit:1
-					queryDashpayProfileInfo:YES
-					withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-		if (success) {
-			DSBlockchainIdentity *blockchainIdentity = blockchainIdentities.firstObject;
-			
-			DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-			DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-			
-			[myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
-																completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-				DSLog(@"Friend request sent %i", success);
-			}];
-		}
-	}];
+    [manager searchIdentityByDashpayUsername:username withCompletion:^(BOOL success, DSBlockchainIdentity * _Nullable blockchainIdentity, NSError * _Nullable error) {
+        if (success) {
+        
+            DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+            DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+            
+            [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
+                                                                completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+                DSLog(@"Friend request sent %i", success);
+            }];
+        }
+    }];
 }
 
 - (void)sendContactRequestToBlockchainIdentity:(DSBlockchainIdentity *) blockchainIdentity {
