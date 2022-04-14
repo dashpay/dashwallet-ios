@@ -348,6 +348,7 @@ static NSString *const DWKrupnikDevnetIdentifier = @"devnet-krupnik";
 - (DSChain *)mobileDevnetChain {
     return [[DSChainsManager sharedInstance]
         registerDevnetChainWithIdentifier:DWMobileDevnetIdentifier
+                                  version:1
                       forServiceLocations:[self mobileDevnetServiceLocation]
               withMinimumDifficultyBlocks:UINT32_MAX
                              standardPort:20001
@@ -367,6 +368,7 @@ static NSString *const DWKrupnikDevnetIdentifier = @"devnet-krupnik";
 - (DSChain *)schnappsDevnetChain {
     return [[DSChainsManager sharedInstance]
         registerDevnetChainWithIdentifier:DWSchnappsDevnetIdentifier
+                                  version:1
                       forServiceLocations:[self schnappsDevnetServiceLocation]
               withMinimumDifficultyBlocks:UINT32_MAX
                              standardPort:20001
@@ -386,6 +388,7 @@ static NSString *const DWKrupnikDevnetIdentifier = @"devnet-krupnik";
 - (DSChain *)evoDevnetChain {
     return [[DSChainsManager sharedInstance]
         registerDevnetChainWithIdentifier:DWEvoDevnetIdentifier
+            version:1
                       forServiceLocations:[self evoDevnetServiceLocation]
               withMinimumDifficultyBlocks:UINT32_MAX
                              standardPort:20001
@@ -405,6 +408,7 @@ static NSString *const DWKrupnikDevnetIdentifier = @"devnet-krupnik";
 - (DSChain *)krupnikDevnetChain {
     return [[DSChainsManager sharedInstance]
                 registerDevnetChainWithIdentifier:DWKrupnikDevnetIdentifier
+                version:1
                 forServiceLocations:[self krupnikDevnetServiceLocation]
                 withMinimumDifficultyBlocks:UINT32_MAX
                 standardPort:20001

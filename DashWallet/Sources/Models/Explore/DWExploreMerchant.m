@@ -19,24 +19,67 @@
 
 @implementation DWExploreMerchant
 
-- (instancetype)initWithName:(NSString *)name logoURL:(NSString *)logoURL method:(DWExploreMerchantPaymentMethod)method;
+- (instancetype)initWithName:(NSString *)name
+                     logoURL:(NSString *)logoURL
+                     address:(NSString * _Nullable)address
+                     phone:(NSString * _Nullable)phone
+                     website:(NSString * _Nullable)website
+                    latitude:(CGFloat)latitude
+                   longitude:(CGFloat)longitude
+                      method:(DWExploreMerchantPaymentMethod)method
+                      type:(DWExploreMerchantType)type
 {
     self = [super init];
     if (self) {
         self.name = name;
         self.logoURL = logoURL;
+        self.address = address;
         self.paymentMethod = method;
+        self.phone = phone;
+        self.website = website;
+        self.latitude = latitude;
+        self.longitude = longitude;
+        self.type = type;
     }
     return self;
 }
 
+-(BOOL)isOnlineMerchant
+{
+    return _type == DWExploreMerchantTypeOnline;
+}
+
 + (NSArray<DWExploreMerchant *>*)mockData
 {
-    [[DWExploreMerchant alloc] initWithName:@"Automercados Gama" logoURL:@"https://drive.google.com/uc?export=view&id=1WYG5ijAkVYD5_If1Kjrnr7IcFqReIg20" method:DWExploreMerchantPaymentMethodDash];
-    
     return @[
-        [[DWExploreMerchant alloc] initWithName:@"Automercados Gama" logoURL:@"https://drive.google.com/uc?export=view&id=1WYG5ijAkVYD5_If1Kjrnr7IcFqReIg20" method:DWExploreMerchantPaymentMethodDash],
-        [[DWExploreMerchant alloc] initWithName:@"1-800 Baskets" logoURL:@"https://api.giftango.com/imageservice/Images/530764_logo_600x380.png" method:DWExploreMerchantPaymentMethodGiftCard],
+        [[DWExploreMerchant alloc] initWithName:@"Automercados Gama"
+                                        logoURL:@"https://drive.google.com/uc?export=view&id=1WYG5ijAkVYD5_If1Kjrnr7IcFqReIg20"
+                                        address:nil
+                                          phone:@"58 (212) 263 19 07"
+                                        website:@"https://www.a1win.net"
+                                       latitude:CGFLOAT_MAX
+                                      longitude:CGFLOAT_MAX
+                                         method:DWExploreMerchantPaymentMethodDash
+                                           type:DWExploreMerchantTypeOnline],
+        [[DWExploreMerchant alloc] initWithName:@"1-800 Baskets"
+                                        logoURL:@"https://drive.google.com/uc?export=view&id=1WYG5ijAkVYD5_If1Kjrnr7IcFqReIg20"
+                                        address:@"21690 Farm to Market 1093, Richmond, TX 77407, USA"
+                                          phone:@"58 (212) 263 19 07"
+                                        website:@"https://www.a1win.net"
+                                       latitude:CGFLOAT_MAX
+                                      longitude:CGFLOAT_MAX
+                                         method:DWExploreMerchantPaymentMethodGiftCard
+                                           type:DWExploreMerchantTypePhysical],
+        [[DWExploreMerchant alloc] initWithName:@"AMC Theatres"
+                                        logoURL:@"https://craypaystorage.blob.core.windows.net/prod/content/wp-content/uploads/2018/05/AMC.png"
+                                        address:@"13649 North Litchfield Road, USA"
+                                          phone:@"58 (212) 263 19 07"
+                                        website:@"https://www.a1win.net"
+                                       latitude:71.2887248
+                                      longitude:-156.7845987
+                                         method:DWExploreMerchantPaymentMethodDash
+                                           type:DWExploreMerchantTypePhysical],
+        
     ];
 }
 

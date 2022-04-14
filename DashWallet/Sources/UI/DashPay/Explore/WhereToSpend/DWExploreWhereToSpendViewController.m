@@ -276,6 +276,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     [super viewDidAppear:animated];
 
     [self showInfoViewControllerIfNeeded];
+    [self showMapIfNeeded];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -414,7 +415,14 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
     
     if(indexPath.section == DWExploreWhereToSpendSectionsItems) {
         DWExploreMerchant *merchant = self.merchants[indexPath.row];
-        ExploreMerchantViewController *vc = [[ExploreMerchantViewController alloc] initWithMerchant:merchant];
+        
+        UIViewController *vc;
+        if(merchant.isOnlineMerchant) {
+            vc = [[ExploreOnlineMerchantViewController alloc] initWithMerchant:merchant];
+        }else{
+            vc = [[ExploreOfflineMerchantViewController alloc] initWithMerchant:merchant];
+        }
+        
         [self.navigationController pushViewController:vc animated:YES];
     }
 }

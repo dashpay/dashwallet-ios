@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,11 +37,28 @@ typedef NS_ENUM(NSUInteger, DWExploreMerchantType) {
 @property(nonatomic, strong) NSString *_Nullable deeplink;
 @property(nonatomic, strong) NSString *_Nullable logoURL;
 @property(nonatomic, strong) NSString *_Nullable plusCode;
+@property(nonatomic, strong) NSString *_Nullable address;
+@property(nonatomic, strong) NSString *_Nullable phone;
+@property(nonatomic, strong) NSString *_Nullable website;
+@property(nonatomic, assign) CGFloat latitude;
+@property(nonatomic, assign) CGFloat longitude;
+
 @property(nonatomic, strong) NSString *_Nullable addDate;
+
 @property(nonatomic, strong) NSString *_Nullable updateDate;
 @property(nonatomic, assign) DWExploreMerchantPaymentMethod paymentMethod;
+@property(nonatomic, assign) DWExploreMerchantType type;
+@property(readonly) BOOL isOnlineMerchant;
 
-- (instancetype)initWithName:(NSString *)name logoURL:(NSString *)logoURL method:(DWExploreMerchantPaymentMethod)method;
+- (instancetype)initWithName:(NSString *)name
+                     logoURL:(NSString *)logoURL
+                     address:(NSString * _Nullable)address
+                       phone:(NSString * _Nullable)phone
+                     website:(NSString * _Nullable)website
+                    latitude:(CGFloat)latitude
+                   longitude:(CGFloat)longitude
+                      method:(DWExploreMerchantPaymentMethod)method
+                        type:(DWExploreMerchantType)type;
 + (NSArray<DWExploreMerchant *>*)mockData;
 
 @end
