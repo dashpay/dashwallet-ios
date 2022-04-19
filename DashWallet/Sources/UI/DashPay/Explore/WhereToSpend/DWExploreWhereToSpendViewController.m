@@ -420,7 +420,7 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
         if(merchant.isOnlineMerchant) {
             vc = [[ExploreOnlineMerchantViewController alloc] initWithMerchant:merchant];
         }else{
-            vc = [[ExploreOfflineMerchantViewController alloc] initWithMerchant:merchant];
+            vc = [[ExploreOfflineMerchantViewController alloc] initWithMerchant:merchant isShowAllHidden:NO];
         }
         
         [self.navigationController pushViewController:vc animated:YES];

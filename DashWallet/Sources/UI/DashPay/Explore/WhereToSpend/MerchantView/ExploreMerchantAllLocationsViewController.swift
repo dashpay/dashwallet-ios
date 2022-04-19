@@ -209,7 +209,7 @@ extension ExploreMerchantAllLocationsViewController: UITableViewDelegate, UITabl
         
         let merchant = DWExploreMerchant.mockData()[1]
         
-        let vc = ExploreOfflineMerchantViewController(merchant: merchant)
+        let vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: true)
         navigationController?.pushViewController(vc, animated: true)
     }
 }

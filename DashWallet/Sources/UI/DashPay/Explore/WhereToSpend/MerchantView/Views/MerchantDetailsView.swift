@@ -27,12 +27,17 @@ class MerchantDetailsView: UIView {
     var subLabel: UILabel!
     var addressLabel: UILabel!
     
-    private var merchant: DWExploreMerchant!
+    private let merchant: DWExploreMerchant
+    private let isShowAllHidden: Bool
     
-    init(merchant: DWExploreMerchant) {
+    init(merchant: DWExploreMerchant, isShowAllHidden: Bool) {
+        
+        self.isShowAllHidden = isShowAllHidden
+        self.merchant = merchant
+        
         super.init(frame: .zero)
         
-        self.merchant = merchant
+        
         configureHierarchy()
     }
         
@@ -142,16 +147,21 @@ extension MerchantDetailsView {
         addressLabel = UILabel()
         addressLabel.font = .dw_font(forTextStyle: .body)
         addressLabel.textColor = .label
+        addressLabel.numberOfLines = 0
+        addressLabel.lineBreakMode = .byWordWrapping
         addressStackView.addArrangedSubview(addressLabel)
         
-        let showAllLocations = UIButton()
-        showAllLocations.setTitle(NSLocalizedString("View all locations", comment: "View all locations"), for: .normal)
-        showAllLocations.setTitleColor(.dw_dashBlue(), for: .normal)
-        showAllLocations.contentHorizontalAlignment = .left
-        showAllLocations.addTarget(self, action: #selector(showAllLocationsAction), for: .touchUpInside)
-        addressStackView.addArrangedSubview(showAllLocations)
-        
-        //containerView.addArrangedSubview(UIView())
+        if !isShowAllHidden
+        {
+            let showAllLocations = UIButton()
+            showAllLocations.setTitle(NSLocalizedString("View all locations", comment: "View all locations"), for: .normal)
+            showAllLocations.setTitleColor(.dw_dashBlue(), for: .normal)
+            showAllLocations.contentHorizontalAlignment = .left
+            showAllLocations.addTarget(self, action: #selector(showAllLocationsAction), for: .touchUpInside)
+            addressStackView.addArrangedSubview(showAllLocations)
+        }else{
+            containerView.addArrangedSubview(UIView())
+        }
         
         let buttonsStackView = UIStackView()
         buttonsStackView.distribution = .fillEqually
@@ -199,23 +209,18 @@ extension MerchantDetailsView {
             payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
         }
         
-        
-        
-       
-        
         addressLabel.text = merchant.address
         
+        let padding: CGFloat = 15
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: topAnchor, constant: 15),
-            containerView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
-            containerView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
-            containerView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
+            containerView.topAnchor.constraint(equalTo: topAnchor, constant: padding),
+            containerView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -padding),
+            containerView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: padding),
+            containerView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -padding),
             
             buttonsStackView.heightAnchor.constraint(equalToConstant: 51),
             
             payButton.heightAnchor.constraint(equalToConstant: 48)
-            
-            
         ])
     }
 }

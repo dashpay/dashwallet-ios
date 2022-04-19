@@ -159,6 +159,17 @@ import UIKit
 @objc class ExploreOfflineMerchantViewController: ExploreMerchantViewController {
 
     private var detailsView: MerchantDetailsView!
+    private var isShowAllHidden: Bool
+    
+    @objc public init(merchant: DWExploreMerchant, isShowAllHidden: Bool = false) {
+        
+        self.isShowAllHidden = isShowAllHidden
+        super.init(merchant: merchant)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private func showAllLocations() {
         let vc = ExploreMerchantAllLocationsViewController()
@@ -170,7 +181,7 @@ import UIKit
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         
-        detailsView = MerchantDetailsView(merchant: merchant)
+        detailsView = MerchantDetailsView(merchant: merchant, isShowAllHidden: isShowAllHidden)
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         detailsView.showAllLocationsActionBlock = { [weak self] in
             self?.showAllLocations()
