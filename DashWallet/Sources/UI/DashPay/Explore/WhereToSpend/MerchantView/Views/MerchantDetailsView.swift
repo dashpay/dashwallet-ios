@@ -70,7 +70,8 @@ class MerchantDetailsView: UIView {
     }
     
     @objc func payAction() {
-        
+        guard let deeplink = merchant.deeplink, let url = URL(string: deeplink) else { return }
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
     
     required init?(coder: NSCoder) {

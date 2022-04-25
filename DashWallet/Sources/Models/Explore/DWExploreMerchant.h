@@ -51,6 +51,7 @@ typedef NS_ENUM(NSUInteger, DWExploreMerchantType) {
 @property(readonly) BOOL isOnlineMerchant;
 
 - (instancetype)initWithName:(NSString *)name
+                    deeplink:(NSString * _Nullable)deeplink
                      logoURL:(NSString *)logoURL
                      address:(NSString * _Nullable)address
                        phone:(NSString * _Nullable)phone

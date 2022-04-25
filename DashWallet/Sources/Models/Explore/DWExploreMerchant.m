@@ -20,6 +20,7 @@
 @implementation DWExploreMerchant
 
 - (instancetype)initWithName:(NSString *)name
+                    deeplink:(NSString * _Nullable)deeplink
                      logoURL:(NSString *)logoURL
                      address:(NSString * _Nullable)address
                      phone:(NSString * _Nullable)phone
@@ -32,6 +33,7 @@
     self = [super init];
     if (self) {
         self.name = name;
+        self.deeplink = deeplink;
         self.logoURL = logoURL;
         self.address = address;
         self.paymentMethod = method;
@@ -53,6 +55,7 @@
 {
     return @[
         [[DWExploreMerchant alloc] initWithName:@"Automercados Gama"
+                                       deeplink:nil
                                         logoURL:@"https://drive.google.com/uc?export=view&id=1WYG5ijAkVYD5_If1Kjrnr7IcFqReIg20"
                                         address:nil
                                           phone:@"58 (212) 263 19 07"
@@ -62,6 +65,7 @@
                                          method:DWExploreMerchantPaymentMethodDash
                                            type:DWExploreMerchantTypeOnline],
         [[DWExploreMerchant alloc] initWithName:@"1-800 Baskets"
+                                       deeplink:@"https://dashdirect.page.link/800Flowers"
                                         logoURL:@"https://drive.google.com/uc?export=view&id=1WYG5ijAkVYD5_If1Kjrnr7IcFqReIg20"
                                         address:@"21690 Farm to Market 1093, Richmond, TX 77407, USA"
                                           phone:@"58 (212) 263 19 07"
@@ -71,13 +75,14 @@
                                          method:DWExploreMerchantPaymentMethodGiftCard
                                            type:DWExploreMerchantTypePhysical],
         [[DWExploreMerchant alloc] initWithName:@"AMC Theatres"
+                                       deeplink:@"https://dashdirect.page.link/AMC"
                                         logoURL:@"https://craypaystorage.blob.core.windows.net/prod/content/wp-content/uploads/2018/05/AMC.png"
                                         address:@"13649 North Litchfield Road, USA"
                                           phone:@"58 (212) 263 19 07"
                                         website:@"https://www.a1win.net"
                                        latitude:71.2887248
                                       longitude:-156.7845987
-                                         method:DWExploreMerchantPaymentMethodDash
+                                         method:DWExploreMerchantPaymentMethodGiftCard
                                            type:DWExploreMerchantTypePhysical],
         
     ];
