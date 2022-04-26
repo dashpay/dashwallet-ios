@@ -19,6 +19,8 @@ import UIKit
 
 @objc class ExploreOnlineMerchantViewController: ExploreMerchantViewController {
     
+    @objc public var payWithDashHandler: (()->())?
+    
     private var containerView: UIStackView!
     private var logoImageView: UIImageView!
     private var nameLabel: UILabel!
@@ -26,7 +28,7 @@ import UIKit
     private var addressLabel: UILabel!
     
     @objc func payAction() {
-        
+        payWithDashHandler?()
     }
     
     @objc func callAction() {

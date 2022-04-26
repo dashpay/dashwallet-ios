@@ -36,7 +36,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                           DWHomeViewControllerDelegate,
                                           UINavigationControllerDelegate,
                                           DWWipeDelegate,
-                                          DWMainMenuViewControllerDelegate>
+                                          DWMainMenuViewControllerDelegate,
+                                          DWExploreTestnetViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
@@ -247,6 +248,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self setTabBarHiddenAnimated:viewController.hidesBottomBarWhenPushed animated:NO];
 }
 
+#pragma mark - DWExploreTestnetViewControllerDelegate
+- (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+}
 #pragma mark - Private
 
 - (DWNavigationController *)homeNavigationController {
@@ -298,6 +303,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 - (DWNavigationController *)exploreNavigationController {
     if (!_menuNavigationController) {
         DWExploreTestnetViewController *exploreController = [[DWExploreTestnetViewController alloc] init];
+        exploreController.delegate = self;
         
         _exploreNavigationController = [[DWNavigationController alloc] initWithRootViewController:exploreController];
         _exploreNavigationController.delegate = self;

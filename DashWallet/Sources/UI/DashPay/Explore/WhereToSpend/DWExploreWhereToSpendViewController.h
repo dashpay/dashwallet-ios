@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWExploreWhereToSpendViewController : UIViewController
 
+@property(nonatomic, copy) void (^payWithDashHandler)(void);
+
 @end
 
 NS_ASSUME_NONNULL_END

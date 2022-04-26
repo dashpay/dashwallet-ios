@@ -32,10 +32,20 @@
     return YES;
 }
 
-- (void)showWhereToSpendViewController
-{
+- (void)showWhereToSpendViewController {
+    
+    DWExploreTestnetViewController* __weak weakSelf = self;
+    
     DWExploreWhereToSpendViewController *vc = [[DWExploreWhereToSpendViewController alloc] init];
+    vc.payWithDashHandler = ^{
+        [weakSelf openPaymentsScreen];
+    };
+    
     [self.navigationController pushViewController:vc animated:YES];
+}
+
+- (void)openPaymentsScreen {
+    [self.delegate exploreTestnetViewControllerShowSendPayment:self];
 }
 
 - (void)viewDidLoad {
@@ -60,7 +70,6 @@
     [self.view addSubview:contentView];
 
     // Contents
-    
     DWExploreHeaderView *headerView = [[DWExploreHeaderView alloc] init];
     headerView.translatesAutoresizingMaskIntoConstraints = NO;
     headerView.image = [UIImage imageNamed:@"image.explore.dash.wallet"];

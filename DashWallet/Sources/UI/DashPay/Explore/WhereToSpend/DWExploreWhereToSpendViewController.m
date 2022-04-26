@@ -418,7 +418,9 @@ typedef NS_ENUM(NSUInteger, DWExploreWhereToSpendSegment) {
         
         UIViewController *vc;
         if(merchant.isOnlineMerchant) {
-            vc = [[ExploreOnlineMerchantViewController alloc] initWithMerchant:merchant];
+            ExploreOnlineMerchantViewController *onlineVC = [[ExploreOnlineMerchantViewController alloc] initWithMerchant:merchant];
+            onlineVC.payWithDashHandler = self.payWithDashHandler;
+            vc = onlineVC;
         }else{
             vc = [[ExploreOfflineMerchantViewController alloc] initWithMerchant:merchant isShowAllHidden:NO];
         }

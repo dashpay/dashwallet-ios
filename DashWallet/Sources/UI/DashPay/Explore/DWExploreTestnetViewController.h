@@ -20,7 +20,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWExploreTestnetViewController;
+
+@protocol DWExploreTestnetViewControllerDelegate <NSObject>
+
+- (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller;
+
+@end
+
 @interface DWExploreTestnetViewController : UIViewController<DWNavigationFullscreenable>
+
+@property (nullable, nonatomic, weak) id<DWExploreTestnetViewControllerDelegate> delegate;
 
 @end
 
