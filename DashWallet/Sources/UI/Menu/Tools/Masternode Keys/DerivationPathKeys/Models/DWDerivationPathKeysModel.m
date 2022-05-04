@@ -20,10 +20,10 @@
 #import <DashSync/DSAuthenticationKeysDerivationPath.h>
 #import <DashSync/DashSync.h>
 
+#import "DSMasternodeManager+LocalMasternode.h"
 #import "DWDerivationPathKeysItemObject.h"
 #import "DWEnvironment.h"
 #import "DWSelectorFormCellModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 
