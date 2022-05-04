@@ -573,21 +573,21 @@ PODS:
     - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
-  - Firebase/CoreOnly (8.14.0):
-    - FirebaseCore (= 8.14.0)
-  - Firebase/DynamicLinks (8.14.0):
+  - Firebase/CoreOnly (8.15.0):
+    - FirebaseCore (= 8.15.0)
+  - Firebase/DynamicLinks (8.15.0):
     - Firebase/CoreOnly
-    - FirebaseDynamicLinks (~> 8.14.0)
-  - FirebaseCore (8.14.0):
+    - FirebaseDynamicLinks (~> 8.15.0)
+  - FirebaseCore (8.15.0):
     - FirebaseCoreDiagnostics (~> 8.0)
     - GoogleUtilities/Environment (~> 7.7)
     - GoogleUtilities/Logger (~> 7.7)
-  - FirebaseCoreDiagnostics (8.14.0):
+  - FirebaseCoreDiagnostics (8.15.0):
     - GoogleDataTransport (~> 9.1)
     - GoogleUtilities/Environment (~> 7.7)
     - GoogleUtilities/Logger (~> 7.7)
     - nanopb (~> 2.30908.0)
-  - FirebaseDynamicLinks (8.14.0):
+  - FirebaseDynamicLinks (8.15.0):
     - FirebaseCore (~> 8.0)
   - FirebaseStorage (8.15.0):
     - FirebaseCore (~> 8.0)
@@ -671,8 +671,8 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
-  - PromisesObjC (2.0.0)
-  - Protobuf (3.19.4)
+  - PromisesObjC (2.1.0)
+  - Protobuf (3.20.1)
   - SDWebImage (5.9.4):
     - SDWebImage/Core (= 5.9.4)
   - SDWebImage/Core (5.9.4)
@@ -775,10 +775,10 @@ SPEC CHECKSUMS:
   DashSync: 436053dc41cd1dbfc88009abf63ef60b6ea3aa25
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
-  Firebase: 7e8fe528c161b9271d365217a74c16aaf834578e
-  FirebaseCore: b84a44ee7ba999e0f9f76d198a9c7f60a797b848
-  FirebaseCoreDiagnostics: fd0c8490f34287229c1d6c103d3a55f81ec85712
-  FirebaseDynamicLinks: 5fe9d2405cc93a58fead4af4ef4c81a466516ba0
+  Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
+  FirebaseCore: 5743c5785c074a794d35f2fff7ecc254a91e08b1
+  FirebaseCoreDiagnostics: 92e07a649aeb66352b319d43bdd2ee3942af84cb
+  FirebaseDynamicLinks: 1dc816ef789c5adac6fede0b46d11478175c70e4
   FirebaseStorage: 8019af461599b2c3bc61c6a5dbdfa3d2de66a4d9
   GoogleDataTransport: 629c20a4d363167143f30ea78320d5a7eb8bd940
   GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1
@@ -792,8 +792,8 @@ SPEC CHECKSUMS:
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
-  PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
-  Protobuf: 235750e4696ff59fb07d949a9dbbc92b3c0700fe
+  PromisesObjC: 99b6f43f9e1044bd87a95a60beff28c2c44ddb72
+  Protobuf: b60ec2f51ad74765f44d0c09d2e0579d7de21745
   SDWebImage: b69257f4ab14e9b6a2ef53e910fdf914d8f757c1
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da

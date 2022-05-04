@@ -23,8 +23,8 @@
 #import "DWExploreTestnetContentsView.h"
 #import "DWScrollingViewController.h"
 #import "DWUIKit.h"
-#import "DWExploreWhereToSpendViewController.h"
 #import "UINavigationBar+DWAppearance.h"
+#import "dashwallet-Swift.h"
 
 @implementation DWExploreTestnetViewController
 
@@ -36,7 +36,7 @@
     
     DWExploreTestnetViewController* __weak weakSelf = self;
     
-    DWExploreWhereToSpendViewController *vc = [[DWExploreWhereToSpendViewController alloc] init];
+    ExploreWhereToSpendViewController *vc = [[ExploreWhereToSpendViewController alloc] init];
     vc.payWithDashHandler = ^{
         [weakSelf openPaymentsScreen];
     };

@@ -27,10 +27,10 @@ class MerchantDetailsView: UIView {
     var subLabel: UILabel!
     var addressLabel: UILabel!
     
-    private let merchant: DWExploreMerchant
+    private let merchant: Merchant
     private let isShowAllHidden: Bool
     
-    init(merchant: DWExploreMerchant, isShowAllHidden: Bool) {
+    init(merchant: Merchant, isShowAllHidden: Bool) {
         
         self.isShowAllHidden = isShowAllHidden
         self.merchant = merchant
@@ -56,9 +56,9 @@ class MerchantDetailsView: UIView {
     }
     
     @objc func directionAction() {
-        guard merchant.longitude != CGFloat.greatestFiniteMagnitude && merchant.latitude != CGFloat.greatestFiniteMagnitude else { return }
+        guard let longitude = merchant.longitude, let latitude = merchant.latitude else { return }
         
-        let coordinate = CLLocationCoordinate2DMake(merchant.latitude, merchant.longitude)
+        let coordinate = CLLocationCoordinate2DMake(latitude, longitude)
         let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate, addressDictionary:nil))
         mapItem.name = merchant.name
         mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving])
@@ -93,7 +93,7 @@ extension MerchantDetailsView {
         logoImageView.layer.masksToBounds = true
         stackView.addArrangedSubview(logoImageView)
         
-        if let str = merchant.logoURL, let url = URL(string: str)
+        if let str = merchant.logoLocation, let url = URL(string: str)
         {
             logoImageView.sd_setImage(with: url, completed: nil)
         }else{
@@ -210,7 +210,7 @@ extension MerchantDetailsView {
             payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
         }
         
-        addressLabel.text = merchant.address
+        addressLabel.text = merchant.address1
         
         let padding: CGFloat = 15
         NSLayoutConstraint.activate([

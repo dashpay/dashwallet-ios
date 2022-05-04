@@ -207,10 +207,10 @@ extension ExploreMerchantAllLocationsViewController: UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         
-        let merchant = DWExploreMerchant.mockData()[1]
-        
-        let vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: true)
-        navigationController?.pushViewController(vc, animated: true)
+//        let merchant = DWExploreMerchant.mockData()[1]
+//        
+//        let vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: true)
+//        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

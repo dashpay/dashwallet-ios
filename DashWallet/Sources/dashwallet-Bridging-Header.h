@@ -8,8 +8,15 @@
 #import "UIFont+DWFont.h"
 #import <SDWebImage/SDWebImage.h>
 #import "DWActionButton.h"
-#import "DWExploreWhereToSpendMapView.h"
 #import "DWExploreWhereToSpendHandlerView.h"
 #import "UIView+DWReuseHelper.h"
 #import <DashSync/DSNetworking.h>
 #import <DashSync/HTTPLoaderManager.h>
+#import "DWExploreGiftCardInfoViewController.h"
+#import "DWExploreWhereToSpendLocationServicePopup.h"
+#import "DWGlobalOptions.h"
+#import "DWExploreWhereToSpendInfoViewController.h"
+#import "DWExploreWhereToSpendSegmentedCell.h"
+#import "DWExploreWhereToSpendSearchCell.h"
+#import "DWExploreWhereToSpendFiltersCell.h"
+

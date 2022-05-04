@@ -48,11 +48,6 @@ import SQLite
     }
     
     private func configureHeaderView() {
-        
-        
-
-        
-        
         let stackView = UIStackView()
         stackView.spacing = 10
         stackView.alignment = .center
@@ -65,7 +60,7 @@ import SQLite
         logoImageView.layer.masksToBounds = true
         stackView.addArrangedSubview(logoImageView)
         
-        if let str = merchant.logoURL, let url = URL(string: str)
+        if let str = merchant.logoLocation, let url = URL(string: str)
         {
             logoImageView.sd_setImage(with: url, completed: nil)
         }else{
@@ -169,7 +164,7 @@ import SQLite
     private var detailsView: MerchantDetailsView!
     private var isShowAllHidden: Bool
     
-    @objc public init(merchant: DWExploreMerchant, isShowAllHidden: Bool = false) {
+    public init(merchant: Merchant, isShowAllHidden: Bool = false) {
         
         self.isShowAllHidden = isShowAllHidden
         super.init(merchant: merchant)
@@ -215,9 +210,9 @@ import SQLite
 }
 
 @objc class ExploreMerchantViewController: UIViewController {
-    internal let merchant: DWExploreMerchant
+    internal let merchant: Merchant
     
-    @objc public init(merchant: DWExploreMerchant) {
+    public init(merchant: Merchant) {
         self.merchant = merchant
         super.init(nibName: nil, bundle: nil)
         

@@ -43,6 +43,14 @@ struct Merchant {
     enum PaymentMethod: String {
         case dash
         case giftCard
+        
+        init?(rawValue: String) {
+            if rawValue == "dash" {
+                self = .dash
+            }else{
+                self = .giftCard
+            }
+        }
     }
     
     enum `Type`: String {
@@ -62,12 +70,12 @@ extension Merchant: RowDecodable {
     static let active = Expression<Bool>("active")
     static let city = Expression<String>("city")
     static let territory = Expression<String>("territory")
-    static let address1 = Expression<String>("address1")
-    static let address2 = Expression<String>("address2")
-    static let address3 = Expression<String>("address3")
-    static let address4 = Expression<String>("address4")
-    static let latitude = Expression<Float64>("latitude")
-    static let longitude = Expression<Float64>("longitude")
+    static let address1 = Expression<String?>("address1")
+    static let address2 = Expression<String?>("address2")
+    static let address3 = Expression<String?>("address3")
+    static let address4 = Expression<String?>("address4")
+    static let latitude = Expression<Float64?>("latitude")
+    static let longitude = Expression<Float64?>("longitude")
     static let website = Expression<String>("website")
     static let phone = Expression<String>("phone")
     static let logoLocation = Expression<String>("logoLocation")

@@ -26,10 +26,6 @@ import Foundation
             //Do something
         }
     }
-    
-    @objc public class func allOnlineMerchants(offset: Int = 1) -> PaginationResult<Merchant> {
-        return ExploreDash.shared.merchantDAO.allOnlineMerchants(offset: offset)
-    }
 }
 
 let bundleExploreDatabaseSyncTime: TimeInterval = 1647448290710
