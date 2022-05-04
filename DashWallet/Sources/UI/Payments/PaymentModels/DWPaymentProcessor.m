@@ -135,8 +135,6 @@ static NSString *sanitizeString(NSString *s) {
 
     self.paymentInput = paymentInput;
 
-    self.shouldClearPasteboard = paymentInput.source == DWPaymentInputSource_Pasteboard;
-
     if (paymentInput.request) {
         self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmRequest:paymentInput.request];
