@@ -16,11 +16,13 @@
 //
 
 #import "AppDelegate.h"
-
+#import "DashWallet-Swift.h"
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
+
 #import <Firebase/Firebase.h>
+@import Firebase;
 
 #import "DWInitialViewController.h"
 #import "DWDataMigrationManager.h"
@@ -93,7 +95,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Setup Firebase Dynamic Links
     [FIRApp configure];
-
+    [ExploreDashObjcWrapper configure];
+    
     [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = YES;
     
     [DSLogger sharedInstance];

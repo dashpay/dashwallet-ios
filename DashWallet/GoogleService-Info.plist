@@ -7,7 +7,7 @@
 	<key>REVERSED_CLIENT_ID</key>
 	<string>com.googleusercontent.apps.1039839682638-rf0qhhtser657srvofa0vlsa6t63rnr6</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>1039839682638-3pmvaj63epbdkj099rlqqr0lvqpvt79f.apps.googleusercontent.com</string>
+	<string>1039839682638-8hd2viubrjk3rnn8v7l5a41mm5afqpi9.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCK3_a7F6tT1P5-JpsH7FfooqanQ1OOXAg</string>
 	<key>GCM_SENDER_ID</key>
@@ -21,15 +21,15 @@
 	<key>STORAGE_BUCKET</key>
 	<string>dash-wallet-firebase.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:1039839682638:ios:7ee1f87721ebb5ebea631f</string>
 	<key>DATABASE_URL</key>

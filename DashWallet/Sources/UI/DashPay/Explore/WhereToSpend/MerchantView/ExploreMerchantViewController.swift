@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SQLite
 
 @objc class ExploreOnlineMerchantViewController: ExploreMerchantViewController {
     
@@ -47,6 +48,11 @@ import UIKit
     }
     
     private func configureHeaderView() {
+        
+        
+
+        
+        
         let stackView = UIStackView()
         stackView.spacing = 10
         stackView.alignment = .center

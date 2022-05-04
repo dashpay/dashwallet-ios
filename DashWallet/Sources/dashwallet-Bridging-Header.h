@@ -11,3 +11,5 @@
 #import "DWExploreWhereToSpendMapView.h"
 #import "DWExploreWhereToSpendHandlerView.h"
 #import "UIView+DWReuseHelper.h"
+#import <DashSync/DSNetworking.h>
+#import <DashSync/HTTPLoaderManager.h>

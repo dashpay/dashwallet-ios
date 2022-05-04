@@ -7,7 +7,10 @@ target 'dashwallet' do
 
   pod 'CloudInAppMessaging', '0.1.0'
 
+  pod 'FirebaseStorage'
   pod 'Firebase/DynamicLinks'
+  pod 'SQLite.swift', '~> 0.13.3'
+  pod 'SSZipArchive'
   
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'

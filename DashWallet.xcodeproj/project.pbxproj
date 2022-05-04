@@ -567,7 +567,14 @@
 		474CD81F27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */; };
 		474CD82227B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */; };
 		474CD82527B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */; };
-		47B0CF0528084D2A00BB6E45 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B0CF0428084D2A00BB6E45 /* Buttons.swift */; };
+		47578D53281B195400B6489C /* ExploreDatabaseSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47578D52281B195400B6489C /* ExploreDatabaseSyncManager.swift */; };
+		4799E3F9281FD4CA00212563 /* ExploreMerchantRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E3F8281FD4CA00212563 /* ExploreMerchantRepository.swift */; };
+		4799E3FB281FED1E00212563 /* ExploreDatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E3FA281FED1E00212563 /* ExploreDatabaseConnection.swift */; };
+		4799E3FD281FED7700212563 /* explore-1647448290710.db in Resources */ = {isa = PBXBuildFile; fileRef = 4799E3FC281FED7700212563 /* explore-1647448290710.db */; };
+		4799E3FF2820281100212563 /* Merchant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E3FE2820281100212563 /* Merchant.swift */; };
+		4799E4032821295D00212563 /* ExploreDash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E4022821295D00212563 /* ExploreDash.swift */; };
+		4799E40628212CB600212563 /* GlobalOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E40528212CB600212563 /* GlobalOptions.swift */; };
+		4799E40828218B5A00212563 /* MerchantDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E40728218B5A00212563 /* MerchantDAO.swift */; };
 		47CCC7E527BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */; };
 		47CCC7E827BBDBE200B39FC5 /* ExploreMerchantViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */; };
 		47CFDC1727B987830071115E /* DWExploreWhereToSpendHandlerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */; };
@@ -1851,7 +1858,14 @@
 		474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendSearchCell.m; sourceTree = "<group>"; };
 		474CD82327B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendSegmentedCell.h; sourceTree = "<group>"; };
 		474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendSegmentedCell.m; sourceTree = "<group>"; };
-		47B0CF0428084D2A00BB6E45 /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
+		47578D52281B195400B6489C /* ExploreDatabaseSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDatabaseSyncManager.swift; sourceTree = "<group>"; };
+		4799E3F8281FD4CA00212563 /* ExploreMerchantRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMerchantRepository.swift; sourceTree = "<group>"; };
+		4799E3FA281FED1E00212563 /* ExploreDatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDatabaseConnection.swift; sourceTree = "<group>"; };
+		4799E3FC281FED7700212563 /* explore-1647448290710.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "explore-1647448290710.db"; sourceTree = "<group>"; };
+		4799E3FE2820281100212563 /* Merchant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Merchant.swift; sourceTree = "<group>"; };
+		4799E4022821295D00212563 /* ExploreDash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDash.swift; sourceTree = "<group>"; };
+		4799E40528212CB600212563 /* GlobalOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalOptions.swift; sourceTree = "<group>"; };
+		4799E40728218B5A00212563 /* MerchantDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDAO.swift; sourceTree = "<group>"; };
 		47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendLocationServicePopup.h; sourceTree = "<group>"; };
 		47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendLocationServicePopup.m; sourceTree = "<group>"; };
 		47CCC7E627BBDBE200B39FC5 /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -3599,7 +3613,6 @@
 				2A95D60D2702791E00B0BF5C /* DWExploreHeaderView.m */,
 				2A95D60F27027DEE00B0BF5C /* DWExploreTestnetContentsView.h */,
 				2A95D61027027DEE00B0BF5C /* DWExploreTestnetContentsView.m */,
-				47B0CF0428084D2A00BB6E45 /* Buttons.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4833,9 +4846,10 @@
 		471BAA3C27B2987C00F27748 /* Explore */ = {
 			isa = PBXGroup;
 			children = (
+				4799E40428212CA600212563 /* Infrastructure */,
+				47578D50281AAC1E00B6489C /* Model */,
 				47FB33C127BE3E1A00EBF019 /* Services */,
-				471BAA3D27B2989800F27748 /* DWExploreMerchant.h */,
-				471BAA3E27B2989800F27748 /* DWExploreMerchant.m */,
+				4799E4022821295D00212563 /* ExploreDash.swift */,
 			);
 			path = Explore;
 			sourceTree = "<group>";
@@ -4874,11 +4888,47 @@
 			path = Cells;
 			sourceTree = "<group>";
 		};
+		47578D50281AAC1E00B6489C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				4799E3F7281FD4B000212563 /* Repositories */,
+				47578D51281AAC5400B6489C /* DAO */,
+				471BAA3D27B2989800F27748 /* DWExploreMerchant.h */,
+				471BAA3E27B2989800F27748 /* DWExploreMerchant.m */,
+				4799E3FE2820281100212563 /* Merchant.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		47578D51281AAC5400B6489C /* DAO */ = {
+			isa = PBXGroup;
+			children = (
+				4799E40728218B5A00212563 /* MerchantDAO.swift */,
+			);
+			path = DAO;
+			sourceTree = "<group>";
+		};
 		4782CF5A27902F7000B4100C /* Model */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		4799E3F7281FD4B000212563 /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				4799E3F8281FD4CA00212563 /* ExploreMerchantRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		4799E40428212CA600212563 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+				4799E40528212CB600212563 /* GlobalOptions.swift */,
+			);
+			path = Infrastructure;
 			sourceTree = "<group>";
 		};
 		47CFDC1427B987600071115E /* Views */ = {
@@ -4916,6 +4966,8 @@
 			isa = PBXGroup;
 			children = (
 				47FB33C327BE3E2E00EBF019 /* DWLocationManager.swift */,
+				47578D52281B195400B6489C /* ExploreDatabaseSyncManager.swift */,
+				4799E3FA281FED1E00212563 /* ExploreDatabaseConnection.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -5002,6 +5054,7 @@
 		75D5F3C8191EC270004AB296 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				4799E3FC281FED7700212563 /* explore-1647448290710.db */,
 				2A28815F261C422D0014C212 /* GoogleService-Info.plist */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
@@ -5421,6 +5474,7 @@
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
+				4799E3FD281FED7700212563 /* explore-1647448290710.db in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */,
 				2AF60D0A250FA63F00FB3E71 /* DWBalanceView.xib in Resources */,
@@ -5884,6 +5938,7 @@
 				2ADC9D10245FF852001D7C0D /* DWNavigationChildViewController.m in Sources */,
 				C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
+				4799E3F9281FD4CA00212563 /* ExploreMerchantRepository.swift in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */,
 				2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */,
@@ -5930,6 +5985,7 @@
 				2A7AF37224826CDF001D74F9 /* DWDPAcceptedRequestNotificationObject.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */,
+				4799E3FB281FED1E00212563 /* ExploreDatabaseConnection.swift in Sources */,
 				2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */,
 				2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */,
 				2AFF01DF243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m in Sources */,
@@ -6022,6 +6078,7 @@
 				2A4F72C826922E3300A75D2D /* DWInvitationSetupState.m in Sources */,
 				47F3321D27FDAC3E00D4D056 /* MerchantDetailsView.swift in Sources */,
 				2AF55E832629863C001974C4 /* UIView+DWAutolayout.m in Sources */,
+				4799E40828218B5A00212563 /* MerchantDAO.swift in Sources */,
 				2A8DB8BF262F5B44009094BD /* DWHistoryFilterContentView.m in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
@@ -6065,6 +6122,7 @@
 				2A44AB0425C6DABD00671AC3 /* DWImgurItemView.m in Sources */,
 				2A2692B325EBD30C00835B30 /* DWConfirmInvitationContentView.m in Sources */,
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
+				47578D53281B195400B6489C /* ExploreDatabaseSyncManager.swift in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
 				2A856CEF24EB1E400040BD61 /* DWUserPayTableViewCell.m in Sources */,
@@ -6107,6 +6165,7 @@
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2AEC24B9251D06BC00AC86F6 /* DWProfileAboutCellModel.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,
+				4799E4032821295D00212563 /* ExploreDash.swift in Sources */,
 				2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */,
 				2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */,
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
@@ -6122,7 +6181,6 @@
 				2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
-				47B0CF0528084D2A00BB6E45 /* Buttons.swift in Sources */,
 				2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */,
 				2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
@@ -6214,6 +6272,7 @@
 				2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
+				4799E3FF2820281100212563 /* Merchant.swift in Sources */,
 				2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */,
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
@@ -6302,6 +6361,7 @@
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */,
 				2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */,
+				4799E40628212CB600212563 /* GlobalOptions.swift in Sources */,
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
@@ -6825,7 +6885,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6846,7 +6906,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -6865,7 +6925,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -6886,7 +6946,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
@@ -6909,7 +6969,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -6932,7 +6992,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -7050,7 +7110,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -7102,7 +7162,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -7121,7 +7181,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -7243,7 +7303,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -7294,7 +7354,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
@@ -7313,7 +7373,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 134;
+				CURRENT_PROJECT_VERSION = 135;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
