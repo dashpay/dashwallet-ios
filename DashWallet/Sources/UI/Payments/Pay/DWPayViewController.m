@@ -96,6 +96,11 @@ NS_ASSUME_NONNULL_BEGIN
         DWPayTableViewCell *payCell = (DWPayTableViewCell *)cell;
         payCell.preferredActionButtonWidth = self.maxActionButtonWidth;
     }
+
+    DWPayOptionModel *option = self.payModel.options[indexPath.row];
+    if (option.type == DWPayOptionModelType_Pasteboard) {
+        [self.payModel checkPasteboardForAddresses];
+    }
 }
 
 #pragma mark - DWPayTableViewCellDelegate
@@ -137,7 +142,8 @@ NS_ASSUME_NONNULL_BEGIN
     UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
     NSParameterAssert(nib);
     [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
-
+    self.tableView.estimatedRowHeight = 40.0;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.tableFooterView = [[UIView alloc] init];
 }
 

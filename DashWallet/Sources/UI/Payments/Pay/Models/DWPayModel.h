@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayModel : NSObject <DWPayModelProtocol>
 
+- (NSArray<NSString *> *)extractAddressesFromFromPasteboard;
+
 @end
 
 NS_ASSUME_NONNULL_END
