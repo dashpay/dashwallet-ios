@@ -575,6 +575,7 @@
 		4799E40828218B5A00212563 /* MerchantDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E40728218B5A00212563 /* MerchantDAO.swift */; };
 		4799E40A2822816100212563 /* ExploreWhereToSpendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E4092822816100212563 /* ExploreWhereToSpendViewController.swift */; };
 		4799E40C2822CEA900212563 /* ExploreMerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E40B2822CEA900212563 /* ExploreMerchantItemCell.swift */; };
+		479A237A28293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */; };
 		47CCC7E527BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */; };
 		47CCC7E827BBDBE200B39FC5 /* ExploreMerchantViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */; };
 		47CFDC1727B987830071115E /* DWExploreWhereToSpendHandlerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */; };
@@ -1864,6 +1865,7 @@
 		4799E40728218B5A00212563 /* MerchantDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDAO.swift; sourceTree = "<group>"; };
 		4799E4092822816100212563 /* ExploreWhereToSpendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreWhereToSpendViewController.swift; sourceTree = "<group>"; };
 		4799E40B2822CEA900212563 /* ExploreMerchantItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMerchantItemCell.swift; sourceTree = "<group>"; };
+		479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDashWhereToSpendModel.swift; sourceTree = "<group>"; };
 		47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendLocationServicePopup.h; sourceTree = "<group>"; };
 		47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendLocationServicePopup.m; sourceTree = "<group>"; };
 		47CCC7E627BBDBE200B39FC5 /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -4855,6 +4857,7 @@
 		474CD81827B1289A009D71A5 /* WhereToSpend */ = {
 			isa = PBXGroup;
 			children = (
+				479A237B282940F0000D7EA2 /* Model */,
 				47F3321A27FDAC0200D4D056 /* MerchantView */,
 				47CFDC1427B987600071115E /* Views */,
 				474CD81927B167A1009D71A5 /* Cells */,
@@ -4925,6 +4928,14 @@
 				4799E40528212CB600212563 /* GlobalOptions.swift */,
 			);
 			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		479A237B282940F0000D7EA2 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		47CFDC1427B987600071115E /* Views */ = {
@@ -6188,6 +6199,7 @@
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				2AF60D09250FA63F00FB3E71 /* DWBalanceView.m in Sources */,
+				479A237A28293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,

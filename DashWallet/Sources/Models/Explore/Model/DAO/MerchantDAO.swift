@@ -18,7 +18,7 @@
 import Foundation
 import SQLite
 
-private let pageLimit = 30
+private let pageLimit = 10
 
 class MerchantDAO
 {

@@ -37,8 +37,10 @@ private enum ExploreWhereToSpendSegment: Int {
 }
 
 @objc class ExploreWhereToSpendViewController: UIViewController {
+    
     @objc var payWithDashHandler: (() -> Void)?
     
+    let model = ExploreDashWhereToSpendModel()
     
     private var segmentTitles: [String] = [NSLocalizedString("Online", comment: "Online"),
                                            NSLocalizedString("Nearby", comment: "Nearby"),
@@ -49,7 +51,6 @@ private enum ExploreWhereToSpendSegment: Int {
     private var tableView: UITableView!
     private var mapView: DWExploreWhereToSpendMapView!
     
-    private var merchants: [Merchant] = []
     private var currentSegment: ExploreWhereToSpendSegment = .online
     private var showMapButton: UIButton!
     
@@ -84,8 +85,6 @@ private enum ExploreWhereToSpendSegment: Int {
         self.title = NSLocalizedString("Where to Spend", comment: "");
         self.view.backgroundColor = .dw_background()
         self.navigationItem.rightBarButtonItem = cancelBarButton
-        
-        merchants = ExploreDash.shared.allOnlineMerchants().items
         
         currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online;
         
@@ -347,7 +346,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         }
         
         if section == .items {
-            let merchant = merchants[indexPath.row]
+            let merchant =  ,,merchants[indexPath. .l5b 6lofoocooo.njndfe ,,,,,,,,,,ow]
             
             let vc: UIViewController
             
