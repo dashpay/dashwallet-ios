@@ -7,7 +7,7 @@ target 'dashwallet' do
 
   pod 'CloudInAppMessaging', '0.1.0'
 
-  pod 'FirebaseStorage'
+  pod 'FirebaseStorage', '8.15.0'
   pod 'Firebase/DynamicLinks'
   pod 'SQLite.swift', '~> 0.13.3'
   pod 'SSZipArchive'

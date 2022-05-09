@@ -16,7 +16,7 @@
 //
 
 #import "AppDelegate.h"
-#import "DashWallet-Swift.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
@@ -184,23 +184,25 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
 continueUserActivity:(nonnull NSUserActivity *)userActivity
  restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
+    
     __weak typeof(self) weakSelf = self;
-        BOOL handled = [[FIRDynamicLinks dynamicLinks] handleUniversalLink:userActivity.webpageURL
-                                                                completion:^(FIRDynamicLink * _Nullable dynamicLink,
-                                                                             NSError * _Nullable error) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
+    
+    BOOL handled = [[FIRDynamicLinks dynamicLinks] handleUniversalLink:userActivity.webpageURL
+                                                            completion:^(FIRDynamicLink * _Nullable dynamicLink,
+                                                                         NSError * _Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
 
-            if (dynamicLink.url) {
-                DWInitialViewController *controller = (DWInitialViewController *)strongSelf.window.rootViewController;
-                if ([controller isKindOfClass:DWInitialViewController.class]) {
-                    [controller handleDeeplink:dynamicLink.url];
-                }
+        if (dynamicLink.url) {
+            DWInitialViewController *controller = (DWInitialViewController *)strongSelf.window.rootViewController;
+            if ([controller isKindOfClass:DWInitialViewController.class]) {
+                [controller handleDeeplink:dynamicLink.url];
             }
-        }];
-        return handled;
+        }
+    }];
+    return handled;
 }
 
 - (BOOL)application:(UIApplication *)application

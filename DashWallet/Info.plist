@@ -112,7 +112,7 @@
 	<false/>
 	<key>FirebaseDynamicLinksCustomDomains</key>
 	<array>
-		<string>https://invitations.dashpay.io/link</string>
+		<string>https://invitations.dashpay.io</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
