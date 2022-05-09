@@ -20,10 +20,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWExploreWhereToSpendSearchCell;
+
+@protocol DWExploreWhereToSpendSearchCellDelegate <UIBarPositioningDelegate>
+
+@optional
+
+- (void)searchCell:(DWExploreWhereToSpendSearchCell *)searchCell shouldStartSearchWithQuery:(NSString *)query;
+- (void)searchCellDidEndSearching:(DWExploreWhereToSpendSearchCell *)searchCell;
+@end
+
 @interface DWExploreWhereToSpendSearchCell : UITableViewCell
 @property (nonatomic, strong) UISearchBar *searchBar;
-
-
+@property (nullable,nonatomic,weak) id<DWExploreWhereToSpendSearchCellDelegate> delegate;
 @end
 
 NS_ASSUME_NONNULL_END

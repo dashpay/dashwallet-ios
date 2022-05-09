@@ -17,8 +17,11 @@
 
 #import "DWExploreWhereToSpendSearchCell.h"
 
-@interface DWExploreWhereToSpendSearchCell ()
+static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
 
+@interface DWExploreWhereToSpendSearchCell () <UISearchBarDelegate>
+@property (nonatomic, strong) NSString *query;
+@property (nonatomic, assign) BOOL didTapDeleteButton;
 @end
 
 @implementation DWExploreWhereToSpendSearchCell
@@ -42,6 +45,7 @@
     self.searchBar = [[UISearchBar alloc] init];
     _searchBar.translatesAutoresizingMaskIntoConstraints = NO;
     _searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    _searchBar.delegate = self;
     [self.contentView addSubview:_searchBar];
     
     [NSLayoutConstraint activateConstraints:@[
@@ -50,5 +54,39 @@
         [_searchBar.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-9]
     ]];
 }
+
+- (void)searchWithQuery:(NSString *)searchQuery {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearch) object:nil];
+    
+    self.query = searchQuery;
+    
+    [self performSelector:@selector(performSearch) withObject:nil afterDelay:SEARCH_DEBOUNCE_DELAY];
+}
+
+- (void)performSearch {
+    [self.delegate searchCell:self shouldStartSearchWithQuery:self.query];
+}
+
+#pragma mark UISearchBarDelegate
+
+- (BOOL)searchBar:(UISearchBar *)searchBar shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+    _didTapDeleteButton = text.length == 0;
+    return YES;
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    if(!_didTapDeleteButton && searchText.length == 0) {
+        [searchBar resignFirstResponder];
+        [self.delegate searchCellDidEndSearching: self];
+        return;
+    }
+    
+    _didTapDeleteButton = false;
+    
+    
+    [self searchWithQuery: searchText];
+}
+
+
 @end
 
