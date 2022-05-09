@@ -30,7 +30,7 @@ private enum ExploreWhereToSpendSections: Int {
     case items
 }
 
-private enum ExploreWhereToSpendSegment: Int {
+enum ExploreWhereToSpendSegment: Int {
     case online = 0
     case nearby
     case all
@@ -42,6 +42,8 @@ private enum ExploreWhereToSpendSegment: Int {
     
     let model = ExploreDashWhereToSpendModel()
     
+    var merchants: [Merchant] { return isSearchActive ? searchResult : model.merchants(for: currentSegment) }
+        
     private var segmentTitles: [String] = [NSLocalizedString("Online", comment: "Online"),
                                            NSLocalizedString("Nearby", comment: "Nearby"),
                                            NSLocalizedString("All", comment: "All")]
@@ -59,6 +61,9 @@ private enum ExploreWhereToSpendSegment: Int {
         infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
         return UIBarButtonItem(customView: infoButton)
     }()
+    
+    private var isSearchActive: Bool = false
+    private var searchResult: [Merchant] = []
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -258,6 +263,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         case .search:
             let searchCell: DWExploreWhereToSpendSearchCell = tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendSearchCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendSearchCell
             searchCell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0);
+            searchCell.delegate = self
             cell = searchCell
         case .filters:
             let filterCell: DWExploreWhereToSpendFiltersCell = tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendFiltersCell
@@ -299,6 +305,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         case .filters, .search:
             return currentSegment == .nearby ? (DWLocationManager.shared.isPermissionDenied ? 0 : 1) : 1
         case .items:
+            
             if currentSegment == .nearby {
                 if(DWLocationManager.shared.isAuthorized){
                     return merchants.count;
@@ -346,7 +353,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         }
         
         if section == .items {
-            let merchant =  ,,merchants[indexPath. .l5b 6lofoocooo.njndfe ,,,,,,,,,,ow]
+            let merchant = merchants[indexPath.row]
             
             let vc: UIViewController
             
@@ -438,5 +445,23 @@ extension ExploreWhereToSpendViewController {
         }
         
         tableView.reloadData()
+    }
+}
+
+extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDelegate {
+    private func stopSearching() {
+        isSearchActive = false
+        searchResult = []
+        tableView.reloadData()
+    }
+    
+    func searchCell(_ searchCell: DWExploreWhereToSpendSearchCell, shouldStartSearchWithQuery query: String) {
+        isSearchActive = true
+        searchResult = model.search(query: query, for: currentSegment)
+        tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
+    }
+    
+    func searchCellDidEndSearching(_ searchCell: DWExploreWhereToSpendSearchCell) {
+        stopSearching()
     }
 }

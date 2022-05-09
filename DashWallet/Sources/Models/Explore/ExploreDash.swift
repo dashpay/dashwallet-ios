@@ -41,6 +41,8 @@ public class ExploreDash {
     private func configure() throws {
         guard !isConfigured else { return }
         
+        try prepareDatabase()
+        
         databaseConnection = ExploreDatabaseConnection()
         try databaseConnection.connect()
         
@@ -52,12 +54,28 @@ public class ExploreDash {
         isConfigured = true
     }
     
+    private func prepareDatabase() throws {
+        let destinationPath = FileManager.getDocumentsDirectory().appendingPathComponent("explore.db")
+        
+        guard !FileManager.default.fileExists(atPath: destinationPath.path) else { return }
+        
+        guard let dbURL = Bundle.main.url(forResource: "explore", withExtension: "db") else {
+            throw ExploreDatabaseConnectionError.fileNotFound
+        }
+        
+        try FileManager.default.copyItem(at: dbURL, to: destinationPath)
+    }
+    
     public static let shared: ExploreDash = ExploreDash()
 }
 
 extension ExploreDash {
-    func allOnlineMerchants(offset: Int = 1) -> PaginationResult<Merchant> {
+    func allOnlineMerchants(offset: Int = 0) -> PaginationResult<Merchant> {
         return merchantDAO.allOnlineMerchants(offset: offset)
+    }
+    
+    func searchOnlineMerchants(query: String, offset: Int = 0) -> PaginationResult<Merchant> {
+        return merchantDAO.searchOnlineMerchants(query: query, offset: offset)
     }
 }
 extension ExploreDash {

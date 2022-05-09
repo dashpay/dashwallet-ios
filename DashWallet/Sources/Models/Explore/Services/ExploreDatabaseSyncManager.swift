@@ -15,14 +15,6 @@
 //  limitations under the License.
 //
 
-/**
- TODO:
- -[] Check file periodically
- -[]
- 
- **/
-
-
 import Foundation
 import Firebase
 import SSZipArchive
@@ -35,6 +27,8 @@ private let timestampKey = "Data-Timestamp"
 private let checksumKey = "Data-Checksum"
 
 public class ExploreDatabaseSyncManager {
+    
+    static let databaseHasBeenUpdatedNotification = NSNotification.Name(rawValue: "databaseHasBeenUpdatedNotification")
     
     private let storage = Storage.storage()
     private let storageRef: StorageReference
@@ -89,16 +83,22 @@ extension ExploreDatabaseSyncManager {
         let urlToSave = getDocumentsDirectory().appendingPathComponent("\(fileName)-\(timestamp).zip")
     
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
-            try? data?.write(to: urlToSave)
-            //GlobalOptions.shared.exploreDatabaseLastSync = Date().timeIntervalSince1970
-            self?.unzipFile(atPath: urlToSave.path, password: checksum)
+            if let e = error {
+                //TODO: try later
+            }else{
+                try? data?.write(to: urlToSave)
+                GlobalOptions.shared.exploreDatabaseLastSync = Date().timeIntervalSince1970
+                self?.unzipFile(atPath: urlToSave.path, password: checksum)
+            }
         }
     }
     
     private func unzipFile(atPath: String, password: String) {
         var error: NSError?
         let urlToUnzip = getDocumentsDirectory()
-        SSZipArchive.unzipFile(atPath: atPath, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true, password: password, error: &error, delegate: nil)
+        SSZipArchive.unzipFile(atPath: atPath, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true, nestedZipLevel: 0, password: password, error: &error, delegate: nil, progressHandler: nil) { path, succeded, error in
+            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+        }
     }
     
     private func getDocumentsDirectory() -> URL {

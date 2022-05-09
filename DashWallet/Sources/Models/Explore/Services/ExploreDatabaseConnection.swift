@@ -26,12 +26,29 @@ class ExploreDatabaseConnection
 {
     private var db: Connection!
     
-    func connect(version: String? = nil) throws {
-        guard let dbPath = Bundle.main.url(forResource: "explore", withExtension: "db")?.path else {
-            throw ExploreDatabaseConnectionError.fileNotFound
+    init() {
+        NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil, queue: .main) { [weak self] notification in
+        //    try? self?.connect()
+        }
+    }
+    
+    func connect() throws {
+        db = nil
+        
+        guard let dbPath = dbPath() else { throw ExploreDatabaseConnectionError.fileNotFound}
+        
+        do {
+            db = try Connection(nil ?? dbPath)
+        }catch{
+            print(error)
         }
         
-        db = try Connection(dbPath)
+    }
+    
+    private func dbPath() -> String? {
+        let downloadedPath = FileManager.getDocumentsDirectory().appendingPathComponent("explore.db").path
+        
+        return FileManager.default.fileExists(atPath: downloadedPath) ? downloadedPath : nil
     }
     
     func find<Item: RowDecodable>(query: QueryType) throws -> [Item] {
@@ -45,6 +62,8 @@ class ExploreDatabaseConnection
         
         return resultItems
     }
+    
+    
 }
 
 extension Row

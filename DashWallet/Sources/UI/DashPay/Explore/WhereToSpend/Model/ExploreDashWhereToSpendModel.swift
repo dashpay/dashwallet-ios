@@ -23,6 +23,12 @@ class ExploreDashWhereToSpendModel {
     var cachedOnlineMerchants: [Merchant] = []
     var lastOnlineMerchantsPage: PaginationResult<Merchant>?
     
+    var cachedNearbyMerchants: [Merchant] = []
+    var cachedNearbyMerchantsPage: PaginationResult<Merchant>?
+    
+    var cachedAllMerchants: [Merchant] = []
+    var cachedAllMerchantsPage: PaginationResult<Merchant>?
+    
     init() {
         fetchMerchants()
     }
@@ -32,5 +38,25 @@ class ExploreDashWhereToSpendModel {
         cachedOnlineMerchants += lastOnlineMerchantsPage?.items ?? []
         
         onlineMerchantsDidChange?()
+    }
+    
+    
+}
+
+extension ExploreDashWhereToSpendModel
+{
+    func merchants(for segment: ExploreWhereToSpendSegment) -> [Merchant] {
+        switch segment {
+        case .online:
+            return cachedOnlineMerchants
+        case .nearby:
+            return cachedNearbyMerchants
+        case .all:
+            return cachedAllMerchants
+        }
+    }
+    
+    func search(query: String, for segment: ExploreWhereToSpendSegment) -> [Merchant] {
+        return ExploreDash.shared.searchOnlineMerchants(query: query).items
     }
 }

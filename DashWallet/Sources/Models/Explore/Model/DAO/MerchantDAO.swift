@@ -18,7 +18,7 @@
 import Foundation
 import SQLite
 
-private let pageLimit = 10
+private let pageLimit = 30
 
 class MerchantDAO
 {
@@ -28,7 +28,7 @@ class MerchantDAO
         self.connection = dbConnection
     }
     
-    func allOnlineMerchants(offset: Int = 1) -> PaginationResult<Merchant> {
+    func allOnlineMerchants(offset: Int = 0) -> PaginationResult<Merchant> {
         let name = Expression<String>("name")
         let type = Expression<String>("type")
         
@@ -46,6 +46,43 @@ class MerchantDAO
             return PaginationResult(items: [], offset: 0)
         }
     }
+    
+    func searchOnlineMerchants(query: String, offset: Int = 0) -> PaginationResult<Merchant> {
+        let name = Expression<String>("name")
+        let type = Expression<String>("type")
+        
+        let merchants = Table("merchant")
+        let query = merchants.select(merchants[*])
+            .filter(type == "online" && name.like("\(query)%"))
+            .order(name)
+            .limit(pageLimit, offset: offset)
+        
+        do {
+            let items: [Merchant] = try connection.find(query: query)
+            return PaginationResult(items: items, offset: offset + pageLimit)
+        }catch{
+            print(error)
+            return PaginationResult(items: [], offset: 0)
+        }
+    }
+//    func nearby(location:offset: Int = 1) -> PaginationResult<Merchant> {
+//        let name = Expression<String>("name")
+//        let type = Expression<String>("type")
+//        
+//        let merchants = Table("merchant")
+//        let query = merchants.select(merchants[*])
+//            .filter(type == "physical" || type == "both")
+//            .order(name)
+//            .limit(pageLimit, offset: offset)
+//        
+//        do {
+//            let items: [Merchant] = try connection.find(query: query)
+//            return PaginationResult(items: items, offset: offset + pageLimit)
+//        }catch{
+//            print(error)
+//            return PaginationResult(items: [], offset: 0)
+//        }
+//    }
 }
 
 struct PaginationResult<Item> {
