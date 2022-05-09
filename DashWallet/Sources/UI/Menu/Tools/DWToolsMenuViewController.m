@@ -171,11 +171,41 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)exportTransactionsInCSV {
-    NSArray<DSTransaction *> *allTransactions = [[[DWEnvironment sharedInstance] currentAccount] allTransactions];
-    NSLog(@"12");
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
-    // NSString *a = @"13";
+    NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
+
+    // Timestamps are set to 0 if the transaction hasn't yet been confirmed, they should be at the top of the list if this is the case
+    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey
+                                                                     ascending:NO
+                                                                    comparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
+                                                                        if ([obj1 unsignedIntValue] == 0) {
+                                                                            if ([obj2 unsignedIntValue] == 0) {
+                                                                                return NSOrderedSame;
+                                                                            }
+                                                                            else {
+                                                                                return NSOrderedDescending;
+                                                                            }
+                                                                        }
+                                                                        else if ([obj2 unsignedIntValue] == 0) {
+                                                                            return NSOrderedAscending;
+                                                                        }
+                                                                        else {
+                                                                            return [(NSNumber *)obj1 compare:obj2];
+                                                                        }
+                                                                    }];
+    NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
+
+    NSString *headers = @"Date and time,Transaction Type,Sent Quantity,Sent Currency,Sending Source,Received Quantity,Received Currency,Receiving Destination,Fee,Fee Currency,Exchange Transaction ID,Blockchain Transaction Hash";
+
+
+    NSString *transactionType = @"Income"; // @"Expense"
+
+    for (DSTransaction *tx in transactions) {
+        NSString *row = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@", @"2021-01-06T00:00:00Z", transactionType, @"", @"DASH", @"DASH Wallet for outgoing transactions / Blank for incoming transactions", @"The amount of Dash received / Blank for outgoing transactions", @"DASH/Blank", @"DASH Wallet/Blank", @"", @"", @"", tx.txHash];
+    }
 }
+
 
 @end
 
