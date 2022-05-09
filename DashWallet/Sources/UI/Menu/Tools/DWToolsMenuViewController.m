@@ -17,6 +17,7 @@
 
 #import "DWToolsMenuViewController.h"
 
+#import "DWEnvironment.h"
 #import "DWExtendedPublicKeysViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
@@ -100,6 +101,20 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"CSV Export", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf exportTransactionsInCSV];
+        };
+        [items addObject:cellModel];
+    }
+
     return [items copy];
 }
 
@@ -153,6 +168,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showExtendedPublicKeys {
     DWExtendedPublicKeysViewController *controller = [[DWExtendedPublicKeysViewController alloc] init];
     [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)exportTransactionsInCSV {
+    NSArray<DSTransaction *> *allTransactions = [[[DWEnvironment sharedInstance] currentAccount] allTransactions];
+    NSLog(@"12");
+
+    // NSString *a = @"13";
 }
 
 @end
