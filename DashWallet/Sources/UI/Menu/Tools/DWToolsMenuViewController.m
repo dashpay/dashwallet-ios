@@ -17,6 +17,7 @@
 
 #import "DWToolsMenuViewController.h"
 
+#import "BigIntTypes.h"
 #import "DWEnvironment.h"
 #import "DWExtendedPublicKeysViewController.h"
 #import "DWFormTableViewController.h"
@@ -24,7 +25,8 @@
 #import "DWKeysOverviewViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
-
+#import "UIView+DWHUD.h"
+#import "UIViewController+DWDisplayError.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWToolsMenuViewController () <DWImportWalletInfoViewControllerDelegate>
@@ -110,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf exportTransactionsInCSV];
+            [strongSelf askToExportTransactionsInCSV];
         };
         [items addObject:cellModel];
     }
@@ -170,43 +172,66 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:controller animated:YES];
 }
 
-- (void)exportTransactionsInCSV {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+- (void)askToExportTransactionsInCSV {
 
-    NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
+    NSString *title = NSLocalizedString(@"CSV Export", nil);
+    NSString *message = NSLocalizedString(@"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", nil);
+    __weak typeof(self) weakSelf = self;
 
-    // Timestamps are set to 0 if the transaction hasn't yet been confirmed, they should be at the top of the list if this is the case
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey
-                                                                     ascending:NO
-                                                                    comparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-                                                                        if ([obj1 unsignedIntValue] == 0) {
-                                                                            if ([obj2 unsignedIntValue] == 0) {
-                                                                                return NSOrderedSame;
-                                                                            }
-                                                                            else {
-                                                                                return NSOrderedDescending;
-                                                                            }
-                                                                        }
-                                                                        else if ([obj2 unsignedIntValue] == 0) {
-                                                                            return NSOrderedAscending;
-                                                                        }
-                                                                        else {
-                                                                            return [(NSNumber *)obj1 compare:obj2];
-                                                                        }
-                                                                    }];
-    NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
-
-    NSString *headers = @"Date and time,Transaction Type,Sent Quantity,Sent Currency,Sending Source,Received Quantity,Received Currency,Receiving Destination,Fee,Fee Currency,Exchange Transaction ID,Blockchain Transaction Hash";
-
-
-    NSString *transactionType = @"Income"; // @"Expense"
-
-    for (DSTransaction *tx in transactions) {
-        NSString *row = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@", @"2021-01-06T00:00:00Z", transactionType, @"", @"DASH", @"DASH Wallet for outgoing transactions / Blank for incoming transactions", @"The amount of Dash received / Blank for outgoing transactions", @"DASH/Blank", @"DASH Wallet/Blank", @"", @"", @"", tx.txHash];
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:message
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Continue", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        [weakSelf exportTransactionsInCSV];
+                    }];
+        [alert addAction:action];
     }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:action];
+    }
+
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        alert.popoverPresentationController.sourceView = self.view;
+        alert.popoverPresentationController.sourceRect = self.view.bounds;
+    }
+
+    [self presentViewController:alert
+                       animated:YES
+                     completion:nil];
 }
 
+- (void)exportTransactionsInCSV {
+    [self.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Generating CSV Report", nil)];
+    __weak typeof(self) weakSelf = self;
 
+    [self.model
+        generateCSVReportWithCompletionHandler:^(NSString *_Nonnull fileName, NSURL *_Nonnull file) {
+            [weakSelf.view dw_hideProgressHUD];
+
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ fileName, file ] applicationActivities:nil];
+
+            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+                activityViewController.popoverPresentationController.sourceView = weakSelf.view;
+                activityViewController.popoverPresentationController.sourceRect = weakSelf.view.bounds;
+            }
+
+            [weakSelf presentViewController:activityViewController animated:YES completion:nil];
+        }
+        errorHandler:^(NSError *_Nonnull error) {
+            [weakSelf.view dw_hideProgressHUD];
+            [weakSelf dw_displayErrorModally:error];
+        }];
+}
 @end
 
 NS_ASSUME_NONNULL_END
