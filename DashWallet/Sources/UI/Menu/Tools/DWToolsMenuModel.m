@@ -38,7 +38,7 @@
     if ([DWEnvironment sharedInstance].currentChainManager.syncPhase != DSChainSyncPhase_Synced) {
         errorHandler([NSError errorWithDomain:@"DashWallet"
                                          code:500
-                                     userInfo:@{NSLocalizedDescriptionKey : DSLocalizedString(@"Can't export CSV while chain is syncing", nil)}]);
+                                     userInfo:@{NSLocalizedDescriptionKey : DSLocalizedString(@"Please wait until the wallet is fully synced before exporting your transaction history", nil)}]);
         return;
     }
 
@@ -60,7 +60,7 @@
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         NSLocale *enUSPOSIXLocale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
         [dateFormatter setLocale:enUSPOSIXLocale];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'Z'"];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd"];
         [dateFormatter setCalendar:[NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian]];
 
         NSDate *now = [NSDate date];
@@ -83,6 +83,7 @@
     id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:transaction];
     NSString *iso8601String = [self.dataProvider ISO8601StringForTransaction:transaction];
 
+
     NSString *transactionType = @"Income";
     NSString *sentQuantity = @"";
     NSString *sentCurrency = @"";
@@ -91,19 +92,27 @@
     NSString *receivedCurrency = [NSString new];
     NSString *receivingDestination = [NSString new];
 
+
+    NSNumberFormatter *numberFormatter = [[DSPriceManager sharedInstance].dashFormat copy];
+    numberFormatter.currencyCode = @"";
+    numberFormatter.currencySymbol = @"";
+    NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dataItem.dashAmount]
+        decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];
+    NSString *formattedNumber = [numberFormatter stringFromNumber:number];
+
     switch (dataItem.direction) {
         case DSTransactionDirection_Moved: {
             break;
         }
         case DSTransactionDirection_Sent: {
             transactionType = @"Expense";
-            sentQuantity = [NSString stringWithFormat:@"%llu", dataItem.dashAmount];
+            sentQuantity = formattedNumber;
             sentCurrency = @"DASH";
             sendingSource = @"DASH Wallet";
             break;
         }
         case DSTransactionDirection_Received: {
-            receivedQuantity = [NSString stringWithFormat:@"%llu", dataItem.dashAmount];
+            receivedQuantity = formattedNumber;
             receivedCurrency = @"DASH";
             receivingDestination = @"DASH Wallet";
             break;

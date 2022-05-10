@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)iso8601StringFromDate:(NSDate *)date {
-    return [self.longDateFormatter stringFromDate:date];
+    return [self.iso8601DateFormatter stringFromDate:date];
 }
 
 @end
