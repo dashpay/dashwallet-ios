@@ -28,7 +28,7 @@ class ExploreDatabaseConnection
     
     init() {
         NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil, queue: .main) { [weak self] notification in
-        //    try? self?.connect()
+            try? self?.connect()
         }
     }
     
@@ -46,7 +46,7 @@ class ExploreDatabaseConnection
     }
     
     private func dbPath() -> String? {
-        let downloadedPath = FileManager.getDocumentsDirectory().appendingPathComponent("explore.db").path
+        let downloadedPath = FileManager.getDocumentsDirectory().appendingPathComponent("explore.db/explore.db").path
         
         return FileManager.default.fileExists(atPath: downloadedPath) ? downloadedPath : nil
     }
@@ -63,6 +63,9 @@ class ExploreDatabaseConnection
         return resultItems
     }
     
+    func execute<Item: RowDecodable>(query: String) throws -> [Item] {
+        return try db.prepare(query).prepareRowIterator().map { Item(row: $0) }
+    }
     
 }
 

@@ -55,21 +55,30 @@ public class ExploreDash {
     }
     
     private func prepareDatabase() throws {
-        let destinationPath = FileManager.getDocumentsDirectory().appendingPathComponent("explore.db")
+        let destinationPath = FileManager.getDocumentsDirectory()
+            .appendingPathComponent("explore.db", isDirectory: true)
+        let finalDestinationPath = destinationPath.appendingPathComponent("explore.db")
         
-        guard !FileManager.default.fileExists(atPath: destinationPath.path) else { return }
+        guard !FileManager.default.fileExists(atPath: finalDestinationPath.path) else { return }
         
+        try? FileManager.default.removeItem(atPath: destinationPath.path)
+        try FileManager.default.createDirectory(at: destinationPath, withIntermediateDirectories: true, attributes: nil)
+    
         guard let dbURL = Bundle.main.url(forResource: "explore", withExtension: "db") else {
             throw ExploreDatabaseConnectionError.fileNotFound
         }
         
-        try FileManager.default.copyItem(at: dbURL, to: destinationPath)
+        try FileManager.default.copyItem(at: dbURL, to: finalDestinationPath)
     }
     
     public static let shared: ExploreDash = ExploreDash()
 }
 
 extension ExploreDash {
+    func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.allOnlineMerchants(offset: offset, completion: completion)
+    }
+    
     func allOnlineMerchants(offset: Int = 0) -> PaginationResult<Merchant> {
         return merchantDAO.allOnlineMerchants(offset: offset)
     }

@@ -24,22 +24,58 @@ class MerchantDAO
 {
     private let connection: ExploreDatabaseConnection
     
+    let serialQueue = DispatchQueue(label: "org.dashfoundation.dashpaytnt.explore.serial.queue")
+    
     init(dbConnection: ExploreDatabaseConnection) {
         self.connection = dbConnection
+    }
+    
+    func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+            let query = """
+                SELECT *
+                FROM merchant
+                WHERE type IN ('online', 'both')
+                GROUP BY source, merchantId
+                ORDER BY name
+                """
+            
+            do {
+                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                completion(.success(PaginationResult(items: items, offset: offset + pageLimit)))
+            }catch{
+                print(error)
+                completion(.failure(error))
+            }
+        }
     }
     
     func allOnlineMerchants(offset: Int = 0) -> PaginationResult<Merchant> {
         let name = Expression<String>("name")
         let type = Expression<String>("type")
+        let source = Expression<String>("source")
+        let merchantId = Expression<String>("id")
         
         let merchants = Table("merchant")
-        let query = merchants.select(merchants[*])
-            .filter(type == "online")
-            .order(name)
-            .limit(pageLimit, offset: offset)
+//        let query = merchants.select(merchants[*])
+//            //.filter(["online", "both"].contains(type))
+//            .group([merchantId, source], having: ["online", "both"].contains(type))
+//            //.order(name)
+//            .limit(pageLimit, offset: offset)
+        
+        
+        let query =
+        """
+        SELECT *
+        FROM merchant
+        WHERE type IN ('online', 'both')
+        GROUP BY source, merchantId
+        ORDER BY name
+        """
         
         do {
-            let items: [Merchant] = try connection.find(query: query)
+            let items: [Merchant] = try connection.execute(query: query)
             return PaginationResult(items: items, offset: offset + pageLimit)
         }catch{
             print(error)
@@ -53,7 +89,7 @@ class MerchantDAO
         
         let merchants = Table("merchant")
         let query = merchants.select(merchants[*])
-            .filter(type == "online" && name.like("\(query)%"))
+            .filter(["online", "both"].contains(type) && name.like("\(query)%"))
             .order(name)
             .limit(pageLimit, offset: offset)
         

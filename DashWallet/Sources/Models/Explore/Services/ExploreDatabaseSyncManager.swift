@@ -88,16 +88,17 @@ extension ExploreDatabaseSyncManager {
             }else{
                 try? data?.write(to: urlToSave)
                 GlobalOptions.shared.exploreDatabaseLastSync = Date().timeIntervalSince1970
-                self?.unzipFile(atPath: urlToSave.path, password: checksum)
+                self?.unzipFile(at: urlToSave.path, password: checksum)
             }
         }
     }
     
-    private func unzipFile(atPath: String, password: String) {
+    private func unzipFile(at path: String, password: String) {
         var error: NSError?
         let urlToUnzip = getDocumentsDirectory()
-        SSZipArchive.unzipFile(atPath: atPath, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true, nestedZipLevel: 0, password: password, error: &error, delegate: nil, progressHandler: nil) { path, succeded, error in
+        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true, nestedZipLevel: 0, password: password, error: &error, delegate: nil, progressHandler: nil) { path, succeded, error in
             NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
         }
     }
     
