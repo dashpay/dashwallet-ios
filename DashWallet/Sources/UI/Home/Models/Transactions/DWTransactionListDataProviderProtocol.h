@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDate *)dateForTransaction:(DSTransaction *)transaction;
 - (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction;
+- (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction;
 
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
                                         font:(UIFont *)font;

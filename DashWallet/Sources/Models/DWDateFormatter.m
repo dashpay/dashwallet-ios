@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) NSDateFormatter *shortDateFormatter;
 @property (readonly, nonatomic, strong) NSDateFormatter *longDateFormatter;
+@property (readonly, nonatomic, strong) NSDateFormatter *iso8601DateFormatter;
 
 @end
 
@@ -51,6 +52,12 @@ NS_ASSUME_NONNULL_END
         _longDateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"yyyyMMMdjmma"
                                                                         options:0
                                                                          locale:locale];
+
+        _iso8601DateFormatter = [[NSDateFormatter alloc] init];
+        NSLocale *enUSPOSIXLocale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+        [_iso8601DateFormatter setLocale:enUSPOSIXLocale];
+        [_iso8601DateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'Z'"];
+        [_iso8601DateFormatter setCalendar:[NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian]];
     }
     return self;
 }
@@ -65,6 +72,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)longStringFromDate:(NSDate *)date {
+    return [self.longDateFormatter stringFromDate:date];
+}
+
+- (NSString *)iso8601StringFromDate:(NSDate *)date {
     return [self.longDateFormatter stringFromDate:date];
 }
 
