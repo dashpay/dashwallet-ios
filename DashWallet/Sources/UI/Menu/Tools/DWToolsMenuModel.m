@@ -83,7 +83,6 @@
     id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:transaction];
     NSString *iso8601String = [self.dataProvider ISO8601StringForTransaction:transaction];
 
-
     NSString *transactionType = @"Income";
     NSString *sentQuantity = @"";
     NSString *sentCurrency = @"";
@@ -92,10 +91,7 @@
     NSString *receivedCurrency = [NSString new];
     NSString *receivingDestination = [NSString new];
 
-
-    NSNumberFormatter *numberFormatter = [[DSPriceManager sharedInstance].dashFormat copy];
-    numberFormatter.currencyCode = @"";
-    numberFormatter.currencySymbol = @"";
+    NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].csvDashFormat;
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dataItem.dashAmount]
         decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];
     NSString *formattedNumber = [numberFormatter stringFromNumber:number];
