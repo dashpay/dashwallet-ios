@@ -81,6 +81,11 @@
 
 - (NSString *)csvRowForTransaction:(DSTransaction *)transaction {
     id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:transaction];
+
+    if (dataItem.direction == DSTransactionDirection_Moved || dataItem.direction == DSTransactionDirection_NotAccountFunds) {
+        return @"";
+    }
+
     NSString *iso8601String = [self.dataProvider ISO8601StringForTransaction:transaction];
 
     NSString *transactionType = @"Income";
@@ -102,9 +107,6 @@
     NSString *transactionId = [NSString hexWithData:txIdData];
 
     switch (dataItem.direction) {
-        case DSTransactionDirection_Moved: {
-            break;
-        }
         case DSTransactionDirection_Sent: {
             transactionType = @"Expense";
             sentQuantity = formattedNumber;
@@ -118,7 +120,7 @@
             receivingDestination = @"DASH Wallet";
             break;
         }
-        case DSTransactionDirection_NotAccountFunds: {
+        default: {
             break;
         }
     }
