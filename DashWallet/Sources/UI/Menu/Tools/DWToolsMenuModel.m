@@ -91,10 +91,15 @@
     NSString *receivedCurrency = [NSString new];
     NSString *receivingDestination = [NSString new];
 
+    uint64_t dashAmount = dataItem.dashAmount + (dataItem.direction == DSTransactionDirection_Sent ? [transaction feeUsed] : 0);
+
     NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].csvDashFormat;
-    NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dataItem.dashAmount]
+    NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
         decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];
     NSString *formattedNumber = [numberFormatter stringFromNumber:number];
+
+    NSData *txIdData = [NSData dataWithBytes:transaction.txHash.u8 length:sizeof(UInt256)].reverse;
+    NSString *transactionId = [NSString hexWithData:txIdData];
 
     switch (dataItem.direction) {
         case DSTransactionDirection_Moved: {
@@ -118,7 +123,7 @@
         }
     }
 
-    return [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n", iso8601String, transactionType, sentQuantity, sentCurrency, sendingSource, receivedQuantity, receivedCurrency, receivingDestination, @"", @"", @"", uint256_hex(transaction.txHash)];
+    return [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n", iso8601String, transactionType, sentQuantity, sentCurrency, sendingSource, receivedQuantity, receivedCurrency, receivingDestination, @"", @"", @"", transactionId];
 }
 
 - (NSArray<DSTransaction *> *)transactions {
