@@ -21,6 +21,12 @@
 
 @interface DWToolsMenuModel ()
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
+
+- (NSString *)generateFileName;
+- (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions;
+- (NSString *)csvRowForTransaction:(DSTransaction *)transaction;
+- (NSArray<DSTransaction *> *)transactions;
+
 @end
 
 @implementation DWToolsMenuModel
@@ -46,26 +52,9 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray<DSTransaction *> *transactions = [weakSelf transactions];
 
-        DWTransactionListDataProvider *dataProvider = [[DWTransactionListDataProvider alloc] init];
+        NSString *csv = [weakSelf csvStringForTransactions:transactions];
 
-        NSMutableString *csv = [NSMutableString new];
-
-        NSString *headers = @"Date and time,Transaction Type,Sent Quantity,Sent Currency,Sending Source,Received Quantity,Received Currency,Receiving Destination,Fee,Fee Currency,Exchange Transaction ID,Blockchain Transaction Hash\n";
-        [csv appendString:headers];
-
-        for (DSTransaction *tx in transactions) {
-            [csv appendString:[weakSelf csvRowForTransaction:tx]];
-        }
-
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        NSLocale *enUSPOSIXLocale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-        [dateFormatter setLocale:enUSPOSIXLocale];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd"];
-        [dateFormatter setCalendar:[NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian]];
-
-        NSDate *now = [NSDate date];
-        NSString *iso8601String = [dateFormatter stringFromDate:now];
-        NSString *fileName = [NSString stringWithFormat:@"report-%@.csv", iso8601String];
+        NSString *fileName = [weakSelf generateFileName];
 
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDir = [paths objectAtIndex:0];
@@ -79,18 +68,53 @@
     });
 }
 
+- (NSString *)generateFileName {
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    NSLocale *enUSPOSIXLocale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    [dateFormatter setLocale:enUSPOSIXLocale];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd"];
+    [dateFormatter setCalendar:[NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian]];
+
+    NSDate *now = [NSDate date];
+    NSString *iso8601String = [dateFormatter stringFromDate:now];
+    NSString *fileName = [NSString stringWithFormat:@"report-%@.csv", iso8601String];
+
+    return fileName;
+}
+
+- (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions {
+    DWTransactionListDataProvider *dataProvider = [[DWTransactionListDataProvider alloc] init];
+
+    NSMutableString *csv = [NSMutableString new];
+
+    NSString *header = @"Date and time,Transaction Type,Sent Quantity,Sent Currency,Sending Source,Received Quantity,Received Currency,Receiving Destination,Fee,Fee Currency,Exchange Transaction ID,Blockchain Transaction Hash\n";
+    [csv appendString:header];
+
+    for (DSTransaction *tx in transactions) {
+        [csv appendString:[self csvRowForTransaction:tx]];
+    }
+
+    return [NSString stringWithString:csv];
+}
+
 - (NSString *)csvRowForTransaction:(DSTransaction *)transaction {
     id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:transaction];
 
+    // Return empty string for internal transactions
     if (dataItem.direction == DSTransactionDirection_Moved || dataItem.direction == DSTransactionDirection_NotAccountFunds) {
         return @"";
     }
 
     NSString *iso8601String = [self.dataProvider ISO8601StringForTransaction:transaction];
 
-    NSString *transactionType = @"Income";
-    NSString *sentQuantity = @"";
-    NSString *sentCurrency = @"";
+    NSString *kCurrency = @"DASH";
+    NSString *kSource = @"DASH";
+    NSString *kExpense = @"Expense";
+    NSString *kIncome = @"Income";
+
+    NSString *transactionType = [NSString new];
+    NSString *sentQuantity = [NSString new];
+    NSString *sentCurrency = [NSString new];
     NSString *sendingSource = [NSString new];
     NSString *receivedQuantity = [NSString new];
     NSString *receivedCurrency = [NSString new];
@@ -108,16 +132,17 @@
 
     switch (dataItem.direction) {
         case DSTransactionDirection_Sent: {
-            transactionType = @"Expense";
+            transactionType = kExpense;
             sentQuantity = formattedNumber;
-            sentCurrency = @"DASH";
-            sendingSource = @"DASH Wallet";
+            sentCurrency = kCurrency;
+            sendingSource = kSource;
             break;
         }
         case DSTransactionDirection_Received: {
+            transactionType = kIncome;
             receivedQuantity = formattedNumber;
-            receivedCurrency = @"DASH";
-            receivingDestination = @"DASH Wallet";
+            receivedCurrency = kCurrency;
+            receivingDestination = kSource;
             break;
         }
         default: {
