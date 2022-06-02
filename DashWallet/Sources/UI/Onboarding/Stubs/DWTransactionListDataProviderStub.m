@@ -35,6 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
     return [self formattedLongTxDate:date];
 }
 
+- (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction {
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
+    return [self formattedISO8601TxDate:date];
+}
+
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
 

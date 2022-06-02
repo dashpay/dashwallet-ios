@@ -51,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWDateFormatter sharedInstance] longStringFromDate:date];
 }
 
+- (NSString *)formattedISO8601TxDate:(NSDate *)date {
+    return [[DWDateFormatter sharedInstance] iso8601StringFromDate:date];
+}
+
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
                                         font:(UIFont *)font {
     const uint64_t dashAmount = transactionData.dashAmount;
