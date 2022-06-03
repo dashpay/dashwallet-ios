@@ -30,8 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic) NSString *transactionId;
 @property (readonly, nonatomic) DSTransactionDirection direction;
+@property (readonly, nonatomic) NSString *dashAmountString;
 @property (readonly, nonatomic) NSString *fiatAmountString;
 
+- (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font;
 
 - (NSUInteger)inputAddressesCount;

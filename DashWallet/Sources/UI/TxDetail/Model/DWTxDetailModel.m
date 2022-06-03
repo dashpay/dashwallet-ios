@@ -64,6 +64,14 @@ NS_ASSUME_NONNULL_BEGIN
     return self.dataItem.direction;
 }
 
+- (NSString *)dashAmountString {
+    return [self.dataProvider dashAmountStringFrom:self.dataItem];
+}
+
+- (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
+    return [self.dataProvider dashAmountStringFrom:self.dataItem tintColor:tintColor font:font];
+}
+
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font {
     return [self.dataProvider dashAmountStringFrom:self.dataItem font:font];
 }
