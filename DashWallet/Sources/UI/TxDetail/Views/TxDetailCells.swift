@@ -62,7 +62,7 @@ class TxDetailHeaderCell: UITableViewCell {
         }
         else {
             self.fiatAmountLabel.text = self.model.fiatAmountString;
-            self.dashAmountLabel.attributedText = model.dashAmountString(with: UIFont.dw_mediumFont(ofSize: 32), tintColor: .label)
+            self.dashAmountLabel.attributedText = model.dashAmountString(with: UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue), tintColor: .label)
         }
       
         self.titleLabel.text = title
@@ -79,11 +79,21 @@ class TxDetailHeaderCell: UITableViewCell {
         }
     }
     
+    override func awakeFromNib() {
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
+        dashAmountLabel.font = UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
+        fiatAmountLabel.font = UIFont.preferredFont(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
+    }
+    
     override class var dw_reuseIdentifier: String { return "TxDetailHeaderCell" }
 }
 
 class TxDetailActionCell: UITableViewCell {
     @IBOutlet var titleLabel: UILabel!
+    
+    override func awakeFromNib() {
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
+    }
     
     override class var dw_reuseIdentifier: String { return "TxDetailActionCell" }
 }
@@ -98,7 +108,7 @@ class TxDetailInfoCell: UITableViewCell {
         {
         case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
             title = items.first?.title
-            
+                
             for item in items {
                 let view = UILabel()
                 view.lineBreakMode = .byTruncatingMiddle
@@ -132,12 +142,17 @@ class TxDetailInfoCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        var views = valueLabelsStack.arrangedSubviews
+        let views = valueLabelsStack.arrangedSubviews
         
         for view in views {
             valueLabelsStack.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
+    }
+    
+    override func awakeFromNib() {
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
+        titleLabel.textColor = UIColor.dw_secondaryText()
     }
     
     override class var dw_reuseIdentifier: String { return "TxDetailInfoCell" }

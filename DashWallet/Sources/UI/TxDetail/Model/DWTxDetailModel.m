@@ -282,7 +282,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *firstAddress = addresses.anyObject;
     for (NSString *address in addresses) {
         NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
+                                                                               withFont:font
+                                                                            showingLogo:NO];
         const BOOL hasTitle = address == firstAddress;
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
@@ -300,7 +301,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *firstAddress = addresses.firstObject;
     for (NSString *address in addresses) {
         NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
+                                                                               withFont:font
+                                                                            showingLogo:NO];
         const BOOL hasTitle = address == firstAddress;
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine

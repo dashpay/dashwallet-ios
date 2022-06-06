@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                         tintColor:(UIColor *)tintColor
                                                              font:(UIFont *)font;
 
++ (NSAttributedString *)dw_dashAddressAttributedString:(NSString *)address withFont:(UIFont *)font showingLogo:(BOOL)showingLogo;
 + (NSAttributedString *)dw_dashAddressAttributedString:(NSString *)address withFont:(UIFont *)font;
 
 @end

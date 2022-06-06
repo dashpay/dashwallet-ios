@@ -135,12 +135,16 @@ extension TXDetailViewController {
             case .header:
                 let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.dw_reuseIdentifier, for: indexPath) as! TxDetailHeaderCell
                 cell.model = self?.model
+                cell.selectionStyle = .none
                 cell.backgroundColor = .clear
                 cell.backgroundView?.backgroundColor = .clear
+                
                 return cell
             case .info:
                 let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailInfoCell.dw_reuseIdentifier, for: indexPath) as! TxDetailInfoCell
                 cell.update(with: item)
+                cell.selectionStyle = .none
+                cell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0)
                 return cell
                 
             case .explorer:
@@ -151,7 +155,7 @@ extension TXDetailViewController {
             
         }
         
-        let detailFont = UIFont.dw_font(forTextStyle: .callout)
+        let detailFont = UIFont.preferredFont(forTextStyle: .body)
         let date: DWTitleDetailItem = model.date()
         
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
@@ -160,12 +164,12 @@ extension TXDetailViewController {
         
         switch (self.model.direction) {
         case .moved:
-            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.dw_secondaryText())!
+            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
             currentSnapshot.appendItems([.movedFrom(model.inputAddresses(with: detailFont)),
                                          .movedTo(model.outputAddresses(with: detailFont))], toSection: .info)
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .sent:
-            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.dw_secondaryText())!
+            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
             currentSnapshot.appendItems([.sentFrom(model.inputAddresses(with: detailFont)),
                                          .sentTo(model.outputAddresses(with: detailFont))], toSection: .info)
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)

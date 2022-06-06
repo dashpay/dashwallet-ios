@@ -88,6 +88,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation UIFont (DWFont)
 
+- (instancetype)fontWithWeight:(CGFloat)weight {
+    UIFontDescriptor *newDescriptor = [self.fontDescriptor fontDescriptorByAddingAttributes:@{UIFontDescriptorTraitsAttribute : @{UIFontWeightTrait : @(weight)}}];
+
+    return [UIFont fontWithDescriptor:newDescriptor size:self.pointSize];
+}
+
 + (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle {
     return [self dw_fontForTextStyle:textStyle respectMinSize:NO];
 }

@@ -22,6 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIFont (DWFont)
 
 /**
+ Copy the font for the given weight
+
+ @param weight The weight of the font
+ @return  A copy of the current `UIFont` with updated weight
+ */
+
+- (instancetype)fontWithWeight:(CGFloat)weight;
+
+/**
  Get the scaled font for the given text style
 
  @param textStyle The `UIFontTextStyle` for the font.
