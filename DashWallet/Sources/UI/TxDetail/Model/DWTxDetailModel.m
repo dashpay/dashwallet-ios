@@ -69,7 +69,37 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    return [self.dataProvider dashAmountStringFrom:self.dataItem tintColor:tintColor font:font];
+
+    NSNumberFormatter *dashFormat = [NSNumberFormatter new];
+    dashFormat.locale = [NSLocale localeWithLocaleIdentifier:@"ru_RU"];
+    dashFormat.lenient = YES;
+    dashFormat.numberStyle = NSNumberFormatterCurrencyStyle;
+    dashFormat.generatesDecimalNumbers = YES;
+    NSRange positiveFormatRange = [dashFormat.positiveFormat rangeOfString:@"#"];
+    if (positiveFormatRange.location != NSNotFound) {
+        dashFormat.negativeFormat = [dashFormat.positiveFormat
+            stringByReplacingCharactersInRange:positiveFormatRange
+                                    withString:@"-#"];
+    }
+    dashFormat.currencyCode = @"DASH";
+    dashFormat.currencySymbol = DASH;
+
+    dashFormat.maximumFractionDigits = 8;
+    dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
+    dashFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, dashFormat.maximumFractionDigits));
+
+
+    const uint64_t dashAmount = self.dataItem.dashAmount;
+
+    // NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
+
+    NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
+        decimalNumberByMultiplyingByPowerOf10:-dashFormat.maximumFractionDigits];
+    NSString *formattedNumber = [dashFormat stringFromNumber:number];
+    NSString *symbol = self.dataItem.directionSymbol;
+    NSString *amount = [symbol stringByAppendingString:formattedNumber];
+
+    return [NSAttributedString dw_dashAttributedStringForFormattedAmount:amount tintColor:tintColor font:font];
 }
 
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font {

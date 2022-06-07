@@ -155,7 +155,7 @@ extension TXDetailViewController {
             
         }
         
-        let detailFont = UIFont.preferredFont(forTextStyle: .body)
+        let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
         let date: DWTitleDetailItem = model.date()
         
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
@@ -189,6 +189,9 @@ extension TXDetailViewController {
 
     @objc func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
+        
+        // Make sure we have 20pt padding on the sides
+        //tableView.contentInset = .init(top: 0, left: 0, bottom: 0, right: 5)
         tableView.backgroundColor = UIColor.dw_secondaryBackground()
         tableView.delegate = self
     }
@@ -207,6 +210,22 @@ extension TXDetailViewController: UITableViewDelegate {
         default:
             break
         }
+    }
+    
+    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return nil
+    }
+    
+    public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        return nil
+    }
+    
+    public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 7
+    }
+    
+    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 8
     }
 }
 
