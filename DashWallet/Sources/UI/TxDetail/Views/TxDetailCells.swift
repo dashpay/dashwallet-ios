@@ -83,9 +83,9 @@ class TxDetailHeaderCell: UITableViewCell {
         iconImageView.contentMode = .center
         iconImageView.clipsToBounds = false
         
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
-        dashAmountLabel.font = UIFont.systemFont(ofSize: 32, weight: UIFont.Weight.medium)
-        fiatAmountLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        titleLabel.font = UIFont.dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
+        dashAmountLabel.font = UIFont.dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
+        fiatAmountLabel.font = UIFont.dw_font(forTextStyle: .footnote)
     }
     
     override class var dw_reuseIdentifier: String { return "TxDetailHeaderCell" }
@@ -95,7 +95,7 @@ class TxDetailActionCell: UITableViewCell {
     @IBOutlet var titleLabel: UILabel!
     
     override func awakeFromNib() {
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .caption1).withWeight(UIFont.Weight.medium.rawValue)
+        titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
     }
     
     override class var dw_reuseIdentifier: String { return "TxDetailActionCell" }
@@ -117,7 +117,7 @@ class TxDetailInfoCell: UITableViewCell {
                 view.lineBreakMode = .byTruncatingMiddle
                 view.attributedText = item.attributedDetail
                 view.textAlignment = .right
-                view.font = UIFont.preferredFont(forTextStyle: .caption1)
+                view.font = UIFont.dw_font(forTextStyle: .footnote)
                 valueLabelsStack.addArrangedSubview(view)
             }
             break
@@ -126,7 +126,7 @@ class TxDetailInfoCell: UITableViewCell {
             
             let view = UILabel()
             view.textAlignment = .right
-            view.font = UIFont.preferredFont(forTextStyle: .caption1)
+            view.font = UIFont.dw_font(forTextStyle: .footnote)
             if let text = item.plainDetail {
                 view.text = text
             }
@@ -157,7 +157,7 @@ class TxDetailInfoCell: UITableViewCell {
     }
     
     override func awakeFromNib() {
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .caption1).withWeight(UIFont.Weight.medium.rawValue)
+        titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
         titleLabel.textColor = UIColor.dw_secondaryText()
     }
     

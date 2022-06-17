@@ -47,7 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)logoutURLString {
     return @"https://uphold.com/";
-
 }
 
 @end
