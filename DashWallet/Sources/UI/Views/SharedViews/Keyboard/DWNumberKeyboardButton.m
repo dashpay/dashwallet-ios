@@ -38,7 +38,7 @@ static UIColor *BackgroundHighlightedColor() {
 }
 
 static UIFont *TitleFont() {
-    return [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3 respectMinSize:YES];
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
 }
 
 static UIFont *CustomTitleFont() {
