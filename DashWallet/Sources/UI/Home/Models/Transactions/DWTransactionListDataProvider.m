@@ -65,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
-    // inherited from DWTxDetailViewController `- (void)setTransaction:(DSTransaction *)transaction`
 
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
