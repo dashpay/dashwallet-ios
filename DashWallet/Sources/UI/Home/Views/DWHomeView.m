@@ -177,6 +177,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)homeModel:(id<DWHomeProtocol>)model didReceiveNewTransaction:(DSTransaction *)transaction {
+    [self.delegate homeView:self showReclassifyYourTransactionsFlowWithTransaction:transaction];
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 1;
 }

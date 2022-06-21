@@ -161,6 +161,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
     [self.currentController dismissViewControllerAnimated:YES
                                                completion:^{
+                                                   self.tabBarView.userInteractionEnabled = YES;
                                                    if (completion) {
                                                        completion();
                                                    }

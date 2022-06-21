@@ -68,7 +68,6 @@ static BOOL IsJailbroken(void) {
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
-@property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
@@ -87,6 +86,8 @@ static BOOL IsJailbroken(void) {
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
+@synthesize allDataSource = _allDataSource;
+@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 - (instancetype)init {
     self = [super init];
@@ -181,6 +182,14 @@ static BOOL IsJailbroken(void) {
     _displayMode = displayMode;
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:YES];
+}
+
+- (void)setAllowedToShowReclassifyYourTransactions:(BOOL)value {
+    _allowedToShowReclassifyYourTransactions = value;
+}
+
+- (BOOL)isAllowedToShowReclassifyYourTransactions {
+    return _allowedToShowReclassifyYourTransactions && [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
 }
 
 - (BOOL)isJailbroken {
@@ -349,7 +358,6 @@ static BOOL IsJailbroken(void) {
 
 - (void)walletBalanceDidChangeNotification {
     [self updateBalance];
-
     [self reloadTxDataSource];
 }
 
@@ -396,6 +404,9 @@ static BOOL IsJailbroken(void) {
 }
 
 #pragma mark - Private
+
+- (void)notifyAboutNewTransaction {
+}
 
 - (DWTransactionListDataSource *)receivedDataSource {
     if (_receivedDataSource == nil) {
@@ -469,10 +480,15 @@ static BOOL IsJailbroken(void) {
                                                                         }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
+        BOOL allowedToShowReclassifyYourTransactions = NO;
         BOOL shouldAnimate = YES;
+
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;
         if (!prevTransaction || prevTransaction == transactions.firstObject) {
             shouldAnimate = NO;
+        }
+        else {
+            allowedToShowReclassifyYourTransactions = YES;
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
@@ -495,6 +511,9 @@ static BOOL IsJailbroken(void) {
         DWTransactionListDataSource *datasource = self.dataSource;
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            if (allowedToShowReclassifyYourTransactions) {
+                [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
+            }
             [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
         });
     });

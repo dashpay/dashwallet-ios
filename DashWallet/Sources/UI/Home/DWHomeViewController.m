@@ -19,6 +19,7 @@
 
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWEnvironment.h"
+#import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -28,11 +29,12 @@
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWSyncingAlertViewController.h"
+#import "DWTransactionListDataSource.h"
 #import "DWTxDetailModel.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
+#import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate>
@@ -81,6 +83,14 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self.model registerForPushNotifications];
+
+    if (self.model.isAllowedToShowReclassifyYourTransactions) {
+        TxReclassifyTransactionsInfoViewController *vc = [TxReclassifyTransactionsInfoViewController controller];
+        vc.transaction = self.model.allDataSource.items.firstObject;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[self.view.window ds_presentingViewController] presentViewController:vc animated:YES completion:nil];
+        });
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -115,6 +125,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
     [self performActionForShortcut:action sender:homeView];
+}
+
+- (void)homeView:(DWHomeView *)homeView showReclassifyYourTransactionsFlowWithTransaction:(DSTransaction *)transaction {
 }
 
 #pragma mark - DWShortcutsActionDelegate

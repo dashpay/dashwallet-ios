@@ -10,3 +10,4 @@
 #import "SFSafariViewController+DashWallet.h"
 #import "DWActionButton.h"
 #import "DWDPBasicUserItem.h"
+#import "DWTransactionListDataProvider.h"
