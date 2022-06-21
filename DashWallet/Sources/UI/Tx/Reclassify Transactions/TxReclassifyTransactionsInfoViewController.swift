@@ -17,6 +17,10 @@
 
 import UIKit
 
+@objc protocol TxReclassifyTransactionsInfoViewControllerDelegate: AnyObject {
+    @objc func txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: TxReclassifyTransactionsInfoViewController, transaction: DSTransaction)
+}
+
 @objc class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var subtitleLabel: UILabel!
@@ -44,6 +48,14 @@ import UIKit
     private var transactionScreenImage: UIImage!
     
     @objc var transaction: DSTransaction!
+    
+    @objc weak var delegate: TxReclassifyTransactionsInfoViewControllerDelegate?
+    
+    @IBAction func iUndersandAction() {
+        dismiss(animated: true) {
+            self.delegate?.txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: self, transaction: self.transaction)
+        }
+    }
     
     @IBAction func whereCanIChangeAction() {
         let vc = TxReclassifyTransactionsWhereToChangeViewController.controller()

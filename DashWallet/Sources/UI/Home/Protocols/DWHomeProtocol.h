@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
           shouldAnimate:(BOOL)shouldAnimate;
 
 - (void)homeModel:(id<DWHomeProtocol>)model
-    didReceiveNewTransaction:(DSTransaction *)transaction;
+    didReceiveNewIncomingTransaction:(DSTransaction *)transaction;
 
 @end
 

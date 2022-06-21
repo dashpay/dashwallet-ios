@@ -73,6 +73,7 @@ static BOOL IsJailbroken(void) {
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
+@property (nonatomic, assign) BOOL initiatingTxDataSources;
 
 @end
 
@@ -156,7 +157,7 @@ static BOOL IsJailbroken(void) {
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
                                  object:nil];
-
+        self.initiatingTxDataSources = YES;
         [self reloadTxDataSource];
     }
     return self;
@@ -480,14 +481,19 @@ static BOOL IsJailbroken(void) {
                                                                         }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
+        BOOL receivedNewIncomingTransaction = NO;
         BOOL allowedToShowReclassifyYourTransactions = NO;
         BOOL shouldAnimate = YES;
 
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;
-        if (!prevTransaction || prevTransaction == transactions.firstObject) {
+        DSTransaction *newTransaction = transactions.firstObject;
+
+        if (!prevTransaction || prevTransaction == newTransaction) {
             shouldAnimate = NO;
         }
-        else {
+
+        if (!self.initiatingTxDataSources && newTransaction && prevTransaction != newTransaction) {
+            receivedNewIncomingTransaction = YES;
             allowedToShowReclassifyYourTransactions = YES;
         }
 
@@ -514,8 +520,18 @@ static BOOL IsJailbroken(void) {
             if (allowedToShowReclassifyYourTransactions) {
                 [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
             }
+
+            if (receivedNewIncomingTransaction && newTransaction) {
+                id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:newTransaction];
+
+                if (dataItem.direction == DSTransactionDirection_Received) {
+                    [self.updatesObserver homeModel:self didReceiveNewIncomingTransaction:newTransaction];
+                }
+            }
             [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
         });
+
+        self.initiatingTxDataSources = NO;
     });
 }
 

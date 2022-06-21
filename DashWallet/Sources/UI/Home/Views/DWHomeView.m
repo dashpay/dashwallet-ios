@@ -177,7 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)homeModel:(id<DWHomeProtocol>)model didReceiveNewTransaction:(DSTransaction *)transaction {
+- (void)homeModel:(id<DWHomeProtocol>)model didReceiveNewIncomingTransaction:(DSTransaction *)transaction {
     [self.delegate homeView:self showReclassifyYourTransactionsFlowWithTransaction:transaction];
 }
 
