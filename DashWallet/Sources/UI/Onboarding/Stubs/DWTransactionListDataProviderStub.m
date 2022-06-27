@@ -40,6 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
     return [self formattedISO8601TxDate:date];
 }
 
+- (NSString *)taxCategoryStringForTransaction:(DSTransaction *)transaction {
+    return @"Transfer Out";
+}
+
+- (NSString *)taxCategoryStringForTaxCategory:(DSTransactionTaxCategory)taxCategory {
+    return @"Transfer Out";
+}
+
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
 

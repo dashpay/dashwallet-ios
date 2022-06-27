@@ -91,42 +91,28 @@ class TxDetailHeaderCell: UITableViewCell {
     override class var dw_reuseIdentifier: String { return "TxDetailHeaderCell" }
 }
 
-class TxDetailActionCell: UITableViewCell {
-    @IBOutlet var titleLabel: UILabel!
-    
+class TxDetailActionCell: TxDetailTitleCell {
     override func awakeFromNib() {
-        titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
+        super.awakeFromNib()
+        titleLabel.textColor = .label
     }
     
     override class var dw_reuseIdentifier: String { return "TxDetailActionCell" }
 }
 
-class TxDetailInfoCell: UITableViewCell {
-    @IBOutlet var titleLabel: UILabel!
+class TxDetailInfoCell: TxDetailTitleDetailsCell {
     @IBOutlet var valueLabelsStack: UIStackView!
     
-    func update(with item: TXDetailViewController.Item) {
+    override func update(with item: TXDetailViewController.Item) {
         var title: String?
-        switch item
-        {
-        case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
-            title = items.first?.title
-                
-            for item in items {
-                let view = UILabel()
-                view.lineBreakMode = .byTruncatingMiddle
-                view.attributedText = item.attributedDetail
-                view.textAlignment = .right
-                view.font = UIFont.dw_font(forTextStyle: .footnote)
-                valueLabelsStack.addArrangedSubview(view)
-            }
-            break
-        case .date(let item), .networkFee(let item):
-            title = item.title
-            
+        
+        let valueLabel: ((DWTitleDetailItem) -> UILabel) = { item in
             let view = UILabel()
+            view.lineBreakMode = .byTruncatingMiddle
+            view.attributedText = item.attributedDetail
             view.textAlignment = .right
             view.font = UIFont.dw_font(forTextStyle: .footnote)
+            
             if let text = item.plainDetail {
                 view.text = text
             }
@@ -135,14 +121,27 @@ class TxDetailInfoCell: UITableViewCell {
                 view.attributedText = text
             }
             
+            return view
+        }
+        
+        switch item
+        {
+        case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
+            title = items.first?.title
+            for item in items {
+                let view = valueLabel(item)
+                valueLabelsStack.addArrangedSubview(view)
+            }
+            break
+        case .date(let item), .networkFee(let item):
+            title = item.title
+            let view = valueLabel(item)
             valueLabelsStack.addArrangedSubview(view)
         default:
             break
         }
         
-        
         titleLabel.text = title
-        
     }
     
     override func prepareForReuse() {
@@ -156,10 +155,43 @@ class TxDetailInfoCell: UITableViewCell {
         }
     }
     
+    override class var dw_reuseIdentifier: String { return "TxDetailInfoCell" }
+}
+
+class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
+    @IBOutlet var categoryLabel: UILabel!
+    
+    override func update(with item: TXDetailViewController.Item) {
+        
+        switch item {
+        case .taxCategory(let item):
+            titleLabel.text = item.title
+            categoryLabel.text = item.plainDetail
+        default:
+            break
+        }
+        
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        categoryLabel?.font = UIFont.dw_font(forTextStyle: .footnote)
+    }
+    
+    override class var dw_reuseIdentifier: String { return "TxDetailTaxCategoryCell" }
+}
+
+class TxDetailTitleDetailsCell: TxDetailTitleCell {
+    func update(with item: TXDetailViewController.Item) {
+    }
+}
+
+class TxDetailTitleCell: UITableViewCell {
+    @IBOutlet var titleLabel: UILabel!
+    
     override func awakeFromNib() {
         titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
         titleLabel.textColor = UIColor.dw_secondaryText()
     }
-    
-    override class var dw_reuseIdentifier: String { return "TxDetailInfoCell" }
 }

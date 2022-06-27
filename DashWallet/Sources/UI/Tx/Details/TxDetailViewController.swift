@@ -35,7 +35,7 @@ enum TxDetailDisplayType {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     
     enum Section: CaseIterable {
-        case header, info, explorer
+        case header, info, taxCategory, explorer
     }
     
     enum Item: Hashable {
@@ -51,10 +51,22 @@ enum TxDetailDisplayType {
         case movedTo([DWTitleDetailItem])
         case networkFee(DWTitleDetailItem)
         case date(DWTitleDetailItem)
+        case taxCategory(DWTitleDetailItem)
         case explorer
         
         func hash(into hasher: inout Hasher) {
-            hasher.combine(rawValue)
+            switch self {
+            case .header:
+                hasher.combine("Header")
+            case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
+                for item in items {
+                    hasher.combine(item.title)
+                }
+            case .date(let item), .taxCategory(let item), .networkFee(let item):
+                hasher.combine(item.title)
+            case .explorer:
+                hasher.combine("Explorer")
+            }
         }
         
         var rawValue: Int {
@@ -75,8 +87,10 @@ enum TxDetailDisplayType {
                 return 6
             case .date:
                 return 7
-            case .explorer:
+            case .taxCategory:
                 return 8
+            case .explorer:
+                return 9
                 
             }
         }
@@ -146,6 +160,10 @@ extension TXDetailViewController {
                 cell.selectionStyle = .none
                 cell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0)
                 return cell
+            case .taxCategory:
+                let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.dw_reuseIdentifier, for: indexPath) as! TxDetailTaxCategoryCell
+                cell.update(with: item)
+                return cell
                 
             case .explorer:
                 let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.dw_reuseIdentifier, for: indexPath) as! TxDetailActionCell
@@ -157,9 +175,10 @@ extension TXDetailViewController {
         
         let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
         let date: DWTitleDetailItem = model.date()
+        let taxCategory = model.taxCategory()
         
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .explorer])
+        currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
         currentSnapshot.appendItems([.header], toSection: .header)
         
         switch (self.model.direction) {
@@ -182,11 +201,47 @@ extension TXDetailViewController {
         }
         
         currentSnapshot.appendItems([.date(date)], toSection: .info)
+        currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
         self.dataSource.apply(currentSnapshot, animatingDifferences: false)
         self.dataSource.defaultRowAnimation = .fade
     }
 
+    func updateTaxCategoryAppearance() {
+        let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
+        let date: DWTitleDetailItem = model.date()
+        let taxCategory = model.taxCategory()
+        
+        currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+        currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
+        currentSnapshot.appendItems([.header], toSection: .header)
+        
+        switch (self.model.direction) {
+        case .moved:
+            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
+            currentSnapshot.appendItems([.movedFrom(model.inputAddresses(with: detailFont)),
+                                         .movedTo(model.outputAddresses(with: detailFont))], toSection: .info)
+            currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
+        case .sent:
+            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
+            currentSnapshot.appendItems([.sentFrom(model.inputAddresses(with: detailFont)),
+                                         .sentTo(model.outputAddresses(with: detailFont))], toSection: .info)
+            currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
+        case .received:
+            currentSnapshot.appendItems([.receivedAt(model.outputAddresses(with: detailFont))], toSection: .info)
+        case .notAccountFunds:
+            break
+        default:
+            break;
+        }
+        
+        currentSnapshot.appendItems([.date(date)], toSection: .info)
+        currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        self.dataSource.apply(currentSnapshot, animatingDifferences: false)
+        self.dataSource.defaultRowAnimation = .fade
+    }
+    
     @objc func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
         
@@ -205,6 +260,9 @@ extension TXDetailViewController: UITableViewDelegate {
         
         switch section
         {
+        case .taxCategory:
+            updateTaxCategoryAppearance()
+            break
         case .explorer:
             viewInBlockExplorer()
         default:
