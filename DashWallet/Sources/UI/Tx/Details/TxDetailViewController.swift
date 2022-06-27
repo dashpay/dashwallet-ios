@@ -40,7 +40,7 @@ enum TxDetailDisplayType {
     
     enum Item: Hashable {
         static func == (lhs: TXDetailViewController.Item, rhs: TXDetailViewController.Item) -> Bool {
-            lhs.rawValue == rhs.rawValue
+            lhs.hashValue == rhs.hashValue
         }
         
         case header
@@ -61,39 +61,22 @@ enum TxDetailDisplayType {
             case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
                 for item in items {
                     hasher.combine(item.title)
+                    if let value = item.plainDetail ?? item.attributedDetail?.string {
+                        hasher.combine(value)
+                    }
                 }
             case .date(let item), .taxCategory(let item), .networkFee(let item):
-                hasher.combine(item.title)
+                hasher.combine(item.title?.hashValue)
+                if let value = item.plainDetail ?? item.attributedDetail?.string {
+                    hasher.combine(value.hashValue)
+                }
+                
             case .explorer:
                 hasher.combine("Explorer")
             }
         }
         
-        var rawValue: Int {
-            switch self {
-            case .header:
-                return 0
-            case .receivedAt:
-                return 1
-            case .sentFrom:
-                return 2
-            case .sentTo:
-                return 3
-            case .movedFrom:
-                return 4
-            case .movedTo:
-                return 5
-            case .networkFee:
-                return 6
-            case .date:
-                return 7
-            case .taxCategory:
-                return 8
-            case .explorer:
-                return 9
-                
-            }
-        }
+        
     }
     
     @IBAction func closeButtonAction(sender: UIButton) {
@@ -107,6 +90,7 @@ enum TxDetailDisplayType {
         
         configureHierarchy()
         configureDataSource()
+        reloadDataSource()
     }
     
     @objc class func controller() -> TXDetailViewController {
@@ -173,41 +157,9 @@ extension TXDetailViewController {
             
         }
         
-        let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
-        let date: DWTitleDetailItem = model.date()
-        let taxCategory = model.taxCategory()
-        
-        currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
-        currentSnapshot.appendItems([.header], toSection: .header)
-        
-        switch (self.model.direction) {
-        case .moved:
-            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
-            currentSnapshot.appendItems([.movedFrom(model.inputAddresses(with: detailFont)),
-                                         .movedTo(model.outputAddresses(with: detailFont))], toSection: .info)
-            currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
-        case .sent:
-            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
-            currentSnapshot.appendItems([.sentFrom(model.inputAddresses(with: detailFont)),
-                                         .sentTo(model.outputAddresses(with: detailFont))], toSection: .info)
-            currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
-        case .received:
-            currentSnapshot.appendItems([.receivedAt(model.outputAddresses(with: detailFont))], toSection: .info)
-        case .notAccountFunds:
-            break
-        default:
-            break;
-        }
-        
-        currentSnapshot.appendItems([.date(date)], toSection: .info)
-        currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
-        currentSnapshot.appendItems([.explorer], toSection: .explorer)
-        self.dataSource.apply(currentSnapshot, animatingDifferences: false)
-        self.dataSource.defaultRowAnimation = .fade
     }
 
-    func updateTaxCategoryAppearance() {
+    func reloadDataSource() {
         let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
         let date: DWTitleDetailItem = model.date()
         let taxCategory = model.taxCategory()
@@ -238,8 +190,9 @@ extension TXDetailViewController {
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
-        self.dataSource.apply(currentSnapshot, animatingDifferences: false)
+        self.dataSource.apply(currentSnapshot, animatingDifferences: true)
         self.dataSource.defaultRowAnimation = .fade
+
     }
     
     @objc func configureHierarchy() {
@@ -261,7 +214,8 @@ extension TXDetailViewController: UITableViewDelegate {
         switch section
         {
         case .taxCategory:
-            updateTaxCategoryAppearance()
+            model.toggleTaxCategoryOnCurrentTransaction()
+            reloadDataSource()
             break
         case .explorer:
             viewInBlockExplorer()
