@@ -15,26 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWToolsMenuModel.h"
-#import "DWCSVExporter.h"
-#import "DWEnvironment.h"
-#import "DWTransactionListDataProvider.h"
+#import <Foundation/Foundation.h>
 
-@interface DWToolsMenuModel ()
-@end
+NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWToolsMenuModel
+@interface DWCSVExporter : NSObject
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-    }
-    return self;
-}
-
-- (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler {
-
-    return [DWCSVExporter generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
-}
++ (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler;
 
 @end
+
+NS_ASSUME_NONNULL_END
