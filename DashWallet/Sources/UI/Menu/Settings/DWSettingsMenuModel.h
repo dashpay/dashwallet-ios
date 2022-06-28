@@ -20,7 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWBalanceDisplayOptions;
-
+@class DWCSVExporter;
 @interface DWSettingsMenuModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *networkName;
@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   sourceRect:(CGRect)sourceRect
                                   completion:(void (^_Nullable)(BOOL confirmed))completion;
 
++ (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler;
 @end
 
 NS_ASSUME_NONNULL_END
