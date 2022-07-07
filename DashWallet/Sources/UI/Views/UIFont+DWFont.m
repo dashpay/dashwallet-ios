@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation UIFont (DWFont)
 
-- (instancetype)fontWithWeight:(CGFloat)weight {
+- (instancetype)fontWithWeight:(UIFontWeight)weight {
     UIFontDescriptor *newDescriptor = [self.fontDescriptor fontDescriptorByAddingAttributes:@{UIFontDescriptorTraitsAttribute : @{UIFontWeightTrait : @(weight)}}];
 
     return [UIFont fontWithDescriptor:newDescriptor size:self.pointSize];

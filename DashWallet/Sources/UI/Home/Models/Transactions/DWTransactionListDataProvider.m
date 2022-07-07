@@ -64,6 +64,31 @@ NS_ASSUME_NONNULL_BEGIN
     return [self formattedISO8601TxDate:date];
 }
 
+- (NSString *)taxCategoryStringForTransaction:(DSTransaction *)transaction {
+    DSTransactionTaxCategory taxCategory = transaction.taxCategory;
+    return [self taxCategoryStringForTaxCategory:taxCategory];
+}
+
+- (NSString *)taxCategoryStringForTaxCategory:(DSTransactionTaxCategory)taxCategory {
+    switch (taxCategory) {
+        case DSTransactionTaxCategory_Unknown: {
+            return NSLocalizedString(@"Transfer", nil);
+        }
+        case DSTransactionTaxCategory_TransferOut: {
+            return NSLocalizedString(@"Transfer Out", nil);
+        }
+        case DSTransactionTaxCategory_TransferIn: {
+            return NSLocalizedString(@"Transfer In", nil);
+        }
+        case DSTransactionTaxCategory_Expense: {
+            return NSLocalizedString(@"Expense", nil);
+        }
+        case DSTransactionTaxCategory_Incone: {
+            return NSLocalizedString(@"Income", nil);
+        }
+    }
+}
+
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
 
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
@@ -71,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSAccount *account = [transaction.accounts containsObject:currentAccount] ? currentAccount : nil;
 
-    DSTransactionDirection transactionDirection = account ? [chain directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
+    DSTransactionDirection transactionDirection = account ? [transaction direction] : DSTransactionDirection_NotAccountFunds;
     uint64_t dashAmount;
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];

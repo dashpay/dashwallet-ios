@@ -278,6 +278,42 @@ NS_ASSUME_NONNULL_BEGIN
     return model;
 }
 
+- (id<DWTitleDetailItem>)taxCategory {
+    NSString *title = NSLocalizedString(@"Tax Category", nil);
+    NSString *detail = [self.dataProvider taxCategoryStringForTransaction:self.transaction];
+    DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_Default
+                                                                            title:title
+                                                                      plainDetail:detail];
+    return model;
+}
+
+- (DSTransactionTaxCategory)nextTaxCategory {
+    switch (self.transaction.taxCategory) {
+        case DSTransactionTaxCategory_Unknown: {
+            return DSTransactionTaxCategory_Unknown;
+        }
+        case DSTransactionTaxCategory_Incone: {
+            return DSTransactionTaxCategory_TransferIn;
+        }
+        case DSTransactionTaxCategory_TransferIn: {
+            return DSTransactionTaxCategory_Incone;
+        }
+        case DSTransactionTaxCategory_Expense: {
+            return DSTransactionTaxCategory_TransferOut;
+        }
+        case DSTransactionTaxCategory_TransferOut: {
+            return DSTransactionTaxCategory_Expense;
+        }
+    }
+
+    return DSTransactionTaxCategory_Unknown;
+}
+
+- (void)toggleTaxCategoryOnCurrentTransaction {
+    DSTransactionTaxCategory nextTaxCategory = [self nextTaxCategory];
+    self.transaction.taxCategory = nextTaxCategory;
+    [self.transaction save];
+}
 - (nullable NSURL *)explorerURL {
     if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
         NSString *urlString = [NSString stringWithFormat:@"https://testnet-insight.dashevo.org/insight/tx/%@",

@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction;
+- (NSString *)taxCategoryStringForTransaction:(DSTransaction *)transaction;
+- (NSString *)taxCategoryStringForTaxCategory:(DSTransactionTaxCategory)taxCategory;
 
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData;
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData

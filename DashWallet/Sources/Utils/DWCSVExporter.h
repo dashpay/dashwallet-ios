@@ -1,5 +1,5 @@
 //
-//  Created by Samuel Westrich
+//  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,40 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdMainnetConstants.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWUpholdMainnetConstants
+@interface DWCSVExporter : NSObject
 
-+ (NSString *)authorizeURLFormat {
-    return @"";
-}
-
-+ (NSString *)baseURLString {
-    return @"https://api.uphold.com/";
-}
-
-+ (NSString *)clientID {
-    return @"";
-}
-
-+ (NSString *)clientSecret {
-    return @"";
-}
-
-+ (NSString *)buyCardURLFormat {
-    return @"https://uphold.com/dashboard/cards/%@/add";
-}
-
-+ (NSString *)transactionURLFormat {
-    return @"https://uphold.com/reserve/transactions/%@";
-}
-
-+ (NSString *)logoutURLString {
-    return @"https://uphold.com/";
-
-}
++ (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler;
 
 @end
 

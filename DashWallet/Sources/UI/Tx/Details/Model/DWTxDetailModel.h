@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<id<DWTitleDetailItem>> *)specialInfoWithFont:(UIFont *)font;
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 - (id<DWTitleDetailItem>)date;
+- (id<DWTitleDetailItem>)taxCategory;
+- (void)toggleTaxCategoryOnCurrentTransaction;
 
 - (nullable NSURL *)explorerURL;
 

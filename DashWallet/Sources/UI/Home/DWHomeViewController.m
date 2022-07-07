@@ -19,6 +19,8 @@
 
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
+#import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -28,14 +30,15 @@
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWSyncingAlertViewController.h"
+#import "DWTransactionListDataSource.h"
 #import "DWTxDetailModel.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
+#import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate>
+@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
 
@@ -81,6 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self.model registerForPushNotifications];
+
+    [self showReclassifyYourTransactionsIfPossibleWithTransaction:self.model.allDataSource.items.firstObject];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -107,9 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
-    TXDetailViewController *controller = [TXDetailViewController controller];
-    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
-    [self presentViewController:controller animated:YES completion:nil];
+    [self presentTransactionDetails:transaction];
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
@@ -117,6 +120,15 @@ NS_ASSUME_NONNULL_BEGIN
     [self performActionForShortcut:action sender:homeView];
 }
 
+- (void)homeView:(DWHomeView *)homeView showReclassifyYourTransactionsFlowWithTransaction:(DSTransaction *)transaction {
+    [self showReclassifyYourTransactionsIfPossibleWithTransaction:transaction];
+}
+
+#pragma mark - TxReclassifyTransactionsInfoViewControllerDelegate
+
+- (void)txReclassifyTransactionsFlowDidClosedWithUnderstandingWithController:(TxReclassifyTransactionsInfoViewController *)controller transaction:(DSTransaction *)transaction {
+    [self presentTransactionDetails:transaction];
+}
 #pragma mark - DWShortcutsActionDelegate
 
 - (void)shortcutsView:(UIView *)view didSelectAction:(DWShortcutAction *)action sender:(UIView *)sender {
@@ -171,6 +183,27 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.model = self.model;
 }
 
+- (void)showReclassifyYourTransactionsIfPossibleWithTransaction:(DSTransaction *)transaction {
+    if (self.presentedViewController) {
+        return;
+    }
+
+    if (self.model.isAllowedToShowReclassifyYourTransactions) {
+        TxReclassifyTransactionsInfoViewController *vc = [TxReclassifyTransactionsInfoViewController controller];
+        vc.delegate = self;
+        vc.transaction = transaction;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self presentViewController:vc animated:YES completion:nil];
+        });
+        [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow = NO;
+    }
+}
+
+- (void)presentTransactionDetails:(DSTransaction *)transaction {
+    TXDetailViewController *controller = [TXDetailViewController controller];
+    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    [self presentViewController:controller animated:YES completion:nil];
+}
 @end
 
 NS_ASSUME_NONNULL_END
