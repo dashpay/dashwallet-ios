@@ -23,7 +23,7 @@
 
 + (NSString *)generateFileName;
 + (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions;
-+ (NSString *)csvRowForTransaction:(DSTransaction *)transaction;
++ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider;
 + (NSArray<DSTransaction *> *)transactions;
 
 @end
@@ -97,11 +97,10 @@
     }
 
     NSString *iso8601String = [dataProvider ISO8601StringForTransaction:transaction];
+    NSString *taxCategoryString = [dataProvider taxCategoryStringForTransaction:transaction];
 
     NSString *kCurrency = @"DASH";
     NSString *kSource = @"DASH";
-    NSString *kExpense = @"Expense";
-    NSString *kIncome = @"Income";
 
     NSString *transactionType = [NSString new];
     NSString *sentQuantity = [NSString new];
@@ -123,14 +122,14 @@
 
     switch (dataItem.direction) {
         case DSTransactionDirection_Sent: {
-            transactionType = kExpense;
+            transactionType = taxCategoryString;
             sentQuantity = formattedNumber;
             sentCurrency = kCurrency;
             sendingSource = kSource;
             break;
         }
         case DSTransactionDirection_Received: {
-            transactionType = kIncome;
+            transactionType = taxCategoryString;
             receivedQuantity = formattedNumber;
             receivedCurrency = kCurrency;
             receivingDestination = kSource;

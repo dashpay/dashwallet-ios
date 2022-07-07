@@ -218,7 +218,8 @@ NS_ASSUME_NONNULL_BEGIN
         generateCSVReportWithCompletionHandler:^(NSString *_Nonnull fileName, NSURL *_Nonnull file) {
             [weakSelf.view dw_hideProgressHUD];
 
-            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ fileName, file ] applicationActivities:nil];
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ file ] applicationActivities:nil];
+            [activityViewController setValue:fileName forKey:@"subject"];
 
             if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
                 activityViewController.popoverPresentationController.sourceView = weakSelf.view;
