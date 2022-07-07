@@ -64,6 +64,44 @@ NS_ASSUME_NONNULL_BEGIN
     return self.dataItem.direction;
 }
 
+- (NSString *)dashAmountString {
+    return [self.dataProvider dashAmountStringFrom:self.dataItem];
+}
+
+- (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
+
+    NSNumberFormatter *dashFormat = [NSNumberFormatter new];
+    dashFormat.locale = [NSLocale localeWithLocaleIdentifier:@"ru_RU"];
+    dashFormat.lenient = YES;
+    dashFormat.numberStyle = NSNumberFormatterCurrencyStyle;
+    dashFormat.generatesDecimalNumbers = YES;
+    NSRange positiveFormatRange = [dashFormat.positiveFormat rangeOfString:@"#"];
+    if (positiveFormatRange.location != NSNotFound) {
+        dashFormat.negativeFormat = [dashFormat.positiveFormat
+            stringByReplacingCharactersInRange:positiveFormatRange
+                                    withString:@"-#"];
+    }
+    dashFormat.currencyCode = @"DASH";
+    dashFormat.currencySymbol = DASH;
+
+    dashFormat.maximumFractionDigits = 8;
+    dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
+    dashFormat.maximum = @(MAX_MONEY / (int64_t)pow(10.0, dashFormat.maximumFractionDigits));
+
+
+    const uint64_t dashAmount = self.dataItem.dashAmount;
+
+    // NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
+
+    NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
+        decimalNumberByMultiplyingByPowerOf10:-dashFormat.maximumFractionDigits];
+    NSString *formattedNumber = [dashFormat stringFromNumber:number];
+    NSString *symbol = self.dataItem.directionSymbol;
+    NSString *amount = [symbol stringByAppendingString:formattedNumber];
+
+    return [NSAttributedString dw_dashAttributedStringForFormattedAmount:amount tintColor:tintColor font:font];
+}
+
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font {
     return [self.dataProvider dashAmountStringFrom:self.dataItem font:font];
 }
@@ -274,7 +312,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *firstAddress = addresses.anyObject;
     for (NSString *address in addresses) {
         NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
+                                                                               withFont:font
+                                                                            showingLogo:NO];
         const BOOL hasTitle = address == firstAddress;
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine
@@ -292,7 +331,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *firstAddress = addresses.firstObject;
     for (NSString *address in addresses) {
         NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
+                                                                               withFont:font
+                                                                            showingLogo:NO];
         const BOOL hasTitle = address == firstAddress;
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItemStyle_TruncatedSingleLine

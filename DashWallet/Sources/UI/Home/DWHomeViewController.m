@@ -28,9 +28,10 @@
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWSyncingAlertViewController.h"
-#import "DWTxDetailPopupViewController.h"
+#import "DWTxDetailModel.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -106,10 +107,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
-    id<DWTransactionListDataProviderProtocol> dataProvider = [self.model getDataProvider];
-    DWTxDetailPopupViewController *controller =
-        [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
-                                                      dataProvider:dataProvider];
+    TXDetailViewController *controller = [TXDetailViewController controller];
+    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
     [self presentViewController:controller animated:YES completion:nil];
 }
 

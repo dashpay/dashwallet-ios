@@ -28,10 +28,11 @@
 #import "DWQRScanModel.h"
 #import "DWQRScanViewController.h"
 #import "DWSendAmountViewController.h"
-#import "DWTxDetailFullscreenViewController.h"
+#import "DWTxDetailModel.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWEmbedding.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        DWSendAmountViewControllerDelegate,
                                        DWQRScanModelDelegate,
                                        DWConfirmPaymentViewControllerDelegate,
-                                       DWTxDetailFullscreenViewControllerDelegate>
+                                       SuccessTxDetailViewControllerDelegate>
 
 @property (nullable, nonatomic, weak) DWSendAmountViewController *amountViewController;
 @property (nullable, nonatomic, weak) DWConfirmSendPaymentViewController *confirmViewController;
@@ -280,8 +281,9 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    DWTxDetailFullscreenViewController *controller = [[DWTxDetailFullscreenViewController alloc] initWithTransaction:transaction
-                                                                                                        dataProvider:self.dataProvider];
+    SuccessTxDetailViewController *controller = [SuccessTxDetailViewController controller];
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
     controller.contactItem = contactItem;
     controller.delegate = self;
     [self presentViewController:controller
@@ -338,14 +340,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
-- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailFullscreenViewController *)controller {
-    [controller dismissViewControllerAnimated:YES
-                                   completion:^{
-                                       // report `contact` context only if current screen is general-purpose payments screen
-                                       // and not a user profile screen with the defined context
-                                       id<DWDPBasicUserItem> contact = [self contactItem] == nil ? controller.contactItem : nil;
-                                       [self payViewControllerDidHidePaymentResultToContact:contact];
-                                   }];
+- (void)txDetailViewControllerDidFinishWithController:(SuccessTxDetailViewController *)controller {
+    id<DWDPBasicUserItem> contact = [self contactItem] == nil ? controller.contactItem : nil;
+    [self payViewControllerDidHidePaymentResultToContact:contact];
 }
 
 #pragma mark -  DWQRScanModelDelegate

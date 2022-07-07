@@ -22,24 +22,21 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIFont (DWFont)
 
 /**
+ Copy the font for the given weight
+
+ @param weight The weight of the font
+ @return  A copy of the current `UIFont` with updated weight
+ */
+
+- (instancetype)fontWithWeight:(CGFloat)weight;
+
+/**
  Get the scaled font for the given text style
 
  @param textStyle The `UIFontTextStyle` for the font.
  @return  A `UIFont` of the custom font that has been scaled for the users currently selected preferred text size.
  */
 + (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle;
-
-/**
- Get the scaled font for the given text style
-
- @param textStyle The `UIFontTextStyle` for the font.
- @param respectMinSize The flag to check if min size of desired font should be taken into consideration
- @return  A `UIFont` of the custom font that has been scaled for the users currently selected preferred text size.
-
- @discussion This method should not be used with views with automatic Dynamic Font enabled (`adjustsFontForContentSizeCategory = YES`).
- Subscribe to `UIContentSizeCategoryDidChangeNotification` and set font manually.
- */
-+ (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle respectMinSize:(BOOL)respectMinSize;
 
 + (UIFont *)dw_navigationBarTitleFont;
 
