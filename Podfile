@@ -2,7 +2,7 @@ target 'dashwallet' do
   platform :ios, '13.0'
   
   pod 'DashSync', :path => '../DashSync/'
-
+  pod 'SQLite.swift', '~> 0.13.3'
   pod 'CloudInAppMessaging', '0.1.0'
   
   pod 'KVO-MVVM', '0.5.6'
