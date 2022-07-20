@@ -83,6 +83,9 @@
 "All" = "Všetko";
 
 /* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
 "Allow camera access in Settings" = "Povoliť prístup ku kamere v nastaveniach";
 
 /* No comment provided by engineer. */
@@ -92,7 +95,7 @@
 "Allow Touch ID access in Settings" = "Povoliť prístup k Touch ID v nastaveniach";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Prijatá suma";
+"Amount received" = "Amount received";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Odoslaná suma";
@@ -260,6 +263,9 @@
 "Create a New Wallet" = "Vytvoriť novú peňaženku";
 
 /* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Súčasný užívateľ: %@";
 
 /* No comment provided by engineer. */
@@ -332,6 +338,12 @@
 "Exit" = "Ukončiť";
 
 /* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -369,6 +381,9 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generovať rozšírené verejné kľúče?";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
 
 /* No comment provided by engineer. */
 "Get Started" = "Začať";
@@ -413,6 +428,9 @@
 "If you still would like to wipe it please input: \"%@\"" = "Ak si ju stále prajete zmazať, prosím zadajte: \"%@\"";
 
 /* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
 "Ignore" = "Ignorovať";
 
 /* No comment provided by engineer. */
@@ -422,7 +440,10 @@
 "Import Private Key" = "Importovať Privátny Kľúč";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Importovať privátny kľúč…";
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Nedostatok prostriedkov";
@@ -495,9 +516,6 @@
 
 /* Logout after 5 min */
 "Logout after" = "Odhlásiť sa po";
-
-/* No comment provided by engineer. */
-"Long press to copy ID" = "Dlhým stlačením kopírovať ID";
 
 /* adjective, security level */
 "Low" = "Nízke";
@@ -863,9 +881,6 @@
 "Sent from" = "Poslané od";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Úspešne poslané";
-
-/* No comment provided by engineer. */
 "Sent to" = "Poslané ku";
 
 /* No comment provided by engineer. */
@@ -944,6 +959,9 @@
 "Tap to unhide balance" = "Klepnutím odkryť zostatok";
 
 /* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "Nie sú k dispozícii žiadne nové upozornenia";
 
 /* No comment provided by engineer. */
@@ -996,6 +1014,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Presunúť s Upholdu";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
 
 /* An action */
 "Try again" = "Skúsiť znova";
@@ -1146,6 +1170,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Budete sa tiež musieť odhlásiť z webovej stránky Upholdu pomocou svojho prehliadača";
+
+/* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Túto frázu pre obnovenie budete potrebovať na prístup k vašim finančným prostriedkom, ak dôjde k strate či poškodeniu tohto zariadenia, alebo k náhodnému odinštalovaniu Dash Wallet z tohoto zariadenia.";

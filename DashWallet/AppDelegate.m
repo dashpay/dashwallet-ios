@@ -30,7 +30,7 @@
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 #import "DWEnvironment.h"
-
+#import "dashwallet-Swift.h"
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
 #endif /* IGNORE_WATCH_TARGET */
@@ -104,6 +104,8 @@ NS_ASSUME_NONNULL_BEGIN
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
     [[DashSync sharedSyncController] registerBackgroundFetchOnce];
+    
+    [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
     
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {

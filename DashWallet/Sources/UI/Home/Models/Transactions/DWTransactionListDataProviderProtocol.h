@@ -17,6 +17,7 @@
 
 @import UIKit;
 #import "DWTransactionListDataItem.h"
+//#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,9 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction;
-- (NSString *)taxCategoryStringForTransaction:(DSTransaction *)transaction;
-- (NSString *)taxCategoryStringForTaxCategory:(DSTransactionTaxCategory)taxCategory;
-
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData;
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
                                         font:(UIFont *)font;

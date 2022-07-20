@@ -21,6 +21,7 @@
 
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItemObject.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -62,31 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction {
     NSDate *date = [self dateForTransaction:transaction];
     return [self formattedISO8601TxDate:date];
-}
-
-- (NSString *)taxCategoryStringForTransaction:(DSTransaction *)transaction {
-    DSTransactionTaxCategory taxCategory = transaction.taxCategory;
-    return [self taxCategoryStringForTaxCategory:taxCategory];
-}
-
-- (NSString *)taxCategoryStringForTaxCategory:(DSTransactionTaxCategory)taxCategory {
-    switch (taxCategory) {
-        case DSTransactionTaxCategory_Unknown: {
-            return NSLocalizedString(@"Transfer", nil);
-        }
-        case DSTransactionTaxCategory_TransferOut: {
-            return NSLocalizedString(@"Transfer Out", nil);
-        }
-        case DSTransactionTaxCategory_TransferIn: {
-            return NSLocalizedString(@"Transfer In", nil);
-        }
-        case DSTransactionTaxCategory_Expense: {
-            return NSLocalizedString(@"Expense", nil);
-        }
-        case DSTransactionTaxCategory_Incone: {
-            return NSLocalizedString(@"Income", nil);
-        }
-    }
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {

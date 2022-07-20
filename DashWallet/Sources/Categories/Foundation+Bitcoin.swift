@@ -16,24 +16,15 @@
 //
 
 import Foundation
-import SQLite
 
-@objc class DatabaseConnection: NSObject {
-    
-    override init() {
-        super.init()
-        do {
-            let db = try Connection("path/to/db.sqlite3")
-        }catch{
-            print("DatabaseConnection", error)
-        }
+extension Data {
+    struct HexEncodingOptions: OptionSet {
+        let rawValue: Int
+        static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
     }
     
-    let shared: DatabaseConnection = DatabaseConnection()
-}
-
-extension DatabaseConnection {
-    private func createDatabaseIfNeeded() {
-        
+    func hexEncodedString(options: HexEncodingOptions = []) -> String {
+        let format = options.contains(.upperCase) ? "%02hhX" : "%02hhx"
+        return self.map { String(format: format, $0) }.joined()
     }
 }

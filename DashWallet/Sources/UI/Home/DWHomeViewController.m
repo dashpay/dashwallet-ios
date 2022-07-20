@@ -31,7 +31,6 @@
 #import "DWShortcutAction.h"
 #import "DWSyncingAlertViewController.h"
 #import "DWTransactionListDataSource.h"
-#import "DWTxDetailModel.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
@@ -201,7 +200,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
     TXDetailViewController *controller = [TXDetailViewController controller];
-    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
     [self presentViewController:controller animated:YES completion:nil];
 }
 @end

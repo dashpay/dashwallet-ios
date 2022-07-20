@@ -21,7 +21,6 @@
 #import "DWDPTxItem.h"
 #import "DWFilterHeaderView.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
-#import "DWTxDetailModel.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
@@ -229,7 +228,7 @@ NS_ASSUME_NONNULL_END
     id<DWTransactionListDataProviderProtocol> dataProvider = self.dataProvider;
 
     TXDetailViewController *controller = [TXDetailViewController controller];
-    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:dataProvider];
+    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:dataProvider];
     [self presentViewController:controller animated:YES completion:nil];
 }
 

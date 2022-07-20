@@ -62,7 +62,6 @@ final class DWWatchDataManager: NSObject {
     }
 
     lazy var dataFilePath: URL = {
-        let filemgr = FileManager.default
         let dirPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         let docsDir = dirPaths[0] as String
         return URL(fileURLWithPath: docsDir).appendingPathComponent(DWWatchDataManager.applicationContextDataFileName)

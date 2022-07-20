@@ -83,6 +83,9 @@
 "All" = "Όλα";
 
 /* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
 "Allow camera access in Settings" = "Επιτρέψτε πρόσβαση της κάμερας στις Ρυθμίσεις";
 
 /* No comment provided by engineer. */
@@ -92,7 +95,7 @@
 "Allow Touch ID access in Settings" = "Επιτρέψτε πρόσβαση του Touch ID στις Ρυθμίσεις";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Ποσοστό Ληφθέντων";
+"Amount received" = "Amount received";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Ποσοστό Απεσταλμένων";
@@ -260,6 +263,9 @@
 "Create a New Wallet" = "Δημιουργία Νέου Πορτοφολιού";
 
 /* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Τρέχων χρήστης: %@";
 
 /* No comment provided by engineer. */
@@ -332,6 +338,12 @@
 "Exit" = "Έξοδος";
 
 /* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -369,6 +381,9 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
 
 /* No comment provided by engineer. */
 "Get Started" = "Ξεκινήστε";
@@ -413,6 +428,9 @@
 "If you still would like to wipe it please input: \"%@\"" = "Εάν εξακολουθείτε να θέλετε να κάνετε εκκαθάριση παρακαλώ εισάγετε: \"%@\"";
 
 /* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
 "Ignore" = "Παράβλεψη";
 
 /* No comment provided by engineer. */
@@ -422,7 +440,10 @@
 "Import Private Key" = "Εισάγετε το ιδιωτικό κλειδί";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Εισάγετε το ιδιωτικό κλειδί…";
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Ανεπαρκή χρήματα";
@@ -495,9 +516,6 @@
 
 /* Logout after 5 min */
 "Logout after" = "Αποσύνδεση μετά από";
-
-/* No comment provided by engineer. */
-"Long press to copy ID" = "Πατήστε παρατεταμένα για να αντιγραψετε το ID";
 
 /* adjective, security level */
 "Low" = "χαμηλά";
@@ -863,9 +881,6 @@
 "Sent from" = "Αποστολή από";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Εστάλη με επιτυχία";
-
-/* No comment provided by engineer. */
 "Sent to" = "Αποστόλη στο";
 
 /* No comment provided by engineer. */
@@ -944,6 +959,9 @@
 "Tap to unhide balance" = "Πατήστε για να αποκαλύψετε το υπόλοιπο";
 
 /* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "Δεν υπάρχουν νέες ειδοποιήσεις";
 
 /* No comment provided by engineer. */
@@ -996,6 +1014,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Μεταφορά από Uphold";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
 
 /* An action */
 "Try again" = "Προσπαθήστε ξανά";
@@ -1146,6 +1170,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Θα πρέπει επίσης να αποσυνδεθείτε από την ιστοσελίδα Uphold χρησιμοποιώντας το πρόγραμμα περιήγησης σας";
+
+/* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Θα χρειαστείτε αυτή τη φράση ανάκτησης για να αποκτήσετε πρόσβαση στα χρήματά σας εάν αυτή η συσκευή χαθεί, καταστραφεί ή εάν το Πορτοφόλι Dash απεγκατασταθει τυχαία από αυτήν τη συσκευή.";

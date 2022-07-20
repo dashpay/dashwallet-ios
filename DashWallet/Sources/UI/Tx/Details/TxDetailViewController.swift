@@ -26,7 +26,7 @@ enum TxDetailDisplayType {
 }
 
 @objc class TXDetailViewController: UIViewController {
-    @objc var model: DWTxDetailModel!
+    @objc var model: TxDetailModel!
     
     @IBOutlet var tableView: UITableView!
     @IBOutlet var closeButton: DWActionButton!
@@ -102,7 +102,7 @@ enum TxDetailDisplayType {
 
 extension TXDetailViewController {
     private func viewInBlockExplorer() {
-        guard let explorerURL = self.model.explorerURL() else {
+        guard let explorerURL = self.model.explorerURL else {
             return
         }
         
@@ -154,15 +154,13 @@ extension TXDetailViewController {
                 cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
                 return cell
             }
-            
         }
-        
     }
 
     func reloadDataSource() {
         let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
-        let date: DWTitleDetailItem = model.date()
-        let taxCategory = model.taxCategory()
+        let date = model.date
+        let taxCategory = model.taxCategory
         
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
@@ -190,8 +188,8 @@ extension TXDetailViewController {
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
-        self.dataSource.apply(currentSnapshot, animatingDifferences: true)
-        self.dataSource.defaultRowAnimation = .fade
+        self.dataSource.apply(currentSnapshot, animatingDifferences: false)
+        self.dataSource.defaultRowAnimation = .none
 
     }
     

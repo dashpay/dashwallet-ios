@@ -71,7 +71,7 @@ import UIKit
     
     private func prepareTransactionScreenImage() {
         let vc = TXDetailViewController.controller()
-        vc.model = DWTxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+        vc.model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
         dw_embedChild(vc, inContainer: transactionScreenContainer)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

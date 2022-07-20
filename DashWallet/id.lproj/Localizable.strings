@@ -83,6 +83,9 @@
 "All" = "Semua";
 
 /* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
 "Allow camera access in Settings" = "Izinkan akses kamera di Pengaturan";
 
 /* No comment provided by engineer. */
@@ -92,7 +95,7 @@
 "Allow Touch ID access in Settings" = "Izinkan akses Pengenal Sentuh di Pengaturan";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Jumlah Diterima";
+"Amount received" = "Amount received";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Jumlah Dikirim";
@@ -260,6 +263,9 @@
 "Create a New Wallet" = "Buat Dompet Baru";
 
 /* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Pengguna saat ini: %@";
 
 /* No comment provided by engineer. */
@@ -332,6 +338,12 @@
 "Exit" = "Keluar";
 
 /* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -369,6 +381,9 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Hasilkan kunci publik yang diperluas?";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
 
 /* No comment provided by engineer. */
 "Get Started" = "Memulai";
@@ -413,6 +428,9 @@
 "If you still would like to wipe it please input: \"%@\"" = "Jika Anda masih ingin menghapusnya, silakan masukkan: \"%@\"";
 
 /* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
 "Ignore" = "Abaikan";
 
 /* No comment provided by engineer. */
@@ -422,7 +440,10 @@
 "Import Private Key" = "Impor kunci pribadi";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Impor kunci pribadi…";
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Dana tidak mencukupi";
@@ -495,9 +516,6 @@
 
 /* Logout after 5 min */
 "Logout after" = "Keluar setelah";
-
-/* No comment provided by engineer. */
-"Long press to copy ID" = "Tekan lama untuk menyalin ID";
 
 /* adjective, security level */
 "Low" = "Rendah";
@@ -863,9 +881,6 @@
 "Sent from" = "Terkirim dari";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Pengiriman berhasil";
-
-/* No comment provided by engineer. */
 "Sent to" = "Terkirim ke";
 
 /* No comment provided by engineer. */
@@ -944,6 +959,9 @@
 "Tap to unhide balance" = "Ketuk untuk melihat saldo";
 
 /* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "Tidak ada pemberitahuan baru";
 
 /* No comment provided by engineer. */
@@ -996,6 +1014,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer dari Uphold";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
 
 /* An action */
 "Try again" = "Coba lagi";
@@ -1146,6 +1170,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Anda juga harus keluar dari situs web Uphold menggunakan browser Anda";
+
+/* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Anda akan memerlukan frasa pemulihan ini untuk mengakses dana Anda jika perangkat ini hilang, rusak, atau jika Dash Wallet secara tidak sengaja dihapus dari perangkat ini.";

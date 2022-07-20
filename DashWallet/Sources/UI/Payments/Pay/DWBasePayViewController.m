@@ -28,7 +28,6 @@
 #import "DWQRScanModel.h"
 #import "DWQRScanViewController.h"
 #import "DWSendAmountViewController.h"
-#import "DWTxDetailModel.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWEmbedding.h"
@@ -283,7 +282,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     SuccessTxDetailViewController *controller = [SuccessTxDetailViewController controller];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
-    controller.model = [[DWTxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
     controller.contactItem = contactItem;
     controller.delegate = self;
     [self presentViewController:controller

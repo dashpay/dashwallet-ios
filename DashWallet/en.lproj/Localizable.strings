@@ -83,6 +83,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
 "Allow camera access in Settings" = "Allow camera access in Settings";
 
 /* No comment provided by engineer. */
@@ -92,7 +95,7 @@
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Amount Received";
+"Amount received" = "Amount received";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Amount Sent";
@@ -260,6 +263,9 @@
 "Create a New Wallet" = "Create a New Wallet";
 
 /* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Current user: %@";
 
 /* No comment provided by engineer. */
@@ -332,6 +338,12 @@
 "Exit" = "Exit";
 
 /* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -369,6 +381,9 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
@@ -413,6 +428,9 @@
 "If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
 
 /* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
 "Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
@@ -422,7 +440,10 @@
 "Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Import private key…";
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
@@ -495,9 +516,6 @@
 
 /* Logout after 5 min */
 "Logout after" = "Logout after";
-
-/* No comment provided by engineer. */
-"Long press to copy ID" = "Long press to copy ID";
 
 /* adjective, security level */
 "Low" = "Low";
@@ -863,9 +881,6 @@
 "Sent from" = "Sent from";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Sent successfully";
-
-/* No comment provided by engineer. */
 "Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
@@ -944,6 +959,9 @@
 "Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
@@ -996,6 +1014,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer from Uphold";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
 
 /* An action */
 "Try again" = "Try again";
@@ -1148,6 +1172,9 @@
 "You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
 
 /* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
+
+/* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
 
 /* No comment provided by engineer. */
@@ -1170,4 +1197,3 @@
 
 /* No comment provided by engineer. */
 "Сopied address or QR" = "Сopied address or QR";
-"Explore" = "Explore";

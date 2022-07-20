@@ -83,6 +83,9 @@
 "All" = "Всички";
 
 /* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
 "Allow camera access in Settings" = "Разреши достъпа до камерата в Настройки";
 
 /* No comment provided by engineer. */
@@ -92,7 +95,7 @@
 "Allow Touch ID access in Settings" = "Разреши достъпа до Touch ID в Настройки";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Получени суми";
+"Amount received" = "Amount received";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Изпратени суми";
@@ -260,6 +263,9 @@
 "Create a New Wallet" = "Създай нов портфейл";
 
 /* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Current user: %@";
 
 /* No comment provided by engineer. */
@@ -332,6 +338,12 @@
 "Exit" = "Изход";
 
 /* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -369,6 +381,9 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
 
 /* No comment provided by engineer. */
 "Get Started" = "Първи стъпки";
@@ -413,6 +428,9 @@
 "If you still would like to wipe it please input: \"%@\"" = "Ако все още искате да го изтриете, моля въведете: \"%@\"";
 
 /* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
 "Ignore" = "Игнорирай";
 
 /* No comment provided by engineer. */
@@ -422,7 +440,10 @@
 "Import Private Key" = "Импортиране на частен ключ.";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Импортиране на частен ключ...";
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Недостатъчно средства";
@@ -495,9 +516,6 @@
 
 /* Logout after 5 min */
 "Logout after" = "Излизане след";
-
-/* No comment provided by engineer. */
-"Long press to copy ID" = "Дълго натискане за копиране на ID";
 
 /* adjective, security level */
 "Low" = "Ниско";
@@ -863,9 +881,6 @@
 "Sent from" = "Изпрати от";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Изпратено успешно";
-
-/* No comment provided by engineer. */
 "Sent to" = "Изпратени на";
 
 /* No comment provided by engineer. */
@@ -944,6 +959,9 @@
 "Tap to unhide balance" = "Докоснете, за да покажете баланса";
 
 /* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
@@ -996,6 +1014,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "прехвърляне от Uphold";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
 
 /* An action */
 "Try again" = "Опитай отново";
@@ -1146,6 +1170,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Необходимо е също да излезете от уебсайта на Uphold, чрез вашият браузър";
+
+/* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Тази фраза за възстановяване ще ви трябва за достъп до вашите средства, ако това устройство е загубено, повредено или ако Dash Wallet някога случайно бъде деинсталиран от това устройство.";

@@ -643,6 +643,8 @@ PODS:
   - SQLite.swift (0.13.3):
     - SQLite.swift/standard (= 0.13.3)
   - SQLite.swift/standard (0.13.3)
+  - SQLiteMigrationManager.swift (0.8.0):
+    - SQLite.swift (~> 0.13.0)
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
     - tinycbor (= 0.5.4-alpha1)
@@ -657,6 +659,7 @@ DEPENDENCIES:
   - MBProgressHUD (= 1.1.0)
   - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
   - SQLite.swift (~> 0.13.3)
+  - SQLiteMigrationManager.swift
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
@@ -682,6 +685,7 @@ SPEC REPOS:
     - Protobuf
     - secp256k1_dash
     - SQLite.swift
+    - SQLiteMigrationManager.swift
     - tinycbor
     - TinyCborObjc
     - UIViewController-KeyboardAdditions
@@ -729,10 +733,11 @@ SPEC CHECKSUMS:
   Protobuf: 818c6a87e44193a77f56b87c6a1c106efda7e062
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
+  SQLiteMigrationManager.swift: 4818b59bf0be6a21e1a494571d4e12950d317bbc
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 3da44b29f857a0f5f6b5704dfe836762c6204cbd
+PODFILE CHECKSUM: 9a219c3d3479c95954aa0a70993d695323827d8d
 
 COCOAPODS: 1.11.2
