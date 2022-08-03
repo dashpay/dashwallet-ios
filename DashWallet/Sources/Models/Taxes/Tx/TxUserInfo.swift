@@ -18,25 +18,6 @@
 import Foundation
 import SQLite
 
-@objc enum TxUserInfoTaxCategory: Int {
-    /// Unknown
-    case unknown
-    
-    /// Income
-    case income
-    
-    /// Transfer In
-    case transferIn
-    
-    /// Transfer Out
-    case transferOut
-    
-    /// Expense
-    case expense
-    
-    
-}
-
 extension TxUserInfoTaxCategory {
     var stringValue: String {
         switch (self) {

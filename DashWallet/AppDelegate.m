@@ -119,6 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
         [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:NO];
     }
     
+    [[Taxes shared] initialize];
+    
     NSParameterAssert(self.window.rootViewController);
     
     [self.window makeKeyAndVisible];

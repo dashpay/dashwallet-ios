@@ -44,7 +44,7 @@ import Foundation
         self.transaction = transaction
         self.dataProvider = dataProvider
         self.dataItem = dataProvider.transactionData(for: transaction)
-        self.txTaxCategory = TxUserInfoDAOImpl.shared.get(by: txHashData)?.taxCategory ?? transaction.defaultTaxCategory()
+        self.txTaxCategory = Taxes.shared.taxCategory(for: transaction)
     }
     
     func toggleTaxCategoryOnCurrentTransaction() {

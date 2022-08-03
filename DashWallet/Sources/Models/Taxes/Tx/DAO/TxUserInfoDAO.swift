@@ -21,6 +21,7 @@ import SQLite
 protocol TxUserInfoDAO {
     func create(dto: TxUserInfo)
     func get(by hash: Data) -> TxUserInfo?
+    func all() -> [TxUserInfo]
     func update(dto: TxUserInfo)
     func delete(dto: TxUserInfo)
 }

@@ -26,7 +26,7 @@
 #import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
-
+#import "dashwallet-Swift.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdAmountModel ()
@@ -182,10 +182,13 @@ NS_ASSUME_NONNULL_END
                               strongSelf.transaction = transaction;
 
                               if (otpRequired) {
+                                  [[Taxes shared] markWithAddress:receiveAddress with:TxUserInfoTaxCategoryTransferIn];
                                   strongSelf.transferState = DWUpholdRequestTransferModelState_OTP;
                               }
                               else {
                                   if (transaction) {
+                                      [[Taxes shared] markWithAddress:receiveAddress with:TxUserInfoTaxCategoryTransferIn];
+
                                       DWUpholdCardObject *card = strongSelf.card;
                                       BOOL notSufficientFunds = ([transaction.total compare:card.available] == NSOrderedDescending);
                                       if (notSufficientFunds) {
