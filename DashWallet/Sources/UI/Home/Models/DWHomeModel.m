@@ -158,7 +158,9 @@ static BOOL IsJailbroken(void) {
                                    name:DWWillWipeWalletNotification
                                  object:nil];
         self.initiatingTxDataSources = YES;
+
         [self reloadTxDataSource];
+        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:[NSDate new]];
     }
     return self;
 }
@@ -494,7 +496,7 @@ static BOOL IsJailbroken(void) {
 
         if (!self.initiatingTxDataSources && newTransaction && prevTransaction != newTransaction) {
             receivedNewIncomingTransaction = YES;
-            allowedToShowReclassifyYourTransactions = YES;
+            allowedToShowReclassifyYourTransactions = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated < newTransaction.transactionDate;
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
@@ -518,7 +520,7 @@ static BOOL IsJailbroken(void) {
 
         dispatch_async(dispatch_get_main_queue(), ^{
             if (allowedToShowReclassifyYourTransactions) {
-                [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
+                [self setAllowedToShowReclassifyYourTransactions:YES];
             }
 
             if (receivedNewIncomingTransaction && newTransaction) {

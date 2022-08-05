@@ -110,6 +110,12 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     setKeychainInt(spendingConfirmationDisabled ? 1 : 0, SPENDING_CONFIRMATION_DISABLED_KEY, NO);
 }
 
+- (void)setActivationDateForReclassifyYourTransactionsFlowIfNeeded:(NSDate *)date {
+    if (self.dateReclassifyYourTransactionsFlowActivated == nil) {
+        self.dateReclassifyYourTransactionsFlowActivated = date;
+    }
+}
+
 #pragma mark - Methods
 
 - (void)restoreToDefaults {
@@ -126,6 +132,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
+    self.dateReclassifyYourTransactionsFlowActivated = nil;
 }
 
 @end
