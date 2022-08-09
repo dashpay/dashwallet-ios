@@ -496,7 +496,9 @@ static BOOL IsJailbroken(void) {
 
         if (!self.initiatingTxDataSources && newTransaction && prevTransaction != newTransaction) {
             receivedNewIncomingTransaction = YES;
-            allowedToShowReclassifyYourTransactions = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated < newTransaction.transactionDate;
+
+            NSDate *dateReclassifyYourTransactionsFlowActivated = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated;
+            allowedToShowReclassifyYourTransactions = [newTransaction.transactionDate compare:dateReclassifyYourTransactionsFlowActivated] == NSOrderedDescending;
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions

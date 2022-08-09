@@ -43,6 +43,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic resyncingWallet;
 @dynamic selectedPaymentCurrency;
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
+@dynamic dateReclassifyYourTransactionsFlowActivated;
 
 #pragma mark - Init
 
