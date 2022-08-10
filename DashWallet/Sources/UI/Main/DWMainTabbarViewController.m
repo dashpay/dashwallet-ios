@@ -301,7 +301,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (DWNavigationController *)exploreNavigationController {
-    if (!_menuNavigationController) {
+    if (!_exploreNavigationController) {
         DWExploreTestnetViewController *exploreController = [[DWExploreTestnetViewController alloc] init];
         exploreController.delegate = self;
         
