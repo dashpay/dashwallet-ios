@@ -19,7 +19,7 @@ import Foundation
 import CoreLocation
 
 @objc protocol DWLocationObserver: AnyObject {
-    @objc func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager)
+    @objc func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation)
     @objc func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager)
     @objc func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager)
 }
@@ -32,7 +32,7 @@ import CoreLocation
     @objc var currentLocation: CLLocation? {
         didSet {
             reverseCurrentLocation()
-            observers.forEach { $0.locationManagerDidChangeCurrentLocation(self) }
+            observers.forEach { $0.locationManagerDidChangeCurrentLocation(self, location: currentLocation!) }
         }
     }
     
@@ -68,6 +68,7 @@ import CoreLocation
     
     override init() {
         locationManager = CLLocationManager()
+        locationManager.distanceFilter = 100
         geocoder = CLGeocoder()
         
         currentLocation = locationManager.location

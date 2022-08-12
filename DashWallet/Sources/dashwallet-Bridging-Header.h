@@ -3,7 +3,6 @@
 //
 
 #import "DWExploreMerchant.h"
-#import "DWExploreWhereToSpendMapView.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
 #import <SDWebImage/SDWebImage.h>
@@ -19,4 +18,5 @@
 #import "DWExploreWhereToSpendSegmentedCell.h"
 #import "DWExploreWhereToSpendSearchCell.h"
 #import "DWExploreWhereToSpendFiltersCell.h"
+#import "CALayer+DWShadow.h"
 

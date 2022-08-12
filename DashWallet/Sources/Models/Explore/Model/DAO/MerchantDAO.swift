@@ -30,6 +30,40 @@ class MerchantDAO
         self.connection = dbConnection
     }
     
+    func merchantsInRect(rect: CGRect, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+//            let query = """
+//                SELECT *
+//                FROM merchant
+//                WHERE type IN ('physical', 'both')
+//                GROUP BY source, merchantId
+//                ORDER BY name
+//                """
+//
+            let query = """
+                SELECT *
+                FROM merchant
+                WHERE type IN ('physical', 'both')
+                    AND latitude > \(rect.minY)
+                    AND latitude < \(rect.maxY)
+                    AND longitude < \(rect.maxX)
+                    AND longitude > \(rect.minX)
+                GROUP BY source, merchantId
+                HAVING (latitude - \(rect.midY))*(latitude - \(rect.midY)) + (longitude - \(rect.midX))*(longitude - \(rect.midX)) = MIN((latitude - \(rect.midY))*(latitude - \(rect.midY)) + (longitude - \(rect.midX))*(longitude - \(rect.midX)))
+                ORDER BY (latitude - \(rect.midY))*(latitude - \(rect.midY)) + (longitude - \(rect.midX))*(longitude - \(rect.midX)) ASC
+                
+            """
+            do {
+                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
+            }catch{
+                print(error)
+                completion(.failure(error))
+            }
+        }
+    }
+    
     func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }

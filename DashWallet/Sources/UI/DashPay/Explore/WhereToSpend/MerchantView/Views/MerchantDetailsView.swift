@@ -37,7 +37,6 @@ class MerchantDetailsView: UIView {
         
         super.init(frame: .zero)
         
-        
         configureHierarchy()
     }
         

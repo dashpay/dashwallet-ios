@@ -163,6 +163,7 @@ import SQLite
 
     private var detailsView: MerchantDetailsView!
     private var isShowAllHidden: Bool
+    private var mapView: ExploreMapView!
     
     public init(merchant: Merchant, isShowAllHidden: Bool = false) {
         
@@ -180,7 +181,9 @@ import SQLite
     }
     
     override func configureHierarchy() {
-        let mapView = DWExploreWhereToSpendMapView()
+        mapView = ExploreMapView()
+        mapView.show(merchants: [merchant])
+        mapView.initialCenterLocation = .init(latitude: merchant.latitude!, longitude: merchant.longitude!)
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         
@@ -202,6 +205,12 @@ import SQLite
             detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        mapView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - 310, right: 0)
     }
     
     override func viewDidLoad() {

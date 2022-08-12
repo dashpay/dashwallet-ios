@@ -63,7 +63,7 @@ struct Merchant {
 extension Merchant: RowDecodable {
     static let name = Expression<String>("name")
     static let deeplink = Expression<String>("deeplink")
-    static let plusCode = Expression<String>("plusCode")
+    static let plusCode = Expression<String?>("plusCode")
     static let paymentMethod = Expression<String>("paymentMethod")
     static let merchantId = Expression<Int64>("merchantId")
     static let id = Expression<Int64>("id")
@@ -77,7 +77,7 @@ extension Merchant: RowDecodable {
     static let latitude = Expression<Float64?>("latitude")
     static let longitude = Expression<Float64?>("longitude")
     static let website = Expression<String>("website")
-    static let phone = Expression<String>("phone")
+    static let phone = Expression<String?>("phone")
     static let logoLocation = Expression<String>("logoLocation")
     static let coverImage = Expression<String?>("coverImage")
     static let type = Expression<String>("type")
@@ -100,7 +100,7 @@ extension Merchant: RowDecodable {
         let latitude = row[Merchant.latitude]
         let longitude = row[Merchant.longitude]
         let website = row[Merchant.website]
-        let phone = row[Merchant.phone]
+        let phone: String? = row[Merchant.phone]
         let logoLocation = row[Merchant.logoLocation]
         let coverImage: String? = row[Merchant.coverImage]
         let plusCode = row[Merchant.plusCode]

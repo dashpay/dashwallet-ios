@@ -23,6 +23,8 @@ class ExploreDashWhereToSpendModel {
     var cachedOnlineMerchants: [Merchant] = []
     var lastOnlineMerchantsPage: PaginationResult<Merchant>?
     
+    var nearbyMerchantsDidChange: (() -> Void)?
+    
     var cachedNearbyMerchants: [Merchant] = []
     var cachedNearbyMerchantsPage: PaginationResult<Merchant>?
     
@@ -40,7 +42,22 @@ class ExploreDashWhereToSpendModel {
         onlineMerchantsDidChange?()
     }
     
-    
+    func fetchMerchants(in rect: CGRect) {
+        ExploreDash.shared.merchants(in: rect) { [weak self] result in
+            switch result {
+            case .success(let page):
+                self?.cachedNearbyMerchants = page.items
+                break
+            case .failure(let error):
+                break //TODO: handler failure
+            }
+            
+            DispatchQueue.main.async {
+                self?.nearbyMerchantsDidChange?()
+            }
+            
+        }
+    }
 }
 
 extension ExploreDashWhereToSpendModel

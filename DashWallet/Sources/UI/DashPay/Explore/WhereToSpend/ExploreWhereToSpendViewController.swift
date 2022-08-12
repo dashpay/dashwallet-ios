@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 private let kExploreWhereToSpendSectionCount = 4
 
@@ -51,14 +52,14 @@ enum ExploreWhereToSpendSegment: Int {
     private var contentViewTopLayoutConstraint: NSLayoutConstraint!
     private var contentView: UIView!
     private var tableView: UITableView!
-    private var mapView: DWExploreWhereToSpendMapView!
+    private var mapView: ExploreMapView!
     
     private var currentSegment: ExploreWhereToSpendSegment = .online
     private var showMapButton: UIButton!
     
     private var cancelBarButton: UIBarButtonItem = {
         let infoButton: UIButton = UIButton(type: .infoLight)
-        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
+        infoButton.addTarget(ExploreWhereToSpendViewController.self, action: #selector(infoButtonAction), for: .touchUpInside)
         return UIBarButtonItem(customView: infoButton)
     }()
     
@@ -90,6 +91,11 @@ enum ExploreWhereToSpendSegment: Int {
         self.title = NSLocalizedString("Where to Spend", comment: "");
         self.view.backgroundColor = .dw_background()
         self.navigationItem.rightBarButtonItem = cancelBarButton
+        
+        model.nearbyMerchantsDidChange = { [weak self] in
+            self?.mapView.show(merchants: self?.model.cachedNearbyMerchants ?? [])
+            self?.tableView.reloadData()
+        }
         
         currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online;
         
@@ -134,6 +140,7 @@ extension ExploreWhereToSpendViewController {
     private func showMap() {
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
+            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition, right: 0)
             self.view.layoutIfNeeded()
         } completion: { [weak self] completed in
             self?.updateShowMapButtonVisibility()
@@ -143,6 +150,7 @@ extension ExploreWhereToSpendViewController {
     private func hideMapIfNeeded() {
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultClosedMapPosition
+            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultClosedMapPosition, right: 0)
             self.view.layoutIfNeeded()
         } completion: { [weak self] completed in
             self?.updateShowMapButtonVisibility()
@@ -157,8 +165,22 @@ extension ExploreWhereToSpendViewController {
         showMapButton.isHidden = !isVisible
     }
     
+    private func show(merchant: Merchant) {
+        let vc: UIViewController
+        
+        if merchant.type == .online {
+            let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
+            onlineVC.payWithDashHandler = self.payWithDashHandler;
+            vc = onlineVC;
+        }else{
+            vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: false)
+        }
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
     private func configureHierarchy() {
-        mapView = DWExploreWhereToSpendMapView(frame: .zero)
+        mapView = ExploreMapView(frame: .zero)
+        mapView.delegate = self
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         
@@ -170,15 +192,6 @@ extension ExploreWhereToSpendViewController {
         contentView.layer.cornerRadius = 20
         contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.addSubview(contentView)
-        
-        let handlerView = DWExploreWhereToSpendHandlerView(frame: .zero)
-        handlerView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(handlerView)
-        
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
-        panRecognizer.minimumNumberOfTouches = 1
-        panRecognizer.maximumNumberOfTouches = 1
-        handlerView.addGestureRecognizer(panRecognizer)
         
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -192,6 +205,17 @@ extension ExploreWhereToSpendViewController {
         tableView.register(ExploreMerchantItemCell.self, forCellReuseIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier)
         tableView.register(ExploreWhereToSpendLocationOffCell.self, forCellReuseIdentifier: ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier)
         contentView.addSubview(tableView)
+        
+        let handlerView = DWExploreWhereToSpendHandlerView(frame: .zero)
+        handlerView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(handlerView)
+        
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
+        panRecognizer.minimumNumberOfTouches = 1
+        panRecognizer.maximumNumberOfTouches = 1
+        handlerView.addGestureRecognizer(panRecognizer)
+        
+        
         
         self.showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
@@ -354,25 +378,14 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         
         if section == .items {
             let merchant = merchants[indexPath.row]
-            
-            let vc: UIViewController
-            
-            if merchant.type == .online {
-                let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
-                onlineVC.payWithDashHandler = self.payWithDashHandler;
-                vc = onlineVC;
-            }else{
-                vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: false)
-            }
-            
-            navigationController?.pushViewController(vc, animated: true)
+            show(merchant: merchant)
         }
     }
 }
 
 extension ExploreWhereToSpendViewController: DWLocationObserver {
-    func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager) {
-        
+    func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
+        //mapView.setCenter(location, animated: false)
     }
     
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
@@ -421,6 +434,7 @@ extension ExploreWhereToSpendViewController {
             let animationDuration: CGFloat = (abs(velocityY)*0.0002)+0.2;
             
             UIView.animate(withDuration: animationDuration, delay: 0, options: .curveEaseOut) {
+                self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - finalY, right: 0)
                 self.contentViewTopLayoutConstraint.constant = finalY
                 self.view.layoutIfNeeded()
             } completion: { completed in
@@ -463,5 +477,15 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
     
     func searchCellDidEndSearching(_ searchCell: DWExploreWhereToSpendSearchCell) {
         stopSearching()
+    }
+}
+
+extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
+    func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleRect rect: CGRect) {
+        model.fetchMerchants(in: rect)
+    }
+    
+    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {
+        show(merchant: merchant)
     }
 }

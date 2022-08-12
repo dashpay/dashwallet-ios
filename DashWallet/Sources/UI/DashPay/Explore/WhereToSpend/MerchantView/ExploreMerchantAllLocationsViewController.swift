@@ -22,7 +22,7 @@ private let kHandlerHeight: CGFloat = 24.0
 private let kDefaultClosedMapPosition = -kHandlerHeight;
 
 class ExploreMerchantAllLocationsViewController: UIViewController {
-    private var mapView: DWExploreWhereToSpendMapView!
+    private var mapView: ExploreMapView!
     private var listContainerView: UIView!
     private var showMapButton: UIButton!
     private var tableView: UITableView!
@@ -50,7 +50,7 @@ class ExploreMerchantAllLocationsViewController: UIViewController {
             
             let animationDuration = (abs(velocityY)*0.0002)+0.2;
             
-            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+            UIView.animate(withDuration: animationDuration, delay: 0, options: .curveEaseOut) {
                 self.contentViewTopLayoutConstraint.constant = finalY
                 self.view.layoutSubviews()
             } completion: { [weak self] completed in
@@ -111,7 +111,7 @@ extension ExploreMerchantAllLocationsViewController {
         
         navigationItem.titleView = titleStack
         
-        mapView = DWExploreWhereToSpendMapView()
+        mapView = ExploreMapView()
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         

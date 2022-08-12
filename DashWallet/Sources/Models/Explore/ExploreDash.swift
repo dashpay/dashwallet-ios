@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 @objc public class ExploreDashObjcWrapper: NSObject {
     @objc public class func configure() {
@@ -75,6 +76,15 @@ public class ExploreDash {
 }
 
 extension ExploreDash {
+    /**
+     Retrieve merchants by location
+     @param location Center of
+     @param rect Visible
+    */
+    func merchants(in rect: CGRect, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.merchantsInRect(rect: rect, completion: completion)
+    }
+    
     func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         merchantDAO.allOnlineMerchants(offset: offset, completion: completion)
     }
@@ -87,8 +97,44 @@ extension ExploreDash {
         return merchantDAO.searchOnlineMerchants(query: query, offset: offset)
     }
 }
+
 extension ExploreDash {
     public class func configure() throws {
         try ExploreDash.shared.configure()
+    }
+}
+
+extension BinaryInteger {
+    var degreesToRadians: CGFloat { CGFloat(self) * .pi / 180 }
+}
+
+extension FloatingPoint {
+    var degreesToRadians: Self { self * .pi / 180 }
+    var radiansToDegrees: Self { self * 180 / .pi }
+}
+
+extension CLLocation {
+    func derivedPosition(inRange range: Double, bearing: Double)-> CGPoint {
+        let earthRadius: Double = 6371000
+        
+        let lat = Double(self.coordinate.latitude.degreesToRadians)
+        let lon = Double(self.coordinate.longitude.degreesToRadians)
+        let angularDistance = range/earthRadius
+        let trueCourse = bearing.degreesToRadians
+        
+        var resultLat = asin(sin(lat) * cos(angularDistance) +
+                       cos(lat) * sin(angularDistance) *
+                       cos(trueCourse))
+        
+        let derivedlon = atan2(sin(trueCourse) * sin(angularDistance) * cos(lat),
+                         cos(angularDistance) - sin(lat) * sin(lat))
+        
+        var resultLon = ((lon + derivedlon + Double.pi).truncatingRemainder(dividingBy: (Double.pi * 2))) - Double.pi
+        
+        resultLat = lat.radiansToDegrees
+        resultLon = lon.radiansToDegrees
+        
+        let newPoint = CGPoint(x: lat, y: lon)
+        return newPoint
     }
 }
