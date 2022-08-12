@@ -30,17 +30,13 @@ class MerchantDAO
         self.connection = dbConnection
     }
     
-    func merchantsInRect(rect: CGRect, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func merchantsInRect(rect: CGRect, userPoint: CGPoint?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
-//            let query = """
-//                SELECT *
-//                FROM merchant
-//                WHERE type IN ('physical', 'both')
-//                GROUP BY source, merchantId
-//                ORDER BY name
-//                """
-//
+
+            let anchorLatitude = userPoint?.y ?? rect.midY
+            let anchorLongitude = userPoint?.x ?? rect.midX
+            
             let query = """
                 SELECT *
                 FROM merchant
@@ -50,8 +46,8 @@ class MerchantDAO
                     AND longitude < \(rect.maxX)
                     AND longitude > \(rect.minX)
                 GROUP BY source, merchantId
-                HAVING (latitude - \(rect.midY))*(latitude - \(rect.midY)) + (longitude - \(rect.midX))*(longitude - \(rect.midX)) = MIN((latitude - \(rect.midY))*(latitude - \(rect.midY)) + (longitude - \(rect.midX))*(longitude - \(rect.midX)))
-                ORDER BY (latitude - \(rect.midY))*(latitude - \(rect.midY)) + (longitude - \(rect.midX))*(longitude - \(rect.midX)) ASC
+                HAVING (latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))
+                ORDER BY ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC
                 
             """
             do {
@@ -86,27 +82,14 @@ class MerchantDAO
     }
     
     func allOnlineMerchants(offset: Int = 0) -> PaginationResult<Merchant> {
-        let name = Expression<String>("name")
-        let type = Expression<String>("type")
-        let source = Expression<String>("source")
-        let merchantId = Expression<String>("id")
-        
-        let merchants = Table("merchant")
-//        let query = merchants.select(merchants[*])
-//            //.filter(["online", "both"].contains(type))
-//            .group([merchantId, source], having: ["online", "both"].contains(type))
-//            //.order(name)
-//            .limit(pageLimit, offset: offset)
-        
-        
         let query =
-        """
-        SELECT *
-        FROM merchant
-        WHERE type IN ('online', 'both')
-        GROUP BY source, merchantId
-        ORDER BY name
-        """
+            """
+            SELECT *
+            FROM merchant
+            WHERE type IN ('online', 'both')
+            GROUP BY source, merchantId
+            ORDER BY name
+            """
         
         do {
             let items: [Merchant] = try connection.execute(query: query)

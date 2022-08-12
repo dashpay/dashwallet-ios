@@ -18,6 +18,11 @@
 import Foundation
 import SQLite
 
+extension Merchant: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
 struct Merchant {
     let name: String
     let merchantId: Int64

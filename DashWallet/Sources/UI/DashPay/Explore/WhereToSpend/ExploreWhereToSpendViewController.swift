@@ -482,7 +482,7 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
 
 extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleRect rect: CGRect) {
-        model.fetchMerchants(in: rect)
+        model.fetchMerchants(in: rect, userPoint: mapView.userLocation?.point)
     }
     
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {

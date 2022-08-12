@@ -183,6 +183,7 @@ import SQLite
     override func configureHierarchy() {
         mapView = ExploreMapView()
         mapView.show(merchants: [merchant])
+        mapView.centerRadius = 5
         mapView.initialCenterLocation = .init(latitude: merchant.latitude!, longitude: merchant.longitude!)
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)

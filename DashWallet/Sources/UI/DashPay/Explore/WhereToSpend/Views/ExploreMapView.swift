@@ -32,7 +32,7 @@ class ExploreMapView: UIView {
     }
     
     var initialCenterLocation: CLLocation?
-    
+    var centerRadius: Double = 20
     var contentInset: UIEdgeInsets = .zero {
         didSet {
             mapView.layoutMargins = contentInset
@@ -40,6 +40,7 @@ class ExploreMapView: UIView {
     }
     
     private var mapView: MKMapView!
+    private var shownMerchants: [Merchant] = []
     
     private lazy var showCurrentLocationOnce: Void = {
         if let loc = initialCenterLocation {
@@ -60,11 +61,18 @@ class ExploreMapView: UIView {
     }
     
     public func show(merchants: [Merchant]) {
-        mapView.addAnnotations(merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
+        let shownMerchants = Set(self.shownMerchants)
+        var newMerchants = Set(merchants)
+        newMerchants = newMerchants.subtracting(shownMerchants)
+        
+        let newMerchantsArray = Array(newMerchants)
+        self.shownMerchants += newMerchantsArray
+        
+        mapView.addAnnotations(newMerchantsArray.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
     }
     
     public func setCenter(_ location: CLLocation, animated: Bool) {
-        let miles: Double = 20.0
+        let miles: Double = centerRadius
         let scalingFactor: Double = abs((cos(2*Double.pi * location.coordinate.latitude/360.0)))
         
         let span: MKCoordinateSpan = MKCoordinateSpan(latitudeDelta: miles/69.0, longitudeDelta: miles/(scalingFactor*69.0))
@@ -161,6 +169,11 @@ extension ExploreMapView: MKMapViewDelegate {
     }
 }
 
+extension CLLocation {
+    var point: CGPoint {
+        return .init(x: self.coordinate.longitude, y: self.coordinate.latitude)
+    }
+}
 extension MKMapRect {
     var cgRect: CGRect {
         return CGRect(origin: .init(x: origin.x, y: origin.y), size: .init(width: size.width, height: size.width))

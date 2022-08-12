@@ -42,8 +42,8 @@ class ExploreDashWhereToSpendModel {
         onlineMerchantsDidChange?()
     }
     
-    func fetchMerchants(in rect: CGRect) {
-        ExploreDash.shared.merchants(in: rect) { [weak self] result in
+    func fetchMerchants(in rect: CGRect, userPoint: CGPoint?) {
+        ExploreDash.shared.merchants(in: rect, userPoint: userPoint) { [weak self] result in
             switch result {
             case .success(let page):
                 self?.cachedNearbyMerchants = page.items
