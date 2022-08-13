@@ -111,7 +111,15 @@ extension MerchantDetailsView {
         
         subLabel = UILabel()
         subLabel.font = .dw_font(forTextStyle: .footnote)
-        subLabel.text = "2 mi · Physical Merchant"
+        
+        if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
+            
+            let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
+            subLabel.text = "\(App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))) · Physical Merchant"
+        }else{
+            subLabel.text = "Physical Merchant"
+        }
+        
         subLabel.textColor = .dw_secondaryText()
         subStackView.addArrangedSubview(subLabel)
         

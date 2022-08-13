@@ -18,8 +18,36 @@
 import UIKit
 import MapKit
 
+struct ExploreMapBounds {
+    let neCoordinate: CLLocationCoordinate2D
+    let swCoordinate: CLLocationCoordinate2D
+    
+    var center: CLLocationCoordinate2D {
+        let dLon = (neCoordinate.longitude - swCoordinate.longitude).degreesToRadians
+        let lat1 = swCoordinate.latitude.degreesToRadians
+        let lat2 = neCoordinate.latitude.degreesToRadians
+        let lon1 = swCoordinate.longitude.degreesToRadians
+    
+        let bX = cos(lat2) + cos(dLon)
+        let bY = cos(lat2) * sin(dLon)
+        
+        let lat = atan2(sin(lat1) + sin(lat2), sqrt((cos(lat1) + bX) * (cos(lat1) + bX) + bY * bY))
+        let lon = lon1 + atan2(bY, cos(lat1) + bX)
+        let center = CLLocationCoordinate2D(latitude: lat.radiansToDegrees, longitude: lon.radiansToDegrees)
+        return center
+    }
+    
+    init(rect: MKMapRect) {
+        let neMapPoint = MKMapPoint(x: rect.maxX, y: rect.origin.y)
+        let swMapPoint = MKMapPoint(x: rect.origin.x, y: rect.maxY)
+        
+        self.neCoordinate = neMapPoint.coordinate
+        self.swCoordinate = swMapPoint.coordinate
+    }
+}
+
 protocol ExploreMapViewDelegate {
-    func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleRect rect: CGRect)
+    func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds)
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant)
 }
 
@@ -39,8 +67,23 @@ class ExploreMapView: UIView {
         }
     }
     
+    var userRadius: Double? {
+        guard mapView.isUserLocationVisible else { return nil }
+        guard let userLocation = userLocation else { return nil }
+        
+        let swLocation = CLLocation(latitude: self.mapBounds.swCoordinate.latitude, longitude: self.mapBounds.swCoordinate.longitude)
+        let neLocation = CLLocation(latitude: self.mapBounds.neCoordinate.latitude, longitude: self.mapBounds.neCoordinate.longitude)
+
+        return max(userLocation.distance(from: swLocation), userLocation.distance(from: neLocation))
+    }
+    
     private var mapView: MKMapView!
+    private var mapBounds: ExploreMapBounds {
+        return .init(rect: mapView.visibleMapRect)
+    }
+    
     private var shownMerchants: [Merchant] = []
+    private var shownMerchantsAnnotations: [MerchantAnnotation] = []
     
     private lazy var showCurrentLocationOnce: Void = {
         if let loc = initialCenterLocation {
@@ -61,14 +104,26 @@ class ExploreMapView: UIView {
     }
     
     public func show(merchants: [Merchant]) {
-        let shownMerchants = Set(self.shownMerchants)
-        var newMerchants = Set(merchants)
-        newMerchants = newMerchants.subtracting(shownMerchants)
         
-        let newMerchantsArray = Array(newMerchants)
-        self.shownMerchants += newMerchantsArray
         
-        mapView.addAnnotations(newMerchantsArray.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
+        
+        if self.shownMerchantsAnnotations.isEmpty {
+            let newAnnotations = merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))})
+            self.shownMerchantsAnnotations = newAnnotations
+            mapView.addAnnotations(newAnnotations)
+        }else{
+            let currentAnnotations = Set(self.shownMerchantsAnnotations)
+            let newMerchants = Set(merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
+            
+            let toAdd = newMerchants.subtracting(currentAnnotations)
+            let toDelete = currentAnnotations.subtracting(newMerchants)
+            let toKeep = currentAnnotations.subtracting(toDelete)
+            self.shownMerchantsAnnotations = Array(toKeep.union(toAdd))
+            
+            mapView.removeAnnotations(Array(toDelete))
+            mapView.addAnnotations(Array(toAdd))
+        }
+//        mapView.addAnnotations(newMerchantsArray.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
     }
     
     public func setCenter(_ location: CLLocation, animated: Bool) {
@@ -152,7 +207,7 @@ extension ExploreMapView: MKMapViewDelegate {
     }
     
     @objc func _mapViewDidChangeVisibleRegion() {
-        delegate?.exploreMapView(self, didChangeVisibleRect: mapView.region.cgRect)
+        delegate?.exploreMapView(self, didChangeVisibleBounds: mapBounds)
     }
     
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
@@ -176,18 +231,27 @@ extension CLLocation {
 }
 extension MKMapRect {
     var cgRect: CGRect {
+        let neMapPoint = MKMapPoint(x: maxX, y: origin.y)
+        let swMapPoint = MKMapPoint(x: origin.x, y: maxY)
+        
+        let neCoordinate = neMapPoint.coordinate
+        let swCoordinate = swMapPoint.coordinate
         return CGRect(origin: .init(x: origin.x, y: origin.y), size: .init(width: size.width, height: size.width))
     }
 }
 
 extension MKCoordinateRegion {
     var cgRect: CGRect {
-        return CGRect(origin: .init(x: center.longitude - span.longitudeDelta, y: center.latitude - span.latitudeDelta), size: .init(width: span.longitudeDelta*2, height: span.latitudeDelta*2))
+        return CGRect(origin: .init(x: center.longitude - span.longitudeDelta, y: center.latitude - span.latitudeDelta), size: .init(width: span.longitudeDelta, height: span.latitudeDelta))
     }
 }
 
 class MerchantAnnotation: MKPointAnnotation {
     var merchant: Merchant
+    
+    override var hash: Int {
+        return merchant.id.hashValue
+    }
     
     init(merchant: Merchant, location: CLLocationCoordinate2D) {
         self.merchant = merchant
@@ -241,3 +305,4 @@ final class MerchantAnnotationView: MKAnnotationView {
     
     static var reuseIdentifier: String { return "MerchantAnnotationView" }
 }
+

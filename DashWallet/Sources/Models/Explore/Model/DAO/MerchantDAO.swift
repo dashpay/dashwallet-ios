@@ -17,6 +17,7 @@
 
 import Foundation
 import SQLite
+import CoreLocation
 
 private let pageLimit = 30
 
@@ -30,21 +31,21 @@ class MerchantDAO
         self.connection = dbConnection
     }
     
-    func merchantsInRect(rect: CGRect, userPoint: CGPoint?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func merchantsInRect(bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
 
-            let anchorLatitude = userPoint?.y ?? rect.midY
-            let anchorLongitude = userPoint?.x ?? rect.midX
+            let anchorLatitude = userPoint?.latitude ?? bounds.center.latitude
+            let anchorLongitude = userPoint?.longitude ?? bounds.center.longitude
             
             let query = """
                 SELECT *
                 FROM merchant
                 WHERE type IN ('physical', 'both')
-                    AND latitude > \(rect.minY)
-                    AND latitude < \(rect.maxY)
-                    AND longitude < \(rect.maxX)
-                    AND longitude > \(rect.minX)
+                    AND latitude > \(bounds.swCoordinate.latitude)
+                    AND latitude < \(bounds.neCoordinate.latitude)
+                    AND longitude < \(bounds.neCoordinate.longitude)
+                    AND longitude > \(bounds.swCoordinate.longitude)
                 GROUP BY source, merchantId
                 HAVING (latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))
                 ORDER BY ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC

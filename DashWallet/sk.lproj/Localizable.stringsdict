@@ -22,5 +22,23 @@
 			<string>%ld použitých</string>
 		</dict>
 	</dict>
+    <key>%d merchant(s) in</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@merchant@</string>
+        <key>merchants</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>zero</key>
+            <string>%d merchants in %@</string>
+            <key>one</key>
+            <string>%d merchant in %@</string>
+            <key>other</key>
+            <string>%d merchants in %@</string>
+        </dict>
+    </dict>
 </dict>
 </plist>

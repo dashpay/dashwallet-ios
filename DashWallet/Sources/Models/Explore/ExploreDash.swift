@@ -81,8 +81,8 @@ extension ExploreDash {
      @param location Center of
      @param rect Visible
     */
-    func merchants(in rect: CGRect, userPoint: CGPoint?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
-        merchantDAO.merchantsInRect(rect: rect, userPoint: userPoint, completion: completion)
+    func merchants(in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.merchantsInRect(bounds: bounds, userPoint: userPoint, completion: completion)
     }
     
     func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {

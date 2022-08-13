@@ -562,6 +562,7 @@
 		471EA7C727AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7C627AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m */; };
 		471EA7CA27AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */; };
 		471EA7CD27AD2072005A2E8A /* DWExploreBaseInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */; };
+		4722959F28A82BC300245374 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4722959E28A82BC300245374 /* App.swift */; };
 		474CD81F27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */; };
 		474CD82227B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */; };
 		474CD82527B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */; };
@@ -1850,6 +1851,7 @@
 		471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreGiftCardInfoViewController.m; sourceTree = "<group>"; };
 		471EA7CB27AD2072005A2E8A /* DWExploreBaseInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreBaseInfoViewController.h; sourceTree = "<group>"; };
 		471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreBaseInfoViewController.m; sourceTree = "<group>"; };
+		4722959E28A82BC300245374 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		474CD81D27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendFiltersCell.h; sourceTree = "<group>"; };
 		474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendFiltersCell.m; sourceTree = "<group>"; };
 		474CD82027B16821009D71A5 /* DWExploreWhereToSpendSearchCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendSearchCell.h; sourceTree = "<group>"; };
@@ -2641,6 +2643,7 @@
 		2A44313B22CF62FC009BAF7F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				4722959D28A82B6000245374 /* Application */,
 				47CCC7E627BBDBE200B39FC5 /* dashwallet-Bridging-Header.h */,
 				2A858A04237EE89B0097A7B5 /* AppleWatch */,
 				2AD1CE7D22DC928C00C99324 /* Categories */,
@@ -4856,6 +4859,14 @@
 			path = Explore;
 			sourceTree = "<group>";
 		};
+		4722959D28A82B6000245374 /* Application */ = {
+			isa = PBXGroup;
+			children = (
+				4722959E28A82BC300245374 /* App.swift */,
+			);
+			path = Application;
+			sourceTree = "<group>";
+		};
 		474CD81827B1289A009D71A5 /* WhereToSpend */ = {
 			isa = PBXGroup;
 			children = (
@@ -5886,6 +5897,7 @@
 				2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
+				4722959F28A82BC300245374 /* App.swift in Sources */,
 				2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				2A7A7BD62348CB6600451078 /* DWSettingsMenuViewController.m in Sources */,

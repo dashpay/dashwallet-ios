@@ -53,6 +53,7 @@ enum ExploreWhereToSpendSegment: Int {
     private var contentView: UIView!
     private var tableView: UITableView!
     private var mapView: ExploreMapView!
+    private var filterCell: DWExploreWhereToSpendFiltersCell?
     
     private var currentSegment: ExploreWhereToSpendSegment = .online
     private var showMapButton: UIButton!
@@ -94,6 +95,8 @@ enum ExploreWhereToSpendSegment: Int {
         
         model.nearbyMerchantsDidChange = { [weak self] in
             self?.mapView.show(merchants: self?.model.cachedNearbyMerchants ?? [])
+            self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in", comment: "#bc-ignore!"), self?.model.cachedNearbyMerchants.count ?? 0)
+            //%d merchant(s) in %@
             self?.tableView.reloadData()
         }
         
@@ -292,14 +295,20 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         case .filters:
             let filterCell: DWExploreWhereToSpendFiltersCell = tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendFiltersCell
             filterCell.title = segmentTitles[currentSegment.rawValue]
-            filterCell.subtitle = nil
+            
+            if let userRadius = mapView.userRadius {
+                filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: floor(userRadius), unit: UnitLength.meters)))
+            }else{
+                filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s)", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count)
+            }
+            
             
             if currentSegment == .nearby {
                 let location: String? = DWLocationManager.shared.currentReversedLocation
                 filterCell.title = location ?? filterCell.title
-                filterCell.subtitle = NSLocalizedString("2 merchants in 20 miles", comment: "");
+                //filterCell.subtitle = NSLocalizedString("2 merchants in 20 miles", comment: "");
             }
-            
+            self.filterCell = filterCell
             cell = filterCell
         case .items:
             if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
@@ -313,7 +322,6 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 cell = itemCell;
             }
         }
-        
         cell.selectionStyle = .none
         return cell;
 
@@ -481,8 +489,8 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
 }
 
 extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
-    func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleRect rect: CGRect) {
-        model.fetchMerchants(in: rect, userPoint: mapView.userLocation?.point)
+    func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
+        model.fetchMerchants(in: bounds, userPoint: mapView.userLocation?.coordinate)
     }
     
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {
