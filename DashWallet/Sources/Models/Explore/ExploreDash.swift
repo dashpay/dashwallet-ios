@@ -85,6 +85,10 @@ extension ExploreDash {
         merchantDAO.merchantsInRect(bounds: bounds, userPoint: userPoint, completion: completion)
     }
     
+    func allLocations(for merchant: Merchant, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.allLocations(for: merchant, in: bounds, userPoint: userPoint, completion: completion)
+    }
+    
     func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         merchantDAO.allOnlineMerchants(offset: offset, completion: completion)
     }

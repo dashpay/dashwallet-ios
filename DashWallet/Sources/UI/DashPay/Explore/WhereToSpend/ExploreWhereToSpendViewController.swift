@@ -17,6 +17,7 @@
 
 import UIKit
 import CoreLocation
+import MapKit
 
 private let kExploreWhereToSpendSectionCount = 4
 

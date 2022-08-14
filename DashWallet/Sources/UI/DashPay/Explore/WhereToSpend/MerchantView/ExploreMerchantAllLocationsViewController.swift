@@ -15,19 +15,26 @@
 //  limitations under the License.
 //
 
+import Foundation
 import UIKit
+import CoreLocation
 
 private let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kHandlerHeight: CGFloat = 24.0
 private let kDefaultClosedMapPosition = -kHandlerHeight;
 
 class ExploreMerchantAllLocationsViewController: UIViewController {
+    
+    public var model: MerchantAllLocationsModel!
+    public var payWithDashHandler: (()->())?
+    
     private var mapView: ExploreMapView!
     private var listContainerView: UIView!
     private var showMapButton: UIButton!
     private var tableView: UITableView!
     private var contentViewTopLayoutConstraint: NSLayoutConstraint!
-    
+    private var navigationTitleLabel: UILabel!
+    private var navigationSubtitleLabel: UILabel!
     @objc func moveAction(sender: UIPanGestureRecognizer) {
         let translatedPoint = sender.translation(in: self.view)
         
@@ -52,6 +59,7 @@ class ExploreMerchantAllLocationsViewController: UIViewController {
             
             UIView.animate(withDuration: animationDuration, delay: 0, options: .curveEaseOut) {
                 self.contentViewTopLayoutConstraint.constant = finalY
+                self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - finalY, right: 0)
                 self.view.layoutSubviews()
             } completion: { [weak self] completed in
                 self?.updateShowMapButtonVisibility()
@@ -71,22 +79,65 @@ class ExploreMerchantAllLocationsViewController: UIViewController {
     private func showMap(animated: Bool = true) {
         if animated {
             UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+                self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition, right: 0)
                 self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
                 self.view.layoutSubviews()
             } completion: { [weak self] completed in
                 self?.updateShowMapButtonVisibility()
             }
         }else{
+            self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition, right: 0)
             contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
             view.layoutSubviews()
             updateShowMapButtonVisibility()
         }
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+    
+    private func show(merchant: Merchant) {
+        let vc: UIViewController
+        
+        if merchant.type == .online {
+            let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
+            onlineVC.payWithDashHandler = self.payWithDashHandler;
+            vc = onlineVC;
+        }else{
+            vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: true)
+        }
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        model.merchantsDidChange = { [weak self] merchants in
+            self?.mapView.show(merchants: merchants)
+            self?.navigationSubtitleLabel.text = String(format: NSLocalizedString("%d locations(s)", comment: "#bc-ignore!"), merchants.count)
+            self?.tableView.reloadData()
+        }
+        
         configureHierarchy()
-        showMap(animated: false)
+        navigationTitleLabel.text = model.merchant.name
+        
+        DispatchQueue.main.async {
+            self.showMap(animated: false)
+        }
+        
+    }
+}
+
+extension ExploreMerchantAllLocationsViewController: ExploreMapViewDelegate {
+    
+    func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
+        model.fetchMerchants(in: bounds, userPoint: mapView.userLocation?.coordinate)
+    }
+    
+    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {
+        show(merchant: merchant)
     }
 }
 
@@ -100,19 +151,21 @@ extension ExploreMerchantAllLocationsViewController {
         
         let titleLabel = UILabel()
         titleLabel.font = .dw_navigationBarTitle()
-        titleLabel.text = "AMC"
         titleStack.addArrangedSubview(titleLabel)
+        navigationTitleLabel = titleLabel
         
         let subtitleLabel = UILabel()
         subtitleLabel.font = .dw_font(forTextStyle: .footnote)
         subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.text = "5 locations"
         titleStack.addArrangedSubview(subtitleLabel)
+        navigationSubtitleLabel = subtitleLabel
         
         navigationItem.titleView = titleStack
         
-        mapView = ExploreMapView()
+        mapView = ExploreMapView(frame: .zero)
+        mapView.delegate = self
         mapView.translatesAutoresizingMaskIntoConstraints = false
+        mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition, right: 0)
         view.addSubview(mapView)
         
         listContainerView = UIView()
@@ -124,15 +177,6 @@ extension ExploreMerchantAllLocationsViewController {
         listContainerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.addSubview(listContainerView)
         
-        let handlerView = DWExploreWhereToSpendHandlerView(frame: .zero)
-        handlerView.translatesAutoresizingMaskIntoConstraints = false
-        listContainerView.addSubview(handlerView)
-        
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
-        panRecognizer.minimumNumberOfTouches = 1
-        panRecognizer.maximumNumberOfTouches = 1
-        handlerView.addGestureRecognizer(panRecognizer)
-        
         tableView = UITableView()
         tableView.separatorStyle = .none
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -143,6 +187,15 @@ extension ExploreMerchantAllLocationsViewController {
         tableView.register(LocationCell.self, forCellReuseIdentifier: LocationCell.dw_reuseIdentifier)
         tableView.rowHeight = 94
         listContainerView.addSubview(tableView)
+        
+        let handlerView = DWExploreWhereToSpendHandlerView(frame: .zero)
+        handlerView.translatesAutoresizingMaskIntoConstraints = false
+        listContainerView.addSubview(handlerView)
+        
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
+        panRecognizer.minimumNumberOfTouches = 1
+        panRecognizer.maximumNumberOfTouches = 1
+        handlerView.addGestureRecognizer(panRecognizer)
         
         showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
@@ -195,26 +248,31 @@ extension ExploreMerchantAllLocationsViewController {
 
 extension ExploreMerchantAllLocationsViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        5
+        return model.cachedMerchants.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let merchant = model.cachedMerchants[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: LocationCell.dw_reuseIdentifier, for: indexPath) as! LocationCell
         cell.accessoryType = .disclosureIndicator
+        cell.update(with: merchant)
+        cell.selectionStyle = .none
+        
+        
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         
-//        let merchant = DWExploreMerchant.mockData()[1]
-//        
-//        let vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: true)
-//        navigationController?.pushViewController(vc, animated: true)
+        let merchant = model.cachedMerchants[indexPath.row]
+        show(merchant: merchant)
     }
 }
 
 class LocationCell: UITableViewCell {
+    private var distanceStackView: UIStackView!
     private var distanceLabel: UILabel!
     private var addressLabel: UILabel!
     
@@ -226,6 +284,19 @@ class LocationCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    public func update(with merchant: Merchant) {
+        addressLabel.text = merchant.address1
+        if let currentLocation = DWLocationManager.shared.currentLocation,
+           DWLocationManager.shared.isAuthorized {
+            distanceStackView.isHidden = false
+            let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
+            let distanceText: String = App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
+            distanceLabel.text = distanceText
+        }else{
+            distanceStackView.isHidden = true
+        }
     }
     
     private func configureHierarchy() {
@@ -243,7 +314,7 @@ class LocationCell: UITableViewCell {
         stackView.axis = .vertical
         contentView.addSubview(stackView)
         
-        let distanceStackView = UIStackView()
+        distanceStackView = UIStackView()
         distanceStackView.spacing = 9
         distanceStackView.translatesAutoresizingMaskIntoConstraints = false
         distanceStackView.axis = .horizontal
@@ -258,7 +329,7 @@ class LocationCell: UITableViewCell {
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
         distanceLabel.font = .dw_font(forTextStyle: .footnote)
         distanceLabel.textColor = .secondaryLabel
-        distanceLabel.text = ["2 miles", "5 miles", "6 miles"][Int.random(in: 0...2)]
+        
         distanceStackView.addArrangedSubview(distanceLabel)
         
         addressLabel = UILabel()
@@ -266,7 +337,7 @@ class LocationCell: UITableViewCell {
         addressLabel.font = .dw_font(forTextStyle: .body)
         addressLabel.numberOfLines = 0
         addressLabel.textColor = .label
-        addressLabel.text = ["457 Alfreton Road, Nottingham, NG7 5LX", "191 Baker Street, Marylebone, New York, NW1 6UY", "191 Baker Street, Marylebone, New York, NW1 6UY"][Int.random(in: 0...2)]
+        
         stackView.addArrangedSubview(addressLabel)
         
         NSLayoutConstraint.activate([

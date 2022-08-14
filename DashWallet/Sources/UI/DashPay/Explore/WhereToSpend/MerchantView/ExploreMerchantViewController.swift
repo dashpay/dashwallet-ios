@@ -177,6 +177,7 @@ import SQLite
     
     private func showAllLocations() {
         let vc = ExploreMerchantAllLocationsViewController()
+        vc.model = .init(merchant: merchant)
         navigationController?.pushViewController(vc, animated: true)
     }
     

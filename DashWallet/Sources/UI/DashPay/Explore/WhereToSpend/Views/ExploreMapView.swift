@@ -64,6 +64,7 @@ class ExploreMapView: UIView {
     var contentInset: UIEdgeInsets = .zero {
         didSet {
             mapView.layoutMargins = contentInset
+        
         }
     }
     

@@ -61,6 +61,34 @@ class MerchantDAO
         }
     }
     
+    func allLocations(for merchant: Merchant, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+            
+            let anchorLatitude = userPoint?.latitude ?? bounds.center.latitude
+            let anchorLongitude = userPoint?.longitude ?? bounds.center.longitude
+            
+            let query = """
+                SELECT *
+                FROM merchant
+                WHERE type IN ('physical', 'both')
+                    AND merchantId = \(merchant.merchantId)
+                    AND latitude > \(bounds.swCoordinate.latitude)
+                    AND latitude < \(bounds.neCoordinate.latitude)
+                    AND longitude < \(bounds.neCoordinate.longitude)
+                    AND longitude > \(bounds.swCoordinate.longitude)
+                ORDER BY ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC
+            """
+            do {
+                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
+            }catch{
+                print(error)
+                completion(.failure(error))
+            }
+        }
+    }
+    
     func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
