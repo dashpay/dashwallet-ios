@@ -104,9 +104,6 @@ class ExploreMapView: UIView {
     }
     
     public func show(merchants: [Merchant]) {
-        
-        
-        
         if self.shownMerchantsAnnotations.isEmpty {
             let newAnnotations = merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))})
             self.shownMerchantsAnnotations = newAnnotations
@@ -118,12 +115,18 @@ class ExploreMapView: UIView {
             let toAdd = newMerchants.subtracting(currentAnnotations)
             let toDelete = currentAnnotations.subtracting(newMerchants)
             let toKeep = currentAnnotations.subtracting(toDelete)
-            self.shownMerchantsAnnotations = Array(toKeep.union(toAdd))
             
-            mapView.removeAnnotations(Array(toDelete))
-            mapView.addAnnotations(Array(toAdd))
+            self.shownMerchantsAnnotations = Array(toKeep.union(toAdd))
+
+            if !toDelete.isEmpty {
+                mapView.removeAnnotations(Array(toDelete))
+            }
+            
+            if !toAdd.isEmpty {
+                mapView.addAnnotations(Array(toAdd))
+            }
+            
         }
-//        mapView.addAnnotations(newMerchantsArray.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
     }
     
     public func setCenter(_ location: CLLocation, animated: Bool) {
@@ -153,8 +156,6 @@ class ExploreMapView: UIView {
             self.setCenter(loc, animated: true)
         }
     }
-    
-
     
     private func configureHierarchy() {
         self.mapView = MKMapView(frame: bounds)
@@ -246,11 +247,24 @@ extension MKCoordinateRegion {
     }
 }
 
+
+
+extension MerchantAnnotation {
+    static func ==(lhs: MerchantAnnotation, rhs: MerchantAnnotation) -> Bool {
+        return lhs.hashValue == rhs.hashValue
+    }
+}
 class MerchantAnnotation: MKPointAnnotation {
     var merchant: Merchant
     
     override var hash: Int {
-        return merchant.id.hashValue
+        return merchant.hashValue
+    }
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let obj = object as? MerchantAnnotation else { return false }
+        
+        return self == obj
     }
     
     init(merchant: Merchant, location: CLLocationCoordinate2D) {
