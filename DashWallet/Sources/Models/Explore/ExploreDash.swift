@@ -100,6 +100,10 @@ extension ExploreDash {
     func searchOnlineMerchants(query: String, offset: Int = 0) -> PaginationResult<Merchant> {
         return merchantDAO.searchOnlineMerchants(query: query, offset: offset)
     }
+    
+    func searchMerchants(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.searchMerchants(by: query, in: bounds, userPoint: userPoint, completion: completion)
+    }
 }
 
 extension ExploreDash {

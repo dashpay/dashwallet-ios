@@ -25,6 +25,7 @@ class ExploreDashWhereToSpendModel {
     var lastOnlineMerchantsPage: PaginationResult<Merchant>?
     
     var nearbyMerchantsDidChange: (() -> Void)?
+    var nearbyLastSearchMerchants: [Merchant] = []
     
     var cachedNearbyMerchants: [Merchant] = []
     var cachedNearbyMerchantsPage: PaginationResult<Merchant>?
@@ -76,5 +77,21 @@ extension ExploreDashWhereToSpendModel
     
     func search(query: String, for segment: ExploreWhereToSpendSegment) -> [Merchant] {
         return ExploreDash.shared.searchOnlineMerchants(query: query).items
+    }
+    
+    func searchMerchants(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?) {
+        ExploreDash.shared.searchMerchants(by: query, in: bounds, userPoint: userPoint) { [weak self] result in
+            switch result {
+            case .success(let page):
+                self?.nearbyLastSearchMerchants = page.items
+                break
+            case .failure(let error):
+                break //TODO: handler failure
+            }
+            
+            DispatchQueue.main.async {
+                self?.nearbyMerchantsDidChange?()
+            }
+        }
     }
 }

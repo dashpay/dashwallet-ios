@@ -41,6 +41,10 @@ static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
     return self;
 }
 
+-(void)resetSearchBar {
+    _searchBar.text = @"";
+}
+
 -(void)configureHierarchy {
     self.searchBar = [[UISearchBar alloc] init];
     _searchBar.translatesAutoresizingMaskIntoConstraints = NO;
@@ -54,6 +58,7 @@ static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
         [_searchBar.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-9]
     ]];
 }
+
 
 - (void)searchWithQuery:(NSString *)searchQuery {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearch) object:nil];

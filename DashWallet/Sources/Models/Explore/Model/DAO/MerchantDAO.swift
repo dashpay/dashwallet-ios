@@ -61,6 +61,35 @@ class MerchantDAO
         }
     }
     
+    func searchMerchants(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+            
+            let anchorLatitude = userPoint?.latitude ?? bounds.center.latitude
+            let anchorLongitude = userPoint?.longitude ?? bounds.center.longitude
+            
+            let query = """
+                SELECT *
+                FROM merchant
+                WHERE type IN ('physical', 'both')
+                    AND name LIKE '\(query)%'
+                    AND latitude > \(bounds.swCoordinate.latitude)
+                    AND latitude < \(bounds.neCoordinate.latitude)
+                    AND longitude < \(bounds.neCoordinate.longitude)
+                    AND longitude > \(bounds.swCoordinate.longitude)
+                ORDER BY ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC
+                
+            """
+            do {
+                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
+            }catch{
+                print(error)
+                completion(.failure(error))
+            }
+        }
+    }
+    
     func allLocations(for merchant: Merchant, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
@@ -130,41 +159,24 @@ class MerchantDAO
     }
     
     func searchOnlineMerchants(query: String, offset: Int = 0) -> PaginationResult<Merchant> {
-        let name = Expression<String>("name")
-        let type = Expression<String>("type")
-        
-        let merchants = Table("merchant")
-        let query = merchants.select(merchants[*])
-            .filter(["online", "both"].contains(type) && name.like("\(query)%"))
-            .order(name)
-            .limit(pageLimit, offset: offset)
+        let query =
+            """
+            SELECT *
+            FROM merchant
+            WHERE type IN ('online', 'both')
+            AND name LIKE '\(query)%'
+            GROUP BY source, merchantId
+            ORDER BY name
+            """
         
         do {
-            let items: [Merchant] = try connection.find(query: query)
+            let items: [Merchant] = try connection.execute(query: query)
             return PaginationResult(items: items, offset: offset + pageLimit)
         }catch{
             print(error)
             return PaginationResult(items: [], offset: 0)
         }
     }
-//    func nearby(location:offset: Int = 1) -> PaginationResult<Merchant> {
-//        let name = Expression<String>("name")
-//        let type = Expression<String>("type")
-//        
-//        let merchants = Table("merchant")
-//        let query = merchants.select(merchants[*])
-//            .filter(type == "physical" || type == "both")
-//            .order(name)
-//            .limit(pageLimit, offset: offset)
-//        
-//        do {
-//            let items: [Merchant] = try connection.find(query: query)
-//            return PaginationResult(items: items, offset: offset + pageLimit)
-//        }catch{
-//            print(error)
-//            return PaginationResult(items: [], offset: 0)
-//        }
-//    }
 }
 
 struct PaginationResult<Item> {

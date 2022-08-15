@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWExploreWhereToSpendSearchCell : UITableViewCell
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nullable,nonatomic,weak) id<DWExploreWhereToSpendSearchCellDelegate> delegate;
+
+-(void)resetSearchBar;
 @end
 
 NS_ASSUME_NONNULL_END

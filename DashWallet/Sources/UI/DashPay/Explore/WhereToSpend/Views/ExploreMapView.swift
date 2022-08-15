@@ -79,7 +79,7 @@ class ExploreMapView: UIView {
     }
     
     private var mapView: MKMapView!
-    private var mapBounds: ExploreMapBounds {
+    var mapBounds: ExploreMapBounds {
         return .init(rect: mapView.visibleMapRect)
     }
     
@@ -133,7 +133,6 @@ class ExploreMapView: UIView {
                 }
             }
         }
-  
     }
     
     public func setCenter(_ location: CLLocation, animated: Bool) {
