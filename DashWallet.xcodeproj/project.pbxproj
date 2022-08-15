@@ -564,6 +564,7 @@
 		471EA7CD27AD2072005A2E8A /* DWExploreBaseInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */; };
 		4722959F28A82BC300245374 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4722959E28A82BC300245374 /* App.swift */; };
 		472295A128A95F8100245374 /* MerchantAllLocationsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472295A028A95F8100245374 /* MerchantAllLocationsModel.swift */; };
+		472295A328AA856300245374 /* FetchingNextPageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472295A228AA856300245374 /* FetchingNextPageCell.swift */; };
 		474CD81F27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */; };
 		474CD82227B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */; };
 		474CD82527B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */; };
@@ -1854,6 +1855,7 @@
 		471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreBaseInfoViewController.m; sourceTree = "<group>"; };
 		4722959E28A82BC300245374 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		472295A028A95F8100245374 /* MerchantAllLocationsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantAllLocationsModel.swift; sourceTree = "<group>"; };
+		472295A228AA856300245374 /* FetchingNextPageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchingNextPageCell.swift; sourceTree = "<group>"; };
 		474CD81D27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendFiltersCell.h; sourceTree = "<group>"; };
 		474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendFiltersCell.m; sourceTree = "<group>"; };
 		474CD82027B16821009D71A5 /* DWExploreWhereToSpendSearchCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendSearchCell.h; sourceTree = "<group>"; };
@@ -4898,6 +4900,7 @@
 				474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */,
 				47FB33C527BE910600EBF019 /* ExploreWhereToSpendLocationOffCell.swift */,
 				4799E40B2822CEA900212563 /* ExploreMerchantItemCell.swift */,
+				472295A228AA856300245374 /* FetchingNextPageCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -5954,6 +5957,7 @@
 				2A877CA225116F1800AB14FC /* DWContactsPlaceholderViewController.m in Sources */,
 				2A7AF36324825A0C001D74F9 /* DWDPUserObject.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
+				472295A328AA856300245374 /* FetchingNextPageCell.swift in Sources */,
 				2A8DBA7A2630A6D6009094BD /* DWExtendedPublicKeysModel.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,

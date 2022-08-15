@@ -19,7 +19,7 @@ import Foundation
 import SQLite
 import CoreLocation
 
-private let pageLimit = 30
+let pageLimit = 100
 
 class MerchantDAO
 {
@@ -29,6 +29,33 @@ class MerchantDAO
     
     init(dbConnection: ExploreDatabaseConnection) {
         self.connection = dbConnection
+    }
+    
+    func merchants(query: String?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+            let query = """
+                SELECT *
+                FROM merchant
+                \(query != nil ? "WHERE name LIKE '\(query!)%'" : "")
+                ORDER BY
+                    CASE
+                    WHEN type IN ('physical', 'both') THEN 1
+                    WHEN type = 'online' THEN 2
+                    END,
+                    \(userPoint != nil ? "ABS(latitude-\(userPoint!.latitude)) + ABS(longitude - \(userPoint!.longitude)) ASC," : "")
+                    name
+                LIMIT \(pageLimit)
+                OFFSET \(offset)
+                """
+            do {
+                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                completion(.success(PaginationResult(items: items, offset: offset + pageLimit)))
+            }catch{
+                print(error)
+                completion(.failure(error))
+            }
+        }
     }
     
     func merchantsInRect(bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {

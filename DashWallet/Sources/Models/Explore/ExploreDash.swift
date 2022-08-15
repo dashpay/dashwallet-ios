@@ -76,6 +76,9 @@ public class ExploreDash {
 }
 
 extension ExploreDash {
+    func merchants(query: String?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.merchants(query: query, userPoint: userPoint, offset: offset, completion: completion)
+    }
     /**
      Retrieve merchants by location
      @param location Center of
