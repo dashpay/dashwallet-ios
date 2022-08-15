@@ -59,6 +59,10 @@ class ExploreMapView: UIView {
         return mapView.userLocation.location
     }
     
+    var centerCoordinate: CLLocationCoordinate2D {
+        return mapView.centerCoordinate
+    }
+    
     var initialCenterLocation: CLLocation?
     var centerRadius: Double = 20
     var contentInset: UIEdgeInsets = .zero {
@@ -80,7 +84,19 @@ class ExploreMapView: UIView {
     
     private var mapView: MKMapView!
     var mapBounds: ExploreMapBounds {
-        return .init(rect: mapView.visibleMapRect)
+        //TODO: dynamic radius
+        let clRegion = CLCircularRegion(center: centerCoordinate, radius: 32000, identifier: "center")
+        let region = MKCoordinateRegion(center: clRegion.center, latitudinalMeters: clRegion.radius*2, longitudinalMeters: clRegion.radius*2)
+        let a = MKMapPoint(CLLocationCoordinate2D(
+            latitude: region.center.latitude + region.span.latitudeDelta / 2,
+            longitude: region.center.longitude - region.span.longitudeDelta / 2))
+        
+        let b = MKMapPoint(CLLocationCoordinate2D(
+            latitude: region.center.latitude - region.span.latitudeDelta / 2,
+            longitude: region.center.longitude + region.span.longitudeDelta / 2));
+        let rect = MKMapRect(x: min(a.x,b.x), y: min(a.y,b.y), width: abs(a.x-b.x), height: abs(a.y-b.y));
+        
+        return .init(rect: rect)
     }
     
     private var shownMerchants: [Merchant] = []

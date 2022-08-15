@@ -97,16 +97,19 @@ import CoreLocation
     private func reverseCurrentLocation()
     {
         guard let loc = currentLocation else { return }
-        reverseGeocodeLocation(loc)
+        reverseGeocodeLocation(loc) { [weak self] loc in
+            self?.currentReversedLocation = loc
+        }
     }
-    
-    private func reverseGeocodeLocation(_ location: CLLocation)
+     
+    public func reverseGeocodeLocation(_ location: CLLocation, completion: @escaping ((String) -> Void))
     {
-        geocoder.reverseGeocodeLocation(location, preferredLocale: Locale.current) { [weak self] placemarks, error in
+        geocoder.reverseGeocodeLocation(location, preferredLocale: Locale.current) { placemarks, error in
             if let placemark = placemarks?.last {
-                self?.currentReversedLocation = [placemark.country, placemark.administrativeArea].compactMap({ $0 }).joined(separator: ", ")
+                let loc = [placemark.country, placemark.administrativeArea, placemark.locality].compactMap({ $0 }).joined(separator: ", ")
+                completion(loc)
             }else if let error = error {
-                
+                completion("Location couldn't determined")
             }
         }
     }

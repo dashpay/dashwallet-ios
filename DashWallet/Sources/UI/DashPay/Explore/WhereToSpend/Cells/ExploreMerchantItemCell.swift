@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 class ExploreMerchantItemCell: UITableViewCell {
     private var logoImageView: UIImageView!
@@ -35,6 +36,16 @@ class ExploreMerchantItemCell: UITableViewCell {
     
     func update(with merchant: Merchant) {
         nameLabel.text = merchant.name
+        
+        if let currentLocation = DWLocationManager.shared.currentLocation,
+           DWLocationManager.shared.isAuthorized {
+            subLabel.isHidden = false
+            let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
+            let distanceText: String = App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
+            subLabel.text = distanceText
+        }else{
+            subLabel.isHidden = true
+        }
         
         if let urlString = merchant.logoLocation, let url = URL(string: urlString) {
             logoImageView.sd_setImage(with: url)
@@ -64,12 +75,25 @@ extension ExploreMerchantItemCell {
         logoImageView.layer.masksToBounds = true
         stackView.addArrangedSubview(logoImageView)
 
+        let textStackView = UIStackView()
+        textStackView.axis = .vertical
+        textStackView.spacing = 2
+        textStackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(textStackView)
+        
         nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.font = UIFont.systemFont(ofSize: 14)
-        stackView.addArrangedSubview(nameLabel)
+        textStackView.addArrangedSubview(nameLabel)
         
-        stackView.addArrangedSubview(UIView())
+        subLabel = UILabel()
+        subLabel.translatesAutoresizingMaskIntoConstraints = false
+        subLabel.font = UIFont.systemFont(ofSize: 11)
+        subLabel.textColor = .secondaryLabel
+        subLabel.isHidden = true
+        textStackView.addArrangedSubview(subLabel)
+        
+
         
         paymentTypeIconView = UIImageView(image: UIImage(named: "image.explore.dash.wts.payment.dash"))
         paymentTypeIconView.translatesAutoresizingMaskIntoConstraints = false

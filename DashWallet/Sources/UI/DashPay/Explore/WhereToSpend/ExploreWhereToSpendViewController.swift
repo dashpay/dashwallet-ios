@@ -56,6 +56,7 @@ enum ExploreWhereToSpendSegment: Int {
     private var contentView: UIView!
     private var tableView: UITableView!
     private var mapView: ExploreMapView!
+    private var radius: Int = 20 //In miles
     private var filterCell: DWExploreWhereToSpendFiltersCell?
     private var searchCell: DWExploreWhereToSpendSearchCell?
     
@@ -112,13 +113,12 @@ enum ExploreWhereToSpendSegment: Int {
                 self?.tableView.reloadData()
             }
             
-            self?.mapView.show(merchants: merchantsToShow)
-            if let userRadius = self?.mapView.userRadius {
-                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: floor(userRadius), unit: UnitLength.meters)))
+            if Locale.current.usesMetricSystem {
+                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.meters)))
             }else{
-                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s)", comment: "#bc-ignore!"),  merchantsToShow.count)
+                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
-
+            self?.mapView.show(merchants: merchantsToShow)
         }
         
         model.allMerchantsDidChange = { [weak self] in
@@ -352,21 +352,15 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
             self.searchCell = searchCell
             cell = searchCell
         case .filters:
-            let filterCell: DWExploreWhereToSpendFiltersCell = tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendFiltersCell
-            filterCell.title = segmentTitles[currentSegment.rawValue]
+            let filterCell: DWExploreWhereToSpendFiltersCell = self.filterCell ?? tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendFiltersCell
             
+    
             if currentSegment == .nearby {
-                if let userRadius = mapView.userRadius {
-                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: floor(userRadius), unit: UnitLength.meters)))
+                if Locale.current.usesMetricSystem {
+                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.meters)))
                 }else{
-                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s)", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count)
+                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
                 }
-            }
-            
-            if currentSegment == .nearby {
-                let location: String? = DWLocationManager.shared.currentReversedLocation
-                filterCell.title = location ?? filterCell.title
-                //filterCell.subtitle = NSLocalizedString("2 merchants in 20 miles", comment: "");
             }
             self.filterCell = filterCell
             cell = filterCell
@@ -542,8 +536,10 @@ extension ExploreWhereToSpendViewController {
         _merchants = model.merchants(for: newSegment)
         isSearchActive = false
         searchCell?.resetSearchBar()
+        filterCell?.title = segmentTitles[index]
         filterCell?.subtitle = nil
         tableView.reloadData()
+        
         
         switch newSegment {
         case .nearby:
@@ -565,10 +561,10 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
         case .all:
             model.fetchMerchants(query: nil, offset: 0)
         case .nearby:
-            if let userRadius = mapView.userRadius {
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: floor(userRadius), unit: UnitLength.meters)))
+            if Locale.current.usesMetricSystem {
+                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.meters)))
             }else{
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s)", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count)
+                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
             mapView.show(merchants: model.cachedNearbyMerchants)
         default:
@@ -606,6 +602,11 @@ extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
         }else{
             model.fetchMerchants(in: bounds, userPoint: mapView.userLocation?.coordinate)
         }
+        
+        DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
+            self?.filterCell?.title = location
+        }
+        
     }
     
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {

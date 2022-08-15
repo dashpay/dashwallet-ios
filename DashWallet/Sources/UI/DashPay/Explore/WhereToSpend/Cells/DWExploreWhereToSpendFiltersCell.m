@@ -78,8 +78,10 @@
     [stackView addArrangedSubview:txtStackView];
     
     UILabel *label = [[UILabel alloc] init];
+    label.adjustsFontSizeToFitWidth = YES;
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.font = [UIFont systemFontOfSize:20];
+    label.minimumScaleFactor = 0.5;
     [txtStackView addArrangedSubview:label];
     _titleLabel = label;
     
