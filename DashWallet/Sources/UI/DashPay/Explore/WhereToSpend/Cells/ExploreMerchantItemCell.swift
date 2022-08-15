@@ -21,7 +21,7 @@ import CoreLocation
 class ExploreMerchantItemCell: UITableViewCell {
     private var logoImageView: UIImageView!
     private var nameLabel: UILabel!
-    private var subLabel: UILabel!
+    var subLabel: UILabel!
     private var paymentTypeIconView: UIImageView!
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

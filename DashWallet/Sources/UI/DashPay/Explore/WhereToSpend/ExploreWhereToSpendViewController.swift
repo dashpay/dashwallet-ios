@@ -64,11 +64,6 @@ enum ExploreWhereToSpendSegment: Int {
     private var showMapButton: UIButton!
     
     
-    private var cancelBarButton: UIBarButtonItem = {
-        let infoButton: UIButton = UIButton(type: .infoLight)
-        infoButton.addTarget(ExploreWhereToSpendViewController.self, action: #selector(infoButtonAction), for: .touchUpInside)
-        return UIBarButtonItem(customView: infoButton)
-    }()
     
     private var isSearchActive: Bool = false
     private var lastSearchQuery: String?
@@ -99,7 +94,10 @@ enum ExploreWhereToSpendSegment: Int {
         
         self.title = NSLocalizedString("Where to Spend", comment: "");
         self.view.backgroundColor = .dw_background()
-        self.navigationItem.rightBarButtonItem = cancelBarButton
+        
+        let infoButton: UIButton = UIButton(type: .infoLight)
+        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
         
         model.nearbyMerchantsDidChange = { [weak self] in
             let merchantsToShow: Array<Merchant>
@@ -114,7 +112,7 @@ enum ExploreWhereToSpendSegment: Int {
             }
             
             if Locale.current.usesMetricSystem {
-                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.meters)))
+                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
             }else{
                 self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
@@ -157,6 +155,7 @@ enum ExploreWhereToSpendSegment: Int {
         }
         
         currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online;
+        _merchants = DWLocationManager.shared.isAuthorized ? model.cachedNearbyMerchants : model.cachedOnlineMerchants
         
         configureHierarchy()
     }
@@ -276,8 +275,6 @@ extension ExploreWhereToSpendViewController {
         panRecognizer.maximumNumberOfTouches = 1
         handlerView.addGestureRecognizer(panRecognizer)
         
-        
-        
         self.showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
         showMapButton.isHidden = true
@@ -357,10 +354,12 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
     
             if currentSegment == .nearby {
                 if Locale.current.usesMetricSystem {
-                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.meters)))
+                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
                 }else{
                     filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
                 }
+            }else{
+                filterCell.title = segmentTitles[currentSegment.rawValue]
             }
             self.filterCell = filterCell
             cell = filterCell
@@ -373,6 +372,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 let merchant = self.merchants[indexPath.row];
                 let itemCell: ExploreMerchantItemCell = tableView.dequeueReusableCell(withIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier, for: indexPath) as! ExploreMerchantItemCell
                 itemCell.update(with: merchant)
+                itemCell.subLabel.isHidden = currentSegment == .online
                 cell = itemCell;
             }
         case .nextPage:
@@ -489,6 +489,7 @@ extension ExploreWhereToSpendViewController {
     @objc private func showMapAction() {
         showMap()
     }
+    
     @objc private func infoButtonAction() {
         showInfoViewController()
     }
@@ -547,8 +548,6 @@ extension ExploreWhereToSpendViewController {
         default:
             self.hideMapIfNeeded()
         }
-        
-        
     }
 }
 
@@ -562,7 +561,7 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
             model.fetchMerchants(query: nil, offset: 0)
         case .nearby:
             if Locale.current.usesMetricSystem {
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.meters)))
+                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
             }else{
                 filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
@@ -597,6 +596,8 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
 
 extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
+        if currentSegment != .nearby { return }
+        
         if let q = lastSearchQuery, isSearchActive {
             model.searchMerchants(by: q, in: bounds, userPoint: mapView.userLocation?.coordinate)
         }else{
