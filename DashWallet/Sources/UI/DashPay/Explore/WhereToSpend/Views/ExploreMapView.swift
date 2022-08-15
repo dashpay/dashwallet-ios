@@ -110,24 +110,30 @@ class ExploreMapView: UIView {
             self.shownMerchantsAnnotations = newAnnotations
             mapView.addAnnotations(newAnnotations)
         }else{
-            let currentAnnotations = Set(self.shownMerchantsAnnotations)
-            let newMerchants = Set(merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
-            
-            let toAdd = newMerchants.subtracting(currentAnnotations)
-            let toDelete = currentAnnotations.subtracting(newMerchants)
-            let toKeep = currentAnnotations.subtracting(toDelete)
-            
-            self.shownMerchantsAnnotations = Array(toKeep.union(toAdd))
-
-            if !toDelete.isEmpty {
-                mapView.removeAnnotations(Array(toDelete))
+            DispatchQueue.global(qos: .background).async { [weak self] in
+                guard let wSelf = self else { return }
+                
+                let currentAnnotations = Set(wSelf.shownMerchantsAnnotations)
+                let newMerchants = Set(merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))}))
+                
+                let toAdd = newMerchants.subtracting(currentAnnotations)
+                let toDelete = currentAnnotations.subtracting(newMerchants)
+                let toKeep = currentAnnotations.subtracting(toDelete)
+                
+                wSelf.shownMerchantsAnnotations = Array(toKeep.union(toAdd))
+                
+                DispatchQueue.main.async {
+                    if !toDelete.isEmpty {
+                        wSelf.mapView.removeAnnotations(Array(toDelete))
+                    }
+                    
+                    if !toAdd.isEmpty {
+                        wSelf.mapView.addAnnotations(Array(toAdd))
+                    }
+                }
             }
-            
-            if !toAdd.isEmpty {
-                mapView.addAnnotations(Array(toAdd))
-            }
-            
         }
+  
     }
     
     public func setCenter(_ location: CLLocation, animated: Bool) {
@@ -192,6 +198,16 @@ class ExploreMapView: UIView {
 
 extension ExploreMapView: MKMapViewDelegate {
     
+    func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
+        guard let view = views.first(where: { $0.annotation is MKUserLocation }) else { return }
+        DispatchQueue.main.async {
+            if #available(iOS 14.0, *) {
+                view.zPriority = .max
+            } else {
+                view.layer.zPosition = CGFloat.greatestFiniteMagnitude
+            }
+        }
+    }
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         switch annotation {
         case is MerchantAnnotation:
