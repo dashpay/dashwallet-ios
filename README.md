@@ -56,7 +56,13 @@ To simplify developing process we use local podspec dependencies and it's import
 2. Install protobuf and grpc:
 `brew install protobuf grpc`
 
-3. Run `pod install` in the wallet directory.
+3. Install last version of rust:
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+
+4. Install cmake and make sure it is located in one of the following folders:
+`${PLATFORM_PATH}/Developer/usr/bin, ${DEVELOPER}/usr/bin:/usr/local/bin, /usr/bin, /bin, /usr/sbin, /sbin, /opt/homebrew/bin`
+
+5. Run `pod install` in the wallet directory.
 
 ### Optional Requirements
 
