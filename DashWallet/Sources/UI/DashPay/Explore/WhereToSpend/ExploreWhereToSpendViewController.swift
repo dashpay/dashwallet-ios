@@ -62,13 +62,10 @@ enum ExploreWhereToSpendSegment: Int {
     
     private var currentSegment: ExploreWhereToSpendSegment = .online
     private var showMapButton: UIButton!
-    
-    
-    
+
     private var isSearchActive: Bool = false
     private var lastSearchQuery: String?
     private var searchResult: [Merchant] = []
-    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -99,61 +96,49 @@ enum ExploreWhereToSpendSegment: Int {
         infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
         
-        model.nearbyMerchantsDidChange = { [weak self] in
-            let merchantsToShow: Array<Merchant>
-            self?._merchants = self?.model.merchants(for: .nearby) ?? []
-            if self?.isSearchActive ?? false {
-                merchantsToShow = self?.model.nearbyLastSearchMerchants ?? []
-                self?.searchResult = merchantsToShow
-                self?.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
-            }else{
-                merchantsToShow = self?.model.cachedNearbyMerchants ?? []
-                self?.tableView.reloadData()
-            }
-            
-            if Locale.current.usesMetricSystem {
-                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-            }else{
-                self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  merchantsToShow.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
-            }
-            self?.mapView.show(merchants: merchantsToShow)
-        }
-        
-        model.allMerchantsDidChange = { [weak self] in
+        model.searchResultDidChange = { [weak self] in
             guard let wSelf = self else { return }
             
-            if wSelf.currentSegment == .all {
-                
-                let newItems = wSelf.model.cachedAllMerchantsPage?.items ?? []
-                let prevItems = wSelf.model.cachedAllMerchants.dropLast(newItems.count)
-                let needToReload = prevItems.isEmpty
-
-                if self?.isSearchActive ?? false {
-                    if needToReload { self?.searchResult = newItems } else { self?.searchResult += newItems }
-                }else{
-                    if needToReload { self?._merchants = newItems } else { self?._merchants += newItems }
-                }
-                
-                if needToReload {
-                    wSelf.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue, ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
-                }else{
-                    var rowsToInsert: [IndexPath] = []
-                    var startIndex = prevItems.count
-
-                    for _ in newItems {
-                        rowsToInsert.append(.init(item: startIndex, section: ExploreWhereToSpendSections.items.rawValue))
-                        startIndex += 1
-                    }
-                    wSelf.tableView.beginUpdates()
-                    wSelf.tableView.reloadSections([ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
-                    wSelf.tableView.insertRows(at: rowsToInsert, with: .top)
-                    wSelf.tableView.endUpdates()
-                }
-                
-
+            switch wSelf.currentSegment
+            {
+            case .online:
+                wSelf.searchResult = wSelf.model.onlineSearchResult
+            case .nearby:
+                wSelf.searchResult = wSelf.model.nearbySearchResult
+                wSelf.mapView.show(merchants: wSelf.model.nearbySearchResult)
+            case .all:
+                wSelf.searchResult = wSelf.model.nearbySearchResult + wSelf.model.onlineSearchResult
+                wSelf.mapView.show(merchants: wSelf.model.nearbySearchResult)
             }
+            
+            self?.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
+        }
+       
+        model.cachedNearbyMerchantsDidChange = { [weak self] in
+            guard let wSelf = self else { return }
+            
+            switch wSelf.currentSegment
+            {
+            case .online:
+                break
+            case .nearby:
+                wSelf._merchants = wSelf.model.cachedNearbyMerchants
+                self?.mapView.show(merchants: wSelf.model.cachedNearbyMerchants)
+                
+                if Locale.current.usesMetricSystem {
+                    self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  wSelf.model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+                }else{
+                    self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  wSelf.model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+                }
+            case .all:
+                wSelf._merchants = wSelf.model.cachedNearbyMerchants + wSelf.model.cachedOnlineMerchants
+                self?.mapView.show(merchants: wSelf.model.cachedNearbyMerchants)
+            }
+            
+            self?.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
         }
         
+
         currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online;
         _merchants = DWLocationManager.shared.isAuthorized ? model.cachedNearbyMerchants : model.cachedOnlineMerchants
         
@@ -216,7 +201,7 @@ extension ExploreWhereToSpendViewController {
     }
     
     private func updateShowMapButtonVisibility() {
-        let isVisible = currentSegment == .nearby &&
+        let isVisible = (currentSegment == .nearby || currentSegment == .all) &&
                         contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition &&
                         DWLocationManager.shared.isAuthorized
                 
@@ -373,6 +358,15 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 let itemCell: ExploreMerchantItemCell = tableView.dequeueReusableCell(withIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier, for: indexPath) as! ExploreMerchantItemCell
                 itemCell.update(with: merchant)
                 itemCell.subLabel.isHidden = currentSegment == .online
+                
+                if currentSegment == .all {
+                    if isSearchActive {
+                        itemCell.subLabel.isHidden = indexPath.row >= model.nearbySearchResult.count
+                    }else{
+                        itemCell.subLabel.isHidden = indexPath.row >= model.cachedNearbyMerchants.count
+                    }
+                }
+                
                 cell = itemCell;
             }
         case .nextPage:
@@ -408,7 +402,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 return merchants.count
             }
         case .nextPage:
-            return model.hasNextPage && currentSegment == .all ? 1 : 0
+            return 0 //model.hasNextPage && currentSegment == .all ? 1 : 0
         default:
             return 1
         }
@@ -452,12 +446,12 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         }
     }
     
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if let cell = cell as? FetchingNextPageCell {
-            cell.start()
-            model.fetchNextPage()
-        }
-    }
+//    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+//        if let cell = cell as? FetchingNextPageCell {
+//            cell.start()
+//            model.fetchNextPage()
+//        }
+//    }
     
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let cell = cell as? FetchingNextPageCell {
@@ -543,7 +537,7 @@ extension ExploreWhereToSpendViewController {
         
         
         switch newSegment {
-        case .nearby:
+        case .nearby, .all:
             self.showMapIfNeeded()
         default:
             self.hideMapIfNeeded()
@@ -555,20 +549,26 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
     private func stopSearching() {
         isSearchActive = false
         searchResult = []
-        
-        switch currentSegment {
-        case .all:
-            model.fetchMerchants(query: nil, offset: 0)
+        model.resetSearchResults()
+        lastSearchQuery = nil
+        switch currentSegment
+        {
+        case .online:
+            _merchants = model.onlineSearchResult
         case .nearby:
+            _merchants = model.cachedNearbyMerchants
+            mapView.show(merchants: model.cachedNearbyMerchants)
+            
             if Locale.current.usesMetricSystem {
                 filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
             }else{
                 filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
+        case .all:
+            _merchants = model.cachedNearbyMerchants + model.cachedOnlineMerchants
             mapView.show(merchants: model.cachedNearbyMerchants)
-        default:
-            tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
         }
+        tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
     }
     
     func searchCell(_ searchCell: DWExploreWhereToSpendSearchCell, shouldStartSearchWithQuery query: String) {
@@ -576,15 +576,18 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
             stopSearching()
             return
         }
+        
         isSearchActive = true
+        lastSearchQuery = query
         
         switch currentSegment {
         case .all:
-            model.fetchMerchants(query: query, offset: 0)
+            model.searchOnline(query: query)
+            model.searchMerchants(by: query, in: mapView.mapBounds, userPoint: mapView.userLocation?.coordinate)
         case .nearby:
             model.searchMerchants(by: query, in: mapView.mapBounds, userPoint: mapView.userLocation?.coordinate)
         default:
-            searchResult = model.search(query: query, for: currentSegment)
+            model.searchOnline(query: query)
             tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
         }
     }
@@ -596,7 +599,7 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
 
 extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
-        if currentSegment != .nearby { return }
+        if currentSegment == .online { return }
         
         if let q = lastSearchQuery, isSearchActive {
             model.searchMerchants(by: q, in: bounds, userPoint: mapView.userLocation?.coordinate)
@@ -605,9 +608,10 @@ extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
         }
         
         DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
-            self?.filterCell?.title = location
+            if self?.currentSegment == .nearby {
+                self?.filterCell?.title = location
+            }
         }
-        
     }
     
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {

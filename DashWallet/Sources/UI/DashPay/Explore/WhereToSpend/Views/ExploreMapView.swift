@@ -96,7 +96,7 @@ class ExploreMapView: UIView {
             longitude: region.center.longitude + region.span.longitudeDelta / 2));
         let rect = MKMapRect(x: min(a.x,b.x), y: min(a.y,b.y), width: abs(a.x-b.x), height: abs(a.y-b.y));
         
-        return .init(rect: rect)
+        return .init(rect: MKCircle(center: centerCoordinate, radius: 32000).boundingMapRect)
     }
     
     private var shownMerchants: [Merchant] = []
