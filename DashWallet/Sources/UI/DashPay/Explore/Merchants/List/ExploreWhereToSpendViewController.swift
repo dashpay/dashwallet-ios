@@ -40,10 +40,10 @@ enum ExploreWhereToSpendSegment: Int {
 }
 
 @objc class ExploreWhereToSpendViewController: UIViewController {
-    
+    //Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
     
-    let model = ExploreDashWhereToSpendModel()
+    private let model = ExploreDashWhereToSpendModel()
     
     private var _merchants: [Merchant] = []
     private var merchants: [Merchant] { return isSearchActive ? searchResult : _merchants }
@@ -52,20 +52,22 @@ enum ExploreWhereToSpendSegment: Int {
                                            NSLocalizedString("Nearby", comment: "Nearby"),
                                            NSLocalizedString("All", comment: "All")]
     
-    private var contentViewTopLayoutConstraint: NSLayoutConstraint!
-    private var contentView: UIView!
-    private var tableView: UITableView!
-    private var mapView: ExploreMapView!
-    private var radius: Int = 20 //In miles
-    private var filterCell: DWExploreWhereToSpendFiltersCell?
-    private var searchCell: DWExploreWhereToSpendSearchCell?
-    
     private var currentSegment: ExploreWhereToSpendSegment = .online
-    private var showMapButton: UIButton!
-
     private var isSearchActive: Bool = false
     private var lastSearchQuery: String?
     private var searchResult: [Merchant] = []
+    
+    private var radius: Int = 20 //In miles //Movel to model
+    private var mapView: ExploreMapView!
+    private var showMapButton: UIButton!
+    
+    private var contentViewTopLayoutConstraint: NSLayoutConstraint!
+    private var contentView: UIView!
+   
+    private var tableView: UITableView!
+    private var filterCell: DWExploreWhereToSpendFiltersCell?
+    private var searchCell: DWExploreWhereToSpendSearchCell?
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -147,6 +149,23 @@ enum ExploreWhereToSpendSegment: Int {
 }
 
 extension ExploreWhereToSpendViewController {
+    private func refreshFilterCell() {
+        switch currentSegment
+        {
+        case .online, .all:
+            filterCell?.title = segmentTitles[currentSegment.rawValue]
+        case .nearby:
+            break
+//            _merchants = model.cachedNearbyMerchants
+//            mapView.show(merchants: model.cachedNearbyMerchants)
+//
+//            if Locale.current.usesMetricSystem {
+//                filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+//            }else{
+//                filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+//            }
+        }
+    }
     private func showInfoViewControllerIfNeeded() {
         if !DWGlobalOptions.sharedInstance().dashpayExploreWhereToSpendInfoShown {
             showInfoViewController()

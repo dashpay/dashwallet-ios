@@ -3605,8 +3605,7 @@
 		2A95D60A27008AD400B0BF5C /* Explore */ = {
 			isa = PBXGroup;
 			children = (
-				471BAA3B27B2981D00F27748 /* Model */,
-				474CD81827B1289A009D71A5 /* WhereToSpend */,
+				477F2AA128AD111700E4D1E7 /* Merchants */,
 				2A95D60B2702790A00B0BF5C /* Views */,
 				2A95D6152702835700B0BF5C /* DWExploreTestnetViewController.h */,
 				2A95D6162702835700B0BF5C /* DWExploreTestnetViewController.m */,
@@ -4845,13 +4844,6 @@
 			path = Receive;
 			sourceTree = "<group>";
 		};
-		471BAA3B27B2981D00F27748 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
 		471BAA3C27B2987C00F27748 /* Explore */ = {
 			isa = PBXGroup;
 			children = (
@@ -4869,24 +4861,6 @@
 				4722959E28A82BC300245374 /* App.swift */,
 			);
 			path = Application;
-			sourceTree = "<group>";
-		};
-		474CD81827B1289A009D71A5 /* WhereToSpend */ = {
-			isa = PBXGroup;
-			children = (
-				479A237B282940F0000D7EA2 /* Model */,
-				47F3321A27FDAC0200D4D056 /* MerchantView */,
-				47CFDC1427B987600071115E /* Views */,
-				474CD81927B167A1009D71A5 /* Cells */,
-				471EA7C527AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.h */,
-				471EA7C627AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m */,
-				471EA7C827AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.h */,
-				471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */,
-				471EA7CB27AD2072005A2E8A /* DWExploreBaseInfoViewController.h */,
-				471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */,
-				4799E4092822816100212563 /* ExploreWhereToSpendViewController.swift */,
-			);
-			path = WhereToSpend;
 			sourceTree = "<group>";
 		};
 		474CD81927B167A1009D71A5 /* Cells */ = {
@@ -4925,6 +4899,79 @@
 			path = DAO;
 			sourceTree = "<group>";
 		};
+		477F2AA128AD111700E4D1E7 /* Merchants */ = {
+			isa = PBXGroup;
+			children = (
+				477F2AA428AD116400E4D1E7 /* Details */,
+				477F2AA328AD113E00E4D1E7 /* List */,
+				477F2AA228AD112400E4D1E7 /* Info */,
+			);
+			path = Merchants;
+			sourceTree = "<group>";
+		};
+		477F2AA228AD112400E4D1E7 /* Info */ = {
+			isa = PBXGroup;
+			children = (
+				471EA7C527AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.h */,
+				471EA7C627AC0610005A2E8A /* DWExploreWhereToSpendInfoViewController.m */,
+				471EA7C827AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.h */,
+				471EA7C927AD1FD5005A2E8A /* DWExploreGiftCardInfoViewController.m */,
+				471EA7CB27AD2072005A2E8A /* DWExploreBaseInfoViewController.h */,
+				471EA7CC27AD2072005A2E8A /* DWExploreBaseInfoViewController.m */,
+			);
+			path = Info;
+			sourceTree = "<group>";
+		};
+		477F2AA328AD113E00E4D1E7 /* List */ = {
+			isa = PBXGroup;
+			children = (
+				477F2AA728AD11EA00E4D1E7 /* Views */,
+				477F2AA628AD11A600E4D1E7 /* Model */,
+				474CD81927B167A1009D71A5 /* Cells */,
+				4799E4092822816100212563 /* ExploreWhereToSpendViewController.swift */,
+			);
+			path = List;
+			sourceTree = "<group>";
+		};
+		477F2AA428AD116400E4D1E7 /* Details */ = {
+			isa = PBXGroup;
+			children = (
+				477F2AA528AD117900E4D1E7 /* Model */,
+				47F3321B27FDAC1500D4D056 /* Views */,
+				47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */,
+				470CEC6F28059AC300C8580D /* ExploreMerchantAllLocationsViewController.swift */,
+			);
+			path = Details;
+			sourceTree = "<group>";
+		};
+		477F2AA528AD117900E4D1E7 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				472295A028A95F8100245374 /* MerchantAllLocationsModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		477F2AA628AD11A600E4D1E7 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		477F2AA728AD11EA00E4D1E7 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				47CFDC1527B987830071115E /* DWExploreWhereToSpendHandlerView.h */,
+				47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */,
+				47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */,
+				47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */,
+				477DB73428A6629D00DE1960 /* ExploreMapView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		4782CF5A27902F7000B4100C /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -4946,37 +4993,6 @@
 				4799E40528212CB600212563 /* GlobalOptions.swift */,
 			);
 			path = Infrastructure;
-			sourceTree = "<group>";
-		};
-		479A237B282940F0000D7EA2 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */,
-				472295A028A95F8100245374 /* MerchantAllLocationsModel.swift */,
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
-		47CFDC1427B987600071115E /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				47CFDC1527B987830071115E /* DWExploreWhereToSpendHandlerView.h */,
-				47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */,
-				47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */,
-				47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */,
-				477DB73428A6629D00DE1960 /* ExploreMapView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		47F3321A27FDAC0200D4D056 /* MerchantView */ = {
-			isa = PBXGroup;
-			children = (
-				47F3321B27FDAC1500D4D056 /* Views */,
-				47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */,
-				470CEC6F28059AC300C8580D /* ExploreMerchantAllLocationsViewController.swift */,
-			);
-			path = MerchantView;
 			sourceTree = "<group>";
 		};
 		47F3321B27FDAC1500D4D056 /* Views */ = {
