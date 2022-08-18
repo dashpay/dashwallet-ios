@@ -565,11 +565,14 @@
 		4722959F28A82BC300245374 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4722959E28A82BC300245374 /* App.swift */; };
 		472295A128A95F8100245374 /* MerchantAllLocationsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472295A028A95F8100245374 /* MerchantAllLocationsModel.swift */; };
 		472295A328AA856300245374 /* FetchingNextPageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472295A228AA856300245374 /* FetchingNextPageCell.swift */; };
+		4728F4C928AE258900282957 /* MerchantsDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4728F4C828AE258900282957 /* MerchantsDataProvider.swift */; };
+		4728F4CB28AE6B3300282957 /* MerchantAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4728F4CA28AE6B3300282957 /* MerchantAnnotationView.swift */; };
 		474CD81F27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */; };
 		474CD82227B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82127B16821009D71A5 /* DWExploreWhereToSpendSearchCell.m */; };
 		474CD82527B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */; };
 		47578D53281B195400B6489C /* ExploreDatabaseSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47578D52281B195400B6489C /* ExploreDatabaseSyncManager.swift */; };
 		477DB73528A6629E00DE1960 /* ExploreMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477DB73428A6629D00DE1960 /* ExploreMapView.swift */; };
+		477F2AA928AD890800E4D1E7 /* MerchantsListHandlerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F2AA828AD890800E4D1E7 /* MerchantsListHandlerView.swift */; };
 		4799E3F9281FD4CA00212563 /* ExploreMerchantRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E3F8281FD4CA00212563 /* ExploreMerchantRepository.swift */; };
 		4799E3FB281FED1E00212563 /* ExploreDatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E3FA281FED1E00212563 /* ExploreDatabaseConnection.swift */; };
 		4799E3FF2820281100212563 /* Merchant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E3FE2820281100212563 /* Merchant.swift */; };
@@ -578,12 +581,11 @@
 		4799E40828218B5A00212563 /* MerchantDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E40728218B5A00212563 /* MerchantDAO.swift */; };
 		4799E40A2822816100212563 /* ExploreWhereToSpendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E4092822816100212563 /* ExploreWhereToSpendViewController.swift */; };
 		4799E40C2822CEA900212563 /* ExploreMerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4799E40B2822CEA900212563 /* ExploreMerchantItemCell.swift */; };
-		479A237A28293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */; };
+		479A237A28293DF3000D7EA2 /* MerchantsListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479A237928293DF3000D7EA2 /* MerchantsListModel.swift */; };
 		479A237C28297B1D000D7EA2 /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 4799E3FC281FED7700212563 /* explore.db */; };
 		479A237E28297B71000D7EA2 /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479A237D28297B71000D7EA2 /* FileManager+DashWallet.swift */; };
 		47CCC7E527BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */; };
 		47CCC7E827BBDBE200B39FC5 /* ExploreMerchantViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */; };
-		47CFDC1727B987830071115E /* DWExploreWhereToSpendHandlerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */; };
 		47F3321D27FDAC3E00D4D056 /* MerchantDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F3321C27FDAC3E00D4D056 /* MerchantDetailsView.swift */; };
 		47FB33C427BE3E2E00EBF019 /* DWLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB33C327BE3E2E00EBF019 /* DWLocationManager.swift */; };
 		47FB33C627BE910600EBF019 /* ExploreWhereToSpendLocationOffCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB33C527BE910600EBF019 /* ExploreWhereToSpendLocationOffCell.swift */; };
@@ -1856,6 +1858,8 @@
 		4722959E28A82BC300245374 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		472295A028A95F8100245374 /* MerchantAllLocationsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantAllLocationsModel.swift; sourceTree = "<group>"; };
 		472295A228AA856300245374 /* FetchingNextPageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchingNextPageCell.swift; sourceTree = "<group>"; };
+		4728F4C828AE258900282957 /* MerchantsDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantsDataProvider.swift; sourceTree = "<group>"; };
+		4728F4CA28AE6B3300282957 /* MerchantAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantAnnotationView.swift; sourceTree = "<group>"; };
 		474CD81D27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendFiltersCell.h; sourceTree = "<group>"; };
 		474CD81E27B167F7009D71A5 /* DWExploreWhereToSpendFiltersCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendFiltersCell.m; sourceTree = "<group>"; };
 		474CD82027B16821009D71A5 /* DWExploreWhereToSpendSearchCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendSearchCell.h; sourceTree = "<group>"; };
@@ -1864,6 +1868,7 @@
 		474CD82427B1686D009D71A5 /* DWExploreWhereToSpendSegmentedCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendSegmentedCell.m; sourceTree = "<group>"; };
 		47578D52281B195400B6489C /* ExploreDatabaseSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDatabaseSyncManager.swift; sourceTree = "<group>"; };
 		477DB73428A6629D00DE1960 /* ExploreMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMapView.swift; sourceTree = "<group>"; };
+		477F2AA828AD890800E4D1E7 /* MerchantsListHandlerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantsListHandlerView.swift; sourceTree = "<group>"; };
 		4799E3F8281FD4CA00212563 /* ExploreMerchantRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMerchantRepository.swift; sourceTree = "<group>"; };
 		4799E3FA281FED1E00212563 /* ExploreDatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDatabaseConnection.swift; sourceTree = "<group>"; };
 		4799E3FC281FED7700212563 /* explore.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = explore.db; sourceTree = "<group>"; };
@@ -1873,14 +1878,12 @@
 		4799E40728218B5A00212563 /* MerchantDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDAO.swift; sourceTree = "<group>"; };
 		4799E4092822816100212563 /* ExploreWhereToSpendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreWhereToSpendViewController.swift; sourceTree = "<group>"; };
 		4799E40B2822CEA900212563 /* ExploreMerchantItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMerchantItemCell.swift; sourceTree = "<group>"; };
-		479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDashWhereToSpendModel.swift; sourceTree = "<group>"; };
+		479A237928293DF3000D7EA2 /* MerchantsListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantsListModel.swift; sourceTree = "<group>"; };
 		479A237D28297B71000D7EA2 /* FileManager+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+DashWallet.swift"; sourceTree = "<group>"; };
 		47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendLocationServicePopup.h; sourceTree = "<group>"; };
 		47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendLocationServicePopup.m; sourceTree = "<group>"; };
 		47CCC7E627BBDBE200B39FC5 /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		47CCC7E727BBDBE200B39FC5 /* ExploreMerchantViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMerchantViewController.swift; sourceTree = "<group>"; };
-		47CFDC1527B987830071115E /* DWExploreWhereToSpendHandlerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendHandlerView.h; sourceTree = "<group>"; };
-		47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendHandlerView.m; sourceTree = "<group>"; };
 		47F3321C27FDAC3E00D4D056 /* MerchantDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDetailsView.swift; sourceTree = "<group>"; };
 		47FB33C327BE3E2E00EBF019 /* DWLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWLocationManager.swift; sourceTree = "<group>"; };
 		47FB33C527BE910600EBF019 /* ExploreWhereToSpendLocationOffCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreWhereToSpendLocationOffCell.swift; sourceTree = "<group>"; };
@@ -4955,7 +4958,8 @@
 		477F2AA628AD11A600E4D1E7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				479A237928293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift */,
+				479A237928293DF3000D7EA2 /* MerchantsListModel.swift */,
+				4728F4C828AE258900282957 /* MerchantsDataProvider.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -4963,11 +4967,11 @@
 		477F2AA728AD11EA00E4D1E7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				47CFDC1527B987830071115E /* DWExploreWhereToSpendHandlerView.h */,
-				47CFDC1627B987830071115E /* DWExploreWhereToSpendHandlerView.m */,
 				47CCC7E327BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.h */,
 				47CCC7E427BBAA4C00B39FC5 /* DWExploreWhereToSpendLocationServicePopup.m */,
 				477DB73428A6629D00DE1960 /* ExploreMapView.swift */,
+				477F2AA828AD890800E4D1E7 /* MerchantsListHandlerView.swift */,
+				4728F4CA28AE6B3300282957 /* MerchantAnnotationView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5910,7 +5914,6 @@
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2AF55E8C26299502001974C4 /* DWInvitationTableViewCell.m in Sources */,
-				47CFDC1727B987830071115E /* DWExploreWhereToSpendHandlerView.m in Sources */,
 				2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
@@ -6051,6 +6054,7 @@
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				2A4EB4B1259939AF00892E4D /* DWGlobalMatchFailedHeaderView.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
+				477F2AA928AD890800E4D1E7 /* MerchantsListHandlerView.swift in Sources */,
 				2A95D614270280F800B0BF5C /* DWColoredButton.m in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */,
@@ -6159,6 +6163,7 @@
 				2AF55E652629834B001974C4 /* NSArray+DWFlatten.m in Sources */,
 				47FB33C427BE3E2E00EBF019 /* DWLocationManager.swift in Sources */,
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
+				4728F4CB28AE6B3300282957 /* MerchantAnnotationView.swift in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
 				2A44AB0425C6DABD00671AC3 /* DWImgurItemView.m in Sources */,
@@ -6236,7 +6241,7 @@
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				2AF60D09250FA63F00FB3E71 /* DWBalanceView.m in Sources */,
-				479A237A28293DF3000D7EA2 /* ExploreDashWhereToSpendModel.swift in Sources */,
+				479A237A28293DF3000D7EA2 /* MerchantsListModel.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
@@ -6279,6 +6284,7 @@
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
+				4728F4C928AE258900282957 /* MerchantsDataProvider.swift in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,

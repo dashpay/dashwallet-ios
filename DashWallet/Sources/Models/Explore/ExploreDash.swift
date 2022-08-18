@@ -37,7 +37,7 @@ public class ExploreDash {
     private var databaseSyncManager: ExploreDatabaseSyncManager!
     private var databaseConnection: ExploreDatabaseConnection!
     
-    private var merchantDAO: MerchantDAO!
+    var merchantDAO: MerchantDAO!
     
     private func configure() throws {
         guard !isConfigured else { return }

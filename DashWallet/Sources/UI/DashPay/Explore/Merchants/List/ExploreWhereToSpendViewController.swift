@@ -33,31 +33,18 @@ private enum ExploreWhereToSpendSections: Int {
     case nextPage
 }
 
-enum ExploreWhereToSpendSegment: Int {
-    case online = 0
-    case nearby
-    case all
-}
-
 @objc class ExploreWhereToSpendViewController: UIViewController {
     //Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
     
-    private let model = ExploreDashWhereToSpendModel()
-    
-    private var _merchants: [Merchant] = []
-    private var merchants: [Merchant] { return isSearchActive ? searchResult : _merchants }
-        
+    private let model = MerchantsListModel()
     private var segmentTitles: [String] = [NSLocalizedString("Online", comment: "Online"),
                                            NSLocalizedString("Nearby", comment: "Nearby"),
                                            NSLocalizedString("All", comment: "All")]
+    private var merchants: [Merchant] { return model.items }
+    private var currentSegment: MerchantsListSegment { return model.currentSegment }
     
-    private var currentSegment: ExploreWhereToSpendSegment = .online
-    private var isSearchActive: Bool = false
-    private var lastSearchQuery: String?
-    private var searchResult: [Merchant] = []
-    
-    private var radius: Int = 20 //In miles //Movel to model
+    private var radius: Int = 20 //In miles //Move to model
     private var mapView: ExploreMapView!
     private var showMapButton: UIButton!
     
@@ -67,7 +54,6 @@ enum ExploreWhereToSpendSegment: Int {
     private var tableView: UITableView!
     private var filterCell: DWExploreWhereToSpendFiltersCell?
     private var searchCell: DWExploreWhereToSpendSearchCell?
-    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -90,59 +76,31 @@ enum ExploreWhereToSpendSegment: Int {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        self.title = NSLocalizedString("Where to Spend", comment: "");
-        self.view.backgroundColor = .dw_background()
-        
-        let infoButton: UIButton = UIButton(type: .infoLight)
-        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
-        
-        model.searchResultDidChange = { [weak self] in
-            guard let wSelf = self else { return }
-            
-            switch wSelf.currentSegment
-            {
-            case .online:
-                wSelf.searchResult = wSelf.model.onlineSearchResult
-            case .nearby:
-                wSelf.searchResult = wSelf.model.nearbySearchResult
-                wSelf.mapView.show(merchants: wSelf.model.nearbySearchResult)
-            case .all:
-                wSelf.searchResult = wSelf.model.nearbySearchResult + wSelf.model.onlineSearchResult
-                wSelf.mapView.show(merchants: wSelf.model.nearbySearchResult)
-            }
-            
-            self?.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
-        }
-       
-        model.cachedNearbyMerchantsDidChange = { [weak self] in
-            guard let wSelf = self else { return }
-            
-            switch wSelf.currentSegment
-            {
-            case .online:
-                break
-            case .nearby:
-                wSelf._merchants = wSelf.model.cachedNearbyMerchants
-                self?.mapView.show(merchants: wSelf.model.cachedNearbyMerchants)
-                
-                if Locale.current.usesMetricSystem {
-                    self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  wSelf.model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-                }else{
-                    self?.filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  wSelf.model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
-                }
-            case .all:
-                wSelf._merchants = wSelf.model.cachedNearbyMerchants + wSelf.model.cachedOnlineMerchants
-                self?.mapView.show(merchants: wSelf.model.cachedNearbyMerchants)
-            }
-            
-            self?.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
-        }
-        
 
-        currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online;
-        _merchants = DWLocationManager.shared.isAuthorized ? model.cachedNearbyMerchants : model.cachedOnlineMerchants
+        model.itemsDidChange = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.refreshFilterCell()
+            wSelf.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue, ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
+            wSelf.mapView.show(merchants: wSelf.model.items)
+        }
+        
+        model.nextPageDidLoaded = { [weak self] offset, count in
+            guard let wSelf = self else { return }
+            
+            var indexPathes: [IndexPath] = Array()
+            indexPathes.reserveCapacity(count)
+            
+            let start = offset
+            let total = (offset+count)
+            for i in start..<total {
+                indexPathes.append(.init(row: i, section: ExploreWhereToSpendSections.items.rawValue))
+            }
+            
+            wSelf.tableView.beginUpdates()
+            wSelf.tableView.insertRows(at: indexPathes, with: .top)
+            wSelf.tableView.reloadSections([ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
+            wSelf.tableView.endUpdates()
+        }
         
         configureHierarchy()
     }
@@ -154,30 +112,114 @@ extension ExploreWhereToSpendViewController {
         {
         case .online, .all:
             filterCell?.title = segmentTitles[currentSegment.rawValue]
+            filterCell?.subtitle = nil
         case .nearby:
-            break
-//            _merchants = model.cachedNearbyMerchants
-//            mapView.show(merchants: model.cachedNearbyMerchants)
-//
-//            if Locale.current.usesMetricSystem {
-//                filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-//            }else{
-//                filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
-//            }
-        }
-    }
-    private func showInfoViewControllerIfNeeded() {
-        if !DWGlobalOptions.sharedInstance().dashpayExploreWhereToSpendInfoShown {
-            showInfoViewController()
-            DWGlobalOptions.sharedInstance().dashpayExploreWhereToSpendInfoShown = true
+            filterCell?.title = segmentTitles[currentSegment.rawValue]
+            if Locale.current.usesMetricSystem {
+                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.items.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+            }else{
+                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.items.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+            }
         }
     }
     
-    private func showInfoViewController() {
-        let vc = DWExploreWhereToSpendInfoViewController()
-        self.present(vc, animated: true, completion: nil)
+    private func configureHierarchy() {
+        self.title = NSLocalizedString("Where to Spend", comment: "");
+        self.view.backgroundColor = .dw_background()
+        
+        let infoButton: UIButton = UIButton(type: .infoLight)
+        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
+        
+        mapView = ExploreMapView(frame: .zero)
+        mapView.delegate = self
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mapView)
+        
+        contentView = UIView()
+        contentView.backgroundColor = .dw_background()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.clipsToBounds = false
+        contentView.layer.masksToBounds = true
+        contentView.layer.cornerRadius = 20
+        contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.addSubview(contentView)
+        
+        tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.showsVerticalScrollIndicator = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.clipsToBounds = false
+        tableView.register(DWExploreWhereToSpendSegmentedCell.self, forCellReuseIdentifier: DWExploreWhereToSpendSegmentedCell.dw_reuseIdentifier)
+        tableView.register(DWExploreWhereToSpendSearchCell.self, forCellReuseIdentifier: DWExploreWhereToSpendSearchCell.dw_reuseIdentifier)
+        tableView.register(DWExploreWhereToSpendFiltersCell.self, forCellReuseIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier)
+        tableView.register(ExploreMerchantItemCell.self, forCellReuseIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier)
+        tableView.register(ExploreWhereToSpendLocationOffCell.self, forCellReuseIdentifier: ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier)
+        tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
+        
+        contentView.addSubview(tableView)
+        
+        let handlerView = MerchantsListHandlerView(frame: .zero)
+        handlerView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(handlerView)
+        
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
+        panRecognizer.minimumNumberOfTouches = 1
+        panRecognizer.maximumNumberOfTouches = 1
+        handlerView.addGestureRecognizer(panRecognizer)
+        
+        self.showMapButton = UIButton(type: .custom)
+        showMapButton.translatesAutoresizingMaskIntoConstraints = false
+        showMapButton.isHidden = true
+        showMapButton.tintColor = .white
+        showMapButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+        showMapButton.addTarget(self, action: #selector(showMapAction), for: .touchUpInside)
+        showMapButton.setImage(UIImage(systemName: "map.fill"), for: .normal)
+        showMapButton.setTitle(NSLocalizedString("Map", comment: ""), for: .normal)
+        showMapButton.layer.masksToBounds = true
+        showMapButton.layer.cornerRadius = 20
+        showMapButton.layer.backgroundColor = UIColor.black.cgColor
+        contentView.addSubview(showMapButton)
+        
+        let showMapButtonWidth: CGFloat = 92
+        let showMapButtonHeight: CGFloat = 40
+        let handlerViewHeight: CGFloat = 24
+        
+        contentViewTopLayoutConstraint = contentView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: -handlerViewHeight)
+        
+        NSLayoutConstraint.activate([
+            contentViewTopLayoutConstraint,
+            
+            contentView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            handlerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            handlerView.heightAnchor.constraint(equalToConstant: handlerViewHeight),
+            handlerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            handlerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            tableView.topAnchor.constraint(equalTo: handlerView.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            mapView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            showMapButton.widthAnchor.constraint(equalToConstant: showMapButtonWidth),
+            showMapButton.heightAnchor.constraint(equalToConstant: showMapButtonHeight),
+            showMapButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            showMapButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+        ])
     }
-    
+}
+
+//MARK: Map related
+extension ExploreWhereToSpendViewController {
     private func updateMapVisibility() {
         if currentSegment != .nearby || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
@@ -187,14 +229,14 @@ extension ExploreWhereToSpendViewController {
     }
     
     private func showMapIfNeeded() {
-        guard currentSegment == .nearby else { return }
+        guard currentSegment != .online else { return }
         
         if DWLocationManager.shared.needsAuthorization {
             DWExploreWhereToSpendLocationServicePopup.show(in: self.view) {
                 DWLocationManager.shared.requestAuthorization()
             }
         
-        }else if DWLocationManager.shared.isAuthorized {
+        }else if DWLocationManager.shared.isAuthorized && self.contentViewTopLayoutConstraint.constant != kDefaultOpenedMapPosition {
             showMap()
         }
     }
@@ -226,107 +268,9 @@ extension ExploreWhereToSpendViewController {
                 
         showMapButton.isHidden = !isVisible
     }
-    
-    private func show(merchant: Merchant) {
-        let vc: UIViewController
-        
-        if merchant.type == .online {
-            let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
-            onlineVC.payWithDashHandler = self.payWithDashHandler;
-            vc = onlineVC;
-        }else{
-            vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: false)
-        }
-        
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    private func configureHierarchy() {
-        mapView = ExploreMapView(frame: .zero)
-        mapView.delegate = self
-        mapView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(mapView)
-        
-        contentView = UIView()
-        contentView.backgroundColor = .dw_background()
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.clipsToBounds = false
-        contentView.layer.masksToBounds = true
-        contentView.layer.cornerRadius = 20
-        contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        view.addSubview(contentView)
-        
-        tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.showsVerticalScrollIndicator = false
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.clipsToBounds = false
-        tableView.register(DWExploreWhereToSpendSegmentedCell.self, forCellReuseIdentifier: DWExploreWhereToSpendSegmentedCell.dw_reuseIdentifier)
-        tableView.register(DWExploreWhereToSpendSearchCell.self, forCellReuseIdentifier: DWExploreWhereToSpendSearchCell.dw_reuseIdentifier)
-        tableView.register(DWExploreWhereToSpendFiltersCell.self, forCellReuseIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier)
-        tableView.register(ExploreMerchantItemCell.self, forCellReuseIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier)
-        tableView.register(ExploreWhereToSpendLocationOffCell.self, forCellReuseIdentifier: ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier)
-        tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
-        
-        contentView.addSubview(tableView)
-        
-        let handlerView = DWExploreWhereToSpendHandlerView(frame: .zero)
-        handlerView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(handlerView)
-        
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
-        panRecognizer.minimumNumberOfTouches = 1
-        panRecognizer.maximumNumberOfTouches = 1
-        handlerView.addGestureRecognizer(panRecognizer)
-        
-        self.showMapButton = UIButton(type: .custom)
-        showMapButton.translatesAutoresizingMaskIntoConstraints = false
-        showMapButton.isHidden = true
-        showMapButton.tintColor = .white
-        showMapButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
-        showMapButton.addTarget(self, action: #selector(showMapAction), for: .touchUpInside)
-        showMapButton.setImage(UIImage(systemName: "map.fill"), for: .normal)
-        showMapButton.setTitle(NSLocalizedString("Map", comment: ""), for: .normal)
-        showMapButton.layer.masksToBounds = true
-        showMapButton.layer.cornerRadius = 20
-        showMapButton.layer.backgroundColor = UIColor.black.cgColor
-        contentView.addSubview(showMapButton)
-        
-        let showMapButtonWidth: CGFloat = 92
-        let showMapButtonHeight: CGFloat = 40
-        let handlerViewHeight: CGFloat = 24
-        
-        contentViewTopLayoutConstraint = contentView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: -handlerViewHeight)
-        
-        NSLayoutConstraint.activate([
-            contentViewTopLayoutConstraint,
-    
-            contentView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-            handlerView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            handlerView.heightAnchor.constraint(equalToConstant: handlerViewHeight),
-            handlerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            handlerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-          
-            tableView.topAnchor.constraint(equalTo: handlerView.bottomAnchor),
-            tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-            mapView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
-            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-            showMapButton.widthAnchor.constraint(equalToConstant: showMapButtonWidth),
-            showMapButton.heightAnchor.constraint(equalToConstant: showMapButtonHeight),
-            showMapButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            showMapButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
-        ])
-    }
 }
+
+//MARK: UITableViewDelegate, UITableViewDataSource
 
 extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -354,18 +298,8 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
             cell = searchCell
         case .filters:
             let filterCell: DWExploreWhereToSpendFiltersCell = self.filterCell ?? tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendFiltersCell
-            
-    
-            if currentSegment == .nearby {
-                if Locale.current.usesMetricSystem {
-                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-                }else{
-                    filterCell.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
-                }
-            }else{
-                filterCell.title = segmentTitles[currentSegment.rawValue]
-            }
             self.filterCell = filterCell
+            refreshFilterCell()
             cell = filterCell
         case .items:
             if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
@@ -376,16 +310,6 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 let merchant = self.merchants[indexPath.row];
                 let itemCell: ExploreMerchantItemCell = tableView.dequeueReusableCell(withIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier, for: indexPath) as! ExploreMerchantItemCell
                 itemCell.update(with: merchant)
-                itemCell.subLabel.isHidden = currentSegment == .online
-                
-                if currentSegment == .all {
-                    if isSearchActive {
-                        itemCell.subLabel.isHidden = indexPath.row >= model.nearbySearchResult.count
-                    }else{
-                        itemCell.subLabel.isHidden = indexPath.row >= model.cachedNearbyMerchants.count
-                    }
-                }
-                
                 cell = itemCell;
             }
         case .nextPage:
@@ -421,7 +345,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 return merchants.count
             }
         case .nextPage:
-            return 0 //model.hasNextPage && currentSegment == .all ? 1 : 0
+            return model.hasNextPage ? 1 : 0
         default:
             return 1
         }
@@ -465,12 +389,12 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
         }
     }
     
-//    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-//        if let cell = cell as? FetchingNextPageCell {
-//            cell.start()
-//            model.fetchNextPage()
-//        }
-//    }
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let cell = cell as? FetchingNextPageCell {
+            cell.start()
+            model.fetchNextPage()
+        }
+    }
     
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let cell = cell as? FetchingNextPageCell {
@@ -479,6 +403,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
     }
 }
 
+//MARK: DWLocationObserver
 extension ExploreWhereToSpendViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
         //mapView.setCenter(location, animated: false)
@@ -498,7 +423,35 @@ extension ExploreWhereToSpendViewController: DWLocationObserver {
     }
 }
 
+//MARK: Actions
 extension ExploreWhereToSpendViewController {
+    private func show(merchant: Merchant) {
+        let vc: UIViewController
+        
+        if merchant.type == .online {
+            let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
+            onlineVC.payWithDashHandler = self.payWithDashHandler;
+            vc = onlineVC;
+        }else{
+            vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: false)
+        }
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
+    
+    private func showInfoViewControllerIfNeeded() {
+        if !DWGlobalOptions.sharedInstance().dashpayExploreWhereToSpendInfoShown {
+            showInfoViewController()
+            DWGlobalOptions.sharedInstance().dashpayExploreWhereToSpendInfoShown = true
+        }
+    }
+    
+    private func showInfoViewController() {
+        let vc = DWExploreWhereToSpendInfoViewController()
+        self.present(vc, animated: true, completion: nil)
+    }
+    
     @objc private func showMapAction() {
         showMap()
     }
@@ -542,73 +495,33 @@ extension ExploreWhereToSpendViewController {
     
     private func segmentedControlDidChange(index: Int) {
         guard currentSegment.rawValue != index,
-              let newSegment = ExploreWhereToSpendSegment(rawValue: index) else {
+              let newSegment = MerchantsListSegment(rawValue: index) else {
             return
         }
         
-        currentSegment = newSegment
-        _merchants = model.merchants(for: newSegment)
-        isSearchActive = false
+        model.currentSegment = newSegment
         searchCell?.resetSearchBar()
-        filterCell?.title = segmentTitles[index]
-        filterCell?.subtitle = nil
-        tableView.reloadData()
+        refreshFilterCell()
         
-        
-        switch newSegment {
-        case .nearby, .all:
-            self.showMapIfNeeded()
-        default:
-            self.hideMapIfNeeded()
+        DispatchQueue.main.async {
+            switch newSegment {
+            case .nearby, .all:
+                self.showMapIfNeeded()
+            default:
+                self.hideMapIfNeeded()
+            }
         }
+        
     }
 }
 
 extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDelegate {
     private func stopSearching() {
-        isSearchActive = false
-        searchResult = []
-        model.resetSearchResults()
-        lastSearchQuery = nil
-        switch currentSegment
-        {
-        case .online:
-            _merchants = model.onlineSearchResult
-        case .nearby:
-            _merchants = model.cachedNearbyMerchants
-            mapView.show(merchants: model.cachedNearbyMerchants)
-            
-            if Locale.current.usesMetricSystem {
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-            }else{
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.cachedNearbyMerchants.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
-            }
-        case .all:
-            _merchants = model.cachedNearbyMerchants + model.cachedOnlineMerchants
-            mapView.show(merchants: model.cachedNearbyMerchants)
-        }
-        tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
+        model.fetch(query: nil)
     }
     
     func searchCell(_ searchCell: DWExploreWhereToSpendSearchCell, shouldStartSearchWithQuery query: String) {
-        if query.isEmpty {
-            stopSearching()
-            return
-        }
-        
-        isSearchActive = true
-        lastSearchQuery = query
-        
-        switch currentSegment {
-        case .all:
-            model.searchOnline(query: query)
-            model.searchMerchants(by: query, in: mapView.mapBounds, userPoint: mapView.userLocation?.coordinate)
-        case .nearby:
-            model.searchMerchants(by: query, in: mapView.mapBounds, userPoint: mapView.userLocation?.coordinate)
-        default:
-            model.searchOnline(query: query)
-            tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue], with: .none)
-        }
+        model.fetch(query: query)
     }
     
     func searchCellDidEndSearching(_ searchCell: DWExploreWhereToSpendSearchCell) {
@@ -616,21 +529,11 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
     }
 }
 
+//MARK: ExploreMapViewDelegate
+
 extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
-        if currentSegment == .online { return }
-        
-        if let q = lastSearchQuery, isSearchActive {
-            model.searchMerchants(by: q, in: bounds, userPoint: mapView.userLocation?.coordinate)
-        }else{
-            model.fetchMerchants(in: bounds, userPoint: mapView.userLocation?.coordinate)
-        }
-        
-        DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
-            if self?.currentSegment == .nearby {
-                self?.filterCell?.title = location
-            }
-        }
+        model.currentMapBounds = bounds
     }
     
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {

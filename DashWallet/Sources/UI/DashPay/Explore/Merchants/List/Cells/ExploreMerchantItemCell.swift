@@ -38,7 +38,7 @@ class ExploreMerchantItemCell: UITableViewCell {
         nameLabel.text = merchant.name
         
         if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized {
+           DWLocationManager.shared.isAuthorized, merchant.type != .online {
             subLabel.isHidden = false
             let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
             let distanceText: String = App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))

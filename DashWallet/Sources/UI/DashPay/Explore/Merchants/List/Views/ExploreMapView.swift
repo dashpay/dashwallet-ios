@@ -18,6 +18,18 @@
 import UIKit
 import MapKit
 
+extension CLLocationCoordinate2D: Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        return lhs.longitude == rhs.longitude && lhs.latitude == rhs.latitude
+    }
+}
+
+extension ExploreMapBounds: Equatable {
+    static func == (lhs: ExploreMapBounds, rhs: ExploreMapBounds) -> Bool {
+        return lhs.neCoordinate == rhs.neCoordinate && lhs.swCoordinate == rhs.swCoordinate
+    }
+}
+
 struct ExploreMapBounds {
     let neCoordinate: CLLocationCoordinate2D
     let swCoordinate: CLLocationCoordinate2D
@@ -68,7 +80,12 @@ class ExploreMapView: UIView {
     var contentInset: UIEdgeInsets = .zero {
         didSet {
             mapView.layoutMargins = contentInset
-        
+            
+//            if let loc = initialCenterLocation {
+//                self.setCenter(loc, animated: false)
+//            }else if let loc = mapView.userLocation.location {
+//                self.setCenter(loc, animated: false)
+//            }
         }
     }
     
@@ -84,18 +101,6 @@ class ExploreMapView: UIView {
     
     private var mapView: MKMapView!
     var mapBounds: ExploreMapBounds {
-        //TODO: dynamic radius
-        let clRegion = CLCircularRegion(center: centerCoordinate, radius: 32000, identifier: "center")
-        let region = MKCoordinateRegion(center: clRegion.center, latitudinalMeters: clRegion.radius*2, longitudinalMeters: clRegion.radius*2)
-        let a = MKMapPoint(CLLocationCoordinate2D(
-            latitude: region.center.latitude + region.span.latitudeDelta / 2,
-            longitude: region.center.longitude - region.span.longitudeDelta / 2))
-        
-        let b = MKMapPoint(CLLocationCoordinate2D(
-            latitude: region.center.latitude - region.span.latitudeDelta / 2,
-            longitude: region.center.longitude + region.span.longitudeDelta / 2));
-        let rect = MKMapRect(x: min(a.x,b.x), y: min(a.y,b.y), width: abs(a.x-b.x), height: abs(a.y-b.y));
-        
         return .init(rect: MKCircle(center: centerCoordinate, radius: 32000).boundingMapRect)
     }
     
@@ -211,8 +216,9 @@ class ExploreMapView: UIView {
     }
 }
 
+//MARK: MKMapViewDelegate
+
 extension ExploreMapView: MKMapViewDelegate {
-    
     func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         guard let view = views.first(where: { $0.annotation is MKUserLocation }) else { return }
         DispatchQueue.main.async {
@@ -257,98 +263,5 @@ extension ExploreMapView: MKMapViewDelegate {
     }
 }
 
-extension CLLocation {
-    var point: CGPoint {
-        return .init(x: self.coordinate.longitude, y: self.coordinate.latitude)
-    }
-}
-extension MKMapRect {
-    var cgRect: CGRect {
-        let neMapPoint = MKMapPoint(x: maxX, y: origin.y)
-        let swMapPoint = MKMapPoint(x: origin.x, y: maxY)
-        
-        let neCoordinate = neMapPoint.coordinate
-        let swCoordinate = swMapPoint.coordinate
-        return CGRect(origin: .init(x: origin.x, y: origin.y), size: .init(width: size.width, height: size.width))
-    }
-}
 
-extension MKCoordinateRegion {
-    var cgRect: CGRect {
-        return CGRect(origin: .init(x: center.longitude - span.longitudeDelta, y: center.latitude - span.latitudeDelta), size: .init(width: span.longitudeDelta, height: span.latitudeDelta))
-    }
-}
-
-
-
-extension MerchantAnnotation {
-    static func ==(lhs: MerchantAnnotation, rhs: MerchantAnnotation) -> Bool {
-        return lhs.hashValue == rhs.hashValue
-    }
-}
-class MerchantAnnotation: MKPointAnnotation {
-    var merchant: Merchant
-    
-    override var hash: Int {
-        return merchant.hashValue
-    }
-    
-    override func isEqual(_ object: Any?) -> Bool {
-        guard let obj = object as? MerchantAnnotation else { return false }
-        
-        return self == obj
-    }
-    
-    init(merchant: Merchant, location: CLLocationCoordinate2D) {
-        self.merchant = merchant
-        super.init()
-        self.coordinate = location
-
-    }
-}
-
-final class MerchantAnnotationView: MKAnnotationView {
-    
-    private var imageView: UIImageView!
-    
-    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        
-        frame = CGRect(x: 0, y: 0, width: 36, height: 36)
-        centerOffset = CGPoint(x: 0, y: -frame.size.height / 2)
-        
-        canShowCallout = true
-        configureHierarchy()
-    }
-    
-    @available(*, unavailable)
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    public func update(with merchant: Merchant) {
-        if let str = merchant.logoLocation, let url = URL(string: str)
-        {
-            imageView.sd_setImage(with: url, completed: nil)
-        }else{
-            imageView.image = UIImage(named: "image.explore.dash.wts.item.logo.empty")
-        }
-    }
-    
-    private func configureHierarchy() {
-        backgroundColor = .clear
-        
-        imageView = UIImageView()
-        imageView.backgroundColor = .white
-        imageView.layer.cornerRadius = 18
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderColor = UIColor.white.cgColor
-        imageView.layer.borderWidth = 2
-        addSubview(imageView)
-        
-        imageView.frame = bounds
-    }
-    
-    static var reuseIdentifier: String { return "MerchantAnnotationView" }
-}
 
