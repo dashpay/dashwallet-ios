@@ -73,7 +73,6 @@ static BOOL IsJailbroken(void) {
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
-@property (nonatomic, assign) BOOL initiatingTxDataSources;
 
 @end
 
@@ -157,8 +156,9 @@ static BOOL IsJailbroken(void) {
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
                                  object:nil];
-        self.initiatingTxDataSources = YES;
+
         [self reloadTxDataSource];
+        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:[NSDate new]];
     }
     return self;
 }
@@ -190,7 +190,8 @@ static BOOL IsJailbroken(void) {
 }
 
 - (BOOL)isAllowedToShowReclassifyYourTransactions {
-    return _allowedToShowReclassifyYourTransactions && [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
+    BOOL shouldDisplayReclassifyYourTransactionsFlow = [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
+    return _allowedToShowReclassifyYourTransactions && shouldDisplayReclassifyYourTransactionsFlow;
 }
 
 - (BOOL)isJailbroken {
@@ -481,7 +482,7 @@ static BOOL IsJailbroken(void) {
                                                                         }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
-        BOOL receivedNewIncomingTransaction = NO;
+        BOOL receivedNewTransaction = NO;
         BOOL allowedToShowReclassifyYourTransactions = NO;
         BOOL shouldAnimate = YES;
 
@@ -492,9 +493,11 @@ static BOOL IsJailbroken(void) {
             shouldAnimate = NO;
         }
 
-        if (!self.initiatingTxDataSources && newTransaction && prevTransaction != newTransaction) {
-            receivedNewIncomingTransaction = YES;
-            allowedToShowReclassifyYourTransactions = YES;
+        if (newTransaction && prevTransaction != newTransaction) {
+            receivedNewTransaction = YES;
+
+            NSDate *dateReclassifyYourTransactionsFlowActivated = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated;
+            allowedToShowReclassifyYourTransactions = [newTransaction.transactionDate compare:dateReclassifyYourTransactionsFlowActivated] == NSOrderedDescending;
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
@@ -517,21 +520,19 @@ static BOOL IsJailbroken(void) {
         DWTransactionListDataSource *datasource = self.dataSource;
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (allowedToShowReclassifyYourTransactions) {
-                [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
-            }
+            [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
 
-            if (receivedNewIncomingTransaction && newTransaction) {
+            if (receivedNewTransaction) {
                 id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:newTransaction];
 
+
+                // TODO: try to do for all transactions
                 if (dataItem.direction == DSTransactionDirection_Received) {
                     [self.updatesObserver homeModel:self didReceiveNewIncomingTransaction:newTransaction];
                 }
             }
             [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
         });
-
-        self.initiatingTxDataSources = NO;
     });
 }
 

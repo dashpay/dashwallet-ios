@@ -16,14 +16,16 @@
 //
 
 #import "DWCSVExporter.h"
+#import "DSTransaction+DashWallet.h"
 #import "DWEnvironment.h"
 #import "DWTransactionListDataProvider.h"
+#import "dashwallet-Swift.h"
 
 @interface DWCSVExporter ()
 
 + (NSString *)generateFileName;
-+ (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions;
-+ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider;
++ (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions andUserInfos:(NSDictionary<NSData *, TxUserInfo *> *)userInfos;
++ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider andUserInfo:(TxUserInfo *__nullable)userInfo;
 + (NSArray<DSTransaction *> *)transactions;
 
 @end
@@ -39,13 +41,13 @@
         return;
     }
 
-    __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray<DSTransaction *> *transactions = [weakSelf transactions];
+        NSArray<DSTransaction *> *transactions = [DWCSVExporter transactions];
+        NSDictionary<NSData *, TxUserInfo *> *userInfos = [[TxUserInfoDAOImpl shared] dictionaryOfAllItems];
 
-        NSString *csv = [weakSelf csvStringForTransactions:transactions];
+        NSString *csv = [DWCSVExporter csvStringForTransactions:transactions andUserInfos:userInfos];
 
-        NSString *fileName = [weakSelf generateFileName];
+        NSString *fileName = [DWCSVExporter generateFileName];
 
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDir = [paths objectAtIndex:0];
@@ -73,7 +75,7 @@
     return fileName;
 }
 
-+ (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions {
++ (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions andUserInfos:(NSDictionary<NSData *, TxUserInfo *> *)userInfos {
     DWTransactionListDataProvider *dataProvider = [[DWTransactionListDataProvider alloc] init];
 
     NSMutableString *csv = [NSMutableString new];
@@ -82,13 +84,14 @@
     [csv appendString:header];
 
     for (DSTransaction *tx in transactions) {
-        [csv appendString:[self csvRowForTransaction:tx usingDataProvider:dataProvider]];
+        TxUserInfo *userInfo = userInfos[[tx txHashData]];
+        [csv appendString:[DWCSVExporter csvRowForTransaction:tx usingDataProvider:dataProvider andUserInfo:userInfo]];
     }
 
     return [NSString stringWithString:csv];
 }
 
-+ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider {
++ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider andUserInfo:(TxUserInfo *__nullable)userInfo {
     id<DWTransactionListDataItem> dataItem = [dataProvider transactionDataForTransaction:transaction];
 
     // Return empty string for internal transactions
@@ -97,7 +100,11 @@
     }
 
     NSString *iso8601String = [dataProvider ISO8601StringForTransaction:transaction];
-    NSString *taxCategoryString = [dataProvider taxCategoryStringForTransaction:transaction];
+    NSString *taxCategoryString = [transaction defaultTaxCategoryString];
+
+    if (userInfo != nil) {
+        taxCategoryString = [userInfo taxCategoryString];
+    }
 
     NSString *kCurrency = @"DASH";
     NSString *kSource = @"DASH";

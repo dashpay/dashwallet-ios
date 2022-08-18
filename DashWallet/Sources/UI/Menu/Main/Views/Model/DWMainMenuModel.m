@@ -16,6 +16,7 @@
 //
 
 #import "DWMainMenuModel.h"
+#import "DWEnvironment.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,15 +45,43 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _items = @[
+        if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+            _items = [DWMainMenuModel allItems];
+        }
+        else {
+            _items = [DWMainMenuModel testnetItems];
+        }
+    }
+    return self;
+}
+
++ (NSArray *)allItems {
+    static NSArray *items;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        items = @[
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_BuySellDash],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
         ];
-    }
-    return self;
+    });
+    return items;
+}
+
++ (NSArray *)testnetItems {
+    static NSArray *items;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        items = @[
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
+        ];
+    });
+    return items;
 }
 
 @end

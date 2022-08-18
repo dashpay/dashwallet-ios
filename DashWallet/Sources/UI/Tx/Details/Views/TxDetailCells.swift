@@ -24,7 +24,7 @@ class TxDetailHeaderCell: UITableViewCell {
     
     @IBOutlet var iconImageView: UIImageView!
     
-    var model: DWTxDetailModel! {
+    var model: TxDetailModel! {
         didSet {
             updateView()
         }
