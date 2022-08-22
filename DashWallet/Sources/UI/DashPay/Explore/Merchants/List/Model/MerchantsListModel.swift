@@ -53,12 +53,15 @@ class MerchantsListModel {
     var userCoordinates: CLLocationCoordinate2D? { return DWLocationManager.shared.currentLocation?.coordinate }
     
     init() {
-        let dataSource = ExploreDash.shared.merchantDAO!
-        onlineMerchantsDataProvider = OnlineMerchantsDataProvider(dataSource: dataSource)
-        nearbyMerchantsDataProvider = NearbyMerchantsDataProvider(dataSource: dataSource)
-        allMerchantsDataProvider = AllMerchantsDataProvider(dataSource: dataSource)
+        onlineMerchantsDataProvider = OnlineMerchantsDataProvider()
+        nearbyMerchantsDataProvider = NearbyMerchantsDataProvider()
+        allMerchantsDataProvider = AllMerchantsDataProvider()
         
         currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online
+        
+        if currentSegment == .online {
+            fetch(query: nil)
+        }
     }
     
     public func fetch(query: String?) {
@@ -141,7 +144,7 @@ extension MerchantsListModel {
     }
     
     func fetchNearby(query: String?) {
-        guard let bounds = currentMapBounds else {
+        guard let bounds = currentMapBounds, let userCoordinates = self.userCoordinates else {
             items = []
             itemsDidChange?()
             return

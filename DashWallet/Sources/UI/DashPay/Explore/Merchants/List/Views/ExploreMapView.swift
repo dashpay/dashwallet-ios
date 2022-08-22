@@ -165,6 +165,12 @@ class ExploreMapView: UIView {
         let region: MKCoordinateRegion = .init(center: location.coordinate, span: span)
         mapView.setRegion(region, animated: animated)
     }
+  
+    public func showUserLocationInCenter(animated: Bool) {
+        if let loc = mapView.userLocation.location {
+            self.setCenter(loc, animated: true)
+        }
+    }
     
     public func setContentInsets(_ inset: UIEdgeInsets, animated: Bool) {
         if animated {
@@ -179,9 +185,7 @@ class ExploreMapView: UIView {
     }
     
     @objc func myLocationButtonAction() {
-        if let loc = mapView.userLocation.location {
-            self.setCenter(loc, animated: true)
-        }
+        showUserLocationInCenter(animated: true)
     }
     
     private func configureHierarchy() {

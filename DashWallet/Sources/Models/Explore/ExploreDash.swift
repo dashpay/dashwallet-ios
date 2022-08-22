@@ -76,36 +76,24 @@ public class ExploreDash {
 }
 
 extension ExploreDash {
-    func merchants(query: String?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
-        merchantDAO.merchants(query: query, userPoint: userPoint, offset: offset, completion: completion)
+    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.onlineMerchants(query: query, onlineOnly: onlineOnly, userPoint: userPoint, offset: offset, completion: completion)
     }
-    /**
-     Retrieve merchants by location
-     @param location Center of
-     @param rect Visible
-    */
-    func merchants(in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
-        merchantDAO.merchantsInRect(bounds: bounds, userPoint: userPoint, completion: completion)
+    
+    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
+    }
+    
+    func allMerchants(by query: String?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.allMerchants(by: query, offset: offset, completion: completion)
+    }
+    
+    func allMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+        merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
     }
     
     func allLocations(for merchant: Merchant, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
         merchantDAO.allLocations(for: merchant, in: bounds, userPoint: userPoint, completion: completion)
-    }
-    
-    func allOnlineMerchants(offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
-        merchantDAO.allOnlineMerchants(offset: offset, completion: completion)
-    }
-    
-    func allOnlineMerchants(offset: Int = 0) -> PaginationResult<Merchant> {
-        return merchantDAO.allOnlineMerchants(offset: offset)
-    }
-    
-    func searchOnlineMerchants(query: String, offset: Int = 0) -> PaginationResult<Merchant> {
-        return merchantDAO.searchOnlineMerchants(query: query, offset: offset)
-    }
-    
-    func searchMerchants(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
-        merchantDAO.searchMerchants(by: query, in: bounds, userPoint: userPoint, completion: completion)
     }
 }
 

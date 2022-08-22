@@ -80,8 +80,17 @@ private enum ExploreWhereToSpendSections: Int {
         model.itemsDidChange = { [weak self] in
             guard let wSelf = self else { return }
             wSelf.refreshFilterCell()
-            wSelf.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue, ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
-            wSelf.mapView.show(merchants: wSelf.model.items)
+            
+            if DWLocationManager.shared.isPermissionDenied {
+                wSelf.tableView.reloadData()
+            }else{
+                wSelf.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue, ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
+            }
+            
+            if wSelf.model.currentSegment != .online
+            {
+                wSelf.mapView.show(merchants: wSelf.model.items)
+            }
         }
         
         model.nextPageDidLoaded = { [weak self] offset, count in
@@ -120,6 +129,13 @@ extension ExploreWhereToSpendViewController {
             }else{
                 filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  model.items.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
+            
+            DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
+                if self?.currentSegment == .nearby {
+                    self?.filterCell?.title = location
+                }
+            }
+
         }
     }
     
@@ -221,7 +237,7 @@ extension ExploreWhereToSpendViewController {
 //MARK: Map related
 extension ExploreWhereToSpendViewController {
     private func updateMapVisibility() {
-        if currentSegment != .nearby || DWLocationManager.shared.isPermissionDenied {
+        if currentSegment == .online || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
         }else{
             showMapIfNeeded()
@@ -406,19 +422,19 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
 //MARK: DWLocationObserver
 extension ExploreWhereToSpendViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
-        //mapView.setCenter(location, animated: false)
+        mapView.setCenter(location, animated: false)
     }
     
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
-        if currentSegment == .nearby {
-            tableView.reloadData()
+        if currentSegment != .online {
             updateMapVisibility()
+            mapView.showUserLocationInCenter(animated: false)
+            model.fetch(query: nil)
         }
     }
     
     func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager) {
-        if currentSegment == .nearby {
-            tableView.reloadData()
+        if currentSegment != .online {
         }
     }
 }
@@ -533,6 +549,8 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
 
 extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
+        
+        refreshFilterCell()
         model.currentMapBounds = bounds
     }
     
