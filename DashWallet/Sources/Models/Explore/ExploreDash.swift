@@ -112,28 +112,3 @@ extension FloatingPoint {
     var radiansToDegrees: Self { self * 180 / .pi }
 }
 
-extension CLLocation {
-    func derivedPosition(inRange range: Double, bearing: Double)-> CGPoint {
-        let earthRadius: Double = 6371000
-        
-        let lat = Double(self.coordinate.latitude.degreesToRadians)
-        let lon = Double(self.coordinate.longitude.degreesToRadians)
-        let angularDistance = range/earthRadius
-        let trueCourse = bearing.degreesToRadians
-        
-        var resultLat = asin(sin(lat) * cos(angularDistance) +
-                       cos(lat) * sin(angularDistance) *
-                       cos(trueCourse))
-        
-        let derivedlon = atan2(sin(trueCourse) * sin(angularDistance) * cos(lat),
-                         cos(angularDistance) - sin(lat) * sin(lat))
-        
-        var resultLon = ((lon + derivedlon + Double.pi).truncatingRemainder(dividingBy: (Double.pi * 2))) - Double.pi
-        
-        resultLat = lat.radiansToDegrees
-        resultLon = lon.radiansToDegrees
-        
-        let newPoint = CGPoint(x: lat, y: lon)
-        return newPoint
-    }
-}

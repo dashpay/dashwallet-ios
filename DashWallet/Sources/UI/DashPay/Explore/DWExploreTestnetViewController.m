@@ -33,10 +33,9 @@
 }
 
 - (void)showWhereToSpendViewController {
-    
     DWExploreTestnetViewController* __weak weakSelf = self;
     
-    ExploreWhereToSpendViewController *vc = [[ExploreWhereToSpendViewController alloc] init];
+    MerchantListViewController *vc = [[MerchantListViewController alloc] init];
     vc.payWithDashHandler = ^{
         [weakSelf openPaymentsScreen];
     };

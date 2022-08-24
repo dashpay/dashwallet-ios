@@ -33,7 +33,7 @@ private enum ExploreWhereToSpendSections: Int {
     case nextPage
 }
 
-@objc class ExploreWhereToSpendViewController: UIViewController {
+@objc class MerchantListViewController: WhereToSpendListViewController {
     //Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
     
@@ -54,6 +54,7 @@ private enum ExploreWhereToSpendSections: Int {
     private var tableView: UITableView!
     private var filterCell: DWExploreWhereToSpendFiltersCell?
     private var searchCell: DWExploreWhereToSpendSearchCell?
+    private var locationOffCell: ExploreWhereToSpendLocationOffCell?
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -81,7 +82,10 @@ private enum ExploreWhereToSpendSections: Int {
             guard let wSelf = self else { return }
             wSelf.refreshFilterCell()
             
-            if DWLocationManager.shared.isPermissionDenied {
+            if wSelf.currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
+                wSelf.tableView.reloadData()
+            }else if wSelf.locationOffCell != nil {
+                wSelf.locationOffCell = nil
                 wSelf.tableView.reloadData()
             }else{
                 wSelf.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue, ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
@@ -115,7 +119,7 @@ private enum ExploreWhereToSpendSections: Int {
     }
 }
 
-extension ExploreWhereToSpendViewController {
+extension MerchantListViewController {
     private func refreshFilterCell() {
         switch currentSegment
         {
@@ -235,7 +239,7 @@ extension ExploreWhereToSpendViewController {
 }
 
 //MARK: Map related
-extension ExploreWhereToSpendViewController {
+extension MerchantListViewController {
     private func updateMapVisibility() {
         if currentSegment == .online || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
@@ -288,7 +292,7 @@ extension ExploreWhereToSpendViewController {
 
 //MARK: UITableViewDelegate, UITableViewDataSource
 
-extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDataSource {
+extension MerchantListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         var cell: UITableViewCell!
@@ -307,6 +311,9 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
             segmentsCell.update(withItems: segmentTitles, andSelectedIndex: currentSegment.rawValue)
             cell = segmentsCell
         case .search:
+            if let cell = searchCell {
+                return cell
+            }
             let searchCell: DWExploreWhereToSpendSearchCell = tableView.dequeueReusableCell(withIdentifier: DWExploreWhereToSpendSearchCell.dw_reuseIdentifier, for: indexPath) as! DWExploreWhereToSpendSearchCell
             searchCell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0);
             searchCell.delegate = self
@@ -322,6 +329,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
                 let itemCell: ExploreWhereToSpendLocationOffCell = tableView.dequeueReusableCell(withIdentifier: ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier, for: indexPath) as! ExploreWhereToSpendLocationOffCell
                 cell = itemCell
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
+                locationOffCell = itemCell
             }else{
                 let merchant = self.merchants[indexPath.row];
                 let itemCell: ExploreMerchantItemCell = tableView.dequeueReusableCell(withIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier, for: indexPath) as! ExploreMerchantItemCell
@@ -420,7 +428,7 @@ extension ExploreWhereToSpendViewController: UITableViewDelegate, UITableViewDat
 }
 
 //MARK: DWLocationObserver
-extension ExploreWhereToSpendViewController: DWLocationObserver {
+extension MerchantListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
         mapView.setCenter(location, animated: false)
     }
@@ -440,7 +448,7 @@ extension ExploreWhereToSpendViewController: DWLocationObserver {
 }
 
 //MARK: Actions
-extension ExploreWhereToSpendViewController {
+extension MerchantListViewController {
     private func show(merchant: Merchant) {
         let vc: UIViewController
         
@@ -531,7 +539,7 @@ extension ExploreWhereToSpendViewController {
     }
 }
 
-extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDelegate {
+extension MerchantListViewController: DWExploreWhereToSpendSearchCellDelegate {
     private func stopSearching() {
         model.fetch(query: nil)
     }
@@ -547,7 +555,7 @@ extension ExploreWhereToSpendViewController: DWExploreWhereToSpendSearchCellDele
 
 //MARK: ExploreMapViewDelegate
 
-extension ExploreWhereToSpendViewController: ExploreMapViewDelegate {
+extension MerchantListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
         
         refreshFilterCell()

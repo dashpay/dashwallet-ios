@@ -95,7 +95,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     }
     
     func fetch(by query: String?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
-        dataSource.allMerchants(by: lastQuery, offset: offset, completion: completion)
+        dataSource.allMerchants(by: query, offset: offset, completion: completion)
     }
     
     override func fetch(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {

@@ -115,9 +115,9 @@ extension MerchantDetailsView {
         if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
             
             let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
-            subLabel.text = "\(App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))) · Physical Merchant"
+            subLabel.text = "\(App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))) · Physical Merchant" + (merchant.type == .onlineAndPhysical ? ", Online" : "")
         }else{
-            subLabel.text = "Physical Merchant"
+            subLabel.text = merchant.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
         }
         
         subLabel.textColor = .dw_secondaryText()
