@@ -22,6 +22,21 @@ enum MerchantsListSegment: Int {
     case online = 0
     case nearby
     case all
+    
+    static func ==(lhs: PointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
+        return lhs.tag == rhs.rawValue
+    }
+    
+    var pointOfUseListSegment: PointOfUseListSegment {
+        switch self {
+        case .online:
+            return .init(tag: rawValue, title: title, showMap: false, showLocationServiceSettings: false, showReversedLocation: false)
+        case .nearby:
+            return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: true, showReversedLocation: true)
+        case .all:
+            return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: false)
+        }
+    }
 }
 
 extension MerchantsListSegment {
@@ -37,114 +52,45 @@ extension MerchantsListSegment {
     }
 }
 
-class MerchantsListModel {
-    private var lastQuery: String?
-    private var isFetching: Bool = false
-    
+class MerchantsListModel: PointOfUseListModel {
     private let onlineMerchantsDataProvider: OnlineMerchantsDataProvider
     private let nearbyMerchantsDataProvider: NearbyMerchantsDataProvider
     private let allMerchantsDataProvider: AllMerchantsDataProvider
     
-    var items: [ExplorePointOfUse] = []
-    var itemsDidChange: (() -> Void)?
-    var nextPageDidLoaded: ((_ offset: Int, _ count: Int) -> Void)?
-    
-    var segments: [MerchantsListSegment] = []
-    var segmentTitles: [String] { return segments.map { $0.title } }
-    
-    var currentSegment: MerchantsListSegment {
-        didSet {
-            segmentDidUpdate()
-        }
+    override var hasNextPage: Bool {
+        return currentDataProvider?.hasNextPage ?? false
     }
     
-    var currentMapBounds: ExploreMapBounds? {
-        didSet {
-            if currentSegment != .online && DWLocationManager.shared.isAuthorized {
-                _fetch(query: lastQuery)
-            }
+    override var currentDataProvider: PointOfUseDataProvider? {
+        switch currentSegment.tag {
+        case MerchantsListSegment.online.rawValue:
+            return onlineMerchantsDataProvider
+        case MerchantsListSegment.nearby.rawValue:
+            return nearbyMerchantsDataProvider
+        case MerchantsListSegment.all.rawValue:
+            return allMerchantsDataProvider
+        default:
+            return nil
         }
     }
-    
-    var userCoordinates: CLLocationCoordinate2D? { return DWLocationManager.shared.currentLocation?.coordinate }
-    
-    init() {
-        segments = [MerchantsListSegment.online, MerchantsListSegment.nearby, MerchantsListSegment.all]
+        
+    override init() {
         
         onlineMerchantsDataProvider = OnlineMerchantsDataProvider()
         nearbyMerchantsDataProvider = NearbyMerchantsDataProvider()
         allMerchantsDataProvider = AllMerchantsDataProvider()
         
-        currentSegment = DWLocationManager.shared.isAuthorized ? .nearby : .online
+        super.init()
         
-        if currentSegment == .online {
-            fetch(query: nil)
-        }
-    }
-    
-    public func fetch(query: String?) {
-        lastQuery = query
-        _fetch(query: query)
-    }
-    
-    private func _fetch(query: String?) {
-        let segment = currentSegment
+        let newSegments = [MerchantsListSegment.online.pointOfUseListSegment, MerchantsListSegment.nearby.pointOfUseListSegment, MerchantsListSegment.all.pointOfUseListSegment]
+        segments = newSegments
         
-        currentDataProvider.merchants(query: query, in: currentMapBounds, userPoint: userCoordinates) { [weak self] result in
-            guard self?.currentSegment == segment else { return }
-            
-            switch result {
-            case .success(let items):
-                self?.items = items
-                DispatchQueue.main.async {
-                    self?.itemsDidChange?()
-                }
-                break
-            case .failure(let error):
-                break //TODO: handler failure
-            }
-        }
-    }
-    
-    public func fetchNextPage() {
-        let segment = currentSegment
-        currentDataProvider.nextPage { [weak self] result in
-            guard self?.currentSegment == segment else { return }
-            
-            switch result {
-            case .success(let items):
-                let offset = self?.items.count ?? 0
-                let count = items.count
-                
-                self?.items += items
-                DispatchQueue.main.async {
-                    self?.nextPageDidLoaded?(offset, count)
-                }
-                break
-            case .failure(let error):
-                break //TODO: handler failure
-            }
+        
+        if DWLocationManager.shared.isAuthorized {
+            currentSegment = newSegments[MerchantsListSegment.nearby.rawValue]
+        }else{
+            currentSegment = newSegments.first!
         }
     }
 }
 
-extension MerchantsListModel {
-    var hasNextPage: Bool {
-        return currentDataProvider.hasNextPage
-    }
-    
-    var currentDataProvider: MerchantsDataProvider {
-        switch currentSegment {
-        case .online:
-            return onlineMerchantsDataProvider
-        case .nearby:
-            return nearbyMerchantsDataProvider
-        case .all:
-            return allMerchantsDataProvider
-        }
-    }
-    
-    func segmentDidUpdate() {
-        _fetch(query: lastQuery)
-    }
-}

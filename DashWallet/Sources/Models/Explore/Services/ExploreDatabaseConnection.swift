@@ -51,7 +51,7 @@ class ExploreDatabaseConnection
         return FileManager.default.fileExists(atPath: downloadedPath) ? downloadedPath : nil
     }
     
-    func find<Item: RowDecodable>(query: QueryType) throws -> [Item] {
+    func execute<Item: RowDecodable>(query: QueryType) throws -> [Item] {
         let items = try db.prepare(query)
         
         var resultItems: [Item] = []

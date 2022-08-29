@@ -37,6 +37,12 @@ class ExploreMerchantItemCell: UITableViewCell {
     func update(with pointOfUse: ExplorePointOfUse) {
         nameLabel.text = pointOfUse.name
         
+        if let urlString = pointOfUse.logoLocation, let url = URL(string: urlString) {
+            logoImageView.sd_setImage(with: url)
+        }else{
+            logoImageView.image = UIImage(named:"image.explore.dash.wts.item.logo.empty")
+        }
+        
         guard let merchant = pointOfUse.merchant else { return }
         
         if let currentLocation = DWLocationManager.shared.currentLocation,
@@ -49,11 +55,7 @@ class ExploreMerchantItemCell: UITableViewCell {
             subLabel.isHidden = true
         }
         
-        if let urlString = pointOfUse.logoLocation, let url = URL(string: urlString) {
-            logoImageView.sd_setImage(with: url)
-        }else{
-            logoImageView.image = UIImage(named:"image.explore.dash.wts.item.logo.empty")
-        }
+        
         
         let isGiftCard = merchant.paymentMethod == .giftCard
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";

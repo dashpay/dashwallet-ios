@@ -75,9 +75,8 @@ extension ExplorePointOfUse {
                 case "Buy Only": self = .buy
                 case "Sell Only": self = .sell
                 case "Buy and Sell": self = .buySell
-                default: return nil
+                default: self = .buy
                 }
-                
             }
         }
         
@@ -109,7 +108,7 @@ struct ExplorePointOfUse {
     let phone: String?
     let logoLocation: String?
     let coverImage: String?
-    let plusCode: String?
+    //let plusCode: String?
 }
 
 extension ExplorePointOfUse: RowDecodable {
@@ -120,7 +119,7 @@ extension ExplorePointOfUse: RowDecodable {
     static let merchantId = Expression<Int64>("merchantId")
     static let id = Expression<Int64>("id")
     static let active = Expression<Bool>("active")
-    static let city = Expression<String>("city")
+    static let city = Expression<String?>("city")
     static let territory = Expression<String>("territory")
     static let address1 = Expression<String?>("address1")
     static let address2 = Expression<String?>("address2")
@@ -155,23 +154,21 @@ extension ExplorePointOfUse: RowDecodable {
         let phone: String? = row[ExplorePointOfUse.phone]
         let logoLocation = row[ExplorePointOfUse.logoLocation]
         let coverImage: String? = row[ExplorePointOfUse.coverImage]
-        let plusCode = row[ExplorePointOfUse.plusCode]
-        
         
         let category: Category
-        if let paymentMethodRaw = row[ExplorePointOfUse.paymentMethod] {
+        if  let paymentMethodRaw = try? row.get(ExplorePointOfUse.paymentMethod) {
             let merchantId = row[ExplorePointOfUse.merchantId]
             let type: Merchant.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             let deeplink = row[ExplorePointOfUse.deeplink]
             category = .merchant(Merchant(merchantId: merchantId, paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!, type: type, deeplink: deeplink))
-        }else if let manufacturer = row[ExplorePointOfUse.manufacturer] {
+        }else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))
         }else{
             category = .unknown
         }
         
-        self.init(id: id, name: name, category: category, active: active, city: city, territory: territory, address1: address1, address2: address2, address3: address3, address4: address4, latitude: latitude, longitude: longitude, website: website, phone: phone, logoLocation: logoLocation, coverImage: coverImage, plusCode: plusCode)
+        self.init(id: id, name: name, category: category, active: active, city: city, territory: territory, address1: address1, address2: address2, address3: address3, address4: address4, latitude: latitude, longitude: longitude, website: website, phone: phone, logoLocation: logoLocation, coverImage: coverImage)
     }
 }
 

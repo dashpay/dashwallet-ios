@@ -142,8 +142,7 @@ import SQLite
                 payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
             }
         }
-        
-        
+
         let padding: CGFloat = 15
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: padding),

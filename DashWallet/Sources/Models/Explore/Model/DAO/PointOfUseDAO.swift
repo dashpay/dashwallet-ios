@@ -24,6 +24,7 @@ struct PointOfUseDAOFilters {
     init(filters: [String: Any?]) {
         self.storage = filters
     }
+    
     subscript(dynamicMember string: String) -> Any? {
         return storage[string] as? Any
     }

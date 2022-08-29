@@ -15,8 +15,22 @@
 //  limitations under the License.
 //
 
-import UIKit
+import Foundation
 
-@objc class WhereToSpendListViewController: UIViewController {
+@objc class AtmListViewController: PointOfUseListViewController {
+    override func configureModel() {
+        model = AtmListModel()
+    }
     
+    override func configureHierarchy() {
+        self.title = NSLocalizedString("ATMs", comment: "");
+        self.view.backgroundColor = .dw_background()
+        
+        //let infoButton: UIButton = UIButton(type: .infoLight)
+        //infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
+        //self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
+        
+        super.configureHierarchy()
+    }
+
 }

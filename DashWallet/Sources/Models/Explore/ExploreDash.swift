@@ -38,6 +38,7 @@ public class ExploreDash {
     private var databaseConnection: ExploreDatabaseConnection!
     
     var merchantDAO: MerchantDAO!
+    var atmDAO: AtmDAO!
     
     private func configure() throws {
         guard !isConfigured else { return }
@@ -51,6 +52,7 @@ public class ExploreDash {
         databaseSyncManager.start()
         
         merchantDAO = MerchantDAO(dbConnection: databaseConnection)
+        atmDAO = AtmDAO(dbConnection: databaseConnection)
         
         isConfigured = true
     }
@@ -97,6 +99,12 @@ extension ExploreDash {
     }
 }
 
+extension ExploreDash {
+    func atms(query: String?, in types: [ExplorePointOfUse.Atm.`Type`], in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        let filters = PointOfUseDAOFilters(filters: ["query": query, "types": types, "bounds": bounds, "userLocation": userPoint, "offset": offset])
+        atmDAO.items(filters: filters, completion: completion)
+    }
+}
 extension ExploreDash {
     public class func configure() throws {
         try ExploreDash.shared.configure()

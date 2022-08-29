@@ -43,6 +43,13 @@
     [self.navigationController pushViewController:vc animated:YES];
 }
 
+- (void)showAtms {
+    DWExploreTestnetViewController* __weak weakSelf = self;
+    
+    AtmListViewController *vc = [[AtmListViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
 - (void)openPaymentsScreen {
     [self.delegate exploreTestnetViewControllerShowSendPayment:self];
 }
@@ -82,7 +89,7 @@
         [weakSelf showWhereToSpendViewController];
     };
     contentsView.atmHandler = ^{
-        
+        [weakSelf showAtms];
     };
     
     contentsView.translatesAutoresizingMaskIntoConstraints = NO;
