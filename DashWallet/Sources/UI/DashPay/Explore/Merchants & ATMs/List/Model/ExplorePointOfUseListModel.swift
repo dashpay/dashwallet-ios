@@ -107,7 +107,7 @@ class ExplorePointOfUseListModel {
     
     internal var dataProviders: [ExplorePointOfUseListSegment: ExplorePointOfUseDataProvider] = [:]
     
-    var currentSegment: ExplorePointOfUseListSegment! {
+    var currentSegment: ExplorePointOfUseListSegment {
         didSet {
             if oldValue != currentSegment {
                 segmentDidUpdate()
@@ -135,11 +135,12 @@ class ExplorePointOfUseListModel {
     
     init(segments: [ExplorePointOfUseListSegment]) {
         self.segments = segments
-        self.currentSegment = segments.first
-        
         for segment in segments {
             dataProviders[segment] = segment.dataProvider
         }
+       
+        self.currentSegment = segments.first!
+        self.segmentDidUpdate()
     }
     
     func segmentDidUpdate() {

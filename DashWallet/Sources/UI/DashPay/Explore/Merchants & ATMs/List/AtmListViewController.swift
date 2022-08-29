@@ -62,7 +62,7 @@ extension AtmListSegmnets {
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
     override func subtitleForFilterCell() -> String? {
-        if currentSegment.showMap {
+        if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
             }else{

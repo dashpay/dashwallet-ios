@@ -23,11 +23,17 @@ class BaseAtmsDataProvider: ExplorePointOfUseDataProvider {
     
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         
-        guard let bounds = bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
+        var bounds = bounds
+        var userPoint = userPoint
+        
+        if DWLocationManager.shared.isAuthorized && (bounds == nil && userPoint == nil) {
             items = []
             currentPage = nil
             completion(.success(items))
             return
+        }else{
+            bounds = nil
+            userPoint = nil
         }
         
         if lastQuery == query && !items.isEmpty && lastBounds == bounds {
@@ -36,10 +42,10 @@ class BaseAtmsDataProvider: ExplorePointOfUseDataProvider {
         }
         
         lastQuery = query
-        lastUserPoint = userLocation
+        lastUserPoint = userPoint
         lastBounds = bounds
         
-        fetch(by: query, in: bounds, userPoint: userLocation, offset: 0) { [weak self] result in
+        fetch(by: query, in: bounds, userPoint: userPoint, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }

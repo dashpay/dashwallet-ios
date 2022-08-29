@@ -198,7 +198,7 @@ extension ExplorePointOfUseListViewController {
         filterCell?.title = currentSegment.title
         filterCell?.subtitle = subtitleForFilterCell()
         
-        if currentSegment.showReversedLocation {
+        if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
             DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
                 if self?.currentSegment.showMap ?? false {
                     self?.filterCell?.title = location
@@ -412,28 +412,21 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             refreshFilterCell()
             cell = filterCell
         case .items:
-            if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
-                let itemCell: MerchantListLocationOffCell = tableView.dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier, for: indexPath) as! MerchantListLocationOffCell
-                cell = itemCell
-                cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
-                locationOffCell = itemCell
-            }else{
-                let merchant = self.items[indexPath.row];
-                let itemCell: ExplorePointOfUseItemCell = tableView.dequeueReusableCell(withIdentifier: ExplorePointOfUseItemCell.dw_reuseIdentifier, for: indexPath) as! ExplorePointOfUseItemCell
-                itemCell.update(with: merchant)
-                cell = itemCell;
-            }
+            let merchant = self.items[indexPath.row];
+            let itemCell: ExplorePointOfUseItemCell = tableView.dequeueReusableCell(withIdentifier: ExplorePointOfUseItemCell.dw_reuseIdentifier, for: indexPath) as! ExplorePointOfUseItemCell
+            itemCell.update(with: merchant)
+            cell = itemCell;
         case .nextPage:
             let cell = tableView.dequeueReusableCell(withIdentifier: FetchingNextPageCell.dw_reuseIdentifier, for: indexPath) as! FetchingNextPageCell
             
             return cell
         }
-        cell.selectionStyle = .none
-        return cell;
         
+        cell.selectionStyle = .none
+        return cell
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    @objc func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }
@@ -441,27 +434,15 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         switch section
         {
         case .filters, .search:
-            return currentSegment == .nearby ? (DWLocationManager.shared.isPermissionDenied ? 0 : 1) : 1
+            return 1
         case .items:
-            
-            if currentSegment == .nearby {
-                if(DWLocationManager.shared.isAuthorized){
-                    return items.count;
-                }else if(DWLocationManager.shared.needsAuthorization) {
-                    return 0;
-                }else if(DWLocationManager.shared.isPermissionDenied) {
-                    return 1;
-                }
-            }else{
-                return items.count
-            }
+            return items.count
         case .nextPage:
             return model.hasNextPage ? 1 : 0
         default:
             return 1
         }
         
-        return 1
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {

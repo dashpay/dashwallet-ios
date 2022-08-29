@@ -59,6 +59,61 @@ extension MerchantsListSegment {
     
     //MARK: Table View
     
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        var cell: UITableViewCell!
+        
+        guard let section = ExplorePointOfUseSections(rawValue: indexPath.section) else {
+            return UITableViewCell()
+        }
+        
+        switch section {
+        case .items:
+            if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
+                let itemCell: MerchantListLocationOffCell = tableView.dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier, for: indexPath) as! MerchantListLocationOffCell
+                cell = itemCell
+                cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
+                locationOffCell = itemCell
+            }else{
+                return super.tableView(tableView, cellForRowAt: indexPath)
+            }
+        default:
+            return super.tableView(tableView, cellForRowAt: indexPath)
+        }
+        
+        cell.selectionStyle = .none
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let section = ExplorePointOfUseSections(rawValue: section) else {
+            return 0
+        }
+        
+        switch section
+        {
+        case .filters, .search:
+            return currentSegment == .nearby ? (DWLocationManager.shared.isPermissionDenied ? 0 : 1) : 1
+        case .items:
+            
+            if currentSegment == .nearby {
+                if(DWLocationManager.shared.isAuthorized){
+                    return items.count;
+                }else if(DWLocationManager.shared.needsAuthorization) {
+                    return 0;
+                }else if(DWLocationManager.shared.isPermissionDenied) {
+                    return 1;
+                }
+            }else{
+                return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
+            }
+        default:
+            return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
+        }
+
+        return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
+    }
+    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         guard let section = ExplorePointOfUseSections(rawValue: indexPath.section) else {
             return 0
@@ -149,5 +204,7 @@ extension MerchantListViewController {
     }
 }
 
-
+extension MerchantsListSegment {
+    
+}
 
