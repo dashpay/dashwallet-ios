@@ -19,6 +19,39 @@ import UIKit
 import CoreLocation
 import MapKit
 
+enum MerchantsListSegment: Int {
+    case online = 0
+    case nearby
+    case all
+    
+    static func ==(lhs: PointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
+        return lhs.tag == rhs.rawValue
+    }
+    
+    var pointOfUseListSegment: PointOfUseListSegment {
+        switch self {
+        case .online:
+            return .init(tag: rawValue, title: title, showMap: false, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: OnlineMerchantsDataProvider())
+        case .nearby:
+            return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: true, showReversedLocation: true, dataProvider: NearbyMerchantsDataProvider())
+        case .all:
+            return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: AllMerchantsDataProvider())
+        }
+    }
+}
+
+extension MerchantsListSegment {
+    var title: String {
+        switch self {
+        case .online:
+            return NSLocalizedString("Online", comment: "Online")
+        case .nearby:
+            return NSLocalizedString("Nearby", comment: "Nearby")
+        case .all:
+            return NSLocalizedString("All", comment: "All")
+        }
+    }
+}
 
 @objc class MerchantListViewController: PointOfUseListViewController {
     //Change to Notification instead of chaining the property
@@ -58,7 +91,10 @@ import MapKit
     }
     
     override func configureModel() {
-        model = MerchantsListModel()
+        model = PointOfUseListModel(segments: [MerchantsListSegment.online.pointOfUseListSegment, MerchantsListSegment.nearby.pointOfUseListSegment, MerchantsListSegment.all.pointOfUseListSegment])
+        if DWLocationManager.shared.isAuthorized {
+            model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
+        }
     }
     
     override func configureHierarchy() {

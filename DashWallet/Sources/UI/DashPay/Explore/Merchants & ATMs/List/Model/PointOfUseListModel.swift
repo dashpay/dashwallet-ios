@@ -23,7 +23,7 @@ class PointOfUseDataProvider {
     var currentPage: PaginationResult<ExplorePointOfUse>?
     
     var hasNextPage: Bool {
-        //TODO: get total amount first
+        //TODO: get total amount first from data base 
         return !items.isEmpty && currentPage?.items.count == pageLimit
     }
     
@@ -77,13 +77,21 @@ class PointOfUseDataProvider {
     }
 }
 
-//static func ==(lhs: PointOfUseListSegment)
 struct PointOfUseListSegment: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(tag)
+    }
+    
+    static func == (lhs: PointOfUseListSegment, rhs: PointOfUseListSegment) -> Bool {
+        return lhs.tag == rhs.tag
+    }
+    
     var tag: Int
     var title: String
     var showMap: Bool
     var showLocationServiceSettings: Bool
     var showReversedLocation: Bool
+    var dataProvider: PointOfUseDataProvider
 }
 
 class PointOfUseListModel {
@@ -97,9 +105,13 @@ class PointOfUseListModel {
     var segments: [PointOfUseListSegment] = []
     var segmentTitles: [String] { return segments.map { $0.title } }
     
+    internal var dataProviders: [PointOfUseListSegment: PointOfUseDataProvider] = [:]
+    
     var currentSegment: PointOfUseListSegment! {
         didSet {
-            segmentDidUpdate()
+            if oldValue != currentSegment {
+                segmentDidUpdate()
+            }
         }
     }
     
@@ -114,11 +126,20 @@ class PointOfUseListModel {
     var userCoordinates: CLLocationCoordinate2D? { return DWLocationManager.shared.currentLocation?.coordinate }
     
     var hasNextPage: Bool {
-        return false
+        return currentDataProvider?.hasNextPage ?? false
     }
     
-    var currentDataProvider: PointOfUseDataProvider! {
-        return nil
+    var currentDataProvider: PointOfUseDataProvider? {
+        return dataProviders[currentSegment]
+    }
+    
+    init(segments: [PointOfUseListSegment]) {
+        self.segments = segments
+        self.currentSegment = segments.first
+        
+        for segment in segments {
+            dataProviders[segment] = segment.dataProvider
+        }
     }
     
     func segmentDidUpdate() {
@@ -135,7 +156,7 @@ extension PointOfUseListModel {
     internal func _fetch(query: String?) {
         let segment = currentSegment
         
-        currentDataProvider.items(query: query, in: currentMapBounds, userPoint: userCoordinates) { [weak self] result in
+        currentDataProvider?.items(query: query, in: currentMapBounds, userPoint: userCoordinates) { [weak self] result in
             guard self?.currentSegment == segment else { return }
             
             switch result {
@@ -153,7 +174,7 @@ extension PointOfUseListModel {
     
     public func fetchNextPage() {
         let segment = currentSegment
-        currentDataProvider.nextPage { [weak self] result in
+        currentDataProvider?.nextPage { [weak self] result in
             guard self?.currentSegment == segment else { return }
             
             switch result {

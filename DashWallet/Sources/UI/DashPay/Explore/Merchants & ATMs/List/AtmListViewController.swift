@@ -17,9 +17,52 @@
 
 import Foundation
 
+enum AtmListSegmnets: Int {
+    case all = 0
+    case buy
+    case sell
+    case buyAndSell
+    
+    static func ==(lhs: PointOfUseListSegment, rhs: AtmListSegmnets) -> Bool {
+        return lhs.tag == rhs.rawValue
+    }
+    
+    var pointOfUseListSegment: PointOfUseListSegment {
+        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider)
+    }
+}
+
+extension AtmListSegmnets {
+    var title: String {
+        switch self {
+        case .all:
+            return NSLocalizedString("All", comment: "all")
+        case .buy:
+            return NSLocalizedString("Buy", comment: "buy")
+        case .sell:
+            return NSLocalizedString("Sell", comment: "Sell")
+        case .buyAndSell:
+            return NSLocalizedString("Buy/Sell", comment: "Buy/Sell")
+        }
+    }
+    
+    var dataProvider: PointOfUseDataProvider {
+        switch self {
+        case .all:
+            return AllAtmsDataProvider()
+        case .buy:
+            return BuyAtmsDataProvider()
+        case .sell:
+            return BuyAndSellAtmsDataProvider()
+        case .buyAndSell:
+            return BuyAndSellAtmsDataProvider()
+        }
+    }
+}
+
 @objc class AtmListViewController: PointOfUseListViewController {
     override func configureModel() {
-        model = AtmListModel()
+        model = PointOfUseListModel(segments: [AtmListSegmnets.all.pointOfUseListSegment, AtmListSegmnets.buy.pointOfUseListSegment, AtmListSegmnets.sell.pointOfUseListSegment, AtmListSegmnets.buyAndSell.pointOfUseListSegment])
     }
     
     override func configureHierarchy() {

@@ -19,7 +19,7 @@ import Foundation
 import CoreLocation
 
 class BaseAtmsDataProvider: PointOfUseDataProvider {
-    var types: [ExplorePointOfUse.Atm.`Type`] { return [.buySell, .buy] }
+    var types: [ExplorePointOfUse.Atm.`Type`]? { return nil }
     
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         

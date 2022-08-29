@@ -100,7 +100,7 @@ extension ExploreDash {
 }
 
 extension ExploreDash {
-    func atms(query: String?, in types: [ExplorePointOfUse.Atm.`Type`], in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+    func atms(query: String?, in types: [ExplorePointOfUse.Atm.`Type`]?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         let filters = PointOfUseDAOFilters(filters: ["query": query, "types": types, "bounds": bounds, "userLocation": userPoint, "offset": offset])
         atmDAO.items(filters: filters, completion: completion)
     }
