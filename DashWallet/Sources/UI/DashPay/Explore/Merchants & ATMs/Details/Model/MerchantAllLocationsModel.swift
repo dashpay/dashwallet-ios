@@ -19,27 +19,28 @@ import Foundation
 import CoreLocation
 
 class MerchantAllLocationsModel {
-    var merchantsDidChange: (([Merchant]) -> Void)?
+    var merchantsDidChange: (([ExplorePointOfUse]) -> Void)?
     
-    let merchant: Merchant
-    var cachedMerchants: [Merchant] = []
+    let merchant: ExplorePointOfUse
+    var cachedMerchants: [ExplorePointOfUse] = []
     
-    init(merchant: Merchant) {
+    init(merchant: ExplorePointOfUse) {
         self.merchant = merchant
     }
     
     func fetchMerchants(in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?) {
-        ExploreDash.shared.allLocations(for: merchant, in: bounds, userPoint: userPoint) { [weak self] result in
-            switch result {
-            case .success(let page):
-                self?.cachedMerchants = page.items
-                DispatchQueue.main.async {
-                    self?.merchantsDidChange?(page.items)
-                }
-                break
-            case .failure(let error):
-                break //TODO: handler failure
-            }
-        }
+        //TODO: fix it
+//        ExploreDash.shared.allLocations(for: merchant, in: bounds, userPoint: userPoint) { [weak self] result in
+//            switch result {
+//            case .success(let page):
+//                self?.cachedMerchants = page.items
+//                DispatchQueue.main.async {
+//                    self?.merchantsDidChange?(page.items)
+//                }
+//                break
+//            case .failure(let error):
+//                break //TODO: handler failure
+//            }
+//        }
     }
 }

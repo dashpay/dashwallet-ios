@@ -18,13 +18,19 @@
 import Foundation
 import CoreLocation
 
+//protocol PointOfUseDataProvider {
+//    func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[Merchant], Error>) -> Void) {
+//        //NOTE: must be overriden
+//    }
+//}
 class MerchantsDataProvider {
-    var items: [Merchant] = []
-    var currentPage: PaginationResult<Merchant>?
+    var items: [ExplorePointOfUse] = []
+    var currentPage: PaginationResult<ExplorePointOfUse>?
     var hasNextPage: Bool {
         //TODO: get total amount first
         return !items.isEmpty && currentPage?.items.count == pageLimit
     }
+    
     
     var nextOffset: Int {
         let offset: Int
@@ -48,11 +54,16 @@ class MerchantsDataProvider {
         self.dataSource = ExploreDash.shared
     }
     
-    func nextPage(completion: @escaping (Swift.Result<[Merchant], Error>) -> Void) {
+    func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        //NOTE: must be overriden
+    }
+    
+    
+    func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         //NOTE: must be overriden 
     }
     
-    internal func handle(result: Swift.Result<PaginationResult<Merchant>, Error>, appending: Bool = false, completion: (Result<[Merchant], Error>) -> Void) {
+    internal func handle(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>, appending: Bool = false, completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
         switch result {
         case .success(let page):
             currentPage = page
@@ -71,7 +82,7 @@ class MerchantsDataProvider {
 }
 
 class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
-    override func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Result<[Merchant], Error>) -> Void) {
+    override func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
         
         if DWLocationManager.shared.isPermissionDenied {
             fetch(by: query, offset: 0) { [weak self] result in
@@ -79,10 +90,14 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
             }
         }else if let bounds = bounds {
             super.merchants(query: query, in: bounds, userPoint: userPoint, completion: completion)
+        }else{
+            items = []
+            currentPage = nil
+            completion(.success(items))
         }
     }
     
-    override func nextPage(completion: @escaping (Result<[Merchant], Error>) -> Void) {
+    override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
         if DWLocationManager.shared.isPermissionDenied {
             
             fetch(by: lastQuery, offset: nextOffset) { [weak self] result in
@@ -94,11 +109,11 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         }
     }
     
-    func fetch(by query: String?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func fetch(by query: String?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.allMerchants(by: query, offset: offset, completion: completion)
     }
     
-    override func fetch(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    override func fetch(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.allMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
     }
 }
@@ -106,9 +121,9 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
 class NearbyMerchantsDataProvider: MerchantsDataProvider {
     internal var lastBounds: ExploreMapBounds!
     
-    func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[Merchant], Error>) -> Void) {
+    override func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         
-        guard let bounds = bounds, DWLocationManager.shared.isAuthorized else {
+        guard let bounds = bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
             items = []
             currentPage = nil
             completion(.success(items))
@@ -124,24 +139,24 @@ class NearbyMerchantsDataProvider: MerchantsDataProvider {
         lastUserPoint = userPoint
         lastBounds = bounds
         
-        fetch(by: query, in: bounds, userPoint: userPoint, offset: 0) { [weak self] result in
+        fetch(by: query, in: bounds, userPoint: userLocation, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }
     
-    override func nextPage(completion: @escaping (Swift.Result<[Merchant], Error>) -> Void) {
+    override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, offset: nextOffset) { [weak self] result in
             self?.handle(result: result, appending: true, completion: completion)
         }
     }
     
-    internal func fetch(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    internal func fetch(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
     }
 }
 
 class OnlineMerchantsDataProvider: MerchantsDataProvider {
-    func merchants(query: String?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[Merchant], Error>) -> Void) {
+    override func merchants(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         if lastQuery == query && !items.isEmpty {
             completion(.success(items))
             return
@@ -155,13 +170,13 @@ class OnlineMerchantsDataProvider: MerchantsDataProvider {
         }
     }
     
-    override func nextPage(completion: @escaping (Swift.Result<[Merchant], Error>) -> Void) {
+    override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         fetch(by: lastQuery, onlineOnly: false, userPoint: lastUserPoint, offset: nextOffset) { [weak self] result in
             self?.handle(result: result, appending: true, completion: completion)
         }
     }
     
-    private func fetch(by query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    private func fetch(by query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.onlineMerchants(query: query, onlineOnly: false, userPoint: userPoint, offset: offset, completion: completion)
     }
 }

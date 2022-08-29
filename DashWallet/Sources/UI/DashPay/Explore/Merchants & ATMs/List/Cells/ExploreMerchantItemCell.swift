@@ -34,20 +34,22 @@ class ExploreMerchantItemCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with merchant: Merchant) {
-        nameLabel.text = merchant.name
+    func update(with pointOfUse: ExplorePointOfUse) {
+        nameLabel.text = pointOfUse.name
+        
+        guard let merchant = pointOfUse.merchant else { return }
         
         if let currentLocation = DWLocationManager.shared.currentLocation,
            DWLocationManager.shared.isAuthorized, merchant.type != .online {
             subLabel.isHidden = false
-            let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
+            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!).distance(from: currentLocation)
             let distanceText: String = App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
             subLabel.text = distanceText
         }else{
             subLabel.isHidden = true
         }
         
-        if let urlString = merchant.logoLocation, let url = URL(string: urlString) {
+        if let urlString = pointOfUse.logoLocation, let url = URL(string: urlString) {
             logoImageView.sd_setImage(with: url)
         }else{
             logoImageView.image = UIImage(named:"image.explore.dash.wts.item.logo.empty")

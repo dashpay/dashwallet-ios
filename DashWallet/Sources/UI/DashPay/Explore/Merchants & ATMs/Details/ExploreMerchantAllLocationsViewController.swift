@@ -97,15 +97,17 @@ class ExploreMerchantAllLocationsViewController: UIViewController {
         super.viewDidAppear(animated)
     }
     
-    private func show(merchant: Merchant) {
+    private func show(pointOfUse: ExplorePointOfUse) {
         let vc: UIViewController
         
+        guard let merchant = pointOfUse.merchant else { return }
+        
         if merchant.type == .online {
-            let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
+            let onlineVC = ExploreOnlineMerchantViewController(merchant: pointOfUse)
             onlineVC.payWithDashHandler = self.payWithDashHandler;
             vc = onlineVC;
         }else{
-            vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: true)
+            vc = ExploreOfflineMerchantViewController(merchant: pointOfUse, isShowAllHidden: true)
         }
         
         navigationController?.pushViewController(vc, animated: true)
@@ -136,8 +138,8 @@ extension ExploreMerchantAllLocationsViewController: ExploreMapViewDelegate {
         model.fetchMerchants(in: bounds, userPoint: mapView.userLocation?.coordinate)
     }
     
-    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {
-        show(merchant: merchant)
+    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: ExplorePointOfUse) {
+        show(pointOfUse: merchant)
     }
 }
 
@@ -267,7 +269,7 @@ extension ExploreMerchantAllLocationsViewController: UITableViewDelegate, UITabl
         tableView.deselectRow(at: indexPath, animated: false)
         
         let merchant = model.cachedMerchants[indexPath.row]
-        show(merchant: merchant)
+        show(pointOfUse: merchant)
     }
 }
 
@@ -286,7 +288,7 @@ class LocationCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func update(with merchant: Merchant) {
+    public func update(with merchant: ExplorePointOfUse) {
         addressLabel.text = merchant.address1
         if let currentLocation = DWLocationManager.shared.currentLocation,
            DWLocationManager.shared.isAuthorized {

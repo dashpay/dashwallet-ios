@@ -24,6 +24,19 @@ enum MerchantsListSegment: Int {
     case all
 }
 
+extension MerchantsListSegment {
+    var title: String {
+        switch self {
+        case .online:
+            return NSLocalizedString("Online", comment: "Online")
+        case .nearby:
+            return NSLocalizedString("Nearby", comment: "Nearby")
+        case .all:
+            return NSLocalizedString("All", comment: "All")
+        }
+    }
+}
+
 class MerchantsListModel {
     private var lastQuery: String?
     private var isFetching: Bool = false
@@ -32,10 +45,13 @@ class MerchantsListModel {
     private let nearbyMerchantsDataProvider: NearbyMerchantsDataProvider
     private let allMerchantsDataProvider: AllMerchantsDataProvider
     
-    var items: [Merchant] = []
+    var items: [ExplorePointOfUse] = []
     var itemsDidChange: (() -> Void)?
     var nextPageDidLoaded: ((_ offset: Int, _ count: Int) -> Void)?
-       
+    
+    var segments: [MerchantsListSegment] = []
+    var segmentTitles: [String] { return segments.map { $0.title } }
+    
     var currentSegment: MerchantsListSegment {
         didSet {
             segmentDidUpdate()
@@ -53,6 +69,8 @@ class MerchantsListModel {
     var userCoordinates: CLLocationCoordinate2D? { return DWLocationManager.shared.currentLocation?.coordinate }
     
     init() {
+        segments = [MerchantsListSegment.online, MerchantsListSegment.nearby, MerchantsListSegment.all]
+        
         onlineMerchantsDataProvider = OnlineMerchantsDataProvider()
         nearbyMerchantsDataProvider = NearbyMerchantsDataProvider()
         allMerchantsDataProvider = AllMerchantsDataProvider()
@@ -70,13 +88,21 @@ class MerchantsListModel {
     }
     
     private func _fetch(query: String?) {
-        switch currentSegment {
-        case .online:
-            fetchOnline(query: query)
-        case .nearby:
-            fetchNearby(query: query)
-        case .all:
-            fetchAll(query: query)
+        let segment = currentSegment
+        
+        currentDataProvider.merchants(query: query, in: currentMapBounds, userPoint: userCoordinates) { [weak self] result in
+            guard self?.currentSegment == segment else { return }
+            
+            switch result {
+            case .success(let items):
+                self?.items = items
+                DispatchQueue.main.async {
+                    self?.itemsDidChange?()
+                }
+                break
+            case .failure(let error):
+                break //TODO: handler failure
+            }
         }
     }
     
@@ -119,74 +145,6 @@ extension MerchantsListModel {
     }
     
     func segmentDidUpdate() {
-        _fetch(query: nil)
+        _fetch(query: lastQuery)
     }
-}
-
-extension MerchantsListModel {
-    
-    
-    func fetchOnline(query: String?) {
-        onlineMerchantsDataProvider.merchants(query: query, userPoint: userCoordinates) { [weak self] result in
-            guard self?.currentSegment == .online else { return }
-            
-            switch result {
-            case .success(let items):
-                self?.items = items
-                DispatchQueue.main.async {
-                    self?.itemsDidChange?()
-                }
-                break
-            case .failure(let error):
-                break //TODO: handler failure
-            }
-        }
-    }
-    
-    func fetchNearby(query: String?) {
-        guard let bounds = currentMapBounds, let userCoordinates = self.userCoordinates else {
-            items = []
-            itemsDidChange?()
-            return
-        }
-        
-        nearbyMerchantsDataProvider.merchants(query: query, in: bounds, userPoint: userCoordinates) { [weak self] result in
-            guard self?.currentSegment == .nearby else { return }
-            
-            switch result {
-            case .success(let items):
-                self?.items = items
-                DispatchQueue.main.async {
-                    self?.itemsDidChange?()
-                }
-                break
-            case .failure(let error):
-                break //TODO: handler failure
-            }
-        }
-    }
-    
-    func fetchAll(query: String?) {
-        guard let bounds = currentMapBounds else {
-            items = []
-            itemsDidChange?()
-            return
-        }
-        
-        allMerchantsDataProvider.merchants(query: query, in: bounds, userPoint: userCoordinates) { [weak self] result in
-            guard self?.currentSegment == .all else { return }
-            
-            switch result {
-            case .success(let items):
-                self?.items = items
-                DispatchQueue.main.async {
-                    self?.itemsDidChange?()
-                }
-                break
-            case .failure(let error):
-                break //TODO: handler failure
-            }
-        }
-    }
-
 }

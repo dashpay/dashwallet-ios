@@ -132,14 +132,17 @@ import SQLite
         payButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
         containerView.addArrangedSubview(payButton)
         
-        if merchant.paymentMethod == .giftCard {
-            payButton.setTitle(NSLocalizedString("Buy a Gift Card", comment: "Buy a Gift Card"), for: .normal)
-            payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
-            payButton.accentColor = .dw_orange()
-        }else{
-            payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
-            payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
+        if case let .merchant(m) = merchant.category {
+            if m.paymentMethod == .giftCard {
+                payButton.setTitle(NSLocalizedString("Buy a Gift Card", comment: "Buy a Gift Card"), for: .normal)
+                payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
+                payButton.accentColor = .dw_orange()
+            }else{
+                payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
+                payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
+            }
         }
+        
         
         let padding: CGFloat = 15
         NSLayoutConstraint.activate([
@@ -165,7 +168,7 @@ import SQLite
     private var isShowAllHidden: Bool
     private var mapView: ExploreMapView!
     
-    public init(merchant: Merchant, isShowAllHidden: Bool = false) {
+    public init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false) {
         
         self.isShowAllHidden = isShowAllHidden
         super.init(merchant: merchant)
@@ -221,9 +224,9 @@ import SQLite
 }
 
 @objc class ExploreMerchantViewController: UIViewController {
-    internal let merchant: Merchant
+    internal let merchant: ExplorePointOfUse
     
-    public init(merchant: Merchant) {
+    public init(merchant: ExplorePointOfUse) {
         self.merchant = merchant
         super.init(nibName: nil, bundle: nil)
         

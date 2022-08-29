@@ -27,10 +27,10 @@ class MerchantDetailsView: UIView {
     var subLabel: UILabel!
     var addressLabel: UILabel!
     
-    private let merchant: Merchant
+    private let merchant: ExplorePointOfUse
     private let isShowAllHidden: Bool
     
-    init(merchant: Merchant, isShowAllHidden: Bool) {
+    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool) {
         
         self.isShowAllHidden = isShowAllHidden
         self.merchant = merchant
@@ -69,7 +69,7 @@ class MerchantDetailsView: UIView {
     }
     
     @objc func payAction() {
-        guard let deeplink = merchant.deeplink, let url = URL(string: deeplink) else { return }
+        guard case let .merchant(m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
     
@@ -112,12 +112,14 @@ extension MerchantDetailsView {
         subLabel = UILabel()
         subLabel.font = .dw_font(forTextStyle: .footnote)
         
-        if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
-            
-            let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
-            subLabel.text = "\(App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))) · Physical Merchant" + (merchant.type == .onlineAndPhysical ? ", Online" : "")
-        }else{
-            subLabel.text = merchant.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
+        if case let .merchant(m) = merchant.category {
+            if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
+                
+                let distance = CLLocation(latitude: merchant.latitude!, longitude: merchant.longitude!).distance(from: currentLocation)
+                subLabel.text = "\(App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
+            }else{
+                subLabel.text = m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
+            }
         }
         
         subLabel.textColor = .dw_secondaryText()
@@ -208,14 +210,17 @@ extension MerchantDetailsView {
         payButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
         containerView.addArrangedSubview(payButton)
         
-        if merchant.paymentMethod == .giftCard {
-            payButton.setTitle(NSLocalizedString("Buy a Gift Card", comment: "Buy a Gift Card"), for: .normal)
-            payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
-            payButton.accentColor = .dw_orange()
-        }else{
-            payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
-            payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
+        if case let .merchant(m) = merchant.category {
+            if m.paymentMethod == .giftCard {
+                payButton.setTitle(NSLocalizedString("Buy a Gift Card", comment: "Buy a Gift Card"), for: .normal)
+                payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
+                payButton.accentColor = .dw_orange()
+            }else{
+                payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
+                payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
+            }
         }
+        
         
         addressLabel.text = merchant.address1
         

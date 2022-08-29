@@ -24,19 +24,19 @@ extension MerchantAnnotation {
 }
 
 class MerchantAnnotation: MKPointAnnotation {
-    var merchant: Merchant
+    var merchant: ExplorePointOfUse
     
     override var hash: Int {
         return merchant.hashValue
     }
+//    
+//    override func isEqual(_ object: Any?) -> Bool {
+//        guard let obj = object as? MerchantAnnotation else { return false }
+//        
+//        return self == obj
+//    }
     
-    override func isEqual(_ object: Any?) -> Bool {
-        guard let obj = object as? MerchantAnnotation else { return false }
-        
-        return self == obj
-    }
-    
-    init(merchant: Merchant, location: CLLocationCoordinate2D) {
+    init(merchant: ExplorePointOfUse, location: CLLocationCoordinate2D) {
         self.merchant = merchant
         super.init()
         self.coordinate = location
@@ -44,7 +44,7 @@ class MerchantAnnotation: MKPointAnnotation {
     }
 }
 
-final class MerchantAnnotationView: MKAnnotationView {
+final class ExploreMapAnnotationView: MKAnnotationView {
     
     private var imageView: UIImageView!
     
@@ -63,8 +63,8 @@ final class MerchantAnnotationView: MKAnnotationView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func update(with merchant: Merchant) {
-        if let str = merchant.logoLocation, let url = URL(string: str)
+    public func update(with pointOfUse: ExplorePointOfUse) {
+        if let str = pointOfUse.logoLocation, let url = URL(string: str)
         {
             imageView.sd_setImage(with: url, completed: nil)
         }else{
@@ -88,3 +88,9 @@ final class MerchantAnnotationView: MKAnnotationView {
     
     static var reuseIdentifier: String { return "MerchantAnnotationView" }
 }
+
+protocol PointOfUse {
+    var logoLocation: String? { get }
+}
+
+

@@ -38,10 +38,8 @@ private enum ExploreWhereToSpendSections: Int {
     @objc var payWithDashHandler: (() -> Void)?
     
     private let model = MerchantsListModel()
-    private var segmentTitles: [String] = [NSLocalizedString("Online", comment: "Online"),
-                                           NSLocalizedString("Nearby", comment: "Nearby"),
-                                           NSLocalizedString("All", comment: "All")]
-    private var merchants: [Merchant] { return model.items }
+    private var segmentTitles: [String] { return model.segmentTitles }
+    private var merchants: [ExplorePointOfUse] { return model.items }
     private var currentSegment: MerchantsListSegment { return model.currentSegment }
     
     private var radius: Int = 20 //In miles //Move to model
@@ -139,7 +137,6 @@ extension MerchantListViewController {
                     self?.filterCell?.title = location
                 }
             }
-
         }
     }
     
@@ -409,7 +406,7 @@ extension MerchantListViewController: UITableViewDelegate, UITableViewDataSource
         
         if section == .items {
             let merchant = merchants[indexPath.row]
-            show(merchant: merchant)
+            show(pointOfUse: merchant)
         }
     }
     
@@ -449,15 +446,17 @@ extension MerchantListViewController: DWLocationObserver {
 
 //MARK: Actions
 extension MerchantListViewController {
-    private func show(merchant: Merchant) {
+    private func show(pointOfUse: ExplorePointOfUse) {
         let vc: UIViewController
         
+        guard let merchant = pointOfUse.merchant else { return }
+        
         if merchant.type == .online {
-            let onlineVC = ExploreOnlineMerchantViewController(merchant: merchant)
+            let onlineVC = ExploreOnlineMerchantViewController(merchant: pointOfUse)
             onlineVC.payWithDashHandler = self.payWithDashHandler;
             vc = onlineVC;
         }else{
-            vc = ExploreOfflineMerchantViewController(merchant: merchant, isShowAllHidden: false)
+            vc = ExploreOfflineMerchantViewController(merchant: pointOfUse, isShowAllHidden: false)
         }
         
         navigationController?.pushViewController(vc, animated: true)
@@ -524,7 +523,6 @@ extension MerchantListViewController {
         }
         
         model.currentSegment = newSegment
-        searchCell?.resetSearchBar()
         refreshFilterCell()
         
         DispatchQueue.main.async {
@@ -562,7 +560,7 @@ extension MerchantListViewController: ExploreMapViewDelegate {
         model.currentMapBounds = bounds
     }
     
-    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant) {
-        show(merchant: merchant)
+    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: ExplorePointOfUse) {
+        show(pointOfUse: merchant)
     }
 }

@@ -22,8 +22,10 @@ import CoreLocation
 let pageLimit = 100
 
 
-class MerchantDAO
+class MerchantDAO: PointOfUseDAO
 {
+    typealias Item = ExplorePointOfUse
+    
     private let connection: ExploreDatabaseConnection
     
     let serialQueue = DispatchQueue(label: "org.dashfoundation.dashpaytnt.explore.serial.queue")
@@ -31,10 +33,14 @@ class MerchantDAO
     init(dbConnection: ExploreDatabaseConnection) {
         self.connection = dbConnection
     }
+    
+    func items(filters: PointOfUseDAOFilters, completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
+        
+    }
 }
 
 extension MerchantDAO {
-    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
@@ -56,7 +62,7 @@ extension MerchantDAO {
                 OFFSET \(offset)
                 """
             do {
-                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: offset)))
             }catch{
                 print(error)
@@ -65,7 +71,7 @@ extension MerchantDAO {
         }
     }
     
-    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
@@ -88,7 +94,7 @@ extension MerchantDAO {
                 OFFSET \(offset)
             """
             do {
-                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
             }catch{
                 print(error)
@@ -97,7 +103,7 @@ extension MerchantDAO {
         }
     }
     
-    func allMerchants(by query: String?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func allMerchants(by query: String?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
@@ -119,7 +125,7 @@ extension MerchantDAO {
                 OFFSET \(offset)
             """
             do {
-                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
             }catch{
                 print(error)
@@ -127,7 +133,7 @@ extension MerchantDAO {
             }
         }
     }
-    func allMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func allMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
@@ -154,7 +160,7 @@ extension MerchantDAO {
                 OFFSET \(offset)
             """
             do {
-                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
             }catch{
                 print(error)
@@ -163,7 +169,7 @@ extension MerchantDAO {
         }
     }
     
-    func allLocations(for merchant: Merchant, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<Merchant>, Error>) -> Void) {
+    func allLocations(for merchant: ExplorePointOfUse, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
@@ -174,7 +180,7 @@ extension MerchantDAO {
                 SELECT *
                 FROM merchant
                 WHERE type IN ('physical', 'both')
-                    AND merchantId = \(merchant.merchantId)
+                    AND merchantId = \(merchant.merchant!.merchantId)
                     AND latitude > \(bounds.swCoordinate.latitude)
                     AND latitude < \(bounds.neCoordinate.latitude)
                     AND longitude < \(bounds.neCoordinate.longitude)
@@ -182,7 +188,7 @@ extension MerchantDAO {
                 ORDER BY ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC
             """
             do {
-                let items: [Merchant] = try wSelf.connection.execute(query: query)
+                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
             }catch{
                 print(error)

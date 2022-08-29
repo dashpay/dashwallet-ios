@@ -60,7 +60,7 @@ struct ExploreMapBounds {
 
 protocol ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds)
-    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: Merchant)
+    func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: ExplorePointOfUse)
 }
 
 class ExploreMapView: UIView {
@@ -80,12 +80,6 @@ class ExploreMapView: UIView {
     var contentInset: UIEdgeInsets = .zero {
         didSet {
             mapView.layoutMargins = contentInset
-            
-//            if let loc = initialCenterLocation {
-//                self.setCenter(loc, animated: false)
-//            }else if let loc = mapView.userLocation.location {
-//                self.setCenter(loc, animated: false)
-//            }
         }
     }
     
@@ -104,7 +98,6 @@ class ExploreMapView: UIView {
         return .init(rect: MKCircle(center: centerCoordinate, radius: 32000).boundingMapRect)
     }
     
-    private var shownMerchants: [Merchant] = []
     private var shownMerchantsAnnotations: [MerchantAnnotation] = []
     
     private lazy var showCurrentLocationOnce: Void = {
@@ -125,7 +118,11 @@ class ExploreMapView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func show(merchants: [Merchant]) {
+    public func reloadAnnotations() {
+        
+    }
+    
+    public func show(merchants: [ExplorePointOfUse]) {
         if self.shownMerchantsAnnotations.isEmpty {
             let newAnnotations = merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))})
             self.shownMerchantsAnnotations = newAnnotations
@@ -194,7 +191,7 @@ class ExploreMapView: UIView {
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .none
         mapView.delegate = self
-        mapView.register(MerchantAnnotationView.self, forAnnotationViewWithReuseIdentifier: MerchantAnnotationView.reuseIdentifier)
+        mapView.register(ExploreMapAnnotationView.self, forAnnotationViewWithReuseIdentifier: ExploreMapAnnotationView.reuseIdentifier)
         addSubview(mapView)
         
         let myLocationButton: UIButton = UIButton(type: .custom)
@@ -233,10 +230,11 @@ extension ExploreMapView: MKMapViewDelegate {
             }
         }
     }
+    
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         switch annotation {
         case is MerchantAnnotation:
-            let view = mapView.dequeueReusableAnnotationView(withIdentifier: MerchantAnnotationView.reuseIdentifier, for: annotation) as! MerchantAnnotationView
+            let view = mapView.dequeueReusableAnnotationView(withIdentifier: ExploreMapAnnotationView.reuseIdentifier, for: annotation) as! ExploreMapAnnotationView
             view.update(with: (annotation as! MerchantAnnotation).merchant)
             return view
         default:
