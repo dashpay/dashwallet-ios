@@ -18,7 +18,7 @@
 import Foundation
 import CoreLocation
 
-class PointOfUseDataProvider {
+class ExplorePointOfUseDataProvider {
     var items: [ExplorePointOfUse] = []
     var currentPage: PaginationResult<ExplorePointOfUse>?
     
@@ -77,12 +77,12 @@ class PointOfUseDataProvider {
     }
 }
 
-struct PointOfUseListSegment: Hashable {
+struct ExplorePointOfUseListSegment: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(tag)
     }
     
-    static func == (lhs: PointOfUseListSegment, rhs: PointOfUseListSegment) -> Bool {
+    static func == (lhs: ExplorePointOfUseListSegment, rhs: ExplorePointOfUseListSegment) -> Bool {
         return lhs.tag == rhs.tag
     }
     
@@ -91,10 +91,10 @@ struct PointOfUseListSegment: Hashable {
     var showMap: Bool
     var showLocationServiceSettings: Bool
     var showReversedLocation: Bool
-    var dataProvider: PointOfUseDataProvider
+    var dataProvider: ExplorePointOfUseDataProvider
 }
 
-class PointOfUseListModel {
+class ExplorePointOfUseListModel {
     internal var lastQuery: String?
     internal var isFetching: Bool = false
     
@@ -102,12 +102,12 @@ class PointOfUseListModel {
     var itemsDidChange: (() -> Void)?
     var nextPageDidLoaded: ((_ offset: Int, _ count: Int) -> Void)?
     
-    var segments: [PointOfUseListSegment] = []
+    var segments: [ExplorePointOfUseListSegment] = []
     var segmentTitles: [String] { return segments.map { $0.title } }
     
-    internal var dataProviders: [PointOfUseListSegment: PointOfUseDataProvider] = [:]
+    internal var dataProviders: [ExplorePointOfUseListSegment: ExplorePointOfUseDataProvider] = [:]
     
-    var currentSegment: PointOfUseListSegment! {
+    var currentSegment: ExplorePointOfUseListSegment! {
         didSet {
             if oldValue != currentSegment {
                 segmentDidUpdate()
@@ -129,11 +129,11 @@ class PointOfUseListModel {
         return currentDataProvider?.hasNextPage ?? false
     }
     
-    var currentDataProvider: PointOfUseDataProvider? {
+    var currentDataProvider: ExplorePointOfUseDataProvider? {
         return dataProviders[currentSegment]
     }
     
-    init(segments: [PointOfUseListSegment]) {
+    init(segments: [ExplorePointOfUseListSegment]) {
         self.segments = segments
         self.currentSegment = segments.first
         
@@ -147,7 +147,7 @@ class PointOfUseListModel {
     }
 }
 
-extension PointOfUseListModel {
+extension ExplorePointOfUseListModel {
     public func fetch(query: String?) {
         lastQuery = query
         _fetch(query: query)
@@ -194,6 +194,6 @@ extension PointOfUseListModel {
     }
 }
 
-extension PointOfUseListModel {
+extension ExplorePointOfUseListModel {
     
 }

@@ -23,11 +23,11 @@ enum AtmListSegmnets: Int {
     case sell
     case buyAndSell
     
-    static func ==(lhs: PointOfUseListSegment, rhs: AtmListSegmnets) -> Bool {
+    static func ==(lhs: ExplorePointOfUseListSegment, rhs: AtmListSegmnets) -> Bool {
         return lhs.tag == rhs.rawValue
     }
     
-    var pointOfUseListSegment: PointOfUseListSegment {
+    var pointOfUseListSegment: ExplorePointOfUseListSegment {
         return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider)
     }
 }
@@ -46,7 +46,7 @@ extension AtmListSegmnets {
         }
     }
     
-    var dataProvider: PointOfUseDataProvider {
+    var dataProvider: ExplorePointOfUseDataProvider {
         switch self {
         case .all:
             return AllAtmsDataProvider()
@@ -60,9 +60,9 @@ extension AtmListSegmnets {
     }
 }
 
-@objc class AtmListViewController: PointOfUseListViewController {
+@objc class AtmListViewController: ExplorePointOfUseListViewController {
     override func configureModel() {
-        model = PointOfUseListModel(segments: [AtmListSegmnets.all.pointOfUseListSegment, AtmListSegmnets.buy.pointOfUseListSegment, AtmListSegmnets.sell.pointOfUseListSegment, AtmListSegmnets.buyAndSell.pointOfUseListSegment])
+        model = ExplorePointOfUseListModel(segments: [AtmListSegmnets.all.pointOfUseListSegment, AtmListSegmnets.buy.pointOfUseListSegment, AtmListSegmnets.sell.pointOfUseListSegment, AtmListSegmnets.buyAndSell.pointOfUseListSegment])
     }
     
     override func configureHierarchy() {

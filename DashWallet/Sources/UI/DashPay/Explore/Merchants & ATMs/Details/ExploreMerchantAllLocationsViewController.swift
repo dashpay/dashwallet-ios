@@ -190,7 +190,7 @@ extension ExploreMerchantAllLocationsViewController {
         tableView.rowHeight = 94
         listContainerView.addSubview(tableView)
         
-        let handlerView = MerchantsListHandlerView(frame: .zero)
+        let handlerView = ListHandlerView(frame: .zero)
         handlerView.translatesAutoresizingMaskIntoConstraints = false
         listContainerView.addSubview(handlerView)
         

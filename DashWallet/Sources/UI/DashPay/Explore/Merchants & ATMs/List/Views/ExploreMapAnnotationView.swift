@@ -29,12 +29,6 @@ class MerchantAnnotation: MKPointAnnotation {
     override var hash: Int {
         return merchant.hashValue
     }
-//    
-//    override func isEqual(_ object: Any?) -> Bool {
-//        guard let obj = object as? MerchantAnnotation else { return false }
-//        
-//        return self == obj
-//    }
     
     init(merchant: ExplorePointOfUse, location: CLLocationCoordinate2D) {
         self.merchant = merchant
@@ -87,10 +81,6 @@ final class ExploreMapAnnotationView: MKAnnotationView {
     }
     
     static var reuseIdentifier: String { return "MerchantAnnotationView" }
-}
-
-protocol PointOfUse {
-    var logoLocation: String? { get }
 }
 
 

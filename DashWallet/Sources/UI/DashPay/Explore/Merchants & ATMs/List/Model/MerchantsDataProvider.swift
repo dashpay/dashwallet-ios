@@ -55,7 +55,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     }
 }
 
-class NearbyMerchantsDataProvider: PointOfUseDataProvider {
+class NearbyMerchantsDataProvider: ExplorePointOfUseDataProvider {
     //internal var lastBounds: ExploreMapBounds!
     
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
@@ -92,7 +92,7 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
     }
 }
 
-class OnlineMerchantsDataProvider: PointOfUseDataProvider {
+class OnlineMerchantsDataProvider: ExplorePointOfUseDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         if lastQuery == query && !items.isEmpty {
             completion(.success(items))

@@ -24,11 +24,11 @@ enum MerchantsListSegment: Int {
     case nearby
     case all
     
-    static func ==(lhs: PointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
+    static func ==(lhs: ExplorePointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
         return lhs.tag == rhs.rawValue
     }
     
-    var pointOfUseListSegment: PointOfUseListSegment {
+    var pointOfUseListSegment: ExplorePointOfUseListSegment {
         switch self {
         case .online:
             return .init(tag: rawValue, title: title, showMap: false, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: OnlineMerchantsDataProvider())
@@ -53,14 +53,14 @@ extension MerchantsListSegment {
     }
 }
 
-@objc class MerchantListViewController: PointOfUseListViewController {
+@objc class MerchantListViewController: ExplorePointOfUseListViewController {
     //Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
     
     //MARK: Table View
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let section = ExploreWhereToSpendSections(rawValue: indexPath.section) else {
+        guard let section = ExplorePointOfUseSections(rawValue: indexPath.section) else {
             return 0
         }
         
@@ -91,7 +91,7 @@ extension MerchantsListSegment {
     }
     
     override func configureModel() {
-        model = PointOfUseListModel(segments: [MerchantsListSegment.online.pointOfUseListSegment, MerchantsListSegment.nearby.pointOfUseListSegment, MerchantsListSegment.all.pointOfUseListSegment])
+        model = ExplorePointOfUseListModel(segments: [MerchantsListSegment.online.pointOfUseListSegment, MerchantsListSegment.nearby.pointOfUseListSegment, MerchantsListSegment.all.pointOfUseListSegment])
         if DWLocationManager.shared.isAuthorized {
             model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
         }
@@ -106,6 +106,8 @@ extension MerchantsListSegment {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
         
         super.configureHierarchy()
+        
+        tableView.register(ExploreMerchantItemCell.self, forCellReuseIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier)
     }
     
     override func viewDidAppear(_ animated: Bool) {

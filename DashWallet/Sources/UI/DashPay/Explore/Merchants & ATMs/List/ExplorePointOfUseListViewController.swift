@@ -24,7 +24,7 @@ private let kHandlerHeight: CGFloat = 24.0
 private let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
 
-enum ExploreWhereToSpendSections: Int {
+enum ExplorePointOfUseSections: Int {
     case segments = 0
     case search
     case filters
@@ -32,10 +32,10 @@ enum ExploreWhereToSpendSections: Int {
     case nextPage
 }
 
-@objc class PointOfUseListViewController: UIViewController {
-    internal var model: PointOfUseListModel!
+@objc class ExplorePointOfUseListViewController: UIViewController {
+    internal var model: ExplorePointOfUseListModel!
     internal var segmentTitles: [String] { return model.segmentTitles }
-    internal var currentSegment: PointOfUseListSegment { return model.currentSegment }
+    internal var currentSegment: ExplorePointOfUseListSegment { return model.currentSegment }
     internal var items: [ExplorePointOfUse] { return model.items }
     
     internal var radius: Int = 20 //In miles //Move to model
@@ -48,7 +48,7 @@ enum ExploreWhereToSpendSections: Int {
     internal var tableView: UITableView!
     internal var filterCell: DWExploreWhereToSpendFiltersCell?
     internal var searchCell: DWExploreWhereToSpendSearchCell?
-    internal var locationOffCell: ExploreWhereToSpendLocationOffCell?
+    internal var locationOffCell: MerchantListLocationOffCell?
     
     //MARK: Map
     internal func updateMapVisibility() {
@@ -134,7 +134,7 @@ enum ExploreWhereToSpendSections: Int {
                 wSelf.locationOffCell = nil
                 wSelf.tableView.reloadData()
             }else{
-                wSelf.tableView.reloadSections([ExploreWhereToSpendSections.items.rawValue, ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
+                wSelf.tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue], with: .none)
             }
             
             if wSelf.model.currentSegment.showMap
@@ -152,12 +152,12 @@ enum ExploreWhereToSpendSections: Int {
             let start = offset
             let total = (offset+count)
             for i in start..<total {
-                indexPathes.append(.init(row: i, section: ExploreWhereToSpendSections.items.rawValue))
+                indexPathes.append(.init(row: i, section: ExplorePointOfUseSections.items.rawValue))
             }
             
             wSelf.tableView.beginUpdates()
             wSelf.tableView.insertRows(at: indexPathes, with: .top)
-            wSelf.tableView.reloadSections([ExploreWhereToSpendSections.nextPage.rawValue], with: .none)
+            wSelf.tableView.reloadSections([ExplorePointOfUseSections.nextPage.rawValue], with: .none)
             wSelf.tableView.endUpdates()
         }
         
@@ -165,14 +165,14 @@ enum ExploreWhereToSpendSections: Int {
     }
 }
 
-extension PointOfUseListViewController {
+extension ExplorePointOfUseListViewController {
     @objc internal func configureModel() {
         
     }
 }
 
 //MARK: DWLocationObserver
-extension PointOfUseListViewController: DWLocationObserver {
+extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
         mapView.setCenter(location, animated: false)
     }
@@ -189,7 +189,7 @@ extension PointOfUseListViewController: DWLocationObserver {
     }
 }
 
-extension PointOfUseListViewController {
+extension ExplorePointOfUseListViewController {
     private func refreshFilterCell() {
         
         filterCell?.title = currentSegment.title
@@ -236,13 +236,12 @@ extension PointOfUseListViewController {
         tableView.register(DWExploreWhereToSpendSegmentedCell.self, forCellReuseIdentifier: DWExploreWhereToSpendSegmentedCell.dw_reuseIdentifier)
         tableView.register(DWExploreWhereToSpendSearchCell.self, forCellReuseIdentifier: DWExploreWhereToSpendSearchCell.dw_reuseIdentifier)
         tableView.register(DWExploreWhereToSpendFiltersCell.self, forCellReuseIdentifier: DWExploreWhereToSpendFiltersCell.dw_reuseIdentifier)
-        tableView.register(ExploreMerchantItemCell.self, forCellReuseIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier)
-        tableView.register(ExploreWhereToSpendLocationOffCell.self, forCellReuseIdentifier: ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier)
+        tableView.register(MerchantListLocationOffCell.self, forCellReuseIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier)
         tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
         
         contentView.addSubview(tableView)
         
-        let handlerView = MerchantsListHandlerView(frame: .zero)
+        let handlerView = ListHandlerView(frame: .zero)
         handlerView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(handlerView)
         
@@ -302,7 +301,7 @@ extension PointOfUseListViewController {
 
 
 //MARK: Actions
-extension PointOfUseListViewController {
+extension ExplorePointOfUseListViewController {
     @objc private func showMapAction() {
         showMap()
     }
@@ -356,7 +355,7 @@ extension PointOfUseListViewController {
 
 //MARK: ExploreMapViewDelegate
 
-extension PointOfUseListViewController: ExploreMapViewDelegate {
+extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
         refreshFilterCell()
         model.currentMapBounds = bounds
@@ -369,7 +368,7 @@ extension PointOfUseListViewController: ExploreMapViewDelegate {
 
 //MARK: DWExploreWhereToSpendSearchCellDelegate
 
-extension PointOfUseListViewController: DWExploreWhereToSpendSearchCellDelegate {
+extension ExplorePointOfUseListViewController: DWExploreWhereToSpendSearchCellDelegate {
     private func stopSearching() {
         model.fetch(query: nil)
     }
@@ -385,12 +384,12 @@ extension PointOfUseListViewController: DWExploreWhereToSpendSearchCellDelegate 
 
 //MARK: UITableViewDelegate, UITableViewDataSource
 
-extension PointOfUseListViewController: UITableViewDelegate, UITableViewDataSource {
+extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         var cell: UITableViewCell!
         
-        guard let section = ExploreWhereToSpendSections(rawValue: indexPath.section) else {
+        guard let section = ExplorePointOfUseSections(rawValue: indexPath.section) else {
             return UITableViewCell()
         }
         
@@ -419,7 +418,7 @@ extension PointOfUseListViewController: UITableViewDelegate, UITableViewDataSour
             cell = filterCell
         case .items:
             if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
-                let itemCell: ExploreWhereToSpendLocationOffCell = tableView.dequeueReusableCell(withIdentifier: ExploreWhereToSpendLocationOffCell.dw_reuseIdentifier, for: indexPath) as! ExploreWhereToSpendLocationOffCell
+                let itemCell: MerchantListLocationOffCell = tableView.dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier, for: indexPath) as! MerchantListLocationOffCell
                 cell = itemCell
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
                 locationOffCell = itemCell
@@ -440,7 +439,7 @@ extension PointOfUseListViewController: UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let section = ExploreWhereToSpendSections(rawValue: section) else {
+        guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }
         
@@ -475,7 +474,7 @@ extension PointOfUseListViewController: UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let section = ExploreWhereToSpendSections(rawValue: indexPath.section) else {
+        guard let section = ExplorePointOfUseSections(rawValue: indexPath.section) else {
             return 0
         }
         
@@ -496,7 +495,7 @@ extension PointOfUseListViewController: UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         
-        guard let section = ExploreWhereToSpendSections(rawValue: indexPath.section) else {
+        guard let section = ExplorePointOfUseSections(rawValue: indexPath.section) else {
             return
         }
         
@@ -517,5 +516,38 @@ extension PointOfUseListViewController: UITableViewDelegate, UITableViewDataSour
         if let cell = cell as? FetchingNextPageCell {
             cell.stop()
         }
+    }
+}
+
+//MARK: Extra UI
+class ListHandlerView: UIView {
+    private var handler: UIView!
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        configureHierarchy()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func configureHierarchy() {
+        layer.backgroundColor = UIColor.dw_background().cgColor
+        layer.masksToBounds = true
+        layer.cornerRadius = 20
+        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        
+        handler = UIView(frame: .init(x: 0, y: 0, width: 40, height: 4))
+        handler.layer.backgroundColor = UIColor.dw_separatorLine().cgColor
+        handler.layer.cornerRadius = 2
+        addSubview(handler)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        handler.center = center
     }
 }
