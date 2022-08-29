@@ -90,6 +90,18 @@ extension MerchantsListSegment {
         navigationController?.pushViewController(vc, animated: true)
     }
     
+    override func subtitleForFilterCell() -> String? {
+        if currentSegment.showMap {
+            if Locale.current.usesMetricSystem {
+                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+            }else{
+                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+            }
+        }else{
+            return nil
+        }
+    }
+    
     override func configureModel() {
         model = ExplorePointOfUseListModel(segments: [MerchantsListSegment.online.pointOfUseListSegment, MerchantsListSegment.nearby.pointOfUseListSegment, MerchantsListSegment.all.pointOfUseListSegment])
         if DWLocationManager.shared.isAuthorized {
@@ -107,7 +119,7 @@ extension MerchantsListSegment {
         
         super.configureHierarchy()
         
-        tableView.register(ExploreMerchantItemCell.self, forCellReuseIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier)
+        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.dw_reuseIdentifier)
     }
     
     override func viewDidAppear(_ animated: Bool) {

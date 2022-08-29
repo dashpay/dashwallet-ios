@@ -61,6 +61,18 @@ extension AtmListSegmnets {
 }
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
+    override func subtitleForFilterCell() -> String? {
+        if currentSegment.showMap {
+            if Locale.current.usesMetricSystem {
+                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+            }else{
+                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+            }
+        }else{
+            return super.subtitleForFilterCell()
+        }
+    }
+    
     override func configureModel() {
         model = ExplorePointOfUseListModel(segments: [AtmListSegmnets.all.pointOfUseListSegment, AtmListSegmnets.buy.pointOfUseListSegment, AtmListSegmnets.sell.pointOfUseListSegment, AtmListSegmnets.buyAndSell.pointOfUseListSegment])
     }
@@ -74,6 +86,12 @@ extension AtmListSegmnets {
         //self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
         
         super.configureHierarchy()
+        tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.dw_reuseIdentifier)
     }
 
+    override func refreshFilterCell() {
+        super.refreshFilterCell()
+        
+        
+    }
 }

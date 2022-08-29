@@ -18,11 +18,13 @@
 import UIKit
 import CoreLocation
 
-class ExploreMerchantItemCell: UITableViewCell {
+class ExplorePointOfUseItemCell: UITableViewCell {
     private var logoImageView: UIImageView!
     private var nameLabel: UILabel!
     var subLabel: UILabel!
-    private var paymentTypeIconView: UIImageView!
+    var mainStackView: UIStackView!
+    
+    override class var dw_reuseIdentifier: String { return "ExplorePointOfUseItemCell" }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -42,48 +44,31 @@ class ExploreMerchantItemCell: UITableViewCell {
         }else{
             logoImageView.image = UIImage(named:"image.explore.dash.wts.item.logo.empty")
         }
-        
-        guard let merchant = pointOfUse.merchant else { return }
-        
-        if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized, merchant.type != .online {
-            subLabel.isHidden = false
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!).distance(from: currentLocation)
-            let distanceText: String = App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-            subLabel.text = distanceText
-        }else{
-            subLabel.isHidden = true
-        }
-        
-        
-        
-        let isGiftCard = merchant.paymentMethod == .giftCard
-        let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
-        paymentTypeIconView.image = UIImage(named: paymentIconName)
+
     }
 }
 
-extension ExploreMerchantItemCell {
-    func configureHierarchy() {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 15
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.alignment = .center
-        contentView.addSubview(stackView)
+extension ExplorePointOfUseItemCell {
+    @objc func configureHierarchy() {
+        mainStackView = UIStackView()
+        mainStackView.axis = .horizontal
+        mainStackView.spacing = 15
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        mainStackView.alignment = .center
+        contentView.addSubview(mainStackView)
         
         logoImageView = UIImageView(image: UIImage(named: "image.explore.dash.wts.item.logo.empty"))
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.layer.cornerRadius = 8.0
         logoImageView.layer.masksToBounds = true
-        stackView.addArrangedSubview(logoImageView)
-
+        mainStackView.addArrangedSubview(logoImageView)
+        
         let textStackView = UIStackView()
         textStackView.axis = .vertical
         textStackView.spacing = 2
         textStackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.addArrangedSubview(textStackView)
+        mainStackView.addArrangedSubview(textStackView)
         
         nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -97,23 +82,13 @@ extension ExploreMerchantItemCell {
         subLabel.isHidden = true
         textStackView.addArrangedSubview(subLabel)
         
-
-        
-        paymentTypeIconView = UIImageView(image: UIImage(named: "image.explore.dash.wts.payment.dash"))
-        paymentTypeIconView.translatesAutoresizingMaskIntoConstraints = false
-        paymentTypeIconView.contentMode = .center
-        stackView.addArrangedSubview(paymentTypeIconView)
-        
         NSLayoutConstraint.activate([
             logoImageView.widthAnchor.constraint(equalToConstant: 36),
             logoImageView.heightAnchor.constraint(equalToConstant: 36),
             
-            paymentTypeIconView.widthAnchor.constraint(equalToConstant: 24),
-            paymentTypeIconView.heightAnchor.constraint(equalToConstant: 24),
-            
-            stackView.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor),
-            stackView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -16)
+            mainStackView.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor),
+            mainStackView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 16),
+            mainStackView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -16)
         ])
     }
 }

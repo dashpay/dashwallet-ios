@@ -190,18 +190,13 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 }
 
 extension ExplorePointOfUseListViewController {
-    private func refreshFilterCell() {
-        
+    @objc internal func subtitleForFilterCell() -> String? {
+        return nil
+    }
+    
+    @objc internal func refreshFilterCell() {
         filterCell?.title = currentSegment.title
-        filterCell?.subtitle = nil
-        
-        if currentSegment.showMap {
-            if Locale.current.usesMetricSystem {
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-            }else{
-                filterCell?.subtitle = String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, App.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
-            }
-        }
+        filterCell?.subtitle = subtitleForFilterCell()
         
         if currentSegment.showReversedLocation {
             DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
@@ -424,7 +419,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
                 locationOffCell = itemCell
             }else{
                 let merchant = self.items[indexPath.row];
-                let itemCell: ExploreMerchantItemCell = tableView.dequeueReusableCell(withIdentifier: ExploreMerchantItemCell.dw_reuseIdentifier, for: indexPath) as! ExploreMerchantItemCell
+                let itemCell: ExplorePointOfUseItemCell = tableView.dequeueReusableCell(withIdentifier: ExplorePointOfUseItemCell.dw_reuseIdentifier, for: indexPath) as! ExplorePointOfUseItemCell
                 itemCell.update(with: merchant)
                 cell = itemCell;
             }

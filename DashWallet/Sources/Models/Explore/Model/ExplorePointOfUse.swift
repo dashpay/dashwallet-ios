@@ -61,6 +61,12 @@ extension ExplorePointOfUse {
         
         return m
     }
+    
+    var atm: Atm? {
+        guard case let .atm(atm) = category else { return nil }
+        
+        return atm
+    }
 }
 
 extension ExplorePointOfUse {
