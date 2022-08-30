@@ -252,6 +252,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 - (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller {
     [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
 }
+
+- (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreTestnetViewController *)controller {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+}
 #pragma mark - Private
 
 - (DWNavigationController *)homeNavigationController {

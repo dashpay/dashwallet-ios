@@ -37,7 +37,7 @@
     
     MerchantListViewController *vc = [[MerchantListViewController alloc] init];
     vc.payWithDashHandler = ^{
-        [weakSelf openPaymentsScreen];
+        [weakSelf.delegate exploreTestnetViewControllerShowSendPayment:weakSelf];
     };
     
     [self.navigationController pushViewController:vc animated:YES];
@@ -47,11 +47,10 @@
     DWExploreTestnetViewController* __weak weakSelf = self;
     
     AtmListViewController *vc = [[AtmListViewController alloc] init];
+    vc.payWithDashHandler = ^{
+        [weakSelf.delegate exploreTestnetViewControllerShowReceivePayment:weakSelf];
+    };
     [self.navigationController pushViewController:vc animated:YES];
-}
-
-- (void)openPaymentsScreen {
-    [self.delegate exploreTestnetViewControllerShowSendPayment:self];
 }
 
 - (void)viewDidLoad {

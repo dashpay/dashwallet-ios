@@ -54,8 +54,7 @@ extension MerchantsListSegment {
 }
 
 @objc class MerchantListViewController: ExplorePointOfUseListViewController {
-    //Change to Notification instead of chaining the property
-    @objc var payWithDashHandler: (() -> Void)?
+    
     
     //MARK: Table View
     
@@ -166,7 +165,6 @@ extension MerchantsListSegment {
     
     override func configureHierarchy() {
         self.title = NSLocalizedString("Where to Spend", comment: "");
-        self.view.backgroundColor = .dw_background()
         
         let infoButton: UIButton = UIButton(type: .infoLight)
         infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)

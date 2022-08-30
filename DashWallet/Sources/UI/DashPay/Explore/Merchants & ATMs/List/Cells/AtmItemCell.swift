@@ -34,9 +34,9 @@ class AtmItemCell: ExplorePointOfUseItemCell {
            DWLocationManager.shared.isAuthorized {
             let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!).distance(from: currentLocation)
             let distanceText: String = App.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-            subLabel.text = "\(distanceText) • \(atm.manufacturer)"
+            subLabel.text = "\(distanceText) • \(pointOfUse.source!)"
         }else{
-            subLabel.text = "\(atm.manufacturer)"
+            subLabel.text = pointOfUse.source
         }
         
         buyTag.isHidden = atm.type == .sell

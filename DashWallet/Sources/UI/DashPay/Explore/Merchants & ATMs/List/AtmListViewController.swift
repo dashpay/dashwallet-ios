@@ -61,6 +61,12 @@ extension AtmListSegmnets {
 }
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
+    override func show(pointOfUse: ExplorePointOfUse) {
+        let vc: ATMDetailsViewController = ATMDetailsViewController(pointOfUse: pointOfUse)
+        vc.payWithDashHandler = payWithDashHandler
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     override func subtitleForFilterCell() -> String? {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
@@ -79,11 +85,6 @@ extension AtmListSegmnets {
     
     override func configureHierarchy() {
         self.title = NSLocalizedString("ATMs", comment: "");
-        self.view.backgroundColor = .dw_background()
-        
-        //let infoButton: UIButton = UIButton(type: .infoLight)
-        //infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
-        //self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
         
         super.configureHierarchy()
         tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.dw_reuseIdentifier)

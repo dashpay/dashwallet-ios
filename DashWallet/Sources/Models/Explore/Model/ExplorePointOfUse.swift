@@ -114,7 +114,7 @@ struct ExplorePointOfUse {
     let phone: String?
     let logoLocation: String?
     let coverImage: String?
-    //let plusCode: String?
+    let source: String?
 }
 
 extension ExplorePointOfUse: RowDecodable {
@@ -160,6 +160,7 @@ extension ExplorePointOfUse: RowDecodable {
         let phone: String? = row[ExplorePointOfUse.phone]
         let logoLocation = row[ExplorePointOfUse.logoLocation]
         let coverImage: String? = row[ExplorePointOfUse.coverImage]
+        let source: String? = row[ExplorePointOfUse.source]
         
         let category: Category
         if  let paymentMethodRaw = try? row.get(ExplorePointOfUse.paymentMethod) {
@@ -174,7 +175,7 @@ extension ExplorePointOfUse: RowDecodable {
             category = .unknown
         }
         
-        self.init(id: id, name: name, category: category, active: active, city: city, territory: territory, address1: address1, address2: address2, address3: address3, address4: address4, latitude: latitude, longitude: longitude, website: website, phone: phone, logoLocation: logoLocation, coverImage: coverImage)
+        self.init(id: id, name: name, category: category, active: active, city: city, territory: territory, address1: address1, address2: address2, address3: address3, address4: address4, latitude: latitude, longitude: longitude, website: website, phone: phone, logoLocation: logoLocation, coverImage: coverImage, source: source)
     }
 }
 

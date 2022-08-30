@@ -18,7 +18,7 @@
 import Foundation
 
 class App {
-    static var distanceFormatter: MeasurementFormatter = {
+    static var distanceFormatter: Foundation.MeasurementFormatter = {
         var formatter = MeasurementFormatter()
         formatter.locale = Locale.current
         formatter.unitOptions = .naturalScale

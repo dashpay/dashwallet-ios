@@ -26,12 +26,12 @@ class BaseAtmsDataProvider: ExplorePointOfUseDataProvider {
         var bounds = bounds
         var userPoint = userPoint
         
-        if DWLocationManager.shared.isAuthorized && (bounds == nil && userPoint == nil) {
+        if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil && userPoint == nil)) {
             items = []
             currentPage = nil
             completion(.success(items))
             return
-        }else{
+        }else if DWLocationManager.shared.isPermissionDenied {
             bounds = nil
             userPoint = nil
         }

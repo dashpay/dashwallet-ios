@@ -33,6 +33,10 @@ enum ExplorePointOfUseSections: Int {
 }
 
 @objc class ExplorePointOfUseListViewController: UIViewController {
+    
+    //Change to Notification instead of chaining the property
+    @objc var payWithDashHandler: (() -> Void)?
+    
     internal var model: ExplorePointOfUseListModel!
     internal var segmentTitles: [String] { return model.segmentTitles }
     internal var currentSegment: ExplorePointOfUseListSegment { return model.currentSegment }
@@ -66,7 +70,6 @@ enum ExplorePointOfUseSections: Int {
             DWExploreWhereToSpendLocationServicePopup.show(in: self.view) {
                 DWLocationManager.shared.requestAuthorization()
             }
-            
         }else if DWLocationManager.shared.isAuthorized && self.contentViewTopLayoutConstraint.constant != kDefaultOpenedMapPosition {
             showMap()
         }
@@ -111,7 +114,10 @@ enum ExplorePointOfUseSections: Int {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        showMapIfNeeded()
+        if DWLocationManager.shared.isAuthorized {
+            showMapIfNeeded()
+        }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -208,6 +214,8 @@ extension ExplorePointOfUseListViewController {
     }
     
     @objc internal func configureHierarchy() {
+        self.view.backgroundColor = .dw_background()
+        
         mapView = ExploreMapView(frame: .zero)
         mapView.delegate = self
         mapView.translatesAutoresizingMaskIntoConstraints = false

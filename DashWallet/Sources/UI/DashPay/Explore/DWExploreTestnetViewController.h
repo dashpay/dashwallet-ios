@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWExploreTestnetViewControllerDelegate <NSObject>
 
 - (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller;
+- (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreTestnetViewController *)controller;
 
 @end
 
