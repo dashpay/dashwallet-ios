@@ -50,6 +50,9 @@
     vc.payWithDashHandler = ^{
         [weakSelf.delegate exploreTestnetViewControllerShowReceivePayment:weakSelf];
     };
+    vc.sellDashHandler = ^{
+        [weakSelf.delegate exploreTestnetViewControllerShowSendPayment:weakSelf];
+    };
     [self.navigationController pushViewController:vc animated:YES];
 }
 

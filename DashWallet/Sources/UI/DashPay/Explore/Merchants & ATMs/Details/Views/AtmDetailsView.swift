@@ -20,6 +20,7 @@ import MapKit
 
 class AtmDetailsView: UIView {
     @objc public var payWithDashHandler: (()->())?
+    @objc public var sellDashHandler: (()->())?
     
     var containerView: UIStackView!
     var logoImageView: UIImageView!
@@ -65,6 +66,10 @@ class AtmDetailsView: UIView {
     
     @objc func payAction() {
         payWithDashHandler?()
+    }
+    
+    @objc func sellAction() {
+        sellDashHandler?()
     }
     
     required init?(coder: NSCoder) {
@@ -116,13 +121,32 @@ extension AtmDetailsView {
         subLabel.isHidden = true
         subStackView.addArrangedSubview(subLabel)
         
+        let buttonsStackView = UIStackView()
+        buttonsStackView.spacing = 5
+        buttonsStackView.axis = .horizontal
+        buttonsStackView.distribution = .fillEqually
+        headerContainerView.addArrangedSubview(buttonsStackView)
+        
         let payButton = DWActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
         payButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
         payButton.setTitle(NSLocalizedString("Buy Dash", comment: "Buy Dash"), for: .normal)
         payButton.accentColor = UIColor(red: 0.235, green: 0.722, blue: 0.471, alpha: 1)
-        headerContainerView.addArrangedSubview(payButton)
+        buttonsStackView.addArrangedSubview(payButton)
+        
+        if let atm = merchant.atm, (atm.type == .buySell || atm.type == .sell)
+        {
+            let sellButton = DWActionButton()
+            sellButton.translatesAutoresizingMaskIntoConstraints = false
+            sellButton.addTarget(self, action: #selector(sellAction), for: .touchUpInside)
+            sellButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+            sellButton.setTitle(NSLocalizedString("Sell Dash", comment: "Buy Dash"), for: .normal)
+            sellButton.accentColor = .dw_dashBlue()
+            buttonsStackView.addArrangedSubview(sellButton)
+        }
+        
+        
         
         let separator = UIView()
         separator.translatesAutoresizingMaskIntoConstraints = false

@@ -21,6 +21,7 @@ class ATMDetailsViewController: UIViewController {
     internal let pointOfUse: ExplorePointOfUse
     
     @objc public var payWithDashHandler: (()->())?
+    @objc var sellDashHandler: (()->())?
     
     private var detailsView: AtmDetailsView!
     private var mapView: ExploreMapView!
@@ -78,6 +79,7 @@ extension ATMDetailsViewController {
         
         detailsView = AtmDetailsView(merchant: pointOfUse)
         detailsView.payWithDashHandler = payWithDashHandler
+        detailsView.sellDashHandler = sellDashHandler
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(detailsView)
         

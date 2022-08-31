@@ -36,6 +36,7 @@ enum ExplorePointOfUseSections: Int {
     
     //Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
+    @objc var sellDashHandler: (()->())?
     
     internal var model: ExplorePointOfUseListModel!
     internal var segmentTitles: [String] { return model.segmentTitles }
