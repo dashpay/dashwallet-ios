@@ -16,10 +16,16 @@
 //
 
 #import "DSTransaction+DashWallet.h"
+#import "NSData+Dash.h"
 
 @implementation DSTransaction (DashWallet)
 
 - (NSData *)txHashData {
     return [NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)];
 }
+
+- (NSString *)txHashHexString {
+    return uint256_reverse_data(self.txHash).hexString;
+}
+
 @end

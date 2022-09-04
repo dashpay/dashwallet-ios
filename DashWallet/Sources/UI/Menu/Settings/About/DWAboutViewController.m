@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.rateReviewLabel.text = NSLocalizedString(@"Help us improve your experience", nil);
     [self.rateReviewButton setTitle:NSLocalizedString(@"Review & Rate the app", nil) forState:UIControlStateNormal];
     [self.contactSupportButton setTitle:NSLocalizedString(@"Contact Support", nil) forState:UIControlStateNormal];
-    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2020 Dash Core", nil);
+    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2022 Dash Core", nil);
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self

@@ -21,6 +21,8 @@
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
 
+@import Firebase;
+
 #import "DWInitialViewController.h"
 #import "DWDataMigrationManager.h"
 #import "DWStartViewController.h"
@@ -90,6 +92,8 @@ NS_ASSUME_NONNULL_BEGIN
 #endif /* FRESH_INSTALL */
     
     [DSLogger sharedInstance];
+    [FIRApp configure];
+    [ExploreDashObjcWrapper configure];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)

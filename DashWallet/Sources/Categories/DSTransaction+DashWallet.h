@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSTransaction (DashWallet)
 
 @property (readonly) NSData *txHashData;
+@property (readonly) NSString *txHashHexString;
 
 @end
 

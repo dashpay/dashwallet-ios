@@ -62,6 +62,9 @@
 "Accept" = "Accept";
 
 /* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
+
+/* No comment provided by engineer. */
 "Activity" = "Activity";
 
 /* Add <username> as your contact... */
@@ -119,6 +122,9 @@
 "Are you sure?" = "本当によろしいですか？";
 
 /* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "認証はご利用できません";
 
 /* No comment provided by engineer. */
@@ -148,11 +154,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "ブロック #%1$d / %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Dashを売買する";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Dashを買う/売る";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Dashを買う";
@@ -161,7 +177,19 @@
 "Buy Dash with Uphold account" = "UpholdアカウントでDashを買う";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "この端末を初期化すると、この端末の資金にアクセスできなくなります。 端末の初期化は復元パスフレーズへのアクセス権がなくなり、PINコードも忘れてしまった場合にのみ実施して下さい。";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "キャンセル";
@@ -242,7 +270,7 @@
 "Copy Logs" = "ログをコピーする";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
@@ -289,6 +317,9 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\nどの脱獄アプリからでも、他のあらゆるアプリのキーチェーンのデータへアクセスが可能です（そしてあなたのDashを簡単に盗めます）。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
 
+/* Direction */
+"Direction" = "Direction";
+
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "スクリーンショット厳禁";
 
@@ -300,6 +331,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Earlier";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "eg: johndoe";
@@ -344,6 +378,9 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -362,10 +399,22 @@
 "Fee will be deducted from requested amount." = "請求額から手数料が差し引かれます。";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "取引をフィルタリングする";
 
 /* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
+/* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Find a user on the Dash Network";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PINを忘れましたか?";
@@ -391,6 +440,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "ウェブサイトへ行く";
 
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "has requested to be your friend";
 
@@ -411,6 +463,9 @@
 
 /* No comment provided by engineer. */
 "History" = "履歴";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "I Accept";
@@ -479,6 +534,9 @@
 "Keypair %ld" = " %ldキーペア";
 
 /* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
+/* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
 /* Validation rule */
@@ -521,7 +579,13 @@
 "Low" = "低";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "信頼できるノードを管理する";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "masternode list #%1$d of %2$d";
@@ -544,6 +608,9 @@
 /* adjective, security level */
 "Medium" = "中間";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Minimum 3 characters";
 
@@ -564,6 +631,9 @@
 
 /* No comment provided by engineer. */
 "Name" = "Name";
+
+/* Nearby */
+"Nearby" = "Nearby";
 
 /* No comment provided by engineer. */
 "Network" = "ネットワーク";
@@ -596,6 +666,9 @@
 "Not a valid Dash address" = "有効なDashアドレスではありません";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* No comment provided by engineer. */
 "Not yet used" = "まだ使用されていません";
 
 /* No comment provided by engineer. */
@@ -606,6 +679,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+
+/* Online */
+"Online" = "Online";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "運用者の諸々のキー";
@@ -625,8 +701,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Pay Directly to Username";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "簡単支払い";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "支払い中";
@@ -733,6 +815,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Register";
 
@@ -838,6 +923,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Upholdで確認する";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "送金";
 
@@ -903,6 +994,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "復元フレーズを表示する";
+
+/* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
 
 /* No comment provided by engineer. */
 "Skip" = "スキップする";
@@ -975,6 +1069,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "このアプリはオープンソースです: ";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "このアプリをアンロックして使用するときは必ずこのPINが必要となります";
@@ -1081,6 +1178,9 @@
 /* No comment provided by engineer. */
 "View All" = "View All";
 
+/* View all locations */
+"View all locations" = "View all locations";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ブロックエクスプローラーで見る";
 
@@ -1115,16 +1215,28 @@
 "We do not store this recovery phrase." = "この復元フレーズは保存されません";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashウォレットの移行中にクラッシュが発生しました。この問題を解決するためには、ブロックチェーンを再スキャンするか、もう一度お試しください。再スキャンは、最大30分ほどかかりますので、Wi-Fiをお使いください。いったん同期プロセスが完了すれば、あなたの残高がご利用可能となります。";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "アップグレード済み";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "ようこそ";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "この取引が確定したら、他のウォレットは\n無価値となり、安全上の理由から再び\n使用しないようにしてください。";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "なぜスクリーンショットを撮ってはいけませんか？";
@@ -1179,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "あなたの取引は送られたので、数分内にその金額がウォレットに表示されるでしょう";

@@ -38,9 +38,7 @@ import Foundation
     
     
     @objc init(transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
-        let txHashData = transaction.txHashData
-        let txHashDataReversed = Data(txHashData.reversed())
-        self.transactionId = txHashDataReversed.hexEncodedString()
+        self.transactionId = transaction.txHashHexString
         self.transaction = transaction
         self.dataProvider = dataProvider
         self.dataItem = dataProvider.transactionData(for: transaction)

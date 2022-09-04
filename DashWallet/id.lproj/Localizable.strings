@@ -62,6 +62,9 @@
 "Accept" = "Terima";
 
 /* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
+
+/* No comment provided by engineer. */
 "Activity" = "Aktivitas";
 
 /* Add <username> as your contact... */
@@ -119,6 +122,9 @@
 "Are you sure?" = "Apakah anda yakin?";
 
 /* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Otentikasi tidak tersedia";
 
 /* No comment provided by engineer. */
@@ -148,11 +154,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Blok #%1$d dari %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Beli & Jual Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Beli / Jual Dash";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Beli Dash";
@@ -161,7 +177,19 @@
 "Buy Dash with Uphold account" = "Beli Dash dengan akun Uphold";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Dengan menghapus perangkat ini, Anda tidak lagi memiliki akses ke dana di perangkat ini. Ini hanya boleh dilakukan jika Anda tidak lagi memiliki akses ke kata sandi Anda dan lupa kode PIN Anda.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Batalkan";
@@ -242,7 +270,7 @@
 "Copy Logs" = "Salin Log";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Hak Cipta © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Tidak dapat secara otomatis memulihkan kata yang hilang atau salah";
@@ -289,6 +317,9 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri Dash Anda). Bersihkan dompet ini segera dan kembalikan pada perangkat yang aman.";
 
+/* Direction */
+"Direction" = "Direction";
+
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Jangan mengambil tangkapan layar";
 
@@ -300,6 +331,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Sebelumnya";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "misalnya: johndoe";
@@ -344,6 +378,9 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -362,10 +399,22 @@
 "Fee will be deducted from requested amount." = "Biaya akan dipotong dari jumlah yang diminta.";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Saring Transaksi";
 
 /* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
+/* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Temukan pengguna di Jaringan Dash";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Lupa PIN?";
@@ -391,6 +440,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Pergi ke Situs Web";
 
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "telah meminta untuk menjadi temanmu";
 
@@ -411,6 +463,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Riwayat";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "Saya terima";
@@ -479,6 +534,9 @@
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
+/* No comment provided by engineer. */
 "Let me know when it’s done" = "Beri tahu saya jika sudah selesai";
 
 /* Validation rule */
@@ -521,7 +579,13 @@
 "Low" = "Rendah";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "Kelola Node Tepercaya";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "daftar masternode #%1$d of %2$d";
@@ -544,6 +608,9 @@
 /* adjective, security level */
 "Medium" = "Sedang";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Minimal 3 karakter";
 
@@ -564,6 +631,9 @@
 
 /* No comment provided by engineer. */
 "Name" = "Nama";
+
+/* Nearby */
+"Nearby" = "Nearby";
 
 /* No comment provided by engineer. */
 "Network" = "Jaringan";
@@ -596,6 +666,9 @@
 "Not a valid Dash address" = "bukan alamat dash yang valid";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Belum digunakan";
 
 /* No comment provided by engineer. */
@@ -606,6 +679,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Setelah %@ menerima permintaan Anda, Anda dapat Membayar Langsung ke Nama Pengguna";
+
+/* Online */
+"Online" = "Online";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Kunci Operator";
@@ -625,8 +701,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Bayar Langsung ke Nama Pengguna";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Bayar dengan Mudah";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Membayar";
@@ -733,6 +815,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Frasa pemulihan harus memiliki 12, 15, 18, 21, atau 24 kata";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Daftar";
 
@@ -838,6 +923,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Lihat di Uphold";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "Kirim";
 
@@ -903,6 +994,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Tampilkan Frasa pemulihan";
+
+/* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
 
 /* No comment provided by engineer. */
 "Skip" = "Lewati";
@@ -975,6 +1069,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Aplikasi ini adalah open source:";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "PIN ini akan diperlukan untuk membuka kunci aplikasi Anda setiap kali saat Anda menggunakannya.";
@@ -1081,6 +1178,9 @@
 /* No comment provided by engineer. */
 "View All" = "Lihat semua";
 
+/* View all locations */
+"View all locations" = "View all locations";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Lihat di Blok Explorer";
 
@@ -1115,16 +1215,28 @@
 "We do not store this recovery phrase." = "Kami tidak menyimpan frasa pemulihan ini.";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Kami telah mendeteksi bahwa Dash Wallet macet selama migrasi. Memindai ulang blockchain akan menyelesaikan masalah ini atau Anda dapat mencoba lagi. Pemindaian ulang sebaiknya dilakukan pada wifi dan akan memakan waktu hingga setengah jam. Dana Anda akan tersedia setelah proses sinkronisasi selesai.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Kami meningkatkan";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "Selamat Datang";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Ketika transaksi dikonfirmasi, dompet lainnya tidak akan berharga dan tidak boleh digunakan kembali untuk alasan keamanan.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Mengapa saya harus tidak mengambil tangkapan layar?";
@@ -1179,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Nama Pengguna DashPay Anda siap digunakan";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";

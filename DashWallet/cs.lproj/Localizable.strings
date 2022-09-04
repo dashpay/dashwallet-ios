@@ -62,6 +62,9 @@
 "Accept" = "Přijmout";
 
 /* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
+
+/* No comment provided by engineer. */
 "Activity" = "Aktivita";
 
 /* Add <username> as your contact... */
@@ -119,6 +122,9 @@
 "Are you sure?" = "Jste si tím jistí?";
 
 /* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Autentizace není dostupná";
 
 /* No comment provided by engineer. */
@@ -148,11 +154,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Blok #%1$d z %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Nákup a prodej Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Koupit / Prodat Dash";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Koupit Dash";
@@ -161,7 +177,19 @@
 "Buy Dash with Uphold account" = "Nakoupit Dash přes Uphold účet";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Vymazáním přijdete o prostředky na tomto zařízení. Mělo by být provedeno, pouze pokud nemáte frázi pro obnovení a zapomněli jste také PIN kód.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Zrušit";
@@ -242,7 +270,7 @@
 "Copy Logs" = "Kopírovat logy";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Nelze automaticky obnovit chybějící nebo nesprávná slova";
@@ -289,6 +317,9 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ZABEZPEČENÍ ZAŘÍZENÍ KOMPROMITOVÁNO\nJakákoliv ‚jailbreak‘ aplikace může přistupovat k datům jiné aplikace (a ukrást váš Dash). Vymažte tuto peněženku a prověďte obnovu na jiném zařízení.";
 
+/* Direction */
+"Direction" = "Direction";
+
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Nesnímejte obrazovku";
 
@@ -300,6 +331,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Dřívější";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "např.: johndoe";
@@ -344,6 +378,9 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -362,10 +399,22 @@
 "Fee will be deducted from requested amount." = "Poplatek bude odečten z požadované částky.";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Filtrovat transakce";
 
 /* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
+/* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Najdi uživatele na Dash Network";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Zapomenutý PIN?";
@@ -391,6 +440,9 @@
 /* No comment provided by engineer. */
 "Go to Website" = "Přejít na Web";
 
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "vás žádá o přidání mezi přátele";
 
@@ -411,6 +463,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Historie";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "Přijímám";
@@ -479,6 +534,9 @@
 "Keypair %ld" = "Klíčový pár %ld";
 
 /* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
+/* No comment provided by engineer. */
 "Let me know when it’s done" = "Dejte mi vědět, až to bude hotové";
 
 /* Validation rule */
@@ -521,7 +579,13 @@
 "Low" = "Nízká";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "Spravovat důvěryhodný node";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "seznam masternodů #%1$d z %2$d";
@@ -544,6 +608,9 @@
 /* adjective, security level */
 "Medium" = "Střední";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Minimálně 3 znaky";
 
@@ -564,6 +631,9 @@
 
 /* No comment provided by engineer. */
 "Name" = "Jméno";
+
+/* Nearby */
+"Nearby" = "Nearby";
 
 /* No comment provided by engineer. */
 "Network" = "Síť";
@@ -596,6 +666,9 @@
 "Not a valid Dash address" = "Není platnou Dash adresou";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Ještě nebyla použita";
 
 /* No comment provided by engineer. */
@@ -606,6 +679,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Až %@ přijme váší žádost, budete pro platby moci použít uživatelské jméno";
+
+/* Online */
+"Online" = "Online";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Klíče operátora";
@@ -625,8 +701,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Plaťte na uživatelské jméno";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Plať snadno";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Placení";
@@ -733,6 +815,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Fráze pro obnovení musí mít 12, 15, 18, 21 nebo 24 slov";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Registrovat";
 
@@ -838,6 +923,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Prohlédnout na Uphold";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "Odeslat";
 
@@ -903,6 +994,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Zobrazit frázi pro obnovení";
+
+/* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
 
 /* No comment provided by engineer. */
 "Skip" = "Přeskočit";
@@ -975,6 +1069,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Aplikace má otevřený zdrojový kód:";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Tento PIN bude požadován pro odemčení aplikace pokaždé, když ji budete chtít použít.";
@@ -1081,6 +1178,9 @@
 /* No comment provided by engineer. */
 "View All" = "Zobrazit vše";
 
+/* View all locations */
+"View all locations" = "View all locations";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobrazit ve vyhledávači";
 
@@ -1115,16 +1215,28 @@
 "We do not store this recovery phrase." = "Neuschováváme tuto frázi pro obnovení.";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Během migrace jsme zachytili pád aplikace Dash Wallet. Opětovné načtení blockchainu vyřeší tento problém nebo to můžete zkusit znovu. Načtení blockchainu by mělo být uskutočněno při připojení na Wi-Fi a může trvat až hodinu. Vaše prostředky budou k dispozici po dokončení synchronizačního procesu.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Vylepšovali jsme";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "Vítej";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Po potvrzení transakce bude druhá peněženka bezcenná, z bezpečnostních důvodů by neměla být znovu používána.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Proč bych neměl pořizovat snímek obrazovky?";
@@ -1179,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Tvoje uživatelské jméno DashPay je připraveo k použití";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transakce byla odeslána a částka by se měla objevit v pěněžence během pár minut.";
