@@ -215,7 +215,7 @@ extension MerchantListViewController {
     }
     
     private func showInfoViewController() {
-        let vc = DWExploreWhereToSpendInfoViewController()
+        let vc = MerchantInfoViewController()
         self.present(vc, animated: true, completion: nil)
     }
     
