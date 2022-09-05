@@ -166,7 +166,7 @@ extension MerchantDAO {
         }
     }
     
-    func allLocations(for merchant: ExplorePointOfUse, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
@@ -177,7 +177,7 @@ extension MerchantDAO {
                 SELECT *
                 FROM merchant
                 WHERE type IN ('physical', 'both')
-                    AND merchantId = \(merchant.merchant!.merchantId)
+                    AND merchantId = \(merchantId)
                     AND latitude > \(bounds.swCoordinate.latitude)
                     AND latitude < \(bounds.neCoordinate.latitude)
                     AND longitude < \(bounds.neCoordinate.longitude)

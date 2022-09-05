@@ -101,8 +101,8 @@ extension ExploreDash {
         merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
     }
     
-    func allLocations(for merchant: ExplorePointOfUse, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.allLocations(for: merchant, in: bounds, userPoint: userPoint, completion: completion)
+    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
     }
 }
 

@@ -254,3 +254,61 @@ extension PointOfUseDetailsView {
 
     }
 }
+
+class VerticalButton: UIButton {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        //TODO: create a color
+        backgroundColor = UIColor(red: 0.961, green: 0.961, blue: 0.965, alpha: 1)
+        imageView?.contentMode = .scaleAspectFit;
+        layer.cornerRadius = 9
+        setTitleColor(.dw_dashBlue(), for: .normal)
+        titleLabel?.font = .dw_mediumFont(ofSize: 11)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.contentHorizontalAlignment = .left
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        centerVertically(padding: 3)
+    }
+}
+
+extension UIButton {
+    func centerVertically(padding: CGFloat = 6.0) {
+        guard
+            let imageViewSize = self.imageView?.frame.size,
+            let titleLabelSize = self.titleLabel?.frame.size else {
+            return
+        }
+        
+        self.imageEdgeInsets = UIEdgeInsets(
+            top: 0.0,
+            left: 0.0,
+            bottom: 20.0,
+            right: -titleLabelSize.width
+        )
+        
+        self.titleEdgeInsets = UIEdgeInsets(
+            top: 14.0,
+            left: -imageViewSize.width,
+            bottom: -5.0,
+            right: 0.0
+        )
+        
+        self.contentEdgeInsets = UIEdgeInsets(
+            top: 0.0,
+            left: 0.0,
+            bottom: -7.0,
+            right: 0.0
+        )
+    }
+}

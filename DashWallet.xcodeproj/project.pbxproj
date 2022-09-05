@@ -466,7 +466,7 @@
 		47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */; };
 		47AE8BB028BFF28700490F5E /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
 		47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */; };
-		47AE8BE628C1305F00490F5E /* ExploreMerchantAllLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */; };
+		47AE8BE628C1305F00490F5E /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */; };
 		47AE8BE928C1305F00490F5E /* AtmDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BBC28C1305E00490F5E /* AtmDetailsView.swift */; };
 		47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BC928C1305E00490F5E /* AtmItemCell.swift */; };
 		47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */; };
@@ -495,6 +495,7 @@
 		47AE8C1328C5F0A700490F5E /* PointOfUseDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1228C5F0A600490F5E /* PointOfUseDetailsViewController.swift */; };
 		47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1428C6378E00490F5E /* HairlineView.swift */; };
 		47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */; };
+		47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1539,7 +1540,7 @@
 		47AE8BAE28BFAFB600490F5E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		47AE8BAF28BFF28400490F5E /* explore.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = explore.db; sourceTree = "<group>"; };
 		47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+DashWallet.swift"; sourceTree = "<group>"; };
-		47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreMerchantAllLocationsViewController.swift; sourceTree = "<group>"; };
+		47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
 		47AE8BBC28C1305E00490F5E /* AtmDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmDetailsView.swift; sourceTree = "<group>"; };
 		47AE8BC928C1305E00490F5E /* AtmItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmItemCell.swift; sourceTree = "<group>"; };
 		47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseItemCell.swift; sourceTree = "<group>"; };
@@ -1571,6 +1572,7 @@
 		47AE8C1228C5F0A600490F5E /* PointOfUseDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseDetailsViewController.swift; sourceTree = "<group>"; };
 		47AE8C1428C6378E00490F5E /* HairlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HairlineView.swift; sourceTree = "<group>"; };
 		47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseDetailsView.swift; sourceTree = "<group>"; };
+		47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsDataProvider.swift; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -4190,7 +4192,7 @@
 				47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */,
 				47AE8BD328C1305E00490F5E /* MerchantListViewController.swift */,
 				47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */,
-				47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */,
+				47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */,
 			);
 			path = List;
 			sourceTree = "<group>";
@@ -4216,6 +4218,7 @@
 				47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */,
 				47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */,
 				47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */,
+				47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -5162,7 +5165,7 @@
 				2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */,
 				47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */,
 				47AE8BF428C1306000490F5E /* FetchingNextPageCell.swift in Sources */,
-				47AE8BE628C1305F00490F5E /* ExploreMerchantAllLocationsViewController.swift in Sources */,
+				47AE8BE628C1305F00490F5E /* AllMerchantLocationsViewController.swift in Sources */,
 				2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */,
 				2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */,
 				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
@@ -5398,6 +5401,7 @@
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
 				2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
+				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
 				2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */,
 				2A7AF3752482703C001D74F9 /* DWDPNewIncomingRequestNotificationObject.m in Sources */,
 				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,

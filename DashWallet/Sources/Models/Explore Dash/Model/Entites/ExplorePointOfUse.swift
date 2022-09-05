@@ -67,6 +67,17 @@ extension ExplorePointOfUse {
         
         return atm
     }
+    
+    var pointOfUseId: Int64 {
+        switch category {
+        case .merchant(let m):
+            return m.merchantId
+        case .atm(let atm):
+            return Int64(atm.manufacturer.hashValue)
+        case .unknown:
+            return Int64.max
+        }
+    }
 }
 
 extension ExplorePointOfUse {
@@ -99,6 +110,7 @@ struct ExplorePointOfUse {
     }
 
     let id: Int64
+    
     let name: String
     let category: Category
     let active: Bool

@@ -29,7 +29,7 @@ class PointOfUseDetailsViewController: UIViewController {
     private var detailsView: PointOfUseDetailsView!
     private var mapView: ExploreMapView!
     
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = false) {
+    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
         
@@ -125,6 +125,14 @@ extension PointOfUseDetailsViewController {
         detailsView = detailsView(for: pointOfUse)
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
+        detailsView.showAllLocationsActionBlock = { [weak self] in
+            guard let wSelf = self else { return }
+            
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
+            vc.payWithDashHandler = wSelf.payWithDashHandler
+            vc.sellDashHandler = wSelf.sellDashHandler
+            wSelf.navigationController?.pushViewController(vc, animated: true)
+        }
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(detailsView)
         

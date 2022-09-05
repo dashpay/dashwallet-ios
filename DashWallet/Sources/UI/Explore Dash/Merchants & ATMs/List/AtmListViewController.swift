@@ -61,13 +61,6 @@ extension AtmListSegmnets {
 }
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
-    override func show(pointOfUse: ExplorePointOfUse) {
-        let vc: PointOfUseDetailsViewController = PointOfUseDetailsViewController(pointOfUse: pointOfUse)
-        vc.payWithDashHandler = payWithDashHandler
-        vc.sellDashHandler = sellDashHandler
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
     override func subtitleForFilterCell() -> String? {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
@@ -91,9 +84,4 @@ extension AtmListSegmnets {
         tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.dw_reuseIdentifier)
     }
 
-    override func refreshFilterCell() {
-        super.refreshFilterCell()
-        
-        
-    }
 }

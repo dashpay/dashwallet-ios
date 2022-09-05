@@ -104,7 +104,10 @@ enum ExplorePointOfUseSections: Int {
     
     //MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
-    }
+        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse)
+        vc.payWithDashHandler = payWithDashHandler
+        vc.sellDashHandler = sellDashHandler
+        navigationController?.pushViewController(vc, animated: true)    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
