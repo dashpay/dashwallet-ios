@@ -466,12 +466,8 @@
 		47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */; };
 		47AE8BB028BFF28700490F5E /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
 		47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */; };
-		47AE8BE528C1305F00490F5E /* ATMDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB628C1305E00490F5E /* ATMDetailsViewController.swift */; };
 		47AE8BE628C1305F00490F5E /* ExploreMerchantAllLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */; };
-		47AE8BE728C1305F00490F5E /* MerchantDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB828C1305E00490F5E /* MerchantDetailsViewController.swift */; };
-		47AE8BE828C1305F00490F5E /* MerchantAllLocationsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BBA28C1305E00490F5E /* MerchantAllLocationsModel.swift */; };
 		47AE8BE928C1305F00490F5E /* AtmDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BBC28C1305E00490F5E /* AtmDetailsView.swift */; };
-		47AE8BEA28C1305F00490F5E /* MerchantDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BBD28C1305E00490F5E /* MerchantDetailsView.swift */; };
 		47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BC928C1305E00490F5E /* AtmItemCell.swift */; };
 		47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */; };
 		47AE8BF328C1306000490F5E /* MerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */; };
@@ -496,6 +492,9 @@
 		47AE8C0C28C53E4A00490F5E /* MerchantInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0B28C53E4A00490F5E /* MerchantInfoViewController.swift */; };
 		47AE8C0E28C540C100490F5E /* GiftCardInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0D28C540C100490F5E /* GiftCardInfoViewController.swift */; };
 		47AE8C1128C5430300490F5E /* PointOfUseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1028C5430300490F5E /* PointOfUseInfoViewController.swift */; };
+		47AE8C1328C5F0A700490F5E /* PointOfUseDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1228C5F0A600490F5E /* PointOfUseDetailsViewController.swift */; };
+		47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1428C6378E00490F5E /* HairlineView.swift */; };
+		47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1540,12 +1539,8 @@
 		47AE8BAE28BFAFB600490F5E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		47AE8BAF28BFF28400490F5E /* explore.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = explore.db; sourceTree = "<group>"; };
 		47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+DashWallet.swift"; sourceTree = "<group>"; };
-		47AE8BB628C1305E00490F5E /* ATMDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ATMDetailsViewController.swift; sourceTree = "<group>"; };
 		47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreMerchantAllLocationsViewController.swift; sourceTree = "<group>"; };
-		47AE8BB828C1305E00490F5E /* MerchantDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantDetailsViewController.swift; sourceTree = "<group>"; };
-		47AE8BBA28C1305E00490F5E /* MerchantAllLocationsModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantAllLocationsModel.swift; sourceTree = "<group>"; };
 		47AE8BBC28C1305E00490F5E /* AtmDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmDetailsView.swift; sourceTree = "<group>"; };
-		47AE8BBD28C1305E00490F5E /* MerchantDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantDetailsView.swift; sourceTree = "<group>"; };
 		47AE8BC928C1305E00490F5E /* AtmItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmItemCell.swift; sourceTree = "<group>"; };
 		47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseItemCell.swift; sourceTree = "<group>"; };
 		47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantItemCell.swift; sourceTree = "<group>"; };
@@ -1573,6 +1568,9 @@
 		47AE8C0B28C53E4A00490F5E /* MerchantInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantInfoViewController.swift; sourceTree = "<group>"; };
 		47AE8C0D28C540C100490F5E /* GiftCardInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardInfoViewController.swift; sourceTree = "<group>"; };
 		47AE8C1028C5430300490F5E /* PointOfUseInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseInfoViewController.swift; sourceTree = "<group>"; };
+		47AE8C1228C5F0A600490F5E /* PointOfUseDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseDetailsViewController.swift; sourceTree = "<group>"; };
+		47AE8C1428C6378E00490F5E /* HairlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HairlineView.swift; sourceTree = "<group>"; };
+		47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseDetailsView.swift; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -2162,6 +2160,7 @@
 				2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */,
 				2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */,
 				2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */,
+				47AE8C1428C6378E00490F5E /* HairlineView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4166,18 +4165,10 @@
 		47AE8BB528C1305E00490F5E /* Details */ = {
 			isa = PBXGroup;
 			children = (
-				47AE8C0A28C2719800490F5E /* Merchant */,
-				47AE8C0928C2718F00490F5E /* ATM */,
+				47AE8C1628C63F9400490F5E /* Views */,
+				47AE8C1228C5F0A600490F5E /* PointOfUseDetailsViewController.swift */,
 			);
 			path = Details;
-			sourceTree = "<group>";
-		};
-		47AE8BB928C1305E00490F5E /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				47AE8BBA28C1305E00490F5E /* MerchantAllLocationsModel.swift */,
-			);
-			path = Model;
 			sourceTree = "<group>";
 		};
 		47AE8BBE28C1305E00490F5E /* Info */ = {
@@ -4199,6 +4190,7 @@
 				47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */,
 				47AE8BD328C1305E00490F5E /* MerchantListViewController.swift */,
 				47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */,
+				47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */,
 			);
 			path = List;
 			sourceTree = "<group>";
@@ -4221,9 +4213,9 @@
 		47AE8BD428C1305E00490F5E /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */,
 				47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */,
 				47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */,
-				47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -4250,24 +4242,13 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		47AE8C0928C2718F00490F5E /* ATM */ = {
+		47AE8C1628C63F9400490F5E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */,
 				47AE8BBC28C1305E00490F5E /* AtmDetailsView.swift */,
-				47AE8BB628C1305E00490F5E /* ATMDetailsViewController.swift */,
 			);
-			path = ATM;
-			sourceTree = "<group>";
-		};
-		47AE8C0A28C2719800490F5E /* Merchant */ = {
-			isa = PBXGroup;
-			children = (
-				47AE8BBD28C1305E00490F5E /* MerchantDetailsView.swift */,
-				47AE8BB828C1305E00490F5E /* MerchantDetailsViewController.swift */,
-				47AE8BB728C1305E00490F5E /* ExploreMerchantAllLocationsViewController.swift */,
-				47AE8BB928C1305E00490F5E /* Model */,
-			);
-			path = Merchant;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		47E71F73286AED0E00CDF2BD /* Utils */ = {
@@ -5165,6 +5146,7 @@
 				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
 				2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */,
+				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				2A7A7BD62348CB6600451078 /* DWSettingsMenuViewController.m in Sources */,
 				2A2CD71B22F99EAC008C7BC9 /* DWShortcutsModel.m in Sources */,
@@ -5243,7 +5225,6 @@
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
 				2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */,
 				2A2CD71E22F99ED8008C7BC9 /* DWShortcutAction.m in Sources */,
-				47AE8BE528C1305F00490F5E /* ATMDetailsViewController.swift in Sources */,
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
 				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
@@ -5293,7 +5274,6 @@
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
-				47AE8BEA28C1305F00490F5E /* MerchantDetailsView.swift in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
@@ -5319,6 +5299,7 @@
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
+				47AE8C1328C5F0A700490F5E /* PointOfUseDetailsViewController.swift in Sources */,
 				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
@@ -5337,7 +5318,6 @@
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */,
-				47AE8BE728C1305F00490F5E /* MerchantDetailsViewController.swift in Sources */,
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
 				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
@@ -5472,7 +5452,6 @@
 				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2AD6E54D2487CE0100B52F14 /* DWContactsDataSourceObject.m in Sources */,
-				47AE8BE828C1305F00490F5E /* MerchantAllLocationsModel.swift in Sources */,
 				2A8DBA702630A609009094BD /* DWExtendedPublicKeysViewController.m in Sources */,
 				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
@@ -5535,6 +5514,7 @@
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
 				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
 				2ACCA3A824BE0C7D00DB32DE /* DWDPTxListCell.m in Sources */,
+				47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */,
 				2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,

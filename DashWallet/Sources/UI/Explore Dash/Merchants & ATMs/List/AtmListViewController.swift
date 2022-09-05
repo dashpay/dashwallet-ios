@@ -62,7 +62,7 @@ extension AtmListSegmnets {
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
     override func show(pointOfUse: ExplorePointOfUse) {
-        let vc: ATMDetailsViewController = ATMDetailsViewController(pointOfUse: pointOfUse)
+        let vc: PointOfUseDetailsViewController = PointOfUseDetailsViewController(pointOfUse: pointOfUse)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         navigationController?.pushViewController(vc, animated: true)

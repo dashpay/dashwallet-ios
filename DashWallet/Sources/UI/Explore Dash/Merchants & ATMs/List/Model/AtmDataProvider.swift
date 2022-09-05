@@ -26,7 +26,7 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
         var bounds = bounds
         var userPoint = userPoint
         
-        if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil && userPoint == nil)) {
+        if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil)) {
             items = []
             currentPage = nil
             completion(.success(items))

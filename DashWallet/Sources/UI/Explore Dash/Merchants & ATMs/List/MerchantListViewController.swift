@@ -129,18 +129,10 @@ extension MerchantsListSegment {
     //MARK: Life cycle
     
     override func show(pointOfUse: ExplorePointOfUse) {
-        let vc: UIViewController
-        
         guard let merchant = pointOfUse.merchant else { return }
         
-        if merchant.type == .online {
-            let onlineVC = OnlineMerchantDetailsViewController(merchant: pointOfUse)
-            onlineVC.payWithDashHandler = self.payWithDashHandler;
-            vc = onlineVC;
-        }else{
-            vc = PhysicalMerchantDetailsViewController(merchant: pointOfUse, isShowAllHidden: false)
-        }
-        
+        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online)
+        vc.payWithDashHandler = self.payWithDashHandler
         navigationController?.pushViewController(vc, animated: true)
     }
     

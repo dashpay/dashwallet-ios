@@ -59,7 +59,7 @@ enum ExplorePointOfUseSections: Int {
     internal func updateMapVisibility() {
         if !currentSegment.showMap || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
-        }else{
+        }else if DWLocationManager.shared.isAuthorized {
             showMapIfNeeded()
         }
     }
@@ -175,7 +175,7 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
     }
     
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
-        if currentSegment.showMap  {
+        if currentSegment.showMap {
             updateMapVisibility()
             mapView.showUserLocationInCenter(animated: false)
             model.fetch(query: nil)
