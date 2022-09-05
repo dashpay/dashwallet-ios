@@ -68,7 +68,7 @@ enum ExplorePointOfUseSections: Int {
         guard currentSegment.showMap else { return }
         
         if DWLocationManager.shared.needsAuthorization {
-            DWExploreWhereToSpendLocationServicePopup.show(in: self.view) {
+            PointOfUseLocationServicePopup.show(in: self.view) {
                 DWLocationManager.shared.requestAuthorization()
             }
         }else if DWLocationManager.shared.isAuthorized && self.contentViewTopLayoutConstraint.constant != kDefaultOpenedMapPosition {

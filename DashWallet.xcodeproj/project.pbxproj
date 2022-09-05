@@ -479,7 +479,6 @@
 		47AE8BF928C1306000490F5E /* MerchantsDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */; };
 		47AE8BFA28C1306000490F5E /* PointOfUseListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */; };
 		47AE8BFB28C1306000490F5E /* ExploreMapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */; };
-		47AE8BFC28C1306000490F5E /* DWExploreWhereToSpendLocationServicePopup.m in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDB28C1305E00490F5E /* DWExploreWhereToSpendLocationServicePopup.m */; };
 		47AE8BFD28C1306000490F5E /* ExploreMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDC28C1305E00490F5E /* ExploreMapView.swift */; };
 		47AE8BFE28C1306000490F5E /* AtmListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */; };
 		47AE8BFF28C1306000490F5E /* DWExploreHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BE128C1305E00490F5E /* DWExploreHeaderView.m */; };
@@ -496,6 +495,7 @@
 		47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1428C6378E00490F5E /* HairlineView.swift */; };
 		47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */; };
 		47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */; };
+		47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1B28C6AA2400490F5E /* PointOfUseLocationServicePopup.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1552,9 +1552,7 @@
 		47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmDataProvider.swift; sourceTree = "<group>"; };
 		47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantsDataProvider.swift; sourceTree = "<group>"; };
 		47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseListModel.swift; sourceTree = "<group>"; };
-		47AE8BD928C1305E00490F5E /* DWExploreWhereToSpendLocationServicePopup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWExploreWhereToSpendLocationServicePopup.h; sourceTree = "<group>"; };
 		47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreMapAnnotationView.swift; sourceTree = "<group>"; };
-		47AE8BDB28C1305E00490F5E /* DWExploreWhereToSpendLocationServicePopup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWExploreWhereToSpendLocationServicePopup.m; sourceTree = "<group>"; };
 		47AE8BDC28C1305E00490F5E /* ExploreMapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreMapView.swift; sourceTree = "<group>"; };
 		47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmListViewController.swift; sourceTree = "<group>"; };
 		47AE8BDE28C1305E00490F5E /* DWExploreTestnetViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWExploreTestnetViewController.h; sourceTree = "<group>"; };
@@ -1573,6 +1571,7 @@
 		47AE8C1428C6378E00490F5E /* HairlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HairlineView.swift; sourceTree = "<group>"; };
 		47AE8C1728C63F9C00490F5E /* PointOfUseDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseDetailsView.swift; sourceTree = "<group>"; };
 		47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsDataProvider.swift; sourceTree = "<group>"; };
+		47AE8C1B28C6AA2400490F5E /* PointOfUseLocationServicePopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseLocationServicePopup.swift; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -4226,8 +4225,7 @@
 		47AE8BD828C1305E00490F5E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				47AE8BD928C1305E00490F5E /* DWExploreWhereToSpendLocationServicePopup.h */,
-				47AE8BDB28C1305E00490F5E /* DWExploreWhereToSpendLocationServicePopup.m */,
+				47AE8C1B28C6AA2400490F5E /* PointOfUseLocationServicePopup.swift */,
 				47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */,
 				47AE8BDC28C1305E00490F5E /* ExploreMapView.swift */,
 			);
@@ -5303,6 +5301,7 @@
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
 				47AE8C1328C5F0A700490F5E /* PointOfUseDetailsViewController.swift in Sources */,
+				47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */,
 				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
@@ -5551,7 +5550,6 @@
 				2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */,
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
-				47AE8BFC28C1306000490F5E /* DWExploreWhereToSpendLocationServicePopup.m in Sources */,
 				47AE8BF828C1306000490F5E /* AtmDataProvider.swift in Sources */,
 				2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */,
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
