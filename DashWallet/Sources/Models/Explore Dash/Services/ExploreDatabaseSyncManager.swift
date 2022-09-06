@@ -49,7 +49,7 @@ public class ExploreDatabaseSyncManager {
     private var lastSync: Double = 0
     
     var syncState: State
-    var lastServerUpdateDate: Date { Date(timeIntervalSince1970: bundleExploreDatabaseSyncTime) }
+    var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
     
     init()
     {
@@ -60,7 +60,7 @@ public class ExploreDatabaseSyncManager {
     public func start() {
         syncIfNeeded()
         
-        // Try to sync 24h later
+        // Try to sync every 24h
         timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] timer in
             self?.syncIfNeeded()
         }
@@ -68,22 +68,31 @@ public class ExploreDatabaseSyncManager {
     
     private func syncIfNeeded() {
         syncState = .fetchingInfo
-        weak var wSelf = self
-        storageRef.getMetadata { metadata, error in
+        
+        storageRef.getMetadata { [weak self] metadata, error in
+            guard let wSelf = self else { return }
+            
             guard let metadata = metadata else {
-                wSelf?.syncState = .error(Date(), nil)
+                wSelf.syncState = .error(Date(), nil)
                 return
             }
             
             guard let timestamp = metadata.customMetadata?[timestampKey],
-                  let ts = TimeInterval(timestamp),
-                  let savedTs = wSelf?.exploreDatabaseLastSyncTimestamp,
-                  (ts/1000) > savedTs else {
-                wSelf?.syncState = .synced(Date())
+                  let timeIntervalMillesecond = TimeInterval(timestamp) else {
+                wSelf.syncState = .error(Date(), nil)
                 return
             }
             
-            wSelf?.downloadDatabase(metadata: metadata)
+            let timeInterval = timeIntervalMillesecond/1000
+            let savedTs = wSelf.exploreDatabaseLastSyncTimestamp
+            wSelf.exploreDatabaseLastVersion = timeInterval
+            
+            guard timeInterval > savedTs else {
+                wSelf.syncState = .synced(Date())
+                return
+            }
+            
+            wSelf.downloadDatabase(metadata: metadata)
         }
     }
         
@@ -137,6 +146,7 @@ extension ExploreDatabaseSyncManager {
 }
 
 private let kExploreDatabaseLastSyncTimestampKey = "kExploreDatabaseLastSyncTimestampKey"
+private let kExploreDatabaseLastVersion = "kExploreDatabaseLastVersion"
 
 extension ExploreDatabaseSyncManager {
     var exploreDatabaseLastSyncTimestamp: TimeInterval {
@@ -145,7 +155,17 @@ extension ExploreDatabaseSyncManager {
         }
         get {
             let value = UserDefaults.standard.double(forKey: kExploreDatabaseLastSyncTimestampKey)
-            return UserDefaults.standard.double(forKey: kExploreDatabaseLastSyncTimestampKey) == 0 ? bundleExploreDatabaseSyncTime : value
+            return value == 0 ? bundleExploreDatabaseSyncTime : value
+        }
+    }
+    
+    var exploreDatabaseLastVersion: TimeInterval {
+        set {
+            UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseLastVersion)
+        }
+        get {
+            let value = UserDefaults.standard.double(forKey: kExploreDatabaseLastVersion)
+            return value == 0 ? bundleExploreDatabaseSyncTime : value
         }
     }
 }

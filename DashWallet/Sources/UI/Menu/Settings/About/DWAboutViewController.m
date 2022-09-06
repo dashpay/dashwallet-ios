@@ -287,6 +287,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)exploreDashDatabaseSyncStateChanged {
     self.exploreDashLastDeviceSyncLabel.text = [self.model exploreDashSyncState];
+    self.exploreDashLastServerUpdateLabel.text = [self.model exploreLastServerUpdateDate];
 }
 
 @end
