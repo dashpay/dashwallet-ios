@@ -386,6 +386,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
 
+/* Explore Dash */
+"Failed to sync on" = "Failed to sync on";
+
 /* No comment provided by engineer. */
 "Failed wallet update" = "Aktualizace peněženky se nezdařila";
 
@@ -397,6 +400,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Poplatek bude odečten z požadované částky.";
+
+/* Explore Dash */
+"Fetching Info" = "Fetching Info";
 
 /* No comment provided by engineer. */
 "Filter" = "Filter";
@@ -532,6 +538,12 @@
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Klíčový pár %ld";
+
+/* Explore Dash */
+"Last device sync" = "Last device sync";
+
+/* Explore Dash */
+"Last server update" = "Last server update";
 
 /* No comment provided by engineer. */
 "Learn More" = "Learn More";
@@ -1045,6 +1057,9 @@
 
 /* No comment provided by engineer. */
 "Syncing Balance" = "Syncing Balance";
+
+/* Explore Dash */
+"Syncing..." = "Syncing...";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Začít";

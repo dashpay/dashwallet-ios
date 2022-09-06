@@ -19,12 +19,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol DWAboutModelDelegate
+
+- (void)exploreDashDatabaseSyncStateChanged;
+
+@end
+
 @interface DWAboutModel : NSObject
+
+@property (nullable, nonatomic, weak) id<DWAboutModelDelegate> delegate;
 
 + (NSURL *)supportURL;
 
 - (NSString *)appVersion;
 - (NSString *)dashSyncVersion;
+- (NSString *)exploreDashSyncState;
+- (NSString *)exploreLastServerUpdateDate;
+
 - (NSString *)status;
 - (nullable NSString *)currentPriceSourcing;
 

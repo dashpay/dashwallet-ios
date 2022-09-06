@@ -26,7 +26,17 @@ private let fileName = "explore"
 private let timestampKey = "Data-Timestamp"
 private let checksumKey = "Data-Checksum"
 
+let bundleExploreDatabaseSyncTime: TimeInterval = 1647448290711/1000
+
 public class ExploreDatabaseSyncManager {
+    
+    enum State {
+        case inititialing
+        case fetchingInfo
+        case syncing
+        case synced(Date)
+        case error(Date, Error?)
+    }
     
     static let databaseHasBeenUpdatedNotification = NSNotification.Name(rawValue: "databaseHasBeenUpdatedNotification")
     
@@ -35,8 +45,15 @@ public class ExploreDatabaseSyncManager {
     
     private var timer: Timer!
     
+    private var databaseVersion: Double = 0
+    private var lastSync: Double = 0
+    
+    var syncState: State
+    var lastServerUpdateDate: Date { Date(timeIntervalSince1970: bundleExploreDatabaseSyncTime) }
+    
     init()
     {
+        syncState = .inititialing
         storageRef = storage.reference(forURL: gsFilePath)
     }
     
@@ -50,19 +67,23 @@ public class ExploreDatabaseSyncManager {
     }
     
     private func syncIfNeeded() {
-        storageRef.getMetadata { [weak self] metadata, error in
+        syncState = .fetchingInfo
+        weak var wSelf = self
+        storageRef.getMetadata { metadata, error in
             guard let metadata = metadata else {
+                wSelf?.syncState = .error(Date(), nil)
                 return
             }
             
             guard let timestamp = metadata.customMetadata?[timestampKey],
                   let ts = TimeInterval(timestamp),
-                  let savedTs = self?.exploreDatabaseLastSyncTimestamp,
-                  ts > savedTs else {
+                  let savedTs = wSelf?.exploreDatabaseLastSyncTimestamp,
+                  (ts/1000) > savedTs else {
+                wSelf?.syncState = .synced(Date())
                 return
             }
             
-            self?.downloadDatabase(metadata: metadata)
+            wSelf?.downloadDatabase(metadata: metadata)
         }
     }
         
@@ -78,17 +99,23 @@ extension ExploreDatabaseSyncManager {
     private func downloadDatabase(metadata: StorageMetadata) {
         guard let timestamp = metadata.customMetadata?[timestampKey],
               let checksum = metadata.customMetadata?[checksumKey] else {
+            syncState = .error(Date(), nil)
             return
         }
         
+        syncState = .syncing
         let urlToSave = getDocumentsDirectory().appendingPathComponent("\(fileName)-\(timestamp).zip")
     
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
+            let date = Date()
+            let timestamp = date.timeIntervalSince1970
+            
             if let e = error {
-                //TODO: try later
+                self?.syncState = .error(date, e)
             }else{
                 try? data?.write(to: urlToSave)
-                self?.exploreDatabaseLastSyncTimestamp = Date().timeIntervalSince1970
+                self?.exploreDatabaseLastSyncTimestamp = timestamp
+                self?.syncState = .synced(date)
                 self?.unzipFile(at: urlToSave.path, password: checksum)
             }
         }

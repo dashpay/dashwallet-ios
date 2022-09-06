@@ -23,11 +23,34 @@
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWAboutModel ()
+
+@property id exploreDashDatabaseState;
+
+@end
+
 @implementation DWAboutModel
 
+- (instancetype)init {
+    self = [super init];
+
+    if (self) {
+        __weak typeof(self) wself = self;
+        self.exploreDashDatabaseState = [[NSNotificationCenter defaultCenter]
+            addObserverForName:@"databaseHasBeenUpdatedNotification"
+                        object:nil
+                         queue:nil
+                    usingBlock:^(NSNotification *_Nonnull note) {
+                        [wself.delegate exploreDashDatabaseSyncStateChanged];
+                    }];
+    }
+
+    return self;
+}
 + (NSURL *)supportURL {
     NSURL *url = [NSURL URLWithString:@"https://support.dash.org/en/support/solutions"];
     return url;
@@ -62,6 +85,48 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return [NSString stringWithFormat:@"DashSync %@", dashSyncCommit];
+}
+
+- (NSString *)exploreDashSyncState {
+    static NSDateFormatter *dateFormatter = nil;
+    if (!dateFormatter) {
+        dateFormatter = [NSDateFormatter new];
+        dateFormatter.dateStyle = NSDateFormatterMediumStyle;
+        dateFormatter.timeStyle = NSDateFormatterShortStyle;
+    }
+
+    NSString *prefix = NSLocalizedString(@"Last device sync", @"Explore Dash");
+    SyncState state = [ExploreDashObjcWrapper syncState];
+    switch (state) {
+        case SyncStateInititialing:
+        case SyncStateFetchingInfo:
+            return [NSString stringWithFormat:@"%@: %@", prefix, NSLocalizedString(@"Fetching Info", @"Explore Dash")];
+        case SyncStateSyncing:
+            return [NSString stringWithFormat:@"%@: %@", prefix, NSLocalizedString(@"Syncing...", @"Explore Dash")];
+        case SyncStateSynced: {
+            NSDate *date = [ExploreDashObjcWrapper lastSyncTryDate];
+            NSString *str = [NSString stringWithFormat:@"%@: %@", prefix, [dateFormatter stringFromDate:date]];
+            return str;
+        }
+        case SyncStateError: {
+            NSDate *date = [ExploreDashObjcWrapper lastFailedSyncDate];
+            NSString *str = [NSString stringWithFormat:@"%@: %@ %@", prefix, NSLocalizedString(@"Failed to sync on", @"Explore Dash"), [dateFormatter stringFromDate:date]];
+            return str;
+        }
+    }
+    return @"";
+}
+
+- (NSString *)exploreLastServerUpdateDate {
+    static NSDateFormatter *dateFormatter = nil;
+    if (!dateFormatter) {
+        dateFormatter = [NSDateFormatter new];
+        dateFormatter.dateStyle = NSDateFormatterMediumStyle;
+        dateFormatter.timeStyle = NSDateFormatterNoStyle;
+    }
+
+    NSDate *date = [ExploreDashObjcWrapper lastServerUpdateDate];
+    return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Last server update", @"Explore Dash"), [dateFormatter stringFromDate:date]];
 }
 
 - (NSString *)status {
@@ -161,6 +226,10 @@ NS_ASSUME_NONNULL_BEGIN
     [peerManager removeTrustedPeerHost];
     [peerManager disconnect];
     [peerManager connect];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self.exploreDashDatabaseState];
 }
 
 @end

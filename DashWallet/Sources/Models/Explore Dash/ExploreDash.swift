@@ -18,7 +18,27 @@
 import Foundation
 import CoreLocation
 
+extension ExploreDatabaseSyncManager.State {
+    var objcState: ExploreDashObjcWrapper.SyncState {
+        switch self {
+        case .inititialing: return .inititialing
+        case .syncing: return .syncing
+        case .fetchingInfo: return .fetchingInfo
+        case .synced(_): return .synced
+        case .error(_): return .error
+        }
+    }
+}
+
 @objc public class ExploreDashObjcWrapper: NSObject {
+    @objc public enum SyncState: Int {
+        case inititialing
+        case fetchingInfo
+        case syncing
+        case synced
+        case error
+    }
+    
     @objc public class func configure() {
         do {
             try ExploreDash.configure()
@@ -27,9 +47,23 @@ import CoreLocation
             //Do something
         }
     }
+    
+    @objc public class var syncState: ExploreDashObjcWrapper.SyncState {
+        return ExploreDash.shared.syncState.objcState
+    }
+    
+    @objc public class var lastServerUpdateDate: Date {
+        return ExploreDash.shared.lastServerUpdateDate
+    }
+    
+    @objc public class var lastSyncTryDate: Date? {
+        return ExploreDash.shared.lastSyncTryDate
+    }
+    
+    @objc public class var lastFailedSyncDate: Date? {
+        return ExploreDash.shared.lastFailedSyncDate
+    }
 }
-
-let bundleExploreDatabaseSyncTime: TimeInterval = 1647448290711
 
 public class ExploreDash {
     static var distanceFormatter: Foundation.MeasurementFormatter = {
@@ -55,7 +89,7 @@ public class ExploreDash {
         databaseConnection = ExploreDatabaseConnection()
         try databaseConnection.connect()
         
-        databaseSyncManager = ExploreDatabaseSyncManager()
+        databaseSyncManager = ExploreDatabaseSyncManager.share
         databaseSyncManager.start()
         
         merchantDAO = MerchantDAO(dbConnection: databaseConnection)
@@ -113,6 +147,33 @@ extension ExploreDash {
     }
 }
 
+extension ExploreDash {
+    var lastServerUpdateDate: Date {
+        return ExploreDatabaseSyncManager.share.lastServerUpdateDate
+    }
+    
+    var syncState: ExploreDatabaseSyncManager.State {
+        return ExploreDatabaseSyncManager.share.syncState
+    }
+    
+    var lastSyncTryDate: Date? {
+        switch syncState {
+        case .synced(let date):
+            return date
+        default:
+            return nil
+        }
+    }
+    
+    var lastFailedSyncDate: Date? {
+        switch syncState {
+        case .error(let date, _):
+            return date
+        default:
+            return nil
+        }
+    }
+}
 extension ExploreDash {
     public class func configure() throws {
         try ExploreDash.shared.configure()

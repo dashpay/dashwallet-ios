@@ -18,6 +18,7 @@
 #import "DWGlobalOptions.h"
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
+#import "DWAboutModel.h"
 
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"
