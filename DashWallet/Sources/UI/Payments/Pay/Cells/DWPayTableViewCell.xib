@@ -19,17 +19,17 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="t2L-Cm-WX2">
-                        <rect key="frame" x="0.0" y="32" width="320" height="36"/>
+                        <rect key="frame" x="0.0" y="26" width="320" height="48"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="V4F-Kn-9JI">
-                                <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
+                                <rect key="frame" x="0.0" y="6" width="36" height="36"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="36" id="Epy-sO-2xF"/>
                                     <constraint firstAttribute="height" constant="36" id="nuk-3t-cPz"/>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="751" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="hoJ-si-8dR">
-                                <rect key="frame" x="46" y="1.5" width="47.5" height="33.5"/>
+                                <rect key="frame" x="46" y="7.5" width="47.5" height="33.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zdc-n5-mPq">
                                         <rect key="frame" x="0.0" y="0.0" width="47.5" height="17"/>
@@ -47,7 +47,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="260" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="Le8-Ow-UBi" customClass="DWActionButton">
-                                <rect key="frame" x="103.5" y="0.0" width="216.5" height="36"/>
+                                <rect key="frame" x="103.5" y="6" width="216.5" height="36"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="36" id="5Pb-Sc-ZDb"/>
                                 </constraints>
@@ -64,8 +64,10 @@
                 </subviews>
                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                 <constraints>
+                    <constraint firstAttribute="bottom" secondItem="t2L-Cm-WX2" secondAttribute="bottom" constant="26" id="1tQ-DJ-WX2"/>
                     <constraint firstItem="t2L-Cm-WX2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="HY3-zh-q3W"/>
                     <constraint firstItem="t2L-Cm-WX2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="b2r-pM-hEm"/>
+                    <constraint firstItem="t2L-Cm-WX2" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="26" id="w7E-WR-aES"/>
                     <constraint firstAttribute="trailing" secondItem="t2L-Cm-WX2" secondAttribute="trailing" id="zjU-KF-elI"/>
                 </constraints>
             </tableViewCellContentView>

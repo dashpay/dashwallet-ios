@@ -91,10 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
     return cell;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 88;
-}
-
 #pragma mark - DWPayTableViewCellDelegate
 
 - (void)payTableViewCell:(DWPayTableViewCell *)cell
