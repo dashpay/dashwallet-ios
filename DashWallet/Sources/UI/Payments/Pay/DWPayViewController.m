@@ -91,21 +91,14 @@ NS_ASSUME_NONNULL_BEGIN
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if ([cell isKindOfClass:DWPayTableViewCell.class]) {
-        DWPayTableViewCell *payCell = (DWPayTableViewCell *)cell;
-        payCell.preferredActionButtonWidth = self.maxActionButtonWidth;
-    }
-
-    DWPayOptionModel *option = self.payModel.options[indexPath.row];
-    if (option.type == DWPayOptionModelType_Pasteboard) {
-        [self.payModel checkPasteboardForAddresses];
-    }
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 88;
 }
 
 #pragma mark - DWPayTableViewCellDelegate
 
-- (void)payTableViewCell:(DWPayTableViewCell *)cell action:(UIButton *)sender {
+- (void)payTableViewCell:(DWPayTableViewCell *)cell
+                  action:(UIButton *)sender {
     DWPayOptionModel *payOption = cell.model;
     NSParameterAssert(payOption);
     if (!payOption) {
@@ -129,10 +122,6 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
     }
-}
-
-- (void)payTableViewCell:(DWPayTableViewCell *)cell didUpdateButtonWidth:(CGFloat)buttonWidth {
-    self.maxActionButtonWidth = MAX(self.maxActionButtonWidth, buttonWidth);
 }
 
 #pragma mark - Private

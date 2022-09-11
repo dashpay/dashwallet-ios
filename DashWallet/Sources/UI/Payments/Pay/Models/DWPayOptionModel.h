@@ -28,11 +28,11 @@ typedef NS_ENUM(NSUInteger, DWPayOptionModelType) {
 @interface DWPayOptionModel : NSObject
 
 @property (readonly, nonatomic, assign) DWPayOptionModelType type;
-
-/**
- Observable
- */
-@property (nullable, nonatomic, copy) NSString *details;
+@property (nonatomic, copy) NSString *details;
+@property (readonly) UIImage *icon;
+@property (readonly) UIColor *descriptionColor;
+@property (readonly) NSString *title;
+@property (readonly) NSString *actionTitle;
 
 - (instancetype)initWithType:(DWPayOptionModelType)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
