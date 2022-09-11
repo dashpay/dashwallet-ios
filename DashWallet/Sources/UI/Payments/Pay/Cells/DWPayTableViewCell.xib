@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -18,33 +18,38 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xkW-tQ-EHg">
-                        <rect key="frame" x="0.0" y="31" width="320" height="38.5"/>
+                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="t2L-Cm-WX2">
+                        <rect key="frame" x="0.0" y="32" width="320" height="36"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="V4F-Kn-9JI">
-                                <rect key="frame" x="0.0" y="1" width="36" height="36"/>
+                                <rect key="frame" x="0.0" y="0.0" width="36" height="36"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="36" id="Epy-sO-2xF"/>
                                     <constraint firstAttribute="height" constant="36" id="nuk-3t-cPz"/>
                                 </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zdc-n5-mPq">
-                                <rect key="frame" x="52" y="0.0" width="42" height="20.5"/>
-                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <color key="textColor" name="DarkTitleColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="248" verticalHuggingPriority="255" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CTn-mf-98w" userLabel="Desc Label">
-                                <rect key="frame" x="52" y="23.5" width="42" height="15"/>
-                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <view contentMode="scaleToFill" horizontalHuggingPriority="258" translatesAutoresizingMaskIntoConstraints="NO" id="Le8-Ow-UBi" customClass="DWActionButton">
-                                <rect key="frame" x="110" y="-0.5" width="210" height="39"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="751" axis="vertical" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="hoJ-si-8dR">
+                                <rect key="frame" x="46" y="1.5" width="47.5" height="33.5"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zdc-n5-mPq">
+                                        <rect key="frame" x="0.0" y="0.0" width="47.5" height="17"/>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <color key="textColor" name="DarkTitleColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="248" verticalHuggingPriority="255" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CTn-mf-98w" userLabel="Desc Label">
+                                        <rect key="frame" x="0.0" y="20" width="47.5" height="13.5"/>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                            <view contentMode="scaleToFill" horizontalHuggingPriority="260" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="Le8-Ow-UBi" customClass="DWActionButton">
+                                <rect key="frame" x="103.5" y="0.0" width="216.5" height="36"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="39" id="fLj-el-bfo"/>
+                                    <constraint firstAttribute="height" constant="36" id="5Pb-Sc-ZDb"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
@@ -55,33 +60,17 @@
                                 </connections>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="CTn-mf-98w" firstAttribute="top" secondItem="zdc-n5-mPq" secondAttribute="bottom" constant="3" id="4tf-1s-pPd"/>
-                            <constraint firstItem="CTn-mf-98w" firstAttribute="leading" secondItem="V4F-Kn-9JI" secondAttribute="trailing" constant="16" id="DVE-aK-eGR"/>
-                            <constraint firstItem="V4F-Kn-9JI" firstAttribute="leading" secondItem="xkW-tQ-EHg" secondAttribute="leading" id="JEz-qV-mBD"/>
-                            <constraint firstAttribute="bottom" secondItem="CTn-mf-98w" secondAttribute="bottom" id="QZx-ld-u3a"/>
-                            <constraint firstItem="V4F-Kn-9JI" firstAttribute="centerY" secondItem="xkW-tQ-EHg" secondAttribute="centerY" id="VM2-1d-bW5"/>
-                            <constraint firstAttribute="trailing" secondItem="Le8-Ow-UBi" secondAttribute="trailing" id="X4f-5b-pD1"/>
-                            <constraint firstItem="zdc-n5-mPq" firstAttribute="leading" secondItem="V4F-Kn-9JI" secondAttribute="trailing" constant="16" id="cuU-Xz-JoP"/>
-                            <constraint firstItem="zdc-n5-mPq" firstAttribute="top" secondItem="xkW-tQ-EHg" secondAttribute="top" id="gEV-mf-bYd"/>
-                            <constraint firstItem="Le8-Ow-UBi" firstAttribute="leading" secondItem="CTn-mf-98w" secondAttribute="trailing" constant="16" id="gud-3K-NyS"/>
-                            <constraint firstItem="Le8-Ow-UBi" firstAttribute="leading" secondItem="zdc-n5-mPq" secondAttribute="trailing" constant="16" id="mzs-Ii-QO9"/>
-                            <constraint firstItem="Le8-Ow-UBi" firstAttribute="centerY" secondItem="xkW-tQ-EHg" secondAttribute="centerY" id="v7m-zc-bUc"/>
-                        </constraints>
-                    </view>
+                    </stackView>
                 </subviews>
                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                 <constraints>
-                    <constraint firstItem="xkW-tQ-EHg" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="5bP-XL-xUI"/>
-                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="xkW-tQ-EHg" secondAttribute="bottom" constant="26" id="D8j-Zk-icC"/>
-                    <constraint firstAttribute="trailing" secondItem="xkW-tQ-EHg" secondAttribute="trailing" id="PF7-x0-FfC"/>
-                    <constraint firstItem="xkW-tQ-EHg" firstAttribute="top" relation="greaterThanOrEqual" secondItem="H2p-sc-9uM" secondAttribute="top" constant="26" id="afG-HE-ChY"/>
-                    <constraint firstItem="xkW-tQ-EHg" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="d1y-jM-dj9"/>
+                    <constraint firstItem="t2L-Cm-WX2" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="HY3-zh-q3W"/>
+                    <constraint firstItem="t2L-Cm-WX2" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="b2r-pM-hEm"/>
+                    <constraint firstAttribute="trailing" secondItem="t2L-Cm-WX2" secondAttribute="trailing" id="zjU-KF-elI"/>
                 </constraints>
             </tableViewCellContentView>
-            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <viewLayoutGuide key="safeArea" id="aW0-zy-SZf"/>
+            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <connections>
                 <outlet property="actionButton" destination="Le8-Ow-UBi" id="gOn-Fr-lgz"/>
                 <outlet property="descriptionLabel" destination="CTn-mf-98w" id="emb-bS-jMI"/>

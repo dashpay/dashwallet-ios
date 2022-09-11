@@ -22,7 +22,6 @@
 #import "DWConfirmSendPaymentViewController.h"
 #import "DWHomeViewController.h"
 #import "DWPayModelProtocol.h"
-#import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"
 #import "DWQRScanModel.h"
