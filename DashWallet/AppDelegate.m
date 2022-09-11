@@ -178,6 +178,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    DWStartViewController *startController = (DWStartViewController *)self.window.rootViewController;
+    if ([startController isKindOfClass:DWStartViewController.class]) {
+        startController.deferredURLToProcess = url;
+        return NO;
+    }
+    
     if (![DWURLParser allowsURLHandling]) {
         return NO;
     }
