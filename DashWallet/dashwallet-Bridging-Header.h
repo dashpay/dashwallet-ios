@@ -19,6 +19,7 @@
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
+#import "DWAmountObject.h"
 
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"

@@ -30,6 +30,7 @@
 #import "DWToolsMenuViewController.h"
 #import "DWUpholdViewController.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -89,10 +90,12 @@ NS_ASSUME_NONNULL_BEGIN
                               alertIfLockout:YES
                                   completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
-                                          UIViewController *controller = [DWUpholdViewController controller];
-                                          DWNavigationController *navigationController =
-                                              [[DWNavigationController alloc] initWithRootViewController:controller];
-                                          [self presentViewController:navigationController animated:YES completion:nil];
+                                          UIViewController *controller = [SwiftUIViewFactory makeSwiftUIViewWithDismissHandler:^{
+                                              [[self presentedViewController] dismissViewControllerAnimated:YES completion:nil];
+                                          }];
+                                          controller.hidesBottomBarWhenPushed = true;
+                                          [self.navigationController pushViewController:controller
+                                                                               animated:YES];
                                       }
                                   }];
 
