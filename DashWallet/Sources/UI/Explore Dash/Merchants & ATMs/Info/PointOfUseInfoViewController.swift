@@ -25,9 +25,12 @@ class PointOfUseInfoViewController: UIViewController {
     internal func configureHierarchy() {
         view.backgroundColor = .dw_background()
         
+        let configuration = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
+        let closeImage = UIImage(systemName: "xmark", withConfiguration: configuration)
+        
         let closeButton = UIButton(type: .custom)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.setImage(.init(named: "close.button"), for: .normal)
+        closeButton.setImage(closeImage, for: .normal)
         closeButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
         view.addSubview(closeButton)
         
