@@ -50,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationDidEnterBackground {
 }
 
+- (void)applicationWillResignActiveNotification {
+}
+
 - (BOOL)shouldShowLockScreen {
     return NO;
 }
