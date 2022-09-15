@@ -207,6 +207,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                                name:UIApplicationDidBecomeActiveNotification
                              object:nil];
     [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActiveNotification)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillEnterForegroundNotification)
+                               name:UIApplicationWillEnterForegroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self
                            selector:@selector(applicationDidEnterBackgroundNotification)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
@@ -318,7 +326,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (void)applicationDidEnterBackgroundNotification {
-    [self.model applicationDidEnterBackground];
+}
+
+- (void)applicationWillEnterForegroundNotification {
+}
+
+- (void)applicationWillResignActiveNotification {
+    [self.model applicationWillResignActiveNotification];
 }
 
 #pragma mark - Demo Mode
