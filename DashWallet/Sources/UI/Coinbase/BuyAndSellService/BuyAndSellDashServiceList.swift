@@ -47,7 +47,7 @@ struct BuyAndSellDashServiceList: View {
                                 .listRowBackground(Color.clear)
                                 .onTapGesture(perform: {
                                     if(buyAndSellDashServicesModel.serviceType == .COINBASE){
-                                        if(!viewModel.isConnected){
+                                        if(!viewModel.isConnected || viewModel.showUserNeedDashWallet){
                                             viewModel.signInTapped()
                                         }else{
                                             isCoinbaseTapped = true
@@ -71,6 +71,13 @@ struct BuyAndSellDashServiceList: View {
             .navigationBarBackButtonHidden(true)
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.bottom)
+            .alert(isPresented: $viewModel.showUserNeedDashWallet) {
+                Alert(
+                    title: Text("You should create your Coinbase account outside the Dash Pay app"),
+                    message: Text("After you create your Coinbase account go back to the Dash Pay app and sign in"),
+                    dismissButton: .default(Text("Close"))
+                )
+            }
         
     }
 }
