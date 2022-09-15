@@ -140,14 +140,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)finishMigrationIfDone {
+    NSMutableDictionary *options = [NSMutableDictionary dictionaryWithDictionary:self.viewModel.deferredLaunchOptions];
+    options[UIApplicationLaunchOptionsURLKey] = self.deferredURLToProcess;
+
     if (self.viewModel.state == DWStartModelStateDone) {
         [self.delegate startViewController:self
-            didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
+            didFinishWithDeferredLaunchOptions:options
                         shouldRescanBlockchain:NO];
     }
     else if (self.viewModel.state == DWStartModelStateDoneAndRescan) {
         [self.delegate startViewController:self
-            didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
+            didFinishWithDeferredLaunchOptions:options
                         shouldRescanBlockchain:YES];
     }
 }

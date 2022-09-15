@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWStartModel *viewModel;
 @property (nullable, weak, nonatomic) id<DWStartViewControllerDelegate> delegate;
+@property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 
 + (instancetype)controller;
 
