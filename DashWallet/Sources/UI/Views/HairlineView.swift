@@ -46,4 +46,8 @@ class HairlineView: UIView {
         let context = UIGraphicsGetCurrentContext()
         drawHairline(in: context!, scale: UIScreen.main.scale, color: UIColor.separator.cgColor)
     }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+    }
 }

@@ -90,12 +90,10 @@ NS_ASSUME_NONNULL_BEGIN
                               alertIfLockout:YES
                                   completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
-                                          UIViewController *controller = [SwiftUIViewFactory makeSwiftUIViewWithDismissHandler:^{
-                                              [[self presentedViewController] dismissViewControllerAnimated:YES completion:nil];
-                                          }];
-                                          controller.hidesBottomBarWhenPushed = true;
-                                          [self.navigationController pushViewController:controller
-                                                                               animated:YES];
+                                          PortalViewController *vc = [[PortalViewController alloc] init];
+
+                                          vc.hidesBottomBarWhenPushed = true;
+                                          [self.navigationController pushViewController:vc animated:YES];
                                       }
                                   }];
 

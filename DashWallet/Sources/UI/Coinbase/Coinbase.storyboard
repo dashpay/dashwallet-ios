@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Coinbase Info View Controller-->
+        <scene sceneID="s0d-6b-0kx">
+            <objects>
+                <viewController storyboardIdentifier="CoinbaseInfoViewController" id="Y6W-OH-hqX" customClass="CoinbaseInfoViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UUf-El-1iK">
+                                <rect key="frame" x="15" y="203.5" width="384" height="489"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9oS-Uj-OBm" customClass="DWActionButton">
+                                        <rect key="frame" x="20" y="429" width="344" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="GFY-Jx-caH"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="I got it"/>
+                                        <connections>
+                                            <action selector="gotItAction" destination="Y6W-OH-hqX" eventType="touchUpInside" id="EOw-nY-GaL"/>
+                                        </connections>
+                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="b9b-Pd-dfI">
+                                        <rect key="frame" x="20" y="325" width="344" height="74"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Make sure you set up the right authorization limit on Coinbase" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IpT-aJ-JtH">
+                                                <rect key="frame" x="0.0" y="0.0" width="344" height="38.5"/>
+                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pQf-vp-0PU">
+                                                <rect key="frame" x="0.0" y="43.5" width="344" height="30.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="coinbase.info" translatesAutoresizingMaskIntoConstraints="NO" id="S30-kc-PWS">
+                                        <rect key="frame" x="0.0" y="0.0" width="384" height="300"/>
+                                    </imageView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kyU-Qw-aXI">
+                                        <rect key="frame" x="0.0" y="300" width="384" height="1"/>
+                                        <color key="backgroundColor" systemColor="separatorColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="1" id="3mz-9Z-JUL"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="9oS-Uj-OBm" firstAttribute="top" secondItem="b9b-Pd-dfI" secondAttribute="bottom" constant="30" id="5UO-I4-zEc"/>
+                                    <constraint firstItem="9oS-Uj-OBm" firstAttribute="leading" secondItem="UUf-El-1iK" secondAttribute="leading" constant="20" id="7vw-dh-5Vi"/>
+                                    <constraint firstAttribute="trailing" secondItem="9oS-Uj-OBm" secondAttribute="trailing" constant="20" id="9jo-W9-Uw0"/>
+                                    <constraint firstItem="S30-kc-PWS" firstAttribute="top" secondItem="UUf-El-1iK" secondAttribute="top" id="CGr-Uf-Bfx"/>
+                                    <constraint firstItem="b9b-Pd-dfI" firstAttribute="leading" secondItem="UUf-El-1iK" secondAttribute="leading" constant="20" id="DqJ-r4-JhD"/>
+                                    <constraint firstItem="kyU-Qw-aXI" firstAttribute="leading" secondItem="UUf-El-1iK" secondAttribute="leading" id="SBb-Nx-QKB"/>
+                                    <constraint firstItem="b9b-Pd-dfI" firstAttribute="top" secondItem="S30-kc-PWS" secondAttribute="bottom" constant="25" id="Zpz-aD-1f7"/>
+                                    <constraint firstAttribute="trailing" secondItem="kyU-Qw-aXI" secondAttribute="trailing" id="d6a-BU-EUU"/>
+                                    <constraint firstAttribute="trailing" secondItem="S30-kc-PWS" secondAttribute="trailing" id="lVh-Ik-RhO"/>
+                                    <constraint firstAttribute="trailing" secondItem="b9b-Pd-dfI" secondAttribute="trailing" constant="20" id="ozf-6i-M8r"/>
+                                    <constraint firstItem="S30-kc-PWS" firstAttribute="leading" secondItem="UUf-El-1iK" secondAttribute="leading" id="prW-sI-6ho"/>
+                                    <constraint firstAttribute="bottom" secondItem="9oS-Uj-OBm" secondAttribute="bottom" constant="20" id="xsO-m4-ng3"/>
+                                    <constraint firstItem="kyU-Qw-aXI" firstAttribute="top" secondItem="S30-kc-PWS" secondAttribute="bottom" id="yjb-79-sCf"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="UUf-El-1iK" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="15" id="12J-Q8-QhI"/>
+                            <constraint firstItem="UUf-El-1iK" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="SMe-a9-gK0"/>
+                            <constraint firstItem="UUf-El-1iK" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="awO-zB-IEJ"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="UUf-El-1iK" secondAttribute="trailing" constant="15" id="e9n-rT-0A1"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="actionButton" destination="9oS-Uj-OBm" id="FYT-Hn-1k9"/>
+                        <outlet property="contentView" destination="UUf-El-1iK" id="CBY-08-3t5"/>
+                        <outlet property="hairline" destination="kyU-Qw-aXI" id="1LJ-C5-76J"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="71.014492753623188" y="72.991071428571431"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="coinbase.info" width="330" height="300"/>
+        <namedColor name="SecondaryTextColor">
+            <color red="0.28627450980392155" green="0.28627450980392155" blue="0.28627450980392155" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="separatorColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.28999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
