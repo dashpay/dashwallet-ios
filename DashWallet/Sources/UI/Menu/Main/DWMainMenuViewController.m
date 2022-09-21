@@ -90,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
                               alertIfLockout:YES
                                   completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
-                                          PortalViewController *vc = [[PortalViewController alloc] init];
+                                          PortalViewController *vc = [PortalViewController controller];
 
                                           vc.hidesBottomBarWhenPushed = true;
                                           [self.navigationController pushViewController:vc animated:YES];

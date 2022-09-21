@@ -34,9 +34,7 @@ class CoinbaseInfoViewController: UIViewController {
     }
     
     class func controller() -> CoinbaseInfoViewController {
-        let storyboard = UIStoryboard(name: "Coinbase", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "CoinbaseInfoViewController") as! CoinbaseInfoViewController
-        return vc
+        return vc(CoinbaseInfoViewController.self, from: sb("Coinbase"))
     }
 }
 

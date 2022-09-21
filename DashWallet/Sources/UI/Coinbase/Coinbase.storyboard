@@ -97,6 +97,22 @@
             </objects>
             <point key="canvasLocation" x="71.014492753623188" y="72.991071428571431"/>
         </scene>
+        <!--Portal View Controller-->
+        <scene sceneID="26Q-fR-C6f">
+            <objects>
+                <viewController storyboardIdentifier="PortalViewController" extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="TLQ-9x-mqp" customClass="PortalViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="5Nk-11-XRw">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="qrw-fO-GLY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cBs-pK-8N6" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="747.82608695652175" y="72.991071428571431"/>
+        </scene>
     </scenes>
     <resources>
         <image name="coinbase.info" width="330" height="300"/>
