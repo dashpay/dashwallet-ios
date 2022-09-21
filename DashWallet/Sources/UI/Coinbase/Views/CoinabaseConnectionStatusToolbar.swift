@@ -23,16 +23,8 @@ struct CoinabaseConnectionStatusToolbar : View {
     
     var body: some View {
         
-        HStack(alignment: .center ) {
-            Button(action: {
-                backTapHandler()}
-            ) {
-                       Image("backarrow") // set image here
-                           .aspectRatio(contentMode: .fit)
-                           .foregroundColor(.white)
-                   }
-                   .padding(.leading, 12)
-            
+        ZStack {
+         
             HStack(alignment: .center ){
             Image( "Coinbase")
             
@@ -51,6 +43,18 @@ struct CoinabaseConnectionStatusToolbar : View {
                 }.background( Color.white)
                    
             }}.frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
+            
+            Button(action: {
+                backTapHandler()}
+            ) {
+                       Image("backarrow") // set image here
+                           .aspectRatio(contentMode: .fit)
+                           .foregroundColor(.white)
+                   }
+                   .padding(.leading, 12)
+                   .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+            
+            
         }.frame(minWidth: 0, maxWidth: .infinity, alignment: .topLeading)
             .padding(.vertical, 12)
             .background( Color.white)

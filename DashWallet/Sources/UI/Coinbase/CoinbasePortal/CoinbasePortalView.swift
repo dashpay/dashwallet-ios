@@ -19,6 +19,11 @@ struct CoinbasePortalView: View {
         
         VStack(alignment: .center, spacing: 20) {
             
+            CoinabaseConnectionStatusToolbar(isConnected: viewModel.isConnected,backTapHandler: {
+                self.presentationMode.wrappedValue.dismiss()
+            })
+       
+            
             VStack(alignment: .center, spacing: 0){
                 let lastKnowBalance = viewModel.getLastKnownBalance()
                 let dashBalance = viewModel.dashAccount?.balance.amount ?? lastKnowBalance ?? ""
@@ -75,29 +80,7 @@ struct CoinbasePortalView: View {
                 .padding(.horizontal, 15)
             
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                HStack(alignment: .center ){
-                    Image( "Coinbase")
-                    
-                    VStack(spacing: 0 ) {
-                        Text(LocalizedStringKey("Coinbase")).font(Font.custom("MontserratSemiBold", size: 16))
-                        
-                        HStack(spacing:4) {
-                            if(viewModel.isConnected){
-                                Image("Connected")
-                                Text( "Connected").font(Font.custom("MontserratRegular", size: 10))
-                            }else{
-                                Image("Disconnected")
-                                Text("Disconnected").font(Font.custom("MontserratRegular", size: 10))
-                            }
-                            
-                        }.background( Color.clear)
-                        
-                    }}.frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
-            }
-        }
+        .navigationBarHidden(true)
         .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity,alignment: .topLeading)
             .background(Color.screenBackgroundColor)
             .onAppear{
