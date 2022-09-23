@@ -73,6 +73,8 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewWillAppear:animated];
 
     self.view.model = [[DWMainMenuModel alloc] init];
+    self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
+    //    self.navigationController.navigationBar.prefersLargeTitles = NO;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

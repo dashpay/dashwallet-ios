@@ -19,21 +19,10 @@ import SwiftUI
 
 struct CoinabaseConnectionStatusToolbar : View {
     var isConnected: Bool = true
-    var backTapHandler: () -> Void
     
     var body: some View {
         
-        HStack(alignment: .center ) {
-            Button(action: {
-                backTapHandler()}
-            ) {
-                       Image("backarrow") // set image here
-                           .aspectRatio(contentMode: .fit)
-                           .foregroundColor(.white)
-                   }
-                   .padding(.leading, 12)
-            
-            HStack(alignment: .center ){
+        HStack(alignment: .center ){
             Image( "Coinbase")
             
             VStack(spacing: 0 ) {
@@ -48,19 +37,15 @@ struct CoinabaseConnectionStatusToolbar : View {
                         Text("Disconnected").font(Font.custom("MontserratRegular", size: 10))
                     }
                     
-                }.background( Color.white)
-                   
+                }
             }}.frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
-        }.frame(minWidth: 0, maxWidth: .infinity, alignment: .topLeading)
-            .padding(.vertical, 12)
-            .background( Color.white)
         
     }
 }
 
 struct CoinabaseToolbar_Previews: PreviewProvider {
     static var previews: some View {
-        CoinabaseConnectionStatusToolbar(isConnected: true,backTapHandler: {})
-        CoinabaseConnectionStatusToolbar(isConnected: false,backTapHandler: {})
+        CoinabaseConnectionStatusToolbar(isConnected: true)
+        CoinabaseConnectionStatusToolbar(isConnected: false)
     }
 }

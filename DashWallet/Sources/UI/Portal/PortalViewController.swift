@@ -61,11 +61,20 @@ extension PortalViewController {
         
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .always
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configureHierarchy()
-        //configureDataSource()
+        
+        navigationController?.navigationBar.topItem?.backButtonDisplayMode = .minimal
+        
     }
     
     @objc class func controller() -> PortalViewController {
@@ -82,6 +91,8 @@ extension PortalViewController {
     }
     
     private func configureHierarchy() {
+        
+        title = NSLocalizedString("Select a service", comment: "Buy Sell Dash")
         coinbaseButton = UIButton(type: .custom)
         coinbaseButton.translatesAutoresizingMaskIntoConstraints = false
         coinbaseButton.setTitle("Coinbase", for: .normal)
