@@ -559,7 +559,7 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
-  - bls-signatures-pod (1.0.6)
+  - bls-signatures-pod (1.0.7)
   - BoringSSL-GRPC (0.0.24):
     - BoringSSL-GRPC/Implementation (= 0.0.24)
     - BoringSSL-GRPC/Interface (= 0.0.24)
@@ -582,12 +582,12 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.1.4)
+  - DashSharedCore (0.1.9)
   - DashSync (0.1.0):
-    - bls-signatures-pod (= 1.0.6)
+    - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.1.4)
+    - DashSharedCore (= 0.1.9)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
@@ -656,7 +656,7 @@ PODS:
   - KVO-MVVM (0.5.6)
   - MBProgressHUD (1.1.0)
   - MMSegmentSlider (1.0.3)
-  - Protobuf (3.21.5)
+  - Protobuf (3.21.6)
   - secp256k1_dash (0.1.4-alpha.2)
   - SQLite.swift (0.13.3):
     - SQLite.swift/standard (= 0.13.3)
@@ -729,14 +729,14 @@ SPEC CHECKSUMS:
   "!ProtoCompiler": 938ac0701c79342e77008ff71758933ffad8bae1
   "!ProtoCompiler-gRPCPlugin": 5b75d985d1a03be04585316db3ca41a2aa525918
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
-  bls-signatures-pod: d14a3b680e7029ce6734d9cdfd8fd2299f69a5e5
+  bls-signatures-pod: 2fb002bda90163678c294bc2aa8a1049cba9ead7
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 5e1629b13d7ef41d03b5849ad3f56a45ec412c64
-  DashSync: effff85365ab834e3621a3e2930edb8e5fc0674b
+  DashSharedCore: 29b5be6c8197ff5b008bd61e24f3b2a45f013d5b
+  DashSync: 1a4df59c39da86eb21c1a4db028a8460c39fe622
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: dd62176ac7f492b0bab9b4c2600a6a3a99309544
@@ -746,7 +746,7 @@ SPEC CHECKSUMS:
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
-  Protobuf: 7504b04fffcf6662ad629694db8231f5e744327f
+  Protobuf: e7846f61e8542750cf311385fc633c1d00928f9f
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
   SQLiteMigrationManager.swift: 4818b59bf0be6a21e1a494571d4e12950d317bbc
