@@ -6,7 +6,7 @@
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
-
+#import "DSReachabilityManager.h"
 //MARK: DashWallet
 #import "DWTransactionListDataProviderProtocol.h"
 #import "DWActionButton.h"

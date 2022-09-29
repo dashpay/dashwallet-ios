@@ -224,6 +224,9 @@
 /* No comment provided by engineer. */
 "Close App" = "Zamknij Aplikacje";
 
+/* Dash Portal */
+"Coinbase" = "Coinbase";
+
 /* No comment provided by engineer. */
 "Confirm" = "Potwierdź";
 
@@ -238,6 +241,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Połącz się z giełdą stron trzecich";
+
+/* Buy Sell Portal */
+"Connected" = "Connected";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Podłączone peery %d ";
@@ -319,6 +325,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Buy Sell Portal */
+"Disconnected" = "Disconnected";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Nie rób zrzutu ekranu";
@@ -556,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Podlinkuj konto Uphold";
+
+/* Buy Sell Portal */
+"Link your account" = "Link your account";
 
 /* No comment provided by engineer. */
 "Load more" = "Załaduj więcej";
@@ -937,6 +949,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Sprawdź na Uphold";
+
+/* Buy Sell Dash */
+"Select a service" = "Select a service";
 
 /* Sell */
 "Sell" = "Sell";

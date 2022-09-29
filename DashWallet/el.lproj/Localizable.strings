@@ -224,6 +224,9 @@
 /* No comment provided by engineer. */
 "Close App" = "Κλείσιμο Εφαρμογής";
 
+/* Dash Portal */
+"Coinbase" = "Coinbase";
+
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
 
@@ -238,6 +241,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Συνδεθείτε με ανταλλακτήρια τρίτων";
+
+/* Buy Sell Portal */
+"Connected" = "Connected";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Συνδεδεμένοι χρήστες: %d";
@@ -319,6 +325,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Buy Sell Portal */
+"Disconnected" = "Disconnected";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Μην τραβήξετε στιγμιότυπο οθόνης";
@@ -556,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
+
+/* Buy Sell Portal */
+"Link your account" = "Link your account";
 
 /* No comment provided by engineer. */
 "Load more" = "Φόρτωσε περισσότερα";
@@ -937,6 +949,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Δείτε στο Uphold";
+
+/* Buy Sell Dash */
+"Select a service" = "Select a service";
 
 /* Sell */
 "Sell" = "Sell";

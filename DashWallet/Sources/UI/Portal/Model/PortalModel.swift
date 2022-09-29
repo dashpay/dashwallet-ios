@@ -24,11 +24,72 @@ extension PortalModel.Service {
         case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
         }
     }
+    
+    var icon: String {
+        switch self {
+        case .coinbase: return "portal.coinbase"
+        case .uphold: return "portal.uphold"
+        }
+    }
+    
+    var status: Bool {
+        switch self {
+        case .coinbase: return false
+        case .uphold: return true
+        }
+    }
 }
 
 class PortalModel {
-    enum Service {
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    
+    enum Service: CaseIterable {
         case coinbase
         case uphold
+    }
+    
+    enum NetworkStatus {
+        case online
+        case offline
+    }
+    
+    var services: [Service] = Service.allCases
+    var networkStatus: NetworkStatus!
+    
+    private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
+    private var reachabilityObserver: Any!
+     
+    init() {
+        initializeReachibility()
+    }
+    
+    private func initializeReachibility() {
+        if (!reachability.isMonitoring) {
+            reachability.startMonitoring()
+        }
+        
+        self.reachabilityObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
+                                                                           object: nil,
+                                                                           queue: nil,
+                                                                           using: { [weak self] notification in
+            self?.updateNetworkStatus()
+        })
+        
+        updateNetworkStatus()
+    }
+    
+    private func updateNetworkStatus() {
+        networkStatus = reachability.networkStatus
+        networkStatusDidChange?(networkStatus)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(reachabilityObserver!)
+    }
+}
+
+extension DSReachabilityManager {
+    var networkStatus:  PortalModel.NetworkStatus {
+        return self.isReachable ? .online : .offline
     }
 }

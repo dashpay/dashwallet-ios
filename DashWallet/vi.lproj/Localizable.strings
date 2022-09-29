@@ -224,6 +224,9 @@
 /* No comment provided by engineer. */
 "Close App" = "Đóng ứng dụng";
 
+/* Dash Portal */
+"Coinbase" = "Coinbase";
+
 /* No comment provided by engineer. */
 "Confirm" = "Xác thực";
 
@@ -238,6 +241,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Kết nối với sàn giao dịch của bên thứ ba";
+
+/* Buy Sell Portal */
+"Connected" = "Connected";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Số kết nối ngang hàng: %d";
@@ -319,6 +325,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Buy Sell Portal */
+"Disconnected" = "Disconnected";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Đừng chụp ảnh màn hình";
@@ -556,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Liên kết với tài khoản Uphold";
+
+/* Buy Sell Portal */
+"Link your account" = "Link your account";
 
 /* No comment provided by engineer. */
 "Load more" = "Nạp thêm";
@@ -937,6 +949,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Xem trên Uphold";
+
+/* Buy Sell Dash */
+"Select a service" = "Select a service";
 
 /* Sell */
 "Sell" = "Sell";
