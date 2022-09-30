@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -145,13 +146,13 @@
                                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="hBV-fO-lnl">
                                                                     <rect key="frame" x="59" y="16" width="273.5" height="32.5"/>
                                                                     <subviews>
-                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5jq-wp-55k">
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5jq-wp-55k">
                                                                             <rect key="frame" x="0.0" y="0.0" width="273.5" height="18"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                             <nil key="textColor"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
-                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gUe-zD-bjT">
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gUe-zD-bjT">
                                                                             <rect key="frame" x="0.0" y="18" width="273.5" height="14.5"/>
                                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                                             <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -313,8 +314,17 @@
                             <constraint firstItem="qrw-fO-GLY" firstAttribute="bottom" secondItem="1q3-i4-EXb" secondAttribute="bottom" id="z5F-Xj-26F"/>
                         </constraints>
                     </view>
-                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+                    <navigationItem key="navigationItem" id="I2D-yI-jIC">
+                        <barButtonItem key="rightBarButtonItem" id="pmj-Bp-DKi">
+                            <imageReference key="image" image="xmark" catalog="system" symbolScale="medium"/>
+                            <connections>
+                                <action selector="closeAction" destination="TLQ-9x-mqp" id="9os-nB-Aeg"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
+                        <outlet property="closeButton" destination="pmj-Bp-DKi" id="Jtt-9W-C08"/>
                         <outlet property="collectionView" destination="1q3-i4-EXb" id="hWE-IZ-AQw"/>
                         <outlet property="networkStatusView" destination="n1Y-sR-Pah" id="AIv-Qe-nGq"/>
                         <outlet property="subtitleLabel" destination="s6u-de-xni" id="gUa-mB-Ip8"/>
@@ -330,6 +340,7 @@
         <image name="coinbase.info" width="330" height="300"/>
         <image name="dashCircleFilled" width="14" height="14"/>
         <image name="network.unavailable" width="54" height="54"/>
+        <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="ChevronColor">
             <color red="0.85098039215686272" green="0.85098039215686272" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

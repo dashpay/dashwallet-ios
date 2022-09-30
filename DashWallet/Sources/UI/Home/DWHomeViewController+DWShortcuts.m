@@ -33,7 +33,7 @@
 #import "DWSettingsMenuModel.h"
 #import "DWShortcutAction.h"
 #import "DWUpholdViewController.h"
-
+#import "dashwallet-Swift.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate>
@@ -152,9 +152,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)buySellDashActionAuthenticated {
-    UIViewController *controller = [DWUpholdViewController controller];
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
+    PortalViewController *controller = [PortalViewController controller];
+    controller.showCloseButton = true;
+
+    BaseNavigationController *navigationController =
+        [[BaseNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];
 }
 

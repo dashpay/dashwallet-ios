@@ -87,12 +87,19 @@ extension PortalViewController {
     @IBOutlet var subtitleLabel: UILabel!
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var networkStatusView: UIView!
+    @IBOutlet var closeButton: UIBarButtonItem!
     
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>!
     
     private var model: PortalModel = PortalModel()
     private var hasNetwork: Bool { model.networkStatus == .online }
+    
+    @objc var showCloseButton: Bool = false
+    
+    @IBAction func closeAction() {
+        dismiss(animated: true)
+    }
     
     @objc func coinbaseAction() {
         if DWGlobalOptions.sharedInstance().coinbaseInfoShown {
@@ -186,7 +193,9 @@ extension PortalViewController {
     
     
     private func configureHierarchy() {
-        
+        if !showCloseButton {
+            navigationItem.rightBarButtonItems = []
+        }
         title = NSLocalizedString("Select a service", comment: "Buy Sell Dash")
         
         networkStatusView.isHidden = hasNetwork
