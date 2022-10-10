@@ -13,7 +13,6 @@ import AuthenticationServices
 class GetUserCoinbaseToken : NSObject, ObservableObject{
     @Injected private var coinbaseRepository: CoinbaseRepository
    
-    
     func invoke(code: String) -> AnyPublisher<CoinbaseToken?, Error> {
         coinbaseRepository.getToken(code: code)
             .map { (response: CoinbaseToken) in
@@ -24,12 +23,11 @@ class GetUserCoinbaseToken : NSObject, ObservableObject{
     }
     
     func isUserLoginedIn()->Bool{
-      return   ((NetworkRequest.accessToken?.isEmpty) == false)
+      return NetworkRequest.accessToken != nil
     }
     
     func signOut(){
-        NetworkRequest.accessToken = ""
-        NetworkRequest.refreshToken = ""
-        NetworkRequest.lastKnownBalance = ""
+        NetworkRequest.accessToken = nil
+        NetworkRequest.refreshToken = nil
     }
 }

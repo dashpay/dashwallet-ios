@@ -11,12 +11,6 @@ import AuthenticationServices
 
 class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
     
-    @Injected
-    private var getUserCoinbaseAccounts: GetUserCoinbaseAccounts
-    
-    @Injected
-    private var getUserCoinbaseToken: GetUserCoinbaseToken
-    
     @Published
     var accounts: [CoinbaseUserAccountData] = []
     
@@ -34,6 +28,7 @@ class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
     @Published
     var showUserNeedDashWallet: Bool  = false
     
+    private var coinbase: Coinbase = Coinbase.shared
     func getCoinbaseAccountFaitValue(balance: String)->String? {
         let priceManger = DSPriceManager.sharedInstance()
         let dashAmount = DWAmountObject(dashAmountString: balance,
@@ -44,7 +39,7 @@ class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
     }
     
     func checkServiceStatus(){
-        isConnected = getUserCoinbaseToken.isUserLoginedIn()
+        isConnected = coinbase.isAuthorized
         if (isConnected){
             loadUserCoinbaseAccounts()
         }else{
@@ -58,22 +53,20 @@ class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
         
         if let index = buyAndSellDashServicesList.firstIndex(where: {$0.serviceType == BuyAndSellDashServicesModel.ServiceType.COINBASE}) {
 
-            if(getUserCoinbaseAccounts.isUserHasLastKnownBalance()){
-                if let dashAmount  = getUserCoinbaseAccounts.getLastKnownBalance() {
-                    buyAndSellDashServicesList[index].serviceStatus = BuyAndSellDashServicesModel.ServiceStatus.CONNECTED
-                    buyAndSellDashServicesList[index].balance =  dashAmount
-                    buyAndSellDashServicesList[index].localBalance =  getCoinbaseAccountFaitValue(balance: dashAmount)
-                }
+            if let dashAmount = coinbase.lastKnownBalance {
+                buyAndSellDashServicesList[index].serviceStatus = BuyAndSellDashServicesModel.ServiceStatus.CONNECTED
+                buyAndSellDashServicesList[index].balance = dashAmount
+                buyAndSellDashServicesList[index].localBalance = getCoinbaseAccountFaitValue(balance: dashAmount)
             }
         }
         
-        getUserCoinbaseAccounts.invoke()
+        coinbase.fetchUser()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] response in
               
                 if response == nil{
                     self?.showUserNeedDashWallet = true
-                    self?.getUserCoinbaseToken.signOut()
+                    self?.coinbase.signOut()
                     return
                 }
                 
@@ -95,7 +88,7 @@ class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
     
     
     func signInTapped() {
-        if (getUserCoinbaseToken.isUserLoginedIn()&&getUserCoinbaseAccounts.isUserHasLastKnownBalance()){
+        if (coinbase.isAuthorized && coinbase.hasLastKnownBalance){
             isConnected = true
             if let index = buyAndSellDashServicesList.firstIndex(where: {$0.serviceType == BuyAndSellDashServicesModel.ServiceType.COINBASE}) {
                 buyAndSellDashServicesList[index].serviceStatus = BuyAndSellDashServicesModel.ServiceStatus.CONNECTED
@@ -166,7 +159,7 @@ class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
     }
     
     func loadUserCoinbaseTokens(code: String) {
-        getUserCoinbaseToken.invoke(code: code)
+        coinbase.authorize(with: code)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] response in
                 if( response?.accessToken?.isEmpty==false){

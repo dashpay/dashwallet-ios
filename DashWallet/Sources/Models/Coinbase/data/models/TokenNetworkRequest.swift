@@ -23,7 +23,7 @@ struct NetworkRequest {
     // MARK: Private Constants
     private static let accessTokenKey = "accessToken"
     private static let refreshTokenKey = "refreshToken"
-    private static let lastKnownBalanceKey = "lastKnownBalance"
+    
     
     // MARK: Properties
     static var accessToken: String? {
@@ -43,14 +43,6 @@ struct NetworkRequest {
             UserDefaults.standard.setValue(newValue, forKey: refreshTokenKey)
         }
     }
+
     
-   
-    static var lastKnownBalance: String? {
-        get {
-            UserDefaults.standard.string(forKey: lastKnownBalanceKey)
-        }
-        set {
-            UserDefaults.standard.setValue(newValue, forKey: lastKnownBalanceKey)
-        }
-    }
 }

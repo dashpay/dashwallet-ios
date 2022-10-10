@@ -11,11 +11,7 @@ import Resolver
 import AuthenticationServices
 
 class CoinbaseAccountViewmodel: NSObject,ObservableObject {
-    @Injected
-    private var getUserCoinbaseAccounts: GetUserCoinbaseAccounts
-    
-    @Injected
-    private var getUserCoinbaseToken: GetUserCoinbaseToken
+
     
     @Published
     var accounts: [CoinbaseUserAccountData] = []
@@ -28,9 +24,11 @@ class CoinbaseAccountViewmodel: NSObject,ObservableObject {
     @Published
     var isConnected: Bool = false
     
+    private var coinbase: Coinbase = Coinbase.shared
+    
     func loadUserCoinbaseAccounts() {
-        isConnected = getUserCoinbaseToken.isUserLoginedIn()
-        getUserCoinbaseAccounts.invoke()
+        isConnected = coinbase.isAuthorized
+        coinbase.fetchUser()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] response in
                 self?.dashAccount = response
@@ -39,13 +37,13 @@ class CoinbaseAccountViewmodel: NSObject,ObservableObject {
     }
     
     func signOutTapped(){
-        getUserCoinbaseToken.signOut()
-        isConnected = getUserCoinbaseToken.isUserLoginedIn()
+        coinbase.signOut()
+        isConnected = false
     }
     
     
     func loadUserCoinbaseTokens(code: String) {
-        getUserCoinbaseToken.invoke(code: code)
+        coinbase.authorize(with: code)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] response in
                 if( response?.accessToken?.isEmpty==false){
@@ -66,13 +64,8 @@ class CoinbaseAccountViewmodel: NSObject,ObservableObject {
         return priceManger.localCurrencyString(forDashAmount: dashAmount.plainAmount)
     }
     
-    func getLastKnownBalance()->String?{
-        if(getUserCoinbaseAccounts.isUserHasLastKnownBalance()){
-            if let dashAmount  = getUserCoinbaseAccounts.getLastKnownBalance() {
-               return dashAmount
-            }
-        }
-        return nil
+    func getLastKnownBalance()->String? {
+        return coinbase.lastKnownBalance
     }
     
 }
