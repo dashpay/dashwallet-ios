@@ -7,6 +7,14 @@
 
 import Foundation
 import UIKit
+import SwiftUI
+
+
+protocol ServiceOverviewDelegate : AnyObject {
+    func presentCompletedCoinbaseViewController()
+    func presentCompletedUpholdViewController()
+    
+}
 
 class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
@@ -15,6 +23,7 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     @IBOutlet weak var serviceHint: UILabel!
     @IBOutlet weak var serviceLinkButton: UIButton!
     @IBOutlet weak var serviceFeaturesTables: UITableView!
+    weak var delegate : ServiceOverviewDelegate? = nil
     
     var serviceOverviewScreenModel:ServiceOverviewScreenModel = ServiceOverviewScreenModel.getCoinbaseServiceEnteryPoint
     
@@ -22,8 +31,21 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
         super.viewDidLoad()
         setupHeaderAndTitleLabel()
         
-        serviceLinkButton.setTitle(serviceOverviewScreenModel.serviceButtonTitle, for: .normal)
+        serviceLinkButton.setTitle(serviceOverviewScreenModel.serviceType.self.serviceButtonTitle, for: .normal)
     }
+    
+    @IBAction func linkButtonPressed(_ sender: UIButton) {
+        self.dismiss(animated: true) {
+            if self.serviceOverviewScreenModel.serviceType == .coinbase{
+            self.delegate?.presentCompletedCoinbaseViewController()
+            }
+            else {
+                self.delegate?.presentCompletedUpholdViewController()
+            }
+        }
+    }
+    
+    
     
     override func loadView() {
         super.loadView()
@@ -31,9 +53,10 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     }
     
     func setupHeaderAndTitleLabel() {
-        let serviceOverviewImage = UIImage(named: serviceOverviewScreenModel.imageName)
+        
+        let serviceOverviewImage = UIImage(named: serviceOverviewScreenModel.serviceType.self.icon)
         serviceIcon?.image = serviceOverviewImage
-        serviceHint.text = serviceOverviewScreenModel.serviceName
+        serviceHint.text = serviceOverviewScreenModel.serviceType.self.title
     }
     
     func setupTableView() {
@@ -44,21 +67,21 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return serviceOverviewScreenModel.supportedFeatures.count
-     }
-     
-     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-         if let cell = tableView.dequeueReusableCell(withIdentifier: "serviceOverviewTableCell", for: indexPath) as? ServiceOverviewTableCell {
-             let supportedFeature = serviceOverviewScreenModel.supportedFeatures[indexPath.row]
-             
-             //call the update view function from ContactCell
-             cell.UpdateCellView(supportedFeature: supportedFeature)
-             return cell
-         }
-         else {
-             return ServiceOverviewTableCell()
-         }
-     }
+        return serviceOverviewScreenModel.serviceType.self.supportedFeatures.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if let cell = tableView.dequeueReusableCell(withIdentifier: "serviceOverviewTableCell", for: indexPath) as? ServiceOverviewTableCell {
+            let supportedFeature = serviceOverviewScreenModel.serviceType.self.supportedFeatures[indexPath.row]
+            
+            //call the update view function from ContactCell
+            cell.UpdateCellView(supportedFeature: supportedFeature)
+            return cell
+        }
+        else {
+            return ServiceOverviewTableCell()
+        }
+    }
     
     @objc class func controller() -> ServiceOverviewViewController {
         return vc(ServiceOverviewViewController.self, from: sb("Coinbase"))

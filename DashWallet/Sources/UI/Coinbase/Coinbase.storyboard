@@ -362,6 +362,9 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Button">
                                     <directionalEdgeInsets key="contentInsets" top="11" leading="0.0" bottom="11" trailing="0.0"/>
                                 </buttonConfiguration>
+                                <connections>
+                                    <action selector="linkButtonPressed:" destination="b7v-ga-xlr" eventType="touchUpInside" id="whp-x6-5VX"/>
+                                </connections>
                             </button>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="SuV-Qw-ZV0">
                                 <rect key="frame" x="20" y="212.66666666666669" width="350" height="518.33333333333326"/>

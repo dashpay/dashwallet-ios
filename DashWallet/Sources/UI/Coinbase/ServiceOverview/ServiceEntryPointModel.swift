@@ -7,22 +7,65 @@
 
 import Foundation
 
-struct ServiceOverviewScreenModel:Hashable, Identifiable {
-    var id: Int
-    var serviceType: ServiceType
-    var serviceName: String
-    var serviceButtonTitle: String
-    var imageName: String
-    var supportedFeatures: [SupportedFeature]
+struct ServiceOverviewScreenModel {
+    var serviceType: Service
     
-    public enum ServiceType :Codable{
-        case COINBASE
-        case Uphold
+    public enum Service :CaseIterable{
+        case coinbase
+        case uphold
     }
 }
 
-struct SupportedFeature :Hashable, Identifiable {
-    var id: Int
+extension ServiceOverviewScreenModel.Service {
+    
+    var supportedFeatures: [SupportedFeature] {
+        switch self {
+        case .coinbase: return  [
+            SupportedFeature(
+                serviceName:NSLocalizedString("Buy Dash with fiat", comment: "Dash Service Overview"),
+                imageName:"service.BuyDashwithfiat"),
+           
+            SupportedFeature(
+                serviceName:NSLocalizedString("Buy and convert Dash with another crypto", comment: "Dash Service Overview"),
+                imageName:"service.BuyAndConvertDash"),
+            
+            SupportedFeature(
+                serviceName:NSLocalizedString("Transfer Dash", comment: "Dash Service Overview"),
+                imageName:"service.TransferDash",
+                serviceSubtitle: NSLocalizedString("Between Dash Wallet and your Coinbase account", comment: "Dash Service Overview"))]
+      
+        case .uphold: return  [
+            SupportedFeature(
+                serviceName:NSLocalizedString("Transfer Dash", comment: "Dash Service Overview"),
+                imageName:"service.TransferDash",
+                serviceSubtitle: NSLocalizedString("From Uphold to your Dash Wallet", comment: "Dash Service Overview"))]
+        }
+    }
+    
+    var title: String {
+        switch self {
+        case .coinbase: return NSLocalizedString("Link your Coinbase account", comment: "Dash Service Overview")
+        case .uphold: return NSLocalizedString("Link your Uphold account", comment: "Dash Service Overview")
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .coinbase: return "service.coinbase.square"
+        case .uphold: return "service.uphold.square"
+        }
+    }
+    
+    var serviceButtonTitle: String {
+        switch self {
+        case .coinbase: return NSLocalizedString("Link Coinbase Account", comment: "Dash Service Overview")
+        case .uphold: return NSLocalizedString("Link Uphold account", comment: "Dash Service Overview")
+        }
+    }
+}
+
+
+struct SupportedFeature{
     var serviceName: String
     var imageName: String
     var serviceSubtitle: String?
@@ -30,25 +73,9 @@ struct SupportedFeature :Hashable, Identifiable {
 
 extension ServiceOverviewScreenModel {
     static var getCoinbaseServiceEnteryPoint =
-    ServiceOverviewScreenModel(id: 1, serviceType:ServiceType.COINBASE, serviceName: "Link your Coinbase account", serviceButtonTitle: "Link Coinbase Account", imageName: "Coinbase_square",
-                                 supportedFeatures: [    SupportedFeature(id:0,
-                                                                          serviceName:"Buy Dash with fiat",
-                                                                          imageName:"BuyDashwithfiat"),
-                                                         SupportedFeature(id:1,
-                                                                          serviceName:"Buy and convert Dash with another crypto",
-                                                                          imageName:"BuyAndConvertDash"),
-                                                         SupportedFeature(id:2,
-                                                                          serviceName:"Transfer Dash",
-                                                                          imageName:"TransferDash",
-                                                                          serviceSubtitle: "Between Dash Wallet and your Coinbase account")])
-    
+    ServiceOverviewScreenModel(serviceType:Service.coinbase)
     
     static var getUpholdServiceEnteryPoint =
-    ServiceOverviewScreenModel(id: 2,serviceType:ServiceType.Uphold, serviceName: "Link your Uphold account", serviceButtonTitle: "Link your Uphold account", imageName: "Uphold",
-                                 supportedFeatures: [
-                                    SupportedFeature(id:3,
-                                                     serviceName:"Transfer Dash",
-                                                     imageName:"TransferDash",
-                                                     serviceSubtitle: "From Uphold to your Dash Wallet")])
+    ServiceOverviewScreenModel(serviceType:Service.uphold)
     
 }
