@@ -395,6 +395,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "όριο Face ID ";
 
+/* Buy Sell Portal */
+"Failed to sync" = "Failed to sync";
+
 /* Explore Dash */
 "Failed to sync on" = "Failed to sync on";
 
@@ -515,6 +518,9 @@
 /* No comment provided by engineer. */
 "Income" = "Income";
 
+/* Buy Sell Portal */
+"Initializing" = "Initializing";
+
 /* No comment provided by engineer. */
 "Insufficient funds" = "Ανεπαρκή χρήματα";
 
@@ -550,6 +556,9 @@
 
 /* Explore Dash */
 "Last device sync" = "Last device sync";
+
+/* Buy Sell Portal */
+"Last known balance" = "Last known balance";
 
 /* Explore Dash */
 "Last server update" = "Last server update";

@@ -17,7 +17,6 @@
 
 @import UIKit;
 #import "DWTransactionListDataItem.h"
-//#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

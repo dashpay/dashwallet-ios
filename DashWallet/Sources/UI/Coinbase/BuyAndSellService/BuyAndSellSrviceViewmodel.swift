@@ -173,8 +173,7 @@ class BuyAndSellSrviceViewmodel:NSObject,ObservableObject {
 }
 
 extension BuyAndSellSrviceViewmodel: ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession)
-    -> ASPresentationAnchor {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         let window = UIApplication.shared.connectedScenes
         // Keep only active scenes, onscreen and visible to the user
             .filter { $0.activationState == .foregroundActive }

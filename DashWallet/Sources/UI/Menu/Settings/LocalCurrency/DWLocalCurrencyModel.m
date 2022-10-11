@@ -23,7 +23,6 @@
 
 #import "DWCurrencyItemPriceProvider.h"
 #import "DWCurrencyObject.h"
-#import "DWWeakContainer.h"
 #import "NSPredicate+DWFullTextSearch.h"
 
 NS_ASSUME_NONNULL_BEGIN

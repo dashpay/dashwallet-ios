@@ -20,7 +20,9 @@
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
 #import "DWAmountObject.h"
-
+#import "DWUpholdViewController.h"
+#import "DWUpholdClient.h"
+#import "DWUpholdCardObject.h"
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"
 #import "NSAttributedString+DWBuilder.h"

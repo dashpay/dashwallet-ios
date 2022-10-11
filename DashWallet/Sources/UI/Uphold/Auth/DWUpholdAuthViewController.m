@@ -119,12 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.linkButton.hidden = YES;
     [self.activityIndicatorView startAnimating];
 
-    if (@available(iOS 11.0, *)) {
-        self.authenticationSession = nil;
-    }
-    else {
-        [self dismissViewControllerAnimated:YES completion:nil];
-    }
+    self.authenticationSession = nil;
 
     __weak typeof(self) weakSelf = self;
     [[DWUpholdClient sharedInstance] completeAuthRoutineWithURL:url

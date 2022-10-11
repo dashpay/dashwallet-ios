@@ -16,6 +16,13 @@
 //
 
 import Foundation
+import AuthenticationServices
+
+extension PortalModel {
+    enum Section: Int {
+        case main
+    }
+}
 
 extension PortalModel.Service {
     var title: String {
@@ -40,7 +47,13 @@ extension PortalModel.Service {
     }
 }
 
+protocol PortalModelDelegate: AnyObject {
+    func serviceItemsDidChange();
+}
+
 class PortalModel {
+    weak var delegate: PortalModelDelegate?
+    
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     
     enum Service: CaseIterable {
@@ -53,14 +66,46 @@ class PortalModel {
         case offline
     }
     
+    var items: [ServiceItem] = [] {
+        didSet {
+            delegate?.serviceItemsDidChange()
+        }
+    }
+    
     var services: [Service] = Service.allCases
     var networkStatus: NetworkStatus!
     
     private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
     private var reachabilityObserver: Any!
-     
+    private var upholdDashCard: DWUpholdCardObject?
+   
+    private var serviceItemDataProvider: ServiceDataProvider
+    
     init() {
+        serviceItemDataProvider = ServiceDataProviderImpl()
+        serviceItemDataProvider.listenForData { [weak self] items in
+            self?.items = items
+            self?.delegate?.serviceItemsDidChange()
+        }
+        
         initializeReachibility()
+    }
+    
+    public func refreshData() {
+        serviceItemDataProvider.refresh()
+    }
+    
+    public func initiateCoinbaseAuthorization(with context: ASWebAuthenticationPresentationContextProviding) {
+        Coinbase.shared.signIn(with: context) { [weak self] result in
+            switch result {
+            case .success(let completed):
+                self?.serviceItemDataProvider.refresh()
+                break
+            case .failure(let error):
+                //TODO: show error
+                break
+            }
+        }
     }
     
     private func initializeReachibility() {
