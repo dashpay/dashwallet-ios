@@ -354,6 +354,129 @@
             </objects>
             <point key="canvasLocation" x="747.82608695652175" y="72.991071428571431"/>
         </scene>
+        <!--Service Overview View Controller-->
+        <scene sceneID="xEq-Ug-xeS">
+            <objects>
+                <viewController storyboardIdentifier="ServiceOverviewViewController" id="b7v-ga-xlr" customClass="ServiceOverviewViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qYt-Wg-YPc">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dVj-lx-t1P">
+                                <rect key="frame" x="155" y="64" width="80" height="80"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="dVj-lx-t1P" secondAttribute="height" multiplier="1:1" id="4oZ-uH-Lh9"/>
+                                    <constraint firstAttribute="height" constant="80" id="96q-aE-P5t"/>
+                                    <constraint firstAttribute="width" constant="80" id="RnM-Wc-Vxq"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Service Hint" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IvU-p5-Bfv">
+                                <rect key="frame" x="126.66666666666667" y="164" width="136.66666666666663" height="28.666666666666657"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="24"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TbD-Do-UCN">
+                                <rect key="frame" x="15" y="751" width="360" height="39"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Button">
+                                    <directionalEdgeInsets key="contentInsets" top="11" leading="0.0" bottom="11" trailing="0.0"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="linkButtonPressed:" destination="b7v-ga-xlr" eventType="touchUpInside" id="whp-x6-5VX"/>
+                                </connections>
+                            </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="SuV-Qw-ZV0">
+                                <rect key="frame" x="20" y="212.66666666666669" width="350" height="518.33333333333326"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="serviceOverviewTableCell" id="GPS-tK-sdf" customClass="ServiceOverviewTableCell" customModule="dashwallet" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="44.666666030883789" width="350" height="52"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="GPS-tK-sdf" id="18j-Vp-u1K">
+                                            <rect key="frame" x="0.0" y="0.0" width="350" height="52"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="m4D-0y-S73">
+                                                    <rect key="frame" x="8" y="8" width="34" height="34"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="34" id="7pm-zK-uU9"/>
+                                                        <constraint firstAttribute="width" constant="34" id="ueP-rn-jZe"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="top" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="k0D-U9-OFj">
+                                                    <rect key="frame" x="52" y="14" width="268" height="28"/>
+                                                    <subviews>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sl0-bf-yqE">
+                                                            <rect key="frame" x="0.0" y="0.0" width="39" height="18"/>
+                                                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Between Dash Wallet and your Coinbase account" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hpE-X1-87m">
+                                                            <rect key="frame" x="0.0" y="20" width="268" height="8"/>
+                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                    <constraints>
+                                                        <constraint firstItem="hpE-X1-87m" firstAttribute="width" secondItem="k0D-U9-OFj" secondAttribute="width" id="j6d-IT-M5M"/>
+                                                    </constraints>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="k0D-U9-OFj" firstAttribute="top" secondItem="18j-Vp-u1K" secondAttribute="top" constant="14" id="07z-WN-QpQ"/>
+                                                <constraint firstAttribute="bottom" secondItem="m4D-0y-S73" secondAttribute="bottom" constant="10" id="D0v-tK-fmY"/>
+                                                <constraint firstItem="k0D-U9-OFj" firstAttribute="leading" secondItem="m4D-0y-S73" secondAttribute="trailing" constant="10" id="Gxe-QB-lvb"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="k0D-U9-OFj" secondAttribute="trailing" constant="10" id="RRp-RX-Odz"/>
+                                                <constraint firstItem="m4D-0y-S73" firstAttribute="leading" secondItem="18j-Vp-u1K" secondAttribute="leading" constant="8" id="VUB-WC-zei"/>
+                                                <constraint firstItem="m4D-0y-S73" firstAttribute="top" secondItem="18j-Vp-u1K" secondAttribute="top" constant="8" id="hKb-AR-7j9"/>
+                                                <constraint firstAttribute="bottom" secondItem="k0D-U9-OFj" secondAttribute="bottom" constant="10" id="oEU-He-Wgx"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <accessibility key="accessibilityConfiguration">
+                                            <accessibilityTraits key="traits" notEnabled="YES"/>
+                                        </accessibility>
+                                        <connections>
+                                            <outlet property="FeatureSubtitle" destination="hpE-X1-87m" id="PS2-pq-tuJ"/>
+                                            <outlet property="FeatureTitle" destination="sl0-bf-yqE" id="MAc-Pv-kw2"/>
+                                            <outlet property="featureIcon" destination="m4D-0y-S73" id="1lg-oX-9Ix"/>
+                                            <outlet property="featureSubtitle" destination="hpE-X1-87m" id="6V9-TZ-jcu"/>
+                                            <outlet property="featureTitle" destination="sl0-bf-yqE" id="T2U-Pz-lKU"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </prototypes>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="5Up-aG-Jvs"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="TbD-Do-UCN" firstAttribute="top" secondItem="SuV-Qw-ZV0" secondAttribute="bottom" constant="20" id="4na-WG-e2Z"/>
+                            <constraint firstItem="SuV-Qw-ZV0" firstAttribute="leading" secondItem="5Up-aG-Jvs" secondAttribute="leading" constant="20" id="5yK-9W-jnU"/>
+                            <constraint firstItem="5Up-aG-Jvs" firstAttribute="trailing" secondItem="SuV-Qw-ZV0" secondAttribute="trailing" constant="20" id="AD6-km-1qt"/>
+                            <constraint firstItem="5Up-aG-Jvs" firstAttribute="bottom" secondItem="TbD-Do-UCN" secondAttribute="bottom" constant="20" id="BDd-Dr-xMo"/>
+                            <constraint firstItem="dVj-lx-t1P" firstAttribute="top" secondItem="5Up-aG-Jvs" secondAttribute="top" constant="20" id="Bqf-Iy-9Gs"/>
+                            <constraint firstItem="IvU-p5-Bfv" firstAttribute="centerX" secondItem="dVj-lx-t1P" secondAttribute="centerX" id="IOP-VC-qNn"/>
+                            <constraint firstItem="SuV-Qw-ZV0" firstAttribute="top" secondItem="IvU-p5-Bfv" secondAttribute="bottom" constant="20" id="TCz-w1-VLv"/>
+                            <constraint firstItem="IvU-p5-Bfv" firstAttribute="top" secondItem="dVj-lx-t1P" secondAttribute="bottom" constant="20" id="Y7k-wF-dtM"/>
+                            <constraint firstItem="TbD-Do-UCN" firstAttribute="leading" secondItem="5Up-aG-Jvs" secondAttribute="leading" constant="15" id="eYo-Zn-8Yw"/>
+                            <constraint firstItem="dVj-lx-t1P" firstAttribute="centerX" secondItem="qYt-Wg-YPc" secondAttribute="centerX" id="g3s-U6-iop"/>
+                            <constraint firstAttribute="trailing" secondItem="TbD-Do-UCN" secondAttribute="trailing" constant="15" id="kAM-4r-zqv"/>
+                            <constraint firstItem="dVj-lx-t1P" firstAttribute="top" secondItem="5Up-aG-Jvs" secondAttribute="top" constant="20" id="l2z-dx-Srb"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="serviceFeaturesTables" destination="SuV-Qw-ZV0" id="E53-NG-JBU"/>
+                        <outlet property="serviceHint" destination="IvU-p5-Bfv" id="QSY-i1-P62"/>
+                        <outlet property="serviceIcon" destination="dVj-lx-t1P" id="JpG-wW-LOG"/>
+                        <outlet property="serviceLinkButton" destination="TbD-Do-UCN" id="Fj3-Nb-HpU"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UuO-JE-pls" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-813" y="73"/>
+        </scene>
     </scenes>
     <resources>
         <image name="chevron.right" catalog="system" width="97" height="128"/>

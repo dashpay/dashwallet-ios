@@ -47,6 +47,10 @@
 		0F6EDFEA28C8AE74000427E7 /* BuyAndSellDashServiceRowStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFE528C8AE74000427E7 /* BuyAndSellDashServiceRowStatus.swift */; };
 		0F6EDFEB28C8AE74000427E7 /* BuyAndSellDashServiceRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFE628C8AE74000427E7 /* BuyAndSellDashServiceRow.swift */; };
 		0F6EDFED28C8B764000427E7 /* SwiftUIViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFEC28C8B764000427E7 /* SwiftUIViewFactory.swift */; };
+		0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */; };
+		0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */; };
+		0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */; };
+		0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FC75A8E28F03E22000E4858 /* libDashSync.a */; };
 		1FC212F0BAB5FB85C59E9CD3 /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02771AC5DDCA0A1749C6A05B /* libPods-TodayExtension.a */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
@@ -723,6 +727,10 @@
 		0F6EDFE528C8AE74000427E7 /* BuyAndSellDashServiceRowStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuyAndSellDashServiceRowStatus.swift; sourceTree = "<group>"; };
 		0F6EDFE628C8AE74000427E7 /* BuyAndSellDashServiceRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuyAndSellDashServiceRow.swift; sourceTree = "<group>"; };
 		0F6EDFEC28C8B764000427E7 /* SwiftUIViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewFactory.swift; sourceTree = "<group>"; };
+		0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceEntryPointModel.swift; sourceTree = "<group>"; };
+		0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewTableCell.swift; sourceTree = "<group>"; };
+		0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewViewController.swift; sourceTree = "<group>"; };
+		0FC75A8E28F03E22000E4858 /* libDashSync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDashSync.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		2142023B66B3AB7DC260D9A9 /* Pods-TodayExtension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -1833,6 +1841,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */,
 				2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */,
 				FB3E9F60236125F600C09C5C /* BackgroundTasks.framework in Frameworks */,
 				2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */,
@@ -2068,6 +2077,7 @@
 		0F6EDFE028C8AE32000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
+				0F71317328F436160072F454 /* ServiceOverview */,
 				4751136D28D9B4F400223B77 /* Info Screen */,
 				0F0E652328CF69550075B252 /* Views */,
 				0F0E652028CA20BD0075B252 /* BuyDashCoinbase */,
@@ -2090,6 +2100,16 @@
 				0F6EDFE628C8AE74000427E7 /* BuyAndSellDashServiceRow.swift */,
 			);
 			path = BuyAndSellService;
+			sourceTree = "<group>";
+		};
+		0F71317328F436160072F454 /* ServiceOverview */ = {
+			isa = PBXGroup;
+			children = (
+				0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */,
+				0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */,
+				0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */,
+			);
+			path = ServiceOverview;
 			sourceTree = "<group>";
 		};
 		2A0C69A023104798001B8C90 /* PaymentModels */ = {
@@ -4679,6 +4699,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0FC75A8E28F03E22000E4858 /* libDashSync.a */,
 				2A5279BB23D994BC00F856D3 /* CoreNFC.framework */,
 				2AA08533237D6CF500797F95 /* CloudKit.framework */,
 				2A0C6C852362EFAE00C86F37 /* libDashSync-Shared.a */,
@@ -5553,6 +5574,7 @@
 				2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
+				0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */,
 				47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */,
 				2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */,
 				2A7A7BE02348DC1900451078 /* DWToolsMenuViewController.m in Sources */,
@@ -5638,6 +5660,7 @@
 				47AE8BFD28C1306000490F5E /* ExploreMapView.swift in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				0F0E651B28CA20280075B252 /* fontStyle.swift in Sources */,
+				0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */,
 				2A7AF380248280CE001D74F9 /* DWDPSearchItemsFactory.m in Sources */,
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
 				2AB66E02235711FA007BE825 /* DWWalletKeysOverviewModel.m in Sources */,
@@ -5779,6 +5802,7 @@
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				0F6EDFD828C896BD000427E7 /* GetUserCoinbaseAccounts.swift in Sources */,
+				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
 				0F6EDFDD28C896BD000427E7 /* RestClient.swift in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
