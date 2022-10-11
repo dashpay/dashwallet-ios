@@ -145,6 +145,7 @@ extension PortalViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let snapshot = dataSource.snapshot(for: .main)
         let item = snapshot.items[indexPath.item]
+        item.service.increaseUsageCount()
         
         switch item.service {
         case .uphold:

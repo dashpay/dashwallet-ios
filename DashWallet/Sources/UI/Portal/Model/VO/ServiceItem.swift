@@ -69,13 +69,15 @@ class ServiceItem: Hashable {
     var service: Service
 
     var dashBalance: String?
-    var usageCount: UInt = 0
+    var usageCount: Int = 0
     
-    init(status: Status, service: Service, dashBalance: String? = nil, usageCount: UInt = 0) {
+    var isInUse: Bool { return status == .syncing || status == .authorized }
+    
+    init(status: Status, service: Service, dashBalance: String? = nil) {
         self.status = status
         self.service = service
         self.dashBalance = dashBalance
-        self.usageCount = usageCount
+        self.usageCount = service.usageCount
     }
     
     func hash(into hasher: inout Hasher) {

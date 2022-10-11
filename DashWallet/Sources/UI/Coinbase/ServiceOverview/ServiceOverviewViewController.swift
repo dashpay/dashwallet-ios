@@ -22,7 +22,8 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     @IBOutlet weak var serviceHint: UILabel!
     @IBOutlet weak var serviceLinkButton: UIButton!
     @IBOutlet weak var serviceFeaturesTables: UITableView!
-    weak var delegate : ServiceOverviewDelegate? = nil
+    
+    weak var delegate: ServiceOverviewDelegate?
     
     var model: ServiceOverviewScreenModel = ServiceOverviewScreenModel.getCoinbaseServiceEnteryPoint
     

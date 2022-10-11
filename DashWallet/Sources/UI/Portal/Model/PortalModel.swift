@@ -50,6 +50,14 @@ extension Service {
         case .uphold: return true
         }
     }
+    
+    var usageCount: Int {
+        return UserDefaults.standard.integer(forKey: kServiceUsageCount)
+    }
+    
+    func increaseUsageCount() {
+        UserDefaults.standard.set(usageCount + 1, forKey: kServiceUsageCount)
+    }
 }
 
 protocol PortalModelDelegate: AnyObject {
@@ -60,8 +68,6 @@ class PortalModel {
     weak var delegate: PortalModelDelegate?
     
     var networkStatusDidChange: ((NetworkStatus) -> ())?
-    
-    
     
     enum NetworkStatus {
         case online

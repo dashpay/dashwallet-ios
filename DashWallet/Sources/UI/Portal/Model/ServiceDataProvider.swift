@@ -70,6 +70,10 @@ class ServiceDataProviderImpl: ServiceDataProvider {
             items.append(item)
         }
         
-        self.handler?(items)
+        let sortedItems = items
+            .sorted(by: { $0.usageCount > $1.usageCount })
+            .sorted(by: { $0.isInUse && !$1.isInUse })
+        
+        self.handler?(sortedItems)
     }
 }

@@ -18,6 +18,8 @@
 import Foundation
 import Combine
 
+let kServiceUsageCount = "kServiceUsageCount"
+
 class ServiceDataSource {
     var serviceDidUpdate: ((ServiceItem) -> Void)!
     
@@ -30,6 +32,8 @@ class ServiceDataSource {
     func refresh() {
         assertionFailure("Override it")
     }
+    
+    
 }
 
 class UpholdDataSource: ServiceDataSource {
