@@ -63,10 +63,12 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     }
     
     func setupTableView() {
+        serviceFeaturesTables.estimatedRowHeight = 80
+        serviceFeaturesTables.rowHeight = UITableView.automaticDimension
         serviceFeaturesTables.allowsSelection = false
         serviceFeaturesTables.delegate = self
         serviceFeaturesTables.dataSource = self
-        serviceFeaturesTables.separatorStyle = UITableViewCell.SeparatorStyle.none
+        serviceFeaturesTables.separatorStyle = .none
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
