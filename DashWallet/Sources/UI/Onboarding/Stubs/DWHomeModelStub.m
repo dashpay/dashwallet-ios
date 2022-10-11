@@ -40,7 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
-@property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 
 @end
 
@@ -54,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
+@synthesize allDataSource = _allDataSource;
+@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 - (instancetype)init {
     self = [super init];
@@ -70,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
+        _allowedToShowReclassifyYourTransactions = NO;
 
         [self updateBalance];
         [self reloadTxDataSource];

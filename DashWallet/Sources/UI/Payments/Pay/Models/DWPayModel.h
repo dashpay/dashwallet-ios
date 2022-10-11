@@ -18,9 +18,7 @@
 #import "DWPayModelProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
 @interface DWPayModel : NSObject <DWPayModelProtocol>
-
 @end
 
 NS_ASSUME_NONNULL_END

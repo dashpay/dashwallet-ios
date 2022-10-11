@@ -30,7 +30,7 @@
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 #import "DWEnvironment.h"
-
+#import "dashwallet-Swift.h"
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
 #endif /* IGNORE_WATCH_TARGET */
@@ -105,6 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
     [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
+    [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
+    
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
         // start updating prices earlier than migration to update `secureTime`
@@ -116,6 +118,8 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:NO];
     }
+    
+    [[Taxes shared] initialize];
     
     NSParameterAssert(self.window.rootViewController);
     
@@ -174,6 +178,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    DWStartViewController *startController = (DWStartViewController *)self.window.rootViewController;
+    if ([startController isKindOfClass:DWStartViewController.class]) {
+        startController.deferredURLToProcess = url;
+        return NO;
+    }
+    
     if (![DWURLParser allowsURLHandling]) {
         return NO;
     }

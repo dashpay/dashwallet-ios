@@ -16,7 +16,25 @@
 //
 
 #import "DWToolsMenuModel.h"
+#import "DWCSVExporter.h"
+#import "DWEnvironment.h"
+#import "DWTransactionListDataProvider.h"
+
+@interface DWToolsMenuModel ()
+@end
 
 @implementation DWToolsMenuModel
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+    }
+    return self;
+}
+
+- (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler {
+
+    return [DWCSVExporter generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
+}
 
 @end

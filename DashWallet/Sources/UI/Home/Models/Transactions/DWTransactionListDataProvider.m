@@ -21,6 +21,7 @@
 
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItemObject.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,15 +60,19 @@ NS_ASSUME_NONNULL_BEGIN
     return [self formattedLongTxDate:date];
 }
 
+- (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction {
+    NSDate *date = [self dateForTransaction:transaction];
+    return [self formattedISO8601TxDate:date];
+}
+
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
-    // inherited from DWTxDetailViewController `- (void)setTransaction:(DSTransaction *)transaction`
 
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSAccount *account = [transaction.accounts containsObject:currentAccount] ? currentAccount : nil;
 
-    DSTransactionDirection transactionDirection = account ? [chain directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
+    DSTransactionDirection transactionDirection = account ? [transaction direction] : DSTransactionDirection_NotAccountFunds;
     uint64_t dashAmount;
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];

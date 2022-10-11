@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWHomeProtocol;
 @class DWTransactionListDataSource;
+@class DSTransaction;
 @protocol DWPayModelProtocol;
 @protocol DWReceiveModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
@@ -36,6 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeModel:(id<DWHomeProtocol>)model
     didUpdateDataSource:(DWTransactionListDataSource *)dataSource
           shouldAnimate:(BOOL)shouldAnimate;
+
+- (void)homeModel:(id<DWHomeProtocol>)model
+    didReceiveNewIncomingTransaction:(DSTransaction *)transaction;
 
 @end
 
@@ -47,10 +51,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
+@property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
+
 @property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
 
 @property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
 @property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
+@property (readonly, nonatomic, assign, getter=isAllowedToShowReclassifyYourTransactions) BOOL allowedToShowReclassifyYourTransactions;
 
 - (void)reloadShortcuts;
 

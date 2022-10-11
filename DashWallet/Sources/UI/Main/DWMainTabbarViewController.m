@@ -142,28 +142,30 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
+
     [self tabBarViewDidClosePayments:tabBarView completion:nil];
 }
 
 /// helper
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
-    if (!self.modalController) {
-        if (completion) {
-            completion();
-        }
+    if ([self.currentController.presentedViewController isKindOfClass:[DWNavigationController class]]) {
+        DWNavigationController *nvc = (DWNavigationController *)self.currentController.presentedViewController;
 
-        return;
+        if (![nvc.topViewController isKindOfClass:[DWPaymentsViewController class]]) {
+            return;
+        }
     }
 
     tabBarView.userInteractionEnabled = NO;
     [tabBarView setPaymentsButtonOpened:NO];
 
-    [self hideModalControllerCompletion:^{
-        tabBarView.userInteractionEnabled = YES;
-        if (completion) {
-            completion();
-        }
-    }];
+    [self.currentController dismissViewControllerAnimated:YES
+                                               completion:^{
+                                                   self.tabBarView.userInteractionEnabled = YES;
+                                                   if (completion) {
+                                                       completion();
+                                                   }
+                                               }];
 }
 
 #pragma mark - DWPaymentsViewControllerDelegate
@@ -319,11 +321,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
-
-    [self displayModalViewController:navigationController
-                          completion:^{
-                              self.tabBarView.userInteractionEnabled = YES;
-                          }];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self.currentController presentViewController:navigationController
+                                         animated:YES
+                                       completion:^{
+                                           self.tabBarView.userInteractionEnabled = YES;
+                                       }];
+    //        [self.currentController displayModalViewController:navigationController
+    //                              completion:^{
+    //                                  self.tabBarView.userInteractionEnabled = YES;
+    //                              }];
 }
 
 - (void)setupControllers {

@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)shortStringFromDate:(NSDate *)date;
 - (NSString *)longStringFromDate:(NSDate *)date;
+- (NSString *)iso8601StringFromDate:(NSDate *)date;
 
 + (instancetype)sharedInstance;
 

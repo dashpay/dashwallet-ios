@@ -60,7 +60,7 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
         case DWMainMenuItemType_Settings:
             return NSLocalizedString(@"Default currency, shortcuts, about…", nil);
         case DWMainMenuItemType_Tools:
-            return NSLocalizedString(@"Import private key…", nil);
+            return NSLocalizedString(@"Import private key, Export CSV…", nil);
         case DWMainMenuItemType_Support:
             return NSLocalizedString(@"Report an Issue", nil);
     }

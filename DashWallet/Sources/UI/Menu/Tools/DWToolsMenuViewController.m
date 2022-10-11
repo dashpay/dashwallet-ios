@@ -17,13 +17,16 @@
 
 #import "DWToolsMenuViewController.h"
 
+#import "BigIntTypes.h"
+#import "DWEnvironment.h"
 #import "DWExtendedPublicKeysViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
 #import "DWKeysOverviewViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
-
+#import "UIView+DWHUD.h"
+#import "UIViewController+DWDisplayError.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWToolsMenuViewController () <DWImportWalletInfoViewControllerDelegate>
@@ -100,6 +103,20 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"CSV Export", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf askToExportTransactionsInCSV];
+        };
+        [items addObject:cellModel];
+    }
+
     return [items copy];
 }
 
@@ -155,6 +172,67 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:controller animated:YES];
 }
 
+- (void)askToExportTransactionsInCSV {
+
+    NSString *title = NSLocalizedString(@"CSV Export", nil);
+    NSString *message = NSLocalizedString(@"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", nil);
+    __weak typeof(self) weakSelf = self;
+
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:message
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Continue", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        [weakSelf exportTransactionsInCSV];
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:action];
+    }
+
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        alert.popoverPresentationController.sourceView = self.view;
+        alert.popoverPresentationController.sourceRect = self.view.bounds;
+    }
+
+    [self presentViewController:alert
+                       animated:YES
+                     completion:nil];
+}
+
+- (void)exportTransactionsInCSV {
+    [self.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Generating CSV Report", nil)];
+    __weak typeof(self) weakSelf = self;
+
+    [self.model
+        generateCSVReportWithCompletionHandler:^(NSString *_Nonnull fileName, NSURL *_Nonnull file) {
+            [weakSelf.view dw_hideProgressHUD];
+
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ file ] applicationActivities:nil];
+            [activityViewController setValue:fileName forKey:@"subject"];
+
+            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+                activityViewController.popoverPresentationController.sourceView = weakSelf.view;
+                activityViewController.popoverPresentationController.sourceRect = weakSelf.view.bounds;
+            }
+
+            [weakSelf presentViewController:activityViewController animated:YES completion:nil];
+        }
+        errorHandler:^(NSError *_Nonnull error) {
+            [weakSelf.view dw_hideProgressHUD];
+            [weakSelf dw_displayErrorModally:error];
+        }];
+}
 @end
 
 NS_ASSUME_NONNULL_END

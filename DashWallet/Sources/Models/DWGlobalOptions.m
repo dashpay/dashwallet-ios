@@ -42,6 +42,8 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic mostRecentViewedNotificationDate;
 @dynamic resyncingWallet;
 @dynamic selectedPaymentCurrency;
+@dynamic shouldDisplayReclassifyYourTransactionsFlow;
+@dynamic dateReclassifyYourTransactionsFlowActivated;
 
 #pragma mark - Init
 
@@ -53,6 +55,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
+        DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -108,6 +111,12 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     setKeychainInt(spendingConfirmationDisabled ? 1 : 0, SPENDING_CONFIRMATION_DISABLED_KEY, NO);
 }
 
+- (void)setActivationDateForReclassifyYourTransactionsFlowIfNeeded:(NSDate *)date {
+    if (self.dateReclassifyYourTransactionsFlowActivated == nil) {
+        self.dateReclassifyYourTransactionsFlowActivated = date;
+    }
+}
+
 #pragma mark - Methods
 
 - (void)restoreToDefaults {
@@ -122,7 +131,9 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dashpayRegistrationCompleted = NO;
     self.mostRecentViewedNotificationDate = nil;
     self.resyncingWallet = NO;
-    self.shouldDisplayOnboarding = DWPaymentCurrencyDash;
+    self.selectedPaymentCurrency = DWPaymentCurrencyDash;
+    self.shouldDisplayReclassifyYourTransactionsFlow = YES;
+    self.dateReclassifyYourTransactionsFlowActivated = nil;
 }
 
 @end

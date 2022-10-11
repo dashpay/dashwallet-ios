@@ -51,10 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWDateFormatter sharedInstance] longStringFromDate:date];
 }
 
-- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
-                                        font:(UIFont *)font {
+- (NSString *)formattedISO8601TxDate:(NSDate *)date {
+    return [[DWDateFormatter sharedInstance] iso8601StringFromDate:date];
+}
+
+- (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData {
     const uint64_t dashAmount = transactionData.dashAmount;
-    UIColor *tintColor = transactionData.dashAmountTintColor;
 
     NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
 
@@ -63,8 +65,20 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *formattedNumber = [numberFormatter stringFromNumber:number];
     NSString *symbol = transactionData.directionSymbol;
     NSString *string = [symbol stringByAppendingString:formattedNumber];
+    return string;
+}
 
-    return [NSAttributedString dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor font:font];
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                        font:(UIFont *)font {
+    UIColor *tintColor = transactionData.dashAmountTintColor;
+    return [self dashAmountStringFrom:transactionData tintColor:tintColor font:font];
+}
+
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                   tintColor:(UIColor *)color
+                                        font:(UIFont *)font {
+    NSString *amount = [self dashAmountStringFrom:transactionData];
+    return [NSAttributedString dw_dashAttributedStringForFormattedAmount:amount tintColor:color font:font];
 }
 
 @end

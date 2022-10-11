@@ -21,7 +21,6 @@
 #import "DWDPTxItem.h"
 #import "DWFilterHeaderView.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
-#import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
@@ -30,6 +29,7 @@
 #import "DWUserProfileSendRequestCell.h"
 #import "UICollectionView+DWDPItemDequeue.h"
 #import "UIViewController+DWTxFilter.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -226,9 +226,9 @@ NS_ASSUME_NONNULL_END
 
     DSTransaction *transaction = ((id<DWDPTxItem>)item).transaction;
     id<DWTransactionListDataProviderProtocol> dataProvider = self.dataProvider;
-    DWTxDetailPopupViewController *controller =
-        [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
-                                                      dataProvider:dataProvider];
+
+    TXDetailViewController *controller = [TXDetailViewController controller];
+    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:dataProvider];
     [self presentViewController:controller animated:YES completion:nil];
 }
 

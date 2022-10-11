@@ -15,7 +15,9 @@
 //  limitations under the License.
 //
 
+@import UIKit;
 #import "DWTransactionListDataItem.h"
+//#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,8 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDate *)dateForTransaction:(DSTransaction *)transaction;
 - (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction;
-
+- (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction;
+- (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData;
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                        font:(UIFont *)font;
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                   tintColor:(UIColor *)color
                                         font:(UIFont *)font;
 
 @end

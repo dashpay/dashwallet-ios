@@ -22,14 +22,12 @@
 #import "DWPasteboardAddressExtractor.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayModel () <NFCNDEFReaderSessionDelegate>
 
 @property (readonly, nonatomic, strong) DWPaymentInputBuilder *inputBuilder;
 @property (readonly, nonatomic, strong) DWPasteboardAddressExtractor *pasteboardExtractor;
-@property (readonly, nonatomic, strong) DWPayOptionModel *pasteboardOption;
 
 @property (nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
 @property (nullable, nonatomic, copy) void (^nfcReadingCompletion)(DWPaymentInput *paymentInput);
@@ -46,35 +44,38 @@ NS_ASSUME_NONNULL_BEGIN
         _inputBuilder = [[DWPaymentInputBuilder alloc] init];
         _pasteboardExtractor = [[DWPasteboardAddressExtractor alloc] init];
 
-        NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
-
-        DWPayOptionModel *scanQROption = [[DWPayOptionModel alloc]
-            initWithType:DWPayOptionModelType_ScanQR];
-        [options addObject:scanQROption];
-
-        DWPayOptionModel *pasteboardOption = [[DWPayOptionModel alloc]
-            initWithType:DWPayOptionModelType_Pasteboard];
-        [options addObject:pasteboardOption];
-        _pasteboardOption = pasteboardOption;
-
-        // CoreNFC is optional framework
-        if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-            Class NFCNDEFReaderSessionClass = NSClassFromString(@"NFCNDEFReaderSession");
-            if ([NFCNDEFReaderSessionClass respondsToSelector:@selector(readingAvailable)] &&
-                [(id)NFCNDEFReaderSessionClass readingAvailable]) {
-                DWPayOptionModel *nfcOption = [[DWPayOptionModel alloc]
-                    initWithType:DWPayOptionModelType_NFC];
-                [options addObject:nfcOption];
-            }
-        }
-
-        _options = [options copy];
+        [self refreshOptions];
     }
     return self;
 }
 
 - (void)dealloc {
     DSLog(@"☠️ %@", NSStringFromClass(self.class));
+}
+
+- (void)refreshOptions {
+    NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
+
+    DWPayOptionModel *scanQROption = [[DWPayOptionModel alloc]
+        initWithType:DWPayOptionModelType_ScanQR];
+    [options addObject:scanQROption];
+
+    DWPayOptionModel *pasteboardOption = [[DWPayOptionModel alloc]
+        initWithType:DWPayOptionModelType_Pasteboard];
+    [options addObject:pasteboardOption];
+
+    // CoreNFC is optional framework
+    if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+        Class NFCNDEFReaderSessionClass = NSClassFromString(@"NFCNDEFReaderSession");
+        if ([NFCNDEFReaderSessionClass respondsToSelector:@selector(readingAvailable)] &&
+            [(id)NFCNDEFReaderSessionClass readingAvailable]) {
+            DWPayOptionModel *nfcOption = [[DWPayOptionModel alloc]
+                initWithType:DWPayOptionModelType_NFC];
+            [options addObject:nfcOption];
+        }
+    }
+
+    _options = [options copy];
 }
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
@@ -175,13 +176,6 @@ NS_ASSUME_NONNULL_BEGIN
     self.nfcReadingCompletion = nil;
 }
 
-#pragma mark - Private
-
-- (void)setPasteboardPaymentInput:(nullable DWPaymentInput *)pasteboardPaymentInput {
-    _pasteboardPaymentInput = pasteboardPaymentInput;
-
-    self.pasteboardOption.details = pasteboardPaymentInput.userDetails;
-}
 
 @end
 

@@ -16,6 +16,7 @@
 //
 
 #import "DWSettingsMenuModel.h"
+#import "DWCSVExporter.h"
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -132,6 +133,10 @@ NS_ASSUME_NONNULL_BEGIN
                            completion:nil];
 }
 
++ (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler {
+
+    return [DWCSVExporter generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
+}
 @end
 
 NS_ASSUME_NONNULL_END

@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL biometricAuthConfigured;
 @property (nonatomic, assign) BOOL biometricAuthEnabled;
+
+
 /// Value in seconds
 @property (nonatomic, assign) NSInteger autoLockAppInterval;
 
@@ -45,7 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL balanceHidden;
 
 @property (nonatomic, assign) BOOL shouldDisplayOnboarding;
-
+@property (nonatomic, assign) BOOL shouldDisplayReclassifyYourTransactionsFlow;
+@property (nullable, nonatomic, strong) NSDate *dateReclassifyYourTransactionsFlowActivated;
 @property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
 
 @property (nullable, nonatomic, copy) NSString *dashpayUsername;
@@ -64,6 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)spendingConfirmationDisabled;
 - (void)setSpendingConfirmationDisabled:(BOOL)spendingConfirmationDisabled;
 
+- (void)setActivationDateForReclassifyYourTransactionsFlowIfNeeded:(NSDate *)date;
 // Methods
 
 - (void)restoreToDefaults;

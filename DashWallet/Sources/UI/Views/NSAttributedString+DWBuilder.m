@@ -74,21 +74,24 @@ NS_ASSUME_NONNULL_BEGIN
     return [attributedString copy];
 }
 
-+ (NSAttributedString *)dw_dashAddressAttributedString:(NSString *)address withFont:(UIFont *)font {
-    const CGFloat scaleFactor = 1.5; // 24pt (image size) / 16pt (font size)
-    const CGFloat side = font.pointSize * scaleFactor;
-    const CGSize symbolSize = CGSizeMake(side, side);
-    NSTextAttachment *dashIcon = [[NSTextAttachment alloc] init];
-    const CGFloat y = -3.335 * scaleFactor; // -5pt / scaleFactor
-    dashIcon.bounds = CGRectMake(0, y, symbolSize.width, symbolSize.height);
-    dashIcon.image = [UIImage imageNamed:@"icon_tx_list_dash"];
-    NSAttributedString *dashIconAttributedString =
-        [NSAttributedString attributedStringWithAttachment:dashIcon];
-
++ (NSAttributedString *)dw_dashAddressAttributedString:(NSString *)address withFont:(UIFont *)font showingLogo:(BOOL)showingLogo {
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] init];
 
-    [attributedString insertAttributedString:[[NSAttributedString alloc] initWithString:NBSP] atIndex:0];
-    [attributedString insertAttributedString:dashIconAttributedString atIndex:0];
+    if (showingLogo) {
+        const CGFloat scaleFactor = 1.5; // 24pt (image size) / 16pt (font size)
+        const CGFloat side = font.pointSize * scaleFactor;
+        const CGSize symbolSize = CGSizeMake(side, side);
+        NSTextAttachment *dashIcon = [[NSTextAttachment alloc] init];
+        const CGFloat y = -3.335 * scaleFactor; // -5pt / scaleFactor
+        dashIcon.bounds = CGRectMake(0, y, symbolSize.width, symbolSize.height);
+        dashIcon.image = [UIImage imageNamed:@"icon_tx_list_dash"];
+        NSAttributedString *dashIconAttributedString =
+            [NSAttributedString attributedStringWithAttachment:dashIcon];
+
+
+        [attributedString insertAttributedString:[[NSAttributedString alloc] initWithString:NBSP] atIndex:0];
+        [attributedString insertAttributedString:dashIconAttributedString atIndex:0];
+    }
 
     NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : font};
     NSAttributedString *attributedAddress = [[NSAttributedString alloc] initWithString:address
@@ -96,6 +99,10 @@ NS_ASSUME_NONNULL_BEGIN
     [attributedString appendAttributedString:attributedAddress];
 
     return [attributedString copy];
+}
+
++ (NSAttributedString *)dw_dashAddressAttributedString:(NSString *)address withFont:(UIFont *)font {
+    return [self dw_dashAddressAttributedString:address withFont:font showingLogo:NO];
 }
 
 #pragma mark - Private

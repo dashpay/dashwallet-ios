@@ -50,18 +50,12 @@
 		2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */; };
 		2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
 		2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */; };
-		2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */; };
-		2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D922322AEE000BA8C6A /* DWTxDetailContentView.m */; };
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
-		2A1B7DA123239C8700BA8C6A /* DWTxDetailModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA023239C8700BA8C6A /* DWTxDetailModel.m */; };
 		2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */; };
 		2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
-		2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */; };
 		2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */; };
-		2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */; };
 		2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */; };
 		2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */; };
-		2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC52326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m */; };
 		2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */; };
 		2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */; };
 		2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6411238D650200A9B505 /* DWSegmentSlider.m */; };
@@ -98,7 +92,6 @@
 		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
 		2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
 		2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */; };
-		2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A44311822CBF108009BAF7F /* Montserrat.plist */; };
 		2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311D22CC9B5A009BAF7F /* DWNavigationController.m */; };
 		2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
 		2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312522CCC14F009BAF7F /* DWSetPinViewController.m */; };
@@ -343,9 +336,6 @@
 		2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */; };
 		2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
 		2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
-		2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DD123546746007BE825 /* DWTxDetailListView.m */; };
-		2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DFB2355BF59007BE825 /* DWTxDetailHeaderView.m */; };
-		2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AB66DFD2355BF67007BE825 /* DWTxDetailHeaderView.xib */; };
 		2AB66E02235711FA007BE825 /* DWWalletKeysOverviewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66E01235711FA007BE825 /* DWWalletKeysOverviewModel.m */; };
 		2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66E0523572358007BE825 /* DWDerivationPathKeysTableViewCell.m */; };
 		2AB7303E24D0BC0400DCB420 /* UIColor+DWDashPay.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7303D24D0BC0400DCB420 /* UIColor+DWDashPay.m */; };
@@ -451,6 +441,24 @@
 		2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF01E3243F8625003718DC /* DWDPRegistrationDoneTableViewCell.m */; };
 		2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
+		4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
+		4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C311287E78BD00B4BD48 /* SeedDB.swift */; };
+		4709C315287EA11900B4BD48 /* TxUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TxUserInfo.swift */; };
+		4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */; };
+		4709C31E2880247C00B4BD48 /* DSTransaction+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */; };
+		4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31A288020DE00B4BD48 /* TxDetailModel.swift */; };
+		4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */; };
+		471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */; };
+		471A2608289ACDA00056B7B2 /* AddressUserInfoDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */; };
+		471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2609289ACDF70056B7B2 /* Taxes.swift */; };
+		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
+		47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
+		47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
+		47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5146328491C60005A8E3E /* TxDetailCells.swift */; };
+		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
+		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
+		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
+		47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
@@ -502,18 +510,6 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
-		FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
-		FBFC2EC621137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
-		FBFC2EC721137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
-		FBFC2EC821137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
-		FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */; };
-		FBFC2ED621137A7A00D20C57 /* Montserrat-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */; };
-		FBFC2ED721137A7A00D20C57 /* Montserrat-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */; };
-		FBFC2ED821137A7A00D20C57 /* Montserrat-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */; };
-		FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */; };
-		FBFC2EE621137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */; };
-		FBFC2EE721137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */; };
-		FBFC2EE821137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -675,32 +671,20 @@
 		2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPlanetarySystemView.m; sourceTree = "<group>"; };
 		2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~ipad.xib"; sourceTree = "<group>"; };
 		2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~iphone.xib"; sourceTree = "<group>"; };
-		2A1B7D7F232151D400BA8C6A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
-		2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		2A1B7D902322AE2200BA8C6A /* DWTitleDetailItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailItem.h; sourceTree = "<group>"; };
-		2A1B7D912322AEE000BA8C6A /* DWTxDetailContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailContentView.h; sourceTree = "<group>"; };
-		2A1B7D922322AEE000BA8C6A /* DWTxDetailContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailContentView.m; sourceTree = "<group>"; };
 		2A1B7D952322D0BC00BA8C6A /* DWTitleDetailCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailCellModel.h; sourceTree = "<group>"; };
 		2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTitleDetailCellModel.m; sourceTree = "<group>"; };
-		2A1B7D9F23239C8700BA8C6A /* DWTxDetailModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailModel.h; sourceTree = "<group>"; };
-		2A1B7DA023239C8700BA8C6A /* DWTxDetailModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailModel.m; sourceTree = "<group>"; };
 		2A1B7DA32323AC1F00BA8C6A /* DWModalPopupPresentationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupPresentationController.h; sourceTree = "<group>"; };
 		2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPopupPresentationController.m; sourceTree = "<group>"; };
 		2A1B7DA62323AF4300BA8C6A /* DWModalPopupTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupTransition.h; sourceTree = "<group>"; };
 		2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPopupTransition.m; sourceTree = "<group>"; };
-		2A1B7DAC2323B06300BA8C6A /* DWTxDetailPopupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailPopupViewController.h; sourceTree = "<group>"; };
-		2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailPopupViewController.m; sourceTree = "<group>"; };
 		2A1B7DB223244CD700BA8C6A /* NSAttributedString+DWBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+DWBuilder.h"; sourceTree = "<group>"; };
 		2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+DWBuilder.m"; sourceTree = "<group>"; };
-		2A1B7DBA2326187D00BA8C6A /* DWTxDetailFullscreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailFullscreenViewController.h; sourceTree = "<group>"; };
-		2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailFullscreenViewController.m; sourceTree = "<group>"; };
 		2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupAppearanceStyle.h; sourceTree = "<group>"; };
 		2A1B7DBE232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "DWHomeViewController+DWBackupReminder.h"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.h"; sourceTree = SOURCE_ROOT; };
 		2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "DWHomeViewController+DWBackupReminder.m"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.m"; sourceTree = SOURCE_ROOT; };
 		2A1B7DC123266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWSecureWalletDelegateImpl.h"; sourceTree = "<group>"; };
 		2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWSecureWalletDelegateImpl.m"; sourceTree = "<group>"; };
-		2A1B7DC42326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSuccessfulTransactionAnimatedIconView.h; sourceTree = "<group>"; };
-		2A1B7DC52326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSuccessfulTransactionAnimatedIconView.m; sourceTree = "<group>"; };
 		2A1F640A238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormTableViewCell.h; sourceTree = "<group>"; };
 		2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSliderFormTableViewCell.m; sourceTree = "<group>"; };
 		2A1F640D238D5C0900A9B505 /* DWSegmentSliderFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormCellModel.h; sourceTree = "<group>"; };
@@ -772,7 +756,6 @@
 		2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppAssets.xcassets; sourceTree = "<group>"; };
 		2A44311522CBF0B2009BAF7F /* UIFont+DWFont.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIFont+DWFont.h"; sourceTree = "<group>"; };
 		2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIFont+DWFont.m"; sourceTree = "<group>"; };
-		2A44311822CBF108009BAF7F /* Montserrat.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Montserrat.plist; sourceTree = "<group>"; };
 		2A44311C22CC9B5A009BAF7F /* DWNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNavigationController.h; sourceTree = "<group>"; };
 		2A44311D22CC9B5A009BAF7F /* DWNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNavigationController.m; sourceTree = "<group>"; };
 		2A44311F22CCA2A0009BAF7F /* UIColor+DWStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIColor+DWStyle.h"; sourceTree = "<group>"; };
@@ -1280,12 +1263,6 @@
 		2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityModelStub.m; sourceTree = "<group>"; };
 		2AB3417D23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseAdvancedSecurityModel.h; sourceTree = "<group>"; };
 		2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseAdvancedSecurityModel.m; sourceTree = "<group>"; };
-		2AB66DD023546746007BE825 /* DWTxDetailListView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailListView.h; sourceTree = "<group>"; };
-		2AB66DD123546746007BE825 /* DWTxDetailListView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailListView.m; sourceTree = "<group>"; };
-		2AB66DFA2355BF59007BE825 /* DWTxDetailHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailHeaderView.h; sourceTree = "<group>"; };
-		2AB66DFB2355BF59007BE825 /* DWTxDetailHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailHeaderView.m; sourceTree = "<group>"; };
-		2AB66DFD2355BF67007BE825 /* DWTxDetailHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxDetailHeaderView.xib; sourceTree = "<group>"; };
-		2AB66DFF2355C191007BE825 /* DWTxDetailDisplayType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailDisplayType.h; sourceTree = "<group>"; };
 		2AB66E00235711FA007BE825 /* DWWalletKeysOverviewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWalletKeysOverviewModel.h; sourceTree = "<group>"; };
 		2AB66E01235711FA007BE825 /* DWWalletKeysOverviewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWalletKeysOverviewModel.m; sourceTree = "<group>"; };
 		2AB66E0423572358007BE825 /* DWDerivationPathKeysTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDerivationPathKeysTableViewCell.h; sourceTree = "<group>"; };
@@ -1493,7 +1470,28 @@
 		2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationDoneTableViewCell.xib; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
+		4709C30E287E787700B4BD48 /* Migrations.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Migrations.bundle; sourceTree = "<group>"; };
+		4709C311287E78BD00B4BD48 /* SeedDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SeedDB.swift; sourceTree = "<group>"; };
+		4709C314287EA11900B4BD48 /* TxUserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxUserInfo.swift; sourceTree = "<group>"; };
+		4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxUserInfoDAO.swift; sourceTree = "<group>"; };
+		4709C31A288020DE00B4BD48 /* TxDetailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailModel.swift; sourceTree = "<group>"; };
+		4709C31C2880247C00B4BD48 /* DSTransaction+DashWallet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSTransaction+DashWallet.h"; sourceTree = "<group>"; };
+		4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSTransaction+DashWallet.m"; sourceTree = "<group>"; };
+		4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Foundation+Bitcoin.swift"; sourceTree = "<group>"; };
+		471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfo.swift; sourceTree = "<group>"; };
+		471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfoDAO.swift; sourceTree = "<group>"; };
+		471A2609289ACDF70056B7B2 /* Taxes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxes.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
+		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
+		47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
+		47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewController.swift; sourceTree = "<group>"; };
+		47A514612848FEAD005A8E3E /* Tx.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tx.storyboard; sourceTree = "<group>"; };
+		47A5146328491C60005A8E3E /* TxDetailCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailCells.swift; sourceTree = "<group>"; };
+		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
+		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
+		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
+		47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsInfoViewController.swift; sourceTree = "<group>"; };
+		47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsWhereToChangeViewController.swift; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1634,9 +1632,6 @@
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Regular.otf"; sourceTree = "<group>"; };
-		FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Medium.otf"; sourceTree = "<group>"; };
-		FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-SemiBold.otf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1889,34 +1884,20 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		2A1B7D7E232151B800BA8C6A /* TxDetail */ = {
+		2A1B7D7E232151B800BA8C6A /* Tx */ = {
 			isa = PBXGroup;
 			children = (
-				2A1B7D9E23239C7500BA8C6A /* Model */,
-				2A1B7D82232156A600BA8C6A /* Views */,
-				2A1B7D7F232151D400BA8C6A /* DWTxDetailViewController.h */,
-				2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */,
-				2A1B7DAC2323B06300BA8C6A /* DWTxDetailPopupViewController.h */,
-				2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */,
-				2A1B7DBA2326187D00BA8C6A /* DWTxDetailFullscreenViewController.h */,
-				2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */,
+				47F2C6802860315D00C2B774 /* Reclassify Transactions */,
+				47F2C67E2860314A00C2B774 /* Details */,
+				47A514612848FEAD005A8E3E /* Tx.storyboard */,
 			);
-			path = TxDetail;
+			path = Tx;
 			sourceTree = "<group>";
 		};
 		2A1B7D82232156A600BA8C6A /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2A1B7DC42326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.h */,
-				2A1B7DC52326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m */,
-				2A1B7D912322AEE000BA8C6A /* DWTxDetailContentView.h */,
-				2A1B7D922322AEE000BA8C6A /* DWTxDetailContentView.m */,
-				2AB66DFF2355C191007BE825 /* DWTxDetailDisplayType.h */,
-				2AB66DFA2355BF59007BE825 /* DWTxDetailHeaderView.h */,
-				2AB66DFB2355BF59007BE825 /* DWTxDetailHeaderView.m */,
-				2AB66DFD2355BF67007BE825 /* DWTxDetailHeaderView.xib */,
-				2AB66DD023546746007BE825 /* DWTxDetailListView.h */,
-				2AB66DD123546746007BE825 /* DWTxDetailListView.m */,
+				47A5146328491C60005A8E3E /* TxDetailCells.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1936,8 +1917,7 @@
 		2A1B7D9E23239C7500BA8C6A /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				2A1B7D9F23239C8700BA8C6A /* DWTxDetailModel.h */,
-				2A1B7DA023239C8700BA8C6A /* DWTxDetailModel.m */,
+				4709C31A288020DE00B4BD48 /* TxDetailModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -2066,6 +2046,7 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				47F2C67B28602D3800C2B774 /* PageSheet */,
 				2A913E9923A53AC6006A2A59 /* Containers */,
 				2A0C69D423143B17001B8C90 /* ModalController */,
 				2A0C69B62313EB4A001B8C90 /* Transitions */,
@@ -2102,7 +2083,6 @@
 		2A4430F022CBD566009BAF7F /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FBFC2E9E21137A4200D20C57 /* Montserrat */,
 				2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */,
 				75E83CF51B5F997A0038FB70 /* coinflip.aiff */,
 			);
@@ -2183,6 +2163,8 @@
 		2A44313B22CF62FC009BAF7F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				479E7922287C00A000D0F7D7 /* Infrastructure */,
+				47E71F73286AED0E00CDF2BD /* Utils */,
 				2A858A04237EE89B0097A7B5 /* AppleWatch */,
 				2AD1CE7D22DC928C00C99324 /* Categories */,
 				2A44313D22CF632F009BAF7F /* Models */,
@@ -2199,7 +2181,7 @@
 				2A913E6C23A26469006A2A59 /* Onboarding */,
 				2A7A7BAF2347917800451078 /* Menu */,
 				2A6300402328CCAC00827825 /* LockScreen */,
-				2A1B7D7E232151B800BA8C6A /* TxDetail */,
+				2A1B7D7E232151B800BA8C6A /* Tx */,
 				2A9FFE462230FF4600956D5F /* Uphold */,
 				2A8B9E3822FC7F3B00FF8653 /* Payments */,
 				2A9CEBB622E1FA0000A50237 /* Home */,
@@ -2214,6 +2196,7 @@
 		2A44313D22CF632F009BAF7F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				471A2602289ACCD20056B7B2 /* Taxes */,
 				2A9FFDF62230FF2B00956D5F /* Uphold */,
 				2A11F58021947CBE00E7B563 /* DataMigration */,
 				2A913E6323A11DCF006A2A59 /* URL Handling */,
@@ -3625,6 +3608,9 @@
 				2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */,
 				C3DAD2CD247585C10001624F /* NSPredicate+DWFullTextSearch.h */,
 				C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */,
+				4709C31C2880247C00B4BD48 /* DSTransaction+DashWallet.h */,
+				4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */,
+				4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -3917,6 +3903,112 @@
 			path = Receive;
 			sourceTree = "<group>";
 		};
+		4709C310287E78BD00B4BD48 /* Migrations */ = {
+			isa = PBXGroup;
+			children = (
+				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
+			);
+			path = Migrations;
+			sourceTree = "<group>";
+		};
+		4709C313287EA10600B4BD48 /* Tx */ = {
+			isa = PBXGroup;
+			children = (
+				4709C316287EA22600B4BD48 /* DAO */,
+				4709C314287EA11900B4BD48 /* TxUserInfo.swift */,
+			);
+			path = Tx;
+			sourceTree = "<group>";
+		};
+		4709C316287EA22600B4BD48 /* DAO */ = {
+			isa = PBXGroup;
+			children = (
+				4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */,
+			);
+			path = DAO;
+			sourceTree = "<group>";
+		};
+		471A2602289ACCD20056B7B2 /* Taxes */ = {
+			isa = PBXGroup;
+			children = (
+				471A2603289ACCDD0056B7B2 /* Address */,
+				4709C313287EA10600B4BD48 /* Tx */,
+				471A2609289ACDF70056B7B2 /* Taxes.swift */,
+			);
+			path = Taxes;
+			sourceTree = "<group>";
+		};
+		471A2603289ACCDD0056B7B2 /* Address */ = {
+			isa = PBXGroup;
+			children = (
+				471A2606289ACD8C0056B7B2 /* DAO */,
+				471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */,
+			);
+			path = Address;
+			sourceTree = "<group>";
+		};
+		471A2606289ACD8C0056B7B2 /* DAO */ = {
+			isa = PBXGroup;
+			children = (
+				471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */,
+			);
+			path = DAO;
+			sourceTree = "<group>";
+		};
+		4741255F287E77B4004E6BF3 /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				4709C310287E78BD00B4BD48 /* Migrations */,
+				4709C30E287E787700B4BD48 /* Migrations.bundle */,
+				479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */,
+			);
+			path = Database;
+			sourceTree = "<group>";
+		};
+		479E7922287C00A000D0F7D7 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+				4741255F287E77B4004E6BF3 /* Database */,
+			);
+			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		47E71F73286AED0E00CDF2BD /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				47E71F75286AED1900CDF2BD /* DWCSVExporter.h */,
+				47E71F74286AED1900CDF2BD /* DWCSVExporter.m */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		47F2C67B28602D3800C2B774 /* PageSheet */ = {
+			isa = PBXGroup;
+			children = (
+				47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */,
+			);
+			path = PageSheet;
+			sourceTree = "<group>";
+		};
+		47F2C67E2860314A00C2B774 /* Details */ = {
+			isa = PBXGroup;
+			children = (
+				2A1B7D9E23239C7500BA8C6A /* Model */,
+				2A1B7D82232156A600BA8C6A /* Views */,
+				47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */,
+			);
+			path = Details;
+			sourceTree = "<group>";
+		};
+		47F2C6802860315D00C2B774 /* Reclassify Transactions */ = {
+			isa = PBXGroup;
+			children = (
+				47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */,
+				47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */,
+			);
+			path = "Reclassify Transactions";
+			sourceTree = "<group>";
+		};
 		75D5F3B5191EC270004AB296 = {
 			isa = PBXGroup;
 			children = (
@@ -3999,6 +4091,7 @@
 		75D5F3C8191EC270004AB296 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
 				757E09971ADB8EEB006FD352 /* Localizable.strings */,
@@ -4149,17 +4242,6 @@
 			path = "Masternode Keys";
 			sourceTree = "<group>";
 		};
-		FBFC2E9E21137A4200D20C57 /* Montserrat */ = {
-			isa = PBXGroup;
-			children = (
-				2A44311822CBF108009BAF7F /* Montserrat.plist */,
-				FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */,
-				FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */,
-				FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */,
-			);
-			path = Montserrat;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -4303,7 +4385,7 @@
 						TestTargetID = 75D5F3BD191EC270004AB296;
 					};
 					75D5F3BD191EC270004AB296 = {
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1330;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -4414,15 +4496,13 @@
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
+				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */,
 				2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */,
-				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
 				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
-				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
-				FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
@@ -4436,18 +4516,17 @@
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
 				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
-				2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
 				2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */,
-				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
 				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
 				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
+				47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
 				2A7A7BBF2347950700451078 /* DWMainMenuTableViewCell.xib in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
@@ -4469,12 +4548,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBFC2EE721137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
-				FBFC2ED721137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
 				BA7B537B1BDD1DCF00355E8D /* LoadingIndicator.xcassets in Resources */,
 				BA913BE41BD57E4D005A7C0E /* Assets.xcassets in Resources */,
 				BA913BE21BD57E4D005A7C0E /* Interface.storyboard in Resources */,
-				FBFC2EC721137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4482,9 +4558,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBFC2EE821137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
-				FBFC2ED821137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
-				FBFC2EC821137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4493,12 +4566,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */,
-				FBFC2EE621137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
-				FBFC2ED621137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
 				BA54D3CE1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets in Resources */,
 				2A741DC323639C7E00840ADF /* Localizable.strings in Resources */,
 				2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */,
-				FBFC2EC621137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4782,6 +4852,7 @@
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */,
+				4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
 				2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */,
@@ -4817,7 +4888,9 @@
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
+				4709C315287EA11900B4BD48 /* TxUserInfo.swift in Sources */,
 				2A7AF3182480E35A001D74F9 /* DWContactsFetchedDataSource.m in Sources */,
+				47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
@@ -4840,7 +4913,9 @@
 				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				2A7AF3152480DA51001D74F9 /* DWIncomingFetchedDataSource.m in Sources */,
 				2ADC9D10245FF852001D7C0D /* DWNavigationChildViewController.m in Sources */,
+				4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */,
 				C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */,
+				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */,
@@ -4893,7 +4968,6 @@
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
-				2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */,
 				2A7AF380248280CE001D74F9 /* DWDPSearchItemsFactory.m in Sources */,
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
 				2AB66E02235711FA007BE825 /* DWWalletKeysOverviewModel.m in Sources */,
@@ -4907,11 +4981,11 @@
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */,
+				47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */,
 				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */,
 				2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
-				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
@@ -4928,6 +5002,7 @@
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
+				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
@@ -4945,7 +5020,6 @@
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */,
-				2A1B7DA123239C8700BA8C6A /* DWTxDetailModel.m in Sources */,
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
 				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
@@ -4972,7 +5046,6 @@
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
-				2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */,
 				2A7AF39E2482FE46001D74F9 /* DWDateFormatter.m in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
@@ -4994,7 +5067,6 @@
 				C3DAD2C024747F580001624F /* DWSearchViewController.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,
-				2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */,
 				2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */,
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
@@ -5020,6 +5092,7 @@
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */,
 				2A7AF3752482703C001D74F9 /* DWDPNewIncomingRequestNotificationObject.m in Sources */,
+				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
 				2A7AF36C248266FB001D74F9 /* DWDPEstablishedContactObject.m in Sources */,
@@ -5031,7 +5104,6 @@
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */,
-				2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */,
 				2A5BD59E2451F39500688A8D /* DWCheckExistenceUsernameValidationRule.m in Sources */,
 				2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
@@ -5048,6 +5120,7 @@
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
+				4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
@@ -5086,17 +5159,20 @@
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
+				4709C31E2880247C00B4BD48 /* DSTransaction+DashWallet.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
 				2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */,
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */,
-				2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */,
 				2A7AF34C24823315001D74F9 /* DWDPGenericStatusItemView.m in Sources */,
+				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
+				47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */,
 				2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */,
+				471A2608289ACDA00056B7B2 /* AddressUserInfoDAO.swift in Sources */,
 				2AEC5CC2249755BB00F4A689 /* DWDashPayContactsUpdater.m in Sources */,
 				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
@@ -5113,6 +5189,7 @@
 				C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
+				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
@@ -5143,6 +5220,7 @@
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */,
+				471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
@@ -5152,7 +5230,6 @@
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */,
-				2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */,
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
@@ -5161,6 +5238,7 @@
 				2AB7303E24D0BC0400DCB420 /* UIColor+DWDashPay.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
 				2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */,
+				47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 			);
@@ -5310,6 +5388,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -5341,6 +5420,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -5370,6 +5450,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A9529BDC33490B8F700E733D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -5399,6 +5480,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -5557,8 +5639,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -5573,11 +5656,13 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -5590,8 +5675,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -5605,10 +5691,11 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = "arm64 arm64e";
@@ -5620,6 +5707,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 87872BF3D40B38CD0FC246AB /* Pods-DashWalletTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -5649,6 +5737,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAC103D2F3C1CE8C7A598E78 /* Pods-DashWalletTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -5680,12 +5769,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -5702,12 +5791,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -5722,13 +5811,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -5745,13 +5834,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -5769,7 +5858,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -5777,8 +5866,9 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -5793,7 +5883,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -5801,8 +5891,9 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -5880,8 +5971,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -5895,10 +5987,11 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = "arm64 arm64e";
@@ -5912,7 +6005,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -5920,8 +6013,9 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -5935,6 +6029,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B9E5C217A0E8B1689F8307D1 /* Pods-DashWalletTests.testflight.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -5966,12 +6061,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -5986,13 +6081,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -6079,8 +6174,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -6094,10 +6190,12 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -6109,7 +6207,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -6117,8 +6215,9 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -6131,6 +6230,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B49B8EA157CD1A34396D7677 /* Pods-DashWalletTests.testnet.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -6162,12 +6262,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -6182,13 +6282,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.8.2;
+				MARKETING_VERSION = 6.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;

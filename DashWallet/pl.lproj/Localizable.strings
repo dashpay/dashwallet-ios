@@ -83,6 +83,9 @@
 "All" = "Wszystko";
 
 /* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
 "Allow camera access in Settings" = "Zezwól na dostęp do kamery w Ustawieniach";
 
 /* No comment provided by engineer. */
@@ -92,7 +95,7 @@
 "Allow Touch ID access in Settings" = "Zezwól na Touch ID w Ustawieniach";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Ilość otrzymana";
+"Amount received" = "Amount received";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Ilość wysłana";
@@ -260,6 +263,9 @@
 "Create a New Wallet" = "Stwórz Nowy Portfel";
 
 /* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
 "Current user: %@" = "Obecny użytkownik: %@";
 
 /* No comment provided by engineer. */
@@ -332,6 +338,12 @@
 "Exit" = "Wyjdź";
 
 /* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
@@ -369,6 +381,9 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Chcesz stworzyć rozszerzone klucze publiczne?";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
 
 /* No comment provided by engineer. */
 "Get Started" = "Zacznij";
@@ -413,6 +428,9 @@
 "If you still would like to wipe it please input: \"%@\"" = "Jeś dalej nalegasz na wymazanie, proszę o wpisanie: \"%@\"";
 
 /* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
 "Ignore" = "Zignoruj";
 
 /* No comment provided by engineer. */
@@ -422,7 +440,10 @@
 "Import Private Key" = "Zaimportuj Klucz Prywatny";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Importuj klucz prywatny...";
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Niewystarczająca ilość funduszy";
@@ -495,9 +516,6 @@
 
 /* Logout after 5 min */
 "Logout after" = "Wyloguj po";
-
-/* No comment provided by engineer. */
-"Long press to copy ID" = "Przyciśnij dłużej by skopiować ID";
 
 /* adjective, security level */
 "Low" = "Niski";
@@ -863,9 +881,6 @@
 "Sent from" = "Wysłane z";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Wysłane pomyślnie";
-
-/* No comment provided by engineer. */
 "Sent to" = "Wysłane do";
 
 /* No comment provided by engineer. */
@@ -944,6 +959,9 @@
 "Tap to unhide balance" = "Stuknij by odkryć saldo";
 
 /* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
 "There are no new notifications" = "Nie ma nowych powiadomień";
 
 /* No comment provided by engineer. */
@@ -996,6 +1014,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Prześlij z Uphold";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
 
 /* An action */
 "Try again" = "Spróbuj jeszcze raz";
@@ -1146,6 +1170,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Potrzebujesz także wylogować się z przeglądarki na swoim koncie Uphold ";
+
+/* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Fraza odzysku danych będzie potrzebna aby mieć dostęp do funduszy w wypadku utraty tego urządzenia lub jeśli Dash Wallet zostanie przypadkowo odinstalowany. ";

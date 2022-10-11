@@ -24,6 +24,8 @@
 #import "DWLocalCurrencyViewController.h"
 #import "DWSettingsMenuModel.h"
 #import "DWUIKit.h"
+#import "UIView+DWHUD.h"
+#import "UIViewController+DWDisplayError.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -118,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             UITableView *tableView = self.formController.tableView;
             UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-            [strongSelf rescanBlockchainActionFromSourceView:tableView sourceRect:cell.frame];
+            [strongSelf showWarningAboutReclassifiedTransactionsRypes:tableView sourceRect:cell.frame];
         };
         [items addObject:cellModel];
     }
@@ -268,6 +270,64 @@ NS_ASSUME_NONNULL_BEGIN
                      completion:nil];
 }
 
+- (void)showWarningAboutReclassifiedTransactionsRypes:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+    __weak typeof(self) weakSelf = self;
+
+    UIAlertController *actionSheet = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"You will lose all your manually reclassified transactions types", nil)
+                         message:NSLocalizedString(@"If you would like to save manually reclassified types for transactions you should export a CSV transaction file.", nil)
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *continueAction = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Continue", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self rescanBlockchainActionFromSourceView:sourceView sourceRect:sourceRect];
+                }];
+    UIAlertAction *export = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Export CSV", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [weakSelf exportTransactionsInCSV];
+                }];
+    UIAlertAction *cancel = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [actionSheet addAction:export];
+    [actionSheet addAction:continueAction];
+    [actionSheet addAction:cancel];
+
+    if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
+    [self presentViewController:actionSheet
+                       animated:YES
+                     completion:nil];
+}
+
+- (void)exportTransactionsInCSV {
+    [self.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Generating CSV Report", nil)];
+    __weak typeof(self) weakSelf = self;
+
+    [DWSettingsMenuModel
+        generateCSVReportWithCompletionHandler:^(NSString *_Nonnull fileName, NSURL *_Nonnull file) {
+            [weakSelf.view dw_hideProgressHUD];
+
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[ file ] applicationActivities:nil];
+            [activityViewController setValue:fileName forKey:@"subject"];
+            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+                activityViewController.popoverPresentationController.sourceView = weakSelf.view;
+                activityViewController.popoverPresentationController.sourceRect = weakSelf.view.bounds;
+            }
+
+            [weakSelf presentViewController:activityViewController animated:YES completion:nil];
+        }
+        errorHandler:^(NSError *_Nonnull error) {
+            [weakSelf.view dw_hideProgressHUD];
+            [weakSelf dw_displayErrorModally:error];
+        }];
+}
 @end
 
 NS_ASSUME_NONNULL_END

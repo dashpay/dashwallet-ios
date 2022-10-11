@@ -68,7 +68,6 @@ static BOOL IsJailbroken(void) {
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
-@property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
@@ -87,6 +86,8 @@ static BOOL IsJailbroken(void) {
 @synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
+@synthesize allDataSource = _allDataSource;
+@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 - (instancetype)init {
     self = [super init];
@@ -157,6 +158,7 @@ static BOOL IsJailbroken(void) {
                                  object:nil];
 
         [self reloadTxDataSource];
+        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:[NSDate new]];
     }
     return self;
 }
@@ -181,6 +183,15 @@ static BOOL IsJailbroken(void) {
     _displayMode = displayMode;
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:YES];
+}
+
+- (void)setAllowedToShowReclassifyYourTransactions:(BOOL)value {
+    _allowedToShowReclassifyYourTransactions = value;
+}
+
+- (BOOL)isAllowedToShowReclassifyYourTransactions {
+    BOOL shouldDisplayReclassifyYourTransactionsFlow = [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
+    return _allowedToShowReclassifyYourTransactions && shouldDisplayReclassifyYourTransactionsFlow;
 }
 
 - (BOOL)isJailbroken {
@@ -349,7 +360,6 @@ static BOOL IsJailbroken(void) {
 
 - (void)walletBalanceDidChangeNotification {
     [self updateBalance];
-
     [self reloadTxDataSource];
 }
 
@@ -396,6 +406,9 @@ static BOOL IsJailbroken(void) {
 }
 
 #pragma mark - Private
+
+- (void)notifyAboutNewTransaction {
+}
 
 - (DWTransactionListDataSource *)receivedDataSource {
     if (_receivedDataSource == nil) {
@@ -469,10 +482,22 @@ static BOOL IsJailbroken(void) {
                                                                         }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
+        BOOL receivedNewTransaction = NO;
+        BOOL allowedToShowReclassifyYourTransactions = NO;
         BOOL shouldAnimate = YES;
+
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;
-        if (!prevTransaction || prevTransaction == transactions.firstObject) {
+        DSTransaction *newTransaction = transactions.firstObject;
+
+        if (!prevTransaction || prevTransaction == newTransaction) {
             shouldAnimate = NO;
+        }
+
+        if (newTransaction && prevTransaction != newTransaction) {
+            receivedNewTransaction = YES;
+
+            NSDate *dateReclassifyYourTransactionsFlowActivated = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated;
+            allowedToShowReclassifyYourTransactions = [newTransaction.transactionDate compare:dateReclassifyYourTransactionsFlowActivated] == NSOrderedDescending;
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
@@ -495,6 +520,17 @@ static BOOL IsJailbroken(void) {
         DWTransactionListDataSource *datasource = self.dataSource;
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
+
+            if (receivedNewTransaction) {
+                id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:newTransaction];
+
+
+                // TODO: try to do for all transactions
+                if (dataItem.direction == DSTransactionDirection_Received) {
+                    [self.updatesObserver homeModel:self didReceiveNewIncomingTransaction:newTransaction];
+                }
+            }
             [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
         });
     });
