@@ -66,12 +66,12 @@ class ServiceItem: Hashable {
     var icon: String { return service.icon }
     
     var status: Status
-    var service: PortalModel.Service
+    var service: Service
 
     var dashBalance: String?
     var usageCount: UInt = 0
     
-    init(status: Status, service: PortalModel.Service, dashBalance: String? = nil, usageCount: UInt = 0) {
+    init(status: Status, service: Service, dashBalance: String? = nil, usageCount: UInt = 0) {
         self.status = status
         self.service = service
         self.dashBalance = dashBalance

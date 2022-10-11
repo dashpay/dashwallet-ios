@@ -148,6 +148,9 @@
 /* No comment provided by engineer. */
 "Balance hidden" = "Solde caché";
 
+/* Dash Service Overview */
+"Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
+
 /* No comment provided by engineer. */
 "block #%d of %d" = "bloc #%1$d de %2$d";
 
@@ -170,8 +173,14 @@
 /* No comment provided by engineer. */
 "Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
+/* Dash Service Overview */
+"Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
+
 /* No comment provided by engineer. */
 "Buy Dash" = "Acheter du Dash";
+
+/* Dash Service Overview */
+"Buy Dash with fiat" = "Buy Dash with fiat";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Acheter des dashs avec un compte Uphold";
@@ -446,6 +455,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Possibles mots manquants détectés :\n%@";
 
+/* Dash Service Overview */
+"From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Générer des clés publiques étendues ?";
 
@@ -572,11 +584,23 @@
 /* Validation rule */
 "Letters and numbers only" = "Lettres et chiffres seulement";
 
+/* Dash Service Overview */
+"Link Coinbase Account" = "Link Coinbase Account";
+
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Lier un compte Uphold";
 
+/* Dash Service Overview */
+"Link Uphold account" = "Link Uphold account";
+
 /* Buy Sell Portal */
 "Link your account" = "Link your account";
+
+/* Dash Service Overview */
+"Link your Coinbase account" = "Link your Coinbase account";
+
+/* Dash Service Overview */
+"Link your Uphold account" = "Link your Uphold account";
 
 /* No comment provided by engineer. */
 "Load more" = "Charger plus";
@@ -1147,6 +1171,9 @@
 
 /* A verb, button title. */
 "Transfer" = "Transférer";
+
+/* Dash Service Overview */
+"Transfer Dash" = "Transfer Dash";
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Transférer des dashs depuis votre compte Uphold vers ce portefeuille";

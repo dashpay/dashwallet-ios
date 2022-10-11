@@ -6,17 +6,38 @@
 //
 
 import Foundation
+import AuthenticationServices
 
-struct ServiceOverviewScreenModel {
-    var serviceType: Service
-    
-    public enum Service :CaseIterable{
-        case coinbase
-        case uphold
-    }
+protocol ServiceOverviewScreenModelDelegate: AnyObject {
+    func didSignIn()
+    func signInDidFail(error: Error)
 }
 
-extension ServiceOverviewScreenModel.Service {
+class ServiceOverviewScreenModel {
+    weak var delegate: ServiceOverviewScreenModelDelegate?
+    
+    var serviceType: Service
+    
+    init(serviceType: Service) {
+        self.serviceType = serviceType
+    }
+    
+    public func initiateCoinbaseAuthorization(with context: ASWebAuthenticationPresentationContextProviding) {
+        Coinbase.shared.signIn(with: context) { [weak self] result in
+            switch result {
+            case .success(let completed):
+                self?.delegate?.didSignIn()
+                break
+            case .failure(let error):
+                self?.delegate?.signInDidFail(error: error)
+                break
+            }
+        }
+    }
+    
+}
+
+extension Service {
     
     var supportedFeatures: [SupportedFeature] {
         switch self {
@@ -42,14 +63,14 @@ extension ServiceOverviewScreenModel.Service {
         }
     }
     
-    var title: String {
+    var entryTitle: String {
         switch self {
         case .coinbase: return NSLocalizedString("Link your Coinbase account", comment: "Dash Service Overview")
         case .uphold: return NSLocalizedString("Link your Uphold account", comment: "Dash Service Overview")
         }
     }
     
-    var icon: String {
+    var entryIcon: String {
         switch self {
         case .coinbase: return "service.coinbase.square"
         case .uphold: return "service.uphold.square"

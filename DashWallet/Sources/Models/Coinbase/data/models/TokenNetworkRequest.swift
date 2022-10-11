@@ -9,9 +9,9 @@ import Foundation
 
 struct NetworkRequest {
     // MARK: Private Constants
-    static let callbackURLScheme = "dashwallet"
+    static let callbackURLScheme = "authhub"
     static let clientSecret = Bundle.main.infoDictionary?["CLIENT_SECRET"]
-    static let redirect_uri = "dashwallet://oauth-callback"
+    static let redirect_uri = "authhub://oauth-callback"
     static let clientID = Bundle.main.infoDictionary?["CLIENT_ID"]
     static let grant_type = "authorization_code"
     static let response_type = "code"

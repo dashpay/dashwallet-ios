@@ -148,6 +148,9 @@
 /* No comment provided by engineer. */
 "Balance hidden" = "Το υπόλοιπο αποκρύφτηκε";
 
+/* Dash Service Overview */
+"Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
+
 /* No comment provided by engineer. */
 "block #%d of %d" = "μπλόκ #%1$d από %2$d";
 
@@ -170,8 +173,14 @@
 /* No comment provided by engineer. */
 "Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
+/* Dash Service Overview */
+"Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
+
 /* No comment provided by engineer. */
 "Buy Dash" = "Αγορά Dash";
+
+/* Dash Service Overview */
+"Buy Dash with fiat" = "Buy Dash with fiat";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
@@ -446,6 +455,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Βρέθηκαν οι πιθανές λέξεις που λείπουν:\n%@";
 
+/* Dash Service Overview */
+"From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
 
@@ -572,11 +584,23 @@
 /* Validation rule */
 "Letters and numbers only" = "Μόνο γράμματα και αριθμοί ";
 
+/* Dash Service Overview */
+"Link Coinbase Account" = "Link Coinbase Account";
+
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
 
+/* Dash Service Overview */
+"Link Uphold account" = "Link Uphold account";
+
 /* Buy Sell Portal */
 "Link your account" = "Link your account";
+
+/* Dash Service Overview */
+"Link your Coinbase account" = "Link your Coinbase account";
+
+/* Dash Service Overview */
+"Link your Uphold account" = "Link your Uphold account";
 
 /* No comment provided by engineer. */
 "Load more" = "Φόρτωσε περισσότερα";
@@ -1147,6 +1171,9 @@
 
 /* A verb, button title. */
 "Transfer" = "Μεταφορά";
+
+/* Dash Service Overview */
+"Transfer Dash" = "Transfer Dash";
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Μεταφέρετε Dash από τον Uphold λογαριασμό σας σε αυτό το πορτοφόλι";

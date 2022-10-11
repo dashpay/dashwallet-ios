@@ -18,13 +18,18 @@
 import Foundation
 import AuthenticationServices
 
+enum Service: CaseIterable {
+    case coinbase
+    case uphold
+}
+
 extension PortalModel {
     enum Section: Int {
         case main
     }
 }
 
-extension PortalModel.Service {
+extension Service {
     var title: String {
         switch self {
         case .coinbase: return NSLocalizedString("Coinbase", comment: "Dash Portal")
@@ -56,10 +61,7 @@ class PortalModel {
     
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     
-    enum Service: CaseIterable {
-        case coinbase
-        case uphold
-    }
+    
     
     enum NetworkStatus {
         case online
@@ -95,18 +97,7 @@ class PortalModel {
         serviceItemDataProvider.refresh()
     }
     
-    public func initiateCoinbaseAuthorization(with context: ASWebAuthenticationPresentationContextProviding) {
-        Coinbase.shared.signIn(with: context) { [weak self] result in
-            switch result {
-            case .success(let completed):
-                self?.serviceItemDataProvider.refresh()
-                break
-            case .failure(let error):
-                //TODO: show error
-                break
-            }
-        }
-    }
+    
     
     private func initializeReachibility() {
         if (!reachability.isMonitoring) {

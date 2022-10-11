@@ -44,18 +44,13 @@ import AuthenticationServices
     }
     
     @objc func coinbaseAction() {
-        model.initiateCoinbaseAuthorization(with: self)
-//        if DWGlobalOptions.sharedInstance().coinbaseInfoShown {
-//            let vc = UIHostingController(rootView: CoinbasePortalView())
-//            navigationController?.pushViewController(vc, animated: true)
-//        }else{
-//            let vc = CoinbaseInfoViewController.controller()
-//            vc.modalPresentationStyle = .overCurrentContext
-//            vc.modalTransitionStyle = .crossDissolve
-//            present(vc, animated: true)
-//
-//            DWGlobalOptions.sharedInstance().coinbaseInfoShown = true
-//        }
+        if Coinbase.shared.isAuthorized {
+            let vc = UIHostingController(rootView: CoinbasePortalView())
+            navigationController?.pushViewController(vc, animated: true)
+        }else{
+            let vc = ServiceOverviewViewController.controller()
+            navigationController?.pushViewController(vc, animated: true)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -145,11 +140,7 @@ extension PortalViewController {
     }
 }
 
-extension PortalViewController: ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        return view.window!
-    }
-}
+
 extension PortalViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let snapshot = dataSource.snapshot(for: .main)
