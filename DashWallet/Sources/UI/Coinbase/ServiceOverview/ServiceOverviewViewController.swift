@@ -63,6 +63,7 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     }
     
     func setupTableView() {
+        serviceFeaturesTables.allowsSelection = false
         serviceFeaturesTables.delegate = self
         serviceFeaturesTables.dataSource = self
         serviceFeaturesTables.separatorStyle = UITableViewCell.SeparatorStyle.none
@@ -75,8 +76,8 @@ class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UIT
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if let cell = tableView.dequeueReusableCell(withIdentifier: "serviceOverviewTableCell", for: indexPath) as? ServiceOverviewTableCell {
             let supportedFeature = model.serviceType.self.supportedFeatures[indexPath.row]
-            
-            cell.UpdateCellView(supportedFeature: supportedFeature)
+            cell.selectionStyle = .none
+            cell.updateCellView(supportedFeature: supportedFeature)
             return cell
         }
         else {

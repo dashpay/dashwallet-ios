@@ -13,7 +13,7 @@ class ServiceOverviewTableCell: UITableViewCell {
     @IBOutlet weak var featureTitle: UILabel!
     @IBOutlet weak var featureSubtitle: UILabel!
     
-    func UpdateCellView(supportedFeature: SupportedFeature) {
+    func updateCellView(supportedFeature: SupportedFeature) {
         featureIcon.image = UIImage(named: supportedFeature.imageName)
        
         featureTitle.text = supportedFeature.serviceName
