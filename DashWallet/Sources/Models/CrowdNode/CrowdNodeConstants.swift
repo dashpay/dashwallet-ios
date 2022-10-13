@@ -16,20 +16,20 @@
 //
 
 struct CrowdNodeConstants {
-    private static let CrowdNodeTestNetAddress = "yMY5bqWcknGy5xYBHSsh2xvHZiJsRucjuy"
-    private static let CrowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
+    private static let crowdNodeTestNetAddress = "yMY5bqWcknGy5xYBHSsh2xvHZiJsRucjuy"
+    private static let crowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
     
-    static var CrowdNodeAddress: String {
+    static var crowdNodeAddress: String {
         get {
             if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
-                return CrowdNodeMainNetAddress
+                return crowdNodeMainNetAddress
             } else {
-                return CrowdNodeTestNetAddress
+                return crowdNodeTestNetAddress
             }
         }
     }
     
-    static var MinimumRequiredDash = UInt64(1000000)
-    static var RequiredForSignup = MinimumRequiredDash -  UInt64(100000)
-    static var ApiOffset = UInt64(20000)
+    static var minimumRequiredDash = UInt64(1000000)
+    static var requiredForSignup = minimumRequiredDash -  UInt64(100000)
+    static var apiOffset = UInt64(20000)
 }

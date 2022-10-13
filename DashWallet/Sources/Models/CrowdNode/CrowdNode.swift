@@ -65,15 +65,15 @@ extension CrowdNode {
     private func topUpAccount(_ accountAddress: String) async throws -> DSTransaction {
         let topUpTx = try await sendCoinsService.sendCoins(
             address: accountAddress,
-            amount: CrowdNodeConstants.RequiredForSignup
+            amount: CrowdNodeConstants.requiredForSignup
         )
         return await txObserver.first(filter: SpendableTransaction(txHashData: topUpTx.txHashData))
     }
     
     private func makeSignUpRequest(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let signUpTx = try await sendCoinsService.sendCoins(
-            address: CrowdNodeConstants.CrowdNodeAddress,
-            amount: CrowdNodeConstants.ApiOffset + ApiCode.signUp.rawValue,
+            address: CrowdNodeConstants.crowdNodeAddress,
+            amount: CrowdNodeConstants.apiOffset + ApiCode.signUp.rawValue,
             inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
         )
         
@@ -87,8 +87,8 @@ extension CrowdNode {
     
     private func acceptTerms(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let termsAcceptedTx = try await sendCoinsService.sendCoins(
-            address: CrowdNodeConstants.CrowdNodeAddress,
-            amount: CrowdNodeConstants.ApiOffset + ApiCode.acceptTerms.rawValue,
+            address: CrowdNodeConstants.crowdNodeAddress,
+            amount: CrowdNodeConstants.apiOffset + ApiCode.acceptTerms.rawValue,
             inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
         )
         let welcomeResponse = await txObserver.first(filter: CrowdNodeResponse(

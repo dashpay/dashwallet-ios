@@ -21,7 +21,7 @@ public class CrowdNodeResponse: TransactionFilter {
     
     init(responseCode: ApiCode, accountAddress: String) {
         self.accountAddress = accountAddress
-        self.responseAmount = CrowdNodeConstants.ApiOffset + responseCode.rawValue
+        self.responseAmount = CrowdNodeConstants.apiOffset + responseCode.rawValue
     }
     
     func matches(tx: DSTransaction) -> Bool {
