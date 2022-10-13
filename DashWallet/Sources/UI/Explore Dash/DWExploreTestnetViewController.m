@@ -54,6 +54,14 @@
     [self.navigationController pushViewController:vc animated:YES];
 }
 
+- (void)showStaking {
+    DWExploreTestnetViewController *__weak weakSelf = self;
+
+    NewAccountViewController *vc = [NewAccountViewController controller];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -90,6 +98,9 @@
     };
     contentsView.atmHandler = ^{
         [weakSelf showAtms];
+    };
+    contentsView.stakingHandler = ^{
+        [weakSelf showStaking];
     };
 
     contentsView.translatesAutoresizingMaskIntoConstraints = NO;

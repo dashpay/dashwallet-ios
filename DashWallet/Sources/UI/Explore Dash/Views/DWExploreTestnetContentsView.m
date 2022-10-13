@@ -38,9 +38,9 @@
     if (self) {
         self.backgroundColor = [UIColor dw_darkBlueColor];
 
-        cellIcons = @[ @"image.explore.dash.wheretospend", @"image.explore.dash.atm" ];
-        cellTitles = @[ NSLocalizedString(@"Where to Spend?", nil), NSLocalizedString(@"ATMs", nil) ];
-        cellSubtitles = @[ NSLocalizedString(@"Find merchants who accept Dash as payment.", nil), NSLocalizedString(@"Find where to buy or sell DASH and other cryptocurrencies for cash.", nil) ];
+        cellIcons = @[ @"image.explore.dash.wheretospend", @"image.explore.dash.atm", @"image.explore.dash.atm" ]; 
+        cellTitles = @[ NSLocalizedString(@"Where to Spend?", nil), NSLocalizedString(@"ATMs", nil), NSLocalizedString(@"Staking", nil) ];
+        cellSubtitles = @[ NSLocalizedString(@"Find merchants who accept Dash as payment.", nil), NSLocalizedString(@"Find where to buy or sell DASH and other cryptocurrencies for cash.", nil), NSLocalizedString(@"Easily stake Dash and earn passive income with a few simple clicks.", nil) ];
 
         UIView *contentView = [[UIView alloc] init];
         contentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -77,7 +77,7 @@
             [contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
-            [subContentView.heightAnchor constraintEqualToConstant:180],
+            [subContentView.heightAnchor constraintEqualToConstant:260],
             [subContentView.topAnchor constraintEqualToAnchor:contentView.topAnchor
                                                      constant:15],
             [subContentView.bottomAnchor constraintLessThanOrEqualToAnchor:contentView.bottomAnchor
@@ -117,7 +117,7 @@
 }
 
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 2;
+    return 3;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -126,8 +126,11 @@
     if (indexPath.row == 0) {
         _whereToSpendHandler();
     }
-    else {
+    else if (indexPath.row == 1) {
         _atmHandler();
+    }
+    else {
+        _stakingHandler();
     }
 }
 
