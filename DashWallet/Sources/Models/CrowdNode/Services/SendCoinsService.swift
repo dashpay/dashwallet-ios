@@ -44,12 +44,8 @@ public class SendCoinsService {
         
         await account.sign(transaction, withPrompt: nil)
         account.register(transaction, saveImmediately: false)
-        let error = await transactionManager.publishTransaction(transaction)
-        
-        if (error != nil) {
-            throw error
-        }
-        
+        try await transactionManager.publishTransaction(transaction)
+    
         return transaction
     }
 }
