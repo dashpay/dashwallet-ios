@@ -30,7 +30,10 @@ class CrowdNodeModel {
                 outputMessage = accountAddress
                 
                 do {
-                    let success = await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: NSLocalizedString("Sign up to CrowdNode", comment: ""), usingBiometricAuthentication: false, alertIfLockout: false).0
+                    let success = await DSAuthenticationManager.sharedInstance().authenticate(
+                        withPrompt: NSLocalizedString("Sign up to CrowdNode", comment: ""),
+                        usingBiometricAuthentication: false, alertIfLockout: false
+                    ).0
             
                     if (success) {
                         isLoading = true

@@ -32,5 +32,4 @@ struct CrowdNodeConstants {
     static var MinimumRequiredDash = UInt64(1000000)
     static var RequiredForSignup = MinimumRequiredDash -  UInt64(100000)
     static var ApiOffset = UInt64(20000)
-    static var SignUp = ApiOffset + UInt64(131072)
 }
