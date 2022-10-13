@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWExploreTestnetContentsView : UIView
 @property (nonatomic, copy) void (^whereToSpendHandler)(void);
 @property (nonatomic, copy) void (^atmHandler)(void);
+@property (nonatomic, copy) void (^stakingHandler)(void);
 @end
 
 @interface DWExploreTestnetContentsViewCell : UITableViewCell
