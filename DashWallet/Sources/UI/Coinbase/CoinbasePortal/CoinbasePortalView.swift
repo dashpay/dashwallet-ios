@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct CoinbasePortalView: View {
     
     @StateObject
@@ -45,7 +46,7 @@ struct CoinbasePortalView: View {
                 
                 VStack(alignment: .center, spacing: 0){
                     
-                    NavigationLink(destination: BuyCoinbaseView())
+                    NavigationLink(destination: TransferAmountView())
                     {                        CoinbaseServiceItem(imageName: "buyCoinbase",title: "Buy Dash",subTitle: "Receive directly into Dash Wallet.",showDivider: true)
                     }.buttonStyle(PlainButtonStyle())
                     

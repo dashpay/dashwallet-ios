@@ -7,6 +7,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
 #import "DSReachabilityManager.h"
+
 //MARK: DashWallet
 #import "DWTransactionListDataProviderProtocol.h"
 #import "DWActionButton.h"
@@ -23,6 +24,11 @@
 #import "DWUpholdViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdCardObject.h"
+#import "DWAmountModel.h"
+#import "DWBaseActionButtonViewController.h"
+#import "DWBaseViewController.h"
+
+#import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"
 #import "NSAttributedString+DWBuilder.h"
