@@ -30,7 +30,6 @@ enum NumberKeyboardValue: Equatable {
         case digit7
         case digit8
         case digit9
-        
     }
     
     case digit(Digit)
@@ -98,19 +97,24 @@ class NumberKeyboardButton: UIView {
     }
     
     private func reloadTitle() {
-        //TODO: only for separator
-//#if SNAPSHOT
-//        self.titleLabel.accessibilityIdentifier = @"amount_button_separator";
-//#endif /* SNAPSHOT */
+#if SNAPSHOT
+        if value == .separator {
+            self.titleLabel.accessibilityIdentifier = "amount_button_separator"
+        }
+#endif /* SNAPSHOT */
         
         switch value {
         case .custom( _), .digit(_), .separator, .empty:
             self.titleLabel.text = value.stringValue
         case .delete:
+            
+            let image = UIImage(systemName: "delete.backward")!.withTintColor(Styles.textColor)
+            
             let textAttachment = NSTextAttachment()
-            textAttachment.image = UIImage(systemName: "delete.backward")?.withTintColor(Styles.textColor)
+            textAttachment.image = image
             textAttachment.adjustsImageSizeForAccessibilityContentSizeCategory = true
-            //textAttachment.bounds = CGRectMake(-3.0, -2.0, image.size.width, image.size.height);
+            textAttachment.bounds = CGRect(x: -3.0, y: -2.0, width: image.size.width, height: image.size.height)
+            
             // Workaround to make UIKit correctly set text color of the attribute string:
             // Attributed string that consists only of NSTextAttachment will not change it's color
             // To solve it append any regular string at the begining (and at the end to center the image)
@@ -125,7 +129,9 @@ class NumberKeyboardButton: UIView {
     }
     
     private func updateBackgroundView() {
-        UIView.animate(withDuration: 0.075, delay: 0, options: [.curveEaseOut, .beginFromCurrentState]) { [unowned self] in
+        UIView.animate(withDuration: 0.075,
+                       delay: 0,
+                       options: [.curveEaseOut, .beginFromCurrentState]) { [unowned self] in
             if self.isHighlighted {
                 self.backgroundColor = Styles.backgroundHighlightedColor
                 self.titleLabel.textColor = Styles.textHighlightedColor
