@@ -21,6 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWActionButton ()
+
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
+
+@end
+
 @implementation DWActionButton
 
 @synthesize accentColor = _accentColor;
@@ -78,11 +84,35 @@ NS_ASSUME_NONNULL_BEGIN
     [self resetAppearance];
 }
 
+- (void)showActivityIndicator {
+    [self.titleLabel setAlpha:0.0];
+    [_activityIndicator setHidden:NO];
+    [_activityIndicator startAnimating];
+}
+
+- (void)hideActivityIndicator {
+    [self.titleLabel setAlpha:1.0];
+    [_activityIndicator stopAnimating];
+}
+
 #pragma mark - Private
 
 - (void)setup_ActionButton {
+    self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+    _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+    _activityIndicator.hidesWhenStopped = YES;
+    [self addSubview:_activityIndicator];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [_activityIndicator.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        [_activityIndicator.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    ]];
+
     self.usedOnDarkBackground = NO;
     self.inverted = NO;
+
+    BOOL dark = self.usedOnDarkBackground;
+    BOOL inverted = self.inverted;
 }
 
 - (void)resetAppearance {
@@ -98,6 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL dark = self.usedOnDarkBackground;
     BOOL inverted = self.inverted;
+
+    _activityIndicator.color = [self _textColorForInverted:inverted usedOnDarkBackground:dark];
+    _activityIndicator.hidden = YES;
 
     UIColor *color = [self _backgroundColorForInverted:inverted usedOnDarkBackground:dark];
     [self setBackgroundColor:color forState:UIControlStateNormal];
