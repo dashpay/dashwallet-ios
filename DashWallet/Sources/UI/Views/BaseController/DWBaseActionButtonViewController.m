@@ -244,12 +244,12 @@ CGFloat DWBottomButtonHeight(void) {
     UIActivityIndicatorView *activityIndicatorView = nil;
 
     if ([self.class isActionButtonInNavigationBar]) {
-        activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         activityIndicatorView.color = [UIColor dw_tintColor];
     }
     else {
         activityIndicatorView =
-            [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+            [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
         activityIndicatorView.color = [UIColor dw_iconTintColor];
     }
 

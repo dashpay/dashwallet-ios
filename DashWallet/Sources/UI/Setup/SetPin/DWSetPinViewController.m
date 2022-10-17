@@ -17,10 +17,10 @@
 
 #import "DWSetPinViewController.h"
 
-#import "DWNumberKeyboard.h"
 #import "DWPinView.h"
 #import "DWSetPinModel.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet DWPinView *pinView;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
-@property (strong, nonatomic) IBOutlet DWNumberKeyboard *keyboardView;
+@property (strong, nonatomic) IBOutlet NumberKeyboard *keyboardView;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @end
