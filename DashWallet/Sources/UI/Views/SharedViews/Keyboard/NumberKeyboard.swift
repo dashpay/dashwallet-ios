@@ -48,7 +48,7 @@ extension NumberKeyboard {
     @objc var isEnabled: Bool = true
     
     override var intrinsicContentSize: CGSize {
-        return CGSize(width: NumberKeyboard.noIntrinsicMetric, height: Style.buttonHeight * CGFloat(Style.rowsCount) * Style.padding * CGFloat(Style.rowsCount - 1))
+        return CGSize(width: NumberKeyboard.noIntrinsicMetric, height: Style.buttonHeight * CGFloat(Style.rowsCount) + Style.padding * CGFloat(Style.rowsCount - 1))
     }
     
     private var delegateOptions: NumberKeyboardDelegateOptions = []

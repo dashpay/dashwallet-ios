@@ -35,18 +35,31 @@ extension BaseAmountViewController {
     private func configureHierarchy() {
         self.contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.backgroundColor = .clear
+        contentView.backgroundColor = .dw_secondaryBackground()
         setupContentView(contentView)
+        
+        let keyboardContainer = UIView()
+        keyboardContainer.backgroundColor = .dw_background()
+        keyboardContainer.translatesAutoresizingMaskIntoConstraints = false
+        keyboardContainer.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        keyboardContainer.layer.cornerRadius = 10
+        contentView.addSubview(keyboardContainer)
         
         self.numberKeyboard = NumberKeyboard()
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = false
+        numberKeyboard.backgroundColor = .clear
         contentView.addSubview(numberKeyboard)
         
         NSLayoutConstraint.activate([
-            numberKeyboard.heightAnchor.constraint(equalToConstant: kKeyboardHeight),
-            numberKeyboard.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
-            numberKeyboard.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
-            numberKeyboard.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: kDescKeyboardPadding)
+            //keyboardContainer.heightAnchor.constraint(equalToConstant: kKeyboardHeight + 15),
+            keyboardContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
+            keyboardContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
+            keyboardContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
+            
+            numberKeyboard.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 15),
+            numberKeyboard.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
+            numberKeyboard.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
+            numberKeyboard.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15)
         ])
     }
 }

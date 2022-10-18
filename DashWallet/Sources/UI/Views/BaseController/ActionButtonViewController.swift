@@ -24,13 +24,14 @@ protocol ActionButtonProtocol: AnyObject {
 extension DWActionButton: ActionButtonProtocol {}
 extension UIBarButtonItem: ActionButtonProtocol {}
 
-@objc class ActionButtonViewController: UIViewController {
+@objc class ActionButtonViewController: BaseViewController {
     public weak var actionButton: ActionButtonProtocol?
     
     internal var isKeyboardNotificationsEnabled: Bool = false
     internal var showsActionButton: Bool { return true }
     internal var isActionButtonInNavigationBar: Bool { return false }
-    internal var actionButtonTitle: String? { fatalError("Must be overriden in subclass")
+    internal var actionButtonTitle: String? {
+        fatalError("Must be overriden in subclass")
         return nil
     }
     
@@ -101,25 +102,23 @@ extension ActionButtonViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.alignment = .fill
-        stackView.distribution = .fill
-        stackView.spacing = 16
+        stackView.distribution = .equalSpacing
+        stackView.spacing = 0
         view.addSubview(stackView)
         
         if showsActionButton {
             configureActionButton()
         }
         
-        let marginsGuide = self.view.layoutMarginsGuide;
         let safeAreaGuide = self.view.safeAreaLayoutGuide;
         
         let bottomPadding = deviceSpecificBottomPadding()
-
-        self.contentBottomConstraint = safeAreaGuide.bottomAnchor.constraint(equalTo: stackView.bottomAnchor)
+        self.contentBottomConstraint = safeAreaGuide.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: bottomPadding)
                                         
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: safeAreaGuide.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: marginsGuide.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: marginsGuide.trailingAnchor),
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             self.contentBottomConstraint
         ])
     }
@@ -130,15 +129,30 @@ extension ActionButtonViewController {
             self.navigationItem.rightBarButtonItem = barButton
             self.actionButton = barButton
         }else{
+            let buttonContainer = UIView()
+            buttonContainer.backgroundColor = .dw_background()
+            buttonContainer.translatesAutoresizingMaskIntoConstraints = false
+            self.stackView.addArrangedSubview(buttonContainer)
+            
             self.button = DWActionButton(frame: .zero)
             button.translatesAutoresizingMaskIntoConstraints = false
             button.setTitle(actionButtonTitle, for: .normal)
             button.setTitle(actionButtonDisabledTitle, for: .disabled)
             button.addTarget(self, action: #selector(actionButtonAction(sender:)), for: .touchUpInside)
-            self.stackView.addArrangedSubview(button)
+            buttonContainer.addSubview(self.button)
             self.actionButton = button
             
-            button.heightAnchor.constraint(equalToConstant: 46).isActive = true
+            let marginsGuide = self.view.layoutMarginsGuide;
+           
+            NSLayoutConstraint.activate([
+                button.topAnchor.constraint(equalTo: buttonContainer.topAnchor, constant: 0),
+                button.bottomAnchor.constraint(equalTo: buttonContainer.bottomAnchor, constant: 0),
+                button.leadingAnchor.constraint(equalTo: marginsGuide.leadingAnchor),
+                button.trailingAnchor.constraint(equalTo: marginsGuide.trailingAnchor),
+                button.heightAnchor.constraint(equalToConstant: 46)
+                
+            ])
+            
         }
         
         self.actionButton?.isEnabled = false

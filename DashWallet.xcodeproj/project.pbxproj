@@ -554,6 +554,7 @@
 		47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
 		47C661B228FDC72700028A8D /* TransferAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B128FDC72700028A8D /* TransferAmountViewController.swift */; };
 		47C661B428FDCF7800028A8D /* ActionButtonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */; };
+		47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B528FE75A700028A8D /* BaseViewController.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1685,6 +1686,7 @@
 		47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseAmountViewController.swift; sourceTree = "<group>"; };
 		47C661B128FDC72700028A8D /* TransferAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountViewController.swift; sourceTree = "<group>"; };
 		47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButtonViewController.swift; sourceTree = "<group>"; };
+		47C661B528FE75A700028A8D /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -4001,6 +4003,7 @@
 				2AD1CE6C22DA357D00C99324 /* DWBaseViewController.h */,
 				2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */,
 				47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */,
+				47C661B528FE75A700028A8D /* BaseViewController.swift */,
 			);
 			path = BaseController;
 			sourceTree = "<group>";
@@ -5695,6 +5698,7 @@
 				0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */,
 				2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
+				47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
