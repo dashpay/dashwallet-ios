@@ -59,7 +59,7 @@ protocol NumberKeyboardButtonDelegate: AnyObject {
 extension NumberKeyboardButton {
     struct Styles {
         static var textColor: UIColor { .dw_numberKeyboardText() }
-        static var textHighlightedColor: UIColor { .dw_numberKeyboardText() }
+        static var textHighlightedColor: UIColor { .dw_numberKeyboardHighlightedText() }
         static var backgroundColor: UIColor { .dw_secondaryBackground() }
         static var backgroundHighlightedColor: UIColor { .dw_dashBlue() }
         static var titleFont: UIFont { .dw_font(forTextStyle: .title3) }
@@ -79,6 +79,19 @@ class NumberKeyboardButton: UIView {
         didSet {
             if oldValue != isHighlighted {
                 updateBackgroundView()
+            }
+        }
+    }
+    
+    private var _customBackgroundColor: UIColor?
+    var customBackgroundColor: UIColor? {
+        get {
+            _customBackgroundColor ?? Styles.backgroundColor
+        }
+        set {
+            _customBackgroundColor = newValue
+            if !isHighlighted {
+                backgroundColor = newValue
             }
         }
     }
@@ -136,7 +149,7 @@ class NumberKeyboardButton: UIView {
                 self.backgroundColor = Styles.backgroundHighlightedColor
                 self.titleLabel.textColor = Styles.textHighlightedColor
             }else{
-                self.backgroundColor = Styles.backgroundColor
+                self.backgroundColor = customBackgroundColor
                 self.titleLabel.textColor = Styles.textColor
             }
         }
@@ -144,7 +157,7 @@ class NumberKeyboardButton: UIView {
     
     private func configureHierarchy() {
         self.isExclusiveTouch = true
-        self.backgroundColor = .dw_secondaryBackground()
+        self.backgroundColor = Styles.backgroundColor
         
         self.layer.cornerRadius = 8
         self.layer.masksToBounds = true

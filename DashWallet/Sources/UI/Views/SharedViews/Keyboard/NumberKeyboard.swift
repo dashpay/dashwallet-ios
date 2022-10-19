@@ -47,6 +47,12 @@ extension NumberKeyboard {
     
     @objc var isEnabled: Bool = true
     
+    var customButtonBackgroundColor: UIColor? {
+        didSet {
+            updateButtonAppearances()
+        }
+    }
+    
     override var intrinsicContentSize: CGSize {
         return CGSize(width: NumberKeyboard.noIntrinsicMetric, height: Style.buttonHeight * CGFloat(Style.rowsCount) + Style.padding * CGFloat(Style.rowsCount - 1))
     }
@@ -169,6 +175,7 @@ extension NumberKeyboard {
         //Add digits
         for item in NumberKeyboardValue.Digit.allCases {
             let button = NumberKeyboardButton(value: .digit(item))
+            button.customBackgroundColor = customButtonBackgroundColor
             button.delegate = self
             self.addSubview(button)
             buttons.append(button)
@@ -177,12 +184,14 @@ extension NumberKeyboard {
         
         //Add function button
         self.functionButton = NumberKeyboardButton(value: .separator)
+        functionButton.customBackgroundColor = customButtonBackgroundColor
         functionButton.delegate = self
         addSubview(functionButton)
         buttons.append(functionButton)
         
         //Add clear button
         self.clearButton = NumberKeyboardButton(value: .delete)
+        clearButton.customBackgroundColor = customButtonBackgroundColor
         clearButton.delegate = self
         addSubview(clearButton)
         buttons.append(clearButton)
@@ -302,6 +311,12 @@ extension NumberKeyboard {
         }
         
         isClearButtonLongPressGestureActive = false
+    }
+
+    private func updateButtonAppearances() {
+        for item in allButtons {
+            item.customBackgroundColor = customButtonBackgroundColor
+        }
     }
 }
 //MARK: NumberKeyboardButtonDelegate
