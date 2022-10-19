@@ -52,7 +52,14 @@ class AmountInputControl: UIControl {
         case fiat
     }
     
-    public var style: Style = .oppositeAmount
+    public var style: Style = .oppositeAmount {
+        didSet {
+            updateAppearance()
+            setNeedsLayout()
+            invalidateIntrinsicContentSize()
+        }
+    }
+    
     public var amountType: AmountType = .dash
     
     public weak var delegate: AmountInputControlDelegate?
@@ -88,6 +95,11 @@ class AmountInputControl: UIControl {
     }
     
     func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)?) {
+        guard style == .oppositeAmount else {
+            completion?()
+            return
+        }
+        
         let wasSwapped = type != .fiat
         let bigLabel: UILabel = wasSwapped ? supplementaryAmountLabel : mainAmountLabel
         let smallLabel: UILabel = wasSwapped ? mainAmountLabel : supplementaryAmountLabel
@@ -146,11 +158,31 @@ class AmountInputControl: UIControl {
 
 //MARK: Layout
 extension AmountInputControl {
+    private func updateAppearance() {
+        if style == .basic {
+            mainAmountLabel.alpha = 1
+            supplementaryAmountLabel.isHidden = true
+        }else{
+            supplementaryAmountLabel.isHidden = false
+        }
+    }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
-        supplementaryAmountLabel.frame = CGRect(x: 0, y: mainAmountLabel.bounds.maxY, width: bounds.width, height: kSupplementaryAmountLabelHeight)
+        if style == .basic {
+            mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
+        }else{
+            let isSwapped = amountType == .fiat
+            let bigLabel: UILabel = isSwapped ? supplementaryAmountLabel : mainAmountLabel
+            let smallLabel: UILabel = isSwapped ? mainAmountLabel : supplementaryAmountLabel
+            
+            let bigFrame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
+            let smallFrame = CGRect(x: 0, y: kMainAmountLabelHeight, width: bounds.width, height: kSupplementaryAmountLabelHeight)
+            
+            bigLabel.frame = bigFrame
+            smallLabel.frame = smallFrame
+        }
     }
 }
 
@@ -166,11 +198,9 @@ extension AmountInputControl {
         addSubview(contentView)
         
         self.mainAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
-        mainAmountLabel.text = "10DASH"
         contentView.addSubview(mainAmountLabel)
         
-        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kSupplementaryAmountFontSize))
-        supplementaryAmountLabel.text = "10$"
+        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
         contentView.addSubview(supplementaryAmountLabel)
 
         mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
@@ -182,6 +212,8 @@ extension AmountInputControl {
             contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        
+        updateAppearance()
     }
 }
 
@@ -198,6 +230,7 @@ extension AmountInputControl {
         label.adjustsFontSizeToFitWidth = true
         label.isUserInteractionEnabled = true
         label.textAlignment = .center
+        label.contentMode = .redraw
         label.font = font
         label.clipsToBounds = false
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(switchAmountCurrencyAction))
