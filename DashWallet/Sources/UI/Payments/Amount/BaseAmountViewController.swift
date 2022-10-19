@@ -24,6 +24,7 @@ class BaseAmountViewController: ActionButtonViewController {
     private var contentView: UIView!
     private var amountView: AmountView!
     private var numberKeyboard: NumberKeyboard!
+    private var textField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,6 +45,22 @@ extension BaseAmountViewController {
         amountView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(amountView)
         
+        let textFieldRect = CGRect(x: 0.0, y: -500.0, width: 320, height: 44)
+        self.textField = UITextField(frame: textFieldRect)
+        textField.delegate = self
+        textField.autocorrectionType = .no
+        textField.autocapitalizationType = .none
+        textField.spellCheckingType = .no
+        
+        //TODO: demo mode
+        let inputViewRect = CGRect(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: 1.0)
+        textField.inputView = DWNumberKeyboardInputViewAudioFeedback(frame: inputViewRect)
+
+        let inputAssistantItem = textField.inputAssistantItem
+        inputAssistantItem.leadingBarButtonGroups = []
+        inputAssistantItem.trailingBarButtonGroups = []
+        view.addSubview(textField)
+        
         let keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
         keyboardContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -52,8 +69,10 @@ extension BaseAmountViewController {
         contentView.addSubview(keyboardContainer)
         
         self.numberKeyboard = NumberKeyboard()
+        numberKeyboard.customButtonBackgroundColor = .dw_background()
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = false
         numberKeyboard.backgroundColor = .clear
+        numberKeyboard.textInput = textField
         contentView.addSubview(numberKeyboard)
         
         NSLayoutConstraint.activate([
@@ -86,4 +105,10 @@ extension BaseAmountViewController: AmountViewDataSource {
     }
     
     
+}
+
+extension BaseAmountViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        return false
+    }
 }

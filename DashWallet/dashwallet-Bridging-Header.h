@@ -27,6 +27,7 @@
 #import "DWAmountModel.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWBaseViewController.h"
+#import "DWNumberKeyboardInputViewAudioFeedback.h"
 
 #import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"

@@ -169,6 +169,8 @@ class AmountInputControl: UIControl {
 extension AmountInputControl {
     private func updateAppearance() {
         if style == .basic {
+            mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
+            mainAmountLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
             mainAmountLabel.alpha = 1
             supplementaryAmountLabel.isHidden = true
         }else{

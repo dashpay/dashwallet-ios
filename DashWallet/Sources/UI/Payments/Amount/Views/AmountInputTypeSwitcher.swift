@@ -105,6 +105,12 @@ private class ItemButton: UIButton {
         }
     }
     
+    override var isHighlighted: Bool {
+        didSet {
+            backgroundColor = isHighlighted ? UIColor(red: 0.098, green: 0.11, blue: 0.122, alpha: 0.05) : backgroundColor
+        }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -129,7 +135,7 @@ private class ItemButton: UIButton {
         let color: UIColor = .label
         setTitleColor(color.withAlphaComponent(0.8), for: .normal)
         setTitleColor(color, for: .selected)
-        setTitleColor(.white, for: .highlighted)
+        setTitleColor(color, for: .highlighted)
         setTitleColor(color.withAlphaComponent(0.4), for: .disabled)
     }
 }
