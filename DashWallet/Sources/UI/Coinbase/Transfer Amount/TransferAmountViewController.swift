@@ -28,14 +28,19 @@ struct TransferAmountView: UIViewControllerRepresentable {
 }
 
 class TransferAmountViewController: BaseAmountViewController {
-    
     override var actionButtonTitle: String? {
         return NSLocalizedString("Transfer", comment: "Coinbase")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        self.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
+        self.navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
     }
 }
