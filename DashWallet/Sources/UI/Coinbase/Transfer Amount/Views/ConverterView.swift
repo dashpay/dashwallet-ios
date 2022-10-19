@@ -135,7 +135,7 @@ extension ConverterView {
         
         let hairlineView = HairlineView()
         hairlineView.translatesAutoresizingMaskIntoConstraints = false
-        hairlineView.alpha = 0.5
+        hairlineView.alpha = 0.2
         rightContainer.addSubview(hairlineView)
         
         let bottomStackView = UIStackView()
