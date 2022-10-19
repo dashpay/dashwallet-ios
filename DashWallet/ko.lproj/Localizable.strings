@@ -455,6 +455,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "잠재적 입력되지 않은 단어가 발견되었습니다:\n%@";
 
+/* Coinbase: transfer dash to/from */
+"FROM" = "FROM";
+
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
 
@@ -1156,6 +1159,9 @@
 
 /* No comment provided by engineer. */
 "This will move all coins from that wallet to your wallet on this device." = "이로써 해당 기기의 지갑 내 모든 코인을 이 기기 내 당신의 지갑으로 옮기게 됩니다.";
+
+/* Coinbase: transfer dash to/from */
+"TO" = "TO";
 
 /* No comment provided by engineer. */
 "Tools" = "도구";

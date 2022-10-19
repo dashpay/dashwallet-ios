@@ -21,8 +21,9 @@ private let kKeyboardHeight: CGFloat = 215.0
 private let kDescKeyboardPadding: CGFloat = 8.0
 
 class BaseAmountViewController: ActionButtonViewController {
-    private var contentView: UIView!
-    private var amountView: AmountView!
+    internal var contentView: UIView!
+    internal var amountView: AmountView!
+    
     private var numberKeyboard: NumberKeyboard!
     private var textField: UITextField!
     
@@ -34,7 +35,7 @@ class BaseAmountViewController: ActionButtonViewController {
 }
 
 extension BaseAmountViewController {
-    private func configureHierarchy() {
+    @objc internal func configureHierarchy() {
         self.contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
@@ -96,12 +97,12 @@ extension BaseAmountViewController {
 
 extension BaseAmountViewController: AmountViewDataSource {
     var dashAttributedString: NSAttributedString {
-        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254343223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
+        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
         
     }
     
     var localCurrencyAttributedString: NSAttributedString {
-        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254343223)))!)
+        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254223)))!)
     }
     
     

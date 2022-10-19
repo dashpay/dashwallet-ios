@@ -28,19 +28,34 @@ struct TransferAmountView: UIViewControllerRepresentable {
 }
 
 class TransferAmountViewController: BaseAmountViewController {
+    private var converterView: ConverterView!
+    
     override var actionButtonTitle: String? {
         return NSLocalizedString("Transfer", comment: "Coinbase")
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func configureHierarchy() {
+        super.configureHierarchy()
         
-        self.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
+        self.converterView = .init(frame: .zero)
+        converterView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(converterView)
+        
+        NSLayoutConstraint.activate([
+            converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
+            converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            converterView.heightAnchor.constraint(equalToConstant: 128)
+        ])
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
+        view.backgroundColor = UIColor.dw_secondaryBackground()
+        
+        navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
+        navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.largeTitleDisplayMode = .never
     }
 }

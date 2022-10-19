@@ -25,7 +25,7 @@ extension ServiceItem {
         
         if let balance = dashBalance, let fiat = fiatBalance {
             let dashStr = "\(balance) DASH"
-            let fiatStr = " = \(fiat)"
+            let fiatStr = " ≈ \(fiat)"
             let fullStr = "\(dashStr)\(fiatStr)"
             let string = NSMutableAttributedString(string: fullStr)
             string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel], range: NSMakeRange(dashStr.count, fiatStr.count))

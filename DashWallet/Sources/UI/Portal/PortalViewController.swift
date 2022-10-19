@@ -45,7 +45,7 @@ import AuthenticationServices
     
     @objc func coinbaseAction() {
         if Coinbase.shared.isAuthorized {
-            let vc = UIHostingController(rootView: CoinbasePortalView())
+            let vc = TransferAmountViewController()
             navigationController?.pushViewController(vc, animated: true)
         }else{
             let vc = ServiceOverviewViewController.controller()
@@ -55,10 +55,6 @@ import AuthenticationServices
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .always
-        
         model.refreshData()
     }
     
@@ -79,6 +75,8 @@ import AuthenticationServices
         configureHierarchy()
         configureDataSource()
         
+        navigationItem.largeTitleDisplayMode = .always
+        navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.navigationBar.topItem?.backButtonDisplayMode = .minimal
     }
     
