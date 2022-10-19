@@ -79,6 +79,13 @@ class AmountInputControl: UIControl {
     
     private var currencySelectorButton: UIButton!
     
+    init(style: Style) {
+        super.init(frame: .zero)
+        
+        self.style = style
+        configureHierarchy()
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -150,6 +157,8 @@ class AmountInputControl: UIControl {
     
     
     @objc func switchAmountCurrencyAction() {
+        guard style == .oppositeAmount else { return }
+        
         let nextType = amountType.toggle()
         setActiveType(nextType, animated: true, completion: nil)
         amountType = nextType
@@ -218,7 +227,6 @@ extension AmountInputControl {
 }
 
 //MARK: Utils
-
 extension AmountInputControl {
     var contentHeight: CGFloat {
         style == .basic ? 40 : 60

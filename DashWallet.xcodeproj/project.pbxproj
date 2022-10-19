@@ -503,6 +503,7 @@
 		4774DCE528F4668B008CF87D /* PortalServiceItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCE428F4668B008CF87D /* PortalServiceItemCell.swift */; };
 		47838B7228FEFE860003E8AB /* NSString+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7128FEFE860003E8AB /* NSString+DashWallet.m */; };
 		47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7428FFD1D10003E8AB /* AmountView.swift */; };
+		47838B7728FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */; };
 		478A2C7128DC554200AD1420 /* PortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C7028DC554200AD1420 /* PortalModel.swift */; };
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
@@ -1636,6 +1637,7 @@
 		47838B7128FEFE860003E8AB /* NSString+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+DashWallet.m"; sourceTree = "<group>"; };
 		47838B7328FEFE9B0003E8AB /* NSString+DashWallet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+DashWallet.h"; sourceTree = "<group>"; };
 		47838B7428FFD1D10003E8AB /* AmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountView.swift; sourceTree = "<group>"; };
+		47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputTypeSwitcher.swift; sourceTree = "<group>"; };
 		478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
@@ -3905,6 +3907,7 @@
 				2A919F9D24A65CE00018C9A3 /* DWDPAmountContactView.h */,
 				2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */,
 				47838B7428FFD1D10003E8AB /* AmountView.swift */,
+				47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5637,6 +5640,7 @@
 				2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */,
 				2ACCD85D231939FE00A96B62 /* DWRequestAmountContentView.m in Sources */,
 				2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */,
+				47838B7728FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,

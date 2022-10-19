@@ -30,7 +30,7 @@ class AmountView: UIView {
     
     private var maxButton: UIButton!
     private var inputControl: AmountInputControl!
-    private var inputAmountTypeSwitcher: UIView!
+    private var inputTypeSwitcher: AmountInputTypeSwitcher!
         
     override var intrinsicContentSize: CGSize {
         .init(width: AmountView.noIntrinsicMetric, height: 60)
@@ -58,11 +58,16 @@ extension AmountView {
         maxButton.addTarget(self, action: #selector(maxButtonAction), for: .touchUpInside)
         addSubview(maxButton)
         
-        self.inputControl = AmountInputControl(frame: .zero)
+        self.inputControl = AmountInputControl(style: .basic)
         inputControl.dataSource = dataSource
         inputControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(inputControl)
     
+        self.inputTypeSwitcher = .init(frame: .zero)
+        inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
+        inputTypeSwitcher.items = [.init(currencySymbol: "US$", currencyCode: "USD"), .init(currencySymbol: "DASH", currencyCode: "DASH")]
+        addSubview(inputTypeSwitcher)
+        
         NSLayoutConstraint.activate([
             maxButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             maxButton.widthAnchor.constraint(equalToConstant: 38),
@@ -71,8 +76,11 @@ extension AmountView {
             
             inputControl.centerXAnchor.constraint(equalTo: centerXAnchor),
             inputControl.centerYAnchor.constraint(equalTo: centerYAnchor),
-            inputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 55),
-            inputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -55),
+            inputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 60),
+            inputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -60),
+            
+            inputTypeSwitcher.centerYAnchor.constraint(equalTo: centerYAnchor),
+            inputTypeSwitcher.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
     }
 }

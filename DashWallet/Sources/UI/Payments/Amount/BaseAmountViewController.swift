@@ -77,12 +77,12 @@ extension BaseAmountViewController {
 
 extension BaseAmountViewController: AmountViewDataSource {
     var dashAttributedString: NSAttributedString {
-        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254343232332232342), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
+        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254343223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
         
     }
     
     var localCurrencyAttributedString: NSAttributedString {
-        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254343232332233)))!)
+        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254343223)))!)
     }
     
     
