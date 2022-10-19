@@ -160,7 +160,8 @@ extension NumberKeyboard {
     }
     
     private func configureHierarchy() {
-        self.isEnabled = true
+        isExclusiveTouch = true
+        isEnabled = true
         
         var buttons = Array<NumberKeyboardButton>()
         buttons.reserveCapacity(12) //We have only 12 buttons to show
@@ -183,7 +184,7 @@ extension NumberKeyboard {
         //Add clear button
         self.clearButton = NumberKeyboardButton(value: .delete)
         clearButton.delegate = self
-        self.addSubview(clearButton)
+        addSubview(clearButton)
         buttons.append(clearButton)
         
         self.allButtons = buttons
@@ -311,19 +312,20 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
         UIDevice.current.playInputClick()
         
         button.isHighlighted = true
+        
     }
     
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchMoved touch: UITouch) {
         guard isEnabled else { return }
         
         func isHighlighted(view: UIView, touch: UITouch) -> Bool {
-            var bounds = view.bounds
-            var point = touch.location(in: view)
+            let bounds = view.bounds
+            let point = touch.location(in: view)
             return CGRectContainsPoint(bounds, point)
         }
         
         //Try current button first
-        var isCurrentHighlighted = isHighlighted(view: button, touch: touch)
+        let isCurrentHighlighted = isHighlighted(view: button, touch: touch)
 
         if isCurrentHighlighted {
             button.isHighlighted = isCurrentHighlighted
@@ -340,6 +342,8 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
                 isClearButtonLongPressGestureActive = false
             }
         }
+        
+        
     }
     
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchEnded touch: UITouch) {

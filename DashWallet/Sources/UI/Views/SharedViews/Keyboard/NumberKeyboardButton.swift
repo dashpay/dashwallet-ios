@@ -120,7 +120,7 @@ class NumberKeyboardButton: UIView {
             // To solve it append any regular string at the begining (and at the end to center the image)
             let attributedText = NSMutableAttributedString()
             attributedText.beginEditing()
-            attributedText.append(NSAttributedString(string: " "))
+            attributedText.append(NSAttributedString(string: ""))
             attributedText.append(NSAttributedString(attachment: textAttachment))
             attributedText.append(NSAttributedString(string: " "))
             
