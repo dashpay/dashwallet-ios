@@ -588,12 +588,12 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.2.3)
+  - DashSharedCore (0.2.4)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.2.3)
+    - DashSharedCore (= 0.2.4)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
@@ -744,8 +744,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: bb5d6f24200f908cfbbd351d203db3e7eb4ca722
-  DashSync: 389f51c22914b9eb0c5b702035bc7b7c1e6dbae5
+  DashSharedCore: f3f63e99db8d44477cd7a7d592570173ffa44810
+  DashSync: ff544682cdc4e3c3c7f3e84c9111bd8442477697
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
