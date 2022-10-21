@@ -34,14 +34,26 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 hour";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 min";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 hours";
 
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 min";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" nuk është një fjalë e frazës rikthyese";
@@ -96,6 +108,9 @@
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
+
+/* Explore Dash: Filters */
+"Allowed" = "Allowed";
 
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
@@ -293,8 +308,14 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Current user: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -319,6 +340,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Do not take a screenshot";
@@ -410,6 +434,9 @@
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
 
+/* Explore Dash */
+"Filters" = "Filters";
+
 /* No comment provided by engineer. */
 "Find a merchant." = "Find a merchant.";
 
@@ -442,6 +469,9 @@
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
+
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Go to Website";
@@ -643,6 +673,12 @@
 
 /* No comment provided by engineer. */
 "Name" = "Name";
+
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
 
 /* Nearby */
 "Nearby" = "Nearby";
@@ -856,6 +892,9 @@
 
 /* No comment provided by engineer. */
 "Reset" = "Reseto";
+
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";

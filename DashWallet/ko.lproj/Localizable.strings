@@ -34,14 +34,26 @@
 /* No comment provided by engineer. */
 "1 hour" = "1시간";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1분";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24시간";
 
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5분";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"는 복원 문구에 쓰이는 단어가 아닙니다.";
@@ -96,6 +108,9 @@
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "설정에서 터치 ID 접근을 허용";
+
+/* Explore Dash: Filters */
+"Allowed" = "Allowed";
 
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
@@ -293,8 +308,14 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "현재 사용자: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
@@ -319,6 +340,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "스크린샷을 찍지 마세요";
@@ -410,6 +434,9 @@
 /* No comment provided by engineer. */
 "Filter Transactions" = "거래 필터링 하기";
 
+/* Explore Dash */
+"Filters" = "Filters";
+
 /* No comment provided by engineer. */
 "Find a merchant." = "Find a merchant.";
 
@@ -442,6 +469,9 @@
 
 /* No comment provided by engineer. */
 "Get Started" = "시작하기";
+
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
 "Go to Website" = "웹사이트로 가기";
@@ -643,6 +673,12 @@
 
 /* No comment provided by engineer. */
 "Name" = "이름";
+
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
 
 /* Nearby */
 "Nearby" = "Nearby";
@@ -856,6 +892,9 @@
 
 /* No comment provided by engineer. */
 "Reset" = "리셋";
+
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "기본값으로 리셋하기";

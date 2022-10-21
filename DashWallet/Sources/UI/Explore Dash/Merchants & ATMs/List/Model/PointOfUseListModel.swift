@@ -94,7 +94,7 @@ struct PointOfUseListSegment: Hashable {
     var dataProvider: PointOfUseDataProvider
 }
 
-class PointOfUseListModel {
+final class PointOfUseListModel {
     internal var lastQuery: String?
     internal var isFetching: Bool = false
     
@@ -193,8 +193,4 @@ extension PointOfUseListModel {
             }
         }
     }
-}
-
-extension PointOfUseListModel {
-    
 }

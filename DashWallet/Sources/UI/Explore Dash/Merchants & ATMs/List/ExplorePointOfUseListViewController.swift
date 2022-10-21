@@ -299,6 +299,12 @@ extension ExplorePointOfUseListViewController {
 
 //MARK: Actions
 extension ExplorePointOfUseListViewController {
+    private func showFilters() {
+        let vc = PointOfUseListFiltersViewController.controller()
+        let nvc = UINavigationController(rootViewController: vc)
+        present(nvc, animated: true)
+    }
+    
     @objc private func showMapAction() {
         showMap()
     }
@@ -410,6 +416,9 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             cell = searchCell
         case .filters:
             let filterCell: PointOfUseListFiltersCell = self.filterCell ?? tableView.dequeueReusableCell(withIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier, for: indexPath) as! PointOfUseListFiltersCell
+            filterCell.filterAction = { [weak self] in
+                self?.showFilters()
+            }
             self.filterCell = filterCell
             refreshFilterCell()
             cell = filterCell
