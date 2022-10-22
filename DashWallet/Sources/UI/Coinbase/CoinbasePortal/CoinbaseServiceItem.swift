@@ -27,6 +27,7 @@ struct CoinbaseServiceItem: View {
                 if let subTitle = subTitle {
                     titleView
                     Text(subTitle).font(Font.custom("MontserratRegular", size: 12)) .padding(.bottom, 11)
+                    
                    
                 }else{
                     titleView .padding(.bottom, 11)

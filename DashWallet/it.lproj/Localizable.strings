@@ -455,6 +455,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Trovare potenziali parole mancanti:\n%@";
 
+/* Coinbase: transfer dash to/from */
+"FROM" = "FROM";
+
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
 
@@ -1156,6 +1159,9 @@
 
 /* No comment provided by engineer. */
 "This will move all coins from that wallet to your wallet on this device." = "Questa operazione sposterà tutte le monete da quel portafoglio al portafoglio su questo dispositivo.";
+
+/* Coinbase: transfer dash to/from */
+"TO" = "TO";
 
 /* No comment provided by engineer. */
 "Tools" = "Strumenti";

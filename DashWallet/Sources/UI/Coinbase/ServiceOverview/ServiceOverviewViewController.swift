@@ -100,7 +100,7 @@ extension ServiceOverviewViewController: ASWebAuthenticationPresentationContextP
 
 extension ServiceOverviewViewController: ServiceOverviewScreenModelDelegate {
     func didSignIn() {
-        let vc = UIHostingController(rootView: CoinbasePortalView())
+        let vc = TransferAmountViewController() //UIHostingController(rootView: CoinbasePortalView())
         navigationController?.pushViewController(vc, animated: true)
     }
     

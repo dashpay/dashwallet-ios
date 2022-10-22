@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct CoinbasePortalView: View {
     
     @StateObject
@@ -45,7 +46,7 @@ struct CoinbasePortalView: View {
                 
                 VStack(alignment: .center, spacing: 0){
                     
-                    NavigationLink(destination: BuyCoinbaseView())
+                    NavigationLink(destination: TransferAmountView())
                     {                        CoinbaseServiceItem(imageName: "buyCoinbase",title: "Buy Dash",subTitle: "Receive directly into Dash Wallet.",showDivider: true)
                     }.buttonStyle(PlainButtonStyle())
                     
@@ -78,27 +79,7 @@ struct CoinbasePortalView: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 CoinabaseConnectionStatusToolbar(isConnected: viewModel.isConnected)
-                
-//                HStack(alignment: .center ){
-//                    Image( "Coinbase")
-//
-//                    VStack(spacing: 0 ) {
-//                        Text(LocalizedStringKey("Coinbase")).font(Font.custom("MontserratSemiBold", size: 16))
-//
-//                        HStack(spacing:4) {
-//                            if(viewModel.isConnected){
-//                                Image("Connected")
-//                                Text( "Connected").font(Font.custom("MontserratRegular", size: 10))
-//                            }else{
-//                                Image("Disconnected")
-//                                Text("Disconnected").font(Font.custom("MontserratRegular", size: 10))
-//                            }
-//
-//                        }.background( Color.clear)
-//
-//                    }}.frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
             }
-            
         }
 
         .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity,alignment: .topLeading)

@@ -17,19 +17,19 @@
 
 #import "DWPinView.h"
 
-#import "DWNumberKeyboard.h"
 #import "DWPinField.h"
 #import "DWPinInputStepView.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
 static CGFloat const ANIMATION_SPRING_DAMPING = 1.0;
 static CGFloat const ANIMATION_INITIAL_VELOCITY = 0.0;
 static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCurveEaseOut;
 
-@interface DWPinView () <DSPinFieldDelegate, DWNumberKeyboardDelegate>
+@interface DWPinView () <DSPinFieldDelegate, NumberKeyboardDelegate>
 
-@property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
+@property (nullable, nonatomic, weak) NumberKeyboard *keyboard;
 
 @property (nonatomic, strong) DWPinInputStepView *setPinView;
 @property (nonatomic, strong) DWPinInputStepView *confirmPinView;
@@ -93,7 +93,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     ]];
 }
 
-- (void)configureWithKeyboard:(DWNumberKeyboard *)keyboard {
+- (void)configureWithKeyboard:(NumberKeyboard *)keyboard {
     NSParameterAssert(keyboard);
     NSAssert(self.confirmPinView.hidden, @"Keyboard should not be re-set in the middle of input");
 
@@ -128,9 +128,9 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     }
 }
 
-#pragma mark - DWNumberKeyboardDelegate
+#pragma mark - NumberKeyboardDelegate
 
-- (void)numberKeyboardCustomFunctionButtonTap:(DWNumberKeyboard *)numberKeyboard {
+- (void)numberKeyboardCustomButtonDidTap:(NumberKeyboard *)numberKeyboard {
     if (self.confirmPinView.hidden) {
         [self.delegate pinViewCancelButtonTap:self];
     }

@@ -22,9 +22,9 @@
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
-#import "DWNumberKeyboard.h"
 #import "DWQuickReceiveViewController.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -78,7 +78,7 @@ static CGFloat ActionButtonsHeight(void) {
 @property (strong, nonatomic) IBOutlet DWLockActionButton *quickReceiveButton;
 @property (strong, nonatomic) IBOutlet DWLockActionButton *loginButton;
 @property (strong, nonatomic) IBOutlet DWLockActionButton *scanToPayButton;
-@property (strong, nonatomic) IBOutlet DWNumberKeyboard *keyboarView;
+@property (strong, nonatomic) IBOutlet NumberKeyboard *keyboarView;
 
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *dashLogoTopConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *keyboardSpacingViewHeightConstraint;
@@ -210,7 +210,7 @@ static CGFloat ActionButtonsHeight(void) {
                    authenticated:(BOOL)authenticated
                    shouldLockout:(BOOL)shouldLockout
                  attemptsMessage:(nullable NSString *)attemptsMessage {
-    self.keyboarView.enabled = shouldContinueAuthentication;
+    self.keyboarView.isEnabled = shouldContinueAuthentication;
     self.scanToPayButton.enabled = shouldContinueAuthentication;
 
     [self hideLoginButtonIfNeeded];

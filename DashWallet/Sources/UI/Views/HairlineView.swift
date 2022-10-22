@@ -20,6 +20,8 @@ import UIKit
 class HairlineView: UIView {
     @IBInspectable var separatorColor: UIColor = .separator
     
+    override var intrinsicContentSize: CGSize { .init(width: HairlineView.noIntrinsicMetric, height: 1/UIScreen.main.scale) }
+    
     func drawHairline(in context: CGContext, scale: CGFloat, color: CGColor, rect: CGRect) {
         
         let center: CGFloat
@@ -44,7 +46,7 @@ class HairlineView: UIView {
     
     override func draw(_ rect: CGRect) {
         let context = UIGraphicsGetCurrentContext()
-        drawHairline(in: context!, scale: UIScreen.main.scale, color: UIColor.separator.cgColor, rect: rect)
+        drawHairline(in: context!, scale: UIScreen.main.scale, color: UIColor.separator.withAlphaComponent(0.5).cgColor, rect: rect)
     }
     
     override func awakeFromNib() {
