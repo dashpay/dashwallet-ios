@@ -16,28 +16,24 @@ extension Resolver: ResolverRegistering {
         registerRepository()
         registerDomain()
     }
-    
+
     private static func registerSingletons() {
         register { RestClientImpl() as RestClient }.scope(.application)
-       // register { CoreDataManager() }.scope(.application)
     }
-    
+
     private static func registerRemote() {
         register { CoinbaseServiceImpl() as CoinbaseService }
     }
-    
+
     private static func registerRepository() {
         register { CoinbaseRepository() }
     }
-    
+
     private static func registerDomain() {
         register { GetUserCoinbaseAccounts() }
         register { GetUserCoinbaseToken() }
-//        register { GetCharacterDetail() }
-//        register { GetFavorites() }
-//        register { UpdateFavorite() }
-//        register { DeleteFavorite() }
+        register { CreateCoinbaseDashAddress() }
+        register { GetDashExchangeRate() }
+        register { SendDashFromCoinbaseToDashWallet() }
     }
-    
 }
-

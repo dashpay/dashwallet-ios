@@ -8,6 +8,7 @@
 import Foundation
 
 // MARK: - Datum
+
 struct CoinbaseAccountAddress: Codable {
     let id, address: String?
     let addressInfo: AddressInfo?
