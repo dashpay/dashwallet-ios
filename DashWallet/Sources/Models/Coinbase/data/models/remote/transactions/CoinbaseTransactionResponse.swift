@@ -16,7 +16,7 @@ struct CoinbaseTransaction: Codable {
     let id, type, status: String?
     let amount, nativeAmount: Amount?
     let dataDescription: String?
-    let createdAt, updatedAt: Date?
+    let createdAt, updatedAt: String?
     let resource, resourcePath: String?
     let instantExchange: Bool?
     let network: Network?
