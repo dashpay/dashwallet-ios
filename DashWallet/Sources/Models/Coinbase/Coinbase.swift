@@ -145,7 +145,7 @@ extension Coinbase {
         if let coinbaseUserAccountId = NetworkRequest.coinbaseUserAccountId {
             return sendDashFromCoinbaseToDashWallet.invoke(accountId: coinbaseUserAccountId,
                                                            api2FATokenVersion: api2FATokenVersion,
-                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsTypes.send,
+                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsTypes.send.rawValue,
                                                                                                 to: dashWalletAddress,
                                                                                                 amount: coinAmountInDash,
                                                                                                 currency: DASH_CURRENCY,
