@@ -28,7 +28,7 @@ enum APIEndpoint: Endpoint {
         case .swapTrade: return "v2/trades"
         case .swapTradeCommit(let tradeId): return "v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "v2/accounts/\(accountId)/addresses"
-        case .createAccountAddress(let accountId): return "v2/accounts/\(accountId)/addresses"
+        case .createCoinbaseAccountAddress(let accountId): return "v2/accounts/\(accountId)/addresses"
         case .getToken : return "oauth/token"
         case .revokeToken: return "oauth/revoke"
         case .signIn: return "/oauth/authorize"
@@ -46,7 +46,7 @@ enum APIEndpoint: Endpoint {
     case swapTrade
     case swapTradeCommit(String)
     case accountAddress(String)
-    case createAccountAddress(String)
+    case createCoinbaseAccountAddress(String)
     case getToken
     case revokeToken
     case signIn

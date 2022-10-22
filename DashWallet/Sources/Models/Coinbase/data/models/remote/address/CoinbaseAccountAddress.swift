@@ -12,7 +12,6 @@ struct CoinbaseAccountAddress: Codable {
     let id, address: String?
     let addressInfo: AddressInfo?
     let name: String?
-    let createdAt, updatedAt: Date?
     let network, uriScheme, resource, resourcePath: String?
     let qrCodeImageURL: String?
     let addressLabel, depositURI: String?
@@ -21,8 +20,6 @@ struct CoinbaseAccountAddress: Codable {
         case id, address
         case addressInfo = "address_info"
         case name
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
         case network
         case uriScheme = "uri_scheme"
         case resource
