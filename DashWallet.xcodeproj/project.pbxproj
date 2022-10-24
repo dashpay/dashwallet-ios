@@ -1915,7 +1915,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0F0E651728CA1FE30075B252 /* CoinbasePortal */ = {
+		0F0E651728CA1FE30075B252 /* CoinbaseEntryPoint */ = {
 			isa = PBXGroup;
 			children = (
 				0F0E651E28CA20A20075B252 /* CoinbaseAccountViewmodel.swift */,
@@ -1923,7 +1923,7 @@
 				0F0E651828CA1FF40075B252 /* CoinbasePortalView.swift */,
 				47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */,
 			);
-			path = CoinbasePortal;
+			path = CoinbaseEntryPoint;
 			sourceTree = "<group>";
 		};
 		0F0E652028CA20BD0075B252 /* BuyDashCoinbase */ = {
@@ -2065,7 +2065,7 @@
 				0F0E652328CF69550075B252 /* Views */,
 				0F0E652028CA20BD0075B252 /* BuyDashCoinbase */,
 				0F0E651A28CA20260075B252 /* fontStyle.swift */,
-				0F0E651728CA1FE30075B252 /* CoinbasePortal */,
+				0F0E651728CA1FE30075B252 /* CoinbaseEntryPoint */,
 				4751137028D9DEB800223B77 /* Coinbase.storyboard */,
 			);
 			path = Coinbase;
