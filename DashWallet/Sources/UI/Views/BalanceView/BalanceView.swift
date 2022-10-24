@@ -54,7 +54,7 @@ private extension BalanceView {
     private func reloadView() {
         let balanceColor = UIColor.label
         let font = UIFont.dw_font(forTextStyle: .title1)
-        let balanceString = NSAttributedString.dw_dashAttributedString(forAmount: balance, tintColor: balanceColor, font: font)
+        let balanceString = NSAttributedString.dw_dashAttributedString(forAmount: balance, tintColor: balanceColor, dashSymbolColor: dashSymbolColor ?? balanceColor, font: font)
         dashBalanceLabel.attributedText = balanceString
     
         self.fiatBalanceLabel.text = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance))

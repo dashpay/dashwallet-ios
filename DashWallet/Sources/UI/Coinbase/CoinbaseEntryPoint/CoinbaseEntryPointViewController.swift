@@ -17,57 +17,6 @@
 
 import UIKit
 
-private enum CoinbaseEntryPointItem: CaseIterable {
-    case buyDash
-    case sellDash
-    case convertCrypto
-    case transferDash
-}
-
-extension CoinbaseEntryPointItem {
-    var title: String
-    {
-        switch self {
-            
-        case .buyDash:
-            return NSLocalizedString("Buy Dash", comment: "Coinbase Entry Point")
-        case .sellDash:
-            return NSLocalizedString("Sell Dash", comment: "Coinbase Entry Point")
-        case .convertCrypto:
-            return NSLocalizedString("Convert Crypto", comment: "Coinbase Entry Point")
-        case .transferDash:
-            return NSLocalizedString("Transfer Dash", comment: "Coinbase Entry Point")
-        }
-    }
-    
-    var description: String {
-        switch self {
-            
-        case .buyDash:
-            return NSLocalizedString("Receive directly into Dash Wallet", comment: "Coinbase Entry Point")
-        case .sellDash:
-            return NSLocalizedString("Receive directly into Coinbase", comment: "Coinbase Entry Point")
-        case .convertCrypto:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
-        case .transferDash:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
-        }
-    }
-    
-    var icon: String {
-        switch self {
-            
-        case .buyDash:
-            return "buyCoinbase"
-        case .sellDash:
-            return "sellDash"
-        case .convertCrypto:
-            return "convertCrypto"
-        case .transferDash:
-            return "transferCoinbase"
-        }
-    }
-}
 
 final class CoinbaseEntryPointViewController: BaseViewController {
     @IBOutlet var connectionStatusView: UIView!
@@ -79,7 +28,7 @@ final class CoinbaseEntryPointViewController: BaseViewController {
     @IBOutlet var networkUnavailableView: UIView!
     @IBOutlet var mainContentView: UIView!
     
-    private let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.allCases
+    private let model = CoinbaseEntryPointModel()
     
     @IBAction func signOutAction() {
         
@@ -108,7 +57,9 @@ extension CoinbaseEntryPointViewController {
         connectionStatusView.layer.cornerRadius = 2
         
         balanceTitleLabel.text = NSLocalizedString("Dash balance on Coinbase", comment: "Coinbase Entry Point")
-    
+
+        balanceView.dashSymbolColor = .dw_dashBlue()
+        
         tableView.isScrollEnabled = false
         tableView.layer.cornerRadius = 10
         tableView.clipsToBounds = true
@@ -123,13 +74,13 @@ extension CoinbaseEntryPointViewController {
 
 extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count
+        return model.items.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
-        cell.update(with: items[indexPath.item])
-        cell.separatorInset = .init(top: 0, left: indexPath.item == (items.count - 1) ? 2000 : 63, bottom: 0, right: 0)
+        cell.update(with: model.items[indexPath.item])
+        cell.separatorInset = .init(top: 0, left: indexPath.item == (model.items.count - 1) ? 2000 : 63, bottom: 0, right: 0)
         
         return cell
     }
