@@ -9,7 +9,10 @@ import Foundation
 
 // MARK: - Pagination
 struct Pagination: Codable {
-    let endingBefore, startingAfter, previousEndingBefore, nextStartingAfter: String?
+    let endingBefore: String?
+    let previousEndingBefore: String?
+    let nextStartingAfter: String?
+    let startingAfter: String?
     let limit: Int?
     let order, previousURI, nextURI: String?
 

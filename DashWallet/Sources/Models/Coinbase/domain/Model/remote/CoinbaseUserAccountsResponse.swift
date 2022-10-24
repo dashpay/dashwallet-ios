@@ -14,7 +14,7 @@ struct CoinbaseUserAccountsResponse: Codable {
 }
 
 // MARK: - CoinbaseUserAccountData
-struct CoinbaseUserAccountData: Codable,Identifiable {
+struct CoinbaseUserAccountData: Codable, Identifiable {
     let id, name: String
     let primary: Bool
     let type: DatumType

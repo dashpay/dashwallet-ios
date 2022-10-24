@@ -6,7 +6,9 @@
 //
 
 import Foundation
+
 // MARK: - Amount
 struct Amount: Codable {
-    let amount, currency: String?
+    let amount: String?
+    let currency: String?
 }
