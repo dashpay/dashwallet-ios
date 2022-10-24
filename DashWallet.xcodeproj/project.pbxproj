@@ -7,10 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F0E651928CA1FF50075B252 /* CoinbasePortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E651828CA1FF40075B252 /* CoinbasePortalView.swift */; };
 		0F0E651B28CA20280075B252 /* fontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E651A28CA20260075B252 /* fontStyle.swift */; };
-		0F0E651D28CA208F0075B252 /* CoinbaseServiceItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E651C28CA208F0075B252 /* CoinbaseServiceItem.swift */; };
-		0F0E651F28CA20A20075B252 /* CoinbaseAccountViewmodel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E651E28CA20A20075B252 /* CoinbaseAccountViewmodel.swift */; };
 		0F0E652228CA20D00075B252 /* BuyCoinbaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E652128CA20D00075B252 /* BuyCoinbaseView.swift */; };
 		0F0E652528CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E652428CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift */; };
 		0F651D0329047716006EFDD8 /* GetDashExchangeRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */; };
@@ -697,10 +694,7 @@
 		07283055DE20FE578E399BE7 /* libPods-WatchApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
-		0F0E651828CA1FF40075B252 /* CoinbasePortalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbasePortalView.swift; sourceTree = "<group>"; };
 		0F0E651A28CA20260075B252 /* fontStyle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = fontStyle.swift; sourceTree = "<group>"; };
-		0F0E651C28CA208F0075B252 /* CoinbaseServiceItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseServiceItem.swift; sourceTree = "<group>"; };
-		0F0E651E28CA20A20075B252 /* CoinbaseAccountViewmodel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseAccountViewmodel.swift; sourceTree = "<group>"; };
 		0F0E652128CA20D00075B252 /* BuyCoinbaseView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuyCoinbaseView.swift; sourceTree = "<group>"; };
 		0F0E652428CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinabaseConnectionStatusToolbar.swift; sourceTree = "<group>"; };
 		0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDashExchangeRate.swift; sourceTree = "<group>"; };
@@ -1923,9 +1917,6 @@
 			isa = PBXGroup;
 			children = (
 				47838B90290701320003E8AB /* Model */,
-				0F0E651E28CA20A20075B252 /* CoinbaseAccountViewmodel.swift */,
-				0F0E651C28CA208F0075B252 /* CoinbaseServiceItem.swift */,
-				0F0E651828CA1FF40075B252 /* CoinbasePortalView.swift */,
 				47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */,
 			);
 			path = CoinbaseEntryPoint;
@@ -5769,7 +5760,6 @@
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
-				0F0E651928CA1FF50075B252 /* CoinbasePortalView.swift in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
@@ -5912,7 +5902,6 @@
 				4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
-				0F0E651F28CA20A20075B252 /* CoinbaseAccountViewmodel.swift in Sources */,
 				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
 				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
@@ -5984,7 +5973,6 @@
 				47AE8BFB28C1306000490F5E /* ExploreMapAnnotationView.swift in Sources */,
 				2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
-				0F0E651D28CA208F0075B252 /* CoinbaseServiceItem.swift in Sources */,
 				2ADC9D7624640A2B001D7C0D /* DWUserProfileModel.m in Sources */,
 				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,
 				C3DAD26F246D46BF0001624F /* DWFetchedResultsDataSource.m in Sources */,
