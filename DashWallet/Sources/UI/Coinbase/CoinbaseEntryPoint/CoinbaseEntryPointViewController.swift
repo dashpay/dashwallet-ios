@@ -17,7 +17,6 @@
 
 import UIKit
 
-
 final class CoinbaseEntryPointViewController: BaseViewController {
     @IBOutlet var connectionStatusView: UIView!
     @IBOutlet var connectionStatusLabel: UILabel!
@@ -46,6 +45,14 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 }
 
 extension CoinbaseEntryPointViewController {
+    private func configureModel() {
+        model.networkStatusDidChange = { [weak self] status in
+            let isOnline = status == .online
+            self?.networkUnavailableView.isHidden = isOnline
+            self?.mainContentView.isHidden = !isOnline
+        }
+    }
+    
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
         

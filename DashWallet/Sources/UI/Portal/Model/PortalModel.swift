@@ -69,11 +69,6 @@ class PortalModel {
     
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     
-    enum NetworkStatus {
-        case online
-        case offline
-    }
-    
     var items: [ServiceItem] = [] {
         didSet {
             delegate?.serviceItemsDidChange()
@@ -103,8 +98,6 @@ class PortalModel {
         serviceItemDataProvider.refresh()
     }
     
-    
-    
     private func initializeReachibility() {
         if (!reachability.isMonitoring) {
             reachability.startMonitoring()
@@ -130,8 +123,4 @@ class PortalModel {
     }
 }
 
-extension DSReachabilityManager {
-    var networkStatus:  PortalModel.NetworkStatus {
-        return self.isReachable ? .online : .offline
-    }
-}
+
