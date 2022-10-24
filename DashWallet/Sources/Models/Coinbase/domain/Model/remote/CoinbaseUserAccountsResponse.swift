@@ -7,8 +7,6 @@
 
 import Foundation
 
-//   let CoinbaseUserAccountInfo = try? newJSONDecoder().decode(CoinbaseUserAccountInfo.self, from: jsonData)
-
 // MARK: - CoinbaseUserAccountInfo
 struct CoinbaseUserAccountsResponse: Codable {
     let pagination: Pagination

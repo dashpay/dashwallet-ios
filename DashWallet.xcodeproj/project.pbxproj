@@ -17,7 +17,6 @@
 		0F651D0329047716006EFDD8 /* GetDashExchangeRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */; };
 		0F651D0529048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */; };
 		0F6EDF9628C89675000427E7 /* AppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9528C89675000427E7 /* AppModule.swift */; };
-		0F6EDFC228C896BD000427E7 /* CoinbaseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9928C896BC000427E7 /* CoinbaseRepository.swift */; };
 		0F6EDFC328C896BD000427E7 /* TokenNetworkRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9B28C896BC000427E7 /* TokenNetworkRequest.swift */; };
 		0F6EDFC428C896BD000427E7 /* CoinbaseUserAuthInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */; };
 		0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9F28C896BC000427E7 /* CoinbaseSwapeTradeRequest.swift */; };
@@ -575,14 +574,14 @@
 		BA7B537B1BDD1DCF00355E8D /* LoadingIndicator.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA7B537A1BDD1DCF00355E8D /* LoadingIndicator.xcassets */; };
 		BA913BE21BD57E4D005A7C0E /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE01BD57E4D005A7C0E /* Interface.storyboard */; };
 		BA913BE41BD57E4D005A7C0E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE31BD57E4D005A7C0E /* Assets.xcassets */; };
-		BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BA913BF21BD57E4D005A7C0E /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA913BF11BD57E4D005A7C0E /* ExtensionDelegate.swift */; };
 		BA913BFA1BD57E4D005A7C0E /* WatchApp.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BA913BDE1BD57E4D005A7C0E /* WatchApp.app */; };
 		BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
 		BAA6E3EB1BD5C78500773205 /* DWSetupInfoInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EA1BD5C78500773205 /* DWSetupInfoInterfaceController.swift */; };
 		BAA6E3EF1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EE1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift */; };
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
-		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
 		C3CA202C247E4AF300158074 /* DWNotificationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CA202B247E4AF300158074 /* DWNotificationsViewController.m */; };
 		C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CA202F247E54C400158074 /* DWNoNotificationsCell.m */; };
@@ -655,15 +654,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		BA913C001BD57E4E005A7C0E /* Embed App Extensions */ = {
+		BA913C001BD57E4E005A7C0E /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed App Extensions */,
+				BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BA913C021BD57E4E005A7C0E /* Embed Watch Content */ = {
@@ -677,15 +676,15 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */ = {
+		BAE12BF71B2DEE7F00895CC5 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */,
+				BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -705,7 +704,6 @@
 		0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDashExchangeRate.swift; sourceTree = "<group>"; };
 		0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDashFromCoinbaseToDashWallet.swift; sourceTree = "<group>"; };
 		0F6EDF9528C89675000427E7 /* AppModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppModule.swift; sourceTree = "<group>"; };
-		0F6EDF9928C896BC000427E7 /* CoinbaseRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseRepository.swift; sourceTree = "<group>"; };
 		0F6EDF9B28C896BC000427E7 /* TokenNetworkRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenNetworkRequest.swift; sourceTree = "<group>"; };
 		0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseUserAuthInformation.swift; sourceTree = "<group>"; };
 		0F6EDF9F28C896BC000427E7 /* CoinbaseSwapeTradeRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseSwapeTradeRequest.swift; sourceTree = "<group>"; };
@@ -1944,9 +1942,9 @@
 		0F6EDF9328C894B9000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
-				0F6EDFBA28C896BD000427E7 /* core */,
-				0F6EDF9728C896BC000427E7 /* data */,
-				0F6EDFB728C896BD000427E7 /* domain */,
+				47838B83290665EC0003E8AB /* Infrastructure */,
+				0F6EDF9728C896BC000427E7 /* Domain */,
+				0F6EDFB728C896BD000427E7 /* Use Cases */,
 				0F6EDF9428C89675000427E7 /* di */,
 				4774DCDA28F3FA9C008CF87D /* Coinbase.swift */,
 			);
@@ -1961,31 +1959,21 @@
 			path = di;
 			sourceTree = "<group>";
 		};
-		0F6EDF9728C896BC000427E7 /* data */ = {
+		0F6EDF9728C896BC000427E7 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
-				0F6EDF9828C896BC000427E7 /* repository */,
-				0F6EDF9A28C896BC000427E7 /* models */,
-				0F6EDFB428C896BC000427E7 /* remote */,
+				0F6EDF9A28C896BC000427E7 /* Model */,
 			);
-			path = data;
+			path = Domain;
 			sourceTree = "<group>";
 		};
-		0F6EDF9828C896BC000427E7 /* repository */ = {
-			isa = PBXGroup;
-			children = (
-				0F6EDF9928C896BC000427E7 /* CoinbaseRepository.swift */,
-			);
-			path = repository;
-			sourceTree = "<group>";
-		};
-		0F6EDF9A28C896BC000427E7 /* models */ = {
+		0F6EDF9A28C896BC000427E7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
 				0F6EDF9B28C896BC000427E7 /* TokenNetworkRequest.swift */,
 				0F6EDF9C28C896BC000427E7 /* remote */,
 			);
-			path = models;
+			path = Model;
 			sourceTree = "<group>";
 		};
 		0F6EDF9C28C896BC000427E7 /* remote */ = {
@@ -2054,16 +2042,7 @@
 			path = base;
 			sourceTree = "<group>";
 		};
-		0F6EDFB428C896BC000427E7 /* remote */ = {
-			isa = PBXGroup;
-			children = (
-				0F6EDFB528C896BC000427E7 /* CoinbaseAPIEndpoint.swift */,
-				0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */,
-			);
-			path = remote;
-			sourceTree = "<group>";
-		};
-		0F6EDFB728C896BD000427E7 /* domain */ = {
+		0F6EDFB728C896BD000427E7 /* Use Cases */ = {
 			isa = PBXGroup;
 			children = (
 				0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */,
@@ -2072,25 +2051,7 @@
 				0FAA187A290026A9009C8818 /* CreateCoinbaseDashAddress.swift */,
 				0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */,
 			);
-			path = domain;
-			sourceTree = "<group>";
-		};
-		0F6EDFBA28C896BD000427E7 /* core */ = {
-			isa = PBXGroup;
-			children = (
-				0F6EDFBB28C896BD000427E7 /* network */,
-			);
-			path = core;
-			sourceTree = "<group>";
-		};
-		0F6EDFBB28C896BD000427E7 /* network */ = {
-			isa = PBXGroup;
-			children = (
-				0F6EDFBC28C896BD000427E7 /* RestClientErrors.swift */,
-				0F6EDFBF28C896BD000427E7 /* RestClient.swift */,
-				0F6EDFC128C896BD000427E7 /* Endpoint.swift */,
-			);
-			path = network;
+			path = "Use Cases";
 			sourceTree = "<group>";
 		};
 		0F6EDFE028C8AE32000427E7 /* Coinbase */ = {
@@ -4443,6 +4404,34 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		47838B83290665EC0003E8AB /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+				47838B85290666160003E8AB /* API */,
+				47838B84290665F20003E8AB /* Networking */,
+			);
+			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		47838B84290665F20003E8AB /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EDFBC28C896BD000427E7 /* RestClientErrors.swift */,
+				0F6EDFBF28C896BD000427E7 /* RestClient.swift */,
+				0F6EDFC128C896BD000427E7 /* Endpoint.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		47838B85290666160003E8AB /* API */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EDFB528C896BC000427E7 /* CoinbaseAPIEndpoint.swift */,
+				0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
 		478A2C6F28DC551E00AD1420 /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -4967,7 +4956,7 @@
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
-				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
+				BAE12BF71B2DEE7F00895CC5 /* Embed Foundation Extensions */,
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
 				F36D90CA4FBC91B010670F81 /* [CP] Copy Pods Resources */,
 				2A1AF9FD23C86A4400442AF5 /* Run Script - Cleanup Uphold Constants */,
@@ -5008,7 +4997,7 @@
 			buildPhases = (
 				8A568AAF75ECC063AA72DD3A /* [CP] Check Pods Manifest.lock */,
 				BA913BDC1BD57E4D005A7C0E /* Resources */,
-				BA913C001BD57E4E005A7C0E /* Embed App Extensions */,
+				BA913C001BD57E4E005A7C0E /* Embed Foundation Extensions */,
 				B361A57803894CC7C6E59498 /* Frameworks */,
 			);
 			buildRules = (
@@ -5067,7 +5056,7 @@
 			attributes = {
 				CLASSPREFIX = DW;
 				LastSwiftUpdateCheck = 1020;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1400;
 				ORGANIZATIONNAME = "Dash Core";
 				TargetAttributes = {
 					2A4662FF2279DC2F0027533B = {
@@ -5658,7 +5647,6 @@
 				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
-				0F6EDFC228C896BD000427E7 /* CoinbaseRepository.swift in Sources */,
 				47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */,
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,

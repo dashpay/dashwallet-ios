@@ -13,10 +13,10 @@ extension Resolver: ResolverRegistering {
         defaultScope = .graph
         registerSingletons()
         registerRemote()
-        registerRepository()
         registerDomain()
     }
 
+    // TODO: refactor this
     private static func registerSingletons() {
         register { RestClientImpl() as RestClient }.scope(.application)
     }
@@ -25,9 +25,6 @@ extension Resolver: ResolverRegistering {
         register { CoinbaseServiceImpl() as CoinbaseService }
     }
 
-    private static func registerRepository() {
-        register { CoinbaseRepository() }
-    }
 
     private static func registerDomain() {
         register { GetUserCoinbaseAccounts() }

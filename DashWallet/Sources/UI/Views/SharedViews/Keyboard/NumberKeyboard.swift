@@ -327,7 +327,6 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
         UIDevice.current.playInputClick()
         
         button.isHighlighted = true
-        
     }
     
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchMoved touch: UITouch) {
@@ -336,7 +335,7 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
         func isHighlighted(view: UIView, touch: UITouch) -> Bool {
             let bounds = view.bounds
             let point = touch.location(in: view)
-            return CGRectContainsPoint(bounds, point)
+            return bounds.contains(point)
         }
         
         //Try current button first
@@ -353,21 +352,19 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
         if isClearButtonLongPressGestureActive {
             let bounds = self.clearButton.bounds
             let point = touch.location(in: self.clearButton)
-            if !CGRectContainsPoint(bounds, point) {
+            if !bounds.contains(point) {
                 isClearButtonLongPressGestureActive = false
             }
         }
-        
-        
     }
     
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchEnded touch: UITouch) {
         guard isEnabled else { return }
 
         for item in allButtons {
-            let bound = item.bounds
+            let bounds = item.bounds
             let point = touch.location(in: item)
-            if CGRectContainsPoint(bound, point) {
+            if bounds.contains(point) {
                 if item != self.clearButton || !isClearButtonLongPressGestureActive {
                     self.performButtonAction(item)
                 }
@@ -375,7 +372,6 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
         }
         
         resetHighlightedButton()
-            
     }
     
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchCanceled touch: UITouch) {
@@ -395,6 +391,5 @@ extension NumberKeyboard {
         let startOffset = textInput.offset(from: textInput.beginningOfDocument, to: textRange.start)
         let endOffset = textInput.offset(from: textInput.beginningOfDocument, to: textRange.end)
         return NSRange(location: startOffset, length: endOffset - startOffset)
-        
     }
 }

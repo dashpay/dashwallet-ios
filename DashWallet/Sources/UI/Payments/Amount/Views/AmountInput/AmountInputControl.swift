@@ -115,15 +115,15 @@ class AmountInputControl: UIControl {
         
         
         bigLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
-        bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
+        bigLabel.transform = CGAffineTransform(scaleX: 1.0/scale, y: 1.0/scale)
         
         smallLabel.frame = CGRect(x: 0, y: smallLabel.frame.minY, width: bounds.width, height: kMainAmountLabelHeight)
         smallLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
-        smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
+        smallLabel.transform = CGAffineTransform(scaleX: scale, y: scale)
      
         let updateAlphaAndTransform = {
-            bigLabel.transform = CGAffineTransformIdentity;
-            smallLabel.transform = CGAffineTransformIdentity;
+            bigLabel.transform = .identity
+            smallLabel.transform = .identity
             bigLabel.alpha = kSmallAmountTextAlpha
             smallLabel.alpha = kBigAmountTextAlpha
         }

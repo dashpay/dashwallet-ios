@@ -20,6 +20,8 @@ import Combine
 import Foundation
 import Resolver
 
+let kDashCurrency = "DASH"
+
 class Coinbase {
     @Injected
     private var getUserCoinbaseAccounts: GetUserCoinbaseAccounts
@@ -148,7 +150,7 @@ extension Coinbase {
                                                            request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsTypes.send.rawValue,
                                                                                                 to: dashWalletAddress,
                                                                                                 amount: coinAmountInDash,
-                                                                                                currency: DASH_CURRENCY,
+                                                                                                currency: kDashCurrency,
                                                                                                 idem: UUID().uuidString))
         }
         return Empty(completeImmediately: true).eraseToAnyPublisher()

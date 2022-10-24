@@ -10,10 +10,10 @@ import Foundation
 import Resolver
 
 class GetUserCoinbaseToken: NSObject, ObservableObject {
-    @Injected private var coinbaseRepository: CoinbaseRepository
-
+    @Injected private var remoteService: CoinbaseService
+    
     func invoke(code: String) -> AnyPublisher<CoinbaseToken?, Error> {
-        coinbaseRepository.getToken(code: code)
+        remoteService.getToken(code: code)
             .map { (response: CoinbaseToken) in
                 NetworkRequest.accessToken = response.accessToken
                 NetworkRequest.refreshToken = response.refreshToken

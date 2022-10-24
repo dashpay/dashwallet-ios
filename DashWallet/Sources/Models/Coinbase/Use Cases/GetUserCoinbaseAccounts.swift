@@ -12,8 +12,8 @@ import Resolver
 private let lastKnownBalanceKey = "lastKnownBalance"
 
 class GetUserCoinbaseAccounts {
-    @Injected private var coinbaseRepository: CoinbaseRepository
-
+    @Injected private var remoteService: CoinbaseService
+    
     var lastKnownBalance: String? {
         GetUserCoinbaseAccounts.lastKnownBalance
     }
@@ -23,7 +23,7 @@ class GetUserCoinbaseAccounts {
     }
 
     func invoke(limit: Int = 300) -> AnyPublisher<CoinbaseUserAccountData?, Error> {
-        coinbaseRepository.getUserCoinbaseAccounts(limit: limit)
+        remoteService.getUserCoinbaseAccounts(limit: limit)
             .map { (response: CoinbaseUserAccountsResponse) in
                 let account = response.data.first(where: { $0.currency.name == "Dash" })
                 GetUserCoinbaseAccounts.lastKnownBalance = account?.balance.amount

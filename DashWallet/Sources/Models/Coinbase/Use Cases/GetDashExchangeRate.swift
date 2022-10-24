@@ -19,14 +19,13 @@ import Combine
 import Foundation
 import Resolver
 
-class CreateCoinbaseDashAddress {
-    @Injected private var coinbaseRepository: CoinbaseRepository
-
-    func invoke(accountId: String) -> AnyPublisher<String?, Error> {
-        coinbaseRepository.createCoinbaseDashAddress(accountId: accountId)
-            .map { (response: CoinbaseCreateAddressesResponse) in
-                let address = response.data?.address
-                return address
+class GetDashExchangeRate {
+    @Injected private var remoteService: CoinbaseService
+    
+    func invoke() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
+        remoteService.getCoinbaseExchangeRates(currency: kDashCurrency)
+            .map { (response: CoinbaseExchangeRateResponse) in
+                response.data
             }.eraseToAnyPublisher()
     }
 }

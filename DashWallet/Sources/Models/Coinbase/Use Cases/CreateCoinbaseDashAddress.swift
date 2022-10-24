@@ -1,4 +1,4 @@
-//  
+//
 //  Created by hadia
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,18 @@
 //  limitations under the License.
 //
 
-import Foundation
 import Combine
+import Foundation
 import Resolver
 
-class SendDashFromCoinbaseToDashWallet {
-    @Injected private var coinbaseRepository: CoinbaseRepository
+class CreateCoinbaseDashAddress {
+    @Injected private var remoteService: CoinbaseService
     
-    func invoke(accountId: String, api2FATokenVersion: String, request: CoinbaseTransactionsRequest) -> AnyPublisher<CoinbaseTransaction?, Error> {
-        coinbaseRepository.tansferFromCoinbaseToDashWallet(accountId: accountId, api2FATokenVersion: api2FATokenVersion, request: request)
-            .map { (response:CoinbaseTransactionsResponse) in
-                return response.data
+    func invoke(accountId: String) -> AnyPublisher<String?, Error> {
+        remoteService.createCoinbaseAccountAddress(accountId: accountId, request: CoinbaseCreateAddressesRequest(name: "New receive address"))
+            .map { (response: CoinbaseCreateAddressesResponse) in
+                let address = response.data?.address
+                return address
             }.eraseToAnyPublisher()
     }
 }

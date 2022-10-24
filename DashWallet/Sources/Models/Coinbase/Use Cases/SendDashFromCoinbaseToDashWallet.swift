@@ -1,4 +1,4 @@
-//
+//  
 //  Created by hadia
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,16 @@
 //  limitations under the License.
 //
 
-import Combine
 import Foundation
+import Combine
 import Resolver
 
-class GetDashExchangeRate {
-    @Injected private var coinbaseRepository: CoinbaseRepository
-
-    func invoke() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
-        coinbaseRepository.getCoinbaseExchangeRates()
-            .map { (response: CoinbaseExchangeRateResponse) in
-                response.data
+class SendDashFromCoinbaseToDashWallet {
+    @Injected private var remoteService: CoinbaseService
+    func invoke(accountId: String, api2FATokenVersion: String, request: CoinbaseTransactionsRequest) -> AnyPublisher<CoinbaseTransaction?, Error> {
+        remoteService.sendCoinsToWallet(accountId: accountId, api2FATokenVersion: api2FATokenVersion, request: request)
+            .map { (response:CoinbaseTransactionsResponse) in
+                return response.data
             }.eraseToAnyPublisher()
     }
 }
