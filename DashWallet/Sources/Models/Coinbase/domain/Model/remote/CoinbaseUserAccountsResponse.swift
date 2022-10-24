@@ -7,12 +7,6 @@
 
 import Foundation
 
-// MARK: - CoinbaseUserAccountInfo
-struct CoinbaseUserAccountsResponse: Codable {
-    let pagination: Pagination
-    let data: [CoinbaseUserAccountData]
-}
-
 // MARK: - CoinbaseUserAccountData
 struct CoinbaseUserAccountData: Codable, Identifiable {
     let id, name: String

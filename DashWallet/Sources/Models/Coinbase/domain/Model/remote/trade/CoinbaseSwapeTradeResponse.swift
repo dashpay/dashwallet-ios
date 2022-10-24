@@ -7,15 +7,6 @@
 
 import Foundation
 
-// MARK: - CoinbaseSwapeTradeResponse
-struct CoinbaseSwapeTradeResponse: Codable {
-    let data: CoinbaseSwapeTrade?
-
-    enum CodingKeys: String, CodingKey {
-        case data
-    }
-}
-
 // MARK: - DataClass
 struct CoinbaseSwapeTrade: Codable {
     let createdAt: Date?

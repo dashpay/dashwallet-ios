@@ -7,12 +7,6 @@
 
 import Foundation
 
-// MARK: - CoinbaseExchangeRateResponse
-
-struct CoinbaseExchangeRateResponse: Codable {
-    let data: CoinbaseExchangeRate?
-}
-
 // MARK: - DataClass
 
 struct CoinbaseExchangeRate: Codable {

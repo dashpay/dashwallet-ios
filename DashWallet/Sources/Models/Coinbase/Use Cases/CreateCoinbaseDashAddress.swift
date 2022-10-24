@@ -24,7 +24,7 @@ class CreateCoinbaseDashAddress {
     
     func invoke(accountId: String) -> AnyPublisher<String?, Error> {
         remoteService.createCoinbaseAccountAddress(accountId: accountId, request: CoinbaseCreateAddressesRequest(name: "New receive address"))
-            .map { (response: CoinbaseCreateAddressesResponse) in
+            .map { (response: BaseDataResponse<CoinbaseAccountAddress>) in
                 let address = response.data?.address
                 return address
             }.eraseToAnyPublisher()

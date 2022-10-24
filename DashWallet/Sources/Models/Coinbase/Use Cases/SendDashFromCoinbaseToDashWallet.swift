@@ -23,7 +23,7 @@ class SendDashFromCoinbaseToDashWallet {
     @Injected private var remoteService: CoinbaseService
     func invoke(accountId: String, api2FATokenVersion: String, request: CoinbaseTransactionsRequest) -> AnyPublisher<CoinbaseTransaction?, Error> {
         remoteService.sendCoinsToWallet(accountId: accountId, api2FATokenVersion: api2FATokenVersion, request: request)
-            .map { (response:CoinbaseTransactionsResponse) in
+            .map { (response:BaseDataResponse<CoinbaseTransaction>) in
                 return response.data
             }.eraseToAnyPublisher()
     }

@@ -17,7 +17,15 @@
 
 import Foundation
 
-struct BasePaginationResponse<T> {
+struct BasePaginationResponse<T: Codable>: Codable {
     let pagination: Pagination
+    let data: [T]
+}
+
+struct BaseDataResponse<T: Codable>: Codable {
+    let data: T?
+}
+
+struct BaseDataCollectionResponse<T: Codable>: Codable {
     let data: [T]
 }

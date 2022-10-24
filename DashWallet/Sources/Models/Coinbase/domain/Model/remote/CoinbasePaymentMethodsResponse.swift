@@ -7,12 +7,8 @@
 
 import Foundation
 
-// MARK: - CoinbasePaymentMethodsResponse
-struct CoinbasePaymentMethodsResponse: Codable {
-    let data: [CoinbasePaymentMethod]?
-}
 
-// MARK: - Datum
+// MARK: - CoinbasePaymentMethod
 struct CoinbasePaymentMethod: Codable {
     let id, type, name, currency: String?
     let primaryBuy, primarySell, instantBuy, instantSell: Bool?

@@ -7,11 +7,6 @@
 
 import Foundation
 
-// MARK: - CoinBasePlaceBuyOrderResponse
-struct CoinbasePlaceBuyOrderResponse: Codable {
-    let data: CoinbasePlaceBuyOrder?
-}
-
 // MARK: - DataClass
 struct CoinbasePlaceBuyOrder: Codable {
     let id: String?

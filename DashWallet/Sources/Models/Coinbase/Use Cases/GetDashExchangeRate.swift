@@ -24,7 +24,7 @@ class GetDashExchangeRate {
     
     func invoke() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
         remoteService.getCoinbaseExchangeRates(currency: kDashCurrency)
-            .map { (response: CoinbaseExchangeRateResponse) in
+            .map { response in
                 response.data
             }.eraseToAnyPublisher()
     }
