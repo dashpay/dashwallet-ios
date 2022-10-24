@@ -148,6 +148,9 @@
 /* No comment provided by engineer. */
 "Balance hidden" = "Скрит баланс";
 
+/* Coinbase Entry Point */
+"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
+
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
 
@@ -275,6 +278,9 @@
 /* No comment provided by engineer. */
 "Continue" = "Продължи";
 
+/* Coinbase Entry Point */
+"Convert Crypto" = "Convert Crypto";
+
 /* No comment provided by engineer. */
 "Copied" = "Копирано";
 
@@ -311,6 +317,9 @@
 /* No comment provided by engineer. */
 "Current user: %@" = "Current user: %@";
 
+/* Coinbase Entry Point */
+"Dash balance on Coinbase" = "Dash balance on Coinbase";
+
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash плащанията не могат да бъдат по-малки от %@";
 
@@ -334,6 +343,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Coinbase Entry Point */
+"Disconnect Coinbase Account" = "Disconnect Coinbase Account";
 
 /* Buy Sell Portal */
 "Disconnected" = "Disconnected";
@@ -847,6 +859,12 @@
 
 /* No comment provided by engineer. */
 "Receive" = "Получаване";
+
+/* Coinbase Entry Point */
+"Receive directly into Coinbase" = "Receive directly into Coinbase";
+
+/* Coinbase Entry Point */
+"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
 
 /* Received transaction */
 "Received" = "Получени";

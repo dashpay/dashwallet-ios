@@ -148,6 +148,9 @@
 /* No comment provided by engineer. */
 "Balance hidden" = "숨긴 잔고";
 
+/* Coinbase Entry Point */
+"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
+
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
 
@@ -275,6 +278,9 @@
 /* No comment provided by engineer. */
 "Continue" = "계속";
 
+/* Coinbase Entry Point */
+"Convert Crypto" = "Convert Crypto";
+
 /* No comment provided by engineer. */
 "Copied" = "복사됨";
 
@@ -311,6 +317,9 @@
 /* No comment provided by engineer. */
 "Current user: %@" = "현재 사용자: %@";
 
+/* Coinbase Entry Point */
+"Dash balance on Coinbase" = "Dash balance on Coinbase";
+
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
 
@@ -334,6 +343,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Coinbase Entry Point */
+"Disconnect Coinbase Account" = "Disconnect Coinbase Account";
 
 /* Buy Sell Portal */
 "Disconnected" = "Disconnected";
@@ -847,6 +859,12 @@
 
 /* No comment provided by engineer. */
 "Receive" = "받기";
+
+/* Coinbase Entry Point */
+"Receive directly into Coinbase" = "Receive directly into Coinbase";
+
+/* Coinbase Entry Point */
+"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
 
 /* Received transaction */
 "Received" = "받음";

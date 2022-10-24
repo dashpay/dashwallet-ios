@@ -502,6 +502,7 @@
 		47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B792900196F0003E8AB /* ConverterView.swift */; };
 		47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */; };
 		47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8B29068F110003E8AB /* BaseResponse.swift */; };
+		47838B8F2906D7340003E8AB /* BalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8E2906D7340003E8AB /* BalanceView.swift */; };
 		478A2C7128DC554200AD1420 /* PortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C7028DC554200AD1420 /* PortalModel.swift */; };
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
@@ -1634,6 +1635,7 @@
 		47838B792900196F0003E8AB /* ConverterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterView.swift; sourceTree = "<group>"; };
 		47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseEntryPointViewController.swift; sourceTree = "<group>"; };
 		47838B8B29068F110003E8AB /* BaseResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseResponse.swift; sourceTree = "<group>"; };
+		47838B8E2906D7340003E8AB /* BalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceView.swift; sourceTree = "<group>"; };
 		478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
@@ -2420,6 +2422,7 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				47838B8D2906D7280003E8AB /* BalanceView */,
 				47F2C67B28602D3800C2B774 /* PageSheet */,
 				2A913E9923A53AC6006A2A59 /* Containers */,
 				2A0C69D423143B17001B8C90 /* ModalController */,
@@ -4432,6 +4435,14 @@
 			path = API;
 			sourceTree = "<group>";
 		};
+		47838B8D2906D7280003E8AB /* BalanceView */ = {
+			isa = PBXGroup;
+			children = (
+				47838B8E2906D7340003E8AB /* BalanceView.swift */,
+			);
+			path = BalanceView;
+			sourceTree = "<group>";
+		};
 		478A2C6F28DC551E00AD1420 /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -5813,6 +5824,7 @@
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
+				47838B8F2906D7340003E8AB /* BalanceView.swift in Sources */,
 				2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */,
 				2A741DC62363A06000840ADF /* DWURLParser.m in Sources */,
 				2A7AF36F24826737001D74F9 /* DWDPContactObject.m in Sources */,
