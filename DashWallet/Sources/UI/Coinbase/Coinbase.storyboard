@@ -363,7 +363,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="SxB-ut-Oik">
-                                <rect key="frame" x="87" y="112" width="240" height="81.5"/>
+                                <rect key="frame" x="87" y="112" width="240" height="102.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Balance On Coinbase" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AtR-om-OaY">
                                         <rect key="frame" x="59.5" y="0.0" width="121" height="14.5"/>
@@ -378,6 +378,12 @@
                                             <constraint firstAttribute="height" constant="62" id="9d2-iX-tgm"/>
                                         </constraints>
                                     </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last known balance" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aSf-56-Vk0">
+                                        <rect key="frame" x="60" y="86.5" width="120" height="16"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <color key="textColor" name="RedColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0df-k0-XTQ">
@@ -416,10 +422,10 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="L9J-HU-WzI">
-                                <rect key="frame" x="20" y="213.5" width="374" height="640.5"/>
+                                <rect key="frame" x="20" y="234.5" width="374" height="619.5"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Li-Ki-nSF">
-                                        <rect key="frame" x="0.0" y="578.5" width="374" height="62"/>
+                                        <rect key="frame" x="0.0" y="557.5" width="374" height="62"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="62" id="QeI-nd-ZrV"/>
                                         </constraints>
@@ -529,7 +535,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="140" height="40"/>
                                     <subviews>
                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="portal.coinbase" translatesAutoresizingMaskIntoConstraints="NO" id="Ma7-eg-p1L">
-                                            <rect key="frame" x="0.0" y="2.5" width="35" height="35"/>
+                                            <rect key="frame" x="0.0" y="2.6666666666666679" width="35" height="35"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="35" id="0JN-IQ-uon"/>
                                                 <constraint firstAttribute="height" constant="35" id="1ql-Ce-xQz"/>
@@ -592,6 +598,7 @@
                         <outlet property="balanceView" destination="cMF-Vo-oph" id="lXw-LP-1pd"/>
                         <outlet property="connectionStatusLabel" destination="rcn-sd-Psx" id="mz6-Wy-b2a"/>
                         <outlet property="connectionStatusView" destination="IYg-T9-FCS" id="WLV-4V-prx"/>
+                        <outlet property="lastKnownBalanceLabel" destination="aSf-56-Vk0" id="lHB-Vp-cjn"/>
                         <outlet property="mainContentView" destination="L9J-HU-WzI" id="NXf-Ix-vwE"/>
                         <outlet property="networkUnavailableView" destination="0df-k0-XTQ" id="6SV-5G-9bs"/>
                         <outlet property="signOutButton" destination="6Li-Ki-nSF" id="pJT-a9-0VP"/>
@@ -746,6 +753,9 @@
         <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="ChevronColor">
             <color red="0.85098039215686272" green="0.85098039215686272" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="RedColor">
+            <color red="0.81599998474121094" green="0.0080000003799796104" blue="0.10599999874830246" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

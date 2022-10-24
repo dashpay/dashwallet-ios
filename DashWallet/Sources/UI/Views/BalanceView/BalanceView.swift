@@ -71,12 +71,14 @@ private extension BalanceView {
         self.dashBalanceLabel = UILabel()
         dashBalanceLabel.translatesAutoresizingMaskIntoConstraints = false
         dashBalanceLabel.font = .dw_font(forTextStyle: .title1)
+        dashBalanceLabel.textAlignment = .center
         container.addArrangedSubview(dashBalanceLabel)
         
         self.fiatBalanceLabel = UILabel()
         fiatBalanceLabel.translatesAutoresizingMaskIntoConstraints = false
         fiatBalanceLabel.font = .dw_font(forTextStyle: .callout)
         fiatBalanceLabel.textColor = .secondaryLabel
+        fiatBalanceLabel.textAlignment = .center
         container.addArrangedSubview(fiatBalanceLabel)
         
         NSLayoutConstraint.activate([

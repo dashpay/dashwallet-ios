@@ -75,14 +75,29 @@ final class CoinbaseEntryPointModel {
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var networkStatus: NetworkStatus!
     
+    var balance: UInt64 {
+        guard let amount = Coinbase.shared.lastKnownBalance else { return 0 }
+        
+        return UInt64(DSPriceManager.sharedInstance().amount(forDashString: amount))
+    }
+    
     private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
     private var reachabilityObserver: Any!
-    
     
     init() {
         initializeReachibility()
     }
     
+    public func signOut() {
+        Coinbase.shared.signOut()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(reachabilityObserver!)
+    }
+}
+
+private extension CoinbaseEntryPointModel {
     private func initializeReachibility() {
         if (!reachability.isMonitoring) {
             reachability.startMonitoring()
@@ -101,9 +116,5 @@ final class CoinbaseEntryPointModel {
     private func updateNetworkStatus() {
         networkStatus = reachability.networkStatus
         networkStatusDidChange?(networkStatus)
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(reachabilityObserver!)
     }
 }

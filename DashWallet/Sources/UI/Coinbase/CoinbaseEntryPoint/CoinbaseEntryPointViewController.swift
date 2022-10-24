@@ -26,11 +26,13 @@ final class CoinbaseEntryPointViewController: BaseViewController {
     @IBOutlet var signOutButton: UIButton!
     @IBOutlet var networkUnavailableView: UIView!
     @IBOutlet var mainContentView: UIView!
+    @IBOutlet var lastKnownBalanceLabel: UILabel!
     
     private let model = CoinbaseEntryPointModel()
     
     @IBAction func signOutAction() {
-        
+        model.signOut()
+        navigationController?.popToRootViewController(animated: true)
     }
     
     override func viewDidLoad() {
@@ -47,10 +49,18 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 extension CoinbaseEntryPointViewController {
     private func configureModel() {
         model.networkStatusDidChange = { [weak self] status in
-            let isOnline = status == .online
-            self?.networkUnavailableView.isHidden = isOnline
-            self?.mainContentView.isHidden = !isOnline
+            self?.reloadView()
         }
+    }
+    
+    private func reloadView() {
+        let isOnline = model.networkStatus == .online
+        lastKnownBalanceLabel.isHidden = isOnline
+        networkUnavailableView.isHidden = isOnline
+        mainContentView.isHidden = !isOnline
+        connectionStatusView.backgroundColor = isOnline ? .systemGreen : .systemRed
+        connectionStatusLabel.text = isOnline ? NSLocalizedString("Connected", comment: "Coinbase Entry Point") : NSLocalizedString("Disconnected", comment: "Coinbase Entry Point")
+        balanceView.balance = model.balance
     }
     
     private func configureHierarchy() {
@@ -59,6 +69,8 @@ extension CoinbaseEntryPointViewController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
         
+        lastKnownBalanceLabel.text = NSLocalizedString("Last known balance", comment: "Coinbase Entry Point")
+        lastKnownBalanceLabel.isHidden = true
         networkUnavailableView.isHidden = true
         
         connectionStatusView.layer.cornerRadius = 2
@@ -76,6 +88,8 @@ extension CoinbaseEntryPointViewController {
         signOutButton.titleLabel?.font = UIFont.dw_font(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
         signOutButton.layer.cornerRadius = 10
         signOutButton.setTitle(NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point"), for: .normal)
+        
+        reloadView()
     }
 }
 

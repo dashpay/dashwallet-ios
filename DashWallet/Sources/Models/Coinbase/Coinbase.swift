@@ -94,13 +94,9 @@ extension Coinbase {
                 // 1
                 guard error == nil,
                       let callbackURL = callbackURL,
-                      // 2
                       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
-                      // 3
                       let code = queryItems.first(where: { $0.name == "code" })?.value
-                // 4
                 else {
-                    // 5
                     completion(.failure(error!))
                     return
                 }
@@ -117,6 +113,7 @@ extension Coinbase {
         authenticationSession.prefersEphemeralWebBrowserSession = true
 
         if !authenticationSession.start() {
+            //TODO: throw an error
             print("Failed to start ASWebAuthenticationSession")
         }
     }
