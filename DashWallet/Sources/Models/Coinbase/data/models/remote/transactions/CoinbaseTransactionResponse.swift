@@ -6,17 +6,20 @@
 //
 
 import Foundation
+
 // MARK: - CoinBaseTransactionsResponse
+
 struct CoinbaseTransactionsResponse: Codable {
     let data: CoinbaseTransaction?
 }
 
 // MARK: - DataClass
+
 struct CoinbaseTransaction: Codable {
     let id, type, status: String?
     let amount, nativeAmount: Amount?
     let dataDescription: String?
-    let createdAt, updatedAt: Date?
+    let createdAt, updatedAt: String?
     let resource, resourcePath: String?
     let instantExchange: Bool?
     let network: Network?
@@ -40,9 +43,8 @@ struct CoinbaseTransaction: Codable {
     }
 }
 
-
-
 // MARK: - Application
+
 struct Application: Codable {
     let id, resource, resourcePath: String?
 
@@ -53,11 +55,13 @@ struct Application: Codable {
 }
 
 // MARK: - Details
+
 struct Details: Codable {
     let title, subtitle, header, health: String?
 }
 
 // MARK: - Network
+
 struct Network: Codable {
     let status: String?
     let statusDescription: String?
@@ -78,6 +82,7 @@ struct Network: Codable {
 }
 
 // MARK: - To
+
 struct To: Codable {
     let resource, address, currency: String?
     let addressInfo: AddressInfo?

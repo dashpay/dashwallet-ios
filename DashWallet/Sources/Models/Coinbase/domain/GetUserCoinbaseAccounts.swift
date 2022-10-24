@@ -5,33 +5,34 @@
 //  Created by hadia on 28/05/2022.
 //
 
-import Foundation
 import Combine
+import Foundation
 import Resolver
 
 private let lastKnownBalanceKey = "lastKnownBalance"
 
 class GetUserCoinbaseAccounts {
     @Injected private var coinbaseRepository: CoinbaseRepository
-    
+
     var lastKnownBalance: String? {
         GetUserCoinbaseAccounts.lastKnownBalance
     }
-    
+
     var hasLastKnownBalance: Bool {
         return lastKnownBalance != nil
     }
-    
-    func invoke(limit: Int =  300) -> AnyPublisher<CoinbaseUserAccountData?, Error> {
+
+    func invoke(limit: Int = 300) -> AnyPublisher<CoinbaseUserAccountData?, Error> {
         coinbaseRepository.getUserCoinbaseAccounts(limit: limit)
             .map { (response: CoinbaseUserAccountsResponse) in
-                let account = response.data.first(where: {$0.currency.name == "Dash"})
+                let account = response.data.first(where: { $0.currency.name == "Dash" })
                 GetUserCoinbaseAccounts.lastKnownBalance = account?.balance.amount
+                NetworkRequest.coinbaseUserAccountId = account?.id
                 return account
-        }.eraseToAnyPublisher()
+            }.eraseToAnyPublisher()
     }
-    
-    func signOut(){
+
+    func signOut() {
         GetUserCoinbaseAccounts.lastKnownBalance = nil
     }
 }
