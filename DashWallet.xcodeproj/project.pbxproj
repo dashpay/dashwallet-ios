@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F0E651B28CA20280075B252 /* fontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E651A28CA20260075B252 /* fontStyle.swift */; };
-		0F0E652228CA20D00075B252 /* BuyCoinbaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E652128CA20D00075B252 /* BuyCoinbaseView.swift */; };
-		0F0E652528CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0E652428CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift */; };
 		0F651D0329047716006EFDD8 /* GetDashExchangeRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */; };
 		0F651D0529048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */; };
 		0F6EDF9628C89675000427E7 /* AppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9528C89675000427E7 /* AppModule.swift */; };
@@ -694,9 +691,6 @@
 		07283055DE20FE578E399BE7 /* libPods-WatchApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
-		0F0E651A28CA20260075B252 /* fontStyle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = fontStyle.swift; sourceTree = "<group>"; };
-		0F0E652128CA20D00075B252 /* BuyCoinbaseView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuyCoinbaseView.swift; sourceTree = "<group>"; };
-		0F0E652428CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinabaseConnectionStatusToolbar.swift; sourceTree = "<group>"; };
 		0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDashExchangeRate.swift; sourceTree = "<group>"; };
 		0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDashFromCoinbaseToDashWallet.swift; sourceTree = "<group>"; };
 		0F6EDF9528C89675000427E7 /* AppModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppModule.swift; sourceTree = "<group>"; };
@@ -1922,22 +1916,6 @@
 			path = CoinbaseEntryPoint;
 			sourceTree = "<group>";
 		};
-		0F0E652028CA20BD0075B252 /* BuyDashCoinbase */ = {
-			isa = PBXGroup;
-			children = (
-				0F0E652128CA20D00075B252 /* BuyCoinbaseView.swift */,
-			);
-			path = BuyDashCoinbase;
-			sourceTree = "<group>";
-		};
-		0F0E652328CF69550075B252 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				0F0E652428CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		0F6EDF9328C894B9000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
@@ -2058,9 +2036,6 @@
 				47C661B028FDC70F00028A8D /* Transfer Amount */,
 				0F71317328F436160072F454 /* ServiceOverview */,
 				4751136D28D9B4F400223B77 /* Info Screen */,
-				0F0E652328CF69550075B252 /* Views */,
-				0F0E652028CA20BD0075B252 /* BuyDashCoinbase */,
-				0F0E651A28CA20260075B252 /* fontStyle.swift */,
 				0F0E651728CA1FE30075B252 /* CoinbaseEntryPoint */,
 				4751137028D9DEB800223B77 /* Coinbase.storyboard */,
 			);
@@ -5707,7 +5682,6 @@
 				0F6EDFCB28C896BD000427E7 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
 				47AE8BFD28C1306000490F5E /* ExploreMapView.swift in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
-				0F0E651B28CA20280075B252 /* fontStyle.swift in Sources */,
 				0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */,
 				2A7AF380248280CE001D74F9 /* DWDPSearchItemsFactory.m in Sources */,
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
@@ -5922,7 +5896,6 @@
 				2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */,
 				2A7AF34424822AE0001D74F9 /* DWDPGenericContactRequestItemView.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
-				0F0E652528CF697D0075B252 /* CoinabaseConnectionStatusToolbar.swift in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */,
 				0F6EDFD728C896BD000427E7 /* CoinbaseService.swift in Sources */,
@@ -5988,7 +5961,6 @@
 				47AE8C0C28C53E4A00490F5E /* MerchantInfoViewController.swift in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
-				0F0E652228CA20D00075B252 /* BuyCoinbaseView.swift in Sources */,
 				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
