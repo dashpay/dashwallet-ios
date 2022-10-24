@@ -47,6 +47,6 @@ extension CoinbaseInfoViewController {
         contentView.layer.masksToBounds = true
         contentView.backgroundColor = .white
         
-        hairline.heightAnchor.constraint(equalToConstant: 1/UIScreen.main.scale)
+        hairline.heightAnchor.constraint(equalToConstant: 1/UIScreen.main.scale).isActive = true
     }
 }

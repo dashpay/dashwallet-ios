@@ -45,7 +45,7 @@ import AuthenticationServices
     
     @objc func coinbaseAction() {
         if Coinbase.shared.isAuthorized {
-            let vc = TransferAmountViewController()
+            let vc = CoinbaseEntryPointViewController.controller()
             navigationController?.pushViewController(vc, animated: true)
         }else{
             let vc = ServiceOverviewViewController.controller()

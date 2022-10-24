@@ -30,7 +30,6 @@
 		0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA928C896BC000427E7 /* CoinbaseTransactionResponse.swift */; };
 		0F6EDFCE28C896BD000427E7 /* CoinbaseUserAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAA28C896BC000427E7 /* CoinbaseUserAccountsResponse.swift */; };
 		0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAC28C896BC000427E7 /* CoinbaseAccountAddress.swift */; };
-		0F6EDFD028C896BD000427E7 /* CoinbaseAccountAddressesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAD28C896BC000427E7 /* CoinbaseAccountAddressesResponse.swift */; };
 		0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */; };
 		0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */; };
 		0F6EDFD328C896BD000427E7 /* CoinbaseAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */; };
@@ -502,6 +501,8 @@
 		47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7428FFD1D10003E8AB /* AmountView.swift */; };
 		47838B7728FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */; };
 		47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B792900196F0003E8AB /* ConverterView.swift */; };
+		47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */; };
+		47838B8A29068C520003E8AB /* BasePaginationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8929068C520003E8AB /* BasePaginationResponse.swift */; };
 		478A2C7128DC554200AD1420 /* PortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C7028DC554200AD1420 /* PortalModel.swift */; };
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
@@ -717,7 +718,6 @@
 		0F6EDFA928C896BC000427E7 /* CoinbaseTransactionResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseTransactionResponse.swift; sourceTree = "<group>"; };
 		0F6EDFAA28C896BC000427E7 /* CoinbaseUserAccountsResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseUserAccountsResponse.swift; sourceTree = "<group>"; };
 		0F6EDFAC28C896BC000427E7 /* CoinbaseAccountAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseAccountAddress.swift; sourceTree = "<group>"; };
-		0F6EDFAD28C896BC000427E7 /* CoinbaseAccountAddressesResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseAccountAddressesResponse.swift; sourceTree = "<group>"; };
 		0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseCreateAddressesRequest.swift; sourceTree = "<group>"; };
 		0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseExchangeRateResponse.swift; sourceTree = "<group>"; };
 		0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseAmount.swift; sourceTree = "<group>"; };
@@ -1634,6 +1634,8 @@
 		47838B7428FFD1D10003E8AB /* AmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountView.swift; sourceTree = "<group>"; };
 		47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputTypeSwitcher.swift; sourceTree = "<group>"; };
 		47838B792900196F0003E8AB /* ConverterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterView.swift; sourceTree = "<group>"; };
+		47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseEntryPointViewController.swift; sourceTree = "<group>"; };
+		47838B8929068C520003E8AB /* BasePaginationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePaginationResponse.swift; sourceTree = "<group>"; };
 		478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
@@ -1919,6 +1921,7 @@
 				0F0E651E28CA20A20075B252 /* CoinbaseAccountViewmodel.swift */,
 				0F0E651C28CA208F0075B252 /* CoinbaseServiceItem.swift */,
 				0F0E651828CA1FF40075B252 /* CoinbasePortalView.swift */,
+				47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */,
 			);
 			path = CoinbasePortal;
 			sourceTree = "<group>";
@@ -2025,7 +2028,6 @@
 			isa = PBXGroup;
 			children = (
 				0F6EDFAC28C896BC000427E7 /* CoinbaseAccountAddress.swift */,
-				0F6EDFAD28C896BC000427E7 /* CoinbaseAccountAddressesResponse.swift */,
 				0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */,
 				0F651D0029045C9C006EFDD8 /* CoinbaseCreateAddressesResponse.swift */,
 			);
@@ -2038,6 +2040,7 @@
 				0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */,
 				0F6EDFB228C896BC000427E7 /* Pagination.swift */,
 				0F6EDFB328C896BC000427E7 /* AddressInfo.swift */,
+				47838B8929068C520003E8AB /* BasePaginationResponse.swift */,
 			);
 			path = base;
 			sourceTree = "<group>";
@@ -5815,7 +5818,6 @@
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
 				2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */,
 				2A741DC62363A06000840ADF /* DWURLParser.m in Sources */,
-				0F6EDFD028C896BD000427E7 /* CoinbaseAccountAddressesResponse.swift in Sources */,
 				2A7AF36F24826737001D74F9 /* DWDPContactObject.m in Sources */,
 				2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
@@ -5832,6 +5834,7 @@
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
 				0F6EDFDD28C896BD000427E7 /* RestClient.swift in Sources */,
+				47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
@@ -5932,6 +5935,7 @@
 				2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */,
 				2A7AF34C24823315001D74F9 /* DWDPGenericStatusItemView.m in Sources */,
 				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
+				47838B8A29068C520003E8AB /* BasePaginationResponse.swift in Sources */,
 				47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,

@@ -14,7 +14,6 @@ import AuthenticationServices
 protocol ServiceOverviewDelegate : AnyObject {
     func presentCompletedCoinbaseViewController()
     func presentCompletedUpholdViewController()
-    
 }
 
 class ServiceOverviewViewController:  UIViewController, UITableViewDelegate, UITableViewDataSource  {
@@ -100,7 +99,7 @@ extension ServiceOverviewViewController: ASWebAuthenticationPresentationContextP
 
 extension ServiceOverviewViewController: ServiceOverviewScreenModelDelegate {
     func didSignIn() {
-        let vc = TransferAmountViewController() //UIHostingController(rootView: CoinbasePortalView())
+        let vc = CoinbaseEntryPointViewController.controller()
         navigationController?.pushViewController(vc, animated: true)
     }
     
