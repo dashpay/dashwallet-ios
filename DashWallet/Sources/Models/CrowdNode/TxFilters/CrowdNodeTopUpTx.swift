@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@ public class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
     init(address: String) {
         super.init(coins: CrowdNodeConstants.requiredForSignup, address: address)
     }
-    
+
     override func matches(tx: DSTransaction) -> Bool {
         return tx.direction() == DSTransactionDirection.moved && super.matches(tx: tx)
     }

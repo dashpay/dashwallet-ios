@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -22,9 +22,9 @@ enum ApiCode: UInt64 {
     case withdrawalQueue = 16
     case withdrawalDenied = 32
     case withdrawAll = 1000
-    case signUp = 131072
+    case signUp = 131_072
     case acceptTerms = 65536
-    
+
     func maxCode() -> ApiCode {
         return ApiCode.signUp
     }

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,26 +19,26 @@ public class SingleInputAddressSelector {
     let candidates: [DSTransaction]
     let address: String
     private let account = DWEnvironment.sharedInstance().currentAccount
-    
+
     init(candidates: [DSTransaction], address: String) {
         self.candidates = candidates
         self.address = address
     }
-    
+
     func selectFor(tx: DSTransaction) -> UInt64 {
         var balance: UInt64 = 0
-        
+
         candidates
             .filter { candidate in !account.transactionOutputsAreLocked(tx) }
             .forEach { candidate in
                 for (i, output) in candidate.outputs.enumerated() {
-                    if (output.address == self.address) {
+                    if output.address == self.address {
                         tx.addInputHash(candidate.txHash, index: UInt(i), script: output.outScript)
                         balance += output.amount
                     }
                 }
             }
-        
+
         return balance
     }
 }

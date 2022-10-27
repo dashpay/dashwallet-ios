@@ -17,15 +17,15 @@
 
 public class CrowdNodeRequest: CoinsToAddressTxFilter {
     let requestCode: ApiCode
-    
+
     init(requestCode: ApiCode) {
         self.requestCode = requestCode
-        
+
         let address = CrowdNodeConstants.crowdNodeAddress
         let amount = CrowdNodeConstants.apiOffset + requestCode.rawValue
         super.init(coins: amount, address: address)
     }
-    
+
     override func matches(tx: DSTransaction) -> Bool {
         return super.matches(tx: tx) && fromAddresses.count == 1
     }

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,36 +20,36 @@ class FullCrowdNodeSignUpTxSet: TransactionWrapper {
     private let crowdNodeTxFilters = [
         CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
         CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
-        CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil)
+        CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
     ]
     private var matchedFilters: [CoinsToAddressTxFilter] = []
 
     var transactions: [Data: DSTransaction] = [:]
-    
+
     var welcomeToApiResponse: CoinsToAddressTxFilter? {
         matchedFilters.first { filter in
             (filter as? CrowdNodeResponse)?.responseCode == ApiCode.welcomeToApi
         }
     }
-    
+
     var acceptTermsRequest: CoinsToAddressTxFilter? {
         matchedFilters.first { filter in
             (filter as? CrowdNodeRequest)?.requestCode == ApiCode.acceptTerms
         }
     }
-    
+
     var acceptTermsResponse: CoinsToAddressTxFilter? {
         matchedFilters.first { filter in
             (filter as? CrowdNodeResponse)?.responseCode == ApiCode.pleaseAcceptTerms
         }
     }
-    
+
     var signUpRequest: CoinsToAddressTxFilter? {
         matchedFilters.first { filter in
             (filter as? CrowdNodeRequest)?.requestCode == ApiCode.signUp
         }
     }
-    
+
     func tryInclude(tx: DSTransaction) {
         if transactions[tx.txHashData] != nil {
             // Already included
@@ -61,17 +61,17 @@ class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             guard let possibleTopUpTx = chain.transaction(forHash: tx.inputs.first!.inputHash) else { return }
             // TopUp transaction can only be matched if we know the account address
             let topUpFilter = CrowdNodeTopUpTx(address: signUpRequestFilter.fromAddresses.first!)
-            
+
             if topUpFilter.matches(tx: possibleTopUpTx) {
                 transactions[possibleTopUpTx.txHashData] = possibleTopUpTx
                 transactions[tx.txHashData] = tx
                 matchedFilters.append(topUpFilter)
                 matchedFilters.append(signUpRequestFilter)
             }
-            
+
             return
         }
-        
+
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
             transactions[tx.txHashData] = tx
             matchedFilters.append(matchedFilter)

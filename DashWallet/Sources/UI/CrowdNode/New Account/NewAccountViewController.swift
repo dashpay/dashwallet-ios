@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,41 +15,40 @@
 //  limitations under the License.
 //
 
-import UIKit
 import Combine
-
+import UIKit
 
 class NewAccountViewController: UIViewController {
     private let viewModel = CrowdNodeModel()
     private var cancellableBag = Set<AnyCancellable>()
-    
+
     @IBOutlet var actionButton: UIButton!
     @IBOutlet var outputLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
     @IBOutlet var copyButton: UIButton!
     @IBOutlet var animationView: UIActivityIndicatorView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureHierarchy()
         configureObservers()
     }
-    
+
     @objc static func controller() -> NewAccountViewController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "NewAccountViewController") as! NewAccountViewController
         return vc
     }
-    
+
     @IBAction func createAccountAction() {
         viewModel.signUp()
     }
-    
+
     @IBAction func copyOutput() {
         UIPasteboard.general.string = addressLabel.text
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         cancellableBag.removeAll()
@@ -58,18 +57,17 @@ class NewAccountViewController: UIViewController {
 
 extension NewAccountViewController {
     private func configureHierarchy() {
-        self.definesPresentationContext = true
-        self.view.backgroundColor = UIColor.dw_secondaryBackground()
+        definesPresentationContext = true
+        view.backgroundColor = UIColor.dw_secondaryBackground()
         actionButton.setTitle(NSLocalizedString("Sign up to CrowdNode", comment: ""), for: .normal)
     }
 
-    
     private func configureObservers() {
         viewModel.$signUpEnabled
             .receive(on: DispatchQueue.main)
             .assign(to: \.isEnabled, on: actionButton)
             .store(in: &cancellableBag)
-        
+
         viewModel.$accountAddress
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] address in
@@ -77,18 +75,19 @@ extension NewAccountViewController {
                 self?.copyButton.isEnabled = !address.isEmpty
             })
             .store(in: &cancellableBag)
-        
+
         viewModel.$outputMessage
             .receive(on: DispatchQueue.main)
             .assign(to: \.text!, on: outputLabel)
             .store(in: &cancellableBag)
-        
+
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isLoading in
-                if (isLoading) {
+                if isLoading {
                     self?.animationView.startAnimating()
-                } else {
+                }
+                else {
                     self?.animationView.stopAnimating()
                 }
             })

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,11 +18,11 @@
 public class SpendableTransaction: TransactionFilter {
     private let txHashData: Data
     private let account = DWEnvironment.sharedInstance().currentAccount
-    
-    init (txHashData: Data) {
+
+    init(txHashData: Data) {
         self.txHashData = txHashData
     }
-    
+
     func matches(tx: DSTransaction) -> Bool {
         return tx.txHashData == txHashData &&
             !account.transactionOutputsAreLocked(tx)

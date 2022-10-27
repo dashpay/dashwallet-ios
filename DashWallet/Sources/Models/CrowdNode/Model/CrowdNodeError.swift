@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@ enum CrowdNodeError: Error {
     case signUp
     case deposit
     case withdraw
-    
+
     public var description: String {
         switch self {
         case .signUp:

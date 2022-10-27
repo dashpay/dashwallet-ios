@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,21 +15,20 @@
 //  limitations under the License.
 //
 
-struct CrowdNodeConstants {
+enum CrowdNodeConstants {
     private static let crowdNodeTestNetAddress = "yMY5bqWcknGy5xYBHSsh2xvHZiJsRucjuy"
     private static let crowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
-    
+
     static var crowdNodeAddress: String {
-        get {
-            if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
-                return crowdNodeMainNetAddress
-            } else {
-                return crowdNodeTestNetAddress
-            }
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+            return crowdNodeMainNetAddress
+        }
+        else {
+            return crowdNodeTestNetAddress
         }
     }
-    
-    static var minimumRequiredDash = UInt64(1000000)
-    static var requiredForSignup = minimumRequiredDash -  UInt64(100000)
+
+    static var minimumRequiredDash = UInt64(1_000_000)
+    static var requiredForSignup = minimumRequiredDash - UInt64(100_000)
     static var apiOffset = UInt64(20000)
 }

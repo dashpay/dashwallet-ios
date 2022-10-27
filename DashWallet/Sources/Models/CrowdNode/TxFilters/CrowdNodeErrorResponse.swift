@@ -21,7 +21,7 @@ public class CrowdNodeErrorResponse: CoinsToAddressTxFilter {
         let accountAddress = accountAddress
         super.init(coins: errorValue, address: accountAddress, withFee: true)
     }
-    
+
     override func matches(tx: DSTransaction) -> Bool {
         return super.matches(tx: tx) && fromAddresses.first == CrowdNodeConstants.crowdNodeAddress
     }
