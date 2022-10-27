@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,15 +15,11 @@
 //  limitations under the License.
 //
 
-public class CrowdNodeResponse: CoinsToAddressTxFilter {
-    let responseCode: ApiCode
-    
-    init(responseCode: ApiCode, accountAddress: String?) {
-        self.responseCode = responseCode
+/// CrowdNode returns the sent amount - fee as the indication of an error
+public class CrowdNodeErrorResponse: CoinsToAddressTxFilter {
+    init(errorValue: UInt64, accountAddress: String?) {
         let accountAddress = accountAddress
-        let responseAmount = CrowdNodeConstants.apiOffset + responseCode.rawValue
-        
-        super.init(coins: responseAmount, address: accountAddress)
+        super.init(coins: errorValue, address: accountAddress, withFee: true)
     }
     
     override func matches(tx: DSTransaction) -> Bool {

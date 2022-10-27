@@ -15,32 +15,67 @@
 //  limitations under the License.
 //
 
+import Combine
+
 class CrowdNodeModel {
-    private let crowdNode = CrowdNode()
+    private var cancellableBag = Set<AnyCancellable>()
+    private let crowdNode = CrowdNode.shared
+    
     @Published var outputMessage: String = ""
+    @Published var accountAddress: String = ""
     @Published var isLoading: Bool = false
+    @Published var signUpEnabled: Bool = false
+    
+    
+    init() {
+        self.accountAddress = crowdNode.accountAddress
+        
+        crowdNode.$signUpState
+            .sink { [weak self] state in
+                self?.signUpEnabled = false
+                self?.isLoading = false
+                
+                switch state {
+                case .notStarted:
+                    self?.signUpEnabled = true
+                    self?.outputMessage = NSLocalizedString("Sign up to CrowdNode", comment: "")
+                    
+                case .fundingWallet, .signingUp:
+                    self?.isLoading = true
+                    self?.outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "")
+                    
+                case .acceptingTerms:
+                    self?.isLoading = true
+                    self?.outputMessage = NSLocalizedString("Accepting terms of use…", comment: "")
+                    
+                case .finished:
+                    self?.outputMessage = NSLocalizedString("Your CrowdNode account is set up and ready to use!", comment: "")
+                    
+                case .error:
+                    self?.signUpEnabled = true
+                    self?.outputMessage = NSLocalizedString("We couldn’t create your CrowdNode account.", comment: "") + " \(String(describing: self?.crowdNode.apiError?.localizedDescription))"
+                    
+                case .linkedOnline:
+                    break
+                }
+            }
+            .store(in: &cancellableBag)
+    }
     
     @MainActor
     func signUp() {
         Task.init {
-            defer { isLoading = false }
-            
             if let accountAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress {
                 print("CrowdNode account address: \(accountAddress)")
-                outputMessage = accountAddress
+                self.accountAddress = accountAddress
                 
-                do {
-                    let success = await DSAuthenticationManager.sharedInstance().authenticate(
-                        withPrompt: NSLocalizedString("Sign up to CrowdNode", comment: ""),
-                        usingBiometricAuthentication: false, alertIfLockout: false
-                    ).0
+                let success = await DSAuthenticationManager.sharedInstance().authenticate(
+                    withPrompt: NSLocalizedString("Sign up to CrowdNode", comment: ""),
+                    usingBiometricAuthentication: false, alertIfLockout: false
+                ).0
             
-                    if (success) {
-                        isLoading = true
-                        try await crowdNode.signUp(accountAddress: accountAddress)
-                    }
-                } catch {
-                    outputMessage = error.localizedDescription
+                if (success) {
+                    await crowdNode.signUp(accountAddress: accountAddress)
                 }
             }
         }

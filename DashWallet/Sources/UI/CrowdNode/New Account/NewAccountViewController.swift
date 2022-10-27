@@ -25,6 +25,7 @@ class NewAccountViewController: UIViewController {
     
     @IBOutlet var actionButton: UIButton!
     @IBOutlet var outputLabel: UILabel!
+    @IBOutlet var addressLabel: UILabel!
     @IBOutlet var copyButton: UIButton!
     @IBOutlet var animationView: UIActivityIndicatorView!
     
@@ -46,7 +47,7 @@ class NewAccountViewController: UIViewController {
     }
     
     @IBAction func copyOutput() {
-        UIPasteboard.general.string = outputLabel.text
+        UIPasteboard.general.string = addressLabel.text
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -60,11 +61,23 @@ extension NewAccountViewController {
         self.definesPresentationContext = true
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
         actionButton.setTitle(NSLocalizedString("Sign up to CrowdNode", comment: ""), for: .normal)
-        copyButton.isHidden = true
     }
 
     
     private func configureObservers() {
+        viewModel.$signUpEnabled
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.isEnabled, on: actionButton)
+            .store(in: &cancellableBag)
+        
+        viewModel.$accountAddress
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] address in
+                self?.addressLabel.text = address
+                self?.copyButton.isEnabled = !address.isEmpty
+            })
+            .store(in: &cancellableBag)
+        
         viewModel.$outputMessage
             .receive(on: DispatchQueue.main)
             .assign(to: \.text!, on: outputLabel)
@@ -74,7 +87,6 @@ extension NewAccountViewController {
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isLoading in
                 if (isLoading) {
-                    self?.copyButton.isHidden = false
                     self?.animationView.startAnimating()
                 } else {
                     self?.animationView.stopAnimating()

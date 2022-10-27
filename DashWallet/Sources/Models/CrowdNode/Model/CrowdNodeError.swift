@@ -15,18 +15,19 @@
 //  limitations under the License.
 //
 
-public class CrowdNodeResponse: CoinsToAddressTxFilter {
-    let responseCode: ApiCode
+enum CrowdNodeError: Error {
+    case signUp
+    case deposit
+    case withdraw
     
-    init(responseCode: ApiCode, accountAddress: String?) {
-        self.responseCode = responseCode
-        let accountAddress = accountAddress
-        let responseAmount = CrowdNodeConstants.apiOffset + responseCode.rawValue
-        
-        super.init(coins: responseAmount, address: accountAddress)
-    }
-    
-    override func matches(tx: DSTransaction) -> Bool {
-        return super.matches(tx: tx) && fromAddresses.first == CrowdNodeConstants.crowdNodeAddress
+    public var description: String {
+        switch self {
+        case .signUp:
+            return NSLocalizedString("We couldn’t create your CrowdNode account.", comment: "")
+        case .deposit:
+            return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "")
+        case .withdraw:
+            return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "")
+        }
     }
 }

@@ -15,18 +15,7 @@
 //  limitations under the License.
 //
 
-public class CrowdNodeResponse: CoinsToAddressTxFilter {
-    let responseCode: ApiCode
-    
-    init(responseCode: ApiCode, accountAddress: String?) {
-        self.responseCode = responseCode
-        let accountAddress = accountAddress
-        let responseAmount = CrowdNodeConstants.apiOffset + responseCode.rawValue
-        
-        super.init(coins: responseAmount, address: accountAddress)
-    }
-    
-    override func matches(tx: DSTransaction) -> Bool {
-        return super.matches(tx: tx) && fromAddresses.first == CrowdNodeConstants.crowdNodeAddress
-    }
+protocol TransactionWrapper {
+    var transactions: [Data: DSTransaction] { get }
+    func tryInclude(tx: DSTransaction)
 }

@@ -28,14 +28,75 @@ public class CrowdNode {
         case linkedOnline
     }
     
-    private var accountAddress: String = ""
-    private(set) var signUpState = SignUpState.notStarted
     private let sendCoinsService = SendCoinsService()
     private let txObserver = TransactionObserver()
+    
+    @Published private(set) var signUpState = SignUpState.notStarted
+    private(set) var accountAddress: String = ""
+    private(set) var apiError: Error? = nil
+    
+    public static let shared: CrowdNode = CrowdNode()
+    
+    init() {
+        restoreState()
+    }
 }
 
 extension CrowdNode {
-    func signUp(accountAddress: String) async throws {
+    private func restoreState() {
+        if (signUpState != SignUpState.notStarted) {
+            // Already started/restored
+            return
+        }
+        
+        print("restoring CrowdNode status")
+        let fullSet = FullCrowdNodeSignUpTxSet()
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        wallet.allTransactions.forEach { transaction in
+            fullSet.tryInclude(tx: transaction)
+        }
+        
+        if let welcomeResponse = fullSet.welcomeToApiResponse {
+            precondition(welcomeResponse.toAddress != nil)
+            setFinished(address: welcomeResponse.toAddress!)
+            return
+        }
+        
+        if let acceptTermsResponse = fullSet.acceptTermsResponse {
+            precondition(acceptTermsResponse.toAddress != nil)
+            setAcceptingTerms(address: acceptTermsResponse.toAddress!)
+            return
+        }
+        
+        if let signUpRequest = fullSet.signUpRequest {
+            precondition(signUpRequest.fromAddresses.first != nil)
+            setSigningUp(address: signUpRequest.fromAddresses.first!)
+        }
+    }
+    
+    private func setFinished(address: String) {
+        accountAddress = address
+        print("found finished sign up, account: \(address)")
+        signUpState = SignUpState.finished
+        // TODO: refreshBalance()
+        // TODO: tax category
+    }
+    
+    private func setAcceptingTerms(address: String) {
+        accountAddress = address
+        print("found accept terms response, account: \(address)")
+        signUpState = SignUpState.acceptingTerms
+    }
+    
+    private func setSigningUp(address: String) {
+        accountAddress = address
+        print("found signUp request, account: \(address)")
+        signUpState = SignUpState.signingUp
+    }
+}
+
+extension CrowdNode {
+    func signUp(accountAddress: String) async {
         self.accountAddress = accountAddress
         
         do {
@@ -58,7 +119,7 @@ extension CrowdNode {
             }
         } catch {
             signUpState = SignUpState.error
-            throw error
+            apiError = error
         }
     }
 
@@ -67,7 +128,7 @@ extension CrowdNode {
             address: accountAddress,
             amount: CrowdNodeConstants.requiredForSignup
         )
-        return await txObserver.first(filter: SpendableTransaction(txHashData: topUpTx.txHashData))
+        return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
     }
     
     private func makeSignUpRequest(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
@@ -77,12 +138,22 @@ extension CrowdNode {
             inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
         )
         
-        let acceptTermsResponse = await txObserver.first(filter: CrowdNodeResponse(
+        let successResponse = CrowdNodeResponse(
             responseCode: ApiCode.pleaseAcceptTerms,
             accountAddress: accountAddress
-        ))
+        )
+        let errorResponse = CrowdNodeErrorResponse(
+            errorValue: CrowdNodeConstants.apiOffset + ApiCode.welcomeToApi.rawValue,
+            accountAddress: accountAddress
+        )
         
-        return (req: signUpTx, resp: acceptTermsResponse)
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
+        
+        if errorResponse.matches(tx: responseTx) {
+            throw CrowdNodeError.signUp
+        }
+        
+        return (req: signUpTx, resp: responseTx)
     }
     
     private func acceptTerms(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
@@ -91,11 +162,22 @@ extension CrowdNode {
             amount: CrowdNodeConstants.apiOffset + ApiCode.acceptTerms.rawValue,
             inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
         )
-        let welcomeResponse = await txObserver.first(filter: CrowdNodeResponse(
+        
+        let successResponse = CrowdNodeResponse(
             responseCode: ApiCode.welcomeToApi,
             accountAddress: accountAddress
-        ))
+        )
+        let errorResponse = CrowdNodeErrorResponse(
+            errorValue: successResponse.coins,
+            accountAddress: accountAddress
+        )
         
-        return (req: termsAcceptedTx, resp: welcomeResponse)
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
+        
+        if errorResponse.matches(tx: responseTx) {
+            throw CrowdNodeError.signUp
+        }
+        
+        return (req: termsAcceptedTx, resp: responseTx)
     }
 }

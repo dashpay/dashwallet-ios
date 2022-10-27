@@ -15,18 +15,12 @@
 //  limitations under the License.
 //
 
-public class CrowdNodeResponse: CoinsToAddressTxFilter {
-    let responseCode: ApiCode
-    
-    init(responseCode: ApiCode, accountAddress: String?) {
-        self.responseCode = responseCode
-        let accountAddress = accountAddress
-        let responseAmount = CrowdNodeConstants.apiOffset + responseCode.rawValue
-        
-        super.init(coins: responseAmount, address: accountAddress)
+public class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
+    init(address: String) {
+        super.init(coins: CrowdNodeConstants.requiredForSignup, address: address)
     }
     
     override func matches(tx: DSTransaction) -> Bool {
-        return super.matches(tx: tx) && fromAddresses.first == CrowdNodeConstants.crowdNodeAddress
+        return tx.direction() == DSTransactionDirection.moved && super.matches(tx: tx)
     }
 }

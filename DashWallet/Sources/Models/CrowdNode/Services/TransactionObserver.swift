@@ -20,7 +20,7 @@ import Combine
 public class TransactionObserver {
     
     /// Observes status changes for transactions that match `filter`
-    func observe(filter: TransactionFilter) -> AnyPublisher<DSTransaction, Never> {
+    func observe(filters: [TransactionFilter]) -> AnyPublisher<DSTransaction, Never> {
         return NotificationCenter.default.publisher(for: NSNotification.Name.DSTransactionManagerTransactionStatusDidChange)
             .compactMap { notification in
                 let txKey = DSTransactionManagerNotificationTransactionKey
@@ -33,15 +33,15 @@ public class TransactionObserver {
                 
                 return nil
             }
-            .filter { tx in filter.matches(tx: tx) }
+            .filter { tx in filters.contains { $0.matches(tx: tx) } }
             .eraseToAnyPublisher()
     }
     
     /// Waits for the first status change that matches `filter`
-    func first(filter: TransactionFilter) async -> DSTransaction {
+    func first(filters: TransactionFilter...) async -> DSTransaction {
         return await withCheckedContinuation { continuation in
             var cancellable: AnyCancellable? = nil
-            cancellable = observe(filter: filter).first().sink(receiveValue: { tx in
+            cancellable = observe(filters: filters).first().sink(receiveValue: { tx in
                 cancellable?.cancel()
                 continuation.resume(returning: tx)
             })
