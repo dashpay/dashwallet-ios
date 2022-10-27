@@ -15,20 +15,12 @@
 //  limitations under the License.
 //
 
-enum CrowdNodeConstants {
-    private static let crowdNodeTestNetAddress = "yMY5bqWcknGy5xYBHSsh2xvHZiJsRucjuy"
-    private static let crowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
-
-    static var crowdNodeAddress: String {
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-            return crowdNodeMainNetAddress
-        }
-        else {
-            return crowdNodeTestNetAddress
-        }
+public class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
+    init(address: String) {
+        super.init(coins: CrowdNodeConstants.requiredForSignup, address: address)
     }
 
-    static var minimumRequiredDash = UInt64(1_000_000)
-    static var requiredForSignup = minimumRequiredDash - UInt64(100_000)
-    static var apiOffset = UInt64(20000)
+    override func matches(tx: DSTransaction) -> Bool {
+        return tx.direction() == DSTransactionDirection.moved && super.matches(tx: tx)
+    }
 }

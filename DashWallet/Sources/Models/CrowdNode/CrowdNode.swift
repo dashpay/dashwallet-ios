@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -27,38 +27,100 @@ public class CrowdNode {
         // Link Existing Account
         case linkedOnline
     }
-    
-    private var accountAddress: String = ""
-    private(set) var signUpState = SignUpState.notStarted
+
     private let sendCoinsService = SendCoinsService()
     private let txObserver = TransactionObserver()
+
+    @Published private(set) var signUpState = SignUpState.notStarted
+    private(set) var accountAddress: String = ""
+    private(set) var apiError: Error?
+
+    public static let shared: CrowdNode = .init()
+
+    init() {
+        restoreState()
+    }
 }
 
 extension CrowdNode {
-    func signUp(accountAddress: String) async throws {
+    private func restoreState() {
+        if signUpState != SignUpState.notStarted {
+            // Already started/restored
+            return
+        }
+
+        print("restoring CrowdNode status")
+        let fullSet = FullCrowdNodeSignUpTxSet()
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        wallet.allTransactions.forEach { transaction in
+            fullSet.tryInclude(tx: transaction)
+        }
+
+        if let welcomeResponse = fullSet.welcomeToApiResponse {
+            precondition(welcomeResponse.toAddress != nil)
+            setFinished(address: welcomeResponse.toAddress!)
+            return
+        }
+
+        if let acceptTermsResponse = fullSet.acceptTermsResponse {
+            precondition(acceptTermsResponse.toAddress != nil)
+            setAcceptingTerms(address: acceptTermsResponse.toAddress!)
+            return
+        }
+
+        if let signUpRequest = fullSet.signUpRequest {
+            precondition(signUpRequest.fromAddresses.first != nil)
+            setSigningUp(address: signUpRequest.fromAddresses.first!)
+        }
+    }
+
+    private func setFinished(address: String) {
+        accountAddress = address
+        print("found finished sign up, account: \(address)")
+        signUpState = SignUpState.finished
+        // TODO: refreshBalance()
+        // TODO: tax category
+    }
+
+    private func setAcceptingTerms(address: String) {
+        accountAddress = address
+        print("found accept terms response, account: \(address)")
+        signUpState = SignUpState.acceptingTerms
+    }
+
+    private func setSigningUp(address: String) {
+        accountAddress = address
+        print("found signUp request, account: \(address)")
+        signUpState = SignUpState.signingUp
+    }
+}
+
+extension CrowdNode {
+    func signUp(accountAddress: String) async {
         self.accountAddress = accountAddress
-        
+
         do {
-            if (signUpState < SignUpState.signingUp) {
+            if signUpState < SignUpState.signingUp {
                 signUpState = SignUpState.fundingWallet
                 let topUpTx = try await topUpAccount(accountAddress)
                 print("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
-                
+
                 signUpState = SignUpState.signingUp
                 let (signUpTx, acceptTermsResponse) = try await makeSignUpRequest(accountAddress, [topUpTx])
                 print("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
                 print("CrowdNode AcceptTerms response tx hash: \(acceptTermsResponse.txHashHexString)")
-                
+
                 signUpState = SignUpState.acceptingTerms
                 let (termsAcceptedTx, welcomeResponse) = try await acceptTerms(accountAddress, [signUpTx, acceptTermsResponse])
                 print("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
                 print("CrowdNode Welcome response tx hash: \(welcomeResponse.txHashHexString)")
-                
+
                 signUpState = SignUpState.finished
             }
-        } catch {
+        }
+        catch {
             signUpState = SignUpState.error
-            throw error
+            apiError = error
         }
     }
 
@@ -67,35 +129,56 @@ extension CrowdNode {
             address: accountAddress,
             amount: CrowdNodeConstants.requiredForSignup
         )
-        return await txObserver.first(filter: SpendableTransaction(txHashData: topUpTx.txHashData))
+        return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
     }
-    
+
     private func makeSignUpRequest(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let signUpTx = try await sendCoinsService.sendCoins(
             address: CrowdNodeConstants.crowdNodeAddress,
             amount: CrowdNodeConstants.apiOffset + ApiCode.signUp.rawValue,
             inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
         )
-        
-        let acceptTermsResponse = await txObserver.first(filter: CrowdNodeResponse(
+
+        let successResponse = CrowdNodeResponse(
             responseCode: ApiCode.pleaseAcceptTerms,
             accountAddress: accountAddress
-        ))
-        
-        return (req: signUpTx, resp: acceptTermsResponse)
+        )
+        let errorResponse = CrowdNodeErrorResponse(
+            errorValue: CrowdNodeConstants.apiOffset + ApiCode.welcomeToApi.rawValue,
+            accountAddress: accountAddress
+        )
+
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
+
+        if errorResponse.matches(tx: responseTx) {
+            throw CrowdNodeError.signUp
+        }
+
+        return (req: signUpTx, resp: responseTx)
     }
-    
+
     private func acceptTerms(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let termsAcceptedTx = try await sendCoinsService.sendCoins(
             address: CrowdNodeConstants.crowdNodeAddress,
             amount: CrowdNodeConstants.apiOffset + ApiCode.acceptTerms.rawValue,
             inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
         )
-        let welcomeResponse = await txObserver.first(filter: CrowdNodeResponse(
+
+        let successResponse = CrowdNodeResponse(
             responseCode: ApiCode.welcomeToApi,
             accountAddress: accountAddress
-        ))
-        
-        return (req: termsAcceptedTx, resp: welcomeResponse)
+        )
+        let errorResponse = CrowdNodeErrorResponse(
+            errorValue: successResponse.coins,
+            accountAddress: accountAddress
+        )
+
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
+
+        if errorResponse.matches(tx: responseTx) {
+            throw CrowdNodeError.signUp
+        }
+
+        return (req: termsAcceptedTx, resp: responseTx)
     }
 }

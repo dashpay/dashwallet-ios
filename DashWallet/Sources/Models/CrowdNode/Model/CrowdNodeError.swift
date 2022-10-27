@@ -15,20 +15,19 @@
 //  limitations under the License.
 //
 
-enum CrowdNodeConstants {
-    private static let crowdNodeTestNetAddress = "yMY5bqWcknGy5xYBHSsh2xvHZiJsRucjuy"
-    private static let crowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
+enum CrowdNodeError: Error {
+    case signUp
+    case deposit
+    case withdraw
 
-    static var crowdNodeAddress: String {
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-            return crowdNodeMainNetAddress
-        }
-        else {
-            return crowdNodeTestNetAddress
+    public var description: String {
+        switch self {
+        case .signUp:
+            return NSLocalizedString("We couldn’t create your CrowdNode account.", comment: "")
+        case .deposit:
+            return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "")
+        case .withdraw:
+            return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "")
         }
     }
-
-    static var minimumRequiredDash = UInt64(1_000_000)
-    static var requiredForSignup = minimumRequiredDash - UInt64(100_000)
-    static var apiOffset = UInt64(20000)
 }

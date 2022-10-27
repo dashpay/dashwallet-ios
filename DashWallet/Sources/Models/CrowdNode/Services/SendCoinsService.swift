@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,18 +19,19 @@ import Combine
 
 public class SendCoinsService {
     private let transactionManager: DSTransactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
-    
+
     func sendCoins(address: String, amount: UInt64, inputSelector: SingleInputAddressSelector? = nil) async throws -> DSTransaction {
         let amount = UInt64(amount)
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
-        let transaction = DSTransaction.init(on: chain)
-        
-        if (inputSelector == nil) {
+        let transaction = DSTransaction(on: chain)
+
+        if inputSelector == nil {
             // Forming transaction normally
             let script = NSData.scriptPubKey(forAddress: address, for: chain)
             account.update(transaction, forAmounts: [amount], toOutputScripts: [script], withFee: true)
-        } else {
+        }
+        else {
             // Selecting proper inputs
             let balance = inputSelector!.selectFor(tx: transaction)
             transaction.addOutputAddress(address, amount: amount)
@@ -41,11 +42,11 @@ public class SendCoinsService {
             transaction.addOutputAddress(changeAddress, amount: change)
             transaction.sortOutputsAccordingToBIP69()
         }
-        
+
         await account.sign(transaction, withPrompt: nil)
         account.register(transaction, saveImmediately: false)
         try await transactionManager.publishTransaction(transaction)
-    
+
         return transaction
     }
 }
