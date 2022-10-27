@@ -28,6 +28,8 @@
 #import "DWBaseActionButtonViewController.h"
 #import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
+#import "DWInputValidator.h"
+#import "DWAmountInputValidator.h"
 
 #import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"

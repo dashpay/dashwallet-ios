@@ -1232,6 +1232,9 @@
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Aktualizované: %@";
 
+/* Updating Price */
+"Updating Price" = "Updating Price";
+
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Poplatok za inováciu";
 

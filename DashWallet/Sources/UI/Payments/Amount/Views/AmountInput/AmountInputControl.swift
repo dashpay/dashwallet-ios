@@ -33,11 +33,14 @@ protocol AmountInputControlDelegate: AnyObject {
 protocol AmountInputControlDataSource: AnyObject {
     var dashAttributedString: NSAttributedString { get }
     var localCurrencyAttributedString: NSAttributedString { get }
+    
+    func supplementaryAmount(for text: String) -> String
+    func mainAmount(for text: String) -> String
 }
 
 extension AmountInputControl.AmountType {
     func toggle() -> Self {
-        self == .dash ? .fiat : .dash
+        self == .main ? .supplementary : .main
     }
 }
 
@@ -48,8 +51,8 @@ class AmountInputControl: UIControl {
     }
     
     enum AmountType {
-        case dash
-        case fiat
+        case main
+        case supplementary
     }
     
     public var style: Style = .oppositeAmount {
@@ -60,7 +63,7 @@ class AmountInputControl: UIControl {
         }
     }
     
-    public var amountType: AmountType = .dash
+    public var amountType: AmountType = .main
     
     public weak var delegate: AmountInputControlDelegate?
     public weak var dataSource: AmountInputControlDataSource? {
@@ -68,6 +71,16 @@ class AmountInputControl: UIControl {
             reloadData()
         }
     }
+    
+    public var mainAmountValidator: DWInputValidator?
+    public var supplementaryAmountValidator: DWInputValidator?
+    
+    public var mainAmountFormatter: NumberFormatter?
+    public var supplementaryAmountFormatter: NumberFormatter?
+    
+    public var text: String? { return mainText }
+    public var mainText: String?
+    public var supplementaryText: String?
     
     override var intrinsicContentSize: CGSize {
         return CGSize(width: mainAmountLabel.bounds.width, height: contentHeight)
@@ -78,6 +91,8 @@ class AmountInputControl: UIControl {
     private var supplementaryAmountLabel: UILabel!
     
     private var currencySelectorButton: UIButton!
+
+    public var textField: UITextField!
     
     init(style: Style) {
         super.init(frame: .zero)
@@ -97,8 +112,8 @@ class AmountInputControl: UIControl {
     }
     
     func reloadData() {
-        mainAmountLabel.attributedText = dataSource?.dashAttributedString
-        supplementaryAmountLabel.attributedText = dataSource?.localCurrencyAttributedString
+        //mainAmountLabel.attributedText = dataSource?.dashAttributedString
+        //supplementaryAmountLabel.attributedText = dataSource?.localCurrencyAttributedString
     }
     
     func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)?) {
@@ -107,7 +122,7 @@ class AmountInputControl: UIControl {
             return
         }
         
-        let wasSwapped = type != .fiat
+        let wasSwapped = type != .supplementary
         let bigLabel: UILabel = wasSwapped ? supplementaryAmountLabel : mainAmountLabel
         let smallLabel: UILabel = wasSwapped ? mainAmountLabel : supplementaryAmountLabel
         
@@ -155,6 +170,19 @@ class AmountInputControl: UIControl {
         }
     }
     
+    override func becomeFirstResponder() -> Bool {
+        let val = textField.becomeFirstResponder()
+        let endOfDocumentPosition = textField.endOfDocument
+        self.textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
+        return val
+    }
+    
+    //MARK: Actions
+    
+    @objc func textFieldValueDidChange() {
+        mainAmountLabel.text = textField.text
+        supplementaryAmountLabel.text = textField.text
+    }
     
     @objc func switchAmountCurrencyAction() {
         guard style == .oppositeAmount else { return }
@@ -184,7 +212,7 @@ extension AmountInputControl {
         if style == .basic {
             mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
         }else{
-            let isSwapped = amountType == .fiat
+            let isSwapped = amountType == .supplementary
             let bigLabel: UILabel = isSwapped ? supplementaryAmountLabel : mainAmountLabel
             let smallLabel: UILabel = isSwapped ? mainAmountLabel : supplementaryAmountLabel
             
@@ -201,6 +229,23 @@ extension AmountInputControl {
 extension AmountInputControl {
     private func configureHierarchy() {
         clipsToBounds = false
+        
+        let textFieldRect = CGRect(x: 0.0, y: -500.0, width: 320, height: 44)
+        self.textField = UITextField(frame: textFieldRect)
+        //textField.addTarget(self, action: #selector(textFieldValueDidChange), for: .editingChanged)
+        textField.delegate = self
+        textField.autocorrectionType = .no
+        textField.autocapitalizationType = .none
+        textField.spellCheckingType = .no
+        
+        //TODO: demo mode
+        let inputViewRect = CGRect(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: 1.0)
+        textField.inputView = DWNumberKeyboardInputViewAudioFeedback(frame: inputViewRect)
+        
+        let inputAssistantItem = textField.inputAssistantItem
+        inputAssistantItem.leadingBarButtonGroups = []
+        inputAssistantItem.trailingBarButtonGroups = []
+        addSubview(textField)
         
         self.contentView = UIControl()
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -247,5 +292,48 @@ extension AmountInputControl {
         label.addGestureRecognizer(tapGesture)
         
         return label
+    }
+}
+
+extension AmountInputControl: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let lastInputString = textField.text ?? ""
+        
+        if let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range, replacementString: string)
+        {
+            textField.text = validatedString
+            updateText(with: validatedString)
+            reloadAttributedData()
+        }
+        
+        return false
+    }
+    
+    var validator: DWInputValidator? {
+        return amountType == .supplementary ? supplementaryAmountValidator : mainAmountValidator
+    }
+}
+
+//MARK: Text Formatting
+
+extension AmountInputControl {
+    func updateText(with inputString: String) {
+        let mainText: String
+        let supplementaryText: String
+        
+        if amountType == .main {
+            mainText = inputString
+            supplementaryText = dataSource?.supplementaryAmount(for: inputString) ?? inputString
+        }else{
+            mainText = dataSource?.mainAmount(for: inputString) ?? inputString
+            supplementaryText = inputString
+        }
+        
+        self.mainText = mainText
+        self.supplementaryText = supplementaryText
+    }
+    
+    func reloadAttributedData() {
+        
     }
 }

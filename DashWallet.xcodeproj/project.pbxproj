@@ -547,6 +547,7 @@
 		47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1B28C6AA2400490F5E /* PointOfUseLocationServicePopup.swift */; };
 		47AE8C1E28C7491C00490F5E /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1D28C7491C00490F5E /* AboutViewController.swift */; };
 		47AF180529070B720025803E /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AF180429070B720025803E /* Types.swift */; };
+		47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AF18072907B7880025803E /* BaseAmountModel.swift */; };
 		47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AA28F9707A00028A8D /* NumberKeyboard.swift */; };
 		47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
@@ -1681,6 +1682,7 @@
 		47AE8C1D28C7491C00490F5E /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		47AF180429070B720025803E /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		47AF1806290717030025803E /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
+		47AF18072907B7880025803E /* BaseAmountModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseAmountModel.swift; sourceTree = "<group>"; };
 		47C661AA28F9707A00028A8D /* NumberKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboard.swift; sourceTree = "<group>"; };
 		47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboardButton.swift; sourceTree = "<group>"; };
 		47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseAmountViewController.swift; sourceTree = "<group>"; };
@@ -3913,6 +3915,7 @@
 				2AFCB9AD23BDEC6300FF59A6 /* DWAmountModel+DWProtected.h */,
 				2A2120EE22147A40009906DC /* DWAmountObject.h */,
 				2A2120EF22147A40009906DC /* DWAmountObject.m */,
+				47AF18072907B7880025803E /* BaseAmountModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -5841,6 +5844,7 @@
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
 				2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */,
+				47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */,
 				2A7AF3752482703C001D74F9 /* DWDPNewIncomingRequestNotificationObject.m in Sources */,
 				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,

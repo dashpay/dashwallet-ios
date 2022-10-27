@@ -24,16 +24,24 @@ protocol AmountViewDataSource: AmountInputControlDataSource {
 class AmountView: UIView {
     public weak var dataSource: AmountViewDataSource? {
         didSet {
-            inputControl.dataSource = dataSource
+            amountInputControl.dataSource = dataSource
         }
     }
     
+    public var textInput: UITextInput {
+        return amountInputControl.textField
+    }
+    
     private var maxButton: UIButton!
-    private var inputControl: AmountInputControl!
+    private var amountInputControl: AmountInputControl!
     private var inputTypeSwitcher: AmountInputTypeSwitcher!
-        
+    
     override var intrinsicContentSize: CGSize {
         .init(width: AmountView.noIntrinsicMetric, height: 60)
+    }
+    
+    override func becomeFirstResponder() -> Bool {
+        return amountInputControl.becomeFirstResponder()
     }
     
     override init(frame: CGRect) {
@@ -47,7 +55,7 @@ class AmountView: UIView {
     }
     
     @objc func maxButtonAction() {
-        inputControl.style = inputControl.style == .oppositeAmount ? .basic : .oppositeAmount
+        amountInputControl.style = amountInputControl.style == .oppositeAmount ? .basic : .oppositeAmount
     }
 }
 
@@ -58,10 +66,15 @@ extension AmountView {
         maxButton.addTarget(self, action: #selector(maxButtonAction), for: .touchUpInside)
         addSubview(maxButton)
         
-        self.inputControl = AmountInputControl(style: .basic)
-        inputControl.dataSource = dataSource
-        inputControl.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(inputControl)
+        self.amountInputControl = AmountInputControl(style: .basic)
+        amountInputControl.mainAmountValidator = DWAmountInputValidator(type: .dash)
+        amountInputControl.mainAmountFormatter = DSPriceManager.sharedInstance().dashFormat
+        amountInputControl.supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency)
+        amountInputControl.supplementaryAmountFormatter = DSPriceManager.sharedInstance().localFormat.copy() as? NumberFormatter
+        
+        amountInputControl.dataSource = dataSource
+        amountInputControl.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(amountInputControl)
     
         self.inputTypeSwitcher = .init(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
@@ -74,10 +87,10 @@ extension AmountView {
             maxButton.heightAnchor.constraint(equalToConstant: 38),
             maxButton.leadingAnchor.constraint(equalTo: leadingAnchor),
             
-            inputControl.centerXAnchor.constraint(equalTo: centerXAnchor),
-            inputControl.centerYAnchor.constraint(equalTo: centerYAnchor),
-            inputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 60),
-            inputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -60),
+            amountInputControl.centerXAnchor.constraint(equalTo: centerXAnchor),
+            amountInputControl.centerYAnchor.constraint(equalTo: centerYAnchor),
+            amountInputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 60),
+            amountInputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -60),
             
             inputTypeSwitcher.centerYAnchor.constraint(equalTo: centerYAnchor),
             inputTypeSwitcher.trailingAnchor.constraint(equalTo: trailingAnchor),

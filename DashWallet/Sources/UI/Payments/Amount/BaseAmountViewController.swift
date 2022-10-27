@@ -25,16 +25,28 @@ class BaseAmountViewController: ActionButtonViewController {
     internal var amountView: AmountView!
     
     private var numberKeyboard: NumberKeyboard!
-    private var textField: UITextField!
+    
+    private var model: BaseAmountModel!
+     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        amountView.becomeFirstResponder()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        configureModel()
         configureHierarchy()
     }
 }
 
 extension BaseAmountViewController {
+    internal func configureModel() {
+        model = BaseAmountModel()
+    }
+        
     @objc internal func configureHierarchy() {
         self.contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -42,25 +54,9 @@ extension BaseAmountViewController {
         setupContentView(contentView)
         
         self.amountView = AmountView(frame: .zero)
-        amountView.dataSource = self
+        amountView.dataSource = model
         amountView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(amountView)
-        
-        let textFieldRect = CGRect(x: 0.0, y: -500.0, width: 320, height: 44)
-        self.textField = UITextField(frame: textFieldRect)
-        textField.delegate = self
-        textField.autocorrectionType = .no
-        textField.autocapitalizationType = .none
-        textField.spellCheckingType = .no
-        
-        //TODO: demo mode
-        let inputViewRect = CGRect(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: 1.0)
-        textField.inputView = DWNumberKeyboardInputViewAudioFeedback(frame: inputViewRect)
-
-        let inputAssistantItem = textField.inputAssistantItem
-        inputAssistantItem.leadingBarButtonGroups = []
-        inputAssistantItem.trailingBarButtonGroups = []
-        view.addSubview(textField)
         
         let keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
@@ -73,7 +69,7 @@ extension BaseAmountViewController {
         numberKeyboard.customButtonBackgroundColor = .dw_background()
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = false
         numberKeyboard.backgroundColor = .clear
-        numberKeyboard.textInput = textField
+        numberKeyboard.textInput = amountView.textInput
         contentView.addSubview(numberKeyboard)
         
         NSLayoutConstraint.activate([
@@ -95,21 +91,16 @@ extension BaseAmountViewController {
     }
 }
 
-extension BaseAmountViewController: AmountViewDataSource {
-    var dashAttributedString: NSAttributedString {
-        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
-        
-    }
-    
-    var localCurrencyAttributedString: NSAttributedString {
-        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254223)))!)
-    }
-    
-    
-}
+//extension BaseAmountViewController: AmountViewDataSource {
+//    var dashAttributedString: NSAttributedString {
+//        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
+//
+//    }
+//
+//    var localCurrencyAttributedString: NSAttributedString {
+//        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254223)))!)
+//    }
+//
+//
+//}
 
-extension BaseAmountViewController: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        return false
-    }
-}
