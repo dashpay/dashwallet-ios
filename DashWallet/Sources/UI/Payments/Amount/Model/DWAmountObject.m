@@ -159,7 +159,7 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
     if (self) {
         _internalType = DWAmountObjectInternalType_Dash;
         _localFormatter = localFormatter;
-        //        _currencyCode = currencyCode;
+        _currencyCode = currencyCode;
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         _plainAmount = previousAmount.plainAmount;

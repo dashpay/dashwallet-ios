@@ -45,6 +45,7 @@ class BaseAmountViewController: ActionButtonViewController {
 extension BaseAmountViewController {
     internal func configureModel() {
         model = BaseAmountModel()
+        model.delegate = self
     }
         
     @objc internal func configureHierarchy() {
@@ -55,6 +56,7 @@ extension BaseAmountViewController {
         
         self.amountView = AmountView(frame: .zero)
         amountView.dataSource = model
+        amountView.delegate = model
         amountView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(amountView)
         
@@ -91,6 +93,11 @@ extension BaseAmountViewController {
     }
 }
 
+extension BaseAmountViewController: BaseAmountModelDelegate {
+    func amountDidChange() {
+        amountView.reloadData()
+    }
+}
 //extension BaseAmountViewController: AmountViewDataSource {
 //    var dashAttributedString: NSAttributedString {
 //        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )

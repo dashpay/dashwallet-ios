@@ -560,6 +560,9 @@
 /* Invalid transaction */
 "Invalid" = "Neplatná";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Neplatná žiadosť o platbu:";
 

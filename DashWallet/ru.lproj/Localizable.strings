@@ -560,6 +560,9 @@
 /* Invalid transaction */
 "Invalid" = "Некорректная";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Некорректный платёжный запрос";
 

@@ -560,6 +560,9 @@
 /* Invalid transaction */
 "Invalid" = "유효하지 않음";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "유효하지 않은 결제 요청";
 

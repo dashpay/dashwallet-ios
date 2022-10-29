@@ -7,6 +7,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
 #import "DSReachabilityManager.h"
+#import "DSCurrencyPriceObject.h"
 
 //MARK: DashWallet
 #import "DWTransactionListDataProviderProtocol.h"

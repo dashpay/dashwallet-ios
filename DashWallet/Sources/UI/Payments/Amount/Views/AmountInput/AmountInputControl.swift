@@ -27,15 +27,14 @@ private let kMainAmountFontSize: CGFloat = 34
 private let kSupplementaryAmountFontSize: CGFloat = 17
 
 protocol AmountInputControlDelegate: AnyObject {
+    func updateInputField(with replacementText: String, in range: NSRange)
     func amountInputControlChangeCurrencyDidTap(_ control: AmountInputControl)
 }
 
 protocol AmountInputControlDataSource: AnyObject {
-    var dashAttributedString: NSAttributedString { get }
-    var localCurrencyAttributedString: NSAttributedString { get }
-    
-    func supplementaryAmount(for text: String) -> String
-    func mainAmount(for text: String) -> String
+    var currentInputString: String { get }
+    var mainAmountString: String { get }
+    var supplementaryAmountString: String { get }
 }
 
 extension AmountInputControl.AmountType {
@@ -72,11 +71,7 @@ class AmountInputControl: UIControl {
         }
     }
     
-    public var mainAmountValidator: DWInputValidator?
-    public var supplementaryAmountValidator: DWInputValidator?
     
-    public var mainAmountFormatter: NumberFormatter?
-    public var supplementaryAmountFormatter: NumberFormatter?
     
     public var text: String? { return mainText }
     public var mainText: String?
@@ -112,8 +107,9 @@ class AmountInputControl: UIControl {
     }
     
     func reloadData() {
-        //mainAmountLabel.attributedText = dataSource?.dashAttributedString
-        //supplementaryAmountLabel.attributedText = dataSource?.localCurrencyAttributedString
+        textField.text = dataSource?.currentInputString
+        mainAmountLabel.attributedText = dataSource?.mainAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_darkTitle())
+        supplementaryAmountLabel.text = dataSource?.supplementaryAmountString
     }
     
     func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)?) {
@@ -297,42 +293,17 @@ extension AmountInputControl {
 
 extension AmountInputControl: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let lastInputString = textField.text ?? ""
-        
-        if let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range, replacementString: string)
-        {
-            textField.text = validatedString
-            updateText(with: validatedString)
-            reloadAttributedData()
-        }
+        delegate?.updateInputField(with: string, in: range)
         
         return false
     }
     
-    var validator: DWInputValidator? {
-        return amountType == .supplementary ? supplementaryAmountValidator : mainAmountValidator
-    }
+    
 }
 
 //MARK: Text Formatting
 
 extension AmountInputControl {
-    func updateText(with inputString: String) {
-        let mainText: String
-        let supplementaryText: String
-        
-        if amountType == .main {
-            mainText = inputString
-            supplementaryText = dataSource?.supplementaryAmount(for: inputString) ?? inputString
-        }else{
-            mainText = dataSource?.mainAmount(for: inputString) ?? inputString
-            supplementaryText = inputString
-        }
-        
-        self.mainText = mainText
-        self.supplementaryText = supplementaryText
-    }
-    
     func reloadAttributedData() {
         
     }

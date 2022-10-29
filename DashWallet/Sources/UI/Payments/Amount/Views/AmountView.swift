@@ -21,10 +21,20 @@ protocol AmountViewDataSource: AmountInputControlDataSource {
     
 }
 
+protocol AmountViewDelegte: AmountInputControlDelegate {
+    
+}
+
 class AmountView: UIView {
     public weak var dataSource: AmountViewDataSource? {
         didSet {
             amountInputControl.dataSource = dataSource
+        }
+    }
+    
+    public weak var delegate: AmountViewDelegte? {
+        didSet {
+            amountInputControl.delegate = delegate
         }
     }
     
@@ -54,6 +64,10 @@ class AmountView: UIView {
         super.init(coder: coder)
     }
     
+    public func reloadData() {
+        amountInputControl.reloadData()
+    }
+    
     @objc func maxButtonAction() {
         amountInputControl.style = amountInputControl.style == .oppositeAmount ? .basic : .oppositeAmount
     }
@@ -67,11 +81,6 @@ extension AmountView {
         addSubview(maxButton)
         
         self.amountInputControl = AmountInputControl(style: .basic)
-        amountInputControl.mainAmountValidator = DWAmountInputValidator(type: .dash)
-        amountInputControl.mainAmountFormatter = DSPriceManager.sharedInstance().dashFormat
-        amountInputControl.supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency)
-        amountInputControl.supplementaryAmountFormatter = DSPriceManager.sharedInstance().localFormat.copy() as? NumberFormatter
-        
         amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(amountInputControl)

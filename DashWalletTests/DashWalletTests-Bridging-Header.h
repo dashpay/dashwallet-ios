@@ -1,4 +1,4 @@
-//
+//  
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,11 +15,8 @@
 //  limitations under the License.
 //
 
-#ifndef NSString_DashWallet_h
-#define NSString_DashWallet_h
+#ifndef DashWalletTests_Bridging_Header_h
+#define DashWalletTests_Bridging_Header_h
 
-@interface NSString (DashWallet)
 
-@end
-
-#endif /* NSString_DashWallet_h */
+#endif /* DashWalletTests_Bridging_Header_h */

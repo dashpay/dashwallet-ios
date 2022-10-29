@@ -560,6 +560,9 @@
 /* Invalid transaction */
 "Invalid" = "Μη έγκυρο";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
 

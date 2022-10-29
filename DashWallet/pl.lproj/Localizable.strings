@@ -560,6 +560,9 @@
 /* Invalid transaction */
 "Invalid" = "Niewłaściwy";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Niewłaściwe rzadanie płatności";
 
