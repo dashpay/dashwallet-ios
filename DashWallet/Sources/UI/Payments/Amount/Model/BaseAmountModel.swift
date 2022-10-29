@@ -35,8 +35,8 @@ class BaseAmountModel {
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
     
-    private var mainAmountValidator: DWInputValidator?
-    private var supplementaryAmountValidator: DWInputValidator?
+    private var mainAmountValidator: DWAmountInputValidator!
+    private var supplementaryAmountValidator: DWAmountInputValidator!
     
     private var localFormatter: NumberFormatter
     private var localCurrencyCode: String
@@ -116,7 +116,21 @@ extension BaseAmountModel: AmountViewDelegte {
     }
     
     func amountInputControlChangeCurrencyDidTap(_ control: AmountInputControl) {
+        assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
         
+        if activeAmountType == .main {
+            if supplementaryAmount == nil {
+                supplementaryAmount = mainAmount.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+            }
+            activeAmountType = .supplementary
+        }else{
+            if mainAmount == nil {
+                mainAmount = supplementaryAmount.dashAmount(dashValidator: mainAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+            }
+            activeAmountType = .main
+        }
+        
+        delegate?.amountDidChange()
     }
     
     

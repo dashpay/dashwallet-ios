@@ -80,7 +80,7 @@ extension AmountView {
         maxButton.addTarget(self, action: #selector(maxButtonAction), for: .touchUpInside)
         addSubview(maxButton)
         
-        self.amountInputControl = AmountInputControl(style: .basic)
+        self.amountInputControl = AmountInputControl(style: .oppositeAmount)
         amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(amountInputControl)

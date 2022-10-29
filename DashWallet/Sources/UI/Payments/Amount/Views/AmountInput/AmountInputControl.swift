@@ -184,7 +184,11 @@ class AmountInputControl: UIControl {
         guard style == .oppositeAmount else { return }
         
         let nextType = amountType.toggle()
-        setActiveType(nextType, animated: true, completion: nil)
+        setActiveType(nextType, animated: true) { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.delegate?.amountInputControlChangeCurrencyDidTap(wSelf)
+        }
+            
         amountType = nextType
     }
 }

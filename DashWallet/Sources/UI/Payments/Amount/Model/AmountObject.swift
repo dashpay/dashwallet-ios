@@ -105,7 +105,7 @@ extension AmountObject {
         
         let priceManager = DSPriceManager.sharedInstance()
         
-        let number = NumberFormatter.dashFormatter.number(from: supplementaryFormatted)!
+        let number = localFormatter.number(from: supplementaryFormatted)!
         let rawAmount = localValidator.stringFromNumber(usingInternalFormatter: number)!
         
         return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .main, mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted, localFormatter: localFormatter, fiatCurrencyCode: currencyCode)

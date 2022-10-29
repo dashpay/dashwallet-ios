@@ -20,6 +20,8 @@ import UIKit
 struct AmountInputTypeItem {
     let currencySymbol: String
     let currencyCode: String
+    
+    var isMain: Bool { currencySymbol == "DASH" }
 }
 
 private let kItemHeight: CGFloat = 24.0
@@ -30,6 +32,8 @@ class AmountInputTypeSwitcher: UIView {
             reloadData()
         }
     }
+    
+    public var selectItem: ((AmountInputTypeItem) -> Void)?
     
     private var containerView: UIStackView!
     private var currentSelectedItemButton: UIButton!
@@ -61,8 +65,9 @@ extension AmountInputTypeSwitcher {
         
         var onceToken: Bool = false
         
-        for item in items {
+        for (i, item) in items.enumerated() {
             let button = itemButton(title: item.currencySymbol)
+            button.tag = i
             containerView.addArrangedSubview(button)
             
             if !onceToken {
