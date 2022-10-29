@@ -28,7 +28,8 @@ private let kSupplementaryAmountFontSize: CGFloat = 17
 
 protocol AmountInputControlDelegate: AnyObject {
     func updateInputField(with replacementText: String, in range: NSRange)
-    func amountInputControlChangeCurrencyDidTap(_ control: AmountInputControl)
+    func amountInputControlDidSwapInputs()
+    func amountInputControlChangeCurrencyDidTap()
 }
 
 protocol AmountInputControlDataSource: AnyObject {
@@ -186,7 +187,7 @@ class AmountInputControl: UIControl {
         let nextType = amountType.toggle()
         setActiveType(nextType, animated: true) { [weak self] in
             guard let wSelf = self else { return }
-            wSelf.delegate?.amountInputControlChangeCurrencyDidTap(wSelf)
+            wSelf.delegate?.amountInputControlDidSwapInputs()
         }
             
         amountType = nextType

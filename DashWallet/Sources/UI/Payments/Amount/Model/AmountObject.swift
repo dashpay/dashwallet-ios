@@ -29,16 +29,18 @@ struct AmountObject {
     let fiatCurrencyCode: String
 
     init(dashAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
-        self.amountType = .main
-        self.amountInternalRepresentation = dashAmountString
-        self.fiatCurrencyCode = fiatCurrencyCode
-        self.localFormatter = localFormatter
-        
         var dashAmountString = dashAmountString
         
         if dashAmountString.isEmpty {
             dashAmountString = "0"
         }
+        
+        self.amountType = .main
+        self.amountInternalRepresentation = dashAmountString
+        self.fiatCurrencyCode = fiatCurrencyCode
+        self.localFormatter = localFormatter
+        
+        
         
         let dashNumber = Decimal(string: dashAmountString, locale: .current)!
         let duffsNumber = Decimal(DUFFS)
@@ -59,16 +61,17 @@ struct AmountObject {
     }
     
     init?(localAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
-        self.amountType = .supplementary
-        self.amountInternalRepresentation = localAmountString
-        self.fiatCurrencyCode = fiatCurrencyCode
-        self.localFormatter = localFormatter
         
         var localAmountString = localAmountString
         
         if localAmountString.isEmpty {
             localAmountString = "0"
         }
+        
+        self.amountType = .supplementary
+        self.amountInternalRepresentation = localAmountString
+        self.fiatCurrencyCode = fiatCurrencyCode
+        self.localFormatter = localFormatter
         
         let localNumber = Decimal(string: localAmountString, locale: .current)!
         let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString)!
@@ -78,13 +81,13 @@ struct AmountObject {
         let localPrice = priceManager.price(forCurrencyCode: fiatCurrencyCode)!.price
         let plainAmount = priceManager.amount(forLocalCurrencyString: localCurrencyFormatted, localFormatter: localFormatter, localPrice: localPrice)
         
-        if plainAmount == 0 && localNumber.isEqual(to: .zero) {
+        if plainAmount == 0 && localNumber != .zero {
             return nil
-        }else{
-            self.plainAmount = Int64(plainAmount)
-            mainFormatted = priceManager.string(forDashAmount: self.plainAmount)!
-            supplementaryFormatted = localCurrencyFormatted
         }
+        
+        self.plainAmount = Int64(plainAmount)
+        mainFormatted = priceManager.string(forDashAmount: self.plainAmount)!
+        supplementaryFormatted = localCurrencyFormatted
     }
 }
 

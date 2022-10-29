@@ -115,7 +115,7 @@ extension BaseAmountModel: AmountViewDelegte {
         delegate?.amountDidChange()
     }
     
-    func amountInputControlChangeCurrencyDidTap(_ control: AmountInputControl) {
+    func amountInputControlDidSwapInputs() {
         assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
         
         if activeAmountType == .main {
@@ -131,6 +131,10 @@ extension BaseAmountModel: AmountViewDelegte {
         }
         
         delegate?.amountDidChange()
+    }
+    
+    func amountInputControlChangeCurrencyDidTap() {
+        
     }
     
     

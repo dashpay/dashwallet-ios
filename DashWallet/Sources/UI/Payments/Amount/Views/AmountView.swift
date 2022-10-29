@@ -87,7 +87,12 @@ extension AmountView {
     
         self.inputTypeSwitcher = .init(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
-        inputTypeSwitcher.items = [.init(currencySymbol: "US$", currencyCode: "USD"), .init(currencySymbol: "DASH", currencyCode: "DASH")]
+        inputTypeSwitcher.items = [.init(currencySymbol: "DASH", currencyCode: "DASH"), .init(currencySymbol: "US$", currencyCode: "USD")]
+        inputTypeSwitcher.selectItem = { [weak self] item in
+            self?.amountInputControl.setActiveType(item.isMain ? .main : .supplementary, animated: true, completion: {
+                self?.delegate?.amountInputControlDidSwapInputs()
+            })
+        }
         addSubview(inputTypeSwitcher)
         
         NSLayoutConstraint.activate([

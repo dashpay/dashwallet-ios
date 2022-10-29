@@ -54,8 +54,11 @@ class AmountInputTypeSwitcher: UIView {
     
     @objc func itemAction(sender: UIButton) {
         currentSelectedItemButton.isSelected = false
+        currentSelectedItemButton.isUserInteractionEnabled = true
         currentSelectedItemButton = sender
         currentSelectedItemButton.isSelected = true
+        currentSelectedItemButton.isUserInteractionEnabled = false
+        selectItem?(items[sender.tag])
     }
 }
 
