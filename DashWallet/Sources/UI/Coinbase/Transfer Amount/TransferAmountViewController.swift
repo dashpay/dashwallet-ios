@@ -37,7 +37,7 @@ class TransferAmountViewController: BaseAmountViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
         
-        self.converterView = .init(frame: .zero)
+        self.converterView = .init(direction: .toCoinbase)
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
         

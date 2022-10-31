@@ -46,6 +46,42 @@ extension String {
         return attributedString
     }
     
+    func attributedAmountForLocalCurrency(textColor: UIColor) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(string: self)
+        
+        let locale = Locale.current
+        let decimalSeparator = locale.decimalSeparator!
+        let insufficientFractionDigits = decimalSeparator + "00"
+        let defaultAttributes = [NSAttributedString.Key.foregroundColor: textColor]
+        
+        attributedString.beginEditing()
+        if let insufficientFractionDigitsRange = self.range(of: insufficientFractionDigits) {
+            let range = NSRange(insufficientFractionDigitsRange, in: self)
+            
+            if range.location > 0 {
+                let beforeFractionRange = NSMakeRange(0, range.location)
+                attributedString.setAttributes(defaultAttributes, range: beforeFractionRange)
+            }
+            let fractionAttributes = [NSAttributedString.Key.foregroundColor: textColor.withAlphaComponent(0.5)]
+            
+            attributedString.setAttributes(fractionAttributes, range: range)
+            
+            
+            let afterFractionIndex = range.location + range.length
+            if (afterFractionIndex < self.count) {
+                let afterFractionRange = NSMakeRange(afterFractionIndex, self.count - afterFractionIndex)
+                attributedString.setAttributes(defaultAttributes, range: afterFractionRange)
+            }
+        }else{
+            attributedString.setAttributes(defaultAttributes, range: NSMakeRange(0, self.count))
+        }
+        
+        attributedString.endEditing()
+        
+        return attributedString
+    }
+    
+    
     /**
      Extract currency symbol from string formatted by number formatter
      

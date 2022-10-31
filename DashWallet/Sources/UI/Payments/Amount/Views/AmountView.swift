@@ -89,7 +89,9 @@ extension AmountView {
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
         inputTypeSwitcher.items = [.init(currencySymbol: "DASH", currencyCode: "DASH"), .init(currencySymbol: "US$", currencyCode: "USD")]
         inputTypeSwitcher.selectItem = { [weak self] item in
-            self?.amountInputControl.setActiveType(item.isMain ? .main : .supplementary, animated: true, completion: {
+            let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
+            self?.amountInputControl.amountType = type
+            self?.amountInputControl.setActiveType(type, animated: true, completion: {
                 self?.delegate?.amountInputControlDidSwapInputs()
             })
         }

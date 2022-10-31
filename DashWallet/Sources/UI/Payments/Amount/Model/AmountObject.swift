@@ -40,8 +40,6 @@ struct AmountObject {
         self.fiatCurrencyCode = fiatCurrencyCode
         self.localFormatter = localFormatter
         
-        
-        
         let dashNumber = Decimal(string: dashAmountString, locale: .current)!
         let duffsNumber = Decimal(DUFFS)
         let plainAmount = dashNumber * duffsNumber

@@ -60,6 +60,7 @@ class AmountInputControl: UIControl {
             updateAppearance()
             setNeedsLayout()
             invalidateIntrinsicContentSize()
+            reloadData()
         }
     }
     
@@ -68,11 +69,11 @@ class AmountInputControl: UIControl {
     public weak var delegate: AmountInputControlDelegate?
     public weak var dataSource: AmountInputControlDataSource? {
         didSet {
-            reloadData()
+            if dataSource != nil {
+                reloadData()
+            }
         }
     }
-    
-    
     
     public var text: String? { return mainText }
     public var mainText: String?
@@ -108,9 +109,18 @@ class AmountInputControl: UIControl {
     }
     
     func reloadData() {
-        textField.text = dataSource?.currentInputString
-        mainAmountLabel.attributedText = dataSource?.mainAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_darkTitle())
-        supplementaryAmountLabel.text = dataSource?.supplementaryAmountString
+        guard let dataSource = dataSource else { return }
+        
+        textField.text = dataSource.currentInputString
+        
+        let mainString = dataSource.mainAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_darkTitle())
+        let supplementaryString = dataSource.supplementaryAmountString.attributedAmountForLocalCurrency(textColor: .dw_darkTitle())
+        if style == .basic {
+            mainAmountLabel.attributedText = amountType == .main ? mainString : supplementaryString
+        }else{
+            mainAmountLabel.attributedText = mainString
+            supplementaryAmountLabel.attributedText = supplementaryString
+        }
     }
     
     func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)?) {
@@ -124,7 +134,6 @@ class AmountInputControl: UIControl {
         let smallLabel: UILabel = wasSwapped ? mainAmountLabel : supplementaryAmountLabel
         
         let scale = kSupplementaryAmountFontSize/kMainAmountFontSize
-        
         
         bigLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
         bigLabel.transform = CGAffineTransform(scaleX: 1.0/scale, y: 1.0/scale)
@@ -233,7 +242,6 @@ extension AmountInputControl {
         
         let textFieldRect = CGRect(x: 0.0, y: -500.0, width: 320, height: 44)
         self.textField = UITextField(frame: textFieldRect)
-        //textField.addTarget(self, action: #selector(textFieldValueDidChange), for: .editingChanged)
         textField.delegate = self
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
@@ -257,9 +265,8 @@ extension AmountInputControl {
         self.mainAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
         contentView.addSubview(mainAmountLabel)
         
-        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
+        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kSupplementaryAmountFontSize))
         contentView.addSubview(supplementaryAmountLabel)
-
         mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
         supplementaryAmountLabel.frame = CGRect(x: 0, y: mainAmountLabel.bounds.maxY, width: bounds.width, height: kSupplementaryAmountLabelHeight)
         
