@@ -1226,6 +1226,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "ไม่สามารถได้รับโค้ด QR ใหม่";
 
+/* Coinbase */
+"Unknown Balance" = "Unknown Balance";
+
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "ไม่รับรอง หรือเอกสารได้รับความเสียหาย";
 

@@ -1226,6 +1226,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Nelze získat nový QR kód";
 
+/* Coinbase */
+"Unknown Balance" = "Unknown Balance";
+
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nepodporovaný nebo poškozený dokument";
 

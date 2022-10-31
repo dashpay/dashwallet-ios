@@ -40,6 +40,8 @@ protocol ConverterViewDataSource: AnyObject {
 }
 
 class ConverterView: UIView {
+    public weak var dataSource: ConverterViewDataSource?
+    
     private var fromView: SourceView!
     private var toView: SourceView!
     private var swapImageView: UIImageView!
@@ -77,8 +79,12 @@ class ConverterView: UIView {
 }
 
 extension ConverterView {
+    private var balance: String {
+        let balance = direction == .toCoinbase ? dataSource?.walletBalance : dataSource?.coinbaseBalance
+        return balance ?? "0"
+    }
     private func updateView() {
-        fromView.update(with: direction.fromSource, balance: "123.12")
+        fromView.update(with: direction.fromSource, balance: balance)
         toView.update(with: direction.toSource, balance: nil)
     }
     
@@ -166,15 +172,15 @@ private enum Source {
     
     var imageName: String {
         switch self {
-        case .dash: return "Coinbase"
-        case .coinbase: return "image.explore.dash.wts.dash"
+        case .dash: return "image.explore.dash.wts.dash"
+        case .coinbase: return "Coinbase"
         }
     }
     
     var title: String {
         switch self {
-        case .dash: return "Coinbase"
-        case .coinbase: return "Dash Wallet"
+        case .dash: return "Dash Wallet"
+        case .coinbase: return "Coinbase"
         }
     }
 }

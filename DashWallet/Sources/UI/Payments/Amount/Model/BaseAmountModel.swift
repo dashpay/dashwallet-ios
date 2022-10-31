@@ -79,6 +79,11 @@ extension BaseAmountModel {
 }
 
 extension BaseAmountModel: AmountViewDataSource {
+    var localCurrency: String {
+        let locale = Locale.current as NSLocale
+        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode)!
+    }
+    
     var currentInputString: String {
         return amount.amountInternalRepresentation
     }
@@ -93,6 +98,10 @@ extension BaseAmountModel: AmountViewDataSource {
 }
 
 extension BaseAmountModel: AmountViewDelegte {
+    var amountInputStyle: AmountInputControl.Style {
+        .oppositeAmount
+    }
+    
     func updateInputField(with replacementText: String, in range: NSRange) {
         let lastInputString = amount.amountInternalRepresentation
         

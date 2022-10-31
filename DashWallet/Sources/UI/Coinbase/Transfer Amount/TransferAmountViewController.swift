@@ -27,7 +27,7 @@ struct TransferAmountView: UIViewControllerRepresentable {
     }
 }
 
-class TransferAmountViewController: BaseAmountViewController {
+final class TransferAmountViewController: BaseAmountViewController {
     private var converterView: ConverterView!
     
     override var actionButtonTitle: String? {
@@ -37,7 +37,10 @@ class TransferAmountViewController: BaseAmountViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
         
-        self.converterView = .init(direction: .toCoinbase)
+        amountView.amountInputStyle = .basic
+        
+        self.converterView = ConverterView(direction: .toCoinbase)
+        converterView.dataSource = model
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
         
@@ -58,4 +61,23 @@ class TransferAmountViewController: BaseAmountViewController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
     }
+}
+
+extension BaseAmountModel: ConverterViewDataSource {
+    var coinbaseBalance: String {
+        return Coinbase.shared.lastKnownBalance ?? NSLocalizedString("Unknown Balance", comment: "Coinbase")
+    }
+    
+    var walletBalance: String {
+        let plainNumber = Decimal(DWEnvironment.sharedInstance().currentWallet.balance)
+        let duffsNumber = Decimal(DUFFS)
+        let dashNumber = plainNumber/duffsNumber
+        if #available(iOS 15.0, *) {
+            return dashNumber.formatted(.number)
+        } else {
+            return "\(dashNumber)"
+        }
+    }
+    
+    
 }

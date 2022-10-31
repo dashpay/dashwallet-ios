@@ -64,7 +64,7 @@ class AmountInputTypeSwitcher: UIView {
 
 extension AmountInputTypeSwitcher {
     private func reloadData() {
-        containerView.arrangedSubviews.forEach { self.containerView.removeArrangedSubview($0) }
+        containerView.removeAllArrangedSubviews()
         
         var onceToken: Bool = false
         

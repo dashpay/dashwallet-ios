@@ -18,28 +18,40 @@
 import UIKit
 
 protocol AmountViewDataSource: AmountInputControlDataSource {
+    var localCurrency: String { get }
     
 }
 
 protocol AmountViewDelegte: AmountInputControlDelegate {
-    
+    var amountInputStyle: AmountInputControl.Style { get }
 }
 
 class AmountView: UIView {
     public weak var dataSource: AmountViewDataSource? {
         didSet {
             amountInputControl.dataSource = dataSource
+            updateView()
         }
     }
     
     public weak var delegate: AmountViewDelegte? {
         didSet {
             amountInputControl.delegate = delegate
+            updateView()
         }
     }
     
     public var textInput: UITextInput {
         return amountInputControl.textField
+    }
+    
+    public var amountInputStyle: AmountInputControl.Style {
+        set {
+            amountInputControl.style = newValue
+        }
+        get {
+            return amountInputControl.style
+        }
     }
     
     private var maxButton: UIButton!
@@ -74,6 +86,10 @@ class AmountView: UIView {
 }
 
 extension AmountView {
+    private func updateView() {
+        inputTypeSwitcher.items = [.init(currencySymbol: "DASH", currencyCode: "DASH"), .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT")]
+    }
+    
     private func configureHierarchy() {
         self.maxButton = MaxButton(frame: CGRect(x: 0, y: 0, width: 38, height: 38))
         maxButton.translatesAutoresizingMaskIntoConstraints = false
@@ -87,7 +103,6 @@ extension AmountView {
     
         self.inputTypeSwitcher = .init(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
-        inputTypeSwitcher.items = [.init(currencySymbol: "DASH", currencyCode: "DASH"), .init(currencySymbol: "US$", currencyCode: "USD")]
         inputTypeSwitcher.selectItem = { [weak self] item in
             let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
             self?.amountInputControl.amountType = type

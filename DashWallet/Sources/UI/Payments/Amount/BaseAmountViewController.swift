@@ -26,7 +26,7 @@ class BaseAmountViewController: ActionButtonViewController {
     
     private var numberKeyboard: NumberKeyboard!
     
-    private var model: BaseAmountModel!
+    internal var model: BaseAmountModel!
      
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
