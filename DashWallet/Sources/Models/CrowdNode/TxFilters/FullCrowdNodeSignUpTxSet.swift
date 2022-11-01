@@ -17,6 +17,7 @@
 
 class FullCrowdNodeSignUpTxSet: TransactionWrapper {
     private let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
+    private let pleaseAcceptTermsFilter = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil)
     private let crowdNodeTxFilters = [
         CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
         CrowdNodeRequest(requestCode: ApiCode.acceptTerms),

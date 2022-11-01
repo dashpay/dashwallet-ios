@@ -17,7 +17,7 @@
 
 public class CoinsToAddressTxFilter: TransactionFilter {
     private let matchingAddress: String?
-    private let withFee: Bool
+    private var withFee: Bool
     private(set) var coins: UInt64
     private(set) var toAddress: String?
     private(set) var fromAddresses = Set<String>()
