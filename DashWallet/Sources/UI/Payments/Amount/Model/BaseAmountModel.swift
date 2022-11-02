@@ -29,7 +29,7 @@ protocol BaseAmountModelDelegate: AnyObject {
 class BaseAmountModel {
     weak var delegate: BaseAmountModelDelegate?
     
-    var showMaxButton: Bool = true
+    var showMaxButton: Bool { true }
     var activeAmountType: AmountType = .main
     
     var mainAmount: AmountObject!
@@ -56,7 +56,6 @@ class BaseAmountModel {
     }
     
     func updateAmount(with replacementString: String, range: NSRange) {
-        let d = Decimal(string: "0.1")
     }
 }
 

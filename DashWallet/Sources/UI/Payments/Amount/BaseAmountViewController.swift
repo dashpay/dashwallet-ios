@@ -28,6 +28,7 @@ class BaseAmountViewController: ActionButtonViewController {
     
     internal var model: BaseAmountModel!
      
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         

@@ -554,6 +554,9 @@
 		47B30D78290BFCA60080C326 /* NumberFormatter+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D77290BFCA60080C326 /* NumberFormatter+DashWallet.swift */; };
 		47B30D7A290D035B0080C326 /* DashTextAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D79290D035B0080C326 /* DashTextAttachment.swift */; };
 		47B30D7C29100ABA0080C326 /* UIStackView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */; };
+		47B30D7E29102F6E0080C326 /* SendAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7D29102F6E0080C326 /* SendAmountModel.swift */; };
+		47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7F291123D30080C326 /* SendAmountViewController.swift */; };
+		47B30D822911259D0080C326 /* UIViewController+Payments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D812911259D0080C326 /* UIViewController+Payments.swift */; };
 		47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AA28F9707A00028A8D /* NumberKeyboard.swift */; };
 		47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
@@ -1694,6 +1697,9 @@
 		47B30D77290BFCA60080C326 /* NumberFormatter+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberFormatter+DashWallet.swift"; sourceTree = "<group>"; };
 		47B30D79290D035B0080C326 /* DashTextAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashTextAttachment.swift; sourceTree = "<group>"; };
 		47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIStackView+DashWallet.swift"; sourceTree = "<group>"; };
+		47B30D7D29102F6E0080C326 /* SendAmountModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountModel.swift; sourceTree = "<group>"; };
+		47B30D7F291123D30080C326 /* SendAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountViewController.swift; sourceTree = "<group>"; };
+		47B30D812911259D0080C326 /* UIViewController+Payments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Payments.swift"; sourceTree = "<group>"; };
 		47C661AA28F9707A00028A8D /* NumberKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboard.swift; sourceTree = "<group>"; };
 		47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboardButton.swift; sourceTree = "<group>"; };
 		47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseAmountViewController.swift; sourceTree = "<group>"; };
@@ -3827,6 +3833,7 @@
 				2A0C69AE2312DD67001B8C90 /* DWSpecifyAmountViewController.h */,
 				2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */,
 				47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */,
+				47B30D7F291123D30080C326 /* SendAmountViewController.swift */,
 			);
 			path = Amount;
 			sourceTree = "<group>";
@@ -3991,6 +3998,7 @@
 				471DD1B9290A962B00E030C8 /* String+DashWallet.swift */,
 				47B30D77290BFCA60080C326 /* NumberFormatter+DashWallet.swift */,
 				47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */,
+				47B30D812911259D0080C326 /* UIViewController+Payments.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -4270,6 +4278,7 @@
 				2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */,
 				2AFCB9A723BDEA1D00FF59A6 /* DWSendAmountModel.h */,
 				2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */,
+				47B30D7D29102F6E0080C326 /* SendAmountModel.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -5694,6 +5703,7 @@
 				0F6EDFCA28C896BD000427E7 /* CoinbasePlaceBuyOrderRequest.swift in Sources */,
 				0F6EDFD328C896BD000427E7 /* CoinbaseAmount.swift in Sources */,
 				2AFF01DF243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m in Sources */,
+				47B30D7E29102F6E0080C326 /* SendAmountModel.swift in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,
 				47AE8BF728C1306000490F5E /* MerchantListViewController.swift in Sources */,
@@ -6005,6 +6015,7 @@
 				0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
 				2AB2373824488DB80081B62C /* DWUserSearchViewController.m in Sources */,
+				47B30D822911259D0080C326 /* UIViewController+Payments.swift in Sources */,
 				2A7AF38F2482BDF1001D74F9 /* UIFont+DWDPItem.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
@@ -6029,6 +6040,7 @@
 				2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */,
 				471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
+				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				0F6EDFDF28C896BD000427E7 /* Endpoint.swift in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,

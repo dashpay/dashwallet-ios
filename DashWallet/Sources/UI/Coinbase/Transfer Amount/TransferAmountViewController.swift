@@ -27,7 +27,7 @@ struct TransferAmountView: UIViewControllerRepresentable {
     }
 }
 
-final class TransferAmountViewController: BaseAmountViewController {
+final class TransferAmountViewController: SendAmountViewController {
     private var converterView: ConverterView!
     
     override var actionButtonTitle: String? {

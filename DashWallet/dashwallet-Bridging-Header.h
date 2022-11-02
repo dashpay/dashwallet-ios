@@ -31,7 +31,12 @@
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
+#import "DWPaymentProcessor.h"
+#import "DWConfirmSendPaymentViewController.h"
+#import "DWPaymentOutput.h"
 
+#import "UIView+DWHUD.h"
+#import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"
