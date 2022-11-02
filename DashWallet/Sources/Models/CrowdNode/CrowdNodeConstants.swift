@@ -30,5 +30,6 @@ enum CrowdNodeConstants {
 
     static var minimumRequiredDash = UInt64(1_000_000)
     static var requiredForSignup = minimumRequiredDash - UInt64(100_000)
+    static var requiredForAcceptTerms = UInt64(100_000)
     static var apiOffset = UInt64(20000)
 }

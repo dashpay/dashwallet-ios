@@ -59,7 +59,12 @@ extension NewAccountViewController {
     private func configureHierarchy() {
         definesPresentationContext = true
         view.backgroundColor = UIColor.dw_secondaryBackground()
-        actionButton.setTitle(NSLocalizedString("Sign up to CrowdNode", comment: ""), for: .normal)
+        
+        if viewModel.isInterrupted {
+            actionButton.setTitle(NSLocalizedString("Accept Terms Of Use", comment: ""), for: .normal)
+        } else {
+            actionButton.setTitle(NSLocalizedString("Sign up to CrowdNode", comment: ""), for: .normal)
+        }
     }
 
     private func configureObservers() {

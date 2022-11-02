@@ -22,6 +22,7 @@
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
 #import "DWHomeView.h"
+#import "DWSyncModel.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
@@ -40,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
+@property (nullable, nonatomic, strong) id syncStateObserver;
 
 @end
 
@@ -50,6 +52,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dealloc {
     DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    
+    if (self.syncStateObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
+    }
 }
 
 - (void)loadView {
@@ -83,8 +89,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self.model registerForPushNotifications];
-
     [self showReclassifyYourTransactionsIfPossibleWithTransaction:self.model.allDataSource.items.firstObject];
+    [self checkCrowdNodeState];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -203,6 +209,44 @@ NS_ASSUME_NONNULL_BEGIN
     controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
     [self presentViewController:controller animated:YES completion:nil];
 }
+
+- (void)checkCrowdNodeState {
+    if (self.model.syncModel.state == DWSyncModelState_SyncDone) {
+        [CrowdNodeObjcWrapper restoreState];
+        
+        if ([CrowdNodeObjcWrapper isInterrupted]) {
+            // Re-authenticate to continue signup
+            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+            [authManager authenticateWithPrompt:NSLocalizedString(@"CrowdNode sign up was interrupted. Continue?", nil)
+                   usingBiometricAuthentication:YES
+                                 alertIfLockout:NO
+                                     completion:^(BOOL success, BOOL usedBiometrics, BOOL cancelled) {
+                if (success) {
+                    [CrowdNodeObjcWrapper continueInterrupted];
+                }
+            }];
+        }
+    } else {
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        self.syncStateObserver = [notificationCenter addObserverForName:DWSyncStateChangedNotification
+                                                                 object:nil
+                                                                  queue:nil
+                                                             usingBlock:^(NSNotification *note) {
+            BOOL isSynced = self.model.syncModel.state == DWSyncModelState_SyncDone;
+            
+            if (isSynced) {
+                if (self.syncStateObserver) {
+                    // Only need to observe once
+                    [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
+                    self.syncStateObserver = nil;
+                }
+                
+                [self checkCrowdNodeState];
+            }
+        }];
+    }
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
