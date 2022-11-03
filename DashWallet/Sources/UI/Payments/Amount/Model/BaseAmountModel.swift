@@ -38,8 +38,8 @@ class BaseAmountModel {
     private var mainAmountValidator: DWAmountInputValidator!
     private var supplementaryAmountValidator: DWAmountInputValidator!
     
-    private var localFormatter: NumberFormatter
-    private var localCurrencyCode: String
+    internal var localFormatter: NumberFormatter
+    internal var localCurrencyCode: String
     
     init() {
         localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
@@ -96,7 +96,7 @@ extension BaseAmountModel: AmountViewDataSource {
     }
 }
 
-extension BaseAmountModel: AmountViewDelegte {
+extension BaseAmountModel: AmountViewDelegate {
     var amountInputStyle: AmountInputControl.Style {
         .oppositeAmount
     }

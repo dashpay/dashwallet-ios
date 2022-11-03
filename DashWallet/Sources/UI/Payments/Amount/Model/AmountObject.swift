@@ -87,6 +87,15 @@ struct AmountObject {
         mainFormatted = priceManager.string(forDashAmount: self.plainAmount)!
         supplementaryFormatted = localCurrencyFormatted
     }
+    
+    init(plainAmount: Int64, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
+        let plainNumber = Decimal(plainAmount)
+        let duffsNumber = Decimal(DUFFS)
+        let dashNumber = plainNumber/duffsNumber
+        let dashAmounString = NSDecimalNumber(decimal: dashNumber).description(withLocale: Locale.current)
+        
+        self.init(dashAmountString: dashAmounString, fiatCurrencyCode: fiatCurrencyCode, localFormatter: localFormatter)
+    }
 }
 
 extension AmountObject {

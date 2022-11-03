@@ -27,7 +27,15 @@ class BaseAmountViewController: ActionButtonViewController {
     private var numberKeyboard: NumberKeyboard!
     
     internal var model: BaseAmountModel!
-     
+    
+    func maxButtonAction() {
+        
+    }
+    
+    internal func configureModel() {
+        model = BaseAmountModel()
+        model.delegate = self
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -44,10 +52,11 @@ class BaseAmountViewController: ActionButtonViewController {
 }
 
 extension BaseAmountViewController {
-    internal func configureModel() {
-        model = BaseAmountModel()
-        model.delegate = self
-    }
+    
+}
+
+extension BaseAmountViewController {
+    
         
     @objc internal func configureHierarchy() {
         self.contentView = UIView()
@@ -56,6 +65,9 @@ extension BaseAmountViewController {
         setupContentView(contentView)
         
         self.amountView = AmountView(frame: .zero)
+        amountView.maxButtonAction = { [weak self] in
+            self?.maxButtonAction()
+        }
         amountView.dataSource = model
         amountView.delegate = model
         amountView.translatesAutoresizingMaskIntoConstraints = false
@@ -95,7 +107,7 @@ extension BaseAmountViewController {
 }
 
 extension BaseAmountViewController: BaseAmountModelDelegate {
-    func amountDidChange() {
+    @objc func amountDidChange() {
         amountView.reloadData()
     }
 }

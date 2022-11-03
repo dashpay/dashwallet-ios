@@ -17,7 +17,7 @@
 
 import Foundation
 
-final class SendAmountModel: BaseAmountModel {
+class SendAmountModel: BaseAmountModel {
     override var showMaxButton: Bool { return false }
     
     var isSendAllowed: Bool {
@@ -27,5 +27,31 @@ final class SendAmountModel: BaseAmountModel {
     
     override init() {
         super.init()
+    }
+    
+    func selectAllFunds(_ preparationHandler: (() -> Void)) {
+        let authManager = DSAuthenticationManager.sharedInstance()
+        
+        if authManager.didAuthenticate {
+            selectAllFunds()
+        }else{
+            authManager.authenticate(withPrompt: nil, usingBiometricAuthentication: true, alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
+                if (authenticatedOrSuccess) {
+                    self?.selectAllFunds()
+                }
+            }
+        }
+    }
+    
+    private func selectAllFunds() {
+        let priceManager = DSPriceManager.sharedInstance()
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let allAvailableFunds = account.maxOutputAmount
+        
+        if allAvailableFunds > 0 {
+            mainAmount = AmountObject(plainAmount: Int64(allAvailableFunds), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            supplementaryAmount = nil
+            delegate?.amountDidChange()
+        }
     }
 }

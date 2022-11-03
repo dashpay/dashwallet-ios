@@ -64,7 +64,16 @@ class AmountInputControl: UIControl {
         }
     }
     
-    public var amountType: AmountType = .main
+    public var amountType: AmountType = .main {
+        didSet {
+            if oldValue != amountType {
+                setActiveType(amountType, animated: true) { [weak self] in
+                    guard let wSelf = self else { return }
+                    wSelf.delegate?.amountInputControlDidSwapInputs()
+                }
+            }
+        }
+    }
     
     public weak var delegate: AmountInputControlDelegate?
     public weak var dataSource: AmountInputControlDataSource? {

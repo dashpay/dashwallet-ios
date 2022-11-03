@@ -59,7 +59,7 @@ static NSString *sanitizeString(NSString *s) {
 @implementation DWPaymentProcessor
 
 - (instancetype)initWithDelegate:(id<DWPaymentProcessorDelegate>)delegate {
-    self = [super init];
+    self = [self init];
     if (self) {
         _delegate = delegate;
     }

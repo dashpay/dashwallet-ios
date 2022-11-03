@@ -40,7 +40,11 @@ protocol ConverterViewDataSource: AnyObject {
 }
 
 class ConverterView: UIView {
-    public weak var dataSource: ConverterViewDataSource?
+    public weak var dataSource: ConverterViewDataSource? {
+        didSet {
+            updateView()
+        }
+    }
     
     private var fromView: SourceView!
     private var toView: SourceView!
@@ -83,6 +87,7 @@ extension ConverterView {
         let balance = direction == .toCoinbase ? dataSource?.walletBalance : dataSource?.coinbaseBalance
         return balance ?? "0"
     }
+    
     private func updateView() {
         fromView.update(with: direction.fromSource, balance: balance)
         toView.update(with: direction.toSource, balance: nil)

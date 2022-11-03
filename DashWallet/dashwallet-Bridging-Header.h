@@ -34,6 +34,8 @@
 #import "DWPaymentProcessor.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "DWPaymentOutput.h"
+#import "DWPaymentInput.h"
+#import "DWPaymentInputBuilder.h"
 
 #import "UIView+DWHUD.h"
 #import "DWConfirmSendPaymentViewController.h"

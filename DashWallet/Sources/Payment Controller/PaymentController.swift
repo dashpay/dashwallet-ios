@@ -17,51 +17,54 @@
 
 import UIKit
 
-fileprivate struct AssociatedKeys {
-    static var paymentProcessor: UInt8 = 0
-    static var confirmViewController: UInt8 = 1
+typealias PaymentControllerPresentationAnchor = UIViewController
+
+protocol AmountViewController where Self: BaseAmountViewController {
 }
 
-protocol PaymentViewController: DWPaymentProcessorDelegate, DWConfirmPaymentViewControllerDelegate where Self: UIViewController {
-    
+protocol PaymentControllerDelegate: AnyObject {
+    func paymentControllerDidFinishTransaction(_ controller: PaymentController)
+    func paymentControllerDidCancelTransaction(_ controller: PaymentController)
 }
 
-extension PaymentViewController {
-    fileprivate var paymentProcessor: DWPaymentProcessor {
-        get {
-            if let processor = objc_getAssociatedObject(self, &AssociatedKeys.paymentProcessor) as? DWPaymentProcessor {
-                return processor
-            }else{
-                
-                let processor = DWPaymentProcessor(delegate: self)
-                self.paymentProcessor = processor
-                return processor
-            }
-        }
-        set {
-            objc_setAssociatedObject(self,
-                                     &AssociatedKeys.paymentProcessor,
-                                     newValue,
-                                     objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
+protocol PaymentControllerPresentationContextProviding: AnyObject {
+    func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor
+}
+
+final class PaymentController: NSObject {
+    weak var delegate: PaymentControllerDelegate?
+    weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
+    
+    private var paymentProcessor: DWPaymentProcessor
+    private weak var confirmViewController: DWConfirmSendPaymentViewController?
+    
+    override init() {
+        paymentProcessor = DWPaymentProcessor()
+        
+        super.init()
+        
+        paymentProcessor.delegate = self
     }
     
-    fileprivate var confirmViewController: DWConfirmSendPaymentViewController? {
-        get {
-            if let vc = objc_getAssociatedObject(self, &AssociatedKeys.confirmViewController) as? DWConfirmSendPaymentViewController {
-                return vc
-            }else{
-                return nil
-            }
-        }
-        set {
-            objc_setAssociatedObject(self,
-                                     &AssociatedKeys.confirmViewController,
-                                     newValue,
-                                     objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
+    public func performPayment(with input: DWPaymentInput) {
+        paymentProcessor.reset()
+        paymentProcessor.processPaymentInput(input)
+    }
+    
+    public func performPayment(with file: Data) {
+        paymentProcessor.reset()
+        paymentProcessor.processFile(file)
+    }
+}
+
+extension PaymentController {
+    var presentationAnchor: PaymentControllerPresentationAnchor? { presentationContextProvider?.presentationAnchorForPaymentController(self)
+    }
+        
     fileprivate func showAlert(with title: String?, message: String?) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
@@ -70,13 +73,13 @@ extension PaymentViewController {
     }
     
     fileprivate func show(modalController: UIViewController) {
-        let presentingViewController = confirmViewController ?? self.presentingViewController
-        presentingViewController?.present(modalController, animated: true)
+        precondition(presentationAnchor != nil)
+        presentationAnchor!.present(modalController, animated: true)
     }
 }
 
 //MARK: DWConfirmPaymentViewControllerDelegate
-extension PaymentViewController {
+extension PaymentController: DWConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: DWConfirmPaymentViewController) {
         if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput
         {
@@ -86,28 +89,43 @@ extension PaymentViewController {
 }
 
 //MARK: DWPaymentProcessorDelegate
-extension PaymentViewController {
+extension PaymentController: DWPaymentProcessorDelegate{
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest, transaction: DSTransaction) {
+//        [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"Swept!", nil)];
+//
+//        if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
+//            [self.navigationController popViewControllerAnimated:YES];
+//        }
+    }
+    
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem) {
-        fatalError("Must be implemented")
+//        DWSendAmountViewController *controller =
+//        [[DWSendAmountViewController alloc] initWithDestination:sendingDestination
+//                                                 paymentDetails:nil
+//                                                    contactItem:contactItem ?: [self contactItem]];
+//        controller.delegate = self;
+//        controller.demoMode = self.demoMode;
+//        [self.navigationController pushViewController:controller animated:YES];
+//        self.amountViewController = controller;
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-
+        
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel) { _ in
             cancelBlock?()
-
-//            assert(!self.confirmViewController || self.confirmViewController.sendingEnabled, "paymentProcessorDidCancelTransactionSigning: should be called")
+            
+            //            assert(!self.confirmViewController || self.confirmViewController.sendingEnabled, "paymentProcessorDidCancelTransactionSigning: should be called")
         }
-
+        
         alert.addAction(cancelAction)
-
+        
         let actionAction = UIAlertAction(title: actionTitle, style: .cancel) { _ in
             actionBlock?()
-
+            
             self.confirmViewController?.sendingEnabled = true
         }
-
+        
         alert.addAction(actionAction)
         self.show(modalController: alert)
     }
@@ -122,7 +140,7 @@ extension PaymentViewController {
             
             //TODO: demo mode
             
-            present(vc, animated: true)
+            presentationAnchor?.present(vc, animated: true)
             confirmViewController = vc
         }
     }
@@ -141,27 +159,29 @@ extension PaymentViewController {
             //show insufficient amount
         }
         
-        self.presentingViewController?.view.dw_hideProgressHUD()
+        presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
         self.showAlert(with: title, message: message)
         
         self.confirmViewController?.sendingEnabled = true
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest, transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
-        presentingViewController?.view.dw_hideProgressHUD()
+        presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
         
         if let vc = confirmViewController {
-            dismiss(animated: true)
+            presentationAnchor?.dismiss(animated: true)
         }else{
             
         }
         
-        let vc = SuccessTxDetailViewController()
-        vc.modalPresentationStyle = .fullScreen
-        vc.model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
-        vc.contactItem = contactItem
-        //vc.delegate = self
-        present(vc, animated: true)
+        delegate?.paymentControllerDidFinishTransaction(self)
+        
+//        let vc = SuccessTxDetailViewController()
+//        vc.modalPresentationStyle = .fullScreen
+//        vc.model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+//        vc.contactItem = contactItem
+//        //vc.delegate = self
+//        presentationAnchor?.present(vc, animated: true)
     }
     
     func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) {
@@ -169,19 +189,15 @@ extension PaymentViewController {
     }
     
     func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {
-        self.presentingViewController?.view.dw_hideProgressHUD()
+        presentationAnchor?.view.dw_hideProgressHUD()
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult message: String) {
+        showAlert(with: message, message: nil)
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {
-        self.presentingViewController?.view.dw_showProgressHUD(withMessage: message)
+        presentationAnchor?.view.dw_showProgressHUD(withMessage: message)
     }
 }
 
-extension UIViewController {
-    func showAlert(with title: String?, message: String?) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
-        alert.addAction(okAction)
-        present(alert, animated: true)
-    }
-}

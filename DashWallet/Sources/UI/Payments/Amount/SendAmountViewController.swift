@@ -21,6 +21,10 @@ class SendAmountViewController: BaseAmountViewController {
     fileprivate var paymentProcessor: DWPaymentProcessor
     fileprivate weak var confirmViewController: DWConfirmSendPaymentViewController?
     
+    private var sendAmountModel: SendAmountModel {
+        model as! SendAmountModel
+    }
+    
     init() {
         paymentProcessor = DWPaymentProcessor()
         
@@ -29,8 +33,25 @@ class SendAmountViewController: BaseAmountViewController {
         paymentProcessor.delegate = self
     }
 
+    override func configureModel() {
+        model = SendAmountModel()
+        model.delegate = self
+    }
+    
     override func actionButtonAction(sender: UIView) {
+        let pc = PaymentController()
+    }
+
+    override func maxButtonAction() {
+        sendAmountModel.selectAllFunds { [weak self] in
+            self?.amountView.amountType = .main
+        }
+    }
+     
+    override func amountDidChange() {
+        super.amountDidChange()
         
+        actionButton?.isEnabled = model.amount.plainAmount > 0
     }
     
     required init?(coder: NSCoder) {
@@ -39,13 +60,6 @@ class SendAmountViewController: BaseAmountViewController {
 }
 
 extension SendAmountViewController {
-    fileprivate func showAlert(with title: String?, message: String?) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
-        alert.addAction(okAction)
-        show(modalController: alert)
-    }
-    
     fileprivate func show(modalController: UIViewController) {
         let presentingViewController = confirmViewController ?? self.presentingViewController
         presentingViewController?.present(modalController, animated: true)

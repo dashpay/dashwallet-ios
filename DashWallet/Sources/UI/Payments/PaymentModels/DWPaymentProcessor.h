@@ -93,6 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
 
+- (void)reset;
+
 - (instancetype)initWithDelegate:(id<DWPaymentProcessorDelegate>)delegate;
 
 - (instancetype)init;
