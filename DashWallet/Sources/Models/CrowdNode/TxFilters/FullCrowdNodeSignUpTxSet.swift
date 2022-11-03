@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-class FullCrowdNodeSignUpTxSet: TransactionWrapper {
+final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
     private let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
     private let pleaseAcceptTermsFilter = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil)
     private let crowdNodeTxFilters = [

@@ -18,7 +18,7 @@
 import Combine
 
 @MainActor
-class CrowdNodeModel {
+final class CrowdNodeModel {
     private var cancellableBag = Set<AnyCancellable>()
     private let crowdNode = CrowdNode.shared
     private var signUpTaskId: UIBackgroundTaskIdentifier = UIBackgroundTaskIdentifier.invalid
@@ -73,7 +73,7 @@ class CrowdNodeModel {
     }
 
     func signUp() {
-        Task.init {
+        Task {
             let accountAddress: String
             let promptMessage: String
             

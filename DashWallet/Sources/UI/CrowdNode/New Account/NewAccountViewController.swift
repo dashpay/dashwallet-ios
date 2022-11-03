@@ -18,7 +18,7 @@
 import Combine
 import UIKit
 
-class NewAccountViewController: UIViewController {
+final class NewAccountViewController: UIViewController {
     private let viewModel = CrowdNodeModel()
     private var cancellableBag = Set<AnyCancellable>()
 

@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-public class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
+public final class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
     init(address: String) {
         super.init(coins: CrowdNodeConstants.requiredForSignup, address: address)
     }

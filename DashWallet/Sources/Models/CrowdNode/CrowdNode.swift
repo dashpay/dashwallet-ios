@@ -31,7 +31,7 @@ import BackgroundTasks
         let crowdNode = CrowdNode.shared
         
         if crowdNode.signUpState == .acceptTermsRequired {
-            Task.init {
+            Task {
                 let address = crowdNode.accountAddress
                 await crowdNode.signUp(accountAddress: address)
             }
@@ -39,7 +39,7 @@ import BackgroundTasks
     }
 }
 
-public class CrowdNode {
+public final class CrowdNode {
     enum SignUpState: Comparable {
         case notInitiated
         case notStarted
