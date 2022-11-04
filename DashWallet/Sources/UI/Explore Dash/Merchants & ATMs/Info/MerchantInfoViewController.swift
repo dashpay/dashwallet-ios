@@ -21,11 +21,11 @@ class MerchantInfoViewController: PointOfUseInfoViewController {
     
     @objc func learnMoreAction() {
         let vc = GiftCardInfoViewController()
-        present(vc, animated: false)
+        present(vc, animated: true)
     }
     
     @objc func continueButtonAction() {
-        dismiss(animated: false)
+        dismiss(animated: true)
     }
     
     override func configureHierarchy() {
