@@ -65,7 +65,7 @@
         tableView.delegate = self;
         tableView.dataSource = self;
         tableView.rowHeight = 80.0f;
-
+        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [tableView registerClass:[DWExploreTestnetContentsViewCell class] forCellReuseIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier];
         [subContentView addSubview:tableView];
 
@@ -104,7 +104,6 @@
     NSString *subtitle = cellSubtitles[indexPath.row];
 
     DWExploreTestnetContentsViewCell *cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     [cell setImage:[UIImage imageNamed:icon]];
     [cell setTitle:title];
     [cell setSubtitle:subtitle];
