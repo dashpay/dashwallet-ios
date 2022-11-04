@@ -37,6 +37,10 @@ import BackgroundTasks
             }
         }
     }
+    
+    @objc public class func crowdNodeWebsiteUrl() -> URL {
+        return URL(string: CrowdNodeConstants.websiteUrl)!
+    }
 }
 
 public final class CrowdNode {

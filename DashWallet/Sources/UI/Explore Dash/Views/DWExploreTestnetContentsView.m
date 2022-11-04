@@ -38,7 +38,7 @@
     if (self) {
         self.backgroundColor = [UIColor dw_darkBlueColor];
 
-        cellIcons = @[ @"image.explore.dash.wheretospend", @"image.explore.dash.atm", @"image.explore.dash.atm" ]; 
+        cellIcons = @[ @"image.explore.dash.wheretospend", @"image.explore.dash.atm", @"image.explore.dash.staking" ]; 
         cellTitles = @[ NSLocalizedString(@"Where to Spend?", nil), NSLocalizedString(@"ATMs", nil), NSLocalizedString(@"Staking", nil) ];
         cellSubtitles = @[ NSLocalizedString(@"Find merchants who accept Dash as payment.", nil), NSLocalizedString(@"Find where to buy or sell DASH and other cryptocurrencies for cash.", nil), NSLocalizedString(@"Easily stake Dash and earn passive income with a few simple clicks.", nil) ];
 
