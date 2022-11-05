@@ -31,4 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *subtitle;
 @end
 
+@interface DWExploreCrowdNodeContentsViewCell : DWExploreTestnetContentsViewCell
+@end
+
 NS_ASSUME_NONNULL_END

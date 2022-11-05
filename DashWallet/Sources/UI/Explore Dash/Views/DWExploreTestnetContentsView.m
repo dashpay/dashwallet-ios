@@ -38,7 +38,7 @@
     if (self) {
         self.backgroundColor = [UIColor dw_darkBlueColor];
 
-        cellIcons = @[ @"image.explore.dash.wheretospend", @"image.explore.dash.atm", @"image.explore.dash.staking" ]; 
+        cellIcons = @[ @"image.explore.dash.wheretospend", @"image.explore.dash.atm", @"image.explore.dash.staking" ];
         cellTitles = @[ NSLocalizedString(@"Where to Spend?", nil), NSLocalizedString(@"ATMs", nil), NSLocalizedString(@"Staking", nil) ];
         cellSubtitles = @[ NSLocalizedString(@"Find merchants who accept Dash as payment.", nil), NSLocalizedString(@"Find where to buy or sell DASH and other cryptocurrencies for cash.", nil), NSLocalizedString(@"Easily stake Dash and earn passive income with a few simple clicks.", nil) ];
 
@@ -64,9 +64,11 @@
         tableView.scrollEnabled = false;
         tableView.delegate = self;
         tableView.dataSource = self;
-        tableView.rowHeight = 80.0f;
+        tableView.rowHeight = UITableViewAutomaticDimension;
+
         tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [tableView registerClass:[DWExploreTestnetContentsViewCell class] forCellReuseIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier];
+        [tableView registerClass:[DWExploreCrowdNodeContentsViewCell class] forCellReuseIdentifier:DWExploreCrowdNodeContentsViewCell.dw_reuseIdentifier];
         [subContentView addSubview:tableView];
 
         CGFloat verticalPadding = 10;
@@ -77,7 +79,7 @@
             [contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
-            [subContentView.heightAnchor constraintEqualToConstant:260],
+            [subContentView.heightAnchor constraintEqualToConstant:294],
             [subContentView.topAnchor constraintEqualToAnchor:contentView.topAnchor
                                                      constant:15],
             [subContentView.bottomAnchor constraintLessThanOrEqualToAnchor:contentView.bottomAnchor
@@ -102,16 +104,22 @@
     NSString *icon = cellIcons[indexPath.row];
     NSString *title = cellTitles[indexPath.row];
     NSString *subtitle = cellSubtitles[indexPath.row];
+    DWExploreTestnetContentsViewCell *cell;
 
-    DWExploreTestnetContentsViewCell *cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
+    if (indexPath.row == 2) {
+        cell = (DWExploreCrowdNodeContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreCrowdNodeContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
+    } else {
+        cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
+    }
+    
     [cell setImage:[UIImage imageNamed:icon]];
     [cell setTitle:title];
     [cell setSubtitle:subtitle];
-
+    
     if (indexPath.row == 1) {
         cell.separatorInset = UIEdgeInsetsMake(0, 2000, 0, 0);
     }
-
+    
     return cell;
 }
 
@@ -139,6 +147,7 @@
 @property (readonly, nonatomic, strong) UIImageView *iconImageView;
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UILabel *descLabel;
+@property (readonly, nonatomic, strong) UIStackView *contentStack;
 @end
 
 @implementation DWExploreTestnetContentsViewCell
@@ -187,6 +196,7 @@
     labelsStackView.spacing = 1;
     labelsStackView.alignment = UIStackViewAlignmentLeading;
     [stackView addArrangedSubview:labelsStackView];
+    _contentStack = labelsStackView;
 
     UILabel *titleLabel = [[UILabel alloc] init];
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -205,7 +215,7 @@
     descLabel.numberOfLines = 0;
     [labelsStackView addArrangedSubview:descLabel];
     _descLabel = descLabel;
-
+    
     [labelsStackView addArrangedSubview:[UIView new]];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -218,7 +228,8 @@
                                                constant:-4],
         [stackView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor
                                                 constant:15],
-        [stackView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor]
+        [stackView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
+        [stackView.heightAnchor constraintGreaterThanOrEqualToConstant:64.0]
     ]];
 }
 
@@ -245,4 +256,62 @@
 - (void)setSubtitle:(NSString *)subtitle {
     self.descLabel.text = subtitle;
 }
+
+- (void)addContent:(UIView *)view {
+    UIView *last = [[_contentStack arrangedSubviews] lastObject];
+    [_contentStack setCustomSpacing:10 afterView:last];
+    [_contentStack addArrangedSubview:view];
+    _contentStack.layoutMargins = UIEdgeInsetsMake(0, 0, 10, 0);
+    _contentStack.layoutMarginsRelativeArrangement = YES;
+}
+@end
+
+
+@implementation DWExploreCrowdNodeContentsViewCell : DWExploreTestnetContentsViewCell
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        [self addCrowdNodeAPYLabel];
+    }
+    return self;
+}
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self addCrowdNodeAPYLabel];
+    }
+
+    return self;
+}
+
+- (void)addCrowdNodeAPYLabel {
+    UIColor *systemGreen = [UIColor colorWithRed:98.0 / 255.0 green:182.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
+    
+    UIStackView *apyStackView = [UIStackView new];
+    apyStackView.axis = UILayoutConstraintAxisHorizontal;
+    apyStackView.spacing = 4;
+    apyStackView.backgroundColor = [systemGreen colorWithAlphaComponent:0.1];
+    apyStackView.layer.cornerRadius = 6.0;
+    apyStackView.layer.masksToBounds = YES;
+    apyStackView.layoutMargins = UIEdgeInsetsMake(0, 8, 0, 8);
+    apyStackView.layoutMarginsRelativeArrangement = YES;
+
+    UIImageView *iconImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 14, 14)];
+    iconImageView.contentMode = UIViewContentModeCenter;
+    [iconImageView setImage:[UIImage imageNamed:@"image.explore.dash.apy"]];
+    [apyStackView addArrangedSubview:iconImageView];
+    
+    UILabel *apiLabel = [[UILabel alloc] init];
+    apiLabel.textColor = systemGreen;
+    apiLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightSemibold];
+    apiLabel.text = NSLocalizedString(@"Current APY = a lot of %", nil);
+    [apyStackView addArrangedSubview:apiLabel];
+    
+    [super addContent:apyStackView];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [apyStackView.heightAnchor constraintEqualToConstant:24]
+    ]];
+}
+
 @end
