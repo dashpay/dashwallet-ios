@@ -186,6 +186,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showExploreDash {
     DWExploreTestnetViewController *controller = [[DWExploreTestnetViewController alloc] init];
     controller.delegate = self;
+    controller.syncModel = self.model.syncModel;
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:nvc animated:YES completion:nil];
 }

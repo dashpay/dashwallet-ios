@@ -260,6 +260,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         DWMainMenuViewController *menuController =
             [[DWMainMenuViewController alloc] initWithBalanceDisplayOptions:self.homeModel.balanceDisplayOptions];
         menuController.delegate = self;
+        menuController.syncModel = self.homeModel.syncModel;
 
         _menuNavigationController = [[DWNavigationController alloc] initWithRootViewController:menuController];
         _menuNavigationController.delegate = self;

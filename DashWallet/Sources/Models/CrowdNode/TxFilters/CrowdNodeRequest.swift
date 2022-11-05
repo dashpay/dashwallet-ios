@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-public class CrowdNodeRequest: CoinsToAddressTxFilter {
+public final class CrowdNodeRequest: CoinsToAddressTxFilter {
     let requestCode: ApiCode
 
     init(requestCode: ApiCode) {

@@ -19,6 +19,7 @@
 
 #import "DWPaymentsViewController.h"
 #import "DWWipeDelegate.h"
+#import "DWSyncProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMainMenuViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
+@property (nonatomic, strong) id<DWSyncProtocol> syncModel;
 
 - (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions;
 

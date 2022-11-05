@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-public class SpendableTransaction: TransactionFilter {
+public final class SpendableTransaction: TransactionFilter {
     private let txHashData: Data
     private let account = DWEnvironment.sharedInstance().currentAccount
 

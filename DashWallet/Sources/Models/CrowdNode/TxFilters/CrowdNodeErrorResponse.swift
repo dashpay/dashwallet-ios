@@ -16,7 +16,7 @@
 //
 
 /// CrowdNode returns the sent amount - fee as the indication of an error
-public class CrowdNodeErrorResponse: CoinsToAddressTxFilter {
+public final class CrowdNodeErrorResponse: CoinsToAddressTxFilter {
     init(errorValue: UInt64, accountAddress: String?) {
         let accountAddress = accountAddress
         super.init(coins: errorValue, address: accountAddress, withFee: true)

@@ -17,7 +17,7 @@
 
 import Combine
 
-public class SendCoinsService {
+public final class SendCoinsService {
     private let transactionManager: DSTransactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
 
     func sendCoins(address: String, amount: UInt64, inputSelector: SingleInputAddressSelector? = nil) async throws -> DSTransaction {

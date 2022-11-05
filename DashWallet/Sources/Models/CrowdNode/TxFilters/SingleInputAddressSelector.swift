@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-public class SingleInputAddressSelector {
+public final class SingleInputAddressSelector {
     let candidates: [DSTransaction]
     let address: String
     private let account = DWEnvironment.sharedInstance().currentAccount

@@ -17,7 +17,7 @@
 
 import Combine
 
-public class TransactionObserver {
+public final class TransactionObserver {
     /// Observes status changes for transactions that match `filter`
     func observe(filters: [TransactionFilter]) -> AnyPublisher<DSTransaction, Never> {
         return NotificationCenter.default.publisher(for: NSNotification.Name.DSTransactionManagerTransactionStatusDidChange)

@@ -18,9 +18,9 @@
 public class CoinsToAddressTxFilter: TransactionFilter {
     private let matchingAddress: String?
     private var withFee: Bool
-    private(set) var coins: UInt64
-    private(set) var toAddress: String?
-    private(set) var fromAddresses = Set<String>()
+    final private(set) var coins: UInt64
+    final private(set) var toAddress: String?
+    final private(set) var fromAddresses = Set<String>()
 
     init(coins: UInt64, address: String?, withFee: Bool = false) {
         matchingAddress = address
