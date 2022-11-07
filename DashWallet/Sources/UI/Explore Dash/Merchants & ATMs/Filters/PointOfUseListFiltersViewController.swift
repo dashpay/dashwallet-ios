@@ -18,7 +18,6 @@
 import UIKit
 
 typealias Item = PointOfUseListFilters
-
 class PointOfUseListFiltersViewController: UIViewController {
     class PointOfUseListFiltersDataSource: UITableViewDiffableDataSource<Section, Item> {
         override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -94,6 +93,22 @@ class PointOfUseListFiltersViewController: UIViewController {
 }
 
 extension PointOfUseListFiltersViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let identifier: Section?
+        
+        if #available(iOS 15.0, *) {
+            identifier = dataSource.sectionIdentifier(for: indexPath.section)
+        } else {
+            identifier = dataSource.snapshot().sectionIdentifiers[indexPath.section]
+        }
+        
+        if let identifier = identifier, identifier == .location {
+            navigationController?.pushViewController(SelectStateViewController.controller(), animated: true)
+        }
+    }
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let dataSource = self.dataSource else { return nil }
         
@@ -154,6 +169,7 @@ extension PointOfUseListFiltersViewController {
             
             let section = wSelf.currentSnapshot.sectionIdentifiers[indexPath.section]
             let cell = tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath)
+            cell.selectionStyle = .none
             
             if let filterCell = cell as? FilterItemCell {
                 filterCell.update(with: item)
