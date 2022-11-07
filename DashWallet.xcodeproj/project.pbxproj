@@ -4066,6 +4066,7 @@
 		47838B7B290133440003E8AB /* Filters */ = {
 			isa = PBXGroup;
 			children = (
+				47A50F3C291560ED00C70123 /* Locations List */,
 				47838B80290271020003E8AB /* Model */,
 				47838B7C290133610003E8AB /* PointOfUseListFiltersViewController.swift */,
 			);
@@ -4086,6 +4087,13 @@
 				4741255F287E77B4004E6BF3 /* Database */,
 			);
 			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		47A50F3C291560ED00C70123 /* Locations List */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "Locations List";
 			sourceTree = "<group>";
 		};
 		47AE8B9328BF873800490F5E /* Explore Dash */ = {

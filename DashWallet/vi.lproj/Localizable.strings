@@ -311,6 +311,9 @@
 /* Explore Dash: Filters */
 "Current location" = "Current location";
 
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Người dùng hiện tại: %@";
 
@@ -596,6 +599,9 @@
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Số lượng được yêu cầu: %@";
 
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
+
 /* No comment provided by engineer. */
 "Locked" = "Đã khoá";
 
@@ -773,6 +779,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Đang gửi...";
 
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
+
 /* No comment provided by engineer. */
 "Payments" = "Các giao dịch";
 
@@ -829,6 +838,9 @@
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorums xác nhận: %1$d/%2$d";
+
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Tỷ giá: %1$@ = %2$@";

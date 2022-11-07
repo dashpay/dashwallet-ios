@@ -311,6 +311,9 @@
 /* Explore Dash: Filters */
 "Current location" = "Current location";
 
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Utente corrente: %@";
 
@@ -596,6 +599,9 @@
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Quantità locale richiesta: %@";
 
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
+
 /* No comment provided by engineer. */
 "Locked" = "Bloccato";
 
@@ -773,6 +779,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Pagamento in corso...";
 
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
+
 /* No comment provided by engineer. */
 "Payments" = "Pagamenti";
 
@@ -829,6 +838,9 @@
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorum validati: %1$d/%2$d";
+
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Tasso: %1$@ = %2$@";

@@ -39,6 +39,16 @@ enum PointOfUseListFilters: String {
         }
     }
     
+    var image: String? {
+        switch self {
+        case .paymentTypeDash:
+            return "image.explore.dash.wts.payment.dash"
+        case .paymentTypeGiftCard:
+            return "image.explore.dash.wts.payment.gift-card"
+        default: return nil
+        }
+    }
+    
     var title: String {
         switch self {
             

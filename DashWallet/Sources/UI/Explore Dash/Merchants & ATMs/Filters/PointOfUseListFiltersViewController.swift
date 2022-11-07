@@ -20,6 +20,21 @@ import UIKit
 typealias Item = PointOfUseListFilters
 
 class PointOfUseListFiltersViewController: UIViewController {
+    class PointOfUseListFiltersDataSource: UITableViewDiffableDataSource<Section, Item> {
+        override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+            if #available(iOS 15.0, *) {
+                if let identifier = sectionIdentifier(for: section) {
+                    return identifier.title
+                }
+            } else {
+                let identifier = snapshot().sectionIdentifiers[section]
+                return identifier.title
+            }
+            
+            return nil
+        }
+    }
+    
     enum Section: CaseIterable {
         case paymentType
         case sortBy
@@ -27,6 +42,18 @@ class PointOfUseListFiltersViewController: UIViewController {
         case radius
         case locationService
         case resetFilters
+        
+        var title: String? {
+            switch self {
+            case .paymentType: return NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")
+            case .sortBy: return NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")
+            case .location: return NSLocalizedString("Location", comment: "Explore Dash/Merchants/Filters")
+            case .radius: return NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")
+            case .locationService: return NSLocalizedString("Current Location Settings", comment: "Explore Dash/Merchants/Filters")
+            default:
+                return nil
+            }
+        }
     }
     
 //    struct Item: Hashable {
@@ -39,7 +66,7 @@ class PointOfUseListFiltersViewController: UIViewController {
 //        }
 //    }
     
-    private var dataSource: UITableViewDiffableDataSource<Section, Item>! = nil
+    private var dataSource: PointOfUseListFiltersDataSource! = nil
     private var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     
     @IBOutlet var tableView: UITableView!
@@ -66,6 +93,46 @@ class PointOfUseListFiltersViewController: UIViewController {
     }
 }
 
+extension PointOfUseListFiltersViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard let dataSource = self.dataSource else { return nil }
+        
+        let title: String?
+        
+        if #available(iOS 15.0, *) {
+            if let identifier = dataSource.sectionIdentifier(for: section) {
+                title = identifier.title
+            }else{
+                title = nil
+            }
+        } else {
+            let identifier = dataSource.snapshot().sectionIdentifiers[section]
+            title = identifier.title
+        }
+        
+        let label = UILabel()
+        label.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
+        label.textColor = .secondaryLabel
+        label.text = title
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        let view = UIView()
+        view.addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
+            label.topAnchor.constraint(equalTo: view.topAnchor),
+            label.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            label.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        return view
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 30
+    }
+}
+
 extension PointOfUseListFiltersViewController {
     private func configureHierarchy() {
         title = NSLocalizedString("Filters", comment: "Explore Dash")
@@ -74,19 +141,25 @@ extension PointOfUseListFiltersViewController {
         appearance.configureWithTransparentBackground()
         navigationController?.navigationBar.standardAppearance = appearance
         
+        tableView.delegate = self
+        
         view.backgroundColor = .dw_secondaryBackground()
     }
     
     private func configureDataSource() {
-        self.dataSource = UITableViewDiffableDataSource
-        <Section, Item>(tableView: tableView) { [weak self]
+        self.dataSource = PointOfUseListFiltersDataSource(tableView: tableView) { [weak self]
             (tableView: UITableView, indexPath: IndexPath, item: Item) -> UITableViewCell? in
             
             guard let wSelf = self else { return UITableViewCell() }
             
             let section = wSelf.currentSnapshot.sectionIdentifiers[indexPath.section]
+            let cell = tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath)
             
-            return tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath)
+            if let filterCell = cell as? FilterItemCell {
+                filterCell.update(with: item)
+            }
+            
+            return cell
         }
     }
     
@@ -109,8 +182,23 @@ extension PointOfUseListFiltersViewController {
 class FilterItemSelectableCell: FilterItemCell {
     @IBOutlet var iconImageView: UIImageView!
     @IBOutlet var checkboxButton: UIButton!
+    
+    override func update(with item: Item) {
+        super.update(with: item)
+        
+        if let image = item.image {
+            iconImageView.image = UIImage(named: image)
+            iconImageView.isHidden = false
+        }else{
+            iconImageView.isHidden = true
+        }
+    }
 }
 
 class FilterItemCell: UITableViewCell {
     @IBOutlet var nameLabel: UILabel!
+    
+    func update(with item: Item) {
+        nameLabel.text = item.title
+    }
 }
