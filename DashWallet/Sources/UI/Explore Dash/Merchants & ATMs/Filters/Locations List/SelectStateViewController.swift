@@ -46,6 +46,26 @@ extension SelectStateViewController {
     private func configureHierarchy() {
         title = NSLocalizedString("Location", comment: "Explore Dash/Merchants/Filters/Location")
         
+        let standardAppearance = UINavigationBarAppearance()
+        standardAppearance.configureWithOpaqueBackground()
+        standardAppearance.backgroundColor = .systemBackground
+        standardAppearance.shadowColor = nil
+        standardAppearance.shadowImage = nil
+        
+        let compactAppearance = standardAppearance.copy()
+        
+        let navBar = self.navigationController!.navigationBar
+        navBar.isTranslucent = true
+        navBar.standardAppearance = standardAppearance
+        navBar.scrollEdgeAppearance = standardAppearance
+        navBar.compactAppearance = compactAppearance
+        if #available(iOS 15.0, *) {
+            navBar.compactScrollEdgeAppearance = compactAppearance
+        }
+
+        tableView.layoutMargins = .init(top: 0.0, left: 15, bottom: 0.0, right: 0)
+        tableView.separatorInset = tableView.layoutMargins
+        
         searchResultsController = self.storyboard?.instantiateViewController(withIdentifier: "SelectLocationResultsViewController") as? SelectLocationResultsViewController
         searchResultsController.tableView.delegate = self
         
@@ -57,8 +77,8 @@ extension SelectStateViewController {
         searchController.searchBar.delegate = self
         
         navigationItem.searchController = searchController
-        
         navigationItem.hidesSearchBarWhenScrolling = false
+        
         definesPresentationContext = true
     }
 }
@@ -78,11 +98,22 @@ extension SelectStateViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: tableViewCellIdentifier, for: indexPath)
-        var configuration =  cell.defaultContentConfiguration()
-        configuration.text = model.territories[indexPath.row]
-        cell.contentConfiguration = configuration
-        return cell
+        switch indexPath.section {
+        case 0:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "CurrentLocationCell", for: indexPath)
+//            var configuration =  cell.defaultContentConfiguration()
+//            configuration.text = model.territories[indexPath.row]
+//            cell.contentConfiguration = configuration
+            cell.isSelected = false
+            return cell
+        default:
+            let cell = tableView.dequeueReusableCell(withIdentifier: tableViewCellIdentifier, for: indexPath)
+            var configuration =  cell.defaultContentConfiguration()
+            configuration.text = model.territories[indexPath.row]
+            cell.contentConfiguration = configuration
+            cell.isSelected = false
+            return cell
+        }
     }
 }
 

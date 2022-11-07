@@ -17,7 +17,28 @@
 
 import UIKit
 
-class TerritoriesListCell: UITableViewCell {
-    
+final class TerritoriesListCurrentLocationCell: UITableViewCell {
+    @IBOutlet var iconView: UIImageView!
+    @IBOutlet var label: UILabel!
+        
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        
+        let color: UIColor = selected ? .dw_dashBlue() : .label
+        
+        label.textColor = color
+        iconView.tintColor = color
+    }
+}
+
+
+final class TerritoriesListItemCell: UITableViewCell {
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        
+        guard var configuration = contentConfiguration as? UIListContentConfiguration else { return }
+        configuration.textProperties.color = selected ? .dw_dashBlue() : .label
+        contentConfiguration = configuration
+    }
 }
 

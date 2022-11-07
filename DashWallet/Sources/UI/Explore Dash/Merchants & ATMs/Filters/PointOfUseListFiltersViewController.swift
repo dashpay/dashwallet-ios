@@ -18,6 +18,7 @@
 import UIKit
 
 typealias Item = PointOfUseListFilters
+
 class PointOfUseListFiltersViewController: UIViewController {
     class PointOfUseListFiltersDataSource: UITableViewDiffableDataSource<Section, Item> {
         override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -76,6 +77,18 @@ class PointOfUseListFiltersViewController: UIViewController {
     
     @IBAction func applyAction() {
         dismiss(animated: true)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        
+        let navBar = self.navigationController!.navigationBar
+        navBar.isTranslucent = true
+        navBar.standardAppearance = appearance
+        navBar.scrollEdgeAppearance = appearance
+        
+        super.viewWillAppear(animated)
     }
     
     override func viewDidLoad() {
@@ -152,10 +165,6 @@ extension PointOfUseListFiltersViewController {
     private func configureHierarchy() {
         title = NSLocalizedString("Filters", comment: "Explore Dash")
         
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        navigationController?.navigationBar.standardAppearance = appearance
-        
         tableView.delegate = self
         
         view.backgroundColor = .dw_secondaryBackground()
@@ -195,6 +204,7 @@ extension PointOfUseListFiltersViewController {
     }
 }
 
+//MARK: FilterItemSelectableCell
 class FilterItemSelectableCell: FilterItemCell {
     @IBOutlet var iconImageView: UIImageView!
     @IBOutlet var checkboxButton: UIButton!
@@ -211,6 +221,7 @@ class FilterItemSelectableCell: FilterItemCell {
     }
 }
 
+//MARK: FilterItemCell
 class FilterItemCell: UITableViewCell {
     @IBOutlet var nameLabel: UILabel!
     
