@@ -1,9 +1,9 @@
 PODS:
-  - "!ProtoCompiler (3.19.4)":
+  - "!ProtoCompiler (3.21.5)":
     - Protobuf (~> 3.0)
-  - "!ProtoCompiler-gRPCPlugin (1.48.0)":
-    - "!ProtoCompiler (= 3.19.4)"
-    - gRPC-ProtoRPC (= 1.48.0)
+  - "!ProtoCompiler-gRPCPlugin (1.49.0)":
+    - "!ProtoCompiler (= 3.21.5)"
+    - gRPC-ProtoRPC (= 1.49.0)
   - abseil/algorithm/algorithm (1.20220623.0):
     - abseil/base/config
   - abseil/algorithm/container (1.20220623.0):
@@ -182,6 +182,12 @@ PODS:
     - abseil/debugging/debugging_internal
     - abseil/debugging/demangle_internal
     - abseil/strings/strings
+  - abseil/functional/any_invocable (1.20220623.0):
+    - abseil/base/base_internal
+    - abseil/base/config
+    - abseil/base/core_headers
+    - abseil/meta/type_traits
+    - abseil/utility/utility
   - abseil/functional/bind_front (1.20220623.0):
     - abseil/base/base_internal
     - abseil/container/compressed_tuple
@@ -582,27 +588,28 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.1.9)
+  - DashSharedCore (0.2.6)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.1.9)
+    - DashSharedCore (= 0.2.6)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
     - TinyCborObjc (= 0.4.6)
   - DSDynamicOptions (0.1.2)
   - DWAlertController (0.2.1)
-  - gRPC-Core (1.48.0):
-    - gRPC-Core/Implementation (= 1.48.0)
-    - gRPC-Core/Interface (= 1.48.0)
-  - gRPC-Core/Implementation (1.48.0):
+  - gRPC-Core (1.49.0):
+    - gRPC-Core/Implementation (= 1.49.0)
+    - gRPC-Core/Interface (= 1.49.0)
+  - gRPC-Core/Implementation (1.49.0):
     - abseil/base/base (= 1.20220623.0)
     - abseil/base/core_headers (= 1.20220623.0)
     - abseil/container/flat_hash_map (= 1.20220623.0)
     - abseil/container/flat_hash_set (= 1.20220623.0)
     - abseil/container/inlined_vector (= 1.20220623.0)
+    - abseil/functional/any_invocable (= 1.20220623.0)
     - abseil/functional/bind_front (= 1.20220623.0)
     - abseil/functional/function_ref (= 1.20220623.0)
     - abseil/hash/hash (= 1.20220623.0)
@@ -621,47 +628,49 @@ PODS:
     - abseil/types/variant (= 1.20220623.0)
     - abseil/utility/utility (= 1.20220623.0)
     - BoringSSL-GRPC (= 0.0.24)
-    - gRPC-Core/Interface (= 1.48.0)
-  - gRPC-Core/Interface (1.48.0)
-  - gRPC-ProtoRPC (1.48.0):
-    - gRPC-ProtoRPC/Legacy (= 1.48.0)
-    - gRPC-ProtoRPC/Legacy-Header (= 1.48.0)
-    - gRPC-ProtoRPC/Main (= 1.48.0)
-  - gRPC-ProtoRPC/Legacy (1.48.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.48.0)
-    - gRPC-ProtoRPC/Main (= 1.48.0)
-    - gRPC-RxLibrary (= 1.48.0)
-    - gRPC/GRPCCore (= 1.48.0)
+    - gRPC-Core/Interface (= 1.49.0)
+  - gRPC-Core/Interface (1.49.0)
+  - gRPC-ProtoRPC (1.49.0):
+    - gRPC-ProtoRPC/Legacy (= 1.49.0)
+    - gRPC-ProtoRPC/Legacy-Header (= 1.49.0)
+    - gRPC-ProtoRPC/Main (= 1.49.0)
+  - gRPC-ProtoRPC/Legacy (1.49.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.49.0)
+    - gRPC-ProtoRPC/Main (= 1.49.0)
+    - gRPC-RxLibrary (= 1.49.0)
+    - gRPC/GRPCCore (= 1.49.0)
     - Protobuf (~> 3.0)
-  - gRPC-ProtoRPC/Legacy-Header (1.48.0)
-  - gRPC-ProtoRPC/Main (1.48.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.48.0)
-    - gRPC/Interface (= 1.48.0)
+  - gRPC-ProtoRPC/Legacy-Header (1.49.0)
+  - gRPC-ProtoRPC/Main (1.49.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.49.0)
+    - gRPC/Interface (= 1.49.0)
     - Protobuf (~> 3.0)
-  - gRPC-RxLibrary (1.48.0):
-    - gRPC-RxLibrary/Implementation (= 1.48.0)
-    - gRPC-RxLibrary/Interface (= 1.48.0)
-  - gRPC-RxLibrary/Implementation (1.48.0):
+  - gRPC-RxLibrary (1.49.0):
+    - gRPC-RxLibrary/Implementation (= 1.49.0)
+    - gRPC-RxLibrary/Interface (= 1.49.0)
+  - gRPC-RxLibrary/Implementation (1.49.0):
     - gRPC-RxLibrary/Interface
-  - gRPC-RxLibrary/Interface (1.48.0)
-  - gRPC/GRPCCore (1.48.0):
-    - gRPC-Core (= 1.48.0)
-    - gRPC-RxLibrary (= 1.48.0)
-    - gRPC/Interface (= 1.48.0)
-    - gRPC/Interface-Legacy (= 1.48.0)
-  - gRPC/Interface (1.48.0):
-    - gRPC/Interface-Legacy (= 1.48.0)
-  - gRPC/Interface-Legacy (1.48.0):
-    - gRPC-RxLibrary/Interface (= 1.48.0)
+  - gRPC-RxLibrary/Interface (1.49.0)
+  - gRPC/GRPCCore (1.49.0):
+    - gRPC-Core (= 1.49.0)
+    - gRPC-RxLibrary (= 1.49.0)
+    - gRPC/Interface (= 1.49.0)
+    - gRPC/Interface-Legacy (= 1.49.0)
+  - gRPC/Interface (1.49.0):
+    - gRPC/Interface-Legacy (= 1.49.0)
+  - gRPC/Interface-Legacy (1.49.0):
+    - gRPC-RxLibrary/Interface (= 1.49.0)
   - KVO-MVVM (0.5.6)
   - MBProgressHUD (1.1.0)
   - MMSegmentSlider (1.0.3)
-  - Protobuf (3.21.6)
+  - Protobuf (3.21.9)
   - secp256k1_dash (0.1.4-alpha.2)
   - SQLite.swift (0.13.3):
     - SQLite.swift/standard (= 0.13.3)
   - SQLite.swift/standard (0.13.3)
-  - SQLiteMigrationManager.swift (0.8.0):
+  - SQLiteMigrationManager.swift (0.8.1):
+    - SQLiteMigrationManager.swift/standard (= 0.8.1)
+  - SQLiteMigrationManager.swift/standard (0.8.1):
     - SQLite.swift (~> 0.13.0)
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
@@ -726,8 +735,8 @@ CHECKOUT OPTIONS:
     :git: https://github.com/podkovyrin/MMSegmentSlider
 
 SPEC CHECKSUMS:
-  "!ProtoCompiler": 938ac0701c79342e77008ff71758933ffad8bae1
-  "!ProtoCompiler-gRPCPlugin": 5b75d985d1a03be04585316db3ca41a2aa525918
+  "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
+  "!ProtoCompiler-gRPCPlugin": 755f0ee414a0d5f0028e0dcfe98c23bdbc3e6fa3
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
   bls-signatures-pod: 2fb002bda90163678c294bc2aa8a1049cba9ead7
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
@@ -735,21 +744,21 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 29b5be6c8197ff5b008bd61e24f3b2a45f013d5b
-  DashSync: 1a4df59c39da86eb21c1a4db028a8460c39fe622
+  DashSharedCore: d0e67127a9614e34259994a1982e4e137eb36942
+  DashSync: 74e5f893f8d7b78d1d9b9d22b5047cd37b76694f
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
-  gRPC: dd62176ac7f492b0bab9b4c2600a6a3a99309544
-  gRPC-Core: 6eb3a212084128c0e2ca6aa45d19342cef2ba898
-  gRPC-ProtoRPC: eec0a09efab2b534ec5ec1cb0fa505abc7cff31e
-  gRPC-RxLibrary: 908af521c74d7a5f7b439b4160c63df852fd1ee6
+  gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
+  gRPC-Core: 3a9fdb5967d42211e875826f3f6fc163ea02c2a1
+  gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
+  gRPC-RxLibrary: 92327f150e11cf3b1c0f52e083944fd9f5cb5d1e
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
-  Protobuf: e7846f61e8542750cf311385fc633c1d00928f9f
+  Protobuf: 02524ec14183fe08fb259741659e79683788158b
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
-  SQLiteMigrationManager.swift: 4818b59bf0be6a21e1a494571d4e12950d317bbc
+  SQLiteMigrationManager.swift: 5383578f5bc8955c06695e8bf04835ee0e6673a8
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
