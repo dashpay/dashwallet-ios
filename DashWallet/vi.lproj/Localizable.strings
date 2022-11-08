@@ -449,6 +449,9 @@
 /* No comment provided by engineer. */
 "Filter Transactions" = "Lọc các giao dịch";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
 /* Explore Dash */
 "Filters" = "Filters";
 

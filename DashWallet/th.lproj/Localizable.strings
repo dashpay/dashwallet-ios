@@ -449,6 +449,9 @@
 /* No comment provided by engineer. */
 "Filter Transactions" = "กรองธุรกรรม";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
 /* Explore Dash */
 "Filters" = "Filters";
 

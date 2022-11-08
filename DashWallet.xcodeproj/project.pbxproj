@@ -503,6 +503,7 @@
 		47AE8C1E28C7491C00490F5E /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1D28C7491C00490F5E /* AboutViewController.swift */; };
 		47C6E6E02919578C003FEDF2 /* TerritoryListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6DF2919578C003FEDF2 /* TerritoryListModel.swift */; };
 		47C6E6E329196D48003FEDF2 /* TerritoriesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6E229196D48003FEDF2 /* TerritoriesListCell.swift */; };
+		47C6E6E5291A68B6003FEDF2 /* AppliedFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1586,6 +1587,7 @@
 		47AE8C1D28C7491C00490F5E /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		47C6E6DF2919578C003FEDF2 /* TerritoryListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerritoryListModel.swift; sourceTree = "<group>"; };
 		47C6E6E229196D48003FEDF2 /* TerritoriesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerritoriesListCell.swift; sourceTree = "<group>"; };
+		47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppliedFiltersView.swift; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -4281,6 +4283,7 @@
 				47AE8C1B28C6AA2400490F5E /* PointOfUseLocationServicePopup.swift */,
 				47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */,
 				47AE8BDC28C1305E00490F5E /* ExploreMapView.swift */,
+				47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5532,6 +5535,7 @@
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,
 				2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */,
+				47C6E6E5291A68B6003FEDF2 /* AppliedFiltersView.swift in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */,

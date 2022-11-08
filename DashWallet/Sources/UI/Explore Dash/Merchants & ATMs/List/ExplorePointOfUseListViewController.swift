@@ -53,7 +53,7 @@ enum ExplorePointOfUseSections: Int {
     internal var tableView: UITableView!
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
-    
+    internal var appliedFiltersLabel: UILabel!
     
     //MARK: Map
     internal func updateMapVisibility() {
@@ -210,6 +210,44 @@ extension ExplorePointOfUseListViewController {
     @objc internal func configureHierarchy() {
         self.view.backgroundColor = .dw_background()
         
+        let appliedFiltersStackView = UIStackView()
+        appliedFiltersStackView.translatesAutoresizingMaskIntoConstraints = false
+        appliedFiltersStackView.alignment = .center
+        appliedFiltersStackView.axis = .vertical
+        appliedFiltersStackView.spacing = 2
+        
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.text = NSLocalizedString("Filtered by:", comment: "Explore Dash/Merchants/Filters")
+        titleLabel.font = .dw_font(forTextStyle: .footnote)
+        appliedFiltersStackView.addArrangedSubview(titleLabel)
+        
+        appliedFiltersLabel = UILabel()
+        appliedFiltersLabel.translatesAutoresizingMaskIntoConstraints = false
+        appliedFiltersLabel.textAlignment = .center
+        appliedFiltersLabel.font = .dw_font(forTextStyle: .footnote)
+        appliedFiltersLabel.text = "California, 5 miles"
+        appliedFiltersLabel.textColor = .dw_dashBlue()
+        appliedFiltersStackView.addArrangedSubview(appliedFiltersLabel)
+        
+        let appliedFilters = UIBarButtonItem(customView: appliedFiltersStackView)
+        let empty = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: self, action: nil)
+        let filter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain, target: self, action: nil)
+        filter.tintColor = .dw_dashBlue()
+        let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
+        toolbarItems = [filter, spacer, appliedFilters, spacer, empty]
+        
+        let standardAppearance = UIToolbarAppearance()
+        standardAppearance.configureWithDefaultBackground()
+        standardAppearance.backgroundColor = .systemBackground
+        //standardAppearance.shadowColor = .opaqueSeparator
+        navigationController?.toolbar.standardAppearance = standardAppearance
+        if #available(iOS 15.0, *) {
+            navigationController?.toolbar.scrollEdgeAppearance = standardAppearance
+        } else {
+            // Fallback on earlier versions
+        }
+        
         mapView = ExploreMapView(frame: .zero)
         mapView.delegate = self
         mapView.translatesAutoresizingMaskIntoConstraints = false
@@ -224,10 +262,26 @@ extension ExplorePointOfUseListViewController {
         contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.addSubview(contentView)
         
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(stackView)
+        
+        let handlerView = ListHandlerView(frame: .zero)
+        handlerView.layer.zPosition = 1
+        handlerView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(handlerView)
+        
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
+        panRecognizer.minimumNumberOfTouches = 1
+        panRecognizer.maximumNumberOfTouches = 1
+        handlerView.addGestureRecognizer(panRecognizer)
+        
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.showsVerticalScrollIndicator = false
         tableView.delegate = self
+        tableView.layer.zPosition = -1
         tableView.dataSource = self
         tableView.clipsToBounds = false
         tableView.register(PointOfUseListSegmentedCell.self, forCellReuseIdentifier: PointOfUseListSegmentedCell.dw_reuseIdentifier)
@@ -235,17 +289,11 @@ extension ExplorePointOfUseListViewController {
         tableView.register(PointOfUseListFiltersCell.self, forCellReuseIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier)
         tableView.register(MerchantListLocationOffCell.self, forCellReuseIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier)
         tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
+        stackView.addArrangedSubview(tableView)
         
-        contentView.addSubview(tableView)
-        
-        let handlerView = ListHandlerView(frame: .zero)
-        handlerView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(handlerView)
-        
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
-        panRecognizer.minimumNumberOfTouches = 1
-        panRecognizer.maximumNumberOfTouches = 1
-        handlerView.addGestureRecognizer(panRecognizer)
+//        appliedFiltersView = AppliedFiltersView(frame: .zero)
+//        //appliedFiltersView.isHidden = true
+//        stackView.addArrangedSubview(appliedFiltersView)
         
         self.showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
@@ -273,15 +321,21 @@ extension ExplorePointOfUseListViewController {
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            handlerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            //handlerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             handlerView.heightAnchor.constraint(equalToConstant: handlerViewHeight),
-            handlerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            handlerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+//            handlerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+//            handlerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            tableView.topAnchor.constraint(equalTo: handlerView.bottomAnchor),
-            tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+//            tableView.topAnchor.constraint(equalTo: handlerView.bottomAnchor),
+//            tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+//            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+//            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
             mapView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
@@ -303,6 +357,8 @@ extension ExplorePointOfUseListViewController {
         let vc = PointOfUseListFiltersViewController.controller()
         let nvc = UINavigationController(rootViewController: vc)
         present(nvc, animated: true)
+        
+        navigationController?.setToolbarHidden(false, animated: false)
     }
     
     @objc private func showMapAction() {
