@@ -17,7 +17,7 @@
 
 import UIKit
 
-typealias Item = PointOfUseListFilters
+typealias Item = PointOfUseListFilter
 
 class PointOfUseListFiltersViewController: UIViewController {
     class PointOfUseListFiltersDataSource: UITableViewDiffableDataSource<Section, Item> {
@@ -66,8 +66,10 @@ class PointOfUseListFiltersViewController: UIViewController {
 //        }
 //    }
     
+    private var model = PointOfUseListFiltersModel()
     private var dataSource: PointOfUseListFiltersDataSource! = nil
     private var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
+    
     
     @IBOutlet var tableView: UITableView!
     
@@ -105,10 +107,9 @@ class PointOfUseListFiltersViewController: UIViewController {
     }
 }
 
+//MARK: UITableViewDelegate
 extension PointOfUseListFiltersViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        
         let identifier: Section?
         
         if #available(iOS 15.0, *) {
@@ -117,9 +118,18 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
             identifier = dataSource.snapshot().sectionIdentifiers[indexPath.section]
         }
         
-        if let identifier = identifier, identifier == .location {
-            navigationController?.pushViewController(SelectStateViewController.controller(), animated: true)
+        
+        if let filterCell = tableView.cellForRow(at: indexPath) as? FilterItemSelectableCell,
+           let item = dataSource.itemIdentifier(for: indexPath) {
+            model.toggle(filter: item)
+            return
         }
+        
+        if let identifier = identifier, identifier == .location {
+            navigationController?.pushViewController(TerritoriesListViewController.controller(), animated: true)
+        }
+        
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -165,6 +175,7 @@ extension PointOfUseListFiltersViewController {
     private func configureHierarchy() {
         title = NSLocalizedString("Filters", comment: "Explore Dash")
         
+        tableView.allowsMultipleSelection = true
         tableView.delegate = self
         
         view.backgroundColor = .dw_secondaryBackground()
@@ -183,6 +194,11 @@ extension PointOfUseListFiltersViewController {
             if let filterCell = cell as? FilterItemCell {
                 filterCell.update(with: item)
             }
+            
+            if let filterCell = cell as? FilterItemSelectableCell {
+                filterCell.setSelected(wSelf.model.isFilterSelected(item), animated: true)
+            }
+
             
             return cell
         }
@@ -204,6 +220,16 @@ extension PointOfUseListFiltersViewController {
     }
 }
 
+extension PointOfUseListFiltersViewController: TerritoriesListViewControllerDelegate {
+    func didSelectTerritory(_ territory: Territory) {
+        
+    }
+    
+    func didSelectCurrentLocation() {
+        
+    }
+}
+
 //MARK: FilterItemSelectableCell
 class FilterItemSelectableCell: FilterItemCell {
     @IBOutlet var iconImageView: UIImageView!
@@ -218,6 +244,17 @@ class FilterItemSelectableCell: FilterItemCell {
         }else{
             iconImageView.isHidden = true
         }
+    }
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        checkboxButton.isSelected = selected
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        checkboxButton.isUserInteractionEnabled = false
     }
 }
 

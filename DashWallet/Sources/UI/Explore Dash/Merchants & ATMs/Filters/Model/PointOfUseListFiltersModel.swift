@@ -17,7 +17,7 @@
 
 import Foundation
 
-enum PointOfUseListFilters: String {
+enum PointOfUseListFilter: String {
     case sortAZ
     case sortZA
     case sortDistance
@@ -61,13 +61,29 @@ enum PointOfUseListFilters: String {
         case .paymentTypeGiftCard:
             return NSLocalizedString("Gift Card", comment: "Explore Dash: Filters")
         case .radius1:
-            return NSLocalizedString("1 mile", comment: "Explore Dash: Filters")
+            if Locale.usesMetricMeasurementSystem {
+                return NSLocalizedString("2 km", comment: "Explore Dash: Filters")
+            }else{
+                return NSLocalizedString("1 mile", comment: "Explore Dash: Filters")
+            }
         case .radius5:
-            return NSLocalizedString("5 miles", comment: "Explore Dash: Filters")
+            if Locale.usesMetricMeasurementSystem {
+                return NSLocalizedString("8 km", comment: "Explore Dash: Filters")
+            }else{
+                return NSLocalizedString("5 miles", comment: "Explore Dash: Filters")
+            }
         case .radius20:
-            return NSLocalizedString("20 miles", comment: "Explore Dash: Filters")
+            if Locale.usesMetricMeasurementSystem {
+                return NSLocalizedString("32 km", comment: "Explore Dash: Filters")
+            }else{
+                return NSLocalizedString("20 miles", comment: "Explore Dash: Filters")
+            }
         case .radius50:
-            return NSLocalizedString("50 miles", comment: "Explore Dash: Filters")
+            if Locale.usesMetricMeasurementSystem {
+                return NSLocalizedString("80 km", comment: "Explore Dash: Filters")
+            }else{
+                return NSLocalizedString("50 miles", comment: "Explore Dash: Filters")
+            }
         case .location:
             return NSLocalizedString("Current location", comment: "Explore Dash: Filters")
         case .locationService:
@@ -81,5 +97,27 @@ enum PointOfUseListFilters: String {
 }
 
 class PointOfUseListFiltersModel {
+    var selected: Set<PointOfUseListFilter> = []
     
+    func isFilterSelected(_ filter: PointOfUseListFilter) -> Bool {
+        selected.contains(filter)
+    }
+    
+    func toggle(filter: PointOfUseListFilter) {
+        if isFilterSelected(filter) {
+            selected.remove(filter)
+        }else{
+            selected.insert(filter)
+        }
+    }
+}
+
+extension Locale {
+    static var usesMetricMeasurementSystem: Bool {
+        if #available(iOS 16, *) {
+            return current.measurementSystem == .metric
+        } else {
+            return current.usesMetricSystem
+        }
+    }
 }

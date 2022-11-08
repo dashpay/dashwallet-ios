@@ -455,7 +455,7 @@
 		47838B7F290160860003E8AB /* ExploreDash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47838B7E290160860003E8AB /* ExploreDash.storyboard */; };
 		47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B81290271170003E8AB /* PointOfUseListFiltersModel.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
-		47A50F3E29192F8D00C70123 /* SelectStateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A50F3D29192F8D00C70123 /* SelectStateViewController.swift */; };
+		47A50F3E29192F8D00C70123 /* TerritoriesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A50F3D29192F8D00C70123 /* TerritoriesListViewController.swift */; };
 		47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
 		47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
 		47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5146328491C60005A8E3E /* TxDetailCells.swift */; };
@@ -1534,7 +1534,7 @@
 		47838B7E290160860003E8AB /* ExploreDash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ExploreDash.storyboard; sourceTree = "<group>"; };
 		47838B81290271170003E8AB /* PointOfUseListFiltersModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListFiltersModel.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
-		47A50F3D29192F8D00C70123 /* SelectStateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectStateViewController.swift; sourceTree = "<group>"; };
+		47A50F3D29192F8D00C70123 /* TerritoriesListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerritoriesListViewController.swift; sourceTree = "<group>"; };
 		47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewController.swift; sourceTree = "<group>"; };
 		47A514612848FEAD005A8E3E /* Tx.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tx.storyboard; sourceTree = "<group>"; };
@@ -4100,7 +4100,7 @@
 			children = (
 				47C6E6E129196B98003FEDF2 /* Views */,
 				47A50F3F29193D2B00C70123 /* Model */,
-				47A50F3D29192F8D00C70123 /* SelectStateViewController.swift */,
+				47A50F3D29192F8D00C70123 /* TerritoriesListViewController.swift */,
 			);
 			path = "Locations List";
 			sourceTree = "<group>";
@@ -5409,7 +5409,7 @@
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
-				47A50F3E29192F8D00C70123 /* SelectStateViewController.swift in Sources */,
+				47A50F3E29192F8D00C70123 /* TerritoriesListViewController.swift in Sources */,
 				47C6E6E02919578C003FEDF2 /* TerritoryListModel.swift in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,

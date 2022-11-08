@@ -19,12 +19,20 @@ import UIKit
 
 private let tableViewCellIdentifier = "TerritoryCell"
 
-class SelectStateViewController: UITableViewController {
+protocol TerritoriesListViewControllerDelegate: AnyObject {
+    func didSelectTerritory(_ territory: Territory)
+    func didSelectCurrentLocation()
+}
+
+class TerritoriesListViewController: UITableViewController {
+    public var selectedTerritory: Territory?
+    public weak var delegate: TerritoriesListViewControllerDelegate?
+    
     private var searchController: UISearchController!
     private var searchResultsController: SelectLocationResultsViewController!
     
     private var model: TerritoriesListModel!
-    
+   
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -32,13 +40,13 @@ class SelectStateViewController: UITableViewController {
         configureHierarchy()
     }
     
-    class func controller() -> SelectStateViewController {
+    class func controller() -> TerritoriesListViewController {
         let storyboard = UIStoryboard(name: "ExploreDash", bundle: nil)
-        return storyboard.instantiateViewController(withIdentifier: "SelectStateViewController") as! SelectStateViewController
+        return storyboard.instantiateViewController(withIdentifier: "SelectStateViewController") as! TerritoriesListViewController
     }
 }
 
-extension SelectStateViewController {
+extension TerritoriesListViewController {
     private func configureModel() {
         model = TerritoriesListModel()
     }
@@ -83,7 +91,7 @@ extension SelectStateViewController {
     }
 }
 
-extension SelectStateViewController {
+extension TerritoriesListViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
@@ -101,9 +109,6 @@ extension SelectStateViewController {
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "CurrentLocationCell", for: indexPath)
-//            var configuration =  cell.defaultContentConfiguration()
-//            configuration.text = model.territories[indexPath.row]
-//            cell.contentConfiguration = configuration
             cell.isSelected = false
             return cell
         default:
@@ -117,7 +122,7 @@ extension SelectStateViewController {
     }
 }
 
-extension SelectStateViewController: UISearchControllerDelegate {
+extension TerritoriesListViewController: UISearchControllerDelegate {
     func presentSearchController(_ searchController: UISearchController) {
     }
     
@@ -134,11 +139,11 @@ extension SelectStateViewController: UISearchControllerDelegate {
     }
 }
 
-extension SelectStateViewController: UISearchBarDelegate {
+extension TerritoriesListViewController: UISearchBarDelegate {
     
 }
 
-extension SelectStateViewController: UISearchResultsUpdating {
+extension TerritoriesListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         var filtered: [Territory] = model.territories
         

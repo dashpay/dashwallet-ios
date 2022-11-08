@@ -41,10 +41,16 @@
 "1 min" = "1분";
 
 /* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
 "20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24시간";
+
+/* Explore Dash: Filters */
+"32 km" = "32 km";
 
 /* Explore Dash: Filters */
 "5 miles" = "5 miles";
@@ -54,6 +60,12 @@
 
 /* Explore Dash: Filters */
 "50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"는 복원 문구에 쓰이는 단어가 아닙니다.";
