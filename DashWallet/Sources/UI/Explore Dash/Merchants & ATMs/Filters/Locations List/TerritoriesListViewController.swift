@@ -49,6 +49,9 @@ class TerritoriesListViewController: UITableViewController {
 extension TerritoriesListViewController {
     private func configureModel() {
         model = TerritoriesListModel()
+        model.territoriesDidChange = { [weak self] in
+            self?.tableView.reloadData()
+        }
     }
     
     private func configureHierarchy() {
@@ -109,16 +112,40 @@ extension TerritoriesListViewController {
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "CurrentLocationCell", for: indexPath)
-            cell.isSelected = false
             return cell
         default:
+            let territory = model.territories[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: tableViewCellIdentifier, for: indexPath)
             var configuration =  cell.defaultContentConfiguration()
-            configuration.text = model.territories[indexPath.row]
+            configuration.text = territory
             cell.contentConfiguration = configuration
-            cell.isSelected = false
+            
             return cell
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 0:
+            cell.setSelected(selectedTerritory == nil, animated: false)
+        default:
+            let territory = model.territories[indexPath.row]
+            cell.isSelected = territory == selectedTerritory
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 0:
+            selectedTerritory = nil
+            delegate?.didSelectCurrentLocation()
+        default:
+            let territory = model.territories[indexPath.row]
+            selectedTerritory = territory
+            delegate?.didSelectTerritory(territory)
+        }
+        
+        tableView.reloadData()
     }
 }
 

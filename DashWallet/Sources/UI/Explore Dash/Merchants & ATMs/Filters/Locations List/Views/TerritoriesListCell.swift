@@ -28,6 +28,9 @@ final class TerritoriesListCurrentLocationCell: UITableViewCell {
         
         label.textColor = color
         iconView.tintColor = color
+        
+        accessoryType = selected ? .checkmark : .none
+        tintColor = selected ? .dw_dashBlue() : .label
     }
 }
 
@@ -39,6 +42,9 @@ final class TerritoriesListItemCell: UITableViewCell {
         guard var configuration = contentConfiguration as? UIListContentConfiguration else { return }
         configuration.textProperties.color = selected ? .dw_dashBlue() : .label
         contentConfiguration = configuration
+        
+        accessoryType = selected ? .checkmark : .none
+        tintColor = selected ? .dw_dashBlue() : .label
     }
 }
 

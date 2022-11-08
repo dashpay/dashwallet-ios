@@ -133,6 +133,8 @@ final class PointOfUseListModel {
         return dataProviders[currentSegment]
     }
     
+    var territories: [Territory] = []
+    
     init(segments: [PointOfUseListSegment]) {
         self.segments = segments
         for segment in segments {
@@ -141,6 +143,8 @@ final class PointOfUseListModel {
        
         self.currentSegment = segments.first!
         self.segmentDidUpdate()
+        
+        
     }
     
     func segmentDidUpdate() {

@@ -138,6 +138,10 @@ extension ExploreDash {
     func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
     }
+    
+    func fetchTerritoriesForMerchants(completion: @escaping (Swift.Result<[Territory], Error>) -> Void) {
+        merchantDAO.territories(completion: completion)
+    }
 }
 
 extension ExploreDash {

@@ -27,6 +27,8 @@ class MerchantDAO: PointOfUseDAO
     
     let serialQueue = DispatchQueue(label: "org.dashfoundation.dashpaytnt.explore.serial.queue")
     
+    private var cachedTerritories: [Territory] = []
+    
     init(dbConnection: ExploreDatabaseConnection) {
         self.connection = dbConnection
     }
@@ -187,6 +189,28 @@ extension MerchantDAO {
             do {
                 let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
+            }catch{
+                print(error)
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func territories(completion: @escaping (Swift.Result<[Territory], Error>) -> Void) {
+        
+        if !cachedTerritories.isEmpty {
+            completion(.success(cachedTerritories))
+            return
+        }
+        
+        let query = "SELECT DISTINCT territory from merchant WHERE territory != ''"
+        
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+            do {
+                let items: [Territory] = try wSelf.connection.execute(query: query)
+                self?.cachedTerritories = items
+                completion(.success(items))
             }catch{
                 print(error)
                 completion(.failure(error))

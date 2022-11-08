@@ -126,7 +126,9 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
         }
         
         if let identifier = identifier, identifier == .location {
-            navigationController?.pushViewController(TerritoriesListViewController.controller(), animated: true)
+            let vc = TerritoriesListViewController.controller()
+            vc.delegate = self
+            navigationController?.pushViewController(vc, animated: true)
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
@@ -222,11 +224,11 @@ extension PointOfUseListFiltersViewController {
 
 extension PointOfUseListFiltersViewController: TerritoriesListViewControllerDelegate {
     func didSelectTerritory(_ territory: Territory) {
-        
+        navigationController?.popViewController(animated: true)
     }
     
     func didSelectCurrentLocation() {
-        
+        navigationController?.popViewController(animated: true)
     }
 }
 

@@ -26,3 +26,11 @@ extension Row {
 protocol RowDecodable {
     init(row: Row)
 }
+
+extension String: RowDecodable {
+    private static let territory = Expression<String?>("territory")
+    
+    init(row: Row) {
+        self.init(row[String.territory]!)
+    }
+}

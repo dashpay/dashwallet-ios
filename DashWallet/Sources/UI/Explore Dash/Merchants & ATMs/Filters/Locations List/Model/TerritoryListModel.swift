@@ -20,5 +20,22 @@ import Foundation
 typealias Territory = String
 
 class TerritoriesListModel {
-    var territories: [Territory] = ["Alabama", "California", "Oregon"]
+    var territories: [Territory] = []
+    
+    var territoriesDidChange: (() -> ())?
+    
+    init() {
+        ExploreDash.shared.fetchTerritoriesForMerchants(completion: { [weak self] result in
+            switch result {
+            case .success(let r):
+                self?.territories = r
+                DispatchQueue.main.async {
+                    self?.territoriesDidChange?()
+                }
+                
+            case .failure(let error):
+                break
+            }
+        })
+    }
 }
