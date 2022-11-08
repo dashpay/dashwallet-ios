@@ -55,6 +55,9 @@ enum ExplorePointOfUseSections: Int {
     internal var searchCell: PointOfUseListSearchCell?
     internal var appliedFiltersLabel: UILabel!
     
+    internal var isFiltered: Bool = false
+    internal var emptyResultsView: UIStackView!
+    
     //MARK: Map
     internal func updateMapVisibility() {
         if !currentSegment.showMap || DWLocationManager.shared.isPermissionDenied {
@@ -210,6 +213,8 @@ extension ExplorePointOfUseListViewController {
     @objc internal func configureHierarchy() {
         self.view.backgroundColor = .dw_background()
         
+        
+        
         let appliedFiltersStackView = UIStackView()
         appliedFiltersStackView.translatesAutoresizingMaskIntoConstraints = false
         appliedFiltersStackView.alignment = .center
@@ -291,10 +296,6 @@ extension ExplorePointOfUseListViewController {
         tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
         stackView.addArrangedSubview(tableView)
         
-//        appliedFiltersView = AppliedFiltersView(frame: .zero)
-//        //appliedFiltersView.isHidden = true
-//        stackView.addArrangedSubview(appliedFiltersView)
-        
         self.showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
         showMapButton.isHidden = true
@@ -308,6 +309,28 @@ extension ExplorePointOfUseListViewController {
         showMapButton.layer.backgroundColor = UIColor.black.cgColor
         contentView.addSubview(showMapButton)
         
+        emptyResultsView = UIStackView()
+        emptyResultsView.isHidden = true
+        emptyResultsView.translatesAutoresizingMaskIntoConstraints = false
+        emptyResultsView.alignment = .center
+        emptyResultsView.axis = .vertical
+        emptyResultsView.spacing = 5
+        tableView.addSubview(emptyResultsView)
+        
+        let noResultsLabel = UILabel()
+        noResultsLabel.translatesAutoresizingMaskIntoConstraints = false
+        noResultsLabel.text = NSLocalizedString("No Results Found", comment: "Explore Dash/Merchants/Filters")
+        noResultsLabel.font = .dw_font(forTextStyle: .headline).withWeight(500)
+        emptyResultsView.addArrangedSubview(noResultsLabel)
+        
+        let resetFiltersButton = UIButton()
+        resetFiltersButton.translatesAutoresizingMaskIntoConstraints = false
+        resetFiltersButton.setTitle(NSLocalizedString("Reset Filters", comment: "Explore Dash/Merchants/Filters"), for: .normal)
+        resetFiltersButton.tintColor = .dw_red()
+        resetFiltersButton.setTitleColor(.dw_red(), for: .normal)
+        resetFiltersButton.backgroundColor = .clear
+        emptyResultsView.addArrangedSubview(resetFiltersButton)
+    
         let showMapButtonWidth: CGFloat = 92
         let showMapButtonHeight: CGFloat = 40
         let handlerViewHeight: CGFloat = 24
@@ -321,21 +344,12 @@ extension ExplorePointOfUseListViewController {
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            //handlerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             handlerView.heightAnchor.constraint(equalToConstant: handlerViewHeight),
-//            handlerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-//            handlerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-            
+
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-//            tableView.topAnchor.constraint(equalTo: handlerView.bottomAnchor),
-//            tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-//            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-//            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
             mapView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
@@ -346,6 +360,9 @@ extension ExplorePointOfUseListViewController {
             showMapButton.heightAnchor.constraint(equalToConstant: showMapButtonHeight),
             showMapButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             showMapButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+            
+            emptyResultsView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            emptyResultsView.centerYAnchor.constraint(equalTo: tableView.centerYAnchor),
         ])
     }
 }
@@ -359,6 +376,9 @@ extension ExplorePointOfUseListViewController {
         present(nvc, animated: true)
         
         navigationController?.setToolbarHidden(false, animated: false)
+        isFiltered = true
+        emptyResultsView.isHidden = false
+        tableView.reloadData()
     }
     
     @objc private func showMapAction() {
@@ -531,7 +551,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .items:
             return 56.0
         case .nextPage:
-            return 60
+            return 60.0
         }
     }
     
@@ -559,38 +579,5 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         if let cell = cell as? FetchingNextPageCell {
             cell.stop()
         }
-    }
-}
-
-//MARK: Extra UI
-class ListHandlerView: UIView {
-    private var handler: UIView!
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        configureHierarchy()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func configureHierarchy() {
-        layer.backgroundColor = UIColor.dw_background().cgColor
-        layer.masksToBounds = true
-        layer.cornerRadius = 20
-        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        
-        handler = UIView(frame: .init(x: 0, y: 0, width: 40, height: 4))
-        handler.layer.backgroundColor = UIColor.dw_separatorLine().cgColor
-        handler.layer.cornerRadius = 2
-        addSubview(handler)
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        handler.center = center
     }
 }

@@ -719,6 +719,9 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
+
 /* No comment provided by engineer. */
 "Node IP" = "โหนด IP";
 

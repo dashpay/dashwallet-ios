@@ -719,6 +719,9 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC zariadenie nevyslalo validnú Dash adresu";
 
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
+
 /* No comment provided by engineer. */
 "Node IP" = "IP uzla";
 

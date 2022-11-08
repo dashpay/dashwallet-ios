@@ -85,6 +85,10 @@ extension MerchantsListSegment {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if isFiltered {
+            return 0
+        }
+        
         guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }
