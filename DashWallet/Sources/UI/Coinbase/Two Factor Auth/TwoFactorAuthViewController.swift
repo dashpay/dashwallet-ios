@@ -37,61 +37,11 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         setupContentView(contentView)
         
-        screenLabel.text = NSLocalizedString("Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
-        screenLabel.font = UIFont.dw_font(forTextStyle: .headline).withWeight(UIFont.Weight.semibold.rawValue).withSize(20)
-        screenLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        subTitle.text = NSLocalizedString("This extra step shows it’s really you trying to make a transaction.", comment: "Coinbase Two Factor Auth")
-        subTitle.font = UIFont.dw_font(forTextStyle: .body)
-        subTitle.numberOfLines = 0
-        subTitle.translatesAutoresizingMaskIntoConstraints = false
-        subTitle.lineBreakMode = .byWordWrapping
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tappedOnLabel(_ :)))
-        tapGesture.numberOfTapsRequired = 1
-        contactCoinbase.addGestureRecognizer(tapGesture)
-        contactCoinbase.isUserInteractionEnabled = true
-        
-        let  needHelpAttributedString = NSMutableAttributedString(string:  NSLocalizedString(" Need help? ", comment: "Coinbase Two Factor Auth"), attributes: nil)
-        let contactCoinbasnAttributedLinkString = NSMutableAttributedString(string: contactCoinbaseString, attributes:[.foregroundColor: UIColor.dw_dashBlue(), NSAttributedString.Key.link: URL(string: "https://help.coinbase.com/en/contact-us")!])
-        
-        let fullAttributedString = NSMutableAttributedString()
-        fullAttributedString.append( needHelpAttributedString)
-        fullAttributedString.append(contactCoinbasnAttributedLinkString)
-        
-        contactCoinbase.isUserInteractionEnabled = true
-        contactCoinbase.font = UIFont.dw_font(forTextStyle: .body)
-        contactCoinbase.attributedText = fullAttributedString
-        styleContactCoinbase(attributedString:fullAttributedString)
-        
-        twoFactorAuthField.layer.borderColor = UIColor.dw_dashBlue().cgColor
-        twoFactorAuthField.layer.borderWidth = 1.0
-        twoFactorAuthField.layer.cornerRadius = 10.5
-        twoFactorAuthField.placeholder = NSLocalizedString("Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
-        twoFactorAuthField.autocorrectionType = .no
-        twoFactorAuthField.autocapitalizationType = .none
-        twoFactorAuthField.spellCheckingType = .no
-        
-        let inputViewRect = CGRect(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: 1.0)
-        twoFactorAuthField.inputView = DWNumberKeyboardInputViewAudioFeedback(frame: inputViewRect)
-        
-        let inputAssistantItem = twoFactorAuthField.inputAssistantItem
-        inputAssistantItem.leadingBarButtonGroups = []
-        inputAssistantItem.trailingBarButtonGroups = []
-        
-        hintLabel.text = NSLocalizedString("It could be the code from the SMS on your phone.If not, enter the code from the authentication app.",
-                                           comment: "Coinbase Two Factor Auth")
-        hintLabel.font = UIFont.dw_font(forTextStyle: .caption1)
-        hintLabel.numberOfLines = 0
-        hintLabel.translatesAutoresizingMaskIntoConstraints = false
-        hintLabel.lineBreakMode = .byWordWrapping
-        hintLabel.textColor = .dw_secondaryText()
-        
-        contentView.addSubview(screenLabel)
-        contentView.addSubview(subTitle)
-        contentView.addSubview(contactCoinbase)
-        contentView.addSubview(twoFactorAuthField)
-        contentView.addSubview(hintLabel)
+        styleTitle()
+        styleSubTitle()
+        styleContactCoinbase()
+        styleTwoFactorAuthFieldDefaultState()
+        styleHintFieldDefaultState()
         
         let keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
@@ -110,7 +60,6 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         
         NSLayoutConstraint.activate([
             
-            //keyboardContainer.heightAnchor.constraint(equalToConstant: kKeyboardHeight + 15),
             keyboardContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
@@ -127,19 +76,100 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         return NSLocalizedString("Verfiy", comment: "Coinbase")
     }
     
-    func styleContactCoinbase(attributedString:NSMutableAttributedString){
+    func styleTitle(){
+        screenLabel.text = NSLocalizedString("Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
+        screenLabel.font = UIFont.dw_font(forTextStyle: .headline).withWeight(UIFont.Weight.semibold.rawValue).withSize(20)
+        screenLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(screenLabel)
+    }
+    
+    func styleSubTitle(){
+        subTitle.text = NSLocalizedString("This extra step shows it’s really you trying to make a transaction.", comment: "Coinbase Two Factor Auth")
+        subTitle.font = UIFont.dw_font(forTextStyle: .body)
+        subTitle.numberOfLines = 0
+        subTitle.translatesAutoresizingMaskIntoConstraints = false
+        subTitle.lineBreakMode = .byWordWrapping
+        contentView.addSubview(subTitle)
+    }
+    
+    func styleContactCoinbase(){
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tappedOnLabel(_ :)))
+        tapGesture.numberOfTapsRequired = 1
+        contactCoinbase.addGestureRecognizer(tapGesture)
+        contactCoinbase.isUserInteractionEnabled = true
+        
+        let  needHelpAttributedString = NSMutableAttributedString(string:  NSLocalizedString(" Need help? ", comment: "Coinbase Two Factor Auth"), attributes: nil)
+        let contactCoinbasnAttributedLinkString = NSMutableAttributedString(string: contactCoinbaseString, attributes:[.foregroundColor: UIColor.dw_dashBlue(), NSAttributedString.Key.link: URL(string: "https://help.coinbase.com/en/contact-us")!])
+        
+        let fullAttributedString = NSMutableAttributedString()
+        fullAttributedString.append( needHelpAttributedString)
+        fullAttributedString.append(contactCoinbasnAttributedLinkString)
+        
+        contactCoinbase.isUserInteractionEnabled = true
+        contactCoinbase.font = UIFont.dw_font(forTextStyle: .body)
+        contactCoinbase.attributedText = fullAttributedString
+        
         guard let text = contactCoinbase.text else { return }
         let contactCoinbaseRange = (text as NSString).range(of:  contactCoinbaseString)
         
-        attributedString.enumerateAttributes(in: contactCoinbaseRange, options: []) { attributes, range, stop in
-            attributedString.removeAttribute(.link, range: range)
-            attributedString.removeAttribute(.underlineStyle, range: range)
+        fullAttributedString.enumerateAttributes(in: contactCoinbaseRange, options: []) { attributes, range, stop in
+            fullAttributedString.removeAttribute(.link, range: range)
+            fullAttributedString.removeAttribute(.underlineStyle, range: range)
         }
         
-        contactCoinbase.attributedText = attributedString
+        contactCoinbase.attributedText = fullAttributedString
+        contentView.addSubview(contactCoinbase)
     }
     
-    //MARK:- tappedOnLabel
+    func styleTwoFactorAuthFieldDefaultState(){
+        twoFactorAuthField.layer.borderColor = UIColor.dw_dashBlue().cgColor
+        twoFactorAuthField.layer.borderWidth = 1.0
+        twoFactorAuthField.layer.cornerRadius = 10.5
+        twoFactorAuthField.autocorrectionType = .no
+        twoFactorAuthField.autocapitalizationType = .none
+        twoFactorAuthField.spellCheckingType = .no
+        twoFactorAuthField.placeholder = NSLocalizedString("Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
+        contentView.addSubview(twoFactorAuthField)
+    }
+    
+    func styleTwoFactorAuthFieldErrorState(){
+        twoFactorAuthField.borderStyle = .none
+        twoFactorAuthField.layer.cornerRadius = 10.5
+        twoFactorAuthField.backgroundColor = UIColor.dw_red().withAlphaComponent(0.1)
+    }
+    
+    func styleHintFieldDefaultState(){
+        hintLabel.text = NSLocalizedString("It could be the code from the SMS on your phone.If not, enter the code from the authentication app.",
+                                           comment: "Coinbase Two Factor Auth")
+        hintLabel.font = UIFont.dw_font(forTextStyle: .caption1)
+        hintLabel.numberOfLines = 0
+        hintLabel.translatesAutoresizingMaskIntoConstraints = false
+        hintLabel.lineBreakMode = .byWordWrapping
+        hintLabel.textColor = .dw_secondaryText()
+        contentView.addSubview(hintLabel)
+        
+    }
+    
+    func         styleHintFieldErrorState(){
+        
+        let errorColor=UIColor.dw_red().withAlphaComponent(0.55)
+        hintLabel.textColor =  errorColor
+        let image = UIImage(named: "icon_exclamation")?.withTintColor(errorColor)
+        
+        let textAttachment = NSTextAttachment()
+        textAttachment.image = image
+        textAttachment.adjustsImageSizeForAccessibilityContentSizeCategory = true
+        textAttachment.bounds = CGRect(x: -3.0, y: -2.0, width: 14, height: 14)
+        
+        let attributedText = NSMutableAttributedString()
+        attributedText.beginEditing()
+        attributedText.append(NSAttributedString(string: ""))
+        attributedText.append(NSAttributedString(attachment: textAttachment))
+        attributedText.append(NSAttributedString(string:  NSLocalizedString(" The code is incorrect. Please check and try again!", comment: "Coinbase Two Factor Auth")))
+        
+        hintLabel.attributedText = attributedText
+    }
+    
     @objc func tappedOnLabel(_ gesture: UITapGestureRecognizer) {
         guard let text = self.contactCoinbase.text else { return }
         let contactCoinbaseRange = (text as NSString).range(of:  contactCoinbaseString)
@@ -167,7 +197,21 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 }
 
-
+extension TwoFactorAuthViewController: TwoFactorAuthModelDelegate {
+    func transferFromCoinbaseSuccess() {
+        //TODO naigate to success screen
+    }
+    
+    func transferFromCoinbaseForTwoFactorAuthError(error: Error) {
+        styleTwoFactorAuthFieldErrorState()
+        styleHintFieldErrorState()
+    }
+    
+    func transferFromCoinbaseForUnkownError(error: Error) {
+        //TODO naigate to error screen
+    }
+    
+}
 
 
 extension UITapGestureRecognizer {
