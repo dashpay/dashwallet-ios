@@ -41,6 +41,10 @@ import BackgroundTasks
     @objc public class func crowdNodeWebsiteUrl() -> URL {
         return URL(string: CrowdNodeConstants.websiteUrl)!
     }
+    
+    @objc public class func notificationID() -> String {
+        return CrowdNodeConstants.notificationID
+    }
 }
 
 public final class CrowdNode {
@@ -66,8 +70,10 @@ public final class CrowdNode {
     
     private(set) var accountAddress: String = ""
     private(set) var apiError: Error?
+    var showNotificationOnResult: Bool = false
 
     public static let shared: CrowdNode = .init()
+
     
     init() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
@@ -76,6 +82,7 @@ public final class CrowdNode {
     }
 }
 
+// Restoring state
 extension CrowdNode {
     func restoreState() {
         if signUpState > SignUpState.notStarted {
@@ -148,6 +155,7 @@ extension CrowdNode {
     }
 }
 
+// Signup
 extension CrowdNode {
     func signUp(accountAddress: String) async {
         self.accountAddress = accountAddress
@@ -169,6 +177,7 @@ extension CrowdNode {
                 let _ = try await acceptTerms(accountAddress, [topUpTx])
             }
 
+            notifyIfNeeded()
             signUpState = SignUpState.finished
         }
         catch {
@@ -240,5 +249,18 @@ extension CrowdNode {
         }
 
         return (req: termsAcceptedTx, resp: responseTx)
+    }
+    
+    func notifyIfNeeded() {
+        if !showNotificationOnResult || !DWGlobalOptions.sharedInstance().localNotificationsEnabled {
+            return
+        }
+        
+        let content = UNMutableNotificationContent.init()
+        content.body = NSLocalizedString("Your CrowdNode account is set up and ready to use!", comment: "")
+        content.sound = UNNotificationSound.default
+        let request = UNNotificationRequest.init(identifier: CrowdNodeConstants.notificationID, content: content, trigger: nil)
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.add(request)
     }
 }

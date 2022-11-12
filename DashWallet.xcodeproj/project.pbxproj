@@ -8,9 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		1121A8B728E5DB6E00464C31 /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */; };
+		1141E4C2291BB12200ACDA9E /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */; };
 		117ED4A128EC86E0006E3EE4 /* TransactionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */; };
 		117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */; };
 		117ED4AA28ED6766006E3EE4 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */; };
+		118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118A1392291AA21B002641E4 /* AccountCreatingController.swift */; };
 		119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */; };
 		119E8D062905200300D406C1 /* CoinsToAddressTxFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */; };
 		119E8D082905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */; };
@@ -654,9 +656,11 @@
 		0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
+		1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
 		117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionObserver.swift; sourceTree = "<group>"; };
 		117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFilter.swift; sourceTree = "<group>"; };
 		117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
+		118A1392291AA21B002641E4 /* AccountCreatingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatingController.swift; sourceTree = "<group>"; };
 		119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeRequest.swift; sourceTree = "<group>"; };
 		119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsToAddressTxFilter.swift; sourceTree = "<group>"; };
 		119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullCrowdNodeSignUpTxSet.swift; sourceTree = "<group>"; };
@@ -1830,6 +1834,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1141E4C0291BB0FC00ACDA9E /* Portal */ = {
+			isa = PBXGroup;
+			children = (
+				1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */,
+			);
+			path = Portal;
+			sourceTree = "<group>";
+		};
 		117ED4A628ED66A2006E3EE4 /* TxFilters */ = {
 			isa = PBXGroup;
 			children = (
@@ -1860,6 +1872,7 @@
 			isa = PBXGroup;
 			children = (
 				11BD737D28E6BD7400A34022 /* NewAccountViewController.swift */,
+				118A1392291AA21B002641E4 /* AccountCreatingController.swift */,
 			);
 			path = "New Account";
 			sourceTree = "<group>";
@@ -1879,6 +1892,7 @@
 		11C5F51128E5D0C500F6F135 /* CrowdNode */ = {
 			isa = PBXGroup;
 			children = (
+				1141E4C0291BB0FC00ACDA9E /* Portal */,
 				11BD737A28E6BCD400A34022 /* New Account */,
 				1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */,
 				11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */,
@@ -5301,6 +5315,7 @@
 				2A7AF38924829AF2001D74F9 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				119E8D0C2907C61400D406C1 /* CrowdNodeTopUpTx.swift in Sources */,
 				C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */,
+				118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */,
 				2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
@@ -5648,6 +5663,7 @@
 				11B8449A28F6D5480082770C /* SingleInputAddressSelector.swift in Sources */,
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
+				1141E4C2291BB12200ACDA9E /* CrowdNodePortalViewController.swift in Sources */,
 				2AB2373824488DB80081B62C /* DWUserSearchViewController.m in Sources */,
 				2A7AF38F2482BDF1001D74F9 /* UIFont+DWDPItem.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,

@@ -17,71 +17,89 @@
 
 import Combine
 
+
+@objc public class CrowdNodeModelObjcWrapper: NSObject {
+    @objc public class func getRootVC() -> UIViewController {
+        let state = CrowdNode.shared.signUpState
+        
+        switch state {
+        case .finished:
+            return CrowdNodePortalController.controller()
+            
+        case .fundingWallet, .acceptingTerms, .signingUp:
+            return AccountCreatingController.controller()
+            
+        default:
+            return NewAccountViewController.controller()
+        }
+    }
+}
+
 @MainActor
 final class CrowdNodeModel {
     private var cancellableBag = Set<AnyCancellable>()
     private let crowdNode = CrowdNode.shared
     private var signUpTaskId: UIBackgroundTaskIdentifier = UIBackgroundTaskIdentifier.invalid
 
+    public static let shared: CrowdNodeModel = .init()
     @Published var outputMessage: String = ""
     @Published var accountAddress: String = ""
-    @Published var isLoading: Bool = false
     @Published var signUpEnabled: Bool = false
+    @Published var signUpState: CrowdNode.SignUpState
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
     }
+    var showNotificationOnResult: Bool {
+        get { return crowdNode.showNotificationOnResult }
+        set(value) { crowdNode.showNotificationOnResult = value }
+    }
 
     init() {
-        accountAddress = crowdNode.accountAddress
-
+        signUpState = crowdNode.signUpState
         crowdNode.$signUpState
             .sink { [weak self] state in
-                self?.signUpEnabled = false
-                self?.isLoading = false
+                var signUpEnabled = false
+                var outputMessage = ""
 
                 switch state {
-                case .notInitiated, .notStarted:
-                    self?.signUpEnabled = true
-                    self?.outputMessage = NSLocalizedString("Sign up to CrowdNode", comment: "")
+                case .notInitiated, .notStarted, .acceptTermsRequired, .error:
+                    signUpEnabled = true
 
                 case .fundingWallet, .signingUp:
-                    self?.isLoading = true
-                    self?.outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "")
-
-                case .acceptTermsRequired:
-                    self?.signUpEnabled = true
-                    self?.outputMessage = NSLocalizedString("Accept terms of use", comment: "")
+                    outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "")
                     
                 case .acceptingTerms:
-                    self?.isLoading = true
-                    self?.outputMessage = NSLocalizedString("Accepting terms of use…", comment: "")
+                    outputMessage = NSLocalizedString("Accepting terms of use…", comment: "")
 
-                case .finished:
-                    self?.outputMessage = NSLocalizedString("Your CrowdNode account is set up and ready to use!", comment: "")
-
-                case .error:
-                    self?.signUpEnabled = true
-                    self?.outputMessage = NSLocalizedString("We couldn’t create your CrowdNode account.", comment: "") + " \(String(describing: self?.crowdNode.apiError?.localizedDescription))"
-
-                case .linkedOnline:
+                default:
                     break
                 }
+                
+                self?.signUpState = state
+                self?.signUpEnabled = signUpEnabled
+                self?.outputMessage = outputMessage
             }
             .store(in: &cancellableBag)
         
         crowdNode.restoreState()
+        getAccountAddress()
+    }
+    
+    func getAccountAddress() {
+        if isInterrupted {
+            accountAddress = crowdNode.accountAddress
+        } else {
+            accountAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
+        }
     }
 
     func signUp() {
         Task {
-            let accountAddress: String
             let promptMessage: String
             
-            if crowdNode.signUpState == .acceptTermsRequired {
-                accountAddress = crowdNode.accountAddress
+            if isInterrupted {
                 promptMessage = NSLocalizedString("Accept Terms Of Use", comment: "")
             } else {
-                accountAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
                 promptMessage = NSLocalizedString("Sign up to CrowdNode", comment: "")
             }
             

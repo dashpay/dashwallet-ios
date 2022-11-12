@@ -18,16 +18,15 @@
 import Combine
 import UIKit
 
-final class NewAccountViewController: UIViewController {
-    private let viewModel = CrowdNodeModel()
+final class NewAccountViewController: UIViewController, UITextViewDelegate {
+    private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
-    @IBOutlet var actionButton: UIButton!
-    @IBOutlet var outputLabel: UILabel!
+    @IBOutlet var actionButton: DWActionButton!
     @IBOutlet var addressLabel: UILabel!
-    @IBOutlet var copyButton: UIButton!
-    @IBOutlet var animationView: UIActivityIndicatorView!
-
+    @IBOutlet var acceptTermsCheckBox: DWCheckbox!
+    @IBOutlet var acceptTermsText: UITextView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -41,12 +40,16 @@ final class NewAccountViewController: UIViewController {
         return vc
     }
 
-    @IBAction func createAccountAction() {
+    @IBAction func continueAction() {
         viewModel.signUp()
     }
 
-    @IBAction func copyOutput() {
+    @IBAction func copyAddress() {
         UIPasteboard.general.string = addressLabel.text
+    }
+    
+    @IBAction func onTermsChecked() {
+        actionButton.isEnabled = acceptTermsCheckBox.isOn && viewModel.signUpEnabled
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -58,44 +61,81 @@ final class NewAccountViewController: UIViewController {
 extension NewAccountViewController {
     private func configureHierarchy() {
         definesPresentationContext = true
-        view.backgroundColor = UIColor.dw_secondaryBackground()
+        view.backgroundColor = UIColor.dw_background()
         
+        configureActionButton()
+        configureAccountAddress()
+        configureTermsCheckBox()
+    }
+    
+    private func configureActionButton() {
         if viewModel.isInterrupted {
             actionButton.setTitle(NSLocalizedString("Accept Terms Of Use", comment: ""), for: .normal)
         } else {
-            actionButton.setTitle(NSLocalizedString("Sign up to CrowdNode", comment: ""), for: .normal)
+            actionButton.setTitle(NSLocalizedString("Create Account", comment: ""), for: .normal)
         }
     }
+    
+    private func configureAccountAddress() {
+        let gradientMaskLayer = CAGradientLayer()
+        gradientMaskLayer.frame = addressLabel.bounds
+        gradientMaskLayer.colors = [UIColor.white.cgColor, UIColor.white.cgColor, UIColor.clear.cgColor, UIColor.clear.cgColor]
+        gradientMaskLayer.locations = [0, 0.7, 0.85, 1]
+        gradientMaskLayer.startPoint = CGPoint(x: 0, y: 0.5)
+        gradientMaskLayer.endPoint = CGPoint(x: 1, y: 0.5)
+        addressLabel.layer.mask = gradientMaskLayer
+    }
+    
+    private func configureTermsCheckBox() {
+        let baseString = NSMutableAttributedString(string: NSLocalizedString("I agree to CrowdNode", comment: "").description)
+        let termsOfUseString = NSMutableAttributedString(string: NSLocalizedString(" Terms of Use ", comment: "").description)
+        let andString = NSMutableAttributedString(string: NSLocalizedString("and", comment: "").description)
+        let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "").description)
+        
+        termsOfUseString.addAttribute(.link, value: CrowdNodeConstants.termsOfUseUrl, range: NSRange(location: 0, length: termsOfUseString.length))
+        privacyPolicyString.addAttribute(.link, value: CrowdNodeConstants.privacyPolicyUrl, range: NSRange(location: 0, length: privacyPolicyString.length))
+        
+        baseString.append(termsOfUseString)
+        baseString.append(andString)
+        baseString.append(privacyPolicyString)
+        
+        acceptTermsText.attributedText = baseString
+        acceptTermsText.font = UIFont.dw_regularFont(ofSize: 14)
+        acceptTermsCheckBox.style = .square
+        acceptTermsCheckBox.isOn = false
+    }
+    
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+            UIApplication.shared.open(URL)
+            return false
+        }
 
     private func configureObservers() {
         viewModel.$signUpEnabled
             .receive(on: DispatchQueue.main)
-            .assign(to: \.isEnabled, on: actionButton)
+            .sink { [weak self] isEnabled in
+                guard let wSelf = self else { return }
+                wSelf.actionButton.isEnabled = wSelf.acceptTermsCheckBox.isOn && isEnabled
+            }
             .store(in: &cancellableBag)
-
+        
         viewModel.$accountAddress
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] address in
-                self?.addressLabel.text = address
-                self?.copyButton.isEnabled = !address.isEmpty
-            })
+            .assign(to: \.text!, on: addressLabel)
             .store(in: &cancellableBag)
-
-        viewModel.$outputMessage
+        
+        viewModel.$signUpState
             .receive(on: DispatchQueue.main)
-            .assign(to: \.text!, on: outputLabel)
-            .store(in: &cancellableBag)
-
-        viewModel.$isLoading
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] isLoading in
-                if isLoading {
-                    self?.animationView.startAnimating()
+            .sink { [weak self] state in
+                let isCreating = state == .fundingWallet || state == .acceptingTerms || state == .signingUp
+                
+                if isCreating {
+                    var viewControllers = self?.navigationController?.viewControllers
+                    viewControllers?.removeLast()
+                    viewControllers?.append(AccountCreatingController.controller())
+                    self?.navigationController?.setViewControllers(viewControllers!, animated: true)
                 }
-                else {
-                    self?.animationView.stopAnimating()
-                }
-            })
+            }
             .store(in: &cancellableBag)
     }
 }

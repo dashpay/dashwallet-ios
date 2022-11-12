@@ -56,9 +56,7 @@
 
 - (void)showStakingIfSynced {
     if (_syncModel.state == DWSyncModelState_SyncDone) {
-        DWExploreTestnetViewController *__weak weakSelf = self;
-
-        NewAccountViewController *vc = [NewAccountViewController controller];
+        UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
         [self.navigationController pushViewController:vc animated:YES];
     } else {
         [self notifyChainSyncing];
