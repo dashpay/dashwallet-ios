@@ -79,6 +79,10 @@ public final class CrowdNode {
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .sink { [weak self] _ in self?.reset() }
+            .store(in: &cancellableBag)
     }
 }
 
