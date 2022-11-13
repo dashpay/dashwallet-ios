@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -212,7 +213,6 @@
                     </view>
                     <connections>
                         <outlet property="actionButton" destination="DgD-Ua-Noy" id="idV-Jc-Nkt"/>
-                        <outlet property="activityIndicator" destination="Akn-0F-fGK" id="Xui-SH-NRY"/>
                         <outlet property="statusLabel" destination="FLC-dP-GHT" id="kCn-LQ-r36"/>
                     </connections>
                 </viewController>
@@ -244,10 +244,188 @@
             </objects>
             <point key="canvasLocation" x="1513.8461538461538" y="3.5545023696682461"/>
         </scene>
+        <!--Welcome To Crowd Node View Controller-->
+        <scene sceneID="HBG-3m-cV9">
+            <objects>
+                <viewController storyboardIdentifier="WelcomeToCrowdNodeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="xBw-OW-Vmo" customClass="WelcomeToCrowdNodeViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="SdG-gx-RMA">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ex0-Nm-ANv">
+                                <rect key="frame" x="0.0" y="47" width="390" height="763"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g40-Eq-Qi9" userLabel="Logo Wrapper">
+                                        <rect key="frame" x="145" y="15" width="100" height="100"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="FFc-fd-cfG" userLabel="CrowdNode logo">
+                                                <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="65" id="Giz-2P-2if"/>
+                                                    <constraint firstAttribute="width" constant="65" id="mj4-By-5q2"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="100" id="AVY-vd-ljx"/>
+                                            <constraint firstItem="FFc-fd-cfG" firstAttribute="centerX" secondItem="g40-Eq-Qi9" secondAttribute="centerX" id="gV2-fx-UjN"/>
+                                            <constraint firstItem="FFc-fd-cfG" firstAttribute="centerY" secondItem="g40-Eq-Qi9" secondAttribute="centerY" id="sLB-Gi-z6X"/>
+                                            <constraint firstAttribute="width" constant="100" id="zhZ-W7-0eb"/>
+                                        </constraints>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4LF-hx-9fT" userLabel="Title Label">
+                                        <rect key="frame" x="40" y="145" width="310" height="94.666666666666686"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="Become part of a Dash Masternode with CrowdNode">
+                                                <attributes>
+                                                    <font key="NSFont" metaFont="systemBold" size="24"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineHeightMultiple="1.1000000000000001" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="252" verticalCompressionResistancePriority="747" axis="vertical" distribution="equalSpacing" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="iiP-8c-HLa" userLabel="Content Stack">
+                                        <rect key="frame" x="20" y="293.33333333333331" width="350" height="216.33333333333331"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="w8U-Ls-3lS">
+                                                <rect key="frame" x="0.0" y="0.0" width="350" height="96.666666666666671"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Ucn-4T-QzA">
+                                                        <rect key="frame" x="0.0" y="0.0" width="34" height="34"/>
+                                                        <color key="tintColor" systemColor="systemGrayColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="34" id="MX1-hY-2o7"/>
+                                                            <constraint firstAttribute="height" constant="34" id="qAq-Nh-MPx"/>
+                                                        </constraints>
+                                                        <imageReference key="image" image="image.crowdnode.wand" symbolScale="large"/>
+                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
+                                                    </imageView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="b9c-Dn-uU0">
+                                                        <rect key="frame" x="52" y="8" width="298" height="88.666666666666671"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Introducing Staking" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kyx-hu-8tt">
+                                                                <rect key="frame" x="0.0" y="0.0" width="132.33333333333334" height="33"/>
+                                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DGO-br-FKt">
+                                                                <rect key="frame" x="0.0" y="37" width="293" height="51.666666666666657"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="Ucn-4T-QzA" firstAttribute="leading" secondItem="w8U-Ls-3lS" secondAttribute="leading" id="1cm-cA-Rzh"/>
+                                                    <constraint firstItem="b9c-Dn-uU0" firstAttribute="top" secondItem="w8U-Ls-3lS" secondAttribute="top" constant="8" id="DXI-Kb-PcF"/>
+                                                    <constraint firstAttribute="bottom" secondItem="b9c-Dn-uU0" secondAttribute="bottom" id="U8v-rh-nMO"/>
+                                                    <constraint firstItem="Ucn-4T-QzA" firstAttribute="top" secondItem="w8U-Ls-3lS" secondAttribute="top" id="eQv-n7-ULN"/>
+                                                    <constraint firstItem="b9c-Dn-uU0" firstAttribute="leading" secondItem="Ucn-4T-QzA" secondAttribute="trailing" constant="18" id="vLB-wO-yHJ"/>
+                                                    <constraint firstAttribute="trailing" secondItem="b9c-Dn-uU0" secondAttribute="trailing" id="yhU-Uo-nQx"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bl7-PZ-yYz">
+                                                <rect key="frame" x="0.0" y="125.66666666666669" width="350" height="90.666666666666686"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="afR-lj-hfE">
+                                                        <rect key="frame" x="0.0" y="0.0" width="34" height="34"/>
+                                                        <color key="tintColor" systemColor="systemGrayColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="34" id="hDw-Aa-zf8"/>
+                                                            <constraint firstAttribute="width" constant="34" id="kzJ-fx-MIw"/>
+                                                        </constraints>
+                                                        <imageReference key="image" image="image.crowdnode.lightning" symbolScale="large"/>
+                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
+                                                    </imageView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="KEl-l8-Hkh">
+                                                        <rect key="frame" x="52" y="8" width="298" height="82.666666666666671"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Linked accounts" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2fW-RB-tAi">
+                                                                <rect key="frame" x="0.0" y="0.0" width="124.33333333333333" height="17"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="17" id="Mmu-Sy-wzD"/>
+                                                                </constraints>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fQu-uC-BNq">
+                                                                <rect key="frame" x="0.0" y="21.999999999999996" width="293" height="60.666666666666657"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="bottom" secondItem="KEl-l8-Hkh" secondAttribute="bottom" id="MCY-Os-g7M"/>
+                                                    <constraint firstItem="KEl-l8-Hkh" firstAttribute="top" secondItem="bl7-PZ-yYz" secondAttribute="top" constant="8" id="ObK-zB-hG9"/>
+                                                    <constraint firstAttribute="trailing" secondItem="KEl-l8-Hkh" secondAttribute="trailing" id="Wdo-Az-VZu"/>
+                                                    <constraint firstItem="afR-lj-hfE" firstAttribute="leading" secondItem="bl7-PZ-yYz" secondAttribute="leading" id="cxX-j3-MNV"/>
+                                                    <constraint firstItem="KEl-l8-Hkh" firstAttribute="leading" secondItem="afR-lj-hfE" secondAttribute="trailing" constant="18" id="fAe-WP-p0j"/>
+                                                    <constraint firstItem="afR-lj-hfE" firstAttribute="top" secondItem="bl7-PZ-yYz" secondAttribute="top" id="hqK-yd-mS4"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                    </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EhN-vc-U2C" customClass="DWActionButton">
+                                        <rect key="frame" x="15" y="702" width="360" height="46"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="46" id="rTH-V4-Vnk"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="g40-Eq-Qi9" firstAttribute="centerX" secondItem="Ex0-Nm-ANv" secondAttribute="centerX" id="5Fl-4N-B60"/>
+                                    <constraint firstItem="EhN-vc-U2C" firstAttribute="leading" secondItem="Ex0-Nm-ANv" secondAttribute="leading" constant="15" id="5VJ-CO-SGJ"/>
+                                    <constraint firstItem="4LF-hx-9fT" firstAttribute="top" secondItem="g40-Eq-Qi9" secondAttribute="bottom" constant="30" id="Jkh-mu-vos"/>
+                                    <constraint firstItem="iiP-8c-HLa" firstAttribute="centerY" secondItem="Ex0-Nm-ANv" secondAttribute="centerY" constant="20" id="PNa-Um-Rsk"/>
+                                    <constraint firstItem="iiP-8c-HLa" firstAttribute="leading" secondItem="Ex0-Nm-ANv" secondAttribute="leading" constant="20" id="Q2S-rq-stf"/>
+                                    <constraint firstAttribute="trailing" secondItem="EhN-vc-U2C" secondAttribute="trailing" constant="15" id="RZM-yI-0X3"/>
+                                    <constraint firstAttribute="trailing" secondItem="iiP-8c-HLa" secondAttribute="trailing" constant="20" id="dx4-HF-WkT"/>
+                                    <constraint firstAttribute="bottom" secondItem="EhN-vc-U2C" secondAttribute="bottom" constant="15" id="hYN-6s-Vg1"/>
+                                    <constraint firstItem="4LF-hx-9fT" firstAttribute="leading" secondItem="Ex0-Nm-ANv" secondAttribute="leading" constant="40" id="ldl-wM-z6S"/>
+                                    <constraint firstAttribute="trailing" secondItem="4LF-hx-9fT" secondAttribute="trailing" constant="40" id="noY-M4-RDp"/>
+                                    <constraint firstItem="g40-Eq-Qi9" firstAttribute="top" secondItem="Ex0-Nm-ANv" secondAttribute="top" constant="15" id="yPy-mz-vzf"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="7hj-7p-jsx"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Ex0-Nm-ANv" firstAttribute="top" secondItem="7hj-7p-jsx" secondAttribute="top" id="1qL-1F-Abd"/>
+                            <constraint firstItem="Ex0-Nm-ANv" firstAttribute="trailing" secondItem="7hj-7p-jsx" secondAttribute="trailing" id="Tck-lY-dpV"/>
+                            <constraint firstItem="7hj-7p-jsx" firstAttribute="bottom" secondItem="Ex0-Nm-ANv" secondAttribute="bottom" id="dCZ-58-lO4"/>
+                            <constraint firstItem="Ex0-Nm-ANv" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" id="ojj-NH-Ber"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="actionButton" destination="EhN-vc-U2C" id="4mp-GO-9QF"/>
+                        <outlet property="logoWrapper" destination="g40-Eq-Qi9" id="BVV-xa-3Rb"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="s3V-TP-mQ0" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-705" y="4"/>
+        </scene>
     </scenes>
     <resources>
         <image name="icon_copy_outline" width="16" height="16"/>
+        <image name="image.crowdnode.lightning" width="28" height="34"/>
+        <image name="image.crowdnode.logo" width="56.666667938232422" height="65"/>
         <image name="image.crowdnode.notify" width="24" height="24"/>
+        <image name="image.crowdnode.wand" width="34" height="32"/>
         <namedColor name="DashBlueColor">
             <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
@@ -260,8 +438,14 @@
         <systemColor name="labelColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGrayColor">
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

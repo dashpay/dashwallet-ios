@@ -20,18 +20,19 @@ import Combine
 
 @objc public class CrowdNodeModelObjcWrapper: NSObject {
     @objc public class func getRootVC() -> UIViewController {
-        let state = CrowdNode.shared.signUpState
-        
-        switch state {
-        case .finished:
-            return CrowdNodePortalController.controller()
-            
-        case .fundingWallet, .acceptingTerms, .signingUp:
-            return AccountCreatingController.controller()
-            
-        default:
-            return NewAccountViewController.controller()
-        }
+        return WelcomeToCrowdNodeViewController.controller()
+//        let state = CrowdNode.shared.signUpState
+//
+//        switch state {
+//        case .finished:
+//            return CrowdNodePortalController.controller()
+//
+//        case .fundingWallet, .acceptingTerms, .signingUp:
+//            return AccountCreatingController.controller()
+//
+//        default:
+//            return NewAccountViewController.controller()
+//        }
     }
 }
 

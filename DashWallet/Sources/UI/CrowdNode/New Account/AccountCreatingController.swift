@@ -22,14 +22,12 @@ final class AccountCreatingController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     
     @IBOutlet var actionButton: UIButton!
-    @IBOutlet var activityIndicator: UIActivityIndicatorView!
     @IBOutlet var statusLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         viewModel.showNotificationOnResult = false
-        configureHierarchy()
         configureObservers()
     }
     
@@ -50,10 +48,6 @@ final class AccountCreatingController: UIViewController {
 }
 
 extension AccountCreatingController {
-    private func configureHierarchy() {
-        actionButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 14)
-    }
-    
     private func configureObservers() {
         viewModel.$signUpState
             .receive(on: DispatchQueue.main)
