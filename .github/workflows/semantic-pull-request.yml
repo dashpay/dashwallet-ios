@@ -20,6 +20,7 @@ name: "Check PR title format"
            # Default: https://github.com/commitizen/conventional-commit-types
            # Our specific types/scopes (from https://github.com/dashpay/dash/blob/master/CONTRIBUTING.md#contributor-workflow)
            types: |
+             design
              feat
              fix
              docs
@@ -35,12 +36,13 @@ name: "Check PR title format"
              backport
            # Configure which scopes are allowed (newline delimited).
            scopes: |
-             consensus
-             qt
-             log
-             mining
-             net
-             rpc/rest/zmq
-             scripts
-             utils
+             ui
+             dashsync
+             uphold
+             coinbase
+             crowdnode
+             explore-dash
+             syncing
+             testnet
+             dashpay
              wallet
