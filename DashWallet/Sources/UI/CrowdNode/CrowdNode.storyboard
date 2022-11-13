@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -17,60 +18,248 @@
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lbk-ty-UO1">
-                                <rect key="frame" x="16" y="367" width="358" height="72"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="New CrowdNode Account" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JGO-bv-xnp" userLabel="Title Label">
+                                <rect key="frame" x="20" y="61.999999999999993" width="350" height="28.666666666666664"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="24"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ely-BQ-7hu" userLabel="Address Label">
-                                <rect key="frame" x="16" y="447" width="358" height="48"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                <nil key="textColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UxQ-U0-ggd" userLabel="Explainer One">
+                                <rect key="frame" x="20" y="100.66666666666669" width="350" height="67"/>
+                                <string key="text">CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" name="TertiaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FnW-zm-pFT">
-                                <rect key="frame" x="96" y="274" width="199" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1dX-4E-qVf" userLabel="Explainer Two">
+                                <rect key="frame" x="20" y="177.66666666666666" width="350" height="50.333333333333343"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" name="TertiaryTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4DJ-bK-bvd" userLabel="Action Button" customClass="DWActionButton">
+                                <rect key="frame" x="20" y="744" width="350" height="46"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="XCM-8z-ZOE"/>
+                                </constraints>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Create Account"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Create Account"/>
                                 <connections>
-                                    <action selector="createAccountAction" destination="Y6W-OH-hqX" eventType="touchUpInside" id="sMW-SH-dUw"/>
+                                    <action selector="continueAction" destination="Y6W-OH-hqX" eventType="touchUpInside" id="M7h-fG-nBq"/>
                                 </connections>
                             </button>
-                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="l8C-lh-lKO">
-                                <rect key="frame" x="185" y="329" width="20" height="20"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </activityIndicatorView>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Sg3-mL-EdP">
-                                <rect key="frame" x="163" y="503" width="64" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Copy"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nxj-pM-Pl9" userLabel="Address Container">
+                                <rect key="frame" x="20" y="258" width="350" height="58"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C7C-3J-thP" userLabel="Account Label">
+                                        <rect key="frame" x="15" y="9" width="77.333333333333329" height="14.333333333333336"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                        <color key="textColor" name="TertiaryTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lPE-iA-urR" userLabel="Account Address">
+                                        <rect key="frame" x="15" y="28.333333333333314" width="320" height="18"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="de8-l5-sCC" userLabel="Copy Button">
+                                        <rect key="frame" x="310" y="14" width="30" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="7uL-7t-igU"/>
+                                            <constraint firstAttribute="width" secondItem="de8-l5-sCC" secondAttribute="height" multiplier="1:1" id="dqP-HR-pDv"/>
+                                        </constraints>
+                                        <color key="tintColor" name="IconTintColor"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
+                                        <connections>
+                                            <action selector="copyAddress" destination="Y6W-OH-hqX" eventType="touchDragInside" id="aIe-ub-IXz"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" red="0.92156862745098034" green="0.92941176470588238" blue="0.93333333333333335" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstItem="C7C-3J-thP" firstAttribute="top" secondItem="Nxj-pM-Pl9" secondAttribute="top" constant="9" id="4aB-8e-POb"/>
+                                    <constraint firstAttribute="trailing" secondItem="de8-l5-sCC" secondAttribute="trailing" constant="10" id="CK6-68-hJB"/>
+                                    <constraint firstAttribute="trailing" secondItem="lPE-iA-urR" secondAttribute="trailing" constant="15" id="HhJ-0i-L9m"/>
+                                    <constraint firstAttribute="height" constant="58" id="PoE-am-RAI"/>
+                                    <constraint firstItem="de8-l5-sCC" firstAttribute="centerY" secondItem="Nxj-pM-Pl9" secondAttribute="centerY" id="Q6Q-2H-4rx"/>
+                                    <constraint firstItem="lPE-iA-urR" firstAttribute="leading" secondItem="Nxj-pM-Pl9" secondAttribute="leading" constant="15" id="aua-GK-Se2"/>
+                                    <constraint firstItem="lPE-iA-urR" firstAttribute="top" secondItem="C7C-3J-thP" secondAttribute="bottom" constant="5" id="fgz-sO-LWt"/>
+                                    <constraint firstItem="C7C-3J-thP" firstAttribute="leading" secondItem="Nxj-pM-Pl9" secondAttribute="leading" constant="15" id="nav-T2-9rT"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view contentMode="scaleToFill" verticalHuggingPriority="265" placeholderIntrinsicWidth="300" placeholderIntrinsicHeight="44" translatesAutoresizingMaskIntoConstraints="NO" id="KKC-5N-ebV" customClass="DWCheckbox">
+                                <rect key="frame" x="15" y="682" width="35" height="35"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="35" id="GHQ-Kc-AV7"/>
+                                    <constraint firstAttribute="width" constant="35" id="ZAP-rH-WOn"/>
+                                </constraints>
                                 <connections>
-                                    <action selector="copyOutput" destination="Y6W-OH-hqX" eventType="touchUpInside" id="KSv-Jm-8wT"/>
+                                    <action selector="onTermsChecked" destination="Y6W-OH-hqX" eventType="valueChanged" id="VQ6-86-rGX"/>
                                 </connections>
-                            </button>
+                            </view>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="I agree to CrowdNode Terms of Use and Privacy Policy" translatesAutoresizingMaskIntoConstraints="NO" id="HH4-Qf-Qjr" userLabel="Check Box Label">
+                                <rect key="frame" x="50" y="682" width="320" height="52"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="52" id="UoT-nv-tbl"/>
+                                </constraints>
+                                <color key="textColor" systemColor="labelColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="1dX-4E-qVf" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="07d-6L-I4d"/>
+                            <constraint firstItem="KKC-5N-ebV" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="15" id="3k5-QL-TJU"/>
+                            <constraint firstItem="UxQ-U0-ggd" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="6ay-hX-2I5"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="4DJ-bK-bvd" secondAttribute="trailing" constant="20" id="A5k-2W-9nq"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="HH4-Qf-Qjr" secondAttribute="trailing" constant="20" id="Fps-Dv-hNa"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="Nxj-pM-Pl9" secondAttribute="trailing" constant="20" id="Z5B-C7-AEc"/>
+                            <constraint firstItem="Nxj-pM-Pl9" firstAttribute="top" secondItem="1dX-4E-qVf" secondAttribute="bottom" constant="30" id="ZpQ-7x-lZ7"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="UxQ-U0-ggd" secondAttribute="trailing" constant="20" id="bfA-vR-ePZ"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="4DJ-bK-bvd" secondAttribute="bottom" constant="20" id="ccm-ci-unP"/>
+                            <constraint firstItem="HH4-Qf-Qjr" firstAttribute="leading" secondItem="KKC-5N-ebV" secondAttribute="trailing" id="eBS-5I-CPO"/>
+                            <constraint firstItem="4DJ-bK-bvd" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="eN3-2g-MQf"/>
+                            <constraint firstItem="1dX-4E-qVf" firstAttribute="top" secondItem="UxQ-U0-ggd" secondAttribute="bottom" constant="10" id="eXj-TS-s10"/>
+                            <constraint firstItem="Nxj-pM-Pl9" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="fIT-Ka-nzk"/>
+                            <constraint firstItem="JGO-bv-xnp" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="ngv-MS-1Zc"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="1dX-4E-qVf" secondAttribute="trailing" constant="20" id="qYj-3R-eco"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="JGO-bv-xnp" secondAttribute="trailing" constant="20" id="u8K-qm-knZ"/>
+                            <constraint firstItem="JGO-bv-xnp" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="15" id="uj9-xN-meh"/>
+                            <constraint firstItem="KKC-5N-ebV" firstAttribute="top" secondItem="HH4-Qf-Qjr" secondAttribute="top" id="xeo-6B-ND5"/>
+                            <constraint firstItem="HH4-Qf-Qjr" firstAttribute="bottom" secondItem="4DJ-bK-bvd" secondAttribute="top" constant="-10" id="y0O-uH-9Vu"/>
+                            <constraint firstItem="UxQ-U0-ggd" firstAttribute="top" secondItem="JGO-bv-xnp" secondAttribute="bottom" constant="10" id="z4W-le-SDu"/>
+                        </constraints>
                     </view>
                     <connections>
-                        <outlet property="actionButton" destination="FnW-zm-pFT" id="moS-Vv-9JP"/>
-                        <outlet property="addressLabel" destination="Ely-BQ-7hu" id="BII-eq-X5T"/>
-                        <outlet property="animationView" destination="l8C-lh-lKO" id="to5-ct-SH2"/>
-                        <outlet property="copyButton" destination="Sg3-mL-EdP" id="kdv-Hp-c2M"/>
-                        <outlet property="outputLabel" destination="lbk-ty-UO1" id="e3W-Xh-bed"/>
+                        <outlet property="acceptTermsCheckBox" destination="KKC-5N-ebV" id="pLc-1Y-TF2"/>
+                        <outlet property="acceptTermsText" destination="HH4-Qf-Qjr" id="kcs-4n-iid"/>
+                        <outlet property="actionButton" destination="4DJ-bK-bvd" id="IDa-uT-0D5"/>
+                        <outlet property="addressLabel" destination="lPE-iA-urR" id="u8P-2J-yE7"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="36.92307692307692" y="3.5545023696682461"/>
         </scene>
+        <!--Account Creating Controller-->
+        <scene sceneID="pbe-Xu-zht">
+            <objects>
+                <viewController storyboardIdentifier="AccountCreatingController" id="K93-Wj-ayx" customClass="AccountCreatingController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="EtE-Vo-Yyz">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DgD-Ua-Noy" userLabel="Action Button">
+                                <rect key="frame" x="20" y="744" width="350" height="46"/>
+                                <color key="backgroundColor" red="0.96078431372549022" green="0.96470588235294119" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="9Hl-se-PhK"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" image="image.crowdnode.notify" title="Close and notify when it’s done" imagePadding="24">
+                                    <fontDescription key="titleFontDescription" type="system" weight="semibold" pointSize="14"/>
+                                    <color key="baseForegroundColor" name="DashBlueColor"/>
+                                    <color key="baseBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="10"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="closeAndNotify" destination="K93-Wj-ayx" eventType="touchUpInside" id="e5J-x6-rA5"/>
+                                </connections>
+                            </button>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="Akn-0F-fGK" userLabel="Activity Indicator">
+                                <rect key="frame" x="176.66666666666666" y="362" width="37" height="37"/>
+                            </activityIndicatorView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please wait" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jw3-MX-5Jw" userLabel="Title Label">
+                                <rect key="frame" x="153" y="419" width="84" height="19.333333333333314"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your CrowdNode account is creating..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FLC-dP-GHT" userLabel="Status Label">
+                                <rect key="frame" x="68.000000000000014" y="443.33333333333331" width="254.33333333333337" height="17"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
+                                <color key="textColor" name="TertiaryTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="xE6-qi-0lt"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Jw3-MX-5Jw" firstAttribute="centerY" secondItem="xE6-qi-0lt" secondAttribute="centerY" id="4vn-cC-AP2"/>
+                            <constraint firstItem="Akn-0F-fGK" firstAttribute="bottom" secondItem="Jw3-MX-5Jw" secondAttribute="top" constant="-20" id="50b-5h-S0S"/>
+                            <constraint firstItem="Akn-0F-fGK" firstAttribute="centerX" secondItem="xE6-qi-0lt" secondAttribute="centerX" id="54W-q6-L9m"/>
+                            <constraint firstItem="Jw3-MX-5Jw" firstAttribute="centerX" secondItem="xE6-qi-0lt" secondAttribute="centerX" id="5AT-H2-Wx5"/>
+                            <constraint firstItem="FLC-dP-GHT" firstAttribute="top" secondItem="Jw3-MX-5Jw" secondAttribute="bottom" constant="5" id="FUk-Lb-KOi"/>
+                            <constraint firstItem="xE6-qi-0lt" firstAttribute="trailing" secondItem="DgD-Ua-Noy" secondAttribute="trailing" constant="20" id="Lar-VQ-dYH"/>
+                            <constraint firstItem="DgD-Ua-Noy" firstAttribute="bottom" secondItem="xE6-qi-0lt" secondAttribute="bottom" constant="-20" id="XLh-BD-Uhr"/>
+                            <constraint firstItem="DgD-Ua-Noy" firstAttribute="leading" secondItem="xE6-qi-0lt" secondAttribute="leading" constant="20" id="aMk-p7-dVM"/>
+                            <constraint firstItem="FLC-dP-GHT" firstAttribute="centerX" secondItem="xE6-qi-0lt" secondAttribute="centerX" id="u7C-Nk-SfK"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="actionButton" destination="DgD-Ua-Noy" id="idV-Jc-Nkt"/>
+                        <outlet property="activityIndicator" destination="Akn-0F-fGK" id="Xui-SH-NRY"/>
+                        <outlet property="statusLabel" destination="FLC-dP-GHT" id="kCn-LQ-r36"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="pKH-2R-Tyc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="774" y="4"/>
+        </scene>
+        <!--Crowd Node Portal Controller-->
+        <scene sceneID="CQd-Sv-Cgp">
+            <objects>
+                <viewController storyboardIdentifier="CrowdNodePortalController" id="UUU-dB-Ds4" customClass="CrowdNodePortalController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Zpc-Vc-kGo">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Portal" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3dh-mH-Mw5" userLabel="Title Label">
+                                <rect key="frame" x="152" y="413" width="87" height="19"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="xR4-Ii-XoP"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="nXF-PB-z7W" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1513.8461538461538" y="3.5545023696682461"/>
+        </scene>
     </scenes>
     <resources>
+        <image name="icon_copy_outline" width="16" height="16"/>
+        <image name="image.crowdnode.notify" width="24" height="24"/>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="IconTintColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="TertiaryTextColor">
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="labelColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
