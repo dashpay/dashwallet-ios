@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
+		110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* NavigationControllerExtensions.swift */; };
 		1121A8B728E5DB6E00464C31 /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */; };
 		1141E4C2291BB12200ACDA9E /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */; };
 		1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */; };
@@ -656,6 +658,8 @@
 		0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
+		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
+		110C679929227948006B580C /* NavigationControllerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationControllerExtensions.swift; sourceTree = "<group>"; };
 		1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
 		1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToCrowdNodeViewController.swift; sourceTree = "<group>"; };
@@ -1836,6 +1840,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		110C679629227895006B580C /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				110C679929227948006B580C /* NavigationControllerExtensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		1141E4C0291BB0FC00ACDA9E /* Portal */ = {
 			isa = PBXGroup;
 			children = (
@@ -1848,6 +1860,7 @@
 			isa = PBXGroup;
 			children = (
 				1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */,
+				110C67942921147F006B580C /* GettingStartedViewController.swift */,
 			);
 			path = "Getting Started";
 			sourceTree = "<group>";
@@ -1902,6 +1915,7 @@
 		11C5F51128E5D0C500F6F135 /* CrowdNode */ = {
 			isa = PBXGroup;
 			children = (
+				110C679629227895006B580C /* Extensions */,
 				1141E4C3291FDC3B00ACDA9E /* Getting Started */,
 				1141E4C0291BB0FC00ACDA9E /* Portal */,
 				11BD737A28E6BCD400A34022 /* New Account */,
@@ -5313,6 +5327,7 @@
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */,
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
+				110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
 				119E8D0A2905413F00D406C1 /* TransactionWrapper.swift in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
@@ -5706,6 +5721,7 @@
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				47AE8BF828C1306000490F5E /* AtmDataProvider.swift in Sources */,
+				110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */,
 				2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */,
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,

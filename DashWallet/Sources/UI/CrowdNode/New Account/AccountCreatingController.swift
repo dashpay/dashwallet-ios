@@ -54,10 +54,7 @@ extension AccountCreatingController {
             .sink { [weak self] state in
                 if state == .finished {
                     print("CrowdNode: going to portal")
-                    var viewControllers = self?.navigationController?.viewControllers
-                    viewControllers?.removeLast()
-                    viewControllers?.append(CrowdNodePortalController.controller())
-                    self?.navigationController?.setViewControllers(viewControllers!, animated: true)
+                    self?.navigationController?.replace(CrowdNodePortalController.controller(), animated: true)
                 }
             }
             .store(in: &cancellableBag)
