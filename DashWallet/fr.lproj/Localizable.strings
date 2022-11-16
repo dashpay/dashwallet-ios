@@ -1,3 +1,9 @@
+/* Coinbase Two Factor Auth */
+" Need help? " = " Need help? ";
+
+/* Coinbase Two Factor Auth */
+" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ a accepté votre demande de contact";
 
@@ -239,6 +245,9 @@
 /* Dash Portal */
 "Coinbase" = "Coinbase";
 
+/* Coinbase Two Factor Auth */
+"Coinbase 2FA code" = "Coinbase 2FA code";
+
 /* No comment provided by engineer. */
 "Confirm" = "Confirmer";
 
@@ -262,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Connexion au serveur de paiement";
+
+/* Coinbase Two Factor Auth */
+"Contact Coinbase Support" = "Contact Coinbase Support";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Demande de contact en attente";
@@ -379,6 +391,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "Saisir";
+
+/* Coinbase Two Factor Auth */
+"Enter Coinbase 2FA code" = "Enter Coinbase 2FA code";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "Saisissez le code PIN";
@@ -560,11 +575,17 @@
 /* Invalid transaction */
 "Invalid" = "Invalide";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Demande de paiement invalide";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "QR-code non valide";
+
+/* Coinbase Two Factor Auth */
+"It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Il semble que vous tentiez de restaurer votre portefeuille avec une phrase de récupération de 12 mots. Cependant vous n'avez indiqué que 10 mots. Voulez-vous retrouver automatiquement les mots manquants ? Cela peut prendre environ une heure. Nous vous recommandons de brancher votre appareil au secteur.";
@@ -1160,6 +1181,9 @@
 /* This ATM is located in the */
 "This ATM is located in the" = "This ATM is located in the";
 
+/* Coinbase Two Factor Auth */
+"This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
+
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Ce code PIN sera demandé pour déverrouiller votre app avant chaque utilisation.";
 
@@ -1223,6 +1247,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Impossible de générer un nouveau QR-code";
 
+/* Coinbase */
+"Unknown Balance" = "Unknown Balance";
+
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Document non compatible ou endommagé";
 
@@ -1231,6 +1258,9 @@
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Mis à jour : %@";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Frais de mise à jour";
@@ -1258,6 +1288,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Validation du nom d'utilisateur en cours…";
+
+/* Coinbase */
+"Verfiy" = "Verfiy";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Vérifié avec succès";

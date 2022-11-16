@@ -174,8 +174,8 @@ NS_ASSUME_NONNULL_BEGIN
     requestUserActionTitle:(nullable NSString *)title
                    message:(nullable NSString *)message
                actionTitle:(NSString *)actionTitle
-               cancelBlock:(void (^)(void))cancelBlock
-               actionBlock:(void (^)(void))actionBlock {
+               cancelBlock:(nullable void (^)(void))cancelBlock
+               actionBlock:(nullable void (^)(void))actionBlock {
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:title
                          message:message

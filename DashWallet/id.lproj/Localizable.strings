@@ -1,3 +1,9 @@
+/* Coinbase Two Factor Auth */
+" Need help? " = " Need help? ";
+
+/* Coinbase Two Factor Auth */
+" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ telah menerima permintaan kontak Anda";
 
@@ -239,6 +245,9 @@
 /* Dash Portal */
 "Coinbase" = "Coinbase";
 
+/* Coinbase Two Factor Auth */
+"Coinbase 2FA code" = "Coinbase 2FA code";
+
 /* No comment provided by engineer. */
 "Confirm" = "Memastikan";
 
@@ -262,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Mengghubungkan ke server pembayaran";
+
+/* Coinbase Two Factor Auth */
+"Contact Coinbase Support" = "Contact Coinbase Support";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Permintaan Kontak Tertunda";
@@ -379,6 +391,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "Masuk";
+
+/* Coinbase Two Factor Auth */
+"Enter Coinbase 2FA code" = "Enter Coinbase 2FA code";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "Masukkan PIN";
@@ -560,11 +575,17 @@
 /* Invalid transaction */
 "Invalid" = "Tidak valid";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Permintaan pembayaran tidak valid";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Kode QR tidak valid";
+
+/* Coinbase Two Factor Auth */
+"It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Sepertinya Anda mencoba mengembalikan dompet Anda menggunakan frasa pemulihan 12 kata, namun Anda hanya memasukkan 10 kata, apakah Anda ingin memulihkan kata yang hilang secara otomatis? Ini mungkin membutuhkan waktu sekitar satu jam. Kami merekomendasikan untuk mencolokkan perangkat Anda.";
@@ -1160,6 +1181,9 @@
 /* This ATM is located in the */
 "This ATM is located in the" = "This ATM is located in the";
 
+/* Coinbase Two Factor Auth */
+"This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
+
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "PIN ini akan diperlukan untuk membuka kunci aplikasi Anda setiap kali saat Anda menggunakannya.";
 
@@ -1223,6 +1247,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Tidak dapat mendapat kode QR baru";
 
+/* Coinbase */
+"Unknown Balance" = "Unknown Balance";
+
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Dokumen yang tidak didukung atau rusak";
 
@@ -1231,6 +1258,9 @@
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Diperbarui: %@";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Biaya peningkatan";
@@ -1258,6 +1288,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Memvalidasi nama pengguna…";
+
+/* Coinbase */
+"Verfiy" = "Verfiy";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Berhasil Diverifikasi";

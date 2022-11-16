@@ -1,3 +1,9 @@
+/* Coinbase Two Factor Auth */
+" Need help? " = " Need help? ";
+
+/* Coinbase Two Factor Auth */
+" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ prijal vašu požiadavku na kontakt";
 
@@ -239,6 +245,9 @@
 /* Dash Portal */
 "Coinbase" = "Coinbase";
 
+/* Coinbase Two Factor Auth */
+"Coinbase 2FA code" = "Coinbase 2FA code";
+
 /* No comment provided by engineer. */
 "Confirm" = "Potvrdiť";
 
@@ -262,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Pripája sa k platobnému serveru";
+
+/* Coinbase Two Factor Auth */
+"Contact Coinbase Support" = "Contact Coinbase Support";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Žiadosť o kontakt čaká na potvrdenie";
@@ -379,6 +391,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "Zadať";
+
+/* Coinbase Two Factor Auth */
+"Enter Coinbase 2FA code" = "Enter Coinbase 2FA code";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "Zadať PIN";
@@ -560,11 +575,17 @@
 /* Invalid transaction */
 "Invalid" = "Neplatná";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Neplatná žiadosť o platbu:";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Neplatný QR kód";
+
+/* Coinbase Two Factor Auth */
+"It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Zdá sa, že sa pokúšate obnoviť svoju peňaženku pomocou 12-slovnej frázy na obnovenie, avšak zadali ste iba 10 slov. Chcete automaticky obnoviť chýbajúce slová? Môže to trvať asi hodinu. Vaše zariadenie odporúčame pripojiť do siete.";
@@ -1160,6 +1181,9 @@
 /* This ATM is located in the */
 "This ATM is located in the" = "This ATM is located in the";
 
+/* Coinbase Two Factor Auth */
+"This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
+
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Tento PIN bude potrebný na odomknutie aplikácie pri každom použití.";
 
@@ -1223,6 +1247,9 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Nepodarilo sa získať nový QR kód";
 
+/* Coinbase */
+"Unknown Balance" = "Unknown Balance";
+
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nepodporovaný alebo poškodený dokument";
 
@@ -1231,6 +1258,9 @@
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Aktualizované: %@";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Poplatok za inováciu";
@@ -1258,6 +1288,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Overuje sa používateľské meno…";
+
+/* Coinbase */
+"Verfiy" = "Verfiy";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Úspešne overené";

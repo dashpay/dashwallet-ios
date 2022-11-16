@@ -27,17 +27,20 @@ private let kMainAmountFontSize: CGFloat = 34
 private let kSupplementaryAmountFontSize: CGFloat = 17
 
 protocol AmountInputControlDelegate: AnyObject {
-    func amountInputControlChangeCurrencyDidTap(_ control: AmountInputControl)
+    func updateInputField(with replacementText: String, in range: NSRange)
+    func amountInputControlDidSwapInputs()
+    func amountInputControlChangeCurrencyDidTap()
 }
 
 protocol AmountInputControlDataSource: AnyObject {
-    var dashAttributedString: NSAttributedString { get }
-    var localCurrencyAttributedString: NSAttributedString { get }
+    var currentInputString: String { get }
+    var mainAmountString: String { get }
+    var supplementaryAmountString: String { get }
 }
 
 extension AmountInputControl.AmountType {
     func toggle() -> Self {
-        self == .dash ? .fiat : .dash
+        self == .main ? .supplementary : .main
     }
 }
 
@@ -48,8 +51,8 @@ class AmountInputControl: UIControl {
     }
     
     enum AmountType {
-        case dash
-        case fiat
+        case main
+        case supplementary
     }
     
     public var style: Style = .oppositeAmount {
@@ -57,17 +60,33 @@ class AmountInputControl: UIControl {
             updateAppearance()
             setNeedsLayout()
             invalidateIntrinsicContentSize()
+            reloadData()
         }
     }
     
-    public var amountType: AmountType = .dash
+    public var amountType: AmountType = .main {
+        didSet {
+            if oldValue != amountType {
+                setActiveType(amountType, animated: true) { [weak self] in
+                    guard let wSelf = self else { return }
+                    wSelf.delegate?.amountInputControlDidSwapInputs()
+                }
+            }
+        }
+    }
     
     public weak var delegate: AmountInputControlDelegate?
     public weak var dataSource: AmountInputControlDataSource? {
         didSet {
-            reloadData()
+            if dataSource != nil {
+                reloadData()
+            }
         }
     }
+    
+    public var text: String? { return mainText }
+    public var mainText: String?
+    public var supplementaryText: String?
     
     override var intrinsicContentSize: CGSize {
         return CGSize(width: mainAmountLabel.bounds.width, height: contentHeight)
@@ -78,6 +97,8 @@ class AmountInputControl: UIControl {
     private var supplementaryAmountLabel: UILabel!
     
     private var currencySelectorButton: UIButton!
+
+    public var textField: UITextField!
     
     init(style: Style) {
         super.init(frame: .zero)
@@ -97,8 +118,18 @@ class AmountInputControl: UIControl {
     }
     
     func reloadData() {
-        mainAmountLabel.attributedText = dataSource?.dashAttributedString
-        supplementaryAmountLabel.attributedText = dataSource?.localCurrencyAttributedString
+        guard let dataSource = dataSource else { return }
+        
+        textField.text = dataSource.currentInputString
+        
+        let mainString = dataSource.mainAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_darkTitle())
+        let supplementaryString = dataSource.supplementaryAmountString.attributedAmountForLocalCurrency(textColor: .dw_darkTitle())
+        if style == .basic {
+            mainAmountLabel.attributedText = amountType == .main ? mainString : supplementaryString
+        }else{
+            mainAmountLabel.attributedText = mainString
+            supplementaryAmountLabel.attributedText = supplementaryString
+        }
     }
     
     func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)?) {
@@ -107,12 +138,11 @@ class AmountInputControl: UIControl {
             return
         }
         
-        let wasSwapped = type != .fiat
+        let wasSwapped = type != .supplementary
         let bigLabel: UILabel = wasSwapped ? supplementaryAmountLabel : mainAmountLabel
         let smallLabel: UILabel = wasSwapped ? mainAmountLabel : supplementaryAmountLabel
         
         let scale = kSupplementaryAmountFontSize/kMainAmountFontSize
-        
         
         bigLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
         bigLabel.transform = CGAffineTransform(scaleX: 1.0/scale, y: 1.0/scale)
@@ -155,12 +185,29 @@ class AmountInputControl: UIControl {
         }
     }
     
+    override func becomeFirstResponder() -> Bool {
+        let val = textField.becomeFirstResponder()
+        let endOfDocumentPosition = textField.endOfDocument
+        self.textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
+        return val
+    }
+    
+    //MARK: Actions
+    
+    @objc func textFieldValueDidChange() {
+        mainAmountLabel.text = textField.text
+        supplementaryAmountLabel.text = textField.text
+    }
     
     @objc func switchAmountCurrencyAction() {
         guard style == .oppositeAmount else { return }
         
         let nextType = amountType.toggle()
-        setActiveType(nextType, animated: true, completion: nil)
+        setActiveType(nextType, animated: true) { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.delegate?.amountInputControlDidSwapInputs()
+        }
+            
         amountType = nextType
     }
 }
@@ -184,7 +231,7 @@ extension AmountInputControl {
         if style == .basic {
             mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
         }else{
-            let isSwapped = amountType == .fiat
+            let isSwapped = amountType == .supplementary
             let bigLabel: UILabel = isSwapped ? supplementaryAmountLabel : mainAmountLabel
             let smallLabel: UILabel = isSwapped ? mainAmountLabel : supplementaryAmountLabel
             
@@ -202,6 +249,22 @@ extension AmountInputControl {
     private func configureHierarchy() {
         clipsToBounds = false
         
+        let textFieldRect = CGRect(x: 0.0, y: -500.0, width: 320, height: 44)
+        self.textField = UITextField(frame: textFieldRect)
+        textField.delegate = self
+        textField.autocorrectionType = .no
+        textField.autocapitalizationType = .none
+        textField.spellCheckingType = .no
+        
+        //TODO: demo mode
+        let inputViewRect = CGRect(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: 1.0)
+        textField.inputView = DWNumberKeyboardInputViewAudioFeedback(frame: inputViewRect)
+        
+        let inputAssistantItem = textField.inputAssistantItem
+        inputAssistantItem.leadingBarButtonGroups = []
+        inputAssistantItem.trailingBarButtonGroups = []
+        addSubview(textField)
+        
         self.contentView = UIControl()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .clear
@@ -211,9 +274,8 @@ extension AmountInputControl {
         self.mainAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
         contentView.addSubview(mainAmountLabel)
         
-        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
+        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kSupplementaryAmountFontSize))
         contentView.addSubview(supplementaryAmountLabel)
-
         mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
         supplementaryAmountLabel.frame = CGRect(x: 0, y: mainAmountLabel.bounds.maxY, width: bounds.width, height: kSupplementaryAmountLabelHeight)
         
@@ -247,5 +309,23 @@ extension AmountInputControl {
         label.addGestureRecognizer(tapGesture)
         
         return label
+    }
+}
+
+extension AmountInputControl: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        delegate?.updateInputField(with: string, in: range)
+        
+        return false
+    }
+    
+    
+}
+
+//MARK: Text Formatting
+
+extension AmountInputControl {
+    func reloadAttributedData() {
+        
     }
 }

@@ -113,7 +113,16 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
+        let item = model.items[indexPath.item]
+        
+        if item == .buyDash {
+            let vc = TwoFactorAuthViewController.controller()
+            present(vc, animated: true)
+            return
+        }
+        
         let vc = TransferAmountViewController()
+        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 }

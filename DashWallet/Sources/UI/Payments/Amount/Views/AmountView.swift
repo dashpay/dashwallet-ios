@@ -18,22 +18,69 @@
 import UIKit
 
 protocol AmountViewDataSource: AmountInputControlDataSource {
+    var localCurrency: String { get }
     
+}
+
+protocol AmountViewDelegate: AmountInputControlDelegate {
+    var amountInputStyle: AmountInputControl.Style { get }
 }
 
 class AmountView: UIView {
     public weak var dataSource: AmountViewDataSource? {
         didSet {
-            inputControl.dataSource = dataSource
+            amountInputControl.dataSource = dataSource
+            updateView()
         }
     }
     
+    public weak var delegate: AmountViewDelegate? {
+        didSet {
+            amountInputControl.delegate = delegate
+            updateView()
+        }
+    }
+    
+    public var textInput: UITextInput {
+        return amountInputControl.textField
+    }
+    
+    public var amountInputStyle: AmountInputControl.Style {
+        set {
+            amountInputControl.style = newValue
+        }
+        get {
+            return amountInputControl.style
+        }
+    }
+    
+    public var isMaxButtonHidden: Bool = false {
+        didSet {
+            maxButton.isHidden = isMaxButtonHidden
+        }
+    }
+    
+    public var amountType: AmountInputControl.AmountType {
+        set {
+            amountInputControl.amountType = newValue
+        }
+        get {
+            amountInputControl.amountType
+        }
+    }
+    
+    public var maxButtonAction: (() -> Void)?
+    
     private var maxButton: UIButton!
-    private var inputControl: AmountInputControl!
+    private var amountInputControl: AmountInputControl!
     private var inputTypeSwitcher: AmountInputTypeSwitcher!
-        
+    
     override var intrinsicContentSize: CGSize {
         .init(width: AmountView.noIntrinsicMetric, height: 60)
+    }
+    
+    override func becomeFirstResponder() -> Bool {
+        return amountInputControl.becomeFirstResponder()
     }
     
     override init(frame: CGRect) {
@@ -46,26 +93,40 @@ class AmountView: UIView {
         super.init(coder: coder)
     }
     
-    @objc func maxButtonAction() {
-        inputControl.style = inputControl.style == .oppositeAmount ? .basic : .oppositeAmount
+    public func reloadData() {
+        amountInputControl.reloadData()
+    }
+    
+    @objc func maxButtonActionHandler() {
+        maxButtonAction?()
     }
 }
 
 extension AmountView {
+    private func updateView() {
+        inputTypeSwitcher.items = [.init(currencySymbol: "DASH", currencyCode: "DASH"), .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT")]
+    }
+    
     private func configureHierarchy() {
         self.maxButton = MaxButton(frame: CGRect(x: 0, y: 0, width: 38, height: 38))
         maxButton.translatesAutoresizingMaskIntoConstraints = false
-        maxButton.addTarget(self, action: #selector(maxButtonAction), for: .touchUpInside)
+        maxButton.addTarget(self, action: #selector(maxButtonActionHandler), for: .touchUpInside)
         addSubview(maxButton)
         
-        self.inputControl = AmountInputControl(style: .basic)
-        inputControl.dataSource = dataSource
-        inputControl.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(inputControl)
+        self.amountInputControl = AmountInputControl(style: .oppositeAmount)
+        amountInputControl.dataSource = dataSource
+        amountInputControl.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(amountInputControl)
     
         self.inputTypeSwitcher = .init(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
-        inputTypeSwitcher.items = [.init(currencySymbol: "US$", currencyCode: "USD"), .init(currencySymbol: "DASH", currencyCode: "DASH")]
+        inputTypeSwitcher.selectItem = { [weak self] item in
+            let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
+            self?.amountInputControl.amountType = type
+            self?.amountInputControl.setActiveType(type, animated: true, completion: {
+                self?.delegate?.amountInputControlDidSwapInputs()
+            })
+        }
         addSubview(inputTypeSwitcher)
         
         NSLayoutConstraint.activate([
@@ -74,10 +135,10 @@ extension AmountView {
             maxButton.heightAnchor.constraint(equalToConstant: 38),
             maxButton.leadingAnchor.constraint(equalTo: leadingAnchor),
             
-            inputControl.centerXAnchor.constraint(equalTo: centerXAnchor),
-            inputControl.centerYAnchor.constraint(equalTo: centerYAnchor),
-            inputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 60),
-            inputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -60),
+            amountInputControl.centerXAnchor.constraint(equalTo: centerXAnchor),
+            amountInputControl.centerYAnchor.constraint(equalTo: centerYAnchor),
+            amountInputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 60),
+            amountInputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -60),
             
             inputTypeSwitcher.centerYAnchor.constraint(equalTo: centerYAnchor),
             inputTypeSwitcher.trailingAnchor.constraint(equalTo: trailingAnchor),

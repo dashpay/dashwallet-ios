@@ -7,6 +7,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
 #import "DSReachabilityManager.h"
+#import "DSCurrencyPriceObject.h"
 
 //MARK: DashWallet
 #import "DWTransactionListDataProviderProtocol.h"
@@ -28,7 +29,16 @@
 #import "DWBaseActionButtonViewController.h"
 #import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
+#import "DWInputValidator.h"
+#import "DWAmountInputValidator.h"
+#import "DWPaymentProcessor.h"
+#import "DWConfirmSendPaymentViewController.h"
+#import "DWPaymentOutput.h"
+#import "DWPaymentInput.h"
+#import "DWPaymentInputBuilder.h"
 
+#import "UIView+DWHUD.h"
+#import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"

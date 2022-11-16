@@ -24,7 +24,7 @@ protocol ActionButtonProtocol: AnyObject {
 extension DWActionButton: ActionButtonProtocol {}
 extension UIBarButtonItem: ActionButtonProtocol {}
 
-@objc class ActionButtonViewController: BaseViewController {
+class ActionButtonViewController: BaseViewController {
     public weak var actionButton: ActionButtonProtocol?
     
     internal var isKeyboardNotificationsEnabled: Bool = false

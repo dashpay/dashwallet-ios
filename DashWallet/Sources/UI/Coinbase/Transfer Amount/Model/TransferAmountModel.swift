@@ -1,4 +1,4 @@
-//
+//  
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,7 +15,28 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+import Foundation
+import Combine
 
-@implementation NSString (DashWallet)
-@end
+final class TransferAmountModel: SendAmountModel {
+    
+    private var cancellables: Set<AnyCancellable> = []
+    public var address: String!
+    
+    override init() {
+        super.init()
+        
+        obtainNewAddress()
+    }
+    
+    func obtainNewAddress() {
+        Coinbase.shared.createNewCoinbaseDashAddress()
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                print(completion)
+            } receiveValue: { address in
+                self.address = address
+            }
+            .store(in: &cancellables)
+    }
+}

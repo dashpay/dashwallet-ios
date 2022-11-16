@@ -103,8 +103,19 @@ extension Coinbase {
 
                 self.authorize(with: code)
                     .receive(on: DispatchQueue.main)
-                    .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] _ in
-                        completion(.success(true))
+                    .sink(receiveCompletion: { completion in
+                        print(completion)
+                    }, receiveValue: { [weak self] _ in
+                            self!.fetchUser()
+                            .receive(on: DispatchQueue.main)
+                            .sink(receiveCompletion: { [weak self] completion in
+                                
+                            }, receiveValue: { [weak self] response in
+                                completion(.success(true))
+                            })
+                            .store(in: &self!.cancelables)
+                        
+                        
                     })
                     .store(in: &self.cancelables)
             }
