@@ -21,7 +21,7 @@ import CoreLocation
 class BaseAtmsDataProvider: PointOfUseDataProvider {
     var types: [ExplorePointOfUse.Atm.`Type`]? { return nil }
     
-    override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+    override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         
         var bounds = bounds
         var userPoint = userPoint
@@ -36,7 +36,7 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
             userPoint = nil
         }
         
-        if lastQuery == query && !items.isEmpty && lastBounds == bounds {
+        if lastQuery == query && !items.isEmpty && lastBounds == bounds && lastFilters == filters {
             completion(.success(items))
             return
         }
@@ -44,20 +44,21 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
         lastQuery = query
         lastUserPoint = userPoint
         lastBounds = bounds
+        lastFilters = filters
         
-        fetch(by: query, in: bounds, userPoint: userPoint, offset: 0) { [weak self] result in
+        fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }
     
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
-        fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, offset: nextOffset) { [weak self] result in
+        fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
             self?.handle(result: result, appending: true, completion: completion)
         }
     }
     
-    private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.atms(query: query, in: types, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
+    private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        dataSource.atms(query: query, in: types, in: bounds, userPoint: userPoint, with: filters, offset: offset, completion: completion)
     }
 }
 

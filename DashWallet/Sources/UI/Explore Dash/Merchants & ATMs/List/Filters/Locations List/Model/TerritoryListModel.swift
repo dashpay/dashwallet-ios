@@ -19,23 +19,34 @@ import Foundation
 
 typealias Territory = String
 
-class TerritoriesListModel {
+final class TerritoriesListModel {
     var territories: [Territory] = []
     
     var territoriesDidChange: (() -> ())?
+    var territoriesDataSource: TerritoryDataSource? {
+        didSet {
+            fetchTerritories()
+        }
+    }
     
     init() {
-        ExploreDash.shared.fetchTerritoriesForMerchants(completion: { [weak self] result in
+        fetchTerritories()
+    }
+    
+    private func fetchTerritories() {
+        guard let dataSource = territoriesDataSource else { return }
+        
+        dataSource {
+            [weak self] result in
             switch result {
             case .success(let r):
                 self?.territories = r
                 DispatchQueue.main.async {
                     self?.territoriesDidChange?()
                 }
-                
             case .failure(let error):
                 break
             }
-        })
+        }
     }
 }

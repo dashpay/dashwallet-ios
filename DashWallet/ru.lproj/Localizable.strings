@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@принял ваш запрос на добавление в контакты";
 
 /* Username has sent you a contact request */
@@ -121,9 +124,6 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Разрешить доступ к Touch ID в Настройках";
 
-/* Explore Dash: Filters */
-"Allowed" = "Allowed";
-
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -153,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Авторизация недоступна";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Авто-выход";
@@ -347,6 +350,9 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Валюта по умолчанию, ссылки, о программе…";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши Dash).";
 
@@ -442,9 +448,6 @@
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
-
-/* No comment provided by engineer. */
-"Filter" = "Filter";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Показать транзакции";
@@ -740,6 +743,9 @@
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
 
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
 /* No comment provided by engineer. */
 "Not yet used" = "Еще не использован";
 
@@ -932,6 +938,9 @@
 /* No comment provided by engineer. */
 "Reset Wallet" = "Сбросить кошелек";
 
+/* Location Service Status */
+"Restricted" = "Restricted";
+
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Хранить историю взаимных транзакций";
 
@@ -1097,6 +1106,18 @@
 /* No comment provided by engineer. */
 "Sort Contacts" = "Упорядочить контакты";
 
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
+
 /* No comment provided by engineer. */
 "Specify Amount" = "Введите сумму";
 
@@ -1234,6 +1255,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
 
 /* No comment provided by engineer. */
 "Used" = "Использовано";

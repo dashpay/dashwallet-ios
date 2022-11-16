@@ -33,33 +33,104 @@ class MerchantDAO: PointOfUseDAO
         self.connection = dbConnection
     }
     
-    func items(filters: PointOfUseDAOFilters, completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
+    func items(filters: PointOfUseDAOFilters, offset: Int?, completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
         
     }
-}
-
-extension MerchantDAO {
-    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+    
+    //TODO: Refactor: Use a data struct for filters and sorting
+    func items(query: String?,
+               bounds: ExploreMapBounds?,
+               userLocation: CLLocationCoordinate2D?,
+               types: [ExplorePointOfUse.Merchant.`Type`],
+               paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
+               sortBy: PointOfUseListFilters.SortBy?,
+               territory: Territory?,
+               offset: Int,
+               completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             
-            let anchorLatitude = userPoint?.latitude
-            let anchorLongitude = userPoint?.longitude
+            let merchantTable = Table("merchant")
+            let name = ExplorePointOfUse.name
+            let typeColumn = ExplorePointOfUse.type
+            let paymentMethodColumn = ExplorePointOfUse.paymentMethod
+            let territoryColumn = ExplorePointOfUse.territory
             
-            var whereQuery = query != nil ? "WHERE name LIKE '\(query!)%'" : ""
-            whereQuery += "\(whereQuery.isEmpty ? "WHERE" : "AND") type \(onlineOnly ? "= online" : "in ('both', 'online')")"
+            var queryFilter = Expression<Bool>(value: true)
             
-            let query = """
-                SELECT *
-                FROM merchant
-                \(whereQuery)
-                GROUP BY source, merchantId
-                \(anchorLatitude != nil ? "HAVING (latitude - \(anchorLatitude!))*(latitude - \(anchorLatitude!)) + (longitude - \(anchorLongitude!))*(longitude - \(anchorLongitude!)) = MIN((latitude - \(anchorLatitude!))*(latitude - \(anchorLatitude!)) + (longitude - \(anchorLongitude!))*(longitude - \(anchorLongitude!)))" : "")
-                ORDER BY
-                    name
-                LIMIT \(pageLimit)
-                OFFSET \(offset)
-                """
+            // Add query
+            if let query = query {
+                queryFilter = queryFilter && name.like("\(query)%")
+            }
+
+            queryFilter = queryFilter && types.map({ $0.rawValue }).contains(typeColumn) // Add types
+            
+            // Add payment methods
+            if let methods = paymentMethods {
+                queryFilter = queryFilter && methods.map({ $0.rawValue }).contains(paymentMethodColumn)
+            }
+            
+            // Add payment methods or bounds
+            if let territory = territory {
+                queryFilter = queryFilter && territoryColumn.like(territory)
+            }else if let bounds = bounds {
+                var boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
+                                   Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)") &&
+                                   Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)") &&
+                                   Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
+                
+                if !types.filter({ $0 == .online || $0 == .onlineAndPhysical }).isEmpty {
+                    let onlineTypes: [ExplorePointOfUse.Merchant.`Type`] = [.online, .onlineAndPhysical]
+                    boundsFilter = boundsFilter || onlineTypes.map({ $0.rawValue }).contains(typeColumn)
+                }
+                
+                queryFilter = queryFilter && boundsFilter
+            }
+            
+            var query = merchantTable
+                .select(merchantTable[*])
+                .filter(queryFilter)
+            
+            if let anchorLatitude = userLocation?.latitude, let anchorLongitude = userLocation?.longitude {
+                
+                let exp = Expression<Bool>(literal: "(latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))")
+                
+                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId], having: exp)
+            }else{
+                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId])
+            }
+            
+            var distanceSorting = Expression<Bool>(value: true)
+            
+            if let userLocation = userLocation {
+                
+                let anchorLatitude = userLocation.latitude
+                let anchorLongitude = userLocation.longitude
+                
+                distanceSorting = Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
+            }
+            
+            if let sortBy = sortBy, sortBy == .name {
+                query = query.order(name.asc)
+            }else if userLocation != nil {
+                query = query.order([distanceSorting, name.collate(.nocase), name.asc])
+            }else{
+                var typeOrdering = Expression<Void>(literal:"")
+                if bounds == nil && types.count == 3 {
+                    typeOrdering = Expression<Void>(literal: """
+                        CASE
+                            WHEN type = 'online' THEN 1
+                            WHEN type = 'physical' THEN 3
+                            WHEN type = 'both' THEN 2
+                        END
+                        """)
+                }
+                    
+                query = query.order([typeOrdering, name.asc])
+            }
+            
+            query = query.limit(pageLimit, offset: offset)
+            
             do {
                 let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: offset)))
@@ -69,103 +140,139 @@ extension MerchantDAO {
             }
         }
     }
-    
-    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        serialQueue.async { [weak self] in
-            guard let wSelf = self else { return }
-            
-            let anchorLatitude = userPoint?.latitude// ?? bounds.center.latitude
-            let anchorLongitude = userPoint?.longitude// ?? bounds.center.longitude
-            
-            let query = """
-                SELECT *
-                FROM merchant
-                WHERE type IN ('physical', 'both')
-                    \(query != nil ? "AND name LIKE '\(query!)%'" : "")
-                    AND latitude > \(bounds.swCoordinate.latitude)
-                    AND latitude < \(bounds.neCoordinate.latitude)
-                    AND longitude < \(bounds.neCoordinate.longitude)
-                    AND longitude > \(bounds.swCoordinate.longitude)
-                GROUP BY source, merchantId
-                \(anchorLatitude != nil ? "HAVING (latitude - \(anchorLatitude!))*(latitude - \(anchorLatitude!)) + (longitude - \(anchorLongitude!))*(longitude - \(anchorLongitude!)) = MIN((latitude - \(anchorLatitude!))*(latitude - \(anchorLatitude!)) + (longitude - \(anchorLongitude!))*(longitude - \(anchorLongitude!)))" : "")
-                ORDER BY ABS(latitude-\(anchorLatitude!)) + ABS(longitude - \(anchorLongitude!)) ASC
-                LIMIT \(pageLimit)
-                OFFSET \(offset)
-            """
-            do {
-                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
-                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
-            }catch{
-                print(error)
-                completion(.failure(error))
-            }
-        }
+}
+
+extension MerchantDAO {
+    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: nil, territory: nil, offset: offset, completion: completion)
+//        serialQueue.async { [weak self] in
+//            guard let wSelf = self else { return }
+//
+//            let merchantTable = Table("merchant")
+//            let name = ExplorePointOfUse.name
+//            let paymentMethodColumn = ExplorePointOfUse.paymentMethod
+//            let type = ExplorePointOfUse.type
+//            let manufacturer = Expression<String>("manufacturer")
+//            let source = ExplorePointOfUse.source
+//            var queryFilter = Expression<Bool>(value: true)
+//
+//            if let query = query {
+//                queryFilter = queryFilter && name.like("\(query)%")
+//            }
+//
+//            if onlineOnly {
+//                queryFilter = queryFilter && type.like("online")
+//            }else{
+//                queryFilter = queryFilter && Expression<Bool>(literal: "type != 'physical'")
+//            }
+//
+//            if let methods = paymentMethods {
+//                queryFilter = queryFilter && methods.map({ $0.rawValue }).contains(paymentMethodColumn)
+//            }
+//
+//            var query = merchantTable.select(merchantTable[*])
+//                .filter(queryFilter)
+//
+//            if let anchorLatitude = userPoint?.latitude, let anchorLongitude = userPoint?.longitude {
+//
+//                let exp = Expression<Bool>(literal: "(latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))")
+//
+//                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId], having: exp)
+//            }else{
+//                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId])
+//            }
+//
+//            query = query.order(name.asc)
+//            query = query.limit(pageLimit, offset: offset)
+//
+//            do {
+//                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+//                completion(.success(PaginationResult(items: items, offset: offset)))
+//            }catch{
+//                print(error)
+//                completion(.failure(error))
+//            }
+//        }
     }
     
-    func allMerchants(by query: String?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        serialQueue.async { [weak self] in
-            guard let wSelf = self else { return }
-            
-            let whereQuery = query != nil ? "WHERE name LIKE '\(query!)%'" : ""
-            
-            let query = """
-                SELECT *
-                FROM merchant
-                \(whereQuery)
-                GROUP BY source, merchantId
-                ORDER BY
-                CASE
-                    WHEN type = 'online' THEN 1
-                    WHEN type = 'physical' THEN 3
-                    WHEN type = 'both' THEN 2
-                END,
-                name COLLATE NOCASE ASC
-                LIMIT \(pageLimit)
-                OFFSET \(offset)
-            """
-            do {
-                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
-                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
-            }catch{
-                print(error)
-                completion(.failure(error))
-            }
-        }
+    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
+        
+//        serialQueue.async { [weak self] in
+//            guard let wSelf = self else { return }
+//
+//            let merchantTable = Table("merchant")
+//            let name = ExplorePointOfUse.name
+//            let paymentMethodColumn = ExplorePointOfUse.paymentMethod
+//            let territoryColumn = ExplorePointOfUse.territory
+//
+//            var queryFilter = Expression<Bool>(value: true)
+//
+//
+//            if let query = query {
+//                queryFilter = queryFilter && name.like("\(query)%")
+//            }
+//
+//            queryFilter = queryFilter && Expression<Bool>(literal: "type != 'online'")
+//
+//            if let methods = paymentMethods {
+//                queryFilter = queryFilter && methods.map({ $0.rawValue }).contains(paymentMethodColumn)
+//            }
+//
+//            if let territory = territory {
+//                queryFilter = queryFilter && territoryColumn.like(territory)
+//            }else{
+//                queryFilter = queryFilter && Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)")
+//                queryFilter = queryFilter && Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)")
+//                queryFilter = queryFilter && Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)")
+//                queryFilter = queryFilter && Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
+//            }
+//
+//            var query = merchantTable
+//                .select(merchantTable[*])
+//                .filter(queryFilter)
+//
+//            if let anchorLatitude = userPoint?.latitude, let anchorLongitude = userPoint?.longitude {
+//
+//                let exp = Expression<Bool>(literal: "(latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))")
+//
+//                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId], having: exp)
+//            }else{
+//                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId])
+//            }
+//
+//            var distanceSorting = Expression<Bool>(value: true)
+//
+//            if let userLocation = userPoint {
+//
+//                let anchorLatitude = userLocation.latitude
+//                let anchorLongitude = userLocation.longitude
+//
+//                distanceSorting = Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
+//            }
+//
+//            if let sortBy = sortBy, sortBy == .name {
+//                query = query.order(name.asc)
+//            }else if userPoint != nil {
+//                query = query.order([distanceSorting, name.collate(.nocase), name.asc])
+//            }else{
+//                query = query.order(name.asc)
+//            }
+//
+//            query = query.limit(pageLimit, offset: offset)
+//
+//            do {
+//                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+//                completion(.success(PaginationResult(items: items, offset: offset)))
+//            }catch{
+//                print(error)
+//                completion(.failure(error))
+//            }
+//        }
     }
-    func allMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        serialQueue.async { [weak self] in
-            guard let wSelf = self else { return }
-            
-            var whereQuery = query != nil ? "WHERE name LIKE '\(query!)%'" : ""
-            whereQuery += """
-                    \(whereQuery.isEmpty ? "WHERE" : " AND") (latitude > \(bounds.swCoordinate.latitude)
-                    AND latitude < \(bounds.neCoordinate.latitude)
-                    AND longitude < \(bounds.neCoordinate.longitude)
-                    AND longitude > \(bounds.swCoordinate.longitude))
-                    OR type = "online" \(query != nil ? " AND name LIKE '\(query!)%'" : "")
-            """
-            let anchorLatitude = userPoint?.latitude// ?? bounds.center.latitude
-            let anchorLongitude = userPoint?.longitude// ?? bounds.center.longitude
-            
-            let query = """
-                SELECT *
-                FROM merchant
-                \(whereQuery)
-                GROUP BY source, merchantId
-                \(anchorLatitude != nil ? "HAVING (latitude - \(anchorLatitude!))*(latitude - \(anchorLatitude!)) + (longitude - \(anchorLongitude!))*(longitude - \(anchorLongitude!)) = MIN((latitude - \(anchorLatitude!))*(latitude - \(anchorLatitude!)) + (longitude - \(anchorLongitude!))*(longitude - \(anchorLongitude!)))" : "")
-                ORDER BY \(anchorLatitude != nil ? "ABS(latitude-\(anchorLatitude!)) + ABS(longitude - \(anchorLongitude!)) ASC," : "")
-                name COLLATE NOCASE ASC
-                LIMIT \(pageLimit)
-                OFFSET \(offset)
-            """
-            do {
-                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
-                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
-            }catch{
-                print(error)
-                completion(.failure(error))
-            }
-        }
+    
+    func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
     }
     
     func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
@@ -188,7 +295,7 @@ extension MerchantDAO {
             """
             do {
                 let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
-                completion(.success(PaginationResult(items: items, offset: 0 + pageLimit)))
+                completion(.success(PaginationResult(items: items, offset: Int.max)))
             }catch{
                 print(error)
                 completion(.failure(error))
@@ -197,13 +304,12 @@ extension MerchantDAO {
     }
     
     func territories(completion: @escaping (Swift.Result<[Territory], Error>) -> Void) {
-        
         if !cachedTerritories.isEmpty {
             completion(.success(cachedTerritories))
             return
         }
         
-        let query = "SELECT DISTINCT territory from merchant WHERE territory != ''"
+        let query = "SELECT DISTINCT territory from merchant WHERE territory != '' ORDER BY territory"
         
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }

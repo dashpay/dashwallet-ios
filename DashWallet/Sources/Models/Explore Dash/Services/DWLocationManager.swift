@@ -162,3 +162,18 @@ extension DWLocationManager: CLLocationManagerDelegate {
         }
     }
 }
+
+extension DWLocationManager {
+    var localizedStatus: String {
+        switch authorizationStatus {
+        case .notDetermined:
+            return NSLocalizedString("Not Determined", comment: "Location Service Status")
+        case .restricted:
+            return NSLocalizedString("Restricted", comment: "Location Service Status")
+        case .denied:
+            return NSLocalizedString("Denied", comment: "Location Service Status")
+        default:
+            return NSLocalizedString("Authorized", comment: "Location Service Status")
+        }
+    }
+}

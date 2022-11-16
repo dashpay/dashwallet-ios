@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ 님이 당신의 연락처 요청을 수락하였습니다";
 
 /* Username has sent you a contact request */
@@ -121,9 +124,6 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "설정에서 터치 ID 접근을 허용";
 
-/* Explore Dash: Filters */
-"Allowed" = "Allowed";
-
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -153,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "인증할 수 없습니다";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "자동 로그아웃";
@@ -347,6 +350,9 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "통화 기본값, 단축키, 관련 정보...";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
 
@@ -442,9 +448,6 @@
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
-
-/* No comment provided by engineer. */
-"Filter" = "Filter";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "거래 필터링 하기";
@@ -740,6 +743,9 @@
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
 
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
 /* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
 
@@ -932,6 +938,9 @@
 /* No comment provided by engineer. */
 "Reset Wallet" = "지갑 리셋하기";
 
+/* Location Service Status */
+"Restricted" = "Restricted";
+
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";
 
@@ -1097,6 +1106,18 @@
 /* No comment provided by engineer. */
 "Sort Contacts" = "연락처 분류";
 
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
+
 /* No comment provided by engineer. */
 "Specify Amount" = "금액 특정하기";
 
@@ -1234,6 +1255,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "업홀드";
+
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
 
 /* No comment provided by engineer. */
 "Used" = "사용됨";

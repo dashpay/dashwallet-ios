@@ -21,6 +21,7 @@ import CoreLocation
 class PointOfUseDataProvider {
     var items: [ExplorePointOfUse] = []
     var currentPage: PaginationResult<ExplorePointOfUse>?
+    var hasFilters: Bool = false
     
     var hasNextPage: Bool {
         //TODO: get total amount first from data base 
@@ -45,12 +46,13 @@ class PointOfUseDataProvider {
     internal var lastQuery: String?
     internal var lastUserPoint: CLLocationCoordinate2D?
     internal var lastBounds: ExploreMapBounds?
+    internal var lastFilters: PointOfUseListFilters?
     
     init() {
         self.dataSource = ExploreDash.shared
     }
     
-    func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+    func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         //NOTE: must be overriden
     }
     
@@ -92,6 +94,8 @@ struct PointOfUseListSegment: Hashable {
     var showLocationServiceSettings: Bool
     var showReversedLocation: Bool
     var dataProvider: PointOfUseDataProvider
+    var filterGroups: [PointOfUseListFiltersGroup]
+    var territoriesDataSource: TerritoryDataSource?
 }
 
 final class PointOfUseListModel {
@@ -106,6 +110,7 @@ final class PointOfUseListModel {
     var segmentTitles: [String] { return segments.map { $0.title } }
     
     internal var dataProviders: [PointOfUseListSegment: PointOfUseDataProvider] = [:]
+    var filters: PointOfUseListFilters?
     
     var currentSegment: PointOfUseListSegment {
         didSet {
@@ -115,22 +120,48 @@ final class PointOfUseListModel {
         }
     }
     
-    var currentMapBounds: ExploreMapBounds? {
-        didSet {
-            if currentSegment.showMap && DWLocationManager.shared.isAuthorized {
-                _fetch(query: lastQuery)
-            }
-        }
-    }
+    var currentMapBounds: ExploreMapBounds?
+//    {
+//        didSet {
+//            if showMap && DWLocationManager.shared.isAuthorized {
+//                _fetch(query: lastQuery)
+//            }
+//        }
+//    }
     
     var userCoordinates: CLLocationCoordinate2D? { return DWLocationManager.shared.currentLocation?.coordinate }
     
     var hasNextPage: Bool {
-        return currentDataProvider?.hasNextPage ?? false
+        return !isFetching && (currentDataProvider?.hasNextPage ?? false)
     }
     
     var currentDataProvider: PointOfUseDataProvider? {
         return dataProviders[currentSegment]
+    }
+    
+    var hasFilters: Bool {
+        return filters != nil
+    }
+    
+    var appliedFiltersLocalizedString: String? {
+        return filters?.appliedFiltersLocalizedString
+    }
+    
+    var showMap: Bool {
+        return filters?.territory == nil && currentSegment.showMap
+    }
+    
+    var showEmptyResults: Bool {
+        return !isFetching && filters != nil && items.isEmpty
+    }
+    
+    //In meters
+    var currentRadius: Double {
+        filters?.currentRadius ?? 32000
+    }
+    
+    var currentRadiusMiles: Double {
+        Double(filters?.radius?.rawValue ?? 20)
     }
     
     var territories: [Territory] = []
@@ -143,7 +174,16 @@ final class PointOfUseListModel {
        
         self.currentSegment = segments.first!
         self.segmentDidUpdate()
-        
+    }
+    
+    func apply(filters: PointOfUseListFilters?) {
+        self.filters = filters
+        refreshItems()
+    }
+    
+    func resetFilters() {
+        self.filters = nil
+        refreshItems()
         
     }
     
@@ -153,6 +193,10 @@ final class PointOfUseListModel {
 }
 
 extension PointOfUseListModel {
+    public func refreshItems() {
+        _fetch(query: lastQuery)
+    }
+    
     public func fetch(query: String?) {
         lastQuery = query
         _fetch(query: query)
@@ -160,18 +204,20 @@ extension PointOfUseListModel {
     
     internal func _fetch(query: String?) {
         let segment = currentSegment
-        
-        currentDataProvider?.items(query: query, in: currentMapBounds, userPoint: userCoordinates) { [weak self] result in
+        isFetching = true
+        currentDataProvider?.items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
             guard self?.currentSegment == segment else { return }
             
             switch result {
             case .success(let items):
-                self?.items = items
                 DispatchQueue.main.async {
+                    self?.items = items
+                    self?.isFetching = false
                     self?.itemsDidChange?()
                 }
                 break
             case .failure(let error):
+                self?.isFetching = false
                 break //TODO: handler failure
             }
         }

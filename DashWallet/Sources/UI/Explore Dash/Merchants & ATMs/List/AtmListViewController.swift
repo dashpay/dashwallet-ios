@@ -28,7 +28,7 @@ enum AtmListSegmnets: Int {
     }
     
     var pointOfUseListSegment: PointOfUseListSegment {
-        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider)
+        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories)
     }
 }
 
@@ -58,15 +58,23 @@ extension AtmListSegmnets {
             return BuyAndSellAtmsDataProvider()
         }
     }
+    
+    var filterGroups: [PointOfUseListFiltersGroup] {
+        return [.sortByName, .territory, .radius, .locationService]
+    }
+    
+    var territories: TerritoryDataSource {
+        return ExploreDash.shared.fetchTerritoriesForAtms
+    }
 }
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
     override func subtitleForFilterCell() -> String? {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
-                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
             }else{
-                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
             }
         }else{
             return super.subtitleForFilterCell()

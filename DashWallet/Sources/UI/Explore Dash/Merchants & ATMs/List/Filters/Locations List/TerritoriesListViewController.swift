@@ -33,6 +33,12 @@ class TerritoriesListViewController: UITableViewController {
     
     private var model: TerritoriesListModel!
    
+    public var territoriesDataSource: TerritoryDataSource? {
+        didSet {
+            model?.territoriesDataSource = territoriesDataSource
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -49,6 +55,7 @@ class TerritoriesListViewController: UITableViewController {
 extension TerritoriesListViewController {
     private func configureModel() {
         model = TerritoriesListModel()
+        model.territoriesDataSource = territoriesDataSource
         model.territoriesDidChange = { [weak self] in
             self?.tableView.reloadData()
         }

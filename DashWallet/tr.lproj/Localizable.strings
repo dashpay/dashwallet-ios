@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ talebinizi kabul etti.";
 
 /* Username has sent you a contact request */
@@ -121,9 +124,6 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Ayarlardan Dokunmatik Kimliğe erişim izni ver";
 
-/* Explore Dash: Filters */
-"Allowed" = "Allowed";
-
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -153,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Kimlik doğrulaması yapılamıyor";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Otomatik Oturum Kapatma";
@@ -347,6 +350,9 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Varsayılan para birimi, kısayollar, hakkında…";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve Dashlerinizi çalabilir).";
 
@@ -442,9 +448,6 @@
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
-
-/* No comment provided by engineer. */
-"Filter" = "Filter";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "İşlemleri Filtrele";
@@ -740,6 +743,9 @@
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
 
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
 /* No comment provided by engineer. */
 "Not yet used" = "Henüz kullanılmadı";
 
@@ -932,6 +938,9 @@
 /* No comment provided by engineer. */
 "Reset Wallet" = "Cüzdanı Sıfırla";
 
+/* Location Service Status */
+"Restricted" = "Restricted";
+
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Karşılıklı İşlem Geçmişini Saklayın";
 
@@ -1097,6 +1106,18 @@
 /* No comment provided by engineer. */
 "Sort Contacts" = "Kişileri Sırala";
 
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
+
 /* No comment provided by engineer. */
 "Specify Amount" = "Tutarı Belirleyin";
 
@@ -1234,6 +1255,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
 
 /* No comment provided by engineer. */
 "Used" = "Kullanıldı";

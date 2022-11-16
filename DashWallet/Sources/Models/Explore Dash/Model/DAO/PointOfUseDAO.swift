@@ -24,21 +24,20 @@ struct PaginationResult<Item> {
     var offset: Int
 }
 
-@dynamicMemberLookup
-struct PointOfUseDAOFilters {
-    private var storage: [String: Any?] = [:]
-    
-    init(filters: [String: Any?]) {
-        self.storage = filters
-    }
-    
-    subscript(dynamicMember string: String) -> Any? {
-        return storage[string] as? Any
-    }
+enum PointOfUseDAOFilterKey: Int {
+    case radius
+    case query
+    case userLocation
+    case bounds
+    case types
+    case territory
+    case sortDirection
 }
+
+typealias PointOfUseDAOFilters = [PointOfUseDAOFilterKey: Any?]
 
 protocol PointOfUseDAO {
     associatedtype Item
     
-    func items(filters: PointOfUseDAOFilters, completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void)
+    func items(filters: PointOfUseDAOFilters, offset: Int?, completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void)
 }

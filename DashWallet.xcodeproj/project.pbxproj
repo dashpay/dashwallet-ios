@@ -451,6 +451,8 @@
 		471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */; };
 		471A2608289ACDA00056B7B2 /* AddressUserInfoDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */; };
 		471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2609289ACDF70056B7B2 /* Taxes.swift */; };
+		472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */; };
+		47603B2B291B98D200BFDBC8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 47603B2A291B98D100BFDBC8 /* GoogleService-Info.plist */; };
 		47838B7D290133610003E8AB /* PointOfUseListFiltersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7C290133610003E8AB /* PointOfUseListFiltersViewController.swift */; };
 		47838B7F290160860003E8AB /* ExploreDash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47838B7E290160860003E8AB /* ExploreDash.storyboard */; };
 		47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B81290271170003E8AB /* PointOfUseListFiltersModel.swift */; };
@@ -491,7 +493,6 @@
 		47AE8C0328C1F0C600490F5E /* PointOfUseListSegmentedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0228C1F0C600490F5E /* PointOfUseListSegmentedCell.swift */; };
 		47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0428C1F74A00490F5E /* PointOfUseListFiltersCell.swift */; };
 		47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0628C2274200490F5E /* PointOfUseListSearchCell.swift */; };
-		47AE8C0828C2304C00490F5E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAE28BFAFB600490F5E /* GoogleService-Info.plist */; };
 		47AE8C0C28C53E4A00490F5E /* MerchantInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0B28C53E4A00490F5E /* MerchantInfoViewController.swift */; };
 		47AE8C0E28C540C100490F5E /* GiftCardInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0D28C540C100490F5E /* GiftCardInfoViewController.swift */; };
 		47AE8C1128C5430300490F5E /* PointOfUseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1028C5430300490F5E /* PointOfUseInfoViewController.swift */; };
@@ -1531,6 +1532,8 @@
 		471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfo.swift; sourceTree = "<group>"; };
 		471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfoDAO.swift; sourceTree = "<group>"; };
 		471A2609289ACDF70056B7B2 /* Taxes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxes.swift; sourceTree = "<group>"; };
+		472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListEmptyResultsView.swift; sourceTree = "<group>"; };
+		47603B2A291B98D100BFDBC8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		47838B7C290133610003E8AB /* PointOfUseListFiltersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListFiltersViewController.swift; sourceTree = "<group>"; };
 		47838B7E290160860003E8AB /* ExploreDash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ExploreDash.storyboard; sourceTree = "<group>"; };
@@ -1550,7 +1553,6 @@
 		47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreDatabaseSyncManager.swift; sourceTree = "<group>"; };
 		47AE8BA928BFAE5800490F5E /* ExploreDatabaseConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreDatabaseConnection.swift; sourceTree = "<group>"; };
 		47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWLocationManager.swift; sourceTree = "<group>"; };
-		47AE8BAE28BFAFB600490F5E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		47AE8BAF28BFF28400490F5E /* explore.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = explore.db; sourceTree = "<group>"; };
 		47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+DashWallet.swift"; sourceTree = "<group>"; };
 		47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
@@ -4212,7 +4214,6 @@
 		47AE8BB428C1305E00490F5E /* Merchants & ATMs */ = {
 			isa = PBXGroup;
 			children = (
-				47838B7B290133440003E8AB /* Filters */,
 				47AE8BB528C1305E00490F5E /* Details */,
 				47AE8BBE28C1305E00490F5E /* Info */,
 				47AE8BC528C1305E00490F5E /* List */,
@@ -4242,6 +4243,7 @@
 		47AE8BC528C1305E00490F5E /* List */ = {
 			isa = PBXGroup;
 			children = (
+				47838B7B290133440003E8AB /* Filters */,
 				47AE8BD428C1305E00490F5E /* Model */,
 				47AE8BD828C1305E00490F5E /* Views */,
 				47AE8BC628C1305E00490F5E /* Cells */,
@@ -4287,6 +4289,7 @@
 				47AE8BDC28C1305E00490F5E /* ExploreMapView.swift */,
 				47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */,
 				47C6E6E6291A90B2003FEDF2 /* ListHandlerView.swift */,
+				472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4437,8 +4440,8 @@
 		75D5F3C8191EC270004AB296 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				47603B2A291B98D100BFDBC8 /* GoogleService-Info.plist */,
 				47AE8BAF28BFF28400490F5E /* explore.db */,
-				47AE8BAE28BFAFB600490F5E /* GoogleService-Info.plist */,
 				47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
@@ -4843,7 +4846,6 @@
 				2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */,
 				2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
-				47AE8C0828C2304C00490F5E /* GoogleService-Info.plist in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
@@ -4875,6 +4877,7 @@
 				2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */,
 				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
+				47603B2B291B98D200BFDBC8 /* GoogleService-Info.plist in Resources */,
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
 				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
 				47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */,
@@ -5531,6 +5534,7 @@
 				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
 				2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */,
+				472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */,

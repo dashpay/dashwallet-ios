@@ -26,7 +26,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         super.init()
     }
     
-    override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+    override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         
         var bounds = bounds
         var userPoint = userPoint
