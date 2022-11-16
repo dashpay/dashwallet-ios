@@ -26,7 +26,6 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
                 self?.handle(result: result, completion: completion)
             }
         }else if let bounds = bounds {
-            //super.items(query: query, in: bounds, userPoint: userPoint, with: filters, completion: completion)
             fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
                 self?.handle(result: result, completion: completion)
             }
@@ -55,8 +54,6 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
 }
 
 class NearbyMerchantsDataProvider: PointOfUseDataProvider {
-    //internal var lastBounds: ExploreMapBounds!
-    
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         
         guard let bounds = bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
