@@ -18,7 +18,7 @@ struct CoinbaseTransactionsRequest: Codable {
 }
 
 extension CoinbaseTransactionsRequest {
-    enum TransactionsType: String {
+    enum TransactionsType: String, Codable {
         case send, transfer, request
     }
 }
