@@ -39,7 +39,12 @@ protocol ConverterViewDataSource: AnyObject {
     var walletBalance: String { get }
 }
 
+protocol ConverterViewDelegate: AnyObject {
+    func didChangeDirection(_ direction: ConverterViewDirection)
+}
+
 class ConverterView: UIView {
+    public weak var delegate: ConverterViewDelegate?
     public weak var dataSource: ConverterViewDataSource? {
         didSet {
             updateView()

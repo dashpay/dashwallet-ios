@@ -32,21 +32,13 @@ final class TransferAmountViewController: SendAmountViewController {
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
     
-    
     override var actionButtonTitle: String? {
         return NSLocalizedString("Transfer", comment: "Coinbase")
     }
     
     override func actionButtonAction(sender: UIView) {
-        paymentController = PaymentController()
-        paymentController.delegate = self
-        paymentController.presentationContextProvider = self
-        
         showActivityIndicator()
-        DWPaymentInputBuilder().payFirst(from: [transferModel.address], source: .plainAddress) { [weak self] input in
-            input.request?.amount = UInt64(self?.model.amount.plainAmount ?? 0)
-            self?.paymentController.performPayment(with: input)
-        }
+        transferModel.initializeTransfer()
     }
     
     override func initializeModel() {
@@ -65,6 +57,7 @@ final class TransferAmountViewController: SendAmountViewController {
         amountView.amountInputStyle = .basic
         
         self.converterView = ConverterView(direction: .toCoinbase)
+        converterView.delegate = self
         converterView.dataSource = model
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
@@ -88,6 +81,21 @@ final class TransferAmountViewController: SendAmountViewController {
     }
 }
 
+extension TransferAmountViewController: ConverterViewDelegate {
+    func didChangeDirection(_ direction: ConverterViewDirection) {
+        transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
+    }
+}
+
+extension TransferAmountViewController: TransferAmountModelDelegate {
+    func initiatePayment(with input: DWPaymentInput) {
+        paymentController = PaymentController()
+        paymentController.delegate = self
+        paymentController.presentationContextProvider = self
+        paymentController.performPayment(with: input)
+    }
+}
+
 extension BaseAmountModel: ConverterViewDataSource {
     var coinbaseBalance: String {
         return Coinbase.shared.lastKnownBalance ?? NSLocalizedString("Unknown Balance", comment: "Coinbase")
@@ -103,8 +111,6 @@ extension BaseAmountModel: ConverterViewDataSource {
             return "\(dashNumber)"
         }
     }
-    
-    
 }
 
 extension TransferAmountViewController {

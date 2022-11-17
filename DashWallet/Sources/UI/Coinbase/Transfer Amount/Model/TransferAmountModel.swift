@@ -18,18 +18,54 @@
 import Foundation
 import Combine
 
+protocol TransferAmountModelDelegate: AnyObject {
+    func initiatePayment(with input: DWPaymentInput)
+}
+
 final class TransferAmountModel: SendAmountModel {
+    enum TransferDirection {
+        case toWallet
+        case toCoinbase
+    }
+    
+    public weak var delegate: TransferAmountModelDelegate?
     
     private var cancellables: Set<AnyCancellable> = []
+    
     public var address: String!
+    public var direction: TransferDirection = .toCoinbase
     
     override init() {
         super.init()
         
         obtainNewAddress()
     }
+   
+    func initializeTransfer() {
+        if direction == .toCoinbase {
+            transferToCoinbase()
+        }else{
+            transferToWallet()
+        }
+    }
     
-    func obtainNewAddress() {
+    private func transferToCoinbase() {
+        guard let address = self.address else { return }
+        
+        //TODO: validate
+        let amount = UInt64(amount.plainAmount)
+        guard let paymentInput = DWPaymentInputBuilder().pay(toAddress: address, amount: amount) else {
+            return
+        }
+        
+        delegate?.initiatePayment(with: paymentInput)
+    }
+    
+    private func transferToWallet() {
+        //Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: <#T##String#>, coinAmountInDash: <#T##String#>, dashWalletAddress: <#T##String#>)
+    }
+    
+    private func obtainNewAddress() {
         Coinbase.shared.createNewCoinbaseDashAddress()
             .receive(on: RunLoop.main)
             .sink { completion in
