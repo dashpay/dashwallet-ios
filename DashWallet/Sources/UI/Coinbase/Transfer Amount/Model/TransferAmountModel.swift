@@ -38,6 +38,7 @@ final class TransferAmountModel: SendAmountModel {
     override init() {
         super.init()
         
+        //TODO: initialize the process of obtaining new address just before we want to send a transaction
         obtainNewAddress()
     }
    
@@ -62,7 +63,16 @@ final class TransferAmountModel: SendAmountModel {
     }
     
     private func transferToWallet() {
-        //Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: <#T##String#>, coinAmountInDash: <#T##String#>, dashWalletAddress: <#T##String#>)
+        guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
+                
+        Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: nil, coinAmountInDash: amount.amountInternalRepresentation, dashWalletAddress: address)
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                print(completion)
+            } receiveValue: { tx in
+                print(tx)
+            }
+            .store(in: &cancellables)
     }
     
     private func obtainNewAddress() {
