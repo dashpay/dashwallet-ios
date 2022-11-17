@@ -33,13 +33,12 @@ class SendAmountViewController: BaseAmountViewController {
         paymentProcessor.delegate = self
     }
 
-    override func configureModel() {
+    override func initializeModel() {
         model = SendAmountModel()
-        model.delegate = self
     }
-    
+  
     override func actionButtonAction(sender: UIView) {
-        let pc = PaymentController()
+        
     }
 
     override func maxButtonAction() {

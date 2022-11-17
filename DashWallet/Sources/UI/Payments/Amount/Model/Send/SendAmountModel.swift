@@ -51,7 +51,7 @@ class SendAmountModel: BaseAmountModel {
         if allAvailableFunds > 0 {
             mainAmount = AmountObject(plainAmount: Int64(allAvailableFunds), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
             supplementaryAmount = nil
-            delegate?.amountDidChange()
+            amountChangeHandler?(amount)
         }
     }
 }

@@ -49,9 +49,14 @@ final class TransferAmountViewController: SendAmountViewController {
         }
     }
     
-    override func configureModel() {
+    override func initializeModel() {
         model = TransferAmountModel()
-        model.delegate = self
+    }
+    
+    override func configureModel() {
+        super.configureModel()
+        
+        transferModel.delegate = self
     }
     
     override func configureHierarchy() {

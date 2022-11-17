@@ -32,9 +32,18 @@ class BaseAmountViewController: ActionButtonViewController {
         
     }
     
-    internal func configureModel() {
+    internal func initializeModel() {
         model = BaseAmountModel()
-        model.delegate = self
+    }
+    
+    internal func configureModel() {
+        model.amountChangeHandler = { [weak self] amount in
+            self?.amountDidChange()
+        }
+    }
+    
+    internal func amountDidChange() {
+        amountView.reloadData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -46,18 +55,13 @@ class BaseAmountViewController: ActionButtonViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        initializeModel()
         configureModel()
         configureHierarchy()
     }
 }
 
 extension BaseAmountViewController {
-    
-}
-
-extension BaseAmountViewController {
-    
-        
     @objc internal func configureHierarchy() {
         self.contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -106,11 +110,6 @@ extension BaseAmountViewController {
     }
 }
 
-extension BaseAmountViewController: BaseAmountModelDelegate {
-    @objc func amountDidChange() {
-        amountView.reloadData()
-    }
-}
 //extension BaseAmountViewController: AmountViewDataSource {
 //    var dashAttributedString: NSAttributedString {
 //        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
