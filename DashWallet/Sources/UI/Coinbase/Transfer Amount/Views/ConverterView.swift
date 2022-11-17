@@ -78,6 +78,7 @@ class ConverterView: UIView {
     @objc func swapAction() {
         direction = direction.next
         updateView()
+        delegate?.didChangeDirection(direction)
         
         UIView.animate(withDuration: 0.2) {
             self.swapImageView.transform = .init(rotationAngle: 0.9999 * CGFloat.pi)
