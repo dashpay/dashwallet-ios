@@ -79,9 +79,8 @@ class MerchantDAO: PointOfUseDAO
                                    Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)") &&
                                    Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
                 
-                if !types.filter({ $0 == .online || $0 == .onlineAndPhysical }).isEmpty {
-                    let onlineTypes: [ExplorePointOfUse.Merchant.`Type`] = [.online, .onlineAndPhysical]
-                    boundsFilter = boundsFilter || onlineTypes.map({ $0.rawValue }).contains(typeColumn)
+                if types.contains(.online) {
+                    boundsFilter = boundsFilter || Expression<Bool>(literal: "type = online")
                 }
                 
                 queryFilter = queryFilter && boundsFilter
@@ -148,7 +147,7 @@ extension MerchantDAO {
     }
     
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
     }
     
     func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
