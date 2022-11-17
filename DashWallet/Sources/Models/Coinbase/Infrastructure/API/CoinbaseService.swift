@@ -22,7 +22,7 @@ protocol CoinbaseService {
 
     func commitCoinbaseBuyOrder(accountId: String, orderID: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
     
-    func sendCoinsToWallet(accountId: String, api2FATokenVersion: String, request: CoinbaseTransactionsRequest) -> AnyPublisher<BaseDataResponse<CoinbaseTransaction>, Error>
+    func sendCoinsToWallet(accountId: String, verificationCode: String?, request: CoinbaseTransactionsRequest) -> AnyPublisher<BaseDataResponse<CoinbaseTransaction>, Error>
     
     func getBaseIdForUSDModel(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
     
@@ -85,8 +85,8 @@ class CoinbaseServiceImpl: CoinbaseService {
         restClient.post(APIEndpoint.commitBuyOrder(accountId, orderID), using: nil as String?, using: nil)
     }
 
-    func sendCoinsToWallet(accountId: String, api2FATokenVersion: String, request: CoinbaseTransactionsRequest) -> AnyPublisher<BaseDataResponse<CoinbaseTransaction>, Error> {
-        restClient.post(APIEndpoint.sendCoinsToWallet(accountId), using: request, using: api2FATokenVersion)
+    func sendCoinsToWallet(accountId: String, verificationCode: String?, request: CoinbaseTransactionsRequest) -> AnyPublisher<BaseDataResponse<CoinbaseTransaction>, Error> {
+        restClient.post(APIEndpoint.sendCoinsToWallet(accountId), using: request, using: verificationCode)
     }
 
     func getBaseIdForUSDModel(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {

@@ -148,13 +148,12 @@ extension Coinbase {
         return getExchangeRate.invoke()
     }
 
-    public func tansferFromCoinbaseToDashWallet(api2FATokenVersion: String,
-                                                request: CoinbaseTransactionsRequest,
+    public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                 coinAmountInDash: String,
                                                 dashWalletAddress: String) -> AnyPublisher<CoinbaseTransaction?, Error> {
         if let coinbaseUserAccountId = NetworkRequest.coinbaseUserAccountId {
             return sendDashFromCoinbaseToDashWallet.invoke(accountId: coinbaseUserAccountId,
-                                                           api2FATokenVersion: api2FATokenVersion,
+                                                           verificationCode: verificationCode,
                                                            request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsType.send,
                                                                                                 to: dashWalletAddress,
                                                                                                 amount: coinAmountInDash,

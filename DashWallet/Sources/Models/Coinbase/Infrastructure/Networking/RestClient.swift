@@ -15,7 +15,7 @@ protocol RestClient {
     func get<T: Decodable, E: Endpoint>(_ endpoint: E) -> AnyPublisher<T, Error>
     
     /// Creates some resource by sending a JSON body and returning empty response
-    func post<T: Decodable, S: Encodable, E: Endpoint>(_ endpoint: E, using body: S?,using api2FATokenVersion:String?)
+    func post<T: Decodable, S: Encodable, E: Endpoint>(_ endpoint: E, using body: S?, using verificationCode:String?)
     -> AnyPublisher<T, Error>
     
     /// Creates some resource by sending a JSON body and returning empty response
@@ -38,7 +38,7 @@ class RestClientImpl: RestClient {
             .eraseToAnyPublisher()
     }
     
-    func post<T, S, E>(_ endpoint: E, using body: S?,using api2FATokenVersion:String?=nil as String?)
+    func post<T, S, E>(_ endpoint: E, using body: S?, using verificationCode: String? = nil)
     -> AnyPublisher<T, Error> where T: Decodable, S: Encodable, E: Endpoint
     {
         startRequest(for: endpoint, method: "POST", jsonBody: body)
@@ -57,13 +57,13 @@ class RestClientImpl: RestClient {
                                                          method: String,
                                                          jsonBody: T? = nil,
                                                         queryItems: [URLQueryItem]? = nil,
-                                                         api2FATokenVersion:String?=nil)
+                                                         verificationCode:String?=nil)
     -> AnyPublisher<InterimRestResponse, Error> {
         var request: URLRequest
         
         do {
             request = try buildRequest(endpoint: endpoint, method: method, jsonBody: jsonBody,
-                                       queryItems:queryItems,api2FATokenVersion: api2FATokenVersion)
+                                       queryItems:queryItems, verificationCode: verificationCode)
         } catch {
             print("Failed to create request: \(String(describing: error))")
             return Fail(error: error).eraseToAnyPublisher()
@@ -92,7 +92,7 @@ class RestClientImpl: RestClient {
                                                          method: String,
                                                          jsonBody: T?,
                                                          queryItems: [URLQueryItem]? = nil,
-                                                         api2FATokenVersion:String?=nil) throws -> URLRequest {
+                                                         verificationCode: String? = nil) throws -> URLRequest {
         var request = URLRequest(url: endpoint.url, timeoutInterval: 10)
         
         if let queryItems = queryItems {
@@ -101,16 +101,17 @@ class RestClientImpl: RestClient {
             
             request = URLRequest(url: urlComponents?.url ?? endpoint.url  , timeoutInterval: 10)
         }
-      
         
         request.httpMethod = method
+        
         if let apiAccessToken = NetworkRequest.accessToken{
-         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-         request.setValue("Bearer \(apiAccessToken)", forHTTPHeaderField: "Authorization")
-         request.setValue("2021-09-07", forHTTPHeaderField: "CB-VERSION")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(apiAccessToken)", forHTTPHeaderField: "Authorization")
+            request.setValue("2021-09-07", forHTTPHeaderField: "CB-VERSION")
         }
-        if let api2FAToken = api2FATokenVersion  {
-            request.setValue(api2FAToken, forHTTPHeaderField: "CB-2FA-TOKEN")
+        
+        if let verificationCode = verificationCode  {
+            request.setValue(verificationCode, forHTTPHeaderField: "CB-2FA-TOKEN")
         }
        
         // if we got some data, we encode as JSON and put it in the request
