@@ -102,6 +102,7 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         vc.verifyHandler = { [weak self] code in
             self?.transferModel.continueTransferFromCoinbase(with: code)
         }
+        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
         
         codeConfirmationController = vc

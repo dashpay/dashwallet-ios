@@ -81,10 +81,15 @@ final class TransferAmountModel: SendAmountModel {
                     break
                 case .failure(let error):
                     guard let error = error as? RestClientError else { return }
-                    self?.delegate?.initiateTwoFactorAuth()
+                    
+                    if verificationCode == nil {
+                        self?.delegate?.initiateTwoFactorAuth()
+                    }else{
+                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: error)
+                    }
                 }
-            } receiveValue: { tx in
-                print(tx)
+            } receiveValue: { [weak self] tx in
+                self?.delegate?.transferFromCoinbaseToWalletDidSucceed()
             }
             .store(in: &cancellables)
     }

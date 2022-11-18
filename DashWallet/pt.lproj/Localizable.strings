@@ -1,9 +1,3 @@
-/* Coinbase Two Factor Auth */
-" Need help? " = " Need help? ";
-
-/* Coinbase Two Factor Auth */
-" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
-
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ aceitou sua solicitação de contato";
 
@@ -728,6 +722,9 @@
 /* Nearby */
 "Nearby" = "Nearby";
 
+/* Coinbase Two Factor Auth */
+"Need help? " = "Need help? ";
+
 /* No comment provided by engineer. */
 "Network" = "Rede";
 
@@ -1162,6 +1159,9 @@
 
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
+
+/* Coinbase Two Factor Auth */
+"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Não há novas notificações";
