@@ -27,6 +27,7 @@ class BaseAmountViewController: ActionButtonViewController {
     private var numberKeyboard: NumberKeyboard!
     
     internal var model: BaseAmountModel!
+    internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
     
     func maxButtonAction() {
         
@@ -68,7 +69,7 @@ extension BaseAmountViewController {
         contentView.backgroundColor = .dw_secondaryBackground()
         setupContentView(contentView)
         
-        self.amountView = AmountView(frame: .zero)
+        self.amountView = AmountView(style: amountInputStyle)
         amountView.maxButtonAction = { [weak self] in
             self?.maxButtonAction()
         }

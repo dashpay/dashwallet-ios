@@ -32,6 +32,8 @@ final class TransferAmountViewController: SendAmountViewController {
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
     
+    override var amountInputStyle: AmountInputControl.Style { .basic }
+    
     override var actionButtonTitle: String? {
         return NSLocalizedString("Transfer", comment: "Coinbase")
     }
@@ -53,8 +55,6 @@ final class TransferAmountViewController: SendAmountViewController {
     
     override func configureHierarchy() {
         super.configureHierarchy()
-        
-        amountView.amountInputStyle = .basic
         
         self.converterView = ConverterView(direction: .toCoinbase)
         converterView.delegate = self

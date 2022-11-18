@@ -46,11 +46,8 @@ class AmountView: UIView {
     }
     
     public var amountInputStyle: AmountInputControl.Style {
-        set {
-            amountInputControl.style = newValue
-        }
-        get {
-            return amountInputControl.style
+        didSet {
+            amountInputControl?.style = amountInputStyle
         }
     }
     
@@ -83,13 +80,25 @@ class AmountView: UIView {
         return amountInputControl.becomeFirstResponder()
     }
     
+    init(style: AmountInputControl.Style) {
+        amountInputStyle = style
+        
+        super.init(frame: .zero)
+        
+        configureHierarchy()
+    }
+    
     override init(frame: CGRect) {
+        amountInputStyle = .oppositeAmount
+        
         super.init(frame: frame)
         
         configureHierarchy()
     }
     
     required init?(coder: NSCoder) {
+        amountInputStyle = .oppositeAmount
+        
         super.init(coder: coder)
     }
     
