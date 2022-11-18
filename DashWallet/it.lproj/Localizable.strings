@@ -581,6 +581,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
+/* Coinbase */
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Pare che tu stia tentando di rigenerare il tuo portafoglio utilizzando una frase di recupero con 12 parole, tuttavia ne hai inserite solamente 10, vorresti recuperare automaticamente le parole mancanti? Ciò richiederebbe all'incirca un'ora. Ti consigliamo di tenere in carica il tuo dispositivo.";
 
@@ -1234,6 +1237,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Coinbase */
+"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "Riprova";
