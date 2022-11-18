@@ -22,16 +22,21 @@ final class GettingStartedViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     
     @IBOutlet var logoWrapper: UIView!
-    @IBOutlet var newAccountButton: UITableViewCell!
-    @IBOutlet var linkAccountButton: UITableViewCell!
+    @IBOutlet var newAccountButton: UIControl!
+    @IBOutlet var newAccountTitle: UILabel!
+    @IBOutlet var newAccountIcon: UIImageView!
+    @IBOutlet var balanceHint: UIView!
+    @IBOutlet var passphraseHint: UIView!
+    @IBOutlet var linkAccountButton: UIControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
+        configureObservers()
     }
     
     @IBAction func newAccountAction() {
-        print("CrowdNode: newAccountAction")
+        self.navigationController?.pushViewController(NewAccountViewController.controller(), animated: true)
     }
     
     @IBAction func linkAccountAction() {
@@ -48,19 +53,36 @@ final class GettingStartedViewController: UIViewController {
 extension GettingStartedViewController {
     private func configureHierarchy() {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
-        
-        newAccountButton.selectedBackgroundView = createSelectedBackgroundView()
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
-
-        linkAccountButton.selectedBackgroundView = createSelectedBackgroundView()
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
+        
+        let options = DWGlobalOptions.sharedInstance()
+        let walletNeedsBackup = options.walletNeedsBackup
+        self.refreshCreateAccountButton(walletNeedsBackup, viewModel.hasEnoughBalance)
+        self.passphraseHint.isHidden = !walletNeedsBackup
+        let passhraseHintHeight = CGFloat(walletNeedsBackup ? 45 : 0)
+        self.passphraseHint.heightAnchor.constraint(equalToConstant: passhraseHintHeight).isActive = true
     }
     
-    private func createSelectedBackgroundView() -> UIView {
-        let backgroundView = UIView()
-        backgroundView.backgroundColor = .systemGray4
-        backgroundView.layer.cornerRadius = 10
-        
-        return backgroundView
+    private func configureObservers() {
+        viewModel.$hasEnoughBalance
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] enoughBalance in
+                guard let wSelf = self else { return }
+                
+                let needsBackup = DWGlobalOptions.sharedInstance().walletNeedsBackup
+                wSelf.refreshCreateAccountButton(needsBackup, enoughBalance)
+                wSelf.balanceHint.isHidden = enoughBalance
+                let balanceHintHeight = CGFloat(enoughBalance ? 0 : 45)
+                wSelf.balanceHint.heightAnchor.constraint(equalToConstant: balanceHintHeight).isActive = true
+            })
+            .store(in: &cancellableBag)
+    }
+    
+    private func refreshCreateAccountButton(_ needsBackup: Bool, _ enoughBalance: Bool) {
+        let isEnabled = !needsBackup && enoughBalance
+        self.newAccountButton.isEnabled = isEnabled
+        self.newAccountTitle.alpha = isEnabled ? 1.0 : 0.2
+        self.newAccountIcon.alpha = isEnabled ? 1.0 : 0.2
     }
 }

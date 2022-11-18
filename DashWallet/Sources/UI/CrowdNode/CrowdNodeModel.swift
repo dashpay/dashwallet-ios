@@ -43,10 +43,13 @@ final class CrowdNodeModel {
     private var signUpTaskId: UIBackgroundTaskIdentifier = UIBackgroundTaskIdentifier.invalid
 
     public static let shared: CrowdNodeModel = .init()
+    
     @Published var outputMessage: String = ""
     @Published var accountAddress: String = ""
     @Published var signUpEnabled: Bool = false
     @Published var signUpState: CrowdNode.SignUpState
+    @Published var hasEnoughBalance: Bool = false
+    
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
     }
@@ -57,33 +60,8 @@ final class CrowdNodeModel {
 
     init() {
         signUpState = crowdNode.signUpState
-        crowdNode.$signUpState
-            .sink { [weak self] state in
-                var signUpEnabled = false
-                var outputMessage = ""
-
-                switch state {
-                case .notInitiated, .notStarted, .acceptTermsRequired, .error:
-                    signUpEnabled = true
-
-                case .fundingWallet, .signingUp:
-                    outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "")
-                    
-                case .acceptingTerms:
-                    outputMessage = NSLocalizedString("Accepting terms of use…", comment: "")
-
-                default:
-                    break
-                }
-                
-                self?.signUpState = state
-                self?.signUpEnabled = signUpEnabled
-                self?.outputMessage = outputMessage
-            }
-            .store(in: &cancellableBag)
-        
-        crowdNode.restoreState()
-        getAccountAddress()
+        observeState()
+        observeBalance()
     }
     
     func getAccountAddress() {
@@ -135,5 +113,50 @@ final class CrowdNodeModel {
             UIApplication.shared.endBackgroundTask(self.signUpTaskId)
             self.signUpTaskId = UIBackgroundTaskIdentifier.invalid
         }
+    }
+    
+    private func observeState() {
+        crowdNode.$signUpState
+            .sink { [weak self] state in
+                var signUpEnabled = false
+                var outputMessage = ""
+
+                switch state {
+                case .notInitiated, .notStarted, .acceptTermsRequired, .error:
+                    signUpEnabled = true
+
+                case .fundingWallet, .signingUp:
+                    outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "")
+                    
+                case .acceptingTerms:
+                    outputMessage = NSLocalizedString("Accepting terms of use…", comment: "")
+
+                default:
+                    break
+                }
+                
+                self?.signUpState = state
+                self?.signUpEnabled = signUpEnabled
+                self?.outputMessage = outputMessage
+            }
+            .store(in: &cancellableBag)
+        
+        crowdNode.restoreState()
+        getAccountAddress()
+    }
+    
+    private func observeBalance() {
+        checkBalance()
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .sink { [weak self] balance in
+                print("CrowdNode observe balance \(balance)")
+                self?.checkBalance()
+            }
+            .store(in: &cancellableBag)
+    }
+    
+    private func checkBalance() {
+        print("CrowdNode checkBalance")
+        self.hasEnoughBalance = DWEnvironment.sharedInstance().currentAccount.balance > CrowdNodeConstants.minimumRequiredDash
     }
 }
