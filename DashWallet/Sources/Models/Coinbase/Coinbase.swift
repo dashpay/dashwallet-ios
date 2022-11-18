@@ -21,6 +21,7 @@ import Foundation
 import Resolver
 
 let kDashCurrency = "DASH"
+var kCoinbaseContactURL: URL = { URL(string: "https://help.coinbase.com/en/contact-us")! }()
 
 class Coinbase {
     @Injected

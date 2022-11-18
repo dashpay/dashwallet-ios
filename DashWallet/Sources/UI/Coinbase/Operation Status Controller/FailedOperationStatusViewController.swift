@@ -17,14 +17,17 @@
 
 import UIKit
 
-class SuccessfulOperationStatusViewController: ActionButtonViewController, NavigationBarDisplayable {
+class FailedOperationStatusViewController: BaseViewController, NavigationBarDisplayable {
     var isBackButtonHidden: Bool { return true }
     
-    @IBOutlet var contentView: UIView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
+    @IBOutlet var contactSupportButton: UIButton!
+    @IBOutlet var cancelButton: UIButton!
+    @IBOutlet var retryButton: UIButton!
     
-    var closeHandler: (() -> ())?
+    var cancelHandler: (() -> ())?
+    var retryHandler: (() -> ())?
     
     var headerText: String! {
         didSet {
@@ -38,12 +41,16 @@ class SuccessfulOperationStatusViewController: ActionButtonViewController, Navig
         }
     }
     
-    override var actionButtonTitle: String? {
-        return NSLocalizedString("Close", comment: "Action Button")
+    @IBAction func retryAction() {
+        retryHandler?()
     }
     
-    override func actionButtonAction(sender: UIView) {
-        navigationController?.popToRootViewController(animated: true)
+    @IBAction func supportAction() {
+        UIApplication.shared.open(kCoinbaseContactURL)
+    }
+    
+    @IBAction func cancelAction() {
+        cancelHandler?()
     }
     
     override func viewDidLoad() {
@@ -51,8 +58,10 @@ class SuccessfulOperationStatusViewController: ActionButtonViewController, Navig
         
         titleLabel.text = headerText
         descriptionLabel.text = descriptionText
-        actionButton?.isEnabled = true
         
-        setupContentView(contentView)
+        contactSupportButton.layer.cornerRadius = 6
+        contactSupportButton.setTitle(NSLocalizedString("Contact Coinbase Support", comment: "Coinbase"), for: .normal)
+        cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
+        retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
     }
 }

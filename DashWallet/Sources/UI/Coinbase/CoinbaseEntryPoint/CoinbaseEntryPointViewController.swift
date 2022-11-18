@@ -115,6 +115,15 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         
         let item = model.items[indexPath.item]
         
+        if item == .sellDash {
+            let vc = FailedOperationStatusViewController.initiate(from: storyboard!)
+            vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
+            vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase")
+            vc.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(vc, animated: true)
+            return
+        }
+        
         if item == .buyDash {
             let vc = SuccessfulOperationStatusViewController.initiate(from: storyboard!)
             vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")

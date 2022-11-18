@@ -1178,6 +1178,9 @@
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Kişilerinizde %@ adıyla eşleşen kullanıcı yok";
 
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "This app is open source:" = "Bu uygulama açık kaynaklıdır:";
 
@@ -1228,6 +1231,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Upholf hesabınızdan bu cüzdana Dash aktarın";
+
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Uphold'dan Aktar";

@@ -184,7 +184,7 @@ extension ActionButtonViewController {
         if isActionButtonInNavigationBar {
             return 0
         }else{
-            return DWBaseViewController.deviceSpecificBottomPadding()
+            return 15
         }
     }
 }

@@ -1178,6 +1178,9 @@
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในรายชื่อผู้ติดต่อของคุณ";
 
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "This app is open source:" = "แอพพลิเคชั่นนี้คือ ซอฟต์แวร์ที่เปิดเผยหลักการหรือแหล่งที่มาของเทคโนโลยีของซอฟต์แวร์นั้นให้บุคคลภายนอกได้ใช้ ภายใต้เงื่อนไขบางประการที่เปิดโอกาสให้ผู้ใช้ทำการแก้ไข ดัดแปลงและเผยแพร่ซอร์สโค้ดได้ ภายใต้เงื่อนไขทางข้อตกลงทางกฎหมาย";
 
@@ -1228,6 +1231,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "โอน Dash จากบัญชี Uphold ไปยัง wallet นี้";
+
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer from Uphold";

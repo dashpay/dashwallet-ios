@@ -1178,6 +1178,9 @@
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "당신의 연락처에 %@ 라는 이름에 맞는 사용자가 존재하지 않습니다";
 
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "This app is open source:" = "이 어플은 오픈 소스입니다:";
 
@@ -1228,6 +1231,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "당신의 대시를 업홀드 계정에서 이 지갑으로 전송합니다";
+
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "업홀드로부터 전송";

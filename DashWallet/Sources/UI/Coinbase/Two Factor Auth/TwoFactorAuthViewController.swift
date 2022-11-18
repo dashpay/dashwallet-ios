@@ -189,8 +189,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         let contactCoinbaseRange = (text as NSString).range(of: contactCoinbaseString)
 
         if gesture.didTapAttributedTextInLabel(label: contactCoinbase, inRange: contactCoinbaseRange) {
-            let url = URL(string: "https://help.coinbase.com/en/contact-us")!
-            UIApplication.shared.open(url)
+            UIApplication.shared.open(kCoinbaseContactURL)
         }
     }
 
