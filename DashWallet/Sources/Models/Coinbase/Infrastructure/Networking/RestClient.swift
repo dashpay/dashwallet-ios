@@ -42,10 +42,8 @@ class RestClientImpl: RestClient {
             .eraseToAnyPublisher()
     }
     
-    func post<T, S, E>(_ endpoint: E, using body: S?, using verificationCode: String? = nil)
-    -> AnyPublisher<T, Error> where T: Decodable, S: Encodable, E: Endpoint
-    {
-        startRequest(for: endpoint, method: "POST", jsonBody: body)
+    func post<T, S, E>(_ endpoint: E, using body: S?, using verificationCode: String? = nil) -> AnyPublisher<T, Error> where T: Decodable, S: Encodable, E: Endpoint {
+        startRequest(for: endpoint, method: "POST", jsonBody: body, verificationCode: verificationCode)
             .tryMap { try $0.parseJson() }
             .eraseToAnyPublisher()
     }
@@ -84,6 +82,10 @@ class RestClientImpl: RestClient {
             .tryMap { (data: Data, response: URLResponse) in
                 let response = response as! HTTPURLResponse
                 print("Got response with status code \(response.statusCode) and \(data.count) bytes of data")
+                
+                #if DEBUG
+                print(try! JSONSerialization.jsonObject(with: data, options: .allowFragments))
+                #endif
                 
                 if !acceptableStatusCodes.contains(response.statusCode) {
                     throw RestClientError.requestFailed(code: response.statusCode)
