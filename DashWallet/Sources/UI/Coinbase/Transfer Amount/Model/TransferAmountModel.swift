@@ -43,9 +43,21 @@ final class TransferAmountModel: SendAmountModel {
         super.init()
         
         //TODO: initialize the process of obtaining new address just before we want to send a transaction
-        //obtainNewAddress()
+        obtainNewAddress()
     }
    
+    override func selectAllFunds(_ preparationHandler: (() -> Void)) {
+        if direction == .toCoinbase {
+            super.selectAllFunds(preparationHandler)
+        }else{
+            guard let balance = Coinbase.shared.lastKnownBalance else { return }
+            
+            mainAmount = AmountObject(dashAmountString: balance, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            supplementaryAmount = nil
+            amountChangeHandler?(amount)
+        }
+    }
+    
     func initializeTransfer() {
         if direction == .toCoinbase {
             transferToCoinbase()
