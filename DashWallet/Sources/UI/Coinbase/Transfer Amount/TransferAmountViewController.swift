@@ -34,6 +34,8 @@ final class TransferAmountViewController: SendAmountViewController {
     
     override var amountInputStyle: AmountInputControl.Style { .basic }
     
+    private weak var codeConfirmationController: TwoFactorAuthViewController?
+    
     override var actionButtonTitle: String? {
         return NSLocalizedString("Transfer", comment: "Coinbase")
     }
@@ -94,6 +96,25 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         paymentController.presentationContextProvider = self
         paymentController.performPayment(with: input)
     }
+    
+    func initiateTwoFactorAuth() {
+        let vc = TwoFactorAuthViewController.controller()
+        vc.verifyHandler = { [weak self] code in
+            self?.transferModel.continueTransferFromCoinbase(with: code)
+        }
+        navigationController?.pushViewController(vc, animated: true)
+        
+        codeConfirmationController = vc
+    }
+
+    func transferFromCoinbaseToWalletDidSucceed() {
+        codeConfirmationController?.dismiss(animated: true)
+        codeConfirmationController = nil
+    }
+    
+    func transferFromCoinbaseToWalletDidFail(with error: Error) {
+        codeConfirmationController?.show(error: error)
+    }
 }
 
 extension BaseAmountModel: ConverterViewDataSource {
@@ -134,6 +155,4 @@ extension TransferAmountViewController: PaymentControllerPresentationContextProv
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
         return self
     }
-    
-    
 }

@@ -25,11 +25,17 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var twoFactorAuthField: UITextField!
     @IBOutlet var hintLabel: UILabel!
 
+    public var verifyHandler: ((String) -> ())?
+    
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
     let contactCoinbaseString = NSLocalizedString("Contact Coinbase Support", comment: "Coinbase Two Factor Auth")
 
+    public func show(error: Error) {
+        //TODO: handle
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         contentView = UIView()
@@ -72,6 +78,11 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         return NSLocalizedString("Verfiy", comment: "Coinbase")
     }
 
+    override func actionButtonAction(sender: UIView) {
+        showActivityIndicator()
+        verifyHandler?(twoFactorAuthField.text!)
+    }
+    
     func styleTitle() {
         screenLabel.text = NSLocalizedString("Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
         screenLabel.font = UIFont.dw_font(forTextStyle: .headline).withWeight(UIFont.Weight.semibold.rawValue).withSize(20)
@@ -159,7 +170,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         attributedText.beginEditing()
         attributedText.append(NSAttributedString(string: ""))
         attributedText.append(NSAttributedString(attachment: textAttachment))
-        attributedText.append(NSAttributedString(string: NSLocalizedString(" The code is incorrect. Please check and try again!", comment: "Coinbase Two Factor Auth")))
+        attributedText.append(NSAttributedString(string: " "))
+        attributedText.append(NSAttributedString(string: NSLocalizedString("The code is incorrect. Please check and try again!", comment: "Coinbase Two Factor Auth")))
 
         hintLabel.attributedText = attributedText
     }
@@ -179,8 +191,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
         if text.isEmpty {
             actionButton?.isEnabled = false
-        }
-        else {
+        }else{
             actionButton?.isEnabled = true
         }
     }

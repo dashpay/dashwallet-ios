@@ -20,6 +20,10 @@ import Combine
 
 protocol TransferAmountModelDelegate: AnyObject {
     func initiatePayment(with input: DWPaymentInput)
+    func initiateTwoFactorAuth()
+    
+    func transferFromCoinbaseToWalletDidFail(with error: Error)
+    func transferFromCoinbaseToWalletDidSucceed()
 }
 
 final class TransferAmountModel: SendAmountModel {
@@ -39,7 +43,7 @@ final class TransferAmountModel: SendAmountModel {
         super.init()
         
         //TODO: initialize the process of obtaining new address just before we want to send a transaction
-        obtainNewAddress()
+        //obtainNewAddress()
     }
    
     func initializeTransfer() {
@@ -48,6 +52,10 @@ final class TransferAmountModel: SendAmountModel {
         }else{
             transferToWallet()
         }
+    }
+    
+    func continueTransferFromCoinbase(with verificationCode: String) {
+        transferToWallet(with: verificationCode)
     }
     
     private func transferToCoinbase() {
@@ -62,13 +70,19 @@ final class TransferAmountModel: SendAmountModel {
         delegate?.initiatePayment(with: paymentInput)
     }
     
-    private func transferToWallet() {
+    private func transferToWallet(with verificationCode: String? = nil) {
         guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
                 
-        Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: nil, coinAmountInDash: amount.amountInternalRepresentation, dashWalletAddress: address)
+        Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, coinAmountInDash: amount.amountInternalRepresentation, dashWalletAddress: address)
             .receive(on: RunLoop.main)
-            .sink { completion in
-                print(completion)
+            .sink { [weak self] completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    guard let error = error as? RestClientError else { return }
+                    self?.delegate?.initiateTwoFactorAuth()
+                }
             } receiveValue: { tx in
                 print(tx)
             }
