@@ -34,7 +34,7 @@
 		0F6EDFD728C896BD000427E7 /* CoinbaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */; };
 		0F6EDFD828C896BD000427E7 /* GetUserCoinbaseAccounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB828C896BD000427E7 /* GetUserCoinbaseAccounts.swift */; };
 		0F6EDFD928C896BD000427E7 /* GetUserCoinbaseToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB928C896BD000427E7 /* GetUserCoinbaseToken.swift */; };
-		0F6EDFDA28C896BD000427E7 /* RestClientErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFBC28C896BD000427E7 /* RestClientErrors.swift */; };
+		0F6EDFDA28C896BD000427E7 /* RestClientError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFBC28C896BD000427E7 /* RestClientError.swift */; };
 		0F6EDFDD28C896BD000427E7 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFBF28C896BD000427E7 /* RestClient.swift */; };
 		0F6EDFDF28C896BD000427E7 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFC128C896BD000427E7 /* Endpoint.swift */; };
 		0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */; };
@@ -731,7 +731,7 @@
 		0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseService.swift; sourceTree = "<group>"; };
 		0F6EDFB828C896BD000427E7 /* GetUserCoinbaseAccounts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetUserCoinbaseAccounts.swift; sourceTree = "<group>"; };
 		0F6EDFB928C896BD000427E7 /* GetUserCoinbaseToken.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetUserCoinbaseToken.swift; sourceTree = "<group>"; };
-		0F6EDFBC28C896BD000427E7 /* RestClientErrors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientErrors.swift; sourceTree = "<group>"; };
+		0F6EDFBC28C896BD000427E7 /* RestClientError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientError.swift; sourceTree = "<group>"; };
 		0F6EDFBF28C896BD000427E7 /* RestClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.swift; sourceTree = "<group>"; };
 		0F6EDFC128C896BD000427E7 /* Endpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceEntryPointModel.swift; sourceTree = "<group>"; };
@@ -4443,7 +4443,7 @@
 		47838B84290665F20003E8AB /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				0F6EDFBC28C896BD000427E7 /* RestClientErrors.swift */,
+				0F6EDFBC28C896BD000427E7 /* RestClientError.swift */,
 				0F6EDFBF28C896BD000427E7 /* RestClient.swift */,
 				0F6EDFC128C896BD000427E7 /* Endpoint.swift */,
 			);
@@ -6080,7 +6080,7 @@
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
 				4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */,
 				0F6EDFD428C896BD000427E7 /* Pagination.swift in Sources */,
-				0F6EDFDA28C896BD000427E7 /* RestClientErrors.swift in Sources */,
+				0F6EDFDA28C896BD000427E7 /* RestClientError.swift in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,

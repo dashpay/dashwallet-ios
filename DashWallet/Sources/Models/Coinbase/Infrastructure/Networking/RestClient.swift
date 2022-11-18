@@ -8,7 +8,9 @@
 import Foundation
 import Combine
 
-private var ACCESS_TOKEN :String? = nil
+private var acceptableStatusCodes: Range<Int> { return 200..<300 }
+private var ACCESS_TOKEN: String?
+
 /// Provides access to the REST Backend
 protocol RestClient {
     /// Retrieves a JSON resource and decodes it
@@ -22,6 +24,8 @@ protocol RestClient {
     func post<T: Decodable, E: Endpoint>(_ endpoint: E, using queryItems: [URLQueryItem]?)
     -> AnyPublisher<T, Error>
 }
+
+
 
 class RestClientImpl: RestClient {
 
@@ -74,16 +78,17 @@ class RestClientImpl: RestClient {
         return session.dataTaskPublisher(for: request)
             .mapError { (error: Error) -> Error in
                 print("Request failed: \(String(describing: error))")
-                return RestClientErrors.requestFailed(error: error)
+                return RestClientError.requestFailed(error: error)
             }
         // we got a response, lets see what kind of response
             .tryMap { (data: Data, response: URLResponse) in
                 let response = response as! HTTPURLResponse
                 print("Got response with status code \(response.statusCode) and \(data.count) bytes of data")
                 
-                if response.statusCode == 400 {
-                    throw RestClientErrors.requestFailed(code: response.statusCode)
+                if !acceptableStatusCodes.contains(response.statusCode) {
+                    throw RestClientError.requestFailed(code: response.statusCode)
                 }
+                
                 return InterimRestResponse(data: data, response: response)
             }.eraseToAnyPublisher()
     }
@@ -119,7 +124,7 @@ class RestClientImpl: RestClient {
             do {
                 request.httpBody = try JSONEncoder().encode(body)
             } catch {
-                throw RestClientErrors.jsonDecode(error: error)
+                throw RestClientError.jsonDecode(error: error)
             }
         }
         
@@ -132,7 +137,7 @@ class RestClientImpl: RestClient {
         
         func parseJson<T: Decodable>() throws -> T {
             if data.isEmpty {
-                throw RestClientErrors.noDataReceived
+                throw RestClientError.noDataReceived
             }
             
             do {
@@ -141,7 +146,7 @@ class RestClientImpl: RestClient {
                 return result
             } catch {
                 print("Failed to decode JSON: \(error)", String(describing: error))
-                throw RestClientErrors.jsonDecode(error: error)
+                throw RestClientError.jsonDecode(error: error)
             }
         }
     }
