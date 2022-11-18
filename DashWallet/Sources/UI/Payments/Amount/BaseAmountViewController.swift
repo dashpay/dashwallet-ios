@@ -29,9 +29,7 @@ class BaseAmountViewController: ActionButtonViewController {
     internal var model: BaseAmountModel!
     internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
     
-    func maxButtonAction() {
-        
-    }
+    func maxButtonAction() {}
     
     internal func initializeModel() {
         model = BaseAmountModel()
@@ -47,8 +45,8 @@ class BaseAmountViewController: ActionButtonViewController {
         amountView.reloadData()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
         amountView.becomeFirstResponder()
     }
@@ -98,7 +96,6 @@ extension BaseAmountViewController {
             amountView.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 22),
             amountView.heightAnchor.constraint(equalToConstant: 60),
             
-            //keyboardContainer.heightAnchor.constraint(equalToConstant: kKeyboardHeight + 15),
             keyboardContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
@@ -110,17 +107,3 @@ extension BaseAmountViewController {
         ])
     }
 }
-
-//extension BaseAmountViewController: AmountViewDataSource {
-//    var dashAttributedString: NSAttributedString {
-//        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
-//
-//    }
-//
-//    var localCurrencyAttributedString: NSAttributedString {
-//        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254223)))!)
-//    }
-//
-//
-//}
-

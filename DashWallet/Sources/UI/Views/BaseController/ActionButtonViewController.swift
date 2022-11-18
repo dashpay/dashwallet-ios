@@ -152,12 +152,9 @@ extension ActionButtonViewController {
                 button.heightAnchor.constraint(equalToConstant: 46)
                 
             ])
-            
         }
         
         self.actionButton?.isEnabled = false
-        
-        
     }
     
     private func reloadActionButtonTitles() {
