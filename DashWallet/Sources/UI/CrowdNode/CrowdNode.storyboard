@@ -548,6 +548,9 @@
                                                             <color key="titleColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <imageReference key="image" image="info.circle" catalog="system" symbolScale="default"/>
                                                         </state>
+                                                        <connections>
+                                                            <action selector="backupPassphraseAction" destination="uXr-Ta-WJQ" eventType="touchUpInside" id="8CI-2s-nsG"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -598,6 +601,9 @@
                                                             <color key="titleColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <imageReference key="image" image="info.circle" catalog="system" symbolScale="default"/>
                                                         </state>
+                                                        <connections>
+                                                            <action selector="buyDashAction" destination="uXr-Ta-WJQ" eventType="touchUpInside" id="aUU-Ch-cep"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -713,6 +719,7 @@
                         <outlet property="balanceHint" destination="9fz-1h-ZDN" id="qD9-LA-KSj"/>
                         <outlet property="linkAccountButton" destination="ZQI-dO-W89" id="BKk-OO-zZn"/>
                         <outlet property="logoWrapper" destination="oVM-g2-5mk" id="hvQ-Zk-CdC"/>
+                        <outlet property="minimumBalanceLable" destination="MMc-Tm-3cd" id="Wfg-Se-gnI"/>
                         <outlet property="newAccountButton" destination="RrR-Ij-X7B" id="9MN-XO-6xg"/>
                         <outlet property="newAccountIcon" destination="oqB-km-Cfg" id="zB4-ew-ag0"/>
                         <outlet property="newAccountTitle" destination="xjO-zE-GIY" id="u0h-gv-Wd8"/>

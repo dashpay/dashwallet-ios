@@ -57,6 +57,8 @@ final class CrowdNodeModel {
         get { return crowdNode.showNotificationOnResult }
         set(value) { crowdNode.showNotificationOnResult = value }
     }
+    var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
+    var canSignUp: Bool { !needsBackup && hasEnoughBalance }
 
     init() {
         signUpState = crowdNode.signUpState
