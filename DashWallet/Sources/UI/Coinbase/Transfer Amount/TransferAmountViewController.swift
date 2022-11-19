@@ -83,29 +83,13 @@ final class TransferAmountViewController: SendAmountViewController {
     }
 }
 
-extension TransferAmountViewController: ConverterViewDelegate {
-    func didChangeDirection(_ direction: ConverterViewDirection) {
-        transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
-    }
-}
-
+//MARK: TransferAmountModelDelegate
 extension TransferAmountViewController: TransferAmountModelDelegate {
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
         paymentController.delegate = self
         paymentController.presentationContextProvider = self
         paymentController.performPayment(with: input)
-    }
-    
-    func initiateTwoFactorAuth() {
-        let vc = TwoFactorAuthViewController.controller()
-        vc.verifyHandler = { [weak self] code in
-            self?.transferModel.continueTransferFromCoinbase(with: code)
-        }
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
-        
-        codeConfirmationController = vc
     }
 
     func transferFromCoinbaseToWalletDidSucceed() {
@@ -115,11 +99,38 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         showSuccessTransactionStatus()
     }
     
-    func transferFromCoinbaseToWalletDidFail(with error: Error) {
-        codeConfirmationController?.show(error: error)
+    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason) {
+        switch reason {
+        case .twoFactorRequired:
+            initiateTwoFactorAuth()
+        case .invalidVerificationCode:
+            codeConfirmationController?.showInvalidCodeState()
+        case .unknown:
+            hideActivityIndicator()
+            showFailedTransactionStatus()
+        }
+    }
+    
+    private func initiateTwoFactorAuth() {
+        let vc = TwoFactorAuthViewController.controller()
+        vc.verifyHandler = { [weak self] code in
+            self?.transferModel.continueTransferFromCoinbase(with: code)
+        }
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+        
+        codeConfirmationController = vc
     }
 }
 
+//MARK: ConverterViewDelegate
+extension TransferAmountViewController: ConverterViewDelegate {
+    func didChangeDirection(_ direction: ConverterViewDirection) {
+        transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
+    }
+}
+
+//MARK: ConverterViewDataSource
 extension BaseAmountModel: ConverterViewDataSource {
     var coinbaseBalance: String {
         return Coinbase.shared.lastKnownBalance ?? NSLocalizedString("Unknown Balance", comment: "Coinbase")
@@ -138,12 +149,8 @@ extension BaseAmountModel: ConverterViewDataSource {
 }
 
 extension TransferAmountViewController {
-    private func startTransfering() {
-        
-    }
-    
     private func showSuccessTransactionStatus() {
-        let vc = SuccessfulOperationStatusViewController.initiate(from: storyboard!)
+        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("Coinbase"))
         vc.closeHandler = { [weak self] in
             guard let wSelf = self else { return }
             wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
@@ -156,7 +163,7 @@ extension TransferAmountViewController {
     }
     
     private func showFailedTransactionStatus() {
-        let vc = FailedOperationStatusViewController.initiate(from: storyboard!)
+        let vc = FailedOperationStatusViewController.initiate(from: sb("Coinbase"))
         vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
         vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase")
         vc.retryHandler = { [weak self] in
@@ -175,7 +182,7 @@ extension TransferAmountViewController {
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController) {
         hideActivityIndicator()
-        showAlert(with: "Success!", message: "You have sent Dash to Coinbase")
+        showSuccessTransactionStatus()
     }
     
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {

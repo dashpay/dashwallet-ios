@@ -20,10 +20,15 @@ import Combine
 
 protocol TransferAmountModelDelegate: AnyObject {
     func initiatePayment(with input: DWPaymentInput)
-    func initiateTwoFactorAuth()
-    
-    func transferFromCoinbaseToWalletDidFail(with error: Error)
+
+    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason)
     func transferFromCoinbaseToWalletDidSucceed()
+}
+
+enum TransferFromCoinbaseFailureReason {
+    case twoFactorRequired
+    case invalidVerificationCode
+    case unknown
 }
 
 final class TransferAmountModel: SendAmountModel {
@@ -92,12 +97,17 @@ final class TransferAmountModel: SendAmountModel {
                 case .finished:
                     break
                 case .failure(let error):
-                    guard let error = error as? RestClientError else { return }
+                    guard let restError = error as? RestClientError, case let RestClientError.requestFailed(code) = restError else {
+                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
+                        return
+                    }
                     
-                    if verificationCode == nil {
-                        self?.delegate?.initiateTwoFactorAuth()
+                    if verificationCode == nil && code == 402 {
+                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
+                    }else if verificationCode != nil && code == 400 {
+                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
                     }else{
-                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: error)
+                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
                     }
                 }
             } receiveValue: { [weak self] tx in

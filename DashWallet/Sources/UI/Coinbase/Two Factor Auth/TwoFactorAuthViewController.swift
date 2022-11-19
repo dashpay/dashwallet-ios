@@ -34,7 +34,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
     internal var isErrorShown: Bool = false
     
-    public func show(error: Error) {
+    public func showInvalidCodeState() {
         isErrorShown = true
         styleHintFieldErrorState()
         styleTwoFactorAuthFieldErrorState()

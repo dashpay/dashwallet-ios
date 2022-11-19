@@ -103,7 +103,7 @@ extension UINavigationController {
     
     func controller(before controller: UIViewController) -> UIViewController? {
         guard let index = viewControllers.firstIndex(of: controller), index >= 1 else { return nil }
-        return viewControllers[index]
+        return viewControllers[index - 1]
     }
 }
 
