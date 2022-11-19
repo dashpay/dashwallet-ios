@@ -74,11 +74,6 @@ class RestClientImpl: RestClient {
         print("Starting \(method) request for \(String(describing: request))")
         
         return session.dataTaskPublisher(for: request)
-            .mapError { (error: Error) -> Error in
-                print("Request failed: \(String(describing: error))")
-                return RestClientError.requestFailed(error: error)
-            }
-        // we got a response, lets see what kind of response
             .tryMap { (data: Data, response: URLResponse) in
                 let response = response as! HTTPURLResponse
                 print("Got response with status code \(response.statusCode) and \(data.count) bytes of data")
