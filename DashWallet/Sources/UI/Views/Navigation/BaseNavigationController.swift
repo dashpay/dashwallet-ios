@@ -62,3 +62,20 @@ extension NavigationBarDisplayable
         fatalError("init(coder:) has not been implemented")
     }
 }
+
+extension UINavigationController {
+    var previousController: UIViewController? {
+        viewControllers.count > 1 ? viewControllers[viewControllers.count - 2] : nil
+    }
+    
+    func controller(before controller: UIViewController) -> UIViewController? {
+        guard let index = viewControllers.firstIndex(of: controller), index >= 1 else { return nil }
+        return viewControllers[index]
+    }
+}
+
+extension UIViewController {
+    var previousControllerOnNavigationStack: UIViewController? {
+        navigationController?.controller(before: self)
+    }
+}
