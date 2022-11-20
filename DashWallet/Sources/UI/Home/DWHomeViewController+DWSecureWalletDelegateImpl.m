@@ -27,8 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller {
+- (void)secureWalletRoutineDidVerify:(UIViewController *)controller {
     [self.model reloadShortcuts];
+}
+
+- (void)secureWalletRoutineDidFinish:(DWVerifiedSuccessfullyViewController *)controller {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

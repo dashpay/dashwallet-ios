@@ -75,6 +75,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - DWVerifySeedPhraseContentViewDelegate
 
 - (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view {
+    [self.delegate secureWalletRoutineDidVerify:self];
     [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
 
     DWVerifiedSuccessfullyViewController *controller = [DWVerifiedSuccessfullyViewController controller];

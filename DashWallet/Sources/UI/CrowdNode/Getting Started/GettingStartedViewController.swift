@@ -143,9 +143,12 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
     
     internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) { }
     
-    internal func secureWalletRoutineDidVerify(_ controller: DWVerifiedSuccessfullyViewController) {
-        dismissModalControllerBarButtonAction()
+    internal func secureWalletRoutineDidVerify(_ controller: UIViewController) {
         refreshCreateAccountButton()
+    }
+    
+    internal func secureWalletRoutineDidFinish(_ controller: DWVerifiedSuccessfullyViewController) {
+        dismissModalControllerBarButtonAction()
     }
 }
 
