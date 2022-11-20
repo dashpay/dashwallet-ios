@@ -30,7 +30,11 @@ import Combine
             return AccountCreatingController.controller()
 
         default:
-            return WelcomeToCrowdNodeViewController.controller()
+            if DWGlobalOptions.sharedInstance().crowdNodeInfoShown {
+                return GettingStartedViewController.controller()
+            } else {
+                return WelcomeToCrowdNodeViewController.controller()
+            }
         }
     }
 }
@@ -95,12 +99,16 @@ final class CrowdNodeModel {
         }
     }
     
-    func authenticate(message: String? = nil, allowBiometrics: Bool = true) async -> Bool {
-        let useBiometrics = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+    func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
+        let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
         return await DSAuthenticationManager.sharedInstance().authenticate(
             withPrompt: message,
-            usingBiometricAuthentication: allowBiometrics && useBiometrics, alertIfLockout: true
+            usingBiometricAuthentication: allowBiometric && biometricEnabled, alertIfLockout: true
         ).0
+    }
+    
+    func didShowInfoScreen() {
+        DWGlobalOptions.sharedInstance().crowdNodeInfoShown = true
     }
     
     private func persistentSignUp(accountAddress: String) async {
@@ -152,15 +160,11 @@ final class CrowdNodeModel {
     private func observeBalance() {
         checkBalance()
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .sink { [weak self] balance in
-                print("CrowdNode observe balance \(balance)")
-                self?.checkBalance()
-            }
+            .sink { [weak self] _ in self?.checkBalance() }
             .store(in: &cancellableBag)
     }
     
     private func checkBalance() {
-        print("CrowdNode checkBalance")
-        self.hasEnoughBalance = DWEnvironment.sharedInstance().currentAccount.balance > CrowdNodeConstants.minimumRequiredDash
+        self.hasEnoughBalance = DWEnvironment.sharedInstance().currentAccount.balance >= CrowdNodeConstants.minimumRequiredDash
     }
 }

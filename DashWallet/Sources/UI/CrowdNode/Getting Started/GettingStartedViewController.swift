@@ -120,7 +120,7 @@ extension GettingStartedViewController {
 extension GettingStartedViewController: DWSecureWalletDelegate {
     private func backupPassphrase() {
         Task {
-            if await viewModel.authenticate(allowBiometrics: false) {
+            if await viewModel.authenticate(allowBiometric: false) {
                 backupPassphraseAuthenticated()
             }
         }

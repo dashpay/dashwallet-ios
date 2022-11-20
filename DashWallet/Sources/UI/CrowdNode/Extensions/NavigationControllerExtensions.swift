@@ -16,16 +16,9 @@
 //
 
 extension UINavigationController {
-    func replaceLast(_ controller: UIViewController, animated: Bool) {
+    func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
         var viewControllers = viewControllers
-        viewControllers.removeLast()
-        viewControllers.append(controller)
-        setViewControllers(viewControllers, animated: animated)
-    }
-    
-    func replaceAll(_ controller: UIViewController, animated: Bool) {
-        var viewControllers = viewControllers
-        viewControllers.removeAll()
+        viewControllers.removeLast(n)
         viewControllers.append(controller)
         setViewControllers(viewControllers, animated: animated)
     }

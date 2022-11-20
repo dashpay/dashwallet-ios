@@ -26,10 +26,11 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
+        viewModel.didShowInfoScreen()
     }
     
     @IBAction func continueAction() {
-        self.navigationController?.replaceLast(GettingStartedViewController.controller(), animated: true)
+        self.navigationController?.replaceLast(with: GettingStartedViewController.controller())
     }
     
     @objc static func controller() -> WelcomeToCrowdNodeViewController {
