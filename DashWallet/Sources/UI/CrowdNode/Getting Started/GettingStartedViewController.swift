@@ -44,7 +44,7 @@ final class GettingStartedViewController: UIViewController {
     }
     
     @IBAction func linkAccountAction() {
-        print("CrowdNode: linkAccountAction")
+        print("CrowdNode: link account")
     }
     
     @IBAction func backupPassphraseAction() {
@@ -67,7 +67,9 @@ final class GettingStartedViewController: UIViewController {
             message: NSLocalizedString("You should have at least \(minimumDash) to proceed with the CrowdNode verification.", comment: ""),
             preferredStyle: UIAlertController.Style.alert
         )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default, handler: { [weak self] _ in
+            self?.buyDash()
+        }))
         alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel, handler: nil))
         self.navigationController?.present(alert, animated: true, completion: nil)
     }
@@ -118,9 +120,7 @@ extension GettingStartedViewController {
 extension GettingStartedViewController: DWSecureWalletDelegate {
     private func backupPassphrase() {
         Task {
-            let result = await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true)
-            
-            if result.0 {
+            if await viewModel.authenticate(allowBiometrics: false) {
                 backupPassphraseAuthenticated()
             }
         }
@@ -144,7 +144,23 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
     internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) { }
     
     internal func secureWalletRoutineDidVerify(_ controller: DWVerifiedSuccessfullyViewController) {
-        dismissModalControllerBarButtonAction() // TODO check
+        dismissModalControllerBarButtonAction()
         refreshCreateAccountButton()
+    }
+}
+
+extension GettingStartedViewController {
+    private func buyDash() {
+        Task {
+            if await viewModel.authenticate() {
+                buyDashAuthenticated()
+            }
+        }
+    }
+    
+    private func buyDashAuthenticated() {
+        let controller = DWUpholdViewController()
+        let navigationController = DWNavigationController.init(rootViewController: controller)
+        self.navigationController?.present(navigationController, animated: true)
     }
 }

@@ -130,10 +130,7 @@ extension NewAccountViewController {
                 let isCreating = state == .fundingWallet || state == .acceptingTerms || state == .signingUp
                 
                 if isCreating {
-                    var viewControllers = self?.navigationController?.viewControllers
-                    viewControllers?.removeLast()
-                    viewControllers?.append(AccountCreatingController.controller())
-                    self?.navigationController?.setViewControllers(viewControllers!, animated: true)
+                    self?.navigationController?.replaceAll(AccountCreatingController.controller(), animated: true)
                 }
             }
             .store(in: &cancellableBag)

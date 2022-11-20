@@ -29,7 +29,7 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
     }
     
     @IBAction func continueAction() {
-        self.navigationController?.replace(GettingStartedViewController.controller(), animated: true)
+        self.navigationController?.replaceLast(GettingStartedViewController.controller(), animated: true)
     }
     
     @objc static func controller() -> WelcomeToCrowdNodeViewController {

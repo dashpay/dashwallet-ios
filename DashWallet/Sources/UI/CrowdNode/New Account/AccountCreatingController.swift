@@ -53,8 +53,7 @@ extension AccountCreatingController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 if state == .finished {
-                    print("CrowdNode: going to portal")
-                    self?.navigationController?.replace(CrowdNodePortalController.controller(), animated: true)
+                    self?.navigationController?.replaceAll(CrowdNodePortalController.controller(), animated: true)
                 }
             }
             .store(in: &cancellableBag)

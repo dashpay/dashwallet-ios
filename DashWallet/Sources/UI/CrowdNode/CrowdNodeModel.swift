@@ -20,19 +20,18 @@ import Combine
 
 @objc public class CrowdNodeModelObjcWrapper: NSObject {
     @objc public class func getRootVC() -> UIViewController {
-        return WelcomeToCrowdNodeViewController.controller()
-//        let state = CrowdNode.shared.signUpState
-//
-//        switch state {
-//        case .finished:
-//            return CrowdNodePortalController.controller()
-//
-//        case .fundingWallet, .acceptingTerms, .signingUp:
-//            return AccountCreatingController.controller()
-//
-//        default:
-//            return NewAccountViewController.controller()
-//        }
+        let state = CrowdNode.shared.signUpState
+
+        switch state {
+        case .finished:
+            return CrowdNodePortalController.controller()
+
+        case .fundingWallet, .acceptingTerms, .signingUp:
+            return AccountCreatingController.controller()
+
+        default:
+            return WelcomeToCrowdNodeViewController.controller()
+        }
     }
 }
 
@@ -88,17 +87,20 @@ final class CrowdNodeModel {
                 print("CrowdNode account address: \(accountAddress)")
                 self.accountAddress = accountAddress
                 
-                let success = await DSAuthenticationManager.sharedInstance().authenticate(
-                    withPrompt: promptMessage,
-                    usingBiometricAuthentication: true, alertIfLockout: false
-                ).0
-                
-                if success {
+                if await authenticate(message: promptMessage) {
                     signUpEnabled = false
                     await persistentSignUp(accountAddress: accountAddress)
                 }
             }
         }
+    }
+    
+    func authenticate(message: String? = nil, allowBiometrics: Bool = true) async -> Bool {
+        let useBiometrics = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+        return await DSAuthenticationManager.sharedInstance().authenticate(
+            withPrompt: message,
+            usingBiometricAuthentication: allowBiometrics && useBiometrics, alertIfLockout: true
+        ).0
     }
     
     private func persistentSignUp(accountAddress: String) async {
