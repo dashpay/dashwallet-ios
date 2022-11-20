@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,30 +20,30 @@ import Combine
 final class AccountCreatingController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
-    
+
     @IBOutlet var actionButton: UIButton!
     @IBOutlet var statusLabel: UILabel!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         viewModel.showNotificationOnResult = false
         configureObservers()
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         viewModel.showNotificationOnResult = true
     }
-    
+
     @objc static func controller() -> AccountCreatingController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "AccountCreatingController") as! AccountCreatingController
         return vc
     }
-    
+
     @IBAction func closeAndNotify() {
-        self.dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
 }
 
@@ -57,7 +57,7 @@ extension AccountCreatingController {
                 }
             }
             .store(in: &cancellableBag)
-        
+
         viewModel.$outputMessage
             .receive(on: DispatchQueue.main)
             .assign(to: \.text!, on: statusLabel)

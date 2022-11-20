@@ -18,10 +18,9 @@
 import Combine
 
 final class GettingStartedViewController: UIViewController {
-    
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
-    
+
     @IBOutlet var logoWrapper: UIView!
     @IBOutlet var newAccountButton: UIControl!
     @IBOutlet var newAccountTitle: UILabel!
@@ -30,23 +29,23 @@ final class GettingStartedViewController: UIViewController {
     @IBOutlet var passphraseHint: UIView!
     @IBOutlet var linkAccountButton: UIControl!
     @IBOutlet var minimumBalanceLable: UILabel!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
         configureObservers()
     }
-    
+
     @IBAction func newAccountAction() {
         if viewModel.canSignUp {
-            self.navigationController?.pushViewController(NewAccountViewController.controller(), animated: true)
+            navigationController?.pushViewController(NewAccountViewController.controller(), animated: true)
         }
     }
-    
+
     @IBAction func linkAccountAction() {
         print("CrowdNode: link account")
     }
-    
+
     @IBAction func backupPassphraseAction() {
         let alert = UIAlertController(
             title: NSLocalizedString("Backup your passphrase to create a CrowdNode account", comment: ""),
@@ -57,9 +56,9 @@ final class GettingStartedViewController: UIViewController {
             self?.backupPassphrase()
         }))
         alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel, handler: nil))
-        self.navigationController?.present(alert, animated: true, completion: nil)
+        navigationController?.present(alert, animated: true, completion: nil)
     }
-    
+
     @IBAction func buyDashAction() {
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNodeConstants.minimumRequiredDash))!
         let alert = UIAlertController(
@@ -71,9 +70,9 @@ final class GettingStartedViewController: UIViewController {
             self?.buyDash()
         }))
         alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel, handler: nil))
-        self.navigationController?.present(alert, animated: true, completion: nil)
+        navigationController?.present(alert, animated: true, completion: nil)
     }
-    
+
     @objc static func controller() -> GettingStartedViewController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "GettingStartedViewController") as! GettingStartedViewController
@@ -86,13 +85,13 @@ extension GettingStartedViewController {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
-        
+
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNodeConstants.minimumRequiredDash))!
         minimumBalanceLable.text = NSLocalizedString("You need at least \(minimumDash) on your Dash Wallet", comment: "")
-        
-        self.refreshCreateAccountButton()
+
+        refreshCreateAccountButton()
     }
-    
+
     private func configureObservers() {
         viewModel.$hasEnoughBalance
             .receive(on: DispatchQueue.main)
@@ -102,18 +101,18 @@ extension GettingStartedViewController {
             })
             .store(in: &cancellableBag)
     }
-    
+
     private func refreshCreateAccountButton() {
-        self.newAccountTitle.alpha = viewModel.canSignUp ? 1.0 : 0.2
-        self.newAccountIcon.alpha = viewModel.canSignUp ? 1.0 : 0.2
-        
-        self.passphraseHint.isHidden = !viewModel.needsBackup
+        newAccountTitle.alpha = viewModel.canSignUp ? 1.0 : 0.2
+        newAccountIcon.alpha = viewModel.canSignUp ? 1.0 : 0.2
+
+        passphraseHint.isHidden = !viewModel.needsBackup
         let passhraseHintHeight = CGFloat(viewModel.needsBackup ? 45 : 0)
-        self.passphraseHint.heightAnchor.constraint(equalToConstant: passhraseHintHeight).isActive = true
-        
-        self.balanceHint.isHidden = viewModel.hasEnoughBalance
+        passphraseHint.heightAnchor.constraint(equalToConstant: passhraseHintHeight).isActive = true
+
+        balanceHint.isHidden = viewModel.hasEnoughBalance
         let balanceHintHeight = CGFloat(viewModel.hasEnoughBalance ? 0 : 45)
-        self.balanceHint.heightAnchor.constraint(equalToConstant: balanceHintHeight).isActive = true
+        balanceHint.heightAnchor.constraint(equalToConstant: balanceHintHeight).isActive = true
     }
 }
 
@@ -125,28 +124,28 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
             }
         }
     }
-    
+
     private func backupPassphraseAuthenticated() {
         let model = DWPreviewSeedPhraseModel()
         model.getOrCreateNewWallet()
         let controller = DWBackupInfoViewController(model: model)
         controller.delegate = self
-        let navigationController = DWNavigationController.init(rootViewController: controller)
-        let cancelButton = UIBarButtonItem.init(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel, target: self, action: #selector(self.dismissModalControllerBarButtonAction))
+        let navigationController = DWNavigationController(rootViewController: controller)
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel, target: self, action: #selector(dismissModalControllerBarButtonAction))
         controller.navigationItem.leftBarButtonItem = cancelButton
         self.navigationController?.present(navigationController, animated: true)
     }
-    
+
     @objc private func dismissModalControllerBarButtonAction() {
-        self.dismiss(animated: true)
+        dismiss(animated: true)
     }
-    
-    internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) { }
-    
+
+    internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) {}
+
     internal func secureWalletRoutineDidVerify(_ controller: UIViewController) {
         refreshCreateAccountButton()
     }
-    
+
     internal func secureWalletRoutineDidFinish(_ controller: DWVerifiedSuccessfullyViewController) {
         dismissModalControllerBarButtonAction()
     }
@@ -160,10 +159,10 @@ extension GettingStartedViewController {
             }
         }
     }
-    
+
     private func buyDashAuthenticated() {
         let controller = DWUpholdViewController()
-        let navigationController = DWNavigationController.init(rootViewController: controller)
+        let navigationController = DWNavigationController(rootViewController: controller)
         self.navigationController?.present(navigationController, animated: true)
     }
 }

@@ -15,21 +15,21 @@
 //  limitations under the License.
 //
 
-import Combine
 import BackgroundTasks
+import Combine
 
 @objc public class CrowdNodeObjcWrapper: NSObject {
     @objc public class func restoreState() {
         CrowdNode.shared.restoreState()
     }
-    
+
     @objc public class func isInterrupted() -> Bool {
         return CrowdNode.shared.signUpState == .acceptTermsRequired
     }
-    
+
     @objc public class func continueInterrupted() {
         let crowdNode = CrowdNode.shared
-        
+
         if crowdNode.signUpState == .acceptTermsRequired {
             Task {
                 let address = crowdNode.accountAddress
@@ -37,11 +37,11 @@ import BackgroundTasks
             }
         }
     }
-    
+
     @objc public class func crowdNodeWebsiteUrl() -> URL {
         return URL(string: CrowdNodeConstants.websiteUrl)!
     }
-    
+
     @objc public class func notificationID() -> String {
         return CrowdNodeConstants.notificationID
     }
@@ -61,25 +61,24 @@ public final class CrowdNode {
         // Link Existing Account
         case linkedOnline
     }
-    
+
     private var cancellableBag = Set<AnyCancellable>()
     private var syncStateObserver: AnyCancellable?
     private let sendCoinsService = SendCoinsService()
     private let txObserver = TransactionObserver()
     @Published private(set) var signUpState = SignUpState.notInitiated
-    
+
     private(set) var accountAddress: String = ""
     private(set) var apiError: Error?
     var showNotificationOnResult: Bool = false
 
     public static let shared: CrowdNode = .init()
 
-    
     init() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
-        
+
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
@@ -113,7 +112,8 @@ extension CrowdNode {
 
             if fullSet.acceptTermsRequest == nil {
                 setAcceptTermsRequired(address: acceptTermsResponse.toAddress!)
-            } else {
+            }
+            else {
                 setAcceptingTerms(address: acceptTermsResponse.toAddress!)
             }
             return
@@ -138,7 +138,7 @@ extension CrowdNode {
         print("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptingTerms
     }
-    
+
     private func setAcceptTermsRequired(address: String) {
         accountAddress = address
         print("found accept terms CrowdNode response, account: \(address)")
@@ -150,7 +150,7 @@ extension CrowdNode {
         print("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
     }
-    
+
     private func reset() {
         print("CrowdNode reset triggered")
         signUpState = .notStarted
@@ -169,13 +169,14 @@ extension CrowdNode {
                 signUpState = SignUpState.fundingWallet
                 let topUpTx = try await topUpAccount(accountAddress, CrowdNodeConstants.requiredForSignup)
                 print("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
-                
+
                 signUpState = SignUpState.signingUp
                 let (signUpTx, acceptTermsResponse) = try await makeSignUpRequest(accountAddress, [topUpTx])
-                
+
                 signUpState = SignUpState.acceptingTerms
                 let _ = try await acceptTerms(accountAddress, [signUpTx, acceptTermsResponse])
-            } else {
+            }
+            else {
                 signUpState = SignUpState.acceptingTerms
                 let topUpTx = try await topUpAccount(accountAddress, CrowdNodeConstants.requiredForAcceptTerms)
                 let _ = try await acceptTerms(accountAddress, [topUpTx])
@@ -254,16 +255,16 @@ extension CrowdNode {
 
         return (req: termsAcceptedTx, resp: responseTx)
     }
-    
+
     func notifyIfNeeded() {
         if !showNotificationOnResult || !DWGlobalOptions.sharedInstance().localNotificationsEnabled {
             return
         }
-        
-        let content = UNMutableNotificationContent.init()
+
+        let content = UNMutableNotificationContent()
         content.body = NSLocalizedString("Your CrowdNode account is set up and ready to use!", comment: "")
         content.sound = UNNotificationSound.default
-        let request = UNNotificationRequest.init(identifier: CrowdNodeConstants.notificationID, content: content, trigger: nil)
+        let request = UNNotificationRequest(identifier: CrowdNodeConstants.notificationID, content: content, trigger: nil)
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.add(request)
     }

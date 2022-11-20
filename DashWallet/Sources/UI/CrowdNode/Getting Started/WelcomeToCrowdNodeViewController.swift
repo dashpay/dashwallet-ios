@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,19 +20,19 @@ import Combine
 final class WelcomeToCrowdNodeViewController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
-    
+
     @IBOutlet var logoWrapper: UIView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         viewModel.didShowInfoScreen()
     }
-    
+
     @IBAction func continueAction() {
-        self.navigationController?.replaceLast(with: GettingStartedViewController.controller())
+        navigationController?.replaceLast(with: GettingStartedViewController.controller())
     }
-    
+
     @objc static func controller() -> WelcomeToCrowdNodeViewController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "WelcomeToCrowdNodeViewController") as! WelcomeToCrowdNodeViewController
