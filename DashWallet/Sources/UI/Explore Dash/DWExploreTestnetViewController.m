@@ -55,12 +55,12 @@
 }
 
 - (void)showStakingIfSynced {
-//    if (_syncModel.state == DWSyncModelState_SyncDone) {
+    if (_syncModel.state == DWSyncModelState_SyncDone) {
         UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
         [self.navigationController pushViewController:vc animated:YES];
-//    } else {
-//        [self notifyChainSyncing];
-//    }
+    } else {
+        [self notifyChainSyncing];
+    }
 }
 
 - (void)notifyChainSyncing {
