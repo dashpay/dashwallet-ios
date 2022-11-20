@@ -11,27 +11,27 @@ import Resolver
 
 protocol CoinbaseService {
     func getUserCoinbaseAccounts(limit: Int) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseUserAccountData>, Error>
-    
-    func getCoinbaseUserAuthInformation() -> AnyPublisher<CoinbaseUserAuthInformation, Error>
-    
-    func getCoinbaseExchangeRates(currency: String) -> AnyPublisher<BaseDataResponse<CoinbaseExchangeRate>, Error>
-    
-    func getCoinbaseActivePaymentMethods() -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
-    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
 
-    func commitCoinbaseBuyOrder(accountId: String, orderID: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
+    func getCoinbaseUserAuthInformation() -> AnyPublisher<CoinbaseUserAuthInformation, Error>
+
+    func getCoinbaseExchangeRates(currency: String) -> AnyPublisher<BaseDataResponse<CoinbaseExchangeRate>, Error>
+
+    func getCoinbaseActivePaymentMethods() -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
+
+    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePlaceBuyOrder>, Error>
+
+    func commitCoinbaseBuyOrder(accountId: String, orderID: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePlaceBuyOrder>, Error>
+
     func sendCoinsToWallet(accountId: String, api2FATokenVersion: String, request: CoinbaseTransactionsRequest) -> AnyPublisher<BaseDataResponse<CoinbaseTransaction>, Error>
-    
-    func getBaseIdForUSDModel(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
-    func swapTradeCoinbase(request: CoinbaseSwapeTradeRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
-    func swapTradeCommitCoinbase(tradeId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
-    func getCoinbaseAccountAddress(accountId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
+
+    func getCoinbaseBaseIDForCurrency(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseBaseIDForCurrency>, Error>
+
+    func swapTradeCoinbase(request: CoinbaseSwapeTradeRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseSwapeTrade>, Error>
+
+    func swapTradeCommitCoinbase(tradeId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseSwapeTrade>, Error>
+
     func createCoinbaseAccountAddress(accountId: String, request: CoinbaseCreateAddressesRequest) -> AnyPublisher<BaseDataResponse<CoinbaseAccountAddress>, Error>
+
     func getToken(code: String) -> AnyPublisher<CoinbaseToken, Error>
 }
 
@@ -77,11 +77,11 @@ class CoinbaseServiceImpl: CoinbaseService {
         restClient.get(APIEndpoint.activePaymentMethods)
     }
 
-    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {
+    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePlaceBuyOrder>, Error> {
         restClient.post(APIEndpoint.placeBuyOrder(accountId), using: request, using: nil)
     }
 
-    func commitCoinbaseBuyOrder(accountId: String, orderID: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {
+    func commitCoinbaseBuyOrder(accountId: String, orderID: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePlaceBuyOrder>, Error> {
         restClient.post(APIEndpoint.commitBuyOrder(accountId, orderID), using: nil as String?, using: nil)
     }
 
@@ -89,20 +89,16 @@ class CoinbaseServiceImpl: CoinbaseService {
         restClient.post(APIEndpoint.sendCoinsToWallet(accountId), using: request, using: api2FATokenVersion)
     }
 
-    func getBaseIdForUSDModel(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {
+    func getCoinbaseBaseIDForCurrency(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseBaseIDForCurrency>, Error> {
         restClient.get(APIEndpoint.getBaseIdForUSDModel(baseCurrency))
     }
 
-    func swapTradeCoinbase(request: CoinbaseSwapeTradeRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {
+    func swapTradeCoinbase(request: CoinbaseSwapeTradeRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseSwapeTrade>, Error> {
         restClient.post(APIEndpoint.swapTrade, using: request, using: nil)
     }
 
-    func swapTradeCommitCoinbase(tradeId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {
+    func swapTradeCommitCoinbase(tradeId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseSwapeTrade>, Error> {
         restClient.post(APIEndpoint.swapTradeCommit(tradeId), using: nil as String?, using: nil)
-    }
-
-    func getCoinbaseAccountAddress(accountId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error> {
-        restClient.get(APIEndpoint.accountAddress(accountId))
     }
 
     func createCoinbaseAccountAddress(accountId: String, request: CoinbaseCreateAddressesRequest) -> AnyPublisher<BaseDataResponse<CoinbaseAccountAddress>, Error> {

@@ -41,8 +41,14 @@
 		0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */; };
 		0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */; };
 		0F7258F4291BF6B100A785A0 /* TwoFactorAuthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7258F3291BF6B100A785A0 /* TwoFactorAuthModel.swift */; };
+		0F7C1AB2292A6C58003D109B /* GetCoinbaseBaseIDForCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7C1AB1292A6C58003D109B /* GetCoinbaseBaseIDForCurrency.swift */; };
 		0FAA187B290026A9009C8818 /* CreateCoinbaseDashAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FAA187A290026A9009C8818 /* CreateCoinbaseDashAddress.swift */; };
 		0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FC75A8E28F03E22000E4858 /* libDashSync.a */; };
+		0FDA56432927F28C00B72C77 /* GetActivePaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA56422927F28C00B72C77 /* GetActivePaymentMethods.swift */; };
+		0FDA56452927F59000B72C77 /* PlaceBuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA56442927F59000B72C77 /* PlaceBuyOrder.swift */; };
+		0FDA5647292A669200B72C77 /* CommitBuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA5646292A669200B72C77 /* CommitBuyOrder.swift */; };
+		0FDA564B292A67B000B72C77 /* RequestSwapTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA564A292A67B000B72C77 /* RequestSwapTrade.swift */; };
+		0FDA564D292A67C300B72C77 /* CommitSwapTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FDA564C292A67C300B72C77 /* CommitSwapTrade.swift */; };
 		1FC212F0BAB5FB85C59E9CD3 /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02771AC5DDCA0A1749C6A05B /* libPods-TodayExtension.a */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
@@ -738,8 +744,14 @@
 		0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewTableCell.swift; sourceTree = "<group>"; };
 		0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewViewController.swift; sourceTree = "<group>"; };
 		0F7258F3291BF6B100A785A0 /* TwoFactorAuthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorAuthModel.swift; sourceTree = "<group>"; };
+		0F7C1AB1292A6C58003D109B /* GetCoinbaseBaseIDForCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetCoinbaseBaseIDForCurrency.swift; sourceTree = "<group>"; };
 		0FAA187A290026A9009C8818 /* CreateCoinbaseDashAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCoinbaseDashAddress.swift; sourceTree = "<group>"; };
 		0FC75A8E28F03E22000E4858 /* libDashSync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDashSync.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FDA56422927F28C00B72C77 /* GetActivePaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetActivePaymentMethods.swift; sourceTree = "<group>"; };
+		0FDA56442927F59000B72C77 /* PlaceBuyOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceBuyOrder.swift; sourceTree = "<group>"; };
+		0FDA5646292A669200B72C77 /* CommitBuyOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitBuyOrder.swift; sourceTree = "<group>"; };
+		0FDA564A292A67B000B72C77 /* RequestSwapTrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestSwapTrade.swift; sourceTree = "<group>"; };
+		0FDA564C292A67C300B72C77 /* CommitSwapTrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSwapTrade.swift; sourceTree = "<group>"; };
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		2142023B66B3AB7DC260D9A9 /* Pods-TodayExtension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2057,6 +2069,8 @@
 		0F6EDFB728C896BD000427E7 /* Use Cases */ = {
 			isa = PBXGroup;
 			children = (
+				0FDA5649292A678600B72C77 /* Swap Trade */,
+				0FDA5648292A675900B72C77 /* Place Buy Order */,
 				0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */,
 				0F6EDFB828C896BD000427E7 /* GetUserCoinbaseAccounts.swift */,
 				0F6EDFB928C896BD000427E7 /* GetUserCoinbaseToken.swift */,
@@ -2095,6 +2109,26 @@
 				0F7258F3291BF6B100A785A0 /* TwoFactorAuthModel.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		0FDA5648292A675900B72C77 /* Place Buy Order */ = {
+			isa = PBXGroup;
+			children = (
+				0FDA56422927F28C00B72C77 /* GetActivePaymentMethods.swift */,
+				0FDA56442927F59000B72C77 /* PlaceBuyOrder.swift */,
+				0FDA5646292A669200B72C77 /* CommitBuyOrder.swift */,
+			);
+			path = "Place Buy Order";
+			sourceTree = "<group>";
+		};
+		0FDA5649292A678600B72C77 /* Swap Trade */ = {
+			isa = PBXGroup;
+			children = (
+				0FDA564A292A67B000B72C77 /* RequestSwapTrade.swift */,
+				0FDA564C292A67C300B72C77 /* CommitSwapTrade.swift */,
+				0F7C1AB1292A6C58003D109B /* GetCoinbaseBaseIDForCurrency.swift */,
+			);
+			path = "Swap Trade";
 			sourceTree = "<group>";
 		};
 		2A0C69A023104798001B8C90 /* PaymentModels */ = {
@@ -5703,6 +5737,7 @@
 				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
+				0FDA56432927F28C00B72C77 /* GetActivePaymentMethods.swift in Sources */,
 				47AE8BF628C1306000490F5E /* ExplorePointOfUseListViewController.swift in Sources */,
 				2AE4736B241BC5E300804DD4 /* UIViewController+DWDisplayError.m in Sources */,
 				2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */,
@@ -5789,6 +5824,7 @@
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
+				0F7C1AB2292A6C58003D109B /* GetCoinbaseBaseIDForCurrency.swift in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
 				2AD6E5602487E13F00B52F14 /* DWRequestsContentViewController.m in Sources */,
@@ -5913,6 +5949,7 @@
 				0F6EDFD828C896BD000427E7 /* GetUserCoinbaseAccounts.swift in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
+				0FDA564D292A67C300B72C77 /* CommitSwapTrade.swift in Sources */,
 				0F6EDFDD28C896BD000427E7 /* RestClient.swift in Sources */,
 				47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
@@ -6006,6 +6043,7 @@
 				0F6EDFD928C896BD000427E7 /* GetUserCoinbaseToken.swift in Sources */,
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
+				0FDA56452927F59000B72C77 /* PlaceBuyOrder.swift in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				47A50F3B2913BC0900C70123 /* TransferAmountModel.swift in Sources */,
 				471DD1B6290A901200E030C8 /* AmountObject.swift in Sources */,
@@ -6039,6 +6077,7 @@
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				47AE8BF328C1306000490F5E /* MerchantItemCell.swift in Sources */,
 				2AD6E5572487D8C000B52F14 /* DWContactsContentViewController.m in Sources */,
+				0FDA564B292A67B000B72C77 /* RequestSwapTrade.swift in Sources */,
 				C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
@@ -6108,6 +6147,7 @@
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2AB7303E24D0BC0400DCB420 /* UIColor+DWDashPay.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
+				0FDA5647292A669200B72C77 /* CommitBuyOrder.swift in Sources */,
 				2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */,
 				47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
