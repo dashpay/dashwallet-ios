@@ -149,6 +149,9 @@
 "Are you sure?" = "확실합니까?";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
 "ATMs" = "ATMs";
 
 /* No comment provided by engineer. */
@@ -1402,6 +1405,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";

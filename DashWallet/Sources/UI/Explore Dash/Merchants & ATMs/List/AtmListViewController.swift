@@ -28,7 +28,7 @@ enum AtmListSegmnets: Int {
     }
     
     var pointOfUseListSegment: PointOfUseListSegment {
-        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories)
+        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: nil, territoriesDataSource: territories)
     }
 }
 

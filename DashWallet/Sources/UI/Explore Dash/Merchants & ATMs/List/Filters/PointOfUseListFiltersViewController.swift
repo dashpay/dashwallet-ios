@@ -114,11 +114,17 @@ class PointOfUseListFiltersViewController: UIViewController {
     
     var territoriesDataSource: TerritoryDataSource?
     var filtersToUse: [PointOfUseListFiltersGroup]!
-    var initialFilters: PointOfUseListFilters? {
+    var filters: PointOfUseListFilters? {
         didSet {
-            model.selected = initialFilters?.items ?? []
-            model.initialFilters = initialFilters?.items
-            model.initialSelectedTerritory = initialFilters?.territory
+            model.selected = filters?.items ?? []
+            model.initialFilters = filters?.items ?? []
+            model.initialSelectedTerritory = filters?.territory
+        }
+    }
+    
+    var defaultFilters: PointOfUseListFilters? {
+        didSet {
+            model.defaultFilters = defaultFilters?.items ?? []
         }
     }
     

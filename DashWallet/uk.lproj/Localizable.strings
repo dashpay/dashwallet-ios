@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ прийняв ваш запит на додавання в контакти";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 година";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 хвилина";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 години";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 хвилин";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" не є словом з фрази для відновлення";
@@ -60,6 +87,9 @@
 
 /* No comment provided by engineer. */
 "Accept" = "Прийняти";
+
+/* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
 
 /* No comment provided by engineer. */
 "Activity" = "Активність";
@@ -119,7 +149,16 @@
 "Are you sure?" = "Ви впевнені?";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Автентифікація недоступна";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Авто-вихід";
@@ -148,11 +187,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Блок #%1$d з %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Купити & Продати Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Купити / Продати Dash";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Купити Dash";
@@ -161,7 +210,19 @@
 "Buy Dash with Uphold account" = "Купити Dash за допомогою акаунта Uphold";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Видаливши гаманець, у вас більше не буде доступу до коштів на цьому пристрої. Цю дію слід здійснювати лише в тому випадку, якщо у вас більше немає доступу до вашої кодової фрази і ви забули свій PIN.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Відміна";
@@ -242,7 +303,7 @@
 "Copy Logs" = "Копіювати логи";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Авторські права © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Не вдалося автоматично відновити пропущені або неправильні слова";
@@ -265,8 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Поточний користувач: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Платежі Dash не можуть бути меншими ніж %@";
@@ -283,11 +353,20 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Валюта за замовчуванням, ярлики, про програму.";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "БЕЗПЕКА ПРИСТРОЮ ПІД ЗАГРОЗОЮ\nБудь-який «jailbreak» додаток може отримати доступ до ваших приватних ключів (і вкрасти ваші Dash).";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗПЕКА ПРИСТРОЮ ПІД ЗАГРОЗОЮ\nБудь-який «jailbreak» додаток може отримати доступ до ваших приватних ключів (і вкрасти ваші Dash). Негайно видаліть цей гаманець та відновіть його на довіреному пристрої.";
+
+/* Direction */
+"Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Не робіть скріншот";
@@ -300,6 +379,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Раніше";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "наприклад: johndoe";
@@ -344,10 +426,16 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Розширені відкриті ключі";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Ліміт Face ID";
+
+/* Explore Dash */
+"Failed to sync on" = "Failed to sync on";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Помилка оновлення гаманця";
@@ -361,11 +449,29 @@
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Комісія буде списана із запитаної суми.";
 
+/* Explore Dash */
+"Fetching Info" = "Fetching Info";
+
 /* No comment provided by engineer. */
 "Filter Transactions" = "Фільтрувати транзакції";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
+
+/* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Знайдіть користувача в Dash Network";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Забули PIN-код?";
@@ -388,8 +494,14 @@
 /* No comment provided by engineer. */
 "Get Started" = "Почати";
 
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
+
 /* No comment provided by engineer. */
 "Go to Website" = "Перейти на сайт";
+
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "надіслав запит на дружбу";
@@ -411,6 +523,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Історія";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "Я приймаю";
@@ -478,6 +593,15 @@
 /* No comment provided by engineer. */
 "Keypair %ld" = "Ключі %ld";
 
+/* Explore Dash */
+"Last device sync" = "Last device sync";
+
+/* Explore Dash */
+"Last server update" = "Last server update";
+
+/* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Повідомити, коли буде готово";
 
@@ -495,6 +619,10 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Сума у ​​місцевій валюті: %@";
+
+/* Explore Dash/Merchants/Filters
+   Explore Dash/Merchants/Filters/Location */
+"Location" = "Location";
 
 /* No comment provided by engineer. */
 "Locked" = "Заблоковано";
@@ -521,7 +649,13 @@
 "Low" = "Низький";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "Керування довіреним вузлом";
+
+/* No comment provided by engineer. */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "список Мастернод #%1$d з %2$d";
@@ -544,6 +678,9 @@
 /* adjective, security level */
 "Medium" = "Середній";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Minimum 3 characters";
 
@@ -565,6 +702,15 @@
 /* No comment provided by engineer. */
 "Name" = "Назва";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
+/* Nearby */
+"Nearby" = "Nearby";
+
 /* No comment provided by engineer. */
 "Network" = "Мережа";
 
@@ -579,6 +725,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Пристрій NFC не передав дійсну адресу Dash";
+
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP вузла";
@@ -596,6 +745,12 @@
 "Not a valid Dash address" = "Неправильна Dash адреса";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Ще не використовувався";
 
 /* No comment provided by engineer. */
@@ -606,6 +761,12 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Щойно %@ прийме ваш запит, ви зможете здійснити оплату безпосередньо на ім’я користувача";
+
+/* Online */
+"Online" = "Online";
+
+/* Online Merchant */
+"Online Merchant" = "Online Merchant";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Ключі оператора";
@@ -625,8 +786,15 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Платіть безпосередньо на ім'я користувача";
 
+/* Explore Dash/Filters
+   Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Платіть з легкістю";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Оплата";
@@ -639,6 +807,9 @@
 
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Оплата...";
+
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
 
 /* No comment provided by engineer. */
 "Payments" = "Платежі";
@@ -697,6 +868,9 @@
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Затверджені кворуми: %1$d/%2$d.";
 
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
+
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Курс: %1$@ = %2$@";
 
@@ -733,6 +907,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Фраза для відновлення повинна містити 12, 15, 18, 21 або 24 слова";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Реєстрація";
 
@@ -757,11 +934,19 @@
 /* No comment provided by engineer. */
 "Reset" = "Скидання";
 
+/* Explore Dash
+   Explore Dash: Filters
+   Explore Dash/Merchants/Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "Скинути до замовчування";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Скидання гаманця";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Зберігати взаємну історію транзакцій";
@@ -838,6 +1023,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Переглянути на Uphold";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "Відправити";
 
@@ -905,6 +1096,9 @@
 "Show Recovery Phrase" = "Показати фразу відновлення";
 
 /* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
+
+/* No comment provided by engineer. */
 "Skip" = "Пропустити";
 
 /* No comment provided by engineer. */
@@ -918,6 +1112,18 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Сортувати контакти";
+
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Вкажіть суму";
@@ -949,6 +1155,9 @@
 /* No comment provided by engineer. */
 "Syncing Balance" = "Синхронізація балансу";
 
+/* Explore Dash */
+"Syncing..." = "Syncing...";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Tap";
 
@@ -975,6 +1184,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Це програма з відкритим кодом:";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Цей PIN-код необхідний, щоб розблокувати вашу програму кожного разу, коли ви її використовуєте.";
@@ -1051,6 +1263,9 @@
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
+
 /* No comment provided by engineer. */
 "Used" = "Використано";
 
@@ -1080,6 +1295,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "Переглянути все";
+
+/* View all locations */
+"View all locations" = "View all locations";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Подивитися в Block Explorer";
@@ -1115,16 +1333,28 @@
 "We do not store this recovery phrase." = "Ми не зберігаємо цю фразу відновлення.";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Виявлено, що під час міграції Dash Wallet стався збій. Повторне сканування блокчейну вирішить цю проблему або спробуйте ще раз. Повторне сканування бажано проводити з використанням Wi-Fi, і це займе до півгодини. Ваші кошти будуть доступні після завершення процесу синхронізації.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Ми оновились";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "Ласкаво просимо";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Коли ця транзакція буде підтверджена, гаманець буде непотрібним і не зможе бути повторно використаний з метою безпеки.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Чому я не можу зробити скріншот?";
@@ -1179,6 +1409,12 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Ваше ім’я користувача DashPay готове до використання";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакція була відправлена ​​і її сума відобразиться у вашому гаманці за кілька хвилин.";

@@ -85,13 +85,13 @@ struct PointOfUseListFilters: Equatable {
         var meters: Double {
             switch self {
             case .one:
-                return 1600
+                return 2000
             case .five:
-                return 8050
+                return 8000
             case .twenty:
-                return 32200
+                return 32000
             case .fifty:
-                return 80500
+                return 80000
             }
         }
     }
@@ -273,8 +273,8 @@ enum PointOfUseListFilterItem: String {
 //MARK: PointOfUseListFiltersModel
 final class PointOfUseListFiltersModel {
     var selected: Set<PointOfUseListFilterItem> = []
-    var initialFilters: Set<PointOfUseListFilterItem>?
-    
+    var initialFilters: Set<PointOfUseListFilterItem>!
+    var defaultFilters: Set<PointOfUseListFilterItem>!
     var selectedTerritory: Territory?
     var initialSelectedTerritory: Territory? {
         didSet {
@@ -284,11 +284,11 @@ final class PointOfUseListFiltersModel {
     
     var canApply: Bool {
         //TODO: Optimize
-        return !(selected == (initialFilters ?? [])) || selectedTerritory != initialSelectedTerritory
+        return selected != initialFilters || selectedTerritory != initialSelectedTerritory
     }
     
     var canReset: Bool {
-        return initialFilters != nil || canApply
+        return selected != defaultFilters || canApply
     }
     
     func isFilterSelected(_ filter: PointOfUseListFilterItem) -> Bool {
@@ -321,7 +321,7 @@ final class PointOfUseListFiltersModel {
     }
     
     func resetFilters() {
-        selected = []
+        selected = defaultFilters
         selectedTerritory = nil
     }
 }

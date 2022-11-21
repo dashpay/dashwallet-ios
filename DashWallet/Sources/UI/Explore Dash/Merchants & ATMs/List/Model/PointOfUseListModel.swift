@@ -95,6 +95,7 @@ struct PointOfUseListSegment: Hashable {
     var showReversedLocation: Bool
     var dataProvider: PointOfUseDataProvider
     var filterGroups: [PointOfUseListFiltersGroup]
+    var defaultFilters: PointOfUseListFilters!
     var territoriesDataSource: TerritoryDataSource?
 }
 
@@ -111,6 +112,9 @@ final class PointOfUseListModel {
     
     internal var dataProviders: [PointOfUseListSegment: PointOfUseDataProvider] = [:]
     var filters: PointOfUseListFilters?
+    var initialFilters: PointOfUseListFilters! {
+        return currentSegment.defaultFilters
+    }
     
     var currentSegment: PointOfUseListSegment {
         didSet {

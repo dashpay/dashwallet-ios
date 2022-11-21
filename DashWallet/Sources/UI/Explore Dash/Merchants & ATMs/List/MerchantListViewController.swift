@@ -33,6 +33,11 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
+        var defaultFilters: PointOfUseListFilters = PointOfUseListFilters()
+        defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
+        defaultFilters.radius = .twenty
+        defaultFilters.sortBy = .distance
+        defaultFilters.sortNameDirection = .ascending
         
         switch self {
         case .online:
@@ -40,11 +45,13 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
+            
         case .nearby:
             showLocationServiceSettings = true
             showReversedLocation = true
             showMap = true
             dataProvider = NearbyMerchantsDataProvider()
+            
         case .all:
             showLocationServiceSettings = false
             showReversedLocation = false
@@ -52,7 +59,7 @@ enum MerchantsListSegment: Int {
             dataProvider = AllMerchantsDataProvider()
         }
         
-        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories)
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories)
     }
 }
 
@@ -73,7 +80,7 @@ extension MerchantsListSegment {
         case .online:
             return [.paymentType]
         case .nearby:
-            return [.paymentType, .sortByDistanceOrName, .territory, .radius]
+            return [.paymentType, .sortByDistanceOrName, .radius]
         case .all:
             return [.paymentType, .sortByName, .territory, .radius]
         }
@@ -217,8 +224,8 @@ extension MerchantsListSegment {
             if wSelf.currentSegment.showLocationServiceSettings && DWLocationManager.shared.isPermissionDenied {
                 wSelf.tableView.reloadData()
             }else if wSelf.locationOffCell != nil {
-                wSelf.locationOffCell = nil
                 wSelf.tableView.reloadData()
+                wSelf.locationOffCell = nil
             }else{
                 wSelf.tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue], with: .none)
             }

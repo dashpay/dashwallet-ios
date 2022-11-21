@@ -60,7 +60,7 @@ import CoreLocation
     }
     
     override func configureModel() {
-        model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse), filterGroups: [], territoriesDataSource: nil)])
+        model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse), filterGroups: [], defaultFilters: nil, territoriesDataSource: nil)])
     }
     
     override func configureHierarchy() {

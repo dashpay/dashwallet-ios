@@ -60,11 +60,12 @@ enum ExplorePointOfUseSections: Int {
     
     internal var locationServicePopupTitle: String { return "" }
     internal var locationServicePopupDetails: String { return "" }
+    
     //MARK: Map
     internal func updateMapVisibility() {
         if !model.showMap || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
-        }else if DWLocationManager.shared.isAuthorized {
+        }else{
             showMapIfNeeded()
         }
     }
@@ -73,15 +74,17 @@ enum ExplorePointOfUseSections: Int {
         guard model.showMap else { return }
         
         if DWLocationManager.shared.needsAuthorization {
-            PointOfUseLocationServicePopup.show(in: self.view) {
+            PointOfUseLocationServicePopup.show(in: self.view, title: locationServicePopupTitle, details: locationServicePopupDetails) {
                 DWLocationManager.shared.requestAuthorization()
             }
-        }else if DWLocationManager.shared.isAuthorized && self.contentViewTopLayoutConstraint.constant != kDefaultOpenedMapPosition {
+        }else if DWLocationManager.shared.isAuthorized {
             showMap()
         }
     }
     
     internal func showMap() {
+        guard self.contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition else { return }
+        
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
             self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition, right: 0)
@@ -92,6 +95,8 @@ enum ExplorePointOfUseSections: Int {
     }
     
     internal func hideMapIfNeeded() {
+        guard self.contentViewTopLayoutConstraint.constant != kDefaultClosedMapPosition else { return }
+        
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultClosedMapPosition
             self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultClosedMapPosition, right: 0)
@@ -115,16 +120,11 @@ enum ExplorePointOfUseSections: Int {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        DWLocationManager.shared.add(observer: self)
-    }
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         showMapIfNeeded()
+        DWLocationManager.shared.add(observer: self)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -305,6 +305,9 @@ extension ExplorePointOfUseListViewController {
         tableView.layer.zPosition = -1
         tableView.dataSource = self
         tableView.clipsToBounds = false
+        tableView.estimatedRowHeight = 0
+        tableView.estimatedSectionHeaderHeight = 0
+        tableView.estimatedSectionFooterHeight = 0
         tableView.register(PointOfUseListSegmentedCell.self, forCellReuseIdentifier: PointOfUseListSegmentedCell.dw_reuseIdentifier)
         tableView.register(PointOfUseListSearchCell.self, forCellReuseIdentifier: PointOfUseListSearchCell.dw_reuseIdentifier)
         tableView.register(PointOfUseListFiltersCell.self, forCellReuseIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier)
@@ -367,7 +370,8 @@ extension ExplorePointOfUseListViewController {
         vc.filtersToUse = currentSegment.filterGroups
         vc.territoriesDataSource = currentSegment.territoriesDataSource
         vc.delegate = self
-        vc.initialFilters = model.filters
+        vc.defaultFilters = model.initialFilters
+        vc.filters = model.filters ?? model.initialFilters
         let nvc = UINavigationController(rootViewController: vc)
         present(nvc, animated: true)
     }
