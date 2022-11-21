@@ -1482,6 +1482,9 @@
 		471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfoDAO.swift; sourceTree = "<group>"; };
 		471A2609289ACDF70056B7B2 /* Taxes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Taxes.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
+		477A963A292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Interface.strings; sourceTree = "<group>"; };
+		477A963B292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		477A963C292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = uk; path = uk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
 		47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewController.swift; sourceTree = "<group>"; };
@@ -4455,6 +4458,7 @@
 				id,
 				sk,
 				cs,
+				uk,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -5321,6 +5325,7 @@
 				2ADC722823B5547000D9DD37 /* en */,
 				2A8E79B9240676D400AA7C3D /* sk */,
 				2A8E79BD2406772900AA7C3D /* cs */,
+				477A963C292BA4B90013605B /* uk */,
 			);
 			name = Localizable.stringsdict;
 			sourceTree = "<group>";
@@ -5348,6 +5353,7 @@
 				FB43BC8D21217BB900BC9879 /* zh-Hant-TW */,
 				2A9FFF41223654D300956D5F /* id */,
 				2A8E79BC2406772900AA7C3D /* cs */,
+				477A963B292BA4B90013605B /* uk */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -5377,6 +5383,7 @@
 				2A9FFF40223654D300956D5F /* id */,
 				2A8E79BA240676D400AA7C3D /* sk */,
 				2A8E79BB2406772900AA7C3D /* cs */,
+				477A963A292BA4B90013605B /* uk */,
 			);
 			name = Interface.storyboard;
 			sourceTree = "<group>";
