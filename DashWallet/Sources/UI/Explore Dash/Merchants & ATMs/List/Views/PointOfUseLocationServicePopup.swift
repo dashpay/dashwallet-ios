@@ -20,11 +20,18 @@ import UIKit
 class PointOfUseLocationServicePopup: UIView {
     var continueBlock: (() -> ())?
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    private var title: String
+    private var details: String
+    
+    init(title: String, details: String) {
+        self.title = title
+        self.details = details
+        super.init(frame: .zero)
+        
         configureHierarchy()
     }
     
+  
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -74,7 +81,7 @@ class PointOfUseLocationServicePopup: UIView {
         label.numberOfLines = 0
         label.textAlignment = .center
         label.font = .dw_font(forTextStyle: UIFont.TextStyle.body)
-        label.text = NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
+        label.text = title
         textStackView.addArrangedSubview(label)
         
         label = UILabel(frame: .zero)
@@ -83,7 +90,7 @@ class PointOfUseLocationServicePopup: UIView {
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.footnote)
-        label.text = NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.", comment: "")
+        label.text = details
         textStackView.addArrangedSubview(label)
         let continueButton = DWActionButton()
         continueButton.translatesAutoresizingMaskIntoConstraints = false
@@ -132,8 +139,8 @@ class PointOfUseLocationServicePopup: UIView {
             ])
     }
     
-    static func show(in view: UIView, completion: @escaping () -> Void) {
-        let popup = PointOfUseLocationServicePopup(frame: CGRect.zero)
+    static func show(in view: UIView, title: String, details: String, completion: @escaping () -> Void) {
+        let popup = PointOfUseLocationServicePopup(title: title, details: details)
         popup.continueBlock = completion
         popup.show(in: view.window!)
     }

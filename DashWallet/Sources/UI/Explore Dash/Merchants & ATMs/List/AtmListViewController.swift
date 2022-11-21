@@ -69,6 +69,14 @@ extension AtmListSegmnets {
 }
 
 @objc class AtmListViewController: ExplorePointOfUseListViewController {
+    override var locationServicePopupTitle: String {
+        NSLocalizedString("ATM search works better with Location Services turned on", comment: "")
+    }
+    
+    override var locationServicePopupDetails: String {
+        NSLocalizedString("Your location is used to show your position on the map, ATMs in the selected redius and improve search results.", comment: "")
+    }
+    
     override func subtitleForFilterCell() -> String? {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {

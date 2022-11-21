@@ -58,6 +58,8 @@ enum ExplorePointOfUseSections: Int {
     internal var isFiltered: Bool { model.hasFilters }
     internal var emptyResultsView: PointOfUseListEmptyResultsView!
     
+    internal var locationServicePopupTitle: String { return "" }
+    internal var locationServicePopupDetails: String { return "" }
     //MARK: Map
     internal func updateMapVisibility() {
         if !model.showMap || DWLocationManager.shared.isPermissionDenied {

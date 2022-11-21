@@ -86,6 +86,14 @@ extension MerchantsListSegment {
 
 @objc class MerchantListViewController: ExplorePointOfUseListViewController {
     
+    override var locationServicePopupTitle: String {
+        NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
+    }
+    
+    override var locationServicePopupDetails: String {
+        NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.", comment: "")
+    }
+    
     internal var locationOffCell: MerchantListLocationOffCell?
     //MARK: Table View
     
