@@ -49,7 +49,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     }
         
     override func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, territory: filters?.territory, offset: offset, completion: completion)
+        dataSource.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, sortDirection: filters?.sortNameDirection, territory: filters?.territory, offset: offset, completion: completion)
     }
 }
 
@@ -85,7 +85,7 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
     }
     
     internal func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, territory: filters?.territory, offset: offset, completion: completion)
+        dataSource.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, sortDirection: filters?.sortNameDirection, territory: filters?.territory, offset: offset, completion: completion)
     }
 }
 
@@ -112,6 +112,6 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
     }
     
     private func fetch(by query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.onlineMerchants(query: query, onlineOnly: false, paymentMethods: filters?.merchantPaymentTypes, userPoint: userPoint, offset: offset, completion: completion)
+        dataSource.onlineMerchants(query: query, onlineOnly: false, paymentMethods: filters?.merchantPaymentTypes, userPoint: userPoint, sortDirection: filters?.sortNameDirection, offset: offset, completion: completion)
     }
 }

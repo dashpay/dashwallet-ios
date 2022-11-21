@@ -44,6 +44,7 @@ class MerchantDAO: PointOfUseDAO
                types: [ExplorePointOfUse.Merchant.`Type`],
                paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
                sortBy: PointOfUseListFilters.SortBy?,
+               sortDirection: PointOfUseListFilters.SortDirection?,
                territory: Territory?,
                offset: Int,
                completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
@@ -60,7 +61,7 @@ class MerchantDAO: PointOfUseDAO
             
             // Add query
             if let query = query {
-                queryFilter = queryFilter && name.like("\(query)%")
+                queryFilter = queryFilter && name.like("%\(query)%")
             }
 
             queryFilter = queryFilter && types.map({ $0.rawValue }).contains(typeColumn) // Add types
@@ -109,23 +110,24 @@ class MerchantDAO: PointOfUseDAO
                 distanceSorting = Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
             }
             
+            let nameOrdering = sortDirection == .descending ? name.collate(.nocase).desc : name.collate(.nocase).asc
+            
             if let sortBy = sortBy, sortBy == .name {
-                query = query.order(name.asc)
+                query = query.order(nameOrdering)
             }else if userLocation != nil {
-                query = query.order([distanceSorting, name.collate(.nocase), name.asc])
-            }else{
-                var typeOrdering = Expression<Void>(literal:"")
-                if bounds == nil && types.count == 3 {
-                    typeOrdering = Expression<Void>(literal: """
+                query = query.order([distanceSorting, nameOrdering])
+            }else if bounds == nil && types.count == 3 {
+                let typeOrdering = Expression<Void>(literal: """
                         CASE
                             WHEN type = 'online' THEN 1
                             WHEN type = 'physical' THEN 3
                             WHEN type = 'both' THEN 2
                         END
                         """)
-                }
                     
-                query = query.order([typeOrdering, name.asc])
+                query = query.order([typeOrdering, nameOrdering])
+            }else{
+                query = query.order(nameOrdering)
             }
             
             query = query.limit(pageLimit, offset: offset)
@@ -142,16 +144,16 @@ class MerchantDAO: PointOfUseDAO
 }
 
 extension MerchantDAO {
-    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: nil, territory: nil, offset: offset, completion: completion)
+    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortDirection: PointOfUseListFilters.SortDirection?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: nil, sortDirection: sortDirection, territory: nil, offset: offset, completion: completion)
     }
     
-    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
+    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, sortDirection: PointOfUseListFilters.SortDirection?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical], paymentMethods: paymentMethods, sortBy: sortBy, sortDirection: sortDirection,  territory: territory, offset: offset, completion: completion)
     }
     
-    func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
+    func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, sortDirection: PointOfUseListFilters.SortDirection?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, sortDirection: sortDirection, territory: territory, offset: offset, completion: completion)
     }
     
     func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
