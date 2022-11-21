@@ -19,7 +19,16 @@
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
+// -- CrowdNode
 #import "DWCheckbox.h"
+#import "DWBackupInfoViewController.h"
+#import "DWPreviewSeedPhraseModel.h"
+#import "DWSeedPhraseModel.h"
+#import "DWNavigationController.h"
+#import "DWSecureWalletDelegate.h"
+#import "DWVerifiedSuccessfullyViewController.h"
+#import "DWUpholdViewController.h"
+// -- end CrowdNode
 
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"

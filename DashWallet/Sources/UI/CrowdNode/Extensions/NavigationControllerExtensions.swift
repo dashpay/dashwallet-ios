@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,11 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWSecureWalletInfoViewController;
-@class DWVerifiedSuccessfullyViewController;
-
-@protocol DWSecureWalletDelegate <NSObject>
-
-- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller;
-- (void)secureWalletRoutineDidVerify:(UIViewController *)controller;
-- (void)secureWalletRoutineDidFinish:(DWVerifiedSuccessfullyViewController *)controller;
-
-@end
-
-NS_ASSUME_NONNULL_END
+extension UINavigationController {
+    func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
+        var viewControllers = viewControllers
+        viewControllers.removeLast(n)
+        viewControllers.append(controller)
+        setViewControllers(viewControllers, animated: animated)
+    }
+}

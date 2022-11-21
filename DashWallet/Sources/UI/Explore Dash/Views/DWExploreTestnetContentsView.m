@@ -298,7 +298,7 @@
 
     UIImageView *iconImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 14, 14)];
     iconImageView.contentMode = UIViewContentModeCenter;
-    [iconImageView setImage:[UIImage imageNamed:@"image.explore.dash.apy"]];
+    [iconImageView setImage:[UIImage imageNamed:@"image.crowdnode.apy"]];
     [apyStackView addArrangedSubview:iconImageView];
     
     UILabel *apiLabel = [[UILabel alloc] init];

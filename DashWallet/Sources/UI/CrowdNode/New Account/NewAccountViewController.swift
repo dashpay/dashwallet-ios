@@ -26,7 +26,7 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     @IBOutlet var addressLabel: UILabel!
     @IBOutlet var acceptTermsCheckBox: DWCheckbox!
     @IBOutlet var acceptTermsText: UITextView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -47,7 +47,7 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     @IBAction func copyAddress() {
         UIPasteboard.general.string = addressLabel.text
     }
-    
+
     @IBAction func onTermsChecked() {
         actionButton.isEnabled = acceptTermsCheckBox.isOn && viewModel.signUpEnabled
     }
@@ -62,20 +62,21 @@ extension NewAccountViewController {
     private func configureHierarchy() {
         definesPresentationContext = true
         view.backgroundColor = UIColor.dw_background()
-        
+
         configureActionButton()
         configureAccountAddress()
         configureTermsCheckBox()
     }
-    
+
     private func configureActionButton() {
         if viewModel.isInterrupted {
             actionButton.setTitle(NSLocalizedString("Accept Terms Of Use", comment: ""), for: .normal)
-        } else {
+        }
+        else {
             actionButton.setTitle(NSLocalizedString("Create Account", comment: ""), for: .normal)
         }
     }
-    
+
     private func configureAccountAddress() {
         let gradientMaskLayer = CAGradientLayer()
         gradientMaskLayer.frame = addressLabel.bounds
@@ -85,30 +86,30 @@ extension NewAccountViewController {
         gradientMaskLayer.endPoint = CGPoint(x: 1, y: 0.5)
         addressLabel.layer.mask = gradientMaskLayer
     }
-    
+
     private func configureTermsCheckBox() {
         let baseString = NSMutableAttributedString(string: NSLocalizedString("I agree to CrowdNode", comment: "").description)
         let termsOfUseString = NSMutableAttributedString(string: NSLocalizedString(" Terms of Use ", comment: "").description)
         let andString = NSMutableAttributedString(string: NSLocalizedString("and", comment: "").description)
         let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "").description)
-        
+
         termsOfUseString.addAttribute(.link, value: CrowdNodeConstants.termsOfUseUrl, range: NSRange(location: 0, length: termsOfUseString.length))
         privacyPolicyString.addAttribute(.link, value: CrowdNodeConstants.privacyPolicyUrl, range: NSRange(location: 0, length: privacyPolicyString.length))
-        
+
         baseString.append(termsOfUseString)
         baseString.append(andString)
         baseString.append(privacyPolicyString)
-        
+
         acceptTermsText.attributedText = baseString
         acceptTermsText.font = UIFont.dw_regularFont(ofSize: 14)
         acceptTermsCheckBox.style = .square
         acceptTermsCheckBox.isOn = false
     }
-    
+
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-            UIApplication.shared.open(URL)
-            return false
-        }
+        UIApplication.shared.open(URL)
+        return false
+    }
 
     private func configureObservers() {
         viewModel.$signUpEnabled
@@ -118,22 +119,19 @@ extension NewAccountViewController {
                 wSelf.actionButton.isEnabled = wSelf.acceptTermsCheckBox.isOn && isEnabled
             }
             .store(in: &cancellableBag)
-        
+
         viewModel.$accountAddress
             .receive(on: DispatchQueue.main)
             .assign(to: \.text!, on: addressLabel)
             .store(in: &cancellableBag)
-        
+
         viewModel.$signUpState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 let isCreating = state == .fundingWallet || state == .acceptingTerms || state == .signingUp
-                
+
                 if isCreating {
-                    var viewControllers = self?.navigationController?.viewControllers
-                    viewControllers?.removeLast()
-                    viewControllers?.append(AccountCreatingController.controller())
-                    self?.navigationController?.setViewControllers(viewControllers!, animated: true)
+                    self?.navigationController?.replaceLast(2, with: AccountCreatingController.controller())
                 }
             }
             .store(in: &cancellableBag)
