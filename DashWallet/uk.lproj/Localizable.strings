@@ -1,0 +1,1199 @@
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ прийняв ваш запит на додавання в контакти";
+
+/* Username has sent you a contact request */
+"%@ has sent you a contact request" = "%@ надіслав вам запит на додавання в контакти";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access Face ID" = "%@ не має доступу до Face ID";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ не має доступу до камери";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access Touch ID" = "%@ не має доступу до Touch ID";
+
+/* No comment provided by engineer. */
+"(1/3) Processing Payment" = "(1/3) Обробка платежу";
+
+/* No comment provided by engineer. */
+"(1/3) Unable to process payment" = "(1/3) Неможливо обробити платіж";
+
+/* No comment provided by engineer. */
+"(2/3) Creating Dash Identity" = "(2/3) Створення Dash ID";
+
+/* No comment provided by engineer. */
+"(2/3) Unable to create Dash Identity" = "(2/3) Неможливо створити Dash ID";
+
+/* No comment provided by engineer. */
+"(3/3) Can't register username" = "(3/3) Не вдається зареєструвати ім'я користувача";
+
+/* No comment provided by engineer. */
+"(3/3) Registering Username" = "(3/3) Реєстрація імені користувача";
+
+/* No comment provided by engineer. */
+"1 hour" = "1 година";
+
+/* Shorten version of minute */
+"1 min" = "1 хвилина";
+
+/* No comment provided by engineer. */
+"24 hours" = "24 години";
+
+/* Shorten version of minutes */
+"5 min" = "5 хвилин";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" не є словом з фрази для відновлення";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" не є словом з фрази для відновлення. Чи бажаєте ви спробувати відновити правильне слово, що має бути на цьому місці?";
+
+/* No comment provided by engineer. */
+"\ntry again in %@" = "\nспробуйте ще раз через %@";
+
+/* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Пароль пристрою потрібен для захисту вашого гаманця. Щоб продовжити, перейдіть до налаштувань і ввімкніть пароль.";
+
+/* No comment provided by engineer. */
+"About" = "Про програму";
+
+/* No comment provided by engineer. */
+"Accept" = "Прийняти";
+
+/* No comment provided by engineer. */
+"Activity" = "Активність";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Додайте %@ до свого списку контактів, щоб переказувати платежі за Ім'ям користувача та зберігати історію взаємних транзакцій";
+
+/* No comment provided by engineer. */
+"Add a New Contact" = "Додати новий контакт";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Додати ярлик";
+
+/* No comment provided by engineer. */
+"Address" = "Адреса";
+
+/* No comment provided by engineer. */
+"Advanced Security" = "Розширений захист";
+
+/* No comment provided by engineer. */
+"All" = "Все";
+
+/* No comment provided by engineer. */
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* No comment provided by engineer. */
+"Allow camera access in Settings" = "Дозволити доступ до камери в налаштуваннях";
+
+/* No comment provided by engineer. */
+"Allow Face ID access in Settings" = "Дозволити доступ до Face ID в налаштуваннях";
+
+/* No comment provided by engineer. */
+"Allow Touch ID access in Settings" = "Дозволити доступ до Touch ID в налаштуваннях";
+
+/* No comment provided by engineer. */
+"Amount received" = "Amount received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Відправлена сума";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Сума надто мала";
+
+/* No comment provided by engineer. */
+"An intuitive and familiar experience across all your devices" = "Інтуїтивний та звичний інтерфейс на всіх ваших пристроях";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "Додаток %@ запитує платіж для";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Додаток %@ запитує адресу, щоб переказати вам оплату. Чи даєте ви дозвіл на ці дії?";
+
+/* No comment provided by engineer. */
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Додаток %@ хоче отримати ваш основний публічний ключ. Це може бути використане для відстеження вашого гаманця, але не для відправлення ваших Dash.";
+
+/* No comment provided by engineer. */
+"Are you sure?" = "Ви впевнені?";
+
+/* No comment provided by engineer. */
+"Authentication is unvailable" = "Автентифікація недоступна";
+
+/* No comment provided by engineer. */
+"Auto Logout" = "Авто-вихід";
+
+/* No comment provided by engineer. */
+"Autohide Balance" = "Автоматично приховати баланс";
+
+/* lowercase, ex. 4 Dash available */
+"available" = "доступно";
+
+/* No comment provided by engineer. */
+"Available balance" = "Доступний баланс";
+
+/* A noun. Used as a title. */
+"Backup Wallet" = "Резервна копія гаманця";
+
+/* No comment provided by engineer. */
+"Bad recovery phrase" = "Некоректна фраза відновлення";
+
+/* No comment provided by engineer. */
+"Balance hidden" = "Баланс приховано";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "блок #%1$d з %2$d";
+
+/* No comment provided by engineer. */
+"Block #%d of %d" = "Блок #%1$d з %2$d";
+
+/* No comment provided by engineer. */
+"Buy & Sell Dash" = "Купити & Продати Dash";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Купити / Продати Dash";
+
+/* No comment provided by engineer. */
+"Buy Dash" = "Купити Dash";
+
+/* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Купити Dash за допомогою акаунта Uphold";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Видаливши гаманець, у вас більше не буде доступу до коштів на цьому пристрої. Цю дію слід здійснювати лише в тому випадку, якщо у вас більше немає доступу до вашої кодової фрази і ви забули свій PIN.";
+
+/* No comment provided by engineer. */
+"Cancel" = "Відміна";
+
+/* A verb. Action button title for an alert 'Change payment amount?' */
+"Change" = "Змінити";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Змінити суму платежу?";
+
+/* No comment provided by engineer. */
+"Change PIN" = "Змінити PIN-код";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Перевірте з'єднання";
+
+/* Choose your Dash username */
+"Choose your" = "Виберіть свій";
+
+/* No comment provided by engineer. */
+"Clear" = "Очистити";
+
+/* No comment provided by engineer. */
+"Clear trusted node?" = "Видалити довірений вузол?";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid Dash address" = "Буфер обміну не містить Dash адресу";
+
+/* No comment provided by engineer. */
+"Close" = "Закрити";
+
+/* No comment provided by engineer. */
+"Close App" = "Закрити додаток";
+
+/* No comment provided by engineer. */
+"Confirm" = "Підтверджую";
+
+/* No comment provided by engineer. */
+"Confirm & Pay" = "Confirm & Pay";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Підтвердіть PIN";
+
+/* No comment provided by engineer. */
+"Confirming" = "Підтвердження";
+
+/* No comment provided by engineer. */
+"Connect with third party exchanges" = "Підключитися до сторонніх бірж";
+
+/* No comment provided by engineer. */
+"Connected peers: %d" = "Підключені вузли: %d";
+
+/* No comment provided by engineer. */
+"Connecting to payment server" = "Підключення до платіжного сервера";
+
+/* No comment provided by engineer. */
+"Contact Request Pending" = "Непідтверджені запити на додавання до контактів";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Запити на додавання до контактів";
+
+/* No comment provided by engineer. */
+"Contact Support" = "Служба підтримки";
+
+/* No comment provided by engineer. */
+"Contacts" = "Контакти";
+
+/* No comment provided by engineer. */
+"Continue" = "Продовжити";
+
+/* No comment provided by engineer. */
+"Copied" = "Скопійовано";
+
+/* No comment provided by engineer. */
+"Copy" = "Копіювати";
+
+/* No comment provided by engineer. */
+"Copy Logs" = "Копіювати логи";
+
+/* No comment provided by engineer. */
+"Copyright © 2020 Dash Core" = "Авторські права © 2020 Dash Core";
+
+/* No comment provided by engineer. */
+"Could not automatically recover missing or incorrect words" = "Не вдалося автоматично відновити пропущені або неправильні слова";
+
+/* No comment provided by engineer. */
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Не вдалося підключитися до мережі Dash. Будь ласка, перевірте, чи ви підключені до Інтернету.";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Не вдалося здійснити платіж";
+
+/* No comment provided by engineer. */
+"Couldn't sweep balance" = "Не вдалося перенести баланс";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to Dash network" = "Не вдалося передати платіж у мережу Dash";
+
+/* No comment provided by engineer. */
+"Create a New Wallet" = "Створитит нови";
+
+/* No comment provided by engineer. */
+"CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
+"Current user: %@" = "Поточний користувач: %@";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Платежі Dash не можуть бути меншими ніж %@";
+
+/* No comment provided by engineer. */
+"Dash username" = "Ім'я користувача Dash";
+
+/* No comment provided by engineer. */
+"DashPay Upgrade Fee" = "Комісія за оновлення DashPay";
+
+/* No comment provided by engineer. */
+"Date" = "Дата";
+
+/* No comment provided by engineer. */
+"Default currency, shortcuts, about…" = "Валюта за замовчуванням, ярлики, про програму.";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "БЕЗПЕКА ПРИСТРОЮ ПІД ЗАГРОЗОЮ\nБудь-який «jailbreak» додаток може отримати доступ до ваших приватних ключів (і вкрасти ваші Dash).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗПЕКА ПРИСТРОЮ ПІД ЗАГРОЗОЮ\nБудь-який «jailbreak» додаток може отримати доступ до ваших приватних ключів (і вкрасти ваші Dash). Негайно видаліть цей гаманець та відновіть його на довіреному пристрої.";
+
+/* No comment provided by engineer. */
+"Do not take a screenshot" = "Не робіть скріншот";
+
+/* No comment provided by engineer. */
+"Done" = "Готово";
+
+/* ex., Download peer: 127.0.0.1:9999 */
+"Download peer: %@" = "Вузол завантаження: %@";
+
+/* (List of notifications happened) Earlier (some time ago) */
+"Earlier" = "Раніше";
+
+/* Input username textfield placeholder */
+"eg: johndoe" = "наприклад: johndoe";
+
+/* No comment provided by engineer. */
+"Enable Face ID" = "Увімкнути Face ID";
+
+/* No comment provided by engineer. */
+"Enable Receive Notifications" = "Увімкнути отримання сповіщень";
+
+/* No comment provided by engineer. */
+"Enable Touch ID" = "Увімкнути Touch ID";
+
+/* No comment provided by engineer. */
+"Enter" = "Ввід";
+
+/* No comment provided by engineer. */
+"Enter PIN" = "Введіть PIN-код";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Введіть фразу відновлення";
+
+/* No comment provided by engineer. */
+"Enter the amount to transfer" = "Вкажіть суму переказу";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Введіть код 2FA нижче";
+
+/* No comment provided by engineer. */
+"Error" = "Помилка";
+
+/* No comment provided by engineer. */
+"Error Upgrading" = "Помилка оновлення";
+
+/* No comment provided by engineer. */
+"Exit" = "Вихід";
+
+/* No comment provided by engineer. */
+"Expense" = "Expense";
+
+/* No comment provided by engineer. */
+"Explore" = "Explore";
+
+/* No comment provided by engineer. */
+"Extended Public Keys" = "Розширені відкриті ключі";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Ліміт Face ID";
+
+/* No comment provided by engineer. */
+"Failed wallet update" = "Помилка оновлення гаманця";
+
+/* No comment provided by engineer. */
+"Fee" = "Комісія";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Комісія більша за баланс";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount." = "Комісія буде списана із запитаної суми.";
+
+/* No comment provided by engineer. */
+"Filter Transactions" = "Фільтрувати транзакції";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Знайдіть користувача в Dash Network";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Забули PIN-код?";
+
+/* No comment provided by engineer. */
+"Found missing word:\n%@" = "Знайдено пропущене слово:\n%@";
+
+/* No comment provided by engineer. */
+"Found missing words:\n%@" = "Знайдено пропущені слова:\n%@";
+
+/* No comment provided by engineer. */
+"Found potential missing words:\n%@" = "Знайдено можливо пропущені слова:\n%@";
+
+/* No comment provided by engineer. */
+"Generate extended public keys?" = "Згенерувати розширені відкриті ключі?";
+
+/* No comment provided by engineer. */
+"Generating CSV Report" = "Generating CSV Report";
+
+/* No comment provided by engineer. */
+"Get Started" = "Почати";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Перейти на сайт";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "надіслав запит на дружбу";
+
+/* No comment provided by engineer. */
+"Have complete control and customize your wallet based on your needs" = "Отримайте повний контроль і налаштуйте свій гаманець для своїх потреб";
+
+/* No comment provided by engineer. */
+"header #%d of %d" = "заголовок #%1$d з %2$d";
+
+/* Hello username, */
+"Hello %@," = "Привіт, %@,";
+
+/* No comment provided by engineer. */
+"Help us improve your experience" = "Допоможіть нам стати кращими";
+
+/* adjective, security level */
+"High" = "Високий";
+
+/* No comment provided by engineer. */
+"History" = "Історія";
+
+/* No comment provided by engineer. */
+"I Accept" = "Я приймаю";
+
+/* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я погоджуюся з тим, що втрачу свої монети, якщо більше не матиму фрази відновлення";
+
+/* No comment provided by engineer. */
+"I wrote it down" = "Я записав її";
+
+/* No comment provided by engineer. */
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Якщо ви втратите цей пристрій, ви втратите свої кошти. Отримайте свою фразу відновлення, щоб ви могли відновити свій гаманець на іншому пристрої.";
+
+/* No comment provided by engineer. */
+"If you still would like to wipe it please input: \"%@\"" = "Якщо ви все ще бажаєте видалити гаманець, будь ласка, введіть: \"%@\"";
+
+/* No comment provided by engineer. */
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ігнорувати";
+
+/* No comment provided by engineer. */
+"Immediately" = "Негайно";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Імпорт ключа";
+
+/* No comment provided by engineer. */
+"Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* No comment provided by engineer. */
+"Income" = "Income";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Недостатньо коштів";
+
+/* Transaction within the wallet, transfer of own funds */
+"Internal Transfer" = "Внутрішній переказ";
+
+/* No comment provided by engineer. */
+"Internally moved to" = "Внутрішньо переміщено в";
+
+/* Invalid transaction */
+"Invalid" = "Недійсний";
+
+/* No comment provided by engineer. */
+"Invalid Payment Request" = "Недопустимий запит на оплату";
+
+/* No comment provided by engineer. */
+"Invalid QR Code" = "Неправильний QR код";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Ви намагаєтеся відновити свій гаманець за допомогою фрази відновлення з 12 слів. Однак, ви ввели лише 10 слів. Бажаєте автоматично відновити пропущені слова? Це займе приблизно годину. Рекомендуємо підключити гаджет до зарядного пристрою.";
+
+/* No comment provided by engineer. */
+"It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Ви намагаєтеся відновити свій гаманець за допомогою фрази відновлення з 12 слів. Однак, ви ввели лише 11 слів. Бажаєте автоматично відновити пропущене слово?";
+
+/* No comment provided by engineer. */
+"It's Important" = "Це важливо";
+
+/* No comment provided by engineer. */
+"Join Evolution" = "Join Evolution";
+
+/* No comment provided by engineer. */
+"Keypair %ld" = "Ключі %ld";
+
+/* No comment provided by engineer. */
+"Let me know when it’s done" = "Повідомити, коли буде готово";
+
+/* Validation rule */
+"Letters and numbers only" = "Letters and numbers only";
+
+/* No comment provided by engineer. */
+"Link Uphold Account" = "Прив'язати акаунт Uphold";
+
+/* No comment provided by engineer. */
+"Load more" = "Завантажити більше";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Локальна валюта";
+
+/* No comment provided by engineer. */
+"Local requested amount: %@" = "Сума у ​​місцевій валюті: %@";
+
+/* No comment provided by engineer. */
+"Locked" = "Заблоковано";
+
+/* No comment provided by engineer. */
+"Log Out" = "Вийти";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Вийти з Uphold";
+
+/* No comment provided by engineer. */
+"Login with Face ID" = "Увійти за допомогою Face ID";
+
+/* No comment provided by engineer. */
+"Login with Touch ID" = "Увійти за допомогою Touch ID";
+
+/* a verb, Logout Immediately */
+"Logout" = "Вийти";
+
+/* Logout after 5 min */
+"Logout after" = "Вийти через";
+
+/* adjective, security level */
+"Low" = "Низький";
+
+/* No comment provided by engineer. */
+"Manage Trusted Node" = "Керування довіреним вузлом";
+
+/* No comment provided by engineer. */
+"masternode list #%d of %d" = "список Мастернод #%1$d з %2$d";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Реєстрація Мастерноди";
+
+/* No comment provided by engineer. */
+"Masternode Revocation" = "Відключення Мастерноди";
+
+/* No comment provided by engineer. */
+"Masternode Update" = "Оновлення Мастерноди";
+
+/* Contracted variant of 'Maximum' word */
+"Max" = "Максимум";
+
+/* Validation rule: Maximum 24 characters */
+"Maximum %ld characters" = "Maximum %ld characters";
+
+/* adjective, security level */
+"Medium" = "Середній";
+
+/* Validation rule */
+"Minimum 3 characters" = "Minimum 3 characters";
+
+/* No comment provided by engineer. */
+"More" = "Більше";
+
+/* No comment provided by engineer. */
+"More Control" = "Більше контролю";
+
+/* No comment provided by engineer. */
+"Moved from" = "Переміщено з";
+
+/* No comment provided by engineer. */
+"Moved to Address" = "Переміщено на адресу";
+
+/* No comment provided by engineer. */
+"My Contacts" = "Мої контакти";
+
+/* No comment provided by engineer. */
+"Name" = "Назва";
+
+/* No comment provided by engineer. */
+"Network" = "Мережа";
+
+/* No comment provided by engineer. */
+"Network fee" = "Комісія мережі";
+
+/* (List of) New (notifications) */
+"New" = "Нові";
+
+/* No comment provided by engineer. */
+"NFC device" = "NFC пристрій";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid Dash address" = "Пристрій NFC не передав дійсну адресу Dash";
+
+/* No comment provided by engineer. */
+"Node IP" = "IP вузла";
+
+/* adjective, security level */
+"None" = "Відсутній";
+
+/* No comment provided by engineer. */
+"Not a Dash QR code" = "Не є QR-кодом Dash";
+
+/* No comment provided by engineer. */
+"Not a Dash URL" = "Не є посиланням Dash";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Неправильна Dash адреса";
+
+/* No comment provided by engineer. */
+"Not yet used" = "Ще не використовувався";
+
+/* No comment provided by engineer. */
+"Notifications" = "Сповіщення";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Щойно %@ прийме ваш запит, ви зможете здійснити оплату безпосередньо на ім’я користувача";
+
+/* No comment provided by engineer. */
+"Operator Keys" = "Ключі оператора";
+
+/* No comment provided by engineer. */
+"Owner Address" = "Адреса власника";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Ключі власника";
+
+/* No comment provided by engineer. */
+"Pay" = "Оплатити";
+
+/* No comment provided by engineer. */
+"Pay and get paid instantly with easy to use payment flows" = "Платіть і отримуйте гроші миттєво за допомогою простих у використанні платіжних потоків";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Платіть безпосередньо на ім'я користувача";
+
+/* No comment provided by engineer. */
+"Pay with Ease" = "Платіть з легкістю";
+
+/* 1 out of 4 in the Paying Animation */
+"Paying" = "Оплата";
+
+/* 2 out of 4 in the Paying Animation */
+"Paying." = "Оплата.";
+
+/* 3 out of 4 in the Paying Animation */
+"Paying.." = "Оплата..";
+
+/* 4 out of 4 in the Paying Animation */
+"Paying..." = "Оплата...";
+
+/* No comment provided by engineer. */
+"Payments" = "Платежі";
+
+/* No comment provided by engineer. */
+"Pending" = "Очікує";
+
+/* No comment provided by engineer. */
+"PIN is always required to make a payment" = "Для здійснення платежу завжди потрібен PIN-код";
+
+/* No comment provided by engineer. */
+"Please enter PIN to upgrade wallet" = "Введіть PIN-код, щоб оновити гаманець";
+
+/* No comment provided by engineer. */
+"Please place your phone near NFC device." = "Розташуйте телефон біля пристрою NFC.";
+
+/* No comment provided by engineer. */
+"Please tap on the words from your recovery phrase in the right order" = "Будь ласка, торкніться слів з вашої фрази відновлення в правильному порядку";
+
+/* No comment provided by engineer. */
+"Please try again" = "Будь ласка, спробуйте ще раз";
+
+/* No comment provided by engineer. */
+"Please try scanning again" = "Спробуйте відсканувати ще раз";
+
+/* No comment provided by engineer. */
+"Please Wait" = "Будь ласка, зачекайте";
+
+/* No comment provided by engineer. */
+"Please wait" = "Будь ласка, зачекайте";
+
+/* No comment provided by engineer. */
+"Please wait for the sync to complete" = "Будь ласка, зачекайте на завершення синхронізації";
+
+/* No comment provided by engineer. */
+"Please write it down" = "Будь ласка, запишіть її";
+
+/* No comment provided by engineer. */
+"Previously used at IP address" = "Раніше використовувався з IP-адресою";
+
+/* No comment provided by engineer. */
+"Private key" = "Приватний ключ";
+
+/* No comment provided by engineer. */
+"Processing" = "Обробка";
+
+/* No comment provided by engineer. */
+"Provider Address" = "Адреса провайдера";
+
+/* No comment provided by engineer. */
+"Public key" = "Публічний ключ";
+
+/* No comment provided by engineer. */
+"Quick Receive" = "Швидке отримання";
+
+/* No comment provided by engineer. */
+"Quorums validated: %d/%d" = "Затверджені кворуми: %1$d/%2$d.";
+
+/* ex., Rate 1 US $ = 0.000009 Dash */
+"Rate: %@ = %@" = "Курс: %1$@ = %2$@";
+
+/* No comment provided by engineer. */
+"Receive" = "Отримати";
+
+/* Received transaction */
+"Received" = "Отримано";
+
+/* No comment provided by engineer. */
+"Received %@ (%@)" = "Отримано %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Received at" = "Отримано на";
+
+/* No comment provided by engineer. */
+"Received from" = "Отримано з";
+
+/* No comment provided by engineer. */
+"Recover" = "Відновити";
+
+/* No comment provided by engineer. */
+"Recover Wallet" = "Відновити гаманець";
+
+/* No comment provided by engineer. */
+"Recovering..." = "Відновлення...";
+
+/* No comment provided by engineer. */
+"Recovery Phrase" = "Фраза відновлення";
+
+/* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Фраза відновлення не збігається";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Фраза для відновлення повинна містити 12, 15, 18, 21 або 24 слова";
+
+/* Button title, Register (username) */
+"Register" = "Реєстрація";
+
+/* No comment provided by engineer. */
+"Register?" = "Зареєструватись?";
+
+/* No comment provided by engineer. */
+"Registered from" = "Зареєстровано з";
+
+/* No comment provided by engineer. */
+"Registered Masternode" = "Зареєстрована Мастернода";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Повідомити про проблему";
+
+/* An action */
+"Rescan" = "Повторне сканування";
+
+/* No comment provided by engineer. */
+"Rescan Blockchain" = "Пересканувати блокчейн";
+
+/* No comment provided by engineer. */
+"Reset" = "Скидання";
+
+/* No comment provided by engineer. */
+"Reset to Default" = "Скинути до замовчування";
+
+/* No comment provided by engineer. */
+"Reset Wallet" = "Скидання гаманця";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Зберігати взаємну історію транзакцій";
+
+/* No comment provided by engineer. */
+"Retry" = "Повторити";
+
+/* No comment provided by engineer. */
+"Review & Rate the app" = "Оцінити додаток";
+
+/* No comment provided by engineer. */
+"Reward" = "Нагорода";
+
+/* No comment provided by engineer. */
+"Rewards" = "Нагороди";
+
+/* should be as short as possible */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
+"Scan Private Key" = "Сканувати приватний ключ";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Сканувати QR код";
+
+/* A title of the quick receive screen */
+"Scan this to Pay" = "Відскануйте це, щоб оплатити";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
+/* No comment provided by engineer. */
+"Scan to Send" = "Сканувати для відправки";
+
+/* (Send by) Scanning QR code */
+"Scanning QR code" = "Сканування QR коду";
+
+/* No comment provided by engineer. */
+"Screenshot detected. New recovery phrase:" = "Виявлено знімок екрана. Нова фраза відновлення:";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Знімки екрана доступні для інших програм і пристроїв. Створіть нову фразу відновлення та збережіть її в секреті.";
+
+/* No comment provided by engineer. */
+"Search for a contact" = "Пошук контакта";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Пошук запиту на додавання в контакти";
+
+/* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Пошук користувача в Dash Network";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Пошук по імені користувача";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Результати пошуку по \"";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Пошук по імені користувача %@ в Dash Network";
+
+/* No comment provided by engineer. */
+"Secure now" = "Захистити";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Secure Wallet Now" = "Захистіть гаманець зараз";
+
+/* No comment provided by engineer. */
+"Security" = "Безпека";
+
+/* No comment provided by engineer. */
+"Security Level" = "Рівень безпеки";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "Переглянути на Uphold";
+
+/* No comment provided by engineer. */
+"Send" = "Відправити";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Надіслати %1$@ (%2$@) з цього приватного ключа до вашого гаманця? Мережа Dash отримає комісію %3$@ (%4$@).";
+
+/* Send by (scanning QR code) */
+"Send by" = "Надіслати";
+
+/* No comment provided by engineer. */
+"Send Contact Request" = "Надіслати запит на додавання до контактів";
+
+/* No comment provided by engineer. */
+"Send to" = "Відправити";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Address" = "Відправити на адресу";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send with NFC" = "NFC переказ";
+
+/* 1 out of 4 in the Sending Animation */
+"Sending" = "Відправка";
+
+/* No comment provided by engineer. */
+"Sending to" = "Відправка";
+
+/* 2 out of 4 in the Sending Animation */
+"Sending." = "Відправка.";
+
+/* 3 out of 4 in the Sending Animation */
+"Sending.." = "Відправка..";
+
+/* 4 out of 4 in the Sending Animation */
+"Sending..." = "Відправка...";
+
+/* Sent transaction */
+"Sent" = "Відправлено";
+
+/* No comment provided by engineer. */
+"Sent from" = "Відправлено з";
+
+/* No comment provided by engineer. */
+"Sent to" = "Відправити";
+
+/* No comment provided by engineer. */
+"Set a trusted node" = "Встановити довірений вузол";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Встановіть PIN";
+
+/* No comment provided by engineer. */
+"Settings" = "Налаштування";
+
+/* No comment provided by engineer. */
+"Setup Wallet" = "Налаштувати гаманець";
+
+/* No comment provided by engineer. */
+"Share" = "Поділитися";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Показати ключі Мастернод";
+
+/* No comment provided by engineer. */
+"Show Recovery Phrase" = "Показати фразу відновлення";
+
+/* No comment provided by engineer. */
+"Skip" = "Пропустити";
+
+/* No comment provided by engineer. */
+"skip" = "пропустити";
+
+/* No comment provided by engineer. */
+"Something went wrong" = "Щось пішло не так";
+
+/* No comment provided by engineer. */
+"Sort by" = "Сортувати зв";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Сортувати контакти";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Вкажіть суму";
+
+/* No comment provided by engineer. */
+"Spending Confirmation" = "Підтвердження витрат";
+
+/* No comment provided by engineer. */
+"Support" = "Підтримка";
+
+/* No comment provided by engineer. */
+"Swept!" = "Переведено!";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Перейти в Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Перейти в Testnet";
+
+/* No comment provided by engineer. */
+"Sync Failed" = "Помилка синхронізації";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Синхронізувати зараз";
+
+/* No comment provided by engineer. */
+"Syncing" = "Синхронізація";
+
+/* No comment provided by engineer. */
+"Syncing Balance" = "Синхронізація балансу";
+
+/* Pay using NFC (should be as short as possible) */
+"Tap" = "Tap";
+
+/* No comment provided by engineer. */
+"Tap to hide balance" = "Торкніться, щоб приховати баланс";
+
+/* No comment provided by engineer. */
+"Tap to unhide balance" = "Торкніться, щоб показати баланс";
+
+/* No comment provided by engineer. */
+"Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "Немає нових сповіщень";
+
+/* No comment provided by engineer. */
+"There are no transactions to display" = "Немає транзакцій для відображення";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "Немає користувачів, які з ім'ям %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "Немає користувачів, які з ім'ям %@ у ваших контактах";
+
+/* No comment provided by engineer. */
+"This app is open source:" = "Це програма з відкритим кодом:";
+
+/* No comment provided by engineer. */
+"This PIN will be required to unlock your app every time when you use it." = "Цей PIN-код необхідний, щоб розблокувати вашу програму кожного разу, коли ви її використовуєте.";
+
+/* No comment provided by engineer. */
+"This recovery phrase is your access to the funds in this wallet." = "Ця фраза відновлення - ваш доступ до коштів у цьому гаманці.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "Підтвердження може тривати кілька хвилин.";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "Цю транзакцію буде підтверджено негайно без додаткової комісії.";
+
+/* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Цей гаманець не порожній або синхронізація не завершена, ви не можете стерти його без фрази відновлення";
+
+/* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "Це перемістить усі монети з цього гаманця у ваш гаманець на цьому пристрої.";
+
+/* No comment provided by engineer. */
+"Tools" = "Інструменти";
+
+/* No comment provided by engineer. */
+"Total" = "Всього";
+
+/* No comment provided by engineer. */
+"Touch ID limit" = "Touch ID ліміт";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Id транзакції";
+
+/* A verb, button title. */
+"Transfer" = "Переказати";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Переказати Dash з Uphold облікового запису на цей гаманець";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Переказ з Uphold";
+
+/* No comment provided by engineer. */
+"Transfer In" = "Transfer In";
+
+/* No comment provided by engineer. */
+"Transfer Out" = "Transfer Out";
+
+/* An action */
+"Try again" = "Спробуйте ще раз";
+
+/* Alert title */
+"Turn device passcode on" = "Увімкніть пароль";
+
+/* No comment provided by engineer. */
+"Unable to connect" = "Не вдалось підключитись";
+
+/* No comment provided by engineer. */
+"Unable to get new QR code" = "Не вдалося отримати новий QR-код";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Непідтримуваний або пошкоджений документ";
+
+/* No comment provided by engineer. */
+"Unsupported URL" = "Непідтримувана URL-адреса";
+
+/* ex., Updated: 27.12, 8:30 */
+"Updated: %@" = "Оновлено: %@";
+
+/* No comment provided by engineer. */
+"Upgrade Fee" = "Upgrade Fee";
+
+/* No comment provided by engineer. */
+"Upgrading to DashPay" = "Оновлення до DashPay";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Used" = "Використано";
+
+/* No comment provided by engineer. */
+"Used at IP address" = "Використано за IP-адресою";
+
+/* No comment provided by engineer. */
+"Username taken" = "Ім'я користувача зайняте";
+
+/* No comment provided by engineer. */
+"Validating username done" = "Validating username done";
+
+/* No comment provided by engineer. */
+"Validating username failed" = "Ім'я користувача не підтверджено";
+
+/* No comment provided by engineer. */
+"Validating username…" = "Валідація імені користувача";
+
+/* No comment provided by engineer. */
+"Verified Successfully" = "Успішно верифіковано";
+
+/* No comment provided by engineer. */
+"Verify" = "Підтвердити";
+
+/* adjective, security level */
+"Very High" = "Дуже високий";
+
+/* No comment provided by engineer. */
+"View All" = "Переглянути все";
+
+/* No comment provided by engineer. */
+"View in Block Explorer" = "Подивитися в Block Explorer";
+
+/* No comment provided by engineer. */
+"View passphrase, backup wallet…" = "Показати кодову фразу, зробити резервну копію гаманця.";
+
+/* No comment provided by engineer. */
+"View Recovery Phrase" = "Переглянути фразу відновлення";
+
+/* No comment provided by engineer. */
+"Voting Address" = "Адреса голосування";
+
+/* No comment provided by engineer. */
+"Voting Keys" = "Ключі голосування";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Гаманець вимкнено";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Ключі до гаманця";
+
+/* No comment provided by engineer. */
+"Warning" = "Попередження";
+
+/* No comment provided by engineer. */
+"WARNING" = "УВАГА";
+
+/* No comment provided by engineer. */
+"We are about to show you the secret key to your wallet." = "Зараз ми покажемо секретний ключ до вашого гаманця.";
+
+/* No comment provided by engineer. */
+"We do not store this recovery phrase." = "Ми не зберігаємо цю фразу відновлення.";
+
+/* No comment provided by engineer. */
+"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Виявлено, що під час міграції Dash Wallet стався збій. Повторне сканування блокчейну вирішить цю проблему або спробуйте ще раз. Повторне сканування бажано проводити з використанням Wi-Fi, і це займе до півгодини. Ваші кошти будуть доступні після завершення процесу синхронізації.";
+
+/* No comment provided by engineer. */
+"We Upgraded" = "Ми оновились";
+
+/* No comment provided by engineer. */
+"Welcome" = "Ласкаво просимо";
+
+/* No comment provided by engineer. */
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Коли ця транзакція буде підтверджена, гаманець буде непотрібним і не зможе бути повторно використаний з метою безпеки.";
+
+/* No comment provided by engineer. */
+"Why I should not take a screenshot?" = "Чому я не можу зробити скріншот?";
+
+/* No comment provided by engineer. */
+"WIF Private key" = "Приватний ключ WIF";
+
+/* No comment provided by engineer. */
+"Wipe" = "Стерти";
+
+/* No comment provided by engineer. */
+"Wipe Wallet" = "Очистити гаманець";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "З блокчейном Dash";
+
+/* No comment provided by engineer. */
+"You accepted the contact request from %@" = "Ви прийняли запит на додавання в контакти від %@";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash Wallet." = "Ви збираєтеся зняти кошти з іншого гаманця Dash.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Ви збираєтеся стерти цей гаманець із цього пристрою. Кошти, пов’язані з цим гаманцем, можна отримати, лише якщо у вас є фраза для відновлення.";
+
+/* No comment provided by engineer. */
+"You can authenticate with Face ID for payments below" = "Ви можете пройти автентифікацію за допомогою Face ID для платежів нижче";
+
+/* No comment provided by engineer. */
+"You can authenticate with Touch ID for payments below" = "Ви можете пройти автентифікацію за допомогою Touch ID для платежів нижче";
+
+/* No comment provided by engineer. */
+"You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "You have chosen \"%@\" as your username. Your username cannot be changed once registered.";
+
+/* No comment provided by engineer. */
+"You must enter your PIN in order to enter Dash Wallet" = "Ви повинні ввести свій PIN-код, щоб увійти в Dash Wallet";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Ви отримали Dash! Якщо ви втратите цей пристрій, ви втратите свої кошти. Отримайте свою фразу відновлення, щоб ви могли відновити свій гаманець на іншому пристрої.";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "Ви надіслали запит на контакт %@";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "Вам також потрібно буде вийти з веб-сайту Uphold за допомогою браузера";
+
+/* No comment provided by engineer. */
+"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
+
+/* No comment provided by engineer. */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Вам знадобиться ця фраза відновлення, щоб отримати доступ до своїх коштів, якщо цей пристрій буде втрачено, пошкоджено або якщо Dash Wallet буде випадково видалено з цього пристрою.";
+
+/* No comment provided by engineer. */
+"Your DashPay Username is ready to use" = "Ваше ім’я користувача DashPay готове до використання";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакція була відправлена ​​і її сума відобразиться у вашому гаманці за кілька хвилин.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Ваш баланс Dash на Uphold складає";
+
+/* No comment provided by engineer. */
+"Your username %@ has been successfully created on the Dash Network" = "Ваше ім’я користувача %@ було успішно створено в Dash Network";
+
+/* No comment provided by engineer. */
+"Your username %@ is being created on the Dash Network" = "Ваше ім’я користувача %@ створюється в Dash Network";
+
+/* No comment provided by engineer. */
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Тепер ваш гаманець у безпеці. Ви можете будь-коли використати свою фразу відновлення, щоб відновити обліковий запис на іншому пристрої.";
+
+/* No comment provided by engineer. */
+"Сopied address or QR" = "Скопійована адреса або QR";
