@@ -49,17 +49,34 @@ class SendAmountModel: BaseAmountModel {
         let allAvailableFunds = account.maxOutputAmount
         
         if allAvailableFunds > 0 {
-            let maxAmount = AmountObject(plainAmount: Int64(allAvailableFunds), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            
-            if activeAmountType == .main {
-                mainAmount = maxAmount
-                supplementaryAmount = nil
-            }else{
-                mainAmount = nil
-                supplementaryAmount = maxAmount.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
-            }
-            
-            amountChangeHandler?(amount)
+            updateCurrentAmountObject(with: Int64(allAvailableFunds))
         }
+    }
+    
+    internal func updateCurrentAmountObject(with amount: Int64) {
+        let amountObject = amountObject(with: amount, amountType: activeAmountType)
+        updateCurrentAmountObject(with: amountObject)
+    }
+    
+    internal func updateCurrentAmountObject(with newObject: AmountObject) {
+        if activeAmountType == .main {
+            mainAmount = newObject
+            supplementaryAmount = nil
+        }else{
+            mainAmount = nil
+            supplementaryAmount = newObject
+        }
+        
+        amountChangeHandler?(newObject)
+    }
+    
+    internal func amountObject(with amount: Int64, amountType: AmountType) -> AmountObject {
+        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        
+        if activeAmountType == .supplementary {
+            return amountObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+        }
+        
+        return amountObject
     }
 }

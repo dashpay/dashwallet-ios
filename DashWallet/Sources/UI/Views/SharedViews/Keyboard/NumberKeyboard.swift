@@ -59,7 +59,7 @@ extension NumberKeyboard {
     
     private var delegateOptions: NumberKeyboardDelegateOptions = []
     
-    private var isClearButtonLongPressGestureActive: Bool = true
+    private var isClearButtonLongPressGestureActive: Bool = false
     
     private var allButtons: [NumberKeyboardButton]!
     private var digitButtons: [NumberKeyboardButton]!

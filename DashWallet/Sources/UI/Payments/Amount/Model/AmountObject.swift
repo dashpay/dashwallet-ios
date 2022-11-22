@@ -77,6 +77,7 @@ struct AmountObject {
         //TODO: Refactor the way we calculate price for dash
         let priceManager = DSPriceManager.sharedInstance()
         let localPrice = priceManager.price(forCurrencyCode: fiatCurrencyCode)!.price
+        
         let plainAmount = priceManager.amount(forLocalCurrencyString: localCurrencyFormatted, localFormatter: localFormatter, localPrice: localPrice)
         
         if plainAmount == 0 && localNumber != .zero {

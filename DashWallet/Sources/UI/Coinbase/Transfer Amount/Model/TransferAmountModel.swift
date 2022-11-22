@@ -64,15 +64,7 @@ final class TransferAmountModel: SendAmountModel {
             
             let maxAmount = AmountObject(dashAmountString: balance, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
             
-            if activeAmountType == .main {
-                mainAmount = maxAmount
-                supplementaryAmount = nil
-            }else{
-                mainAmount = nil
-                supplementaryAmount = maxAmount
-            }
-            
-            amountChangeHandler?(amount)
+            updateCurrentAmountObject(with: maxAmount)
         }
     }
     
@@ -89,8 +81,6 @@ final class TransferAmountModel: SendAmountModel {
     }
     
     private func transferToCoinbase() {
-        guard let address = self.address else { return }
-        
         //TODO: validate
         let amount = UInt64(amount.plainAmount)
         
