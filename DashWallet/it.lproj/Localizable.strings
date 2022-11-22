@@ -734,6 +734,9 @@
 /* No comment provided by engineer. */
 "Network fee" = "Commissione di rete";
 
+/* Network Unavailable */
+"Network Unavailable" = "Network Unavailable";
+
 /* (List of) New (notifications) */
 "New" = "Nuovo";
 
@@ -826,6 +829,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Il PIN è sempre richiesto per effettuare un pagamento";
+
+/* Network Unavailable */
+"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Inserisci il PIN per aggiornare il portafoglio";

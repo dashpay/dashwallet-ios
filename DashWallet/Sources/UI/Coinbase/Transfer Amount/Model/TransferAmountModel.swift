@@ -43,12 +43,17 @@ final class TransferAmountModel: SendAmountModel {
     
     public var address: String!
     public var direction: TransferDirection = .toCoinbase
+
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var networkStatus: NetworkStatus!
+
+    private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
+    private var reachabilityObserver: Any!
     
     override init() {
         super.init()
         
-        //TODO: initialize the process of obtaining new address just before we want to send a transaction
-        obtainNewAddress()
+        initializeReachibility()
     }
    
     override func selectAllFunds(_ preparationHandler: (() -> Void)) {
@@ -57,8 +62,16 @@ final class TransferAmountModel: SendAmountModel {
         }else{
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
             
-            mainAmount = AmountObject(dashAmountString: balance, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            supplementaryAmount = nil
+            let maxAmount = AmountObject(dashAmountString: balance, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            
+            if activeAmountType == .main {
+                mainAmount = maxAmount
+                supplementaryAmount = nil
+            }else{
+                mainAmount = nil
+                supplementaryAmount = maxAmount
+            }
+            
             amountChangeHandler?(amount)
         }
     }
@@ -80,11 +93,19 @@ final class TransferAmountModel: SendAmountModel {
         
         //TODO: validate
         let amount = UInt64(amount.plainAmount)
-        guard let paymentInput = DWPaymentInputBuilder().pay(toAddress: address, amount: amount) else {
-            return
-        }
         
-        delegate?.initiatePayment(with: paymentInput)
+        obtainNewAddress { [weak self] address in
+            guard let address = address else {
+                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
+                return
+            }
+            
+            guard let paymentInput = DWPaymentInputBuilder().pay(toAddress: address, amount: amount) else {
+                return
+            }
+            
+            self?.delegate?.initiatePayment(with: paymentInput)
+        }
     }
     
     private func transferToWallet(with verificationCode: String? = nil) {
@@ -116,14 +137,38 @@ final class TransferAmountModel: SendAmountModel {
             .store(in: &cancellables)
     }
     
-    private func obtainNewAddress() {
+    private func obtainNewAddress(completion: @escaping ((String?) -> Void)) {
         Coinbase.shared.createNewCoinbaseDashAddress()
             .receive(on: RunLoop.main)
             .sink { completion in
                 print(completion)
             } receiveValue: { address in
                 self.address = address
+                completion(address)
             }
             .store(in: &cancellables)
     }
 }
+
+private extension TransferAmountModel {
+    private func initializeReachibility() {
+        if (!reachability.isMonitoring) {
+            reachability.startMonitoring()
+        }
+        
+        self.reachabilityObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
+                                                                           object: nil,
+                                                                           queue: nil,
+                                                                           using: { [weak self] notification in
+            self?.updateNetworkStatus()
+        })
+        
+        updateNetworkStatus()
+    }
+    
+    private func updateNetworkStatus() {
+        networkStatus = reachability.networkStatus
+        networkStatusDidChange?(networkStatus)
+    }
+}
+

@@ -123,7 +123,7 @@ extension AmountView {
         maxButton.addTarget(self, action: #selector(maxButtonActionHandler), for: .touchUpInside)
         addSubview(maxButton)
         
-        self.amountInputControl = AmountInputControl(style: .oppositeAmount)
+        self.amountInputControl = AmountInputControl(style: amountInputStyle)
         amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(amountInputControl)
@@ -133,9 +133,7 @@ extension AmountView {
         inputTypeSwitcher.selectItem = { [weak self] item in
             let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
             self?.amountInputControl.amountType = type
-            self?.amountInputControl.setActiveType(type, animated: true, completion: {
-                self?.delegate?.amountInputControlDidSwapInputs()
-            })
+            self?.amountInputControl.setActiveType(type, animated: true, completion: nil)
         }
         addSubview(inputTypeSwitcher)
         

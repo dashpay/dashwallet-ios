@@ -24,7 +24,7 @@ class BaseAmountViewController: ActionButtonViewController {
     internal var contentView: UIView!
     internal var amountView: AmountView!
     
-    private var numberKeyboard: NumberKeyboard!
+    internal var numberKeyboard: NumberKeyboard!
     
     internal var model: BaseAmountModel!
     internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }

@@ -19,10 +19,20 @@ import UIKit
 
 protocol ActionButtonProtocol: AnyObject {
     var isEnabled: Bool { get set }
+    var isHidden: Bool { get set }
 }
 
 extension DWActionButton: ActionButtonProtocol {}
-extension UIBarButtonItem: ActionButtonProtocol {}
+extension UIBarButtonItem: ActionButtonProtocol {
+    var isHidden: Bool {
+        set {
+            isEnabled = newValue
+        }
+        get {
+            isEnabled
+        }
+    }
+}
 
 class ActionButtonViewController: BaseViewController {
     public weak var actionButton: ActionButtonProtocol?

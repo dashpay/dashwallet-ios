@@ -32,6 +32,8 @@ final class TransferAmountViewController: SendAmountViewController {
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
     
+    private var networkUnavailableView: UIView!
+    
     override var amountInputStyle: AmountInputControl.Style { .basic }
     
     private weak var codeConfirmationController: TwoFactorAuthViewController?
@@ -52,6 +54,9 @@ final class TransferAmountViewController: SendAmountViewController {
     override func configureModel() {
         super.configureModel()
         
+        transferModel.networkStatusDidChange = { [weak self] status in
+            self?.reloadView()
+        }
         transferModel.delegate = self
     }
     
@@ -64,18 +69,26 @@ final class TransferAmountViewController: SendAmountViewController {
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
         
+        networkUnavailableView = NetworkUnavailableView(frame: .zero)
+        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
+        networkUnavailableView.isHidden = true
+        contentView.addSubview(networkUnavailableView)
+        
         NSLayoutConstraint.activate([
             converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
             converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            converterView.heightAnchor.constraint(equalToConstant: 128)
+            converterView.heightAnchor.constraint(equalToConstant: 128),
+            
+            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor)
         ])
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.dw_secondaryBackground()
+        view.backgroundColor = .dw_background()
         
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
@@ -149,6 +162,14 @@ extension BaseAmountModel: ConverterViewDataSource {
 }
 
 extension TransferAmountViewController {
+    private func reloadView() {
+        let isOnline = transferModel.networkStatus == .online
+        networkUnavailableView.isHidden = isOnline
+        numberKeyboard.isHidden = !isOnline
+        actionButton?.isHidden = !isOnline
+        converterView.hasNetwork = isOnline
+    }
+    
     private func showSuccessTransactionStatus() {
         let vc = SuccessfulOperationStatusViewController.initiate(from: sb("Coinbase"))
         vc.closeHandler = { [weak self] in

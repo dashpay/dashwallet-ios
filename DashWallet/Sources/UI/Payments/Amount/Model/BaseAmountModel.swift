@@ -38,8 +38,8 @@ class BaseAmountModel {
     
     public var amountChangeHandler: ((AmountObject) -> Void)?
     
-    private var mainAmountValidator: DWAmountInputValidator!
-    private var supplementaryAmountValidator: DWAmountInputValidator!
+    internal var mainAmountValidator: DWAmountInputValidator!
+    internal var supplementaryAmountValidator: DWAmountInputValidator!
     
     internal var localFormatter: NumberFormatter
     internal var localCurrencyCode: String

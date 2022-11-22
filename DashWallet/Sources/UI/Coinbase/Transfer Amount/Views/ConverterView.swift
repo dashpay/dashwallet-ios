@@ -44,6 +44,12 @@ protocol ConverterViewDelegate: AnyObject {
 }
 
 class ConverterView: UIView {
+    public var hasNetwork: Bool = true {
+        didSet {
+            updateView()
+        }
+    }
+    
     public weak var delegate: ConverterViewDelegate?
     public weak var dataSource: ConverterViewDataSource? {
         didSet {
@@ -95,8 +101,8 @@ extension ConverterView {
     }
     
     private func updateView() {
-        fromView.update(with: direction.fromSource, balance: balance)
-        toView.update(with: direction.toSource, balance: nil)
+        fromView.update(with: direction.fromSource, balance: balance, hasNetwork: hasNetwork)
+        toView.update(with: direction.toSource, balance: nil, hasNetwork: hasNetwork)
     }
     
     private func configureHierarchy() {
@@ -212,19 +218,30 @@ private class SourceView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func update(with source: Source, balance: String?) {
+    public func update(with source: Source, balance: String?, hasNetwork: Bool) {
         imageView.image = UIImage(named: source.imageName)
         titleLabel.text = source.title
         
         if let balance = balance {
             walletBalanceStackView.isHidden = false
+  
+            let dashNumber = Decimal(string: balance, locale: .current)!
+            let duffsNumber = Decimal(DUFFS)
+            var plainAmount = dashNumber * duffsNumber
             
+            let dashAmount = NSDecimalNumber(decimal: plainAmount).int64Value
+            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: dashAmount) ?? "Fetching..."
+            
+            var hasNetwork = true
+            let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
             let dashStr = "\(balance) DASH"
-            let fiatStr = " ≈ \(balance)"
-            let fullStr = "\(dashStr)\(fiatStr)"
+            let fiatStr = " ≈ \(fiatAmount)"
+            let fullStr = "\(lastKnownBalance)\(dashStr)\(fiatStr)"
             let string = NSMutableAttributedString(string: fullStr)
             string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel], range: NSMakeRange(dashStr.count, fiatStr.count))
+            string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.systemRed], range: NSMakeRange(0, lastKnownBalance.count))
             string.addAttribute(.font, value: UIFont.dw_font(forTextStyle: .footnote), range: NSMakeRange(0, fullStr.count - 1))
+            
             
             walletBallanceLabel.attributedText = string
         }else{
