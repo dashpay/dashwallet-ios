@@ -184,7 +184,7 @@ extension TerritoriesListViewController: UISearchResultsUpdating {
         let whitespaceCharacterSet = CharacterSet.whitespaces
         let strippedString = searchController.searchBar.text!.trimmingCharacters(in: whitespaceCharacterSet).lowercased()
         
-        filtered = filtered.filter { $0.lowercased().contains(strippedString) }
+        filtered = filtered.filter { $0.lowercased().hasPrefix(strippedString) }
         
         if let resultsController = searchController.searchResultsController as? SelectLocationResultsViewController {
             resultsController.result = filtered

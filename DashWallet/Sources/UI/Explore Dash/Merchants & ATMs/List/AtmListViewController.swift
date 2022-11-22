@@ -28,7 +28,11 @@ enum AtmListSegmnets: Int {
     }
     
     var pointOfUseListSegment: PointOfUseListSegment {
-        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: nil, territoriesDataSource: territories)
+        var defaultFilters = PointOfUseListFilters()
+        defaultFilters.sortNameDirection = .ascending
+        defaultFilters.radius = .twenty
+        
+        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories)
     }
 }
 

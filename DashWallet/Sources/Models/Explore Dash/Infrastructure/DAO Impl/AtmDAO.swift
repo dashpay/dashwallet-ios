@@ -65,13 +65,13 @@ class AtmDAO: PointOfUseDAO {
             
             
             if let sortDirection = filters[.sortDirection] as? PointOfUseListFilters.SortDirection {
-                query = query.order(sortDirection == .ascending ? name.asc : name.desc)
+                query = query.order(sortDirection == .ascending ? name.collate(.nocase).asc : name.collate(.nocase).desc)
             }else if let userLocation = filters[.userLocation] as? CLLocationCoordinate2D {
                 
                 let anchorLatitude = userLocation.latitude
                 let anchorLongitude = userLocation.longitude
                 
-                query = query.order([Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC"), name.collate(.nocase), name.asc])
+                query = query.order([Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC"), name.collate(.nocase).asc])
             }else{
                 query = query.order(name.asc)
             }

@@ -110,7 +110,7 @@ struct PointOfUseListFilters: Equatable {
     var appliedFiltersLocalizedString: String? {
         var string: [String] = []
         
-        if let radius = self.radius {
+        if DWLocationManager.shared.isAuthorized, let radius = self.radius {
             let stringValue = ExploreDash.distanceFormatter.string(from: Measurement(value: Double(radius.rawValue), unit: UnitLength.miles))
             string.append(stringValue)
         }

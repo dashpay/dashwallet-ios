@@ -343,11 +343,17 @@ extension PointOfUseListFiltersViewController {
         var sections = filtersToUse.map({ $0.section })
         sections.append(.resetFilters)
         
+        if !DWLocationManager.shared.isAuthorized {
+            sections = sections.filter { $0 != .radius }
+        }
+        
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         currentSnapshot.appendSections(sections)
         
         for group in filtersToUse {
-            currentSnapshot.appendItems(group.items, toSection: group.section)
+            if DWLocationManager.shared.isAuthorized || group.section != .radius  {
+                currentSnapshot.appendItems(group.items, toSection: group.section)
+            }
         }
     
         currentSnapshot.appendItems([.reset], toSection: .resetFilters)
