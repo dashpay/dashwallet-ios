@@ -43,6 +43,7 @@ class PortalServiceItemCell: UICollectionViewCell {
             subtitleLabel.isHidden = false
         }else if !isEnabled {
             balanceStatusView.isHidden = false
+            subtitleLabel.isHidden = true
             
             statusIcon.backgroundColor = .systemRed
             

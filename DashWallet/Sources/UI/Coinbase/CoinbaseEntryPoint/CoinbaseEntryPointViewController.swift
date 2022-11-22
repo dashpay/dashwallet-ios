@@ -38,6 +38,7 @@ final class CoinbaseEntryPointViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        configureModel()
         configureHierarchy()
     }
     
