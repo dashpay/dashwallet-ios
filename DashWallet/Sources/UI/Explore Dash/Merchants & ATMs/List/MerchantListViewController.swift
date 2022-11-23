@@ -184,7 +184,7 @@ extension MerchantsListSegment {
     }
     
     override func subtitleForFilterCell() -> String? {
-        if model.showMap {
+        if model.showMap && DWLocationManager.shared.isAuthorized {
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
             }else{
