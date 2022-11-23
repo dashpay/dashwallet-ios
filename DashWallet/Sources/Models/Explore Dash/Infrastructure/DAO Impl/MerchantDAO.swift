@@ -81,7 +81,7 @@ class MerchantDAO: PointOfUseDAO
                                    Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
                 
                 if types.contains(.online) {
-                    boundsFilter = boundsFilter || Expression<Bool>(literal: "type = online")
+                    boundsFilter = boundsFilter || Expression<Bool>(literal: "type = 'online'")
                 }
                 
                 queryFilter = queryFilter && boundsFilter
