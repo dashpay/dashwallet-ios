@@ -17,7 +17,7 @@ enum APIEndpoint: Endpoint {
     
     var path: String {
         switch self {
-        case .userAccounts(let limit): return "v2/accounts?limit=\(limit)"
+        case .userAccounts(let limit): return "v2/accounts/DASH"
         case .userAuthInformation: return "v2/user/auth"
         case .exchangeRates(let currency): return "v2/exchange-rates?currency=\(currency)"
         case .activePaymentMethods: return "v2/payment-methods"

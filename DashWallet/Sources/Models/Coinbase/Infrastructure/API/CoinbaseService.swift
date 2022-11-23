@@ -10,26 +10,16 @@ import Foundation
 import Resolver
 
 protocol CoinbaseService {
-    func getUserCoinbaseAccounts(limit: Int) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseUserAccountData>, Error>
-    
+    func getUserCoinbaseAccounts(limit: Int) -> AnyPublisher<BaseDataResponse<CoinbaseUserAccountData>, Error>
     func getCoinbaseUserAuthInformation() -> AnyPublisher<CoinbaseUserAuthInformation, Error>
-    
     func getCoinbaseExchangeRates(currency: String) -> AnyPublisher<BaseDataResponse<CoinbaseExchangeRate>, Error>
-    
     func getCoinbaseActivePaymentMethods() -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
     func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-
     func commitCoinbaseBuyOrder(accountId: String, orderID: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
     func sendCoinsToWallet(accountId: String, verificationCode: String?, request: CoinbaseTransactionsRequest) -> AnyPublisher<BaseDataResponse<CoinbaseTransaction>, Error>
-    
     func getBaseIdForUSDModel(baseCurrency: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
     func swapTradeCoinbase(request: CoinbaseSwapeTradeRequest) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
     func swapTradeCommitCoinbase(tradeId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
-    
     func getCoinbaseAccountAddress(accountId: String) -> AnyPublisher<BaseDataCollectionResponse<CoinbasePaymentMethod>, Error>
     func createCoinbaseAccountAddress(accountId: String, request: CoinbaseCreateAddressesRequest) -> AnyPublisher<BaseDataResponse<CoinbaseAccountAddress>, Error>
     func getToken(code: String) -> AnyPublisher<CoinbaseToken, Error>
@@ -61,7 +51,7 @@ class CoinbaseServiceImpl: CoinbaseService {
         return restClient.post(APIEndpoint.getToken, using: queryItems)
     }
 
-    func getUserCoinbaseAccounts(limit: Int) -> AnyPublisher<BaseDataCollectionResponse<CoinbaseUserAccountData>, Error> {
+    func getUserCoinbaseAccounts(limit: Int) -> AnyPublisher<BaseDataResponse<CoinbaseUserAccountData>, Error> {
         restClient.get(APIEndpoint.userAccounts(limit))
     }
 
