@@ -44,7 +44,6 @@ class SendAmountModel: BaseAmountModel {
     }
     
     private func selectAllFunds() {
-        let priceManager = DSPriceManager.sharedInstance()
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
         
@@ -54,7 +53,7 @@ class SendAmountModel: BaseAmountModel {
     }
     
     internal func updateCurrentAmountObject(with amount: Int64) {
-        let amountObject = amountObject(with: amount, amountType: activeAmountType)
+        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
         updateCurrentAmountObject(with: amountObject)
     }
     
@@ -64,19 +63,9 @@ class SendAmountModel: BaseAmountModel {
             supplementaryAmount = nil
         }else{
             mainAmount = nil
-            supplementaryAmount = newObject
+            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
         }
         
         amountChangeHandler?(newObject)
-    }
-    
-    internal func amountObject(with amount: Int64, amountType: AmountType) -> AmountObject {
-        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-        
-        if activeAmountType == .supplementary {
-            return amountObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
-        }
-        
-        return amountObject
     }
 }

@@ -222,7 +222,7 @@ private class SourceView: UIView {
         imageView.image = UIImage(named: source.imageName)
         titleLabel.text = source.title
         
-        if let balance = balance {
+        if let balance = balance, let _ = Double(balance) {
             walletBalanceStackView.isHidden = false
   
             let dashNumber = Decimal(string: balance, locale: .current)!
