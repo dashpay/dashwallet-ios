@@ -200,11 +200,13 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 extension ExplorePointOfUseListViewController {
     internal func updateEmptyResultsForFilters() {
         if model.showEmptyResults {
+            if emptyResultsView != nil && tableView.tableFooterView == emptyResultsView { return }
+            
             emptyResultsView = PointOfUseListEmptyResultsView()
             emptyResultsView.resetHandler = { [weak self] in
                 self?.apply(filters: nil)
             }
-            emptyResultsView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: tableView.bounds.height - tableView.contentSize.height)
+            emptyResultsView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 60)
             tableView.tableFooterView = emptyResultsView
         }else{
             tableView.tableFooterView = nil

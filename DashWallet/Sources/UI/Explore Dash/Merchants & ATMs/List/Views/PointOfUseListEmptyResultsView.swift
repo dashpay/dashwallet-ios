@@ -39,7 +39,7 @@ class PointOfUseListEmptyResultsView: UIView {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.alignment = .center
         stackView.axis = .vertical
-        stackView.spacing = 5
+        stackView.spacing = 2
         addSubview(stackView)
         
         let noResultsLabel = UILabel()
@@ -53,13 +53,15 @@ class PointOfUseListEmptyResultsView: UIView {
         resetFiltersButton.translatesAutoresizingMaskIntoConstraints = false
         resetFiltersButton.setTitle(NSLocalizedString("Reset Filters", comment: "Explore Dash/Merchants/Filters"), for: .normal)
         resetFiltersButton.tintColor = .dw_red()
+        resetFiltersButton.titleLabel?.font = .dw_mediumFont(ofSize: 15)
         resetFiltersButton.setTitleColor(.dw_red(), for: .normal)
         resetFiltersButton.backgroundColor = .clear
         stackView.addArrangedSubview(resetFiltersButton)
         
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            stackView.centerYAnchor.constraint(equalTo: centerYAnchor)
+            stackView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
 }
