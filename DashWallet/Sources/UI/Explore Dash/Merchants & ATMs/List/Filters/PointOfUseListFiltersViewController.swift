@@ -192,7 +192,6 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
     func toggleCells(for items: [Item]) {
         for item in items {
             if let cell = selectedCells[item] {
-                
                 cell.setSelected(false, animated: false)
                 selectedCells[item] = nil
             }
@@ -231,7 +230,10 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         if let filterCell = tableView.cellForRow(at: indexPath) as? FilterItemSelectableCell,
            let item = dataSource.itemIdentifier(for: indexPath) {
-            model.toggle(filter: item)
+            let deselected = model.toggle(filter: item)
+            if !deselected {
+                tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+            }
             updateApplyButton()
             updateResetButton()
             return
@@ -244,7 +246,11 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
         if let filterCell = tableView.cellForRow(at: indexPath) as? FilterItemSelectableCell,
            let item = dataSource.itemIdentifier(for: indexPath) {
             selectedCells[item] = filterCell
-            model.toggle(filter: item)
+            let selected = model.toggle(filter: item)
+            if !selected {
+                tableView.deselectRow(at: indexPath, animated: true)
+            }
+            
             updateApplyButton()
             updateResetButton()
             toggleCells(for: item.itemsToUnselect)

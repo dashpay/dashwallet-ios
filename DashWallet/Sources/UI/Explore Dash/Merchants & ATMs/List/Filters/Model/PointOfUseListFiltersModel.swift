@@ -178,6 +178,34 @@ enum PointOfUseListFilterItem: String {
     case locationService
     case reset
     
+    var otherItems: [PointOfUseListFilterItem] {
+        switch self {
+            
+        case .sortAZ:
+            return [.sortZA]
+        case .sortZA:
+            return [.sortAZ]
+        case .sortDistance:
+            return [.sortName]
+        case .sortName:
+            return [.sortDistance]
+        case .radius1:
+            return [.radius5, .radius20, .radius50]
+        case .radius5:
+            return [.radius1, .radius20, .radius50]
+        case .radius20:
+            return [.radius1, .radius5, .radius50]
+        case .radius50:
+            return [.radius1, .radius5, .radius20]
+        case .paymentTypeDash:
+            return [.paymentTypeGiftCard]
+        case .paymentTypeGiftCard:
+            return [.paymentTypeDash]
+        default:
+            return []
+        }
+    }
+    
     var itemsToUnselect: [PointOfUseListFilterItem] {
         switch self {
             
@@ -295,13 +323,19 @@ final class PointOfUseListFiltersModel {
         selected.contains(filter)
     }
     
-    func toggle(filter: PointOfUseListFilterItem) {
+    func toggle(filter: PointOfUseListFilterItem) -> Bool {
         if isFilterSelected(filter) {
-            selected.remove(filter)
+            if !filter.otherItems.filter({ isFilterSelected($0) }).isEmpty {
+                selected.remove(filter)
+                return true
+            }
         }else{
             unselect(filters: filter.itemsToUnselect)
             selected.insert(filter)
+            return true
         }
+        
+        return false
     }
     
     func unselect(filters: [PointOfUseListFilterItem]) {
