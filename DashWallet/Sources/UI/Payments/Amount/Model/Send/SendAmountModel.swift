@@ -34,7 +34,7 @@ class SendAmountModel: BaseAmountModel {
         
         if authManager.didAuthenticate {
             selectAllFunds()
-        }else{
+        } else {
             authManager.authenticate(withPrompt: nil, usingBiometricAuthentication: true, alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
                 if (authenticatedOrSuccess) {
                     self?.selectAllFunds()
@@ -61,7 +61,7 @@ class SendAmountModel: BaseAmountModel {
         if activeAmountType == .main {
             mainAmount = newObject
             supplementaryAmount = nil
-        }else{
+        } else {
             mainAmount = nil
             supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
         }

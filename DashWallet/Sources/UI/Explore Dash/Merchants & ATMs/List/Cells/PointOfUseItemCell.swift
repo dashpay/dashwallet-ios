@@ -41,7 +41,7 @@ class PointOfUseItemCell: UITableViewCell {
         
         if let urlString = pointOfUse.logoLocation, let url = URL(string: urlString) {
             logoImageView.sd_setImage(with: url)
-        }else{
+        } else {
             logoImageView.image = UIImage(named:"image.explore.dash.wts.item.logo.empty")
         }
 

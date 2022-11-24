@@ -198,7 +198,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
         if text.isEmpty {
             actionButton?.isEnabled = false
-        }else{
+        } else {
             actionButton?.isEnabled = true
         }
     }
@@ -266,8 +266,7 @@ class TwoFactorAuthTextField: UITextField {
         }
     }
     
-    override func textRect(forBounds bounds: CGRect) -> CGRect
-    {
+    override func textRect(forBounds bounds: CGRect) -> CGRect {
         return CGRect(
             x: bounds.origin.x + textInsets.left,
             y: bounds.origin.y + textInsets.top,
@@ -276,8 +275,7 @@ class TwoFactorAuthTextField: UITextField {
         )
     }
     
-    override func editingRect(forBounds bounds: CGRect) -> CGRect
-    {
+    override func editingRect(forBounds bounds: CGRect) -> CGRect {
         return self.textRect(forBounds: bounds)
     }
 }

@@ -38,7 +38,7 @@ extension ExplorePointOfUse {
             init?(rawValue: String) {
                 if rawValue == "dash" {
                     self = .dash
-                }else{
+                } else {
                     self = .giftCard
                 }
             }
@@ -183,7 +183,7 @@ extension ExplorePointOfUse: RowDecodable {
         }else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))
-        }else{
+        } else {
             category = .unknown
         }
         

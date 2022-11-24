@@ -32,7 +32,7 @@ class PointOfUseDataProvider {
         
         if let pageOffset = currentPage?.offset {
             offset = pageOffset + pageLimit
-        }else{
+        } else {
             offset = 0
         }
         
@@ -66,7 +66,7 @@ class PointOfUseDataProvider {
             
             if appending {
                 items += page.items
-            }else{
+            } else {
                 items = page.items
             }
             

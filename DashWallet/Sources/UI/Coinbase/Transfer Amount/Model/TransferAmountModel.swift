@@ -59,7 +59,7 @@ final class TransferAmountModel: SendAmountModel {
     override func selectAllFunds(_ preparationHandler: (() -> Void)) {
         if direction == .toCoinbase {
             super.selectAllFunds(preparationHandler)
-        }else{
+        } else {
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
             
             let maxAmount = AmountObject(dashAmountString: balance, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
@@ -71,7 +71,7 @@ final class TransferAmountModel: SendAmountModel {
     func initializeTransfer() {
         if direction == .toCoinbase {
             transferToCoinbase()
-        }else{
+        } else {
             transferToWallet()
         }
     }
@@ -117,7 +117,7 @@ final class TransferAmountModel: SendAmountModel {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
                     }else if verificationCode != nil && code == 400 {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
-                    }else{
+                    } else {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
                     }
                 }

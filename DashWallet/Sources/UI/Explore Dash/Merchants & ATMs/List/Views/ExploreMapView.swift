@@ -127,7 +127,7 @@ class ExploreMapView: UIView {
             let newAnnotations = merchants.map({ MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!))})
             self.shownMerchantsAnnotations = newAnnotations
             mapView.addAnnotations(newAnnotations)
-        }else{
+        } else {
             DispatchQueue.global(qos: .background).async { [weak self] in
                 guard let wSelf = self else { return }
                 
@@ -176,7 +176,7 @@ class ExploreMapView: UIView {
             } completion: { complete in
                 
             }
-        }else{
+        } else {
             self.contentInset = inset
         }
     }

@@ -121,7 +121,7 @@ extension ExploreDatabaseSyncManager {
             
             if let e = error {
                 self?.syncState = .error(date, e)
-            }else{
+            } else {
                 try? data?.write(to: urlToSave)
                 self?.exploreDatabaseLastSyncTimestamp = timestamp
                 self?.syncState = .synced(date)

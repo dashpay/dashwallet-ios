@@ -107,7 +107,7 @@ extension NumberKeyboard {
             if i%Style.sectionsCount == 0 {
                 left = leftInitial
                 top += Style.buttonHeight + Style.padding
-            }else{
+            } else {
                 left += buttonWidth + Style.padding
             }
         }
@@ -148,7 +148,7 @@ extension NumberKeyboard {
                 self.performClearButtonAction(clearButton, in: textInput)
                 
                 self.perform(#selector(performClearButtonLongPress(isFirstCall:)), with: false, afterDelay: 0.1)
-            }else{
+            } else {
                 isClearButtonLongPressGestureActive = false
             }
         }
@@ -211,7 +211,7 @@ extension NumberKeyboard {
         
         if button.value == NumberKeyboardValue.delete {
             performClearButtonAction(button, in: textInput)
-        }else{
+        } else {
             performRegularButtonAction(button, in: textInput)
         }
     }
@@ -254,7 +254,7 @@ extension NumberKeyboard {
                 tvDelegate.textView?(tv, shouldChangeTextIn: selectedRange, replacementText: "") ?? false {
                 textInput.deleteBackward()
             }
-        }else{
+        } else {
             textInput.deleteBackward()
         }
     }
@@ -286,7 +286,7 @@ extension NumberKeyboard {
                tvDelegate.textView?(tv, shouldChangeTextIn: selectedRange, replacementText: text) ?? false {
                 textInput.insertText(text)
             }
-        }else{
+        } else {
             textInput.insertText(text)
         }
     }
@@ -343,7 +343,7 @@ extension NumberKeyboard: NumberKeyboardButtonDelegate {
 
         if isCurrentHighlighted {
             button.isHighlighted = isCurrentHighlighted
-        }else{
+        } else {
             for item in allButtons {
                 item.isHighlighted = isHighlighted(view: item, touch: touch)
             }

@@ -126,7 +126,7 @@ class AmountInputControl: UIControl {
         let supplementaryString = dataSource.supplementaryAmountString.attributedAmountForLocalCurrency(textColor: .dw_darkTitle())
         if style == .basic {
             mainAmountLabel.attributedText = amountType == .main ? mainString : supplementaryString
-        }else{
+        } else {
             mainAmountLabel.attributedText = mainString
             supplementaryAmountLabel.attributedText = supplementaryString
         }
@@ -178,7 +178,7 @@ class AmountInputControl: UIControl {
                 }
             }
            
-        }else{
+        } else {
             updateAlphaAndTransform()
             changePossiton()
             completion?()
@@ -220,7 +220,7 @@ extension AmountInputControl {
             mainAmountLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
             mainAmountLabel.alpha = 1
             supplementaryAmountLabel.isHidden = true
-        }else{
+        } else {
             supplementaryAmountLabel.isHidden = false
         }
     }
@@ -230,7 +230,7 @@ extension AmountInputControl {
         
         if style == .basic {
             mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
-        }else{
+        } else {
             let isSwapped = amountType == .supplementary
             let bigLabel: UILabel = isSwapped ? supplementaryAmountLabel : mainAmountLabel
             let smallLabel: UILabel = isSwapped ? mainAmountLabel : supplementaryAmountLabel

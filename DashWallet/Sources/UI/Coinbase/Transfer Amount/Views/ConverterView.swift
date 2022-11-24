@@ -244,7 +244,7 @@ private class SourceView: UIView {
             
             
             walletBallanceLabel.attributedText = string
-        }else{
+        } else {
             walletBalanceStackView.isHidden = true
         }
     }

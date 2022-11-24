@@ -320,7 +320,7 @@ extension ExplorePointOfUseListViewController {
                 finalY = kDefaultClosedMapPosition
             }else if finalY > self.view.frame.size.height/2 {
                 finalY = self.mapView.frame.size.height - kHandlerHeight
-            }else{
+            } else {
                 finalY = kDefaultOpenedMapPosition
             }
             
@@ -344,7 +344,7 @@ extension ExplorePointOfUseListViewController {
         
         if segment.showMap {
             self.showMapIfNeeded()
-        }else{
+        } else {
             self.hideMapIfNeeded()
         }
     }

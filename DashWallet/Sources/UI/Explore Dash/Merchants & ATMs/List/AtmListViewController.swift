@@ -65,10 +65,10 @@ extension AtmListSegmnets {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-            }else{
+            } else {
                 return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
-        }else{
+        } else {
             return super.subtitleForFilterCell()
         }
     }

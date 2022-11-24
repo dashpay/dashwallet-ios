@@ -55,7 +55,7 @@ extension NumberFormatter {
         
         if isCurrencySymbolAtTheBeginning {
             currencySymbolNumberSeparator = String(formattedString[ currencySymbolRange.upperBound..<formattedString.index(after: currencySymbolRange.upperBound)])
-        }else{
+        } else {
             currencySymbolNumberSeparator = String(formattedString[formattedString.index(before: currencySymbolRange.upperBound)..<currencySymbolRange.upperBound])
         }
         
@@ -82,7 +82,7 @@ extension NumberFormatter {
         
         if isCurrencySymbolAtTheBeginning {
             resut = currencySymbol + currencySymbolNumberSeparator + formattedStringWithFractionInput
-        }else{
+        } else {
             resut = formattedStringWithFractionInput + currencySymbolNumberSeparator + currencySymbol
         }
         

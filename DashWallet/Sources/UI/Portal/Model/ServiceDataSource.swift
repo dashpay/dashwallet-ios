@@ -53,20 +53,20 @@ class UpholdDataSource: ServiceDataSource {
             if let balance: NSDecimalNumber = DWUpholdClient.sharedInstance().lastKnownBalance {
                 let balance = balance.description(withLocale: NSLocale.current)
                 item = .init(status: .authorized, service: .uphold, dashBalance: balance)
-            }else{
+            } else {
                 DWUpholdClient.sharedInstance().getCards { [weak self] dashCard, fiatCards in
                     self?.dashCard = dashCard
                     
                     if let available: NSDecimalNumber = dashCard?.available {
                         let balance = available.description(withLocale: NSLocale.current)
                         self?.item = .init(status: .authorized, service: .uphold, dashBalance: balance)
-                    }else{
+                    } else {
                         self?.item = .init(status: .failed, service: .uphold)
                     }
                 }
             }
             
-        }else{
+        } else {
             self.item = ServiceItem(status: .idle, service: .uphold)
         }
     }
@@ -88,7 +88,7 @@ class CoinbaseDataSource: ServiceDataSource {
         if isAuthorized {
             if let balance = coinbase.lastKnownBalance {
                 self.item = ServiceItem(status: .authorized, service: .coinbase, dashBalance: balance)
-            }else{
+            } else {
                 self.item = ServiceItem(status: .syncing, service: .coinbase)
                 
                 coinbase.fetchUser()
@@ -104,7 +104,7 @@ class CoinbaseDataSource: ServiceDataSource {
                     .store(in: &cancelables)
             }
             
-        }else{
+        } else {
             self.item = .init(status: .idle, service: .coinbase)
         }
     }

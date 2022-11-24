@@ -66,7 +66,7 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     private func updateService(with item: ServiceItem) {
         if let idx = items.firstIndex(where: { $0.service == item.service }) {
             items[idx] = item
-        }else{
+        } else {
             items.append(item)
         }
         

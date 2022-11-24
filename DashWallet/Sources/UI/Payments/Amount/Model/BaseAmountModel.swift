@@ -132,7 +132,7 @@ extension BaseAmountModel: AmountViewDelegate {
                 supplementaryAmount = mainAmount.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
             }
             activeAmountType = .supplementary
-        }else{
+        } else {
             if mainAmount == nil {
                 mainAmount = supplementaryAmount.dashAmount(dashValidator: mainAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
             }

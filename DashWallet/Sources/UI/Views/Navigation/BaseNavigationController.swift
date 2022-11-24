@@ -64,7 +64,7 @@ extension NavigationBarDisplayable {
     override func forwardingTarget(for aSelector: Selector!) -> Any? {
         if _delegate?.responds(to: aSelector!) ?? false {
             return _delegate
-        }else{
+        } else {
             return super.forwardingTarget(for: aSelector)
         }
     }

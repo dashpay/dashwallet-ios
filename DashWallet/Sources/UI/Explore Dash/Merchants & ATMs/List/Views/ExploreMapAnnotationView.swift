@@ -61,7 +61,7 @@ final class ExploreMapAnnotationView: MKAnnotationView {
         if let str = pointOfUse.logoLocation, let url = URL(string: str)
         {
             imageView.sd_setImage(with: url, completed: nil)
-        }else{
+        } else {
             imageView.image = UIImage(named: "image.explore.dash.wts.item.logo.empty")
         }
     }

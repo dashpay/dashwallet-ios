@@ -47,7 +47,7 @@ import AuthenticationServices
             let vc = CoinbaseEntryPointViewController.controller()
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
-        }else{
+        } else {
             let vc = ServiceOverviewViewController.controller()
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)

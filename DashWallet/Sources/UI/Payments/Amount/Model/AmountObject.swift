@@ -53,7 +53,7 @@ struct AmountObject {
         if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrencyCode, forDashAmount: self.plainAmount),
            let str = localFormatter.string(from: localNumber) {
             supplementaryFormatted = str
-        }else{
+        } else {
             supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
         }
     }
