@@ -578,6 +578,7 @@
 		47C661B428FDCF7800028A8D /* ActionButtonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */; };
 		47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B528FE75A700028A8D /* BaseViewController.swift */; };
 		47C661B828FE907300028A8D /* AmountInputControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B728FE907300028A8D /* AmountInputControl.swift */; };
+		47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1733,6 +1734,7 @@
 		47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButtonViewController.swift; sourceTree = "<group>"; };
 		47C661B528FE75A700028A8D /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		47C661B728FE907300028A8D /* AmountInputControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputControl.swift; sourceTree = "<group>"; };
+		47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Numbers+Dash.swift"; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -4067,6 +4069,7 @@
 				47B30D77290BFCA60080C326 /* NumberFormatter+DashWallet.swift */,
 				47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */,
 				47B30D812911259D0080C326 /* UIViewController+Payments.swift */,
+				47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -5859,6 +5862,7 @@
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
+				47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */,
 				47AE8C1328C5F0A700490F5E /* PointOfUseDetailsViewController.swift in Sources */,
 				47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */,
 				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,

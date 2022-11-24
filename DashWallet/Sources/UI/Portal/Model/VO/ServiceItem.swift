@@ -40,11 +40,7 @@ extension ServiceItem {
         guard let balance = dashBalance else { return nil }
         
         let priceManger = DSPriceManager.sharedInstance()
-        let dashAmount = DWAmountObject(dashAmountString: balance,
-                                        localFormatter: priceManger.localFormat,
-                                        currencyCode: priceManger.localCurrencyCode)
-        
-        return priceManger.localCurrencyString(forDashAmount: dashAmount.plainAmount)
+        return priceManger.localCurrencyString(forDashAmount: Int64(balance))
     }
 }
 
@@ -68,12 +64,12 @@ class ServiceItem: Hashable {
     var status: Status
     var service: Service
 
-    var dashBalance: String?
+    var dashBalance: UInt64?
     var usageCount: Int = 0
     
     var isInUse: Bool { return status == .syncing || status == .authorized }
     
-    init(status: Status, service: Service, dashBalance: String? = nil) {
+    init(status: Status, service: Service, dashBalance: UInt64? = nil) {
         self.status = status
         self.service = service
         self.dashBalance = dashBalance

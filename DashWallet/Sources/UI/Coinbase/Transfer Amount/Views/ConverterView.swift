@@ -121,6 +121,8 @@ extension ConverterView {
         leftContainer.translatesAutoresizingMaskIntoConstraints = false
         leftContainer.alignment = .center
         leftContainer.spacing = 22
+        leftContainer.isUserInteractionEnabled = true
+        leftContainer.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapAction)))
         addSubview(leftContainer)
         
         let fromLabel = UILabel()
@@ -132,7 +134,6 @@ extension ConverterView {
         
         swapImageView = UIImageView(image: UIImage(named: "coinbase.converter.switch"))
         swapImageView.isUserInteractionEnabled = true
-        swapImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapAction)))
         leftContainer.addArrangedSubview(swapImageView)
         
         let toLabel = UILabel()
@@ -222,17 +223,15 @@ private class SourceView: UIView {
         imageView.image = UIImage(named: source.imageName)
         titleLabel.text = source.title
         
-        if let balance = balance, let _ = Double(balance) {
+        if let balance = balance, let dashNumber = Decimal(string: balance, locale: .current) {
             walletBalanceStackView.isHidden = false
   
-            let dashNumber = Decimal(string: balance, locale: .current)!
             let duffsNumber = Decimal(DUFFS)
-            var plainAmount = dashNumber * duffsNumber
+            let plainAmount = dashNumber * duffsNumber
             
             let dashAmount = NSDecimalNumber(decimal: plainAmount).int64Value
             let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: dashAmount) ?? "Fetching..."
             
-            var hasNetwork = true
             let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
             let dashStr = "\(balance) DASH"
             let fiatStr = " ≈ \(fiatAmount)"

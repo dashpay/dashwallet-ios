@@ -61,9 +61,8 @@ final class TransferAmountModel: SendAmountModel {
             super.selectAllFunds(preparationHandler)
         } else {
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
-            
-            let maxAmount = AmountObject(dashAmountString: balance, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            
+        
+            let maxAmount = AmountObject(plainAmount: Int64(balance), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
             updateCurrentAmountObject(with: maxAmount)
         }
     }
