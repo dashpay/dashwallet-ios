@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
-@property (null_resettable, nonatomic, strong) DWPaymentProcessor *paymentProcessor;
 
 @property (nonatomic, assign) BOOL demoMode;
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;

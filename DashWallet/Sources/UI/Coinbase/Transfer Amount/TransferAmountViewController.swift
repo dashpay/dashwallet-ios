@@ -197,8 +197,9 @@ extension TransferAmountViewController {
     }
 }
 
+//MARK: PaymentControllerDelegate
 extension TransferAmountViewController: PaymentControllerDelegate {
-    func paymentControllerDidFinishTransaction(_ controller: PaymentController) {
+    func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
         hideActivityIndicator()
         showSuccessTransactionStatus()
     }

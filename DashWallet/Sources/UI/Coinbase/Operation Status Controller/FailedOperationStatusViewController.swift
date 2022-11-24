@@ -17,7 +17,7 @@
 
 import UIKit
 
-class FailedOperationStatusViewController: BaseViewController, NavigationBarDisplayable {
+final class FailedOperationStatusViewController: BaseViewController, NavigationBarDisplayable {
     var isBackButtonHidden: Bool { return true }
     
     @IBOutlet var titleLabel: UILabel!

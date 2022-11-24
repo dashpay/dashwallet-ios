@@ -22,18 +22,20 @@ typealias PaymentControllerPresentationAnchor = UIViewController
 protocol AmountViewController where Self: BaseAmountViewController {
 }
 
-protocol PaymentControllerDelegate: AnyObject {
-    func paymentControllerDidFinishTransaction(_ controller: PaymentController)
+@objc protocol PaymentControllerDelegate: AnyObject {
+    func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
 }
 
-protocol PaymentControllerPresentationContextProviding: AnyObject {
+@objc protocol PaymentControllerPresentationContextProviding: AnyObject {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor
 }
 
 final class PaymentController: NSObject {
-    weak var delegate: PaymentControllerDelegate?
-    weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
+    @objc weak var delegate: PaymentControllerDelegate?
+    @objc weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
+    
+    @objc public var contactItem: DWDPBasicUserItem?
     
     private var paymentProcessor: DWPaymentProcessor
     private weak var confirmViewController: DWConfirmSendPaymentViewController?
@@ -50,11 +52,12 @@ final class PaymentController: NSObject {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func performPayment(with input: DWPaymentInput) {
+    @objc public func performPayment(with input: DWPaymentInput) {
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
     
+    @objc(performPaymentWithFile:)
     public func performPayment(with file: Data) {
         paymentProcessor.reset()
         paymentProcessor.processFile(file)
@@ -89,7 +92,7 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
 }
 
 //MARK: DWPaymentProcessorDelegate
-extension PaymentController: DWPaymentProcessorDelegate{
+extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest, transaction: DSTransaction) {
 //        [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"Swept!", nil)];
 //
@@ -99,14 +102,11 @@ extension PaymentController: DWPaymentProcessorDelegate{
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem) {
-//        DWSendAmountViewController *controller =
-//        [[DWSendAmountViewController alloc] initWithDestination:sendingDestination
-//                                                 paymentDetails:nil
-//                                                    contactItem:contactItem ?: [self contactItem]];
-//        controller.delegate = self;
-//        controller.demoMode = self.demoMode;
-//        [self.navigationController pushViewController:controller animated:YES];
-//        self.amountViewController = controller;
+        let vc = ProvideAmountViewController()
+        vc.delegate = self
+        //vc.contactItem = nil //TODO: pass contactItem
+        //vc.demoMode = self.demoMode; //TODO: demoMode
+        presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)? = nil) {
@@ -114,13 +114,11 @@ extension PaymentController: DWPaymentProcessorDelegate{
         
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel) { _ in
             cancelBlock?()
-            
-            //            assert(!self.confirmViewController || self.confirmViewController.sendingEnabled, "paymentProcessorDidCancelTransactionSigning: should be called")
         }
         
         alert.addAction(cancelAction)
         
-        let actionAction = UIAlertAction(title: actionTitle, style: .cancel) { _ in
+        let actionAction = UIAlertAction(title: actionTitle, style: .default) { _ in
             actionBlock?()
             
             self.confirmViewController?.sendingEnabled = true
@@ -156,32 +154,20 @@ extension PaymentController: DWPaymentProcessorDelegate{
         
         if error.domain == DSErrorDomain &&
             (error.code == DSErrorInsufficientFunds || error.code == DSErrorInsufficientFundsForNetworkFee) {
-            //show insufficient amount
+            //TODO: Show insufficient amount
         }
         
         presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
         self.showAlert(with: title, message: message)
-        
         self.confirmViewController?.sendingEnabled = true
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest, transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
         presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
         
-        if let vc = confirmViewController {
-            presentationAnchor?.dismiss(animated: true)
-        } else {
-            
-        }
+        confirmViewController?.dismiss(animated: true)
         
-        delegate?.paymentControllerDidFinishTransaction(self)
-        
-//        let vc = SuccessTxDetailViewController()
-//        vc.modalPresentationStyle = .fullScreen
-//        vc.model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
-//        vc.contactItem = contactItem
-//        //vc.delegate = self
-//        presentationAnchor?.present(vc, animated: true)
+        delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
     }
     
     func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) {
@@ -201,3 +187,9 @@ extension PaymentController: DWPaymentProcessorDelegate{
     }
 }
 
+//MARK: ProvideAmountViewControllerDelegate
+extension PaymentController: ProvideAmountViewControllerDelegate {
+    func provideAmountViewControllerDidInput(amount: UInt64) {
+        paymentProcessor.provideAmount(amount)
+    }
+}
