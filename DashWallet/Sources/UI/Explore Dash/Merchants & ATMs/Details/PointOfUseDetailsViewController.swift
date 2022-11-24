@@ -109,7 +109,7 @@ extension PointOfUseDetailsViewController {
                 contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ]
-        }else{
+        } else {
             constraint = [
                 contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
                 contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -194,7 +194,7 @@ extension ExplorePointOfUse {
                 let distance = CLLocation(latitude: self.latitude!, longitude: self.longitude!).distance(from: currentLocation)
                 let distanceString = ExploreDash.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
                 return "\(distanceString)) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
-            }else{
+            } else {
                 return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
             }
         case .atm(_):

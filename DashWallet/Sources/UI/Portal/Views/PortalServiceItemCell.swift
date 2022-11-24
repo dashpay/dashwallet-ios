@@ -43,6 +43,7 @@ class PortalServiceItemCell: UICollectionViewCell {
             subtitleLabel.isHidden = false
         }else if !isEnabled {
             balanceStatusView.isHidden = false
+            subtitleLabel.isHidden = true
             
             statusIcon.backgroundColor = .systemRed
             
@@ -56,11 +57,11 @@ class PortalServiceItemCell: UICollectionViewCell {
                 
                 balanceStatusLabel.text = NSLocalizedString("Last known balance", comment: "Buy Sell Portal")
                 balanceStatusLabel.textColor = .systemRed
-            }else{
+            } else {
                 balanceView.isHidden = true
             }
             
-        }else{
+        } else {
             statusView.isHidden = false
             subtitleLabel.isHidden = true
             statusIcon.backgroundColor = item.status.iconColor

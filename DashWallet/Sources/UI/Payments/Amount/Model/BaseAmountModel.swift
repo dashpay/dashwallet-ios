@@ -27,16 +27,19 @@ protocol BaseAmountModelDelegate: AnyObject {
 }
 
 class BaseAmountModel {
-    weak var delegate: BaseAmountModelDelegate?
-    
     var showMaxButton: Bool { true }
     var activeAmountType: AmountType = .main
     
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
+    var amount: AmountObject {
+        return activeAmountType == .main ? mainAmount : supplementaryAmount
+    }
     
-    private var mainAmountValidator: DWAmountInputValidator!
-    private var supplementaryAmountValidator: DWAmountInputValidator!
+    public var amountChangeHandler: ((AmountObject) -> Void)?
+    
+    internal var mainAmountValidator: DWAmountInputValidator!
+    internal var supplementaryAmountValidator: DWAmountInputValidator!
     
     internal var localFormatter: NumberFormatter
     internal var localCurrencyCode: String
@@ -51,9 +54,7 @@ class BaseAmountModel {
         updateAmountObjects(with: "0")
     }
     
-    var amount: AmountObject {
-        return activeAmountType == .main ? mainAmount : supplementaryAmount
-    }
+    
     
     func updateAmount(with replacementString: String, range: NSRange) {
     }
@@ -120,7 +121,7 @@ extension BaseAmountModel: AmountViewDelegate {
             mainAmount = nil
         }
         
-        delegate?.amountDidChange()
+        amountChangeHandler?(amount)
     }
     
     func amountInputControlDidSwapInputs() {
@@ -131,19 +132,17 @@ extension BaseAmountModel: AmountViewDelegate {
                 supplementaryAmount = mainAmount.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
             }
             activeAmountType = .supplementary
-        }else{
+        } else {
             if mainAmount == nil {
                 mainAmount = supplementaryAmount.dashAmount(dashValidator: mainAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
             }
             activeAmountType = .main
         }
         
-        delegate?.amountDidChange()
+        amountChangeHandler?(amount)
     }
     
     func amountInputControlChangeCurrencyDidTap() {
         
     }
-    
-    
 }

@@ -1,9 +1,3 @@
-/* Coinbase Two Factor Auth */
-" Need help? " = " Need help? ";
-
-/* Coinbase Two Factor Auth */
-" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
-
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ đã chấp nhận yêu cầu liên hệ của bạn";
 
@@ -587,6 +581,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
+/* Coinbase */
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
 
@@ -728,11 +725,17 @@
 /* Nearby */
 "Nearby" = "Nearby";
 
+/* Coinbase Two Factor Auth */
+"Need help? " = "Need help? ";
+
 /* No comment provided by engineer. */
 "Network" = "Mạng";
 
 /* No comment provided by engineer. */
 "Network fee" = "Phí giao dịch";
+
+/* Network Unavailable */
+"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "Thêm mới";
@@ -826,6 +829,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Mã PIN luôn được cần đến khi thực hiện giao dịch";
+
+/* Network Unavailable */
+"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Hãy nhập mã PIN để nâng cấp ví";
@@ -1163,6 +1169,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Coinbase Two Factor Auth */
+"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "Không có thông báo mới";
 
@@ -1174,6 +1183,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Không có người dùng nào có tên trùng với %@ trong danh sách liên hệ của bạn";
+
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ứng dụng này là mã nguồn mở:";
@@ -1226,6 +1238,9 @@
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Chuyển Dash từ tài khoản Uphold của bạn vào ví này";
 
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
+
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Chuyển từ Uphold";
 
@@ -1234,6 +1249,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Coinbase */
+"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "Thử lại";

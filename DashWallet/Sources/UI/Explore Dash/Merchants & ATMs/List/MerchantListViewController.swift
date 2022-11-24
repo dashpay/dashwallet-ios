@@ -73,7 +73,7 @@ extension MerchantsListSegment {
                 cell = itemCell
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
                 locationOffCell = itemCell
-            }else{
+            } else {
                 return super.tableView(tableView, cellForRowAt: indexPath)
             }
         default:
@@ -103,7 +103,7 @@ extension MerchantsListSegment {
                 }else if(DWLocationManager.shared.isPermissionDenied) {
                     return 1;
                 }
-            }else{
+            } else {
                 return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
             }
         default:
@@ -140,10 +140,10 @@ extension MerchantsListSegment {
         if currentSegment.showMap {
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
-            }else{
+            } else {
                 return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
             }
-        }else{
+        } else {
             return nil
         }
     }
@@ -179,7 +179,7 @@ extension MerchantsListSegment {
             }else if wSelf.locationOffCell != nil {
                 wSelf.locationOffCell = nil
                 wSelf.tableView.reloadData()
-            }else{
+            } else {
                 wSelf.tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue], with: .none)
             }
             

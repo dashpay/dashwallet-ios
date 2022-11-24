@@ -25,17 +25,30 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var twoFactorAuthField: UITextField!
     @IBOutlet var hintLabel: UILabel!
 
+    public var verifyHandler: ((String) -> ())?
+    
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
     let contactCoinbaseString = NSLocalizedString("Contact Coinbase Support", comment: "Coinbase Two Factor Auth")
 
+    internal var isErrorShown: Bool = false
+    
+    public func showInvalidCodeState() {
+        isErrorShown = true
+        styleHintFieldErrorState()
+        styleTwoFactorAuthFieldErrorState()
+        hideActivityIndicator()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         setupContentView(contentView)
 
+        twoFactorAuthField.delegate = self
+        
         styleTitle()
         styleSubTitle()
         styleContactCoinbase()
@@ -72,6 +85,11 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         return NSLocalizedString("Verfiy", comment: "Coinbase")
     }
 
+    override func actionButtonAction(sender: UIView) {
+        showActivityIndicator()
+        verifyHandler?(twoFactorAuthField.text!)
+    }
+    
     func styleTitle() {
         screenLabel.text = NSLocalizedString("Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
         screenLabel.font = UIFont.dw_font(forTextStyle: .headline).withWeight(UIFont.Weight.semibold.rawValue).withSize(20)
@@ -94,7 +112,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         contactCoinbase.addGestureRecognizer(tapGesture)
         contactCoinbase.isUserInteractionEnabled = true
 
-        let needHelpAttributedString = NSMutableAttributedString(string: NSLocalizedString(" Need help? ", comment: "Coinbase Two Factor Auth"), attributes: nil)
+        let needHelpAttributedString = NSMutableAttributedString(string: NSLocalizedString("Need help? ", comment: "Coinbase Two Factor Auth"), attributes: nil)
         let contactCoinbasnAttributedLinkString = NSMutableAttributedString(string: contactCoinbaseString, attributes: [.foregroundColor: UIColor.dw_dashBlue(), NSAttributedString.Key.link: URL(string: "https://help.coinbase.com/en/contact-us")!])
 
         let fullAttributedString = NSMutableAttributedString()
@@ -118,6 +136,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     func styleTwoFactorAuthFieldDefaultState() {
+        twoFactorAuthField.backgroundColor = .clear
         twoFactorAuthField.layer.borderColor = UIColor.dw_dashBlue().cgColor
         twoFactorAuthField.layer.borderWidth = 1.0
         twoFactorAuthField.layer.cornerRadius = 10.5
@@ -159,7 +178,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         attributedText.beginEditing()
         attributedText.append(NSAttributedString(string: ""))
         attributedText.append(NSAttributedString(attachment: textAttachment))
-        attributedText.append(NSAttributedString(string: NSLocalizedString(" The code is incorrect. Please check and try again!", comment: "Coinbase Two Factor Auth")))
+        attributedText.append(NSAttributedString(string: " "))
+        attributedText.append(NSAttributedString(string: NSLocalizedString("The code is incorrect. Please check and try again!", comment: "Coinbase Two Factor Auth")))
 
         hintLabel.attributedText = attributedText
     }
@@ -169,8 +189,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         let contactCoinbaseRange = (text as NSString).range(of: contactCoinbaseString)
 
         if gesture.didTapAttributedTextInLabel(label: contactCoinbase, inRange: contactCoinbaseRange) {
-            let url = URL(string: "https://help.coinbase.com/en/contact-us")!
-            UIApplication.shared.open(url)
+            UIApplication.shared.open(kCoinbaseContactURL)
         }
     }
 
@@ -179,8 +198,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
         if text.isEmpty {
             actionButton?.isEnabled = false
-        }
-        else {
+        } else {
             actionButton?.isEnabled = true
         }
     }
@@ -190,6 +208,18 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 }
 
+extension TwoFactorAuthViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if isErrorShown {
+            textField.text = ""
+            styleHintFieldDefaultState()
+            styleTwoFactorAuthFieldDefaultState()
+            isErrorShown = false
+        }
+        
+        return true
+    }
+}
 extension TwoFactorAuthViewController: TwoFactorAuthModelDelegate {
     func transferFromCoinbaseSuccess() {
         // TODO: naigate to success screen
@@ -226,5 +256,26 @@ extension UITapGestureRecognizer {
         let locationOfTouchInTextContainer = CGPoint(x: locationOfTouchInLabel.x - textContainerOffset.x, y: locationOfTouchInLabel.y - textContainerOffset.y)
         let indexOfCharacter = layoutManager.characterIndex(for: locationOfTouchInTextContainer, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
         return NSLocationInRange(indexOfCharacter, targetRange)
+    }
+}
+
+class TwoFactorAuthTextField: UITextField {
+    var textInsets: UIEdgeInsets = .init(top: 0, left: 15, bottom: 0, right: 15) {
+        didSet {
+            setNeedsLayout()
+        }
+    }
+    
+    override func textRect(forBounds bounds: CGRect) -> CGRect {
+        return CGRect(
+            x: bounds.origin.x + textInsets.left,
+            y: bounds.origin.y + textInsets.top,
+            width: bounds.size.width - (textInsets.left + textInsets.right),
+            height: bounds.size.height - (textInsets.top + textInsets.bottom)
+        )
+    }
+    
+    override func editingRect(forBounds bounds: CGRect) -> CGRect {
+        return self.textRect(forBounds: bounds)
     }
 }

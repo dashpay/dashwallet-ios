@@ -10,12 +10,15 @@ import Foundation
 // MARK: - CoinBaseTransactionsRequest
 
 struct CoinbaseTransactionsRequest: Codable {
-    let type, to, amount, currency: String
-    let idem: String?
+    let type: TransactionsType
+    let to: String
+    let amount: String
+    let currency: String
+    let idem: UUID
 }
 
 extension CoinbaseTransactionsRequest {
-    enum TransactionsTypes: String {
+    enum TransactionsType: String, Codable {
         case send, transfer, request
     }
 }

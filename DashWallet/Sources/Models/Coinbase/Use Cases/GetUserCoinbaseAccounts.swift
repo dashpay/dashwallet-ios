@@ -24,8 +24,8 @@ class GetUserCoinbaseAccounts {
 
     func invoke(limit: Int = 300) -> AnyPublisher<CoinbaseUserAccountData?, Error> {
         remoteService.getUserCoinbaseAccounts(limit: limit)
-            .map { (response: BaseDataCollectionResponse<CoinbaseUserAccountData>) in
-                let account = response.data.first(where: { $0.currency.name == "Dash" })
+            .map { (response: BaseDataResponse<CoinbaseUserAccountData>) in
+                let account = response.data
                 GetUserCoinbaseAccounts.lastKnownBalance = account?.balance.amount
                 NetworkRequest.coinbaseUserAccountId = account?.id
                 return account

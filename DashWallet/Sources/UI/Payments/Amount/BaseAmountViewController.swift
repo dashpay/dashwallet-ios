@@ -24,21 +24,29 @@ class BaseAmountViewController: ActionButtonViewController {
     internal var contentView: UIView!
     internal var amountView: AmountView!
     
-    private var numberKeyboard: NumberKeyboard!
+    internal var numberKeyboard: NumberKeyboard!
     
     internal var model: BaseAmountModel!
+    internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
     
-    func maxButtonAction() {
-        
+    func maxButtonAction() {}
+    
+    internal func initializeModel() {
+        model = BaseAmountModel()
     }
     
     internal func configureModel() {
-        model = BaseAmountModel()
-        model.delegate = self
+        model.amountChangeHandler = { [weak self] amount in
+            self?.amountDidChange()
+        }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    internal func amountDidChange() {
+        amountView.reloadData()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
         amountView.becomeFirstResponder()
     }
@@ -46,25 +54,20 @@ class BaseAmountViewController: ActionButtonViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        initializeModel()
         configureModel()
         configureHierarchy()
     }
 }
 
 extension BaseAmountViewController {
-    
-}
-
-extension BaseAmountViewController {
-    
-        
     @objc internal func configureHierarchy() {
         self.contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
         setupContentView(contentView)
         
-        self.amountView = AmountView(frame: .zero)
+        self.amountView = AmountView(style: amountInputStyle)
         amountView.maxButtonAction = { [weak self] in
             self?.maxButtonAction()
         }
@@ -93,7 +96,6 @@ extension BaseAmountViewController {
             amountView.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 22),
             amountView.heightAnchor.constraint(equalToConstant: 60),
             
-            //keyboardContainer.heightAnchor.constraint(equalToConstant: kKeyboardHeight + 15),
             keyboardContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
@@ -105,22 +107,3 @@ extension BaseAmountViewController {
         ])
     }
 }
-
-extension BaseAmountViewController: BaseAmountModelDelegate {
-    @objc func amountDidChange() {
-        amountView.reloadData()
-    }
-}
-//extension BaseAmountViewController: AmountViewDataSource {
-//    var dashAttributedString: NSAttributedString {
-//        NSAttributedString.dw_dashAttributedString(forAmount: UInt64(254223), tintColor: .dw_darkTitle(), symbolSize: CGSize(width: 14.0, height: 11.0) )
-//
-//    }
-//
-//    var localCurrencyAttributedString: NSAttributedString {
-//        return NSAttributedString(string: DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(UInt64(254223)))!)
-//    }
-//
-//
-//}
-

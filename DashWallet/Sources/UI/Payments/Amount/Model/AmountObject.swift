@@ -53,7 +53,7 @@ struct AmountObject {
         if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrencyCode, forDashAmount: self.plainAmount),
            let str = localFormatter.string(from: localNumber) {
             supplementaryFormatted = str
-        }else{
+        } else {
             supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
         }
     }
@@ -77,6 +77,7 @@ struct AmountObject {
         //TODO: Refactor the way we calculate price for dash
         let priceManager = DSPriceManager.sharedInstance()
         let localPrice = priceManager.price(forCurrencyCode: fiatCurrencyCode)!.price
+        
         let plainAmount = priceManager.amount(forLocalCurrencyString: localCurrencyFormatted, localFormatter: localFormatter, localPrice: localPrice)
         
         if plainAmount == 0 && localNumber != .zero {

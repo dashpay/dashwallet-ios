@@ -31,7 +31,7 @@ extension PaymentViewController {
         get {
             if let processor = objc_getAssociatedObject(self, &AssociatedKeys.paymentProcessor) as? DWPaymentProcessor {
                 return processor
-            }else{
+            } else {
                 
                 let processor = DWPaymentProcessor(delegate: self)
                 self.paymentProcessor = processor
@@ -50,7 +50,7 @@ extension PaymentViewController {
         get {
             if let vc = objc_getAssociatedObject(self, &AssociatedKeys.confirmViewController) as? DWConfirmSendPaymentViewController {
                 return vc
-            }else{
+            } else {
                 return nil
             }
         }
@@ -115,7 +115,7 @@ extension PaymentViewController {
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
         if let vc = confirmViewController {
             vc.paymentOutput = paymentOutput
-        }else{
+        } else {
             let vc = DWConfirmSendPaymentViewController()
             vc.paymentOutput = paymentOutput
             vc.delegate = self
@@ -152,7 +152,7 @@ extension PaymentViewController {
         
         if let vc = confirmViewController {
             dismiss(animated: true)
-        }else{
+        } else {
             
         }
         

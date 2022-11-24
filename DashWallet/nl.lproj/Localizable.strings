@@ -1,9 +1,3 @@
-/* Coinbase Two Factor Auth */
-" Need help? " = " Need help? ";
-
-/* Coinbase Two Factor Auth */
-" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
-
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ heeft je contactverzoek geaccepteerd";
 
@@ -587,6 +581,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
+/* Coinbase */
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Het ziet er naar uit dat je probeert een portemonnee te herstellen met een herstelzin van 12 woorden, maar je hebt maar 10 woorden ingevoerd, wil je automatisch de ontbrekende woorden herstellen? Dit kan ongeveer een uur duren. We raden aan je apparaat aan de lader te hangen.";
 
@@ -728,11 +725,17 @@
 /* Nearby */
 "Nearby" = "Nearby";
 
+/* Coinbase Two Factor Auth */
+"Need help? " = "Need help? ";
+
 /* No comment provided by engineer. */
 "Network" = "Netwerk";
 
 /* No comment provided by engineer. */
 "Network fee" = "Netwerkkosten";
+
+/* Network Unavailable */
+"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "Nieuw";
@@ -826,6 +829,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
+
+/* Network Unavailable */
+"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Voer a.u.b. PIN in om de portemonnee bij te werken";
@@ -1163,6 +1169,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Coinbase Two Factor Auth */
+"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "Er zijn geen nieuwe meldingen";
 
@@ -1174,6 +1183,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Er zijn geen gebruikers die overeenkomen met de naam %@ in uw contacten";
+
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Deze app is open source:";
@@ -1226,6 +1238,9 @@
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Verstuur Dash van je Uphold account naar deze portemonnee";
 
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
+
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Verstuur vanaf Uphold";
 
@@ -1234,6 +1249,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Coinbase */
+"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "Probeer opnieuw";

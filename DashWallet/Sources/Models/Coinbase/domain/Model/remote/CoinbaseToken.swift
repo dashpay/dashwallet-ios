@@ -8,7 +8,8 @@
 import Foundation
 // MARK: - CoinbaseToken
 struct CoinbaseToken: Codable {
-    let accessToken, tokenType: String?
+    let accessToken: String?
+    let tokenType: String?
     let expiresIn: Int?
     let refreshToken: String?
     let createdAt: Int?

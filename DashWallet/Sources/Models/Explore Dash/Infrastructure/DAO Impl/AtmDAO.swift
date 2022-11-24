@@ -67,7 +67,7 @@ class AtmDAO: PointOfUseDAO {
 //                let exp = Expression<Bool>(literal: "(latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))")
 //
 //                query = query.group([manufacturer, source], having: exp)
-//            }else{
+//            } else {
 //                query = query.group([manufacturer, source])
 //            }
             
@@ -78,7 +78,7 @@ class AtmDAO: PointOfUseDAO {
                 let anchorLongitude = userLocation.longitude
                 
                 query = query.order([Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC"), name.collate(.nocase), name.asc])
-            }else{
+            } else {
                 query = query.order(name.asc)
             }
                 

@@ -83,6 +83,7 @@ class ServiceItem: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(name)
         hasher.combine(status.rawValue)
+        hasher.combine(usageCount)
     }
 }
 

@@ -37,7 +37,7 @@ extension String {
         let dashSymbolAttributedString = dashSymbolAttributedString(with: tintColor)
         if let range = attributedString.string.range(of: DASH) {
             attributedString.replaceCharacters(in: NSRange(range, in: attributedString.string), with: dashSymbolAttributedString)
-        }else{
+        } else {
             attributedString.insert(.init(string: " "), at: 0)
             attributedString.insert(dashSymbolAttributedString, at: 0)
             attributedString.addAttribute(.foregroundColor, value: tintColor, range: .init(location: 0, length: attributedString.length))
@@ -72,7 +72,7 @@ extension String {
                 let afterFractionRange = NSMakeRange(afterFractionIndex, self.count - afterFractionIndex)
                 attributedString.setAttributes(defaultAttributes, range: afterFractionRange)
             }
-        }else{
+        } else {
             attributedString.setAttributes(defaultAttributes, range: NSMakeRange(0, self.count))
         }
         
@@ -114,7 +114,7 @@ extension String {
         
         if isCurrencySymbolAtTheBeginning {
             return separatedString.first
-        }else{
+        } else {
             return separatedString.last
         }
     }

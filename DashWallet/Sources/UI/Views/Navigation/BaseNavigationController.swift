@@ -23,19 +23,27 @@ enum NavigationBarDisplayStyle
     case shown
 }
 
-protocol NavigationBarDisplayable
-{
+protocol NavigationBarDisplayable: UIViewController {
     var isBackButtonHidden: Bool { get }
     var preferredNavigationBarDisplayStyle: NavigationBarDisplayStyle { get }
 }
 
-extension NavigationBarDisplayable
-{
+extension NavigationBarDisplayable {
     var isBackButtonHidden: Bool { false }
     var preferredNavigationBarDisplayStyle: NavigationBarDisplayStyle { .shown }
 }
 
 @objc class BaseNavigationController: UINavigationController {
+    private weak var _delegate: UINavigationControllerDelegate?
+    override weak var delegate: UINavigationControllerDelegate? {
+        set {
+            _delegate = newValue
+        }
+        get {
+            return _delegate
+        }
+    }
+    
     override init(rootViewController: UIViewController) {
         super.init(rootViewController: rootViewController)
         
@@ -43,22 +51,64 @@ extension NavigationBarDisplayable
         self.navigationBar.backIndicatorImage = arrow
         self.navigationBar.backIndicatorTransitionMaskImage = arrow
         self.navigationBar.tintColor = .black
-        self.navigationItem.backButtonDisplayMode = .minimal
-//        let appearance = self.navigationBar.standardAppearance
-//        appearance.setBackIndicatorImage(arrow, transitionMaskImage: arrow)
-//        appearance.shadowImage = nil
-//        appearance.shadowColor = nil
-//        appearance.backgroundColor = .dw_secondaryBackground()
-//
-//        self.navigationBar.scrollEdgeAppearance = appearance
-//        self.navigationBar.compactAppearance = appearance
-//        self.navigationBar.standardAppearance = appearance
-//        if #available(iOS 15.0, *) {
-//           self.navigationBar.compactScrollEdgeAppearance = appearance
-//        }
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func responds(to aSelector: Selector!) -> Bool {
+        return super.responds(to: aSelector) || (_delegate?.responds(to: aSelector!) ?? false)
+    }
+    
+    override func forwardingTarget(for aSelector: Selector!) -> Any? {
+        if _delegate?.responds(to: aSelector!) ?? false {
+            return _delegate
+        } else {
+            return super.forwardingTarget(for: aSelector)
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        super.delegate = self
+    }
+}
+
+extension BaseNavigationController: UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        var hideBackButton = viewController == navigationController.viewControllers.first
+        var hideNavigationBar = false
+        
+        if let viewController = viewController as? NavigationBarDisplayable {
+            hideBackButton = viewController.isBackButtonHidden
+            hideNavigationBar = viewController.preferredNavigationBarDisplayStyle == .hidden
+        }
+        
+        if delegate?.responds(to: #function) ?? false {
+            delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
+        }
+    
+        navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)
+        viewController.navigationItem.setHidesBackButton(hideBackButton, animated: animated)
+        viewController.navigationItem.backButtonDisplayMode = .minimal
+    }
+}
+
+extension UINavigationController {
+    var previousController: UIViewController? {
+        viewControllers.count > 1 ? viewControllers[viewControllers.count - 2] : nil
+    }
+    
+    func controller(before controller: UIViewController) -> UIViewController? {
+        guard let index = viewControllers.firstIndex(of: controller), index >= 1 else { return nil }
+        return viewControllers[index - 1]
+    }
+}
+
+extension UIViewController {
+    var previousControllerOnNavigationStack: UIViewController? {
+        navigationController?.controller(before: self)
     }
 }

@@ -25,3 +25,9 @@ class BaseViewController: UIViewController {
         view.directionalLayoutMargins = .init(top: 0, leading: 15, bottom: 0, trailing: 15)
     }
 }
+
+extension UIViewController {
+    class func initiate(from storyboard: UIStoryboard) -> Self {
+        vc(Self.self, from: storyboard)
+    }
+}

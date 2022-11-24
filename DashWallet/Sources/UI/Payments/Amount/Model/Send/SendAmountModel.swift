@@ -34,7 +34,7 @@ class SendAmountModel: BaseAmountModel {
         
         if authManager.didAuthenticate {
             selectAllFunds()
-        }else{
+        } else {
             authManager.authenticate(withPrompt: nil, usingBiometricAuthentication: true, alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
                 if (authenticatedOrSuccess) {
                     self?.selectAllFunds()
@@ -44,14 +44,28 @@ class SendAmountModel: BaseAmountModel {
     }
     
     private func selectAllFunds() {
-        let priceManager = DSPriceManager.sharedInstance()
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
         
         if allAvailableFunds > 0 {
-            mainAmount = AmountObject(plainAmount: Int64(allAvailableFunds), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            supplementaryAmount = nil
-            delegate?.amountDidChange()
+            updateCurrentAmountObject(with: Int64(allAvailableFunds))
         }
+    }
+    
+    internal func updateCurrentAmountObject(with amount: Int64) {
+        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        updateCurrentAmountObject(with: amountObject)
+    }
+    
+    internal func updateCurrentAmountObject(with newObject: AmountObject) {
+        if activeAmountType == .main {
+            mainAmount = newObject
+            supplementaryAmount = nil
+        } else {
+            mainAmount = nil
+            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+        }
+        
+        amountChangeHandler?(newObject)
     }
 }

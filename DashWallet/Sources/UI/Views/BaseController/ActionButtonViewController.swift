@@ -19,10 +19,20 @@ import UIKit
 
 protocol ActionButtonProtocol: AnyObject {
     var isEnabled: Bool { get set }
+    var isHidden: Bool { get set }
 }
 
 extension DWActionButton: ActionButtonProtocol {}
-extension UIBarButtonItem: ActionButtonProtocol {}
+extension UIBarButtonItem: ActionButtonProtocol {
+    var isHidden: Bool {
+        set {
+            isEnabled = newValue
+        }
+        get {
+            isEnabled
+        }
+    }
+}
 
 class ActionButtonViewController: BaseViewController {
     public weak var actionButton: ActionButtonProtocol?
@@ -53,7 +63,7 @@ class ActionButtonViewController: BaseViewController {
             activityIndicator.sizeToFit()
             let barButtonItem = UIBarButtonItem(customView: activityIndicator)
             self.navigationItem.rightBarButtonItem = barButtonItem
-        }else{
+        } else {
             self.button.showActivityIndicator()
         }
     }
@@ -61,7 +71,7 @@ class ActionButtonViewController: BaseViewController {
     func hideActivityIndicator() {
         if (self.isActionButtonInNavigationBar) {
             self.navigationItem.rightBarButtonItem = self.barButton
-        }else{
+        } else {
             self.button.hideActivityIndicator()
         }
     }
@@ -128,7 +138,7 @@ extension ActionButtonViewController {
             self.barButton = UIBarButtonItem(title: actionButtonTitle, style: .plain, target: self, action: #selector(actionButtonAction(sender:)))
             self.navigationItem.rightBarButtonItem = barButton
             self.actionButton = barButton
-        }else{
+        } else {
             let buttonContainer = UIView()
             buttonContainer.backgroundColor = .dw_background()
             buttonContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -152,12 +162,9 @@ extension ActionButtonViewController {
                 button.heightAnchor.constraint(equalToConstant: 46)
                 
             ])
-            
         }
         
         self.actionButton?.isEnabled = false
-        
-        
     }
     
     private func reloadActionButtonTitles() {
@@ -186,8 +193,8 @@ extension ActionButtonViewController {
     private func deviceSpecificBottomPadding() -> CGFloat {
         if isActionButtonInNavigationBar {
             return 0
-        }else{
-            return DWBaseViewController.deviceSpecificBottomPadding()
+        } else {
+            return 15
         }
     }
 }

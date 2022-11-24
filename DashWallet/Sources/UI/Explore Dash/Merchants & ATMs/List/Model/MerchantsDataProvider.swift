@@ -27,7 +27,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
             }
         }else if let bounds = bounds {
             super.items(query: query, in: bounds, userPoint: userPoint, completion: completion)
-        }else{
+        } else {
             items = []
             currentPage = nil
             completion(.success(items))
@@ -41,7 +41,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
                 self?.handle(result: result, completion: completion)
                 
             }
-        }else{
+        } else {
             super.nextPage(completion: completion)
         }
     }

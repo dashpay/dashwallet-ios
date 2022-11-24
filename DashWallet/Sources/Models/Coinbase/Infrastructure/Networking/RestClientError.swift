@@ -7,8 +7,7 @@
 
 import Foundation
 
-enum RestClientErrors: Error {
-    case requestFailed(error: Error)
+enum RestClientError: Error {
     case requestFailed(code: Int)
     case noDataReceived
     case jsonDecode(error: Error)

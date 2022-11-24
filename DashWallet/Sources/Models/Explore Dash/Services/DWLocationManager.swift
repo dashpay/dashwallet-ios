@@ -130,7 +130,7 @@ extension DWLocationManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedAlways || status == .authorizedWhenInUse {
             startMonitoring(manager)
-        }else{
+        } else {
             stopMonitoring(manager)
         }
         
@@ -141,7 +141,7 @@ extension DWLocationManager: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse {
             startMonitoring(manager)
-        }else{
+        } else {
             stopMonitoring(manager)
         }
         

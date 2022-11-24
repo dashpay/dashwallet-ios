@@ -133,7 +133,7 @@ extension PaymentController: DWPaymentProcessorDelegate{
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
         if let vc = confirmViewController {
             vc.paymentOutput = paymentOutput
-        }else{
+        } else {
             let vc = DWConfirmSendPaymentViewController()
             vc.paymentOutput = paymentOutput
             vc.delegate = self
@@ -170,7 +170,7 @@ extension PaymentController: DWPaymentProcessorDelegate{
         
         if let vc = confirmViewController {
             presentationAnchor?.dismiss(animated: true)
-        }else{
+        } else {
             
         }
         

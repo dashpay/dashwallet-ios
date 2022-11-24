@@ -19,8 +19,7 @@ import UIKit
 import SwiftUI
 import AuthenticationServices
 
-@objc class PortalViewController: UIViewController {
-    
+@objc final class PortalViewController: UIViewController {
     @IBOutlet var subtitleLabel: UILabel!
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var networkStatusView: UIView!
@@ -48,7 +47,7 @@ import AuthenticationServices
             let vc = CoinbaseEntryPointViewController.controller()
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
-        }else{
+        } else {
             let vc = ServiceOverviewViewController.controller()
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
@@ -75,7 +74,6 @@ import AuthenticationServices
         
         configureModel()
         configureHierarchy()
-        configureDataSource()
         
         navigationItem.largeTitleDisplayMode = .always
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -89,9 +87,10 @@ import AuthenticationServices
 
 extension PortalViewController: PortalModelDelegate {
     func serviceItemsDidChange() {
-        applySnapshot()
+        collectionView.reloadSections([0])
     }
 }
+
 extension PortalViewController {
     private func createLayout() -> UICollectionViewLayout {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(64))
@@ -106,26 +105,6 @@ extension PortalViewController {
         return layout
     }
     
-    private func configureDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<PortalModel.Section, ServiceItem>(collectionView: collectionView) {
-            [weak self] (collectionView: UICollectionView, indexPath: IndexPath, itemIdentifier: ServiceItem) -> UICollectionViewCell? in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ItemCell", for: indexPath) as! PortalServiceItemCell
-            cell.update(with: itemIdentifier, isEnabled: self?.hasNetwork ?? true)
-            return cell
-        }
-        
-        applySnapshot()
-    }
-    
-    private func applySnapshot() {
-        var snapshot = NSDiffableDataSourceSnapshot<PortalModel.Section, ServiceItem>()
-        snapshot.appendSections([.main])
-        
-        snapshot.appendItems(model.items)
-        dataSource.apply(snapshot, animatingDifferences: true)
-    }
-    
-    
     private func configureHierarchy() {
         if !showCloseButton {
             navigationItem.rightBarButtonItems = []
@@ -135,16 +114,28 @@ extension PortalViewController {
         
         networkStatusView.isHidden = hasNetwork
          
+        collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.collectionViewLayout = createLayout()
     }
 }
 
-
-extension PortalViewController: UICollectionViewDelegate {
+//MARK: UICollectionViewDelegate, UICollectionViewDataSource
+extension PortalViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return model.items.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let item = model.items[indexPath.item]
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ItemCell", for: indexPath) as! PortalServiceItemCell
+        cell.update(with: item, isEnabled: hasNetwork)
+        return cell
+    }
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let snapshot = dataSource.snapshot(for: .main)
-        let item = snapshot.items[indexPath.item]
+        let item = model.items[indexPath.item]
         item.service.increaseUsageCount()
         
         switch item.service {

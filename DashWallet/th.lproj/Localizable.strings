@@ -1,9 +1,3 @@
-/* Coinbase Two Factor Auth */
-" Need help? " = " Need help? ";
-
-/* Coinbase Two Factor Auth */
-" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
-
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ ยอมรับคำขอติดต่อของคุณ";
 
@@ -587,6 +581,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
+/* Coinbase */
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "ดูเหมือนว่าคุณกำลังพยายามที่จะกู้คืนกระเป๋าเงินของคุณโดยใช้วลีการกู้คืนคำ 12 คำ แต่คุณได้ป้อน 10 คำเท่านั้นคุณต้องการกู้คืนคำที่หายไปโดยอัตโนมัติหรือไม่ อาจใช้เวลาประมาณหนึ่งชั่วโมง เราขอแนะนำให้เสียบเข้ากับอุปกรณ์ของคุณ";
 
@@ -728,11 +725,17 @@
 /* Nearby */
 "Nearby" = "Nearby";
 
+/* Coinbase Two Factor Auth */
+"Need help? " = "Need help? ";
+
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
 
 /* No comment provided by engineer. */
 "Network fee" = "ค่าธรรมเนียมเครือข่าย";
+
+/* Network Unavailable */
+"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "ใหม่";
@@ -826,6 +829,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ต้องระบุ PIN ทุกครั้งเพื่อชำระเงิน";
+
+/* Network Unavailable */
+"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "โปรดป้อน PIN เพื่ออัปเกรด Wallet";
@@ -1163,6 +1169,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Coinbase Two Factor Auth */
+"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "ไม่มีการแจ้งเตือนใหม่";
 
@@ -1174,6 +1183,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในรายชื่อผู้ติดต่อของคุณ";
+
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "แอพพลิเคชั่นนี้คือ ซอฟต์แวร์ที่เปิดเผยหลักการหรือแหล่งที่มาของเทคโนโลยีของซอฟต์แวร์นั้นให้บุคคลภายนอกได้ใช้ ภายใต้เงื่อนไขบางประการที่เปิดโอกาสให้ผู้ใช้ทำการแก้ไข ดัดแปลงและเผยแพร่ซอร์สโค้ดได้ ภายใต้เงื่อนไขทางข้อตกลงทางกฎหมาย";
@@ -1226,6 +1238,9 @@
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "โอน Dash จากบัญชี Uphold ไปยัง wallet นี้";
 
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
+
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer from Uphold";
 
@@ -1234,6 +1249,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Coinbase */
+"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "ลองอีกครั้ง";

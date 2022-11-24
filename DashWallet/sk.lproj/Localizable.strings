@@ -1,9 +1,3 @@
-/* Coinbase Two Factor Auth */
-" Need help? " = " Need help? ";
-
-/* Coinbase Two Factor Auth */
-" The code is incorrect. Please check and try again!" = " The code is incorrect. Please check and try again!";
-
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ prijal vašu požiadavku na kontakt";
 
@@ -587,6 +581,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
 
+/* Coinbase */
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Zdá sa, že sa pokúšate obnoviť svoju peňaženku pomocou 12-slovnej frázy na obnovenie, avšak zadali ste iba 10 slov. Chcete automaticky obnoviť chýbajúce slová? Môže to trvať asi hodinu. Vaše zariadenie odporúčame pripojiť do siete.";
 
@@ -728,11 +725,17 @@
 /* Nearby */
 "Nearby" = "Nearby";
 
+/* Coinbase Two Factor Auth */
+"Need help? " = "Need help? ";
+
 /* No comment provided by engineer. */
 "Network" = "Sieť";
 
 /* No comment provided by engineer. */
 "Network fee" = "Sieťový poplatok ";
+
+/* Network Unavailable */
+"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "nových";
@@ -826,6 +829,9 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Na vykonanie platby je vždy potrebný PIN";
+
+/* Network Unavailable */
+"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pre inováciu peňaženky zadajte PIN";
@@ -1163,6 +1169,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Coinbase Two Factor Auth */
+"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "Nie sú k dispozícii žiadne nové upozornenia";
 
@@ -1174,6 +1183,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Vo vašich kontaktoch neexistujú žiadni používatelia, ktorí sa zhodujú s menom %@ ";
+
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Táto aplikácia má otvorený zdrojový kód:";
@@ -1226,6 +1238,9 @@
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Preneste Dash z vášho účtu na Upholde do tejto peňaženky";
 
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
+
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Presunúť s Upholdu";
 
@@ -1234,6 +1249,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Coinbase */
+"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "Skúsiť znova";

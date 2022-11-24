@@ -21,6 +21,7 @@ import Foundation
 import Resolver
 
 let kDashCurrency = "DASH"
+var kCoinbaseContactURL: URL = { URL(string: "https://help.coinbase.com/en/contact-us")! }()
 
 class Coinbase {
     @Injected
@@ -148,18 +149,17 @@ extension Coinbase {
         return getExchangeRate.invoke()
     }
 
-    public func tansferFromCoinbaseToDashWallet(api2FATokenVersion: String
-                                                , request: CoinbaseTransactionsRequest
-                                                , coinAmountInDash: String
-                                                , dashWalletAddress: String) -> AnyPublisher<CoinbaseTransaction?, Error> {
+    public func transferFromCoinbaseToDashWallet(verificationCode: String?,
+                                                coinAmountInDash: String,
+                                                dashWalletAddress: String) -> AnyPublisher<CoinbaseTransaction?, Error> {
         if let coinbaseUserAccountId = NetworkRequest.coinbaseUserAccountId {
             return sendDashFromCoinbaseToDashWallet.invoke(accountId: coinbaseUserAccountId,
-                                                           api2FATokenVersion: api2FATokenVersion,
-                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsTypes.send.rawValue,
+                                                           verificationCode: verificationCode,
+                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsType.send,
                                                                                                 to: dashWalletAddress,
                                                                                                 amount: coinAmountInDash,
                                                                                                 currency: kDashCurrency,
-                                                                                                idem: UUID().uuidString))
+                                                                                                idem: UUID()))
         }
         return Empty(completeImmediately: true).eraseToAnyPublisher()
     }

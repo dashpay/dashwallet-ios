@@ -148,7 +148,7 @@ class NumberKeyboardButton: UIView {
             if self.isHighlighted {
                 self.backgroundColor = Styles.backgroundHighlightedColor
                 self.titleLabel.textColor = Styles.textHighlightedColor
-            }else{
+            } else {
                 self.backgroundColor = customBackgroundColor
                 self.titleLabel.textColor = Styles.textColor
             }

@@ -32,50 +32,63 @@ final class TransferAmountViewController: SendAmountViewController {
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
     
+    private var networkUnavailableView: UIView!
+    
+    override var amountInputStyle: AmountInputControl.Style { .basic }
+    
+    private weak var codeConfirmationController: TwoFactorAuthViewController?
     
     override var actionButtonTitle: String? {
         return NSLocalizedString("Transfer", comment: "Coinbase")
     }
     
     override func actionButtonAction(sender: UIView) {
-        paymentController = PaymentController()
-        paymentController.delegate = self
-        paymentController.presentationContextProvider = self
-        
         showActivityIndicator()
-        DWPaymentInputBuilder().payFirst(from: [transferModel.address], source: .plainAddress) { [weak self] input in
-            input.request?.amount = UInt64(self?.model.amount.plainAmount ?? 0)
-            self?.paymentController.performPayment(with: input)
-        }
+        transferModel.initializeTransfer()
+    }
+    
+    override func initializeModel() {
+        model = TransferAmountModel()
     }
     
     override func configureModel() {
-        model = TransferAmountModel()
-        model.delegate = self
+        super.configureModel()
+        
+        transferModel.networkStatusDidChange = { [weak self] status in
+            self?.reloadView()
+        }
+        transferModel.delegate = self
     }
     
     override func configureHierarchy() {
         super.configureHierarchy()
         
-        amountView.amountInputStyle = .basic
-        
         self.converterView = ConverterView(direction: .toCoinbase)
+        converterView.delegate = self
         converterView.dataSource = model
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
+        
+        networkUnavailableView = NetworkUnavailableView(frame: .zero)
+        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
+        networkUnavailableView.isHidden = true
+        contentView.addSubview(networkUnavailableView)
         
         NSLayoutConstraint.activate([
             converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
             converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            converterView.heightAnchor.constraint(equalToConstant: 128)
+            converterView.heightAnchor.constraint(equalToConstant: 128),
+            
+            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor)
         ])
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.dw_secondaryBackground()
+        view.backgroundColor = .dw_background()
         
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
@@ -83,6 +96,54 @@ final class TransferAmountViewController: SendAmountViewController {
     }
 }
 
+//MARK: TransferAmountModelDelegate
+extension TransferAmountViewController: TransferAmountModelDelegate {
+    func initiatePayment(with input: DWPaymentInput) {
+        paymentController = PaymentController()
+        paymentController.delegate = self
+        paymentController.presentationContextProvider = self
+        paymentController.performPayment(with: input)
+    }
+
+    func transferFromCoinbaseToWalletDidSucceed() {
+        codeConfirmationController?.dismiss(animated: true)
+        codeConfirmationController = nil
+        
+        showSuccessTransactionStatus()
+    }
+    
+    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason) {
+        switch reason {
+        case .twoFactorRequired:
+            initiateTwoFactorAuth()
+        case .invalidVerificationCode:
+            codeConfirmationController?.showInvalidCodeState()
+        case .unknown:
+            hideActivityIndicator()
+            showFailedTransactionStatus()
+        }
+    }
+    
+    private func initiateTwoFactorAuth() {
+        let vc = TwoFactorAuthViewController.controller()
+        vc.verifyHandler = { [weak self] code in
+            self?.transferModel.continueTransferFromCoinbase(with: code)
+        }
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+        
+        codeConfirmationController = vc
+    }
+}
+
+//MARK: ConverterViewDelegate
+extension TransferAmountViewController: ConverterViewDelegate {
+    func didChangeDirection(_ direction: ConverterViewDirection) {
+        transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
+    }
+}
+
+//MARK: ConverterViewDataSource
 extension BaseAmountModel: ConverterViewDataSource {
     var coinbaseBalance: String {
         return Coinbase.shared.lastKnownBalance ?? NSLocalizedString("Unknown Balance", comment: "Coinbase")
@@ -98,20 +159,51 @@ extension BaseAmountModel: ConverterViewDataSource {
             return "\(dashNumber)"
         }
     }
-    
-    
 }
 
 extension TransferAmountViewController {
-    private func startTransfering() {
-        
+    private func reloadView() {
+        let isOnline = transferModel.networkStatus == .online
+        networkUnavailableView.isHidden = isOnline
+        numberKeyboard.isHidden = !isOnline
+        actionButton?.isHidden = !isOnline
+        converterView.hasNetwork = isOnline
+    }
+    
+    private func showSuccessTransactionStatus() {
+        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("Coinbase"))
+        vc.closeHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
+        }
+        vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
+        vc.descriptionText = NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device", comment: "Coinbase")
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+
+    }
+    
+    private func showFailedTransactionStatus() {
+        let vc = FailedOperationStatusViewController.initiate(from: sb("Coinbase"))
+        vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
+        vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase")
+        vc.retryHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf, animated: true)
+        }
+        vc.cancelHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
+        }
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController) {
         hideActivityIndicator()
-        showAlert(with: "Success!", message: "You have sent Dash to Coinbase")
+        showSuccessTransactionStatus()
     }
     
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
@@ -123,6 +215,4 @@ extension TransferAmountViewController: PaymentControllerPresentationContextProv
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
         return self
     }
-    
-    
 }

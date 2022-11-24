@@ -78,7 +78,7 @@ class AtmDetailsView: PointOfUseDetailsView {
         if let str = merchant.coverImage, let url = URL(string: str)
         {
             coverImageView.sd_setImage(with: url, completed: nil)
-        }else{
+        } else {
             coverImageView.isHidden = true
         }
         

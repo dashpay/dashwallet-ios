@@ -46,11 +46,8 @@ class AmountView: UIView {
     }
     
     public var amountInputStyle: AmountInputControl.Style {
-        set {
-            amountInputControl.style = newValue
-        }
-        get {
-            return amountInputControl.style
+        didSet {
+            amountInputControl?.style = amountInputStyle
         }
     }
     
@@ -79,17 +76,30 @@ class AmountView: UIView {
         .init(width: AmountView.noIntrinsicMetric, height: 60)
     }
     
+    @discardableResult
     override func becomeFirstResponder() -> Bool {
         return amountInputControl.becomeFirstResponder()
     }
     
+    init(style: AmountInputControl.Style) {
+        amountInputStyle = style
+        
+        super.init(frame: .zero)
+        
+        configureHierarchy()
+    }
+    
     override init(frame: CGRect) {
+        amountInputStyle = .oppositeAmount
+        
         super.init(frame: frame)
         
         configureHierarchy()
     }
     
     required init?(coder: NSCoder) {
+        amountInputStyle = .oppositeAmount
+        
         super.init(coder: coder)
     }
     
@@ -113,7 +123,7 @@ extension AmountView {
         maxButton.addTarget(self, action: #selector(maxButtonActionHandler), for: .touchUpInside)
         addSubview(maxButton)
         
-        self.amountInputControl = AmountInputControl(style: .oppositeAmount)
+        self.amountInputControl = AmountInputControl(style: amountInputStyle)
         amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(amountInputControl)
@@ -123,9 +133,7 @@ extension AmountView {
         inputTypeSwitcher.selectItem = { [weak self] item in
             let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
             self?.amountInputControl.amountType = type
-            self?.amountInputControl.setActiveType(type, animated: true, completion: {
-                self?.delegate?.amountInputControlDidSwapInputs()
-            })
+            self?.amountInputControl.setActiveType(type, animated: true, completion: nil)
         }
         addSubview(inputTypeSwitcher)
         

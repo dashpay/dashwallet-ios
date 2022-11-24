@@ -134,7 +134,7 @@ extension PointOfUseDetailsView {
         if let str = merchant.logoLocation, let url = URL(string: str)
         {
             logoImageView.sd_setImage(with: url, completed: nil)
-        }else{
+        } else {
             logoImageView.image = UIImage(named: "image.explore.dash.wts.item.logo.empty")
         }
         
@@ -186,7 +186,7 @@ extension PointOfUseDetailsView {
             showAllLocations.contentHorizontalAlignment = .left
             showAllLocations.addTarget(self, action: #selector(showAllLocationsAction), for: .touchUpInside)
             locationContainerView.addArrangedSubview(showAllLocations)
-        }else{
+        } else {
             containerView.addArrangedSubview(UIView())
         }
     }
@@ -242,7 +242,7 @@ extension PointOfUseDetailsView {
                 payButton.setTitle(NSLocalizedString("Buy a Gift Card", comment: "Buy a Gift Card"), for: .normal)
                 payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
                 payButton.accentColor = .dw_orange()
-            }else{
+            } else {
                 payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
                 payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
             }
