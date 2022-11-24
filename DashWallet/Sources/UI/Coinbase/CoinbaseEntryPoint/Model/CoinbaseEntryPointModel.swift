@@ -78,7 +78,7 @@ final class CoinbaseEntryPointModel {
     var balance: UInt64 {
         guard let amount = Coinbase.shared.lastKnownBalance else { return 0 }
         
-        return UInt64(DSPriceManager.sharedInstance().amount(forDashString: amount))
+        return amount
     }
     
     private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }

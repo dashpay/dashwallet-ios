@@ -47,8 +47,14 @@ class Coinbase {
 }
 
 extension Coinbase {
-    var lastKnownBalance: String? {
-        getUserCoinbaseAccounts.lastKnownBalance
+    var lastKnownBalance: UInt64? {
+        guard let balance = getUserCoinbaseAccounts.lastKnownBalance, let dashNumber = Decimal(string: balance) else {
+            return nil
+        }
+        
+        let duffsNumber = Decimal(DUFFS)
+        let plainAmount = dashNumber * duffsNumber
+        return NSDecimalNumber(decimal: plainAmount).uint64Value
     }
 
     var hasLastKnownBalance: Bool {

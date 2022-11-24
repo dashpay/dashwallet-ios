@@ -36,7 +36,18 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
 
 // MARK: - Balance
 struct Balance: Codable {
-    let amount, currency: String
+    let amount: String
+    let currency: String
+    
+    var plainAmount: UInt64 {
+        guard let dashNumber = Decimal(string: amount) else {
+            return 0
+        }
+        
+        let duffsNumber = Decimal(DUFFS)
+        let plainAmount = dashNumber * duffsNumber
+        return NSDecimalNumber(decimal: plainAmount).uint64Value
+    }
 }
 
 // MARK: - Currency
