@@ -114,6 +114,7 @@ extension ActionButtonViewController {
         stackView.alignment = .fill
         stackView.distribution = .equalSpacing
         stackView.spacing = 0
+        stackView.preservesSuperviewLayoutMargins = true
         view.addSubview(stackView)
         
         if showsActionButton {

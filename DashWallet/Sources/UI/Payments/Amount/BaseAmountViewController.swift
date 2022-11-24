@@ -24,6 +24,7 @@ class BaseAmountViewController: ActionButtonViewController {
     internal var contentView: UIView!
     internal var amountView: AmountView!
     
+    internal var keyboardContainer: UIView!
     internal var numberKeyboard: NumberKeyboard!
     
     internal var model: BaseAmountModel!
@@ -77,6 +78,7 @@ extension BaseAmountViewController {
         self.contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
+        contentView.preservesSuperviewLayoutMargins = true
         setupContentView(contentView)
         
         self.amountView = AmountView(style: amountInputStyle)
@@ -88,7 +90,7 @@ extension BaseAmountViewController {
         amountView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(amountView)
         
-        let keyboardContainer = UIView()
+        keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
         keyboardContainer.translatesAutoresizingMaskIntoConstraints = false
         keyboardContainer.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
@@ -100,7 +102,7 @@ extension BaseAmountViewController {
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = false
         numberKeyboard.backgroundColor = .clear
         numberKeyboard.textInput = amountView.textInput
-        contentView.addSubview(numberKeyboard)
+        keyboardContainer.addSubview(numberKeyboard)
         
         NSLayoutConstraint.activate([
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
