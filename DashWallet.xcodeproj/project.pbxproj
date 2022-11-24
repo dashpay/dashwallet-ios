@@ -60,7 +60,6 @@
 		2A0C699923103952001B8C90 /* DWMaxButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C699823103952001B8C90 /* DWMaxButton.m */; };
 		2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C699B23104588001B8C90 /* DWPaymentInput.m */; };
 		2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69A2231048DA001B8C90 /* DWPaymentProcessor.m */; };
-		2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69A523114BA7001B8C90 /* DWSendAmountViewController.m */; };
 		2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */; };
 		2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */; };
 		2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69B22312E8A0001B8C90 /* DWWindow.m */; };
@@ -776,8 +775,6 @@
 		2A0C699D231045E7001B8C90 /* DWPaymentInput+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWPaymentInput+Private.h"; sourceTree = "<group>"; };
 		2A0C69A1231048DA001B8C90 /* DWPaymentProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentProcessor.h; sourceTree = "<group>"; };
 		2A0C69A2231048DA001B8C90 /* DWPaymentProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentProcessor.m; sourceTree = "<group>"; };
-		2A0C69A423114BA7001B8C90 /* DWSendAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSendAmountViewController.h; sourceTree = "<group>"; };
-		2A0C69A523114BA7001B8C90 /* DWSendAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendAmountViewController.m; sourceTree = "<group>"; };
 		2A0C69AA23125074001B8C90 /* UIView+DWHUD.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWHUD.h"; sourceTree = "<group>"; };
 		2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWHUD.m"; sourceTree = "<group>"; };
 		2A0C69AE2312DD67001B8C90 /* DWSpecifyAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSpecifyAmountViewController.h; sourceTree = "<group>"; };
@@ -3894,8 +3891,6 @@
 				2AB8CDDC220D87E300A3D1DB /* Views */,
 				2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */,
 				2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */,
-				2A0C69A423114BA7001B8C90 /* DWSendAmountViewController.h */,
-				2A0C69A523114BA7001B8C90 /* DWSendAmountViewController.m */,
 				2A0C69AE2312DD67001B8C90 /* DWSpecifyAmountViewController.h */,
 				2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */,
 				47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */,
@@ -6090,7 +6085,6 @@
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				47AE8C0128C1306000490F5E /* DWExploreTestnetViewController.m in Sources */,
-				2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */,
 				471A2608289ACDA00056B7B2 /* AddressUserInfoDAO.swift in Sources */,
 				2AEC5CC2249755BB00F4A689 /* DWDashPayContactsUpdater.m in Sources */,
 				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,

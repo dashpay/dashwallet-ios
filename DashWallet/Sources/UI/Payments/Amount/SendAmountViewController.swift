@@ -20,7 +20,7 @@ import UIKit
 class SendAmountViewController: BaseAmountViewController {
     override var actionButtonTitle: String? { return NSLocalizedString("Send", comment: "Send Dash") }
     
-    private var sendAmountModel: SendAmountModel {
+    internal var sendAmountModel: SendAmountModel {
         model as! SendAmountModel
     }
     
