@@ -39,10 +39,22 @@ class BaseAmountViewController: ActionButtonViewController {
         model.amountChangeHandler = { [weak self] amount in
             self?.amountDidChange()
         }
+        
+        model.presentCurrencyPickerHandler = { [weak self] in
+            self?.showCurrencyList()
+        }
     }
     
     internal func amountDidChange() {
         amountView.reloadData()
+    }
+    
+    internal func showCurrencyList() {
+        let currencyController = DWLocalCurrencyViewController(navigationAppearance: .white, currencyCode: model.localCurrencyCode)
+        currencyController.isGlobal = false
+        currencyController.delegate = self
+        let nvc = BaseNavigationController(rootViewController: currencyController)
+        present(nvc, animated: true)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -106,4 +118,18 @@ extension BaseAmountViewController {
             numberKeyboard.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15)
         ])
     }
+}
+
+extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
+    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
+        model.setupCurrencyCode(currencyCode)
+        amountView.reloadInputTypeSwitcher()
+        controller.dismiss(animated: true)
+    }
+    
+    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
+        controller.dismiss(animated: true)
+    }
+    
+    
 }

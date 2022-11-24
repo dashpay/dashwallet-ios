@@ -45,11 +45,7 @@ class AmountView: UIView {
         return amountInputControl.textField
     }
     
-    public var amountInputStyle: AmountInputControl.Style {
-        didSet {
-            amountInputControl?.style = amountInputStyle
-        }
-    }
+    public var amountInputStyle: AmountInputControl.Style
     
     public var isMaxButtonHidden: Bool = false {
         didSet {
@@ -107,6 +103,10 @@ class AmountView: UIView {
         amountInputControl.reloadData()
     }
     
+    public func reloadInputTypeSwitcher() {
+        updateView()
+    }
+    
     @objc func maxButtonActionHandler() {
         maxButtonAction?()
     }
@@ -132,7 +132,6 @@ extension AmountView {
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
         inputTypeSwitcher.selectItem = { [weak self] item in
             let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
-            self?.amountInputControl.amountType = type
             self?.amountInputControl.setActiveType(type, animated: true, completion: nil)
         }
         addSubview(inputTypeSwitcher)

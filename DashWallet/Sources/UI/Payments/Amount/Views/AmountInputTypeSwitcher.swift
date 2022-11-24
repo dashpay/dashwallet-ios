@@ -64,8 +64,18 @@ class AmountInputTypeSwitcher: UIView {
 
 extension AmountInputTypeSwitcher {
     private func reloadData() {
-        containerView.removeAllArrangedSubviews()
+        guard !containerView.arrangedSubviews.isEmpty else {
+            presentItems()
+            return
+        }
         
+        for (i, item) in items.enumerated() {
+            let button = containerView.arrangedSubviews[i] as! UIButton
+            button.setTitle(item.currencySymbol, for: .normal)
+        }
+    }
+    
+    private func presentItems() {
         var onceToken: Bool = false
         
         for (i, item) in items.enumerated() {

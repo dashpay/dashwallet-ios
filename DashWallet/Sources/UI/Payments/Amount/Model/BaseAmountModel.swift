@@ -22,10 +22,6 @@ enum AmountType {
     case supplementary
 }
 
-protocol BaseAmountModelDelegate: AnyObject {
-    func amountDidChange()
-}
-
 class BaseAmountModel {
     var showMaxButton: Bool { true }
     var activeAmountType: AmountType = .main
@@ -37,12 +33,13 @@ class BaseAmountModel {
     }
     
     public var amountChangeHandler: ((AmountObject) -> Void)?
+    public var presentCurrencyPickerHandler: (() -> Void)?
     
     internal var mainAmountValidator: DWAmountInputValidator!
     internal var supplementaryAmountValidator: DWAmountInputValidator!
     
     internal var localFormatter: NumberFormatter
-    internal var localCurrencyCode: String
+    var localCurrencyCode: String
     
     init() {
         localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
@@ -54,9 +51,31 @@ class BaseAmountModel {
         updateAmountObjects(with: "0")
     }
     
-    
-    
+    func setupCurrencyCode(_ code: String) {
+        guard let price = DSPriceManager.sharedInstance().price(forCurrencyCode: code) else { return }
+        
+        localFormatter.currencyCode = code
+        localCurrencyCode = code
+        
+        let max = NSDecimalNumber(value: MAX_MONEY/DUFFS)
+        localFormatter.maximum = NSDecimalNumber(decimal: price.price.decimalValue).multiplying(by: max)
+        
+        rebuildAmounts()
+    }
+
     func updateAmount(with replacementString: String, range: NSRange) {
+    }
+    
+    internal func rebuildAmounts() {
+        if activeAmountType == .main {
+            mainAmount = AmountObject(dashAmountString: mainAmount.amountInternalRepresentation, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            supplementaryAmount = nil
+        } else {
+            supplementaryAmount = AmountObject(localAmountString: supplementaryAmount.amountInternalRepresentation, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            mainAmount = nil
+        }
+        
+        amountChangeHandler?(mainAmount ?? supplementaryAmount)
     }
 }
 
@@ -143,6 +162,6 @@ extension BaseAmountModel: AmountViewDelegate {
     }
     
     func amountInputControlChangeCurrencyDidTap() {
-        
+        presentCurrencyPickerHandler?()
     }
 }

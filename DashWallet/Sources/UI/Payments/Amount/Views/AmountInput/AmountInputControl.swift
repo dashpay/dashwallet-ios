@@ -54,26 +54,8 @@ class AmountInputControl: UIControl {
         case main
         case supplementary
     }
-    
-    public var style: Style = .oppositeAmount {
-        didSet {
-            updateAppearance()
-            setNeedsLayout()
-            invalidateIntrinsicContentSize()
-            reloadData()
-        }
-    }
-    
-    public var amountType: AmountType = .main {
-        didSet {
-            if oldValue != amountType {
-                setActiveType(amountType, animated: true) { [weak self] in
-                    guard let wSelf = self else { return }
-                    wSelf.delegate?.amountInputControlDidSwapInputs()
-                }
-            }
-        }
-    }
+
+    public var amountType: AmountType = .main
     
     public weak var delegate: AmountInputControlDelegate?
     public weak var dataSource: AmountInputControlDataSource? {
@@ -92,28 +74,27 @@ class AmountInputControl: UIControl {
         return CGSize(width: mainAmountLabel.bounds.width, height: contentHeight)
     }
     
+    private var style: Style
     private var contentView: UIControl!
     private var mainAmountLabel: UILabel!
     private var supplementaryAmountLabel: UILabel!
+    private var supplementaryAmountHelperLabel: UILabel!
     
     private var currencySelectorButton: UIButton!
 
     public var textField: UITextField!
     
     init(style: Style) {
-        super.init(frame: .zero)
-        
         self.style = style
-        configureHierarchy()
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
         
+        super.init(frame: .zero)
+
         configureHierarchy()
     }
     
     required init?(coder: NSCoder) {
+        self.style = .oppositeAmount
+        
         super.init(coder: coder)
     }
     
@@ -124,16 +105,20 @@ class AmountInputControl: UIControl {
         
         let mainString = dataSource.mainAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_darkTitle())
         let supplementaryString = dataSource.supplementaryAmountString.attributedAmountForLocalCurrency(textColor: .dw_darkTitle())
-        if style == .basic {
-            mainAmountLabel.attributedText = amountType == .main ? mainString : supplementaryString
-        } else {
-            mainAmountLabel.attributedText = mainString
-            supplementaryAmountLabel.attributedText = supplementaryString
-        }
+       
+        mainAmountLabel.attributedText = mainString
+        supplementaryAmountLabel.attributedText = supplementaryString
+        
+        supplementaryAmountHelperLabel.attributedText = supplementaryString
+        updateCurrencySelectorPossition()
     }
     
-    func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)?) {
+    func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)? = nil) {
         guard style == .oppositeAmount else {
+            amountType = type
+            updateAppearance()
+            updateCurrencySelectorPossition()
+            delegate?.amountInputControlDidSwapInputs()
             completion?()
             return
         }
@@ -167,13 +152,21 @@ class AmountInputControl: UIControl {
             smallLabel.frame = bigFramePosition
         }
         
+        amountType = type
+        supplementaryAmountHelperLabel.font = wasSwapped ? bigLabel.font : smallLabel.font
+        
         if animated {
+            currencySelectorButton.isHidden = true
+            
             UIView.animate(withDuration: 0.1, delay: 0.0, options: .curveEaseOut, animations: {
                 updateAlphaAndTransform()
             }) { _ in
                 UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, animations: {
                     changePossiton()
                 }) { _ in
+                    self.currencySelectorButton.isHidden = false
+                    self.updateCurrencySelectorPossition()
+                    self.delegate?.amountInputControlDidSwapInputs()
                     completion?()
                 }
             }
@@ -181,7 +174,9 @@ class AmountInputControl: UIControl {
         } else {
             updateAlphaAndTransform()
             changePossiton()
+            updateCurrencySelectorPossition()
             completion?()
+            delegate?.amountInputControlDidSwapInputs()
         }
     }
     
@@ -194,21 +189,15 @@ class AmountInputControl: UIControl {
     
     //MARK: Actions
     
-    @objc func textFieldValueDidChange() {
-        mainAmountLabel.text = textField.text
-        supplementaryAmountLabel.text = textField.text
-    }
-    
     @objc func switchAmountCurrencyAction() {
         guard style == .oppositeAmount else { return }
         
         let nextType = amountType.toggle()
-        setActiveType(nextType, animated: true) { [weak self] in
-            guard let wSelf = self else { return }
-            wSelf.delegate?.amountInputControlDidSwapInputs()
-        }
-            
-        amountType = nextType
+        setActiveType(nextType, animated: true)
+    }
+    
+    @objc func currencySelectorButtonAction() {
+        delegate?.amountInputControlChangeCurrencyDidTap()
     }
 }
 
@@ -216,13 +205,42 @@ class AmountInputControl: UIControl {
 extension AmountInputControl {
     private func updateAppearance() {
         if style == .basic {
-            mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
             mainAmountLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
             mainAmountLabel.alpha = 1
-            supplementaryAmountLabel.isHidden = true
+        
+            supplementaryAmountLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
+            supplementaryAmountLabel.alpha = 1
+            
+            currencySelectorButton.isHidden = amountType == .main
+            mainAmountLabel.isHidden = amountType != .main
+            supplementaryAmountLabel.isHidden = amountType != .supplementary
         } else {
-            supplementaryAmountLabel.isHidden = false
+            supplementaryAmountLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
+            supplementaryAmountLabel.alpha = 1
+            
+            mainAmountLabel.isHidden = false
+            currencySelectorButton.isHidden = false
         }
+
+        supplementaryAmountHelperLabel.font = supplementaryAmountLabel.font
+    }
+    
+    private func updateCurrencySelectorPossition() {
+        let label: UILabel = supplementaryAmountLabel
+        let labelTextRext = label.textRect(forBounds: label.bounds, limitedToNumberOfLines: 1)
+        
+        supplementaryAmountHelperLabel.sizeToFit()
+        if supplementaryAmountHelperLabel.frame.width > labelTextRext.width {
+            var frame = label.frame
+            frame.size.width = labelTextRext.width
+            supplementaryAmountHelperLabel.frame = frame
+        }
+            
+        var frame = currencySelectorButton.frame
+        frame.origin.x = bounds.width/2 + supplementaryAmountHelperLabel.bounds.width/2
+        frame.origin.y = label.frame.minY
+        frame.size.height = label.frame.height
+        currencySelectorButton.frame = frame
     }
     
     override func layoutSubviews() {
@@ -230,6 +248,7 @@ extension AmountInputControl {
         
         if style == .basic {
             mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
+            supplementaryAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
         } else {
             let isSwapped = amountType == .supplementary
             let bigLabel: UILabel = isSwapped ? supplementaryAmountLabel : mainAmountLabel
@@ -241,6 +260,8 @@ extension AmountInputControl {
             bigLabel.frame = bigFrame
             smallLabel.frame = smallFrame
         }
+        
+        updateCurrencySelectorPossition()
     }
 }
 
@@ -273,11 +294,21 @@ extension AmountInputControl {
         
         self.mainAmountLabel = label(with: .dw_regularFont(ofSize: kMainAmountFontSize))
         contentView.addSubview(mainAmountLabel)
-        
-        self.supplementaryAmountLabel = label(with: .dw_regularFont(ofSize: kSupplementaryAmountFontSize))
+
+        self.supplementaryAmountLabel = SupplementaryAmountLabel()
+        configure(label: supplementaryAmountLabel, with: .dw_regularFont(ofSize: kSupplementaryAmountFontSize))
         contentView.addSubview(supplementaryAmountLabel)
-        mainAmountLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
-        supplementaryAmountLabel.frame = CGRect(x: 0, y: mainAmountLabel.bounds.maxY, width: bounds.width, height: kSupplementaryAmountLabelHeight)
+        
+        let configuration = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold, scale: .small)
+        let icon = UIImage(systemName: "chevron.down", withConfiguration: configuration)
+        currencySelectorButton = UIButton(type: .custom)
+        currencySelectorButton.setImage(icon, for: .normal)
+        currencySelectorButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
+        currencySelectorButton.tintColor = .label
+        currencySelectorButton.addTarget(self, action: #selector(currencySelectorButtonAction), for: .touchUpInside)
+        contentView.addSubview(currencySelectorButton)
+        
+        supplementaryAmountHelperLabel = label(with: .dw_regularFont(ofSize: kSupplementaryAmountFontSize))
         
         NSLayoutConstraint.activate([
             contentView.topAnchor.constraint(equalTo: topAnchor),
@@ -298,6 +329,11 @@ extension AmountInputControl {
     
     func label(with font: UIFont) -> UILabel {
         let label = UILabel()
+        configure(label: label, with: font)
+        return label
+    }
+    
+    func configure(label: UILabel, with font: UIFont) {
         label.minimumScaleFactor = 0.5
         label.adjustsFontSizeToFitWidth = true
         label.isUserInteractionEnabled = true
@@ -307,8 +343,6 @@ extension AmountInputControl {
         label.clipsToBounds = false
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(switchAmountCurrencyAction))
         label.addGestureRecognizer(tapGesture)
-        
-        return label
     }
 }
 
@@ -318,14 +352,19 @@ extension AmountInputControl: UITextFieldDelegate {
         
         return false
     }
-    
-    
 }
 
-//MARK: Text Formatting
-
-extension AmountInputControl {
-    func reloadAttributedData() {
-        
+final class SupplementaryAmountLabel: UILabel {
+    
+    override func textRect(forBounds bounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
+        var frame = bounds
+        frame.origin.x = 30
+        frame.size.width -= 60
+        return frame
+    }
+    
+    override func drawText(in rect: CGRect) {
+        let r = self.textRect(forBounds: rect, limitedToNumberOfLines: self.numberOfLines)
+        super.drawText(in: r)
     }
 }
