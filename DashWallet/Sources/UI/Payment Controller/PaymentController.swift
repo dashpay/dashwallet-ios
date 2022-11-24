@@ -165,9 +165,20 @@ extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest, transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
         presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
         
-        confirmViewController?.dismiss(animated: true)
-        
-        delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+        if let vc = confirmViewController {
+            vc.dismiss(animated: true) {
+                if let vc = self.presentationContextProvider as? UIViewController, vc.navigationController?.topViewController is ProvideAmountViewController {
+                    vc.navigationController?.popViewController(animated: true)
+                }
+                self.delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+            }
+        }else{
+            if let vc = presentationContextProvider as? UIViewController, vc.navigationController?.topViewController is ProvideAmountViewController {
+                vc.navigationController?.popViewController(animated: true)
+            }
+            
+            delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+        }
     }
     
     func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) {
