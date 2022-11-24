@@ -26,7 +26,6 @@
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWNavigationController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWSyncingAlertViewController.h"

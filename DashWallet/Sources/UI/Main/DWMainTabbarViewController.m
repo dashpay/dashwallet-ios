@@ -21,7 +21,6 @@
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
 #import "DWUIKit.h"
@@ -261,7 +260,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
             [[DWMainMenuViewController alloc] initWithBalanceDisplayOptions:self.homeModel.balanceDisplayOptions];
         menuController.delegate = self;
 
-        _menuNavigationController = [[BaseNavigationController alloc] initWithRootViewController:menuController];
+        _menuNavigationController = [[DWNavigationController alloc] initWithRootViewController:menuController];
         _menuNavigationController.delegate = self;
     }
 

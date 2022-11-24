@@ -20,7 +20,7 @@
 #import "DWAmountModel.h"
 #import "DWAmountView.h"
 #import "DWLocalCurrencyViewController.h"
-#import "DWNavigationController.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

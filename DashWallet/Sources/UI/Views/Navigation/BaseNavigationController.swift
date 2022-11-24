@@ -17,23 +17,23 @@
 
 import UIKit
 
-enum NavigationBarDisplayStyle
-{
-    case hidden
-    case shown
-}
-
 protocol NavigationBarDisplayable: UIViewController {
     var isBackButtonHidden: Bool { get }
-    var preferredNavigationBarDisplayStyle: NavigationBarDisplayStyle { get }
+    var isNavigationBarHidden: Bool { get }
+}
+
+@objc(DWNavigationFullscreenable)
+protocol NavigationFullscreenable: AnyObject {
+    var requiresNoNavigationBar: Bool { get }
 }
 
 extension NavigationBarDisplayable {
     var isBackButtonHidden: Bool { false }
-    var preferredNavigationBarDisplayStyle: NavigationBarDisplayStyle { .shown }
+    var isNavigationBarHidden: Bool { false }
 }
 
-@objc class BaseNavigationController: UINavigationController {
+@objc(DWNavigationController)
+class BaseNavigationController: UINavigationController {
     private weak var _delegate: UINavigationControllerDelegate?
     override weak var delegate: UINavigationControllerDelegate? {
         set {
@@ -83,7 +83,9 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         
         if let viewController = viewController as? NavigationBarDisplayable {
             hideBackButton = viewController.isBackButtonHidden
-            hideNavigationBar = viewController.preferredNavigationBarDisplayStyle == .hidden
+            hideNavigationBar = viewController.isNavigationBarHidden
+        } else if let vc = viewController as? NavigationFullscreenable {
+            hideNavigationBar = vc.requiresNoNavigationBar
         }
         
         if delegate?.responds(to: #function) ?? false {

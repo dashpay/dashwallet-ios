@@ -19,8 +19,8 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWNavigationController.h"
 #import "DWRecoverViewController.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -22,13 +22,13 @@
 
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
-#import "DWNavigationController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
 #import "DWUIKit.h"
 #import "DWURLParser.h"
 #import "DWURLRequestHandler.h"
 #import "DWUpholdAuthURLNotification.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -21,13 +21,13 @@
 
 #import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
-#import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWPreviewSeedPhraseViewController.h"
 #import "DWResetWalletInfoViewController.h"
 #import "DWSecurityMenuModel.h"
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 #if SNAPSHOT
 #import "DWDemoAdvancedSecurityViewController.h"
