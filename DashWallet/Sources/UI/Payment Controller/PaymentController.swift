@@ -102,7 +102,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem) {
-        let vc = ProvideAmountViewController()
+        let vc = ProvideAmountViewController(address: sendingDestination)
         vc.delegate = self
         //vc.contactItem = nil //TODO: pass contactItem
         //vc.demoMode = self.demoMode; //TODO: demoMode

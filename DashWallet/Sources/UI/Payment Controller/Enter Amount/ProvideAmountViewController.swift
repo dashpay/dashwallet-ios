@@ -24,7 +24,23 @@ protocol ProvideAmountViewControllerDelegate: AnyObject {
 final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
     
+    init(address: String) {
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func actionButtonAction(sender: UIView) {
+        guard validateInputAmount() else { return }
+        
+        if (!self.sendAmountModel.isSendAllowed) {
+            showAlert(with: "Please wait for the sync to complete".localized(), message: nil)
+            return;
+        }
+        
+        DWGlobalOptions.sharedInstance().selectedPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
         delegate?.provideAmountViewControllerDidInput(amount: UInt64(model.amount.plainAmount))
     }
     

@@ -34,6 +34,19 @@ class BaseAmountModel {
     
     public var amountChangeHandler: ((AmountObject) -> Void)?
     public var presentCurrencyPickerHandler: (() -> Void)?
+    public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let amount = amount.plainAmount
+        
+        return amount < chain.minOutputAmount
+    }
+    
+    public var minimumOutputAmountFormattedString: String {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        return DSPriceManager.sharedInstance().string(forDashAmount: Int64(chain.minOutputAmount)) ?? "Unknown".localized()
+    }
+
+
     
     internal var mainAmountValidator: DWAmountInputValidator!
     internal var supplementaryAmountValidator: DWAmountInputValidator!

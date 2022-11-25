@@ -50,6 +50,16 @@ class BaseAmountViewController: ActionButtonViewController {
         amountView.reloadData()
     }
     
+    internal func validateInputAmount() -> Bool {
+        if (model.isEnteredAmountLessThenMinimumOutputAmount) {
+            let msg = "Dash payments can't be less than %@".localized( model.minimumOutputAmountFormattedString)
+            showAlert(with: "Amount too small".localized(), message: msg)
+            return false
+        }
+        
+        return true
+    }
+    
     internal func showCurrencyList() {
         let currencyController = DWLocalCurrencyViewController(navigationAppearance: .white, currencyCode: model.localCurrencyCode)
         currencyController.isGlobal = false
