@@ -31,9 +31,11 @@
 #import "DWSyncingAlertViewController.h"
 #import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
+#import "UINavigationBar+DWAppearance.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
@@ -84,6 +86,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model registerForPushNotifications];
 
     [self showReclassifyYourTransactionsIfPossibleWithTransaction:self.model.allDataSource.items.firstObject];
+
+    [self.navigationController.navigationBar dw_applyOpaqueAppearanceWithColor:[UIColor dw_dashNavigationBlueColor]];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
