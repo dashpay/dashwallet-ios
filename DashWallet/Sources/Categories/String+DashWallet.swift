@@ -20,8 +20,18 @@ import Foundation
 private let kCurrencySymbol = "¤"
 private var kDashSymbolAssetName = "icon_dash_currency"
 
-//MARK: Formatted Amount
+//MARK: Localization
+extension String {
+    func localized(comment: String? = nil) -> String {
+        NSLocalizedString(self, comment: comment ?? "")
+    }
+    
+    func localized(comment: String? = nil, _ arguments: CVarArg...) -> String {
+        String(format: "Dash payments can't be less than %@".localized(), arguments)
+    }
+}
 
+//MARK: Formatted Amount
 extension String {
     func dashSymbolAttributedString(with tintColor: UIColor) -> NSAttributedString {
         let image = UIImage(named: kDashSymbolAssetName)!.withTintColor(tintColor)
