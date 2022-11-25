@@ -77,7 +77,7 @@ class AmountInputControl: UIControl {
     }
     
     private var style: Style
-    private var contentView: UIControl!
+    private var contentView: CopyPasteableContol!
     private var mainAmountLabel: UILabel!
     private var supplementaryAmountLabel: UILabel!
     private var supplementaryAmountHelperLabel: UILabel!
@@ -182,11 +182,17 @@ class AmountInputControl: UIControl {
         }
     }
     
+    @discardableResult
     override func becomeFirstResponder() -> Bool {
         let val = textField.becomeFirstResponder()
         let endOfDocumentPosition = textField.endOfDocument
         self.textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
         return val
+    }
+    
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
+        textField.resignFirstResponder()
     }
     
     //MARK: Actions
@@ -197,6 +203,16 @@ class AmountInputControl: UIControl {
         let nextType = amountType.toggle()
         setActiveType(nextType, animated: true)
         swapingHandler?(nextType)
+    }
+    
+    
+    
+    internal func pasteAction() {
+        self.becomeFirstResponder()
+    }
+    
+    internal func copyAction() {
+        self.becomeFirstResponder()
     }
     
     @objc func currencySelectorButtonAction() {
@@ -289,7 +305,13 @@ extension AmountInputControl {
         inputAssistantItem.trailingBarButtonGroups = []
         addSubview(textField)
         
-        self.contentView = UIControl()
+        self.contentView = CopyPasteableContol(frame: .zero)
+        contentView.didCopyHandler = { [weak self] in
+            self?.copyAction()
+        }
+        contentView.didPasteHandler = { [weak self] in
+            self?.pasteAction()
+        }
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .clear
         contentView.clipsToBounds = false
@@ -346,6 +368,8 @@ extension AmountInputControl {
         label.clipsToBounds = false
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(switchAmountCurrencyAction))
         label.addGestureRecognizer(tapGesture)
+        
+        
     }
 }
 
@@ -369,5 +393,53 @@ final class SupplementaryAmountLabel: UILabel {
     override func drawText(in rect: CGRect) {
         let r = self.textRect(forBounds: rect, limitedToNumberOfLines: self.numberOfLines)
         super.drawText(in: r)
+    }
+}
+
+final class CopyPasteableContol: UIControl {
+    var didCopyHandler: (() -> ())?
+    var didPasteHandler: (() -> ())?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        configureMenuControl()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc func longPressGestureRecognizerAction(gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .recognized else { return }
+        
+        if let recognizerView = gesture.view
+        {
+            self.becomeFirstResponder()
+            
+            let menuController = UIMenuController.shared
+            menuController.showMenu(from: self, rect: recognizerView.frame)
+        }
+    }
+    
+    private func configureMenuControl() {
+        let longTapGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressGestureRecognizerAction(gesture:)))
+        longTapGesture.cancelsTouchesInView = true
+        self.addGestureRecognizer(longTapGesture)
+    }
+    
+    override func copy(_ sender: Any?) {
+        didCopyHandler?()
+    }
+    
+    override func paste(_ sender: Any?) {
+        didPasteHandler?()
+    }
+    
+    override var canBecomeFirstResponder: Bool {
+        return true
+    }
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        return action == #selector(UIResponderStandardEditActions.copy) || action == #selector(UIResponderStandardEditActions.paste)
     }
 }
