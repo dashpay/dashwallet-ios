@@ -106,6 +106,14 @@ extension BaseAmountModel {
     var isSwapToLocalCurrencyAllowed: Bool {
         return DSPriceManager.sharedInstance().localCurrencyDashPrice != nil
     }
+    
+    var walletBalance: UInt64 {
+        DWEnvironment.sharedInstance().currentWallet.balance
+    }
+    
+    var walletBalanceFormatted: String {
+        walletBalance.formattedDashAmount
+    }
 }
 
 extension BaseAmountModel: AmountViewDataSource {

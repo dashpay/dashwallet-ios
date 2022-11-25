@@ -145,7 +145,7 @@ extension TransferAmountViewController: ConverterViewDelegate {
 
 //MARK: ConverterViewDataSource
 extension BaseAmountModel: ConverterViewDataSource {
-    var coinbaseBalance: String {
+    var coinbaseBalanceFormatted: String {
         guard let balance = Coinbase.shared.lastKnownBalance else {
             return NSLocalizedString("Unknown Balance", comment: "Coinbase")
         }
@@ -153,9 +153,6 @@ extension BaseAmountModel: ConverterViewDataSource {
         return balance.formattedDashAmount
     }
     
-    var walletBalance: String {
-        DWEnvironment.sharedInstance().currentWallet.balance.formattedDashAmount
-    }
 }
 
 extension TransferAmountViewController {

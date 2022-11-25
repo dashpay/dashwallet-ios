@@ -24,7 +24,10 @@ protocol ProvideAmountViewControllerDelegate: AnyObject {
 final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
     
-    let address: String
+    private var balanceLabel: UILabel!
+    
+    private let address: String
+    private var isBalanceHidden: Bool = true
     
     init(address: String) {
         self.address = address
@@ -60,12 +63,12 @@ final class ProvideAmountViewController: SendAmountViewController {
         
         let textContainer = UIStackView()
         textContainer.axis = .vertical
-        textContainer.spacing = 6
+        textContainer.spacing = 4
         stackView.addArrangedSubview(textContainer)
         
         let topStackView = UIStackView()
         topStackView.axis = .horizontal
-        topStackView.spacing = 3
+        topStackView.spacing = 2
         topStackView.alignment = .bottom
         textContainer.addArrangedSubview(topStackView)
         
@@ -99,14 +102,14 @@ final class ProvideAmountViewController: SendAmountViewController {
         
         let balanceTitleLabel = UILabel()
         balanceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceTitleLabel.font = .dw_font(forTextStyle: .footnote)
+        balanceTitleLabel.font = .dw_font(forTextStyle: .body)
         balanceTitleLabel.textColor = .secondaryLabel
         balanceTitleLabel.text = NSLocalizedString("Balance", comment: "Send Screen: to address") + ":"
         balanceStackView.addArrangedSubview(balanceTitleLabel)
 
-        let balanceLabel = UILabel()
+        balanceLabel = UILabel()
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceLabel.font = .dw_font(forTextStyle: .footnote)
+        balanceLabel.font = .dw_font(forTextStyle: .body)
         balanceLabel.textColor = .secondaryLabel
         balanceLabel.text = "5.50 DASH ~ 320.74€"
         balanceStackView.addArrangedSubview(balanceLabel)
@@ -123,6 +126,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         showHideBalanceButton.layer.cornerRadius = 12
         showHideBalanceButton.setImage(UIImage(systemName: "eye.fill", withConfiguration: configuration), for: .normal)
         showHideBalanceButton.tintColor = .label.withAlphaComponent(0.8)
+        showHideBalanceButton.addTarget(self, action: #selector(toggleBalanceVisibilityAction), for: .touchUpInside)
         balanceStackView.addArrangedSubview(showHideBalanceButton)
         
         let extraSpaceView = UIView()
@@ -146,4 +150,51 @@ final class ProvideAmountViewController: SendAmountViewController {
             showHideBalanceButton.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
+    
+    @objc func walletBalanceDidChangeNotification(notification: Notification) {
+        updateBalance()
+    }
+    
+    @objc func toggleBalanceVisibilityAction() {
+        isBalanceHidden.toggle()
+        updateBalance()
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(walletBalanceDidChangeNotification(notification:)), name: .balanceChangeNotification, object: nil)
+        
+        updateBalance()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+}
+
+private extension ProvideAmountViewController {
+    private func updateBalance() {
+        let balance = model.walletBalance
+        
+        let dashNumber = Decimal(balance)/Decimal(DUFFS)
+        let dashAmounString = NSDecimalNumber(decimal: dashNumber).description(withLocale: Locale.current)
+        
+        let fiat: String = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance)) ?? "Syncing..."
+        
+        let dashStr = "\(dashNumber) DASH"
+        let fiatStr = " ≈ \(fiat)"
+        let fullStr = "\(dashStr)\(fiatStr)"
+        
+        if isBalanceHidden {
+            balanceLabel.text = String(repeating: "*", count: fullStr.count + 4)
+        }else{
+            balanceLabel.text = fullStr
+        }
+        
+    }
+}
+
+extension Notification.Name {
+    static var balanceChangeNotification: NSNotification.Name { .init("DSWalletBalanceChangedNotification") }
 }
