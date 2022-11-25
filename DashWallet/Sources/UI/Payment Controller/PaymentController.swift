@@ -84,8 +84,7 @@ extension PaymentController {
 //MARK: DWConfirmPaymentViewControllerDelegate
 extension PaymentController: DWConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: DWConfirmPaymentViewController) {
-        if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput
-        {
+        if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput {
             self.paymentProcessor.confirmPaymentOutput(output)
         }
     }
@@ -94,11 +93,11 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
 //MARK: DWPaymentProcessorDelegate
 extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest, transaction: DSTransaction) {
-//        [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"Swept!", nil)];
-//
-//        if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
-//            [self.navigationController popViewControllerAnimated:YES];
-//        }
+        presentationAnchor?.view.dw_showInfoHUD(withText: NSLocalizedString("Swept", comment: ""))
+        
+        if let vc = presentationContextProvider as? UIViewController, vc.navigationController?.topViewController is ProvideAmountViewController {
+            vc.navigationController?.popViewController(animated: true)
+        }
     }
     
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem) {
