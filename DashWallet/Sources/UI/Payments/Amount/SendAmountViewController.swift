@@ -47,7 +47,7 @@ class SendAmountViewController: BaseAmountViewController {
     override func amountDidChange() {
         super.amountDidChange()
         
-        actionButton?.isEnabled = model.amount.plainAmount > 0
+        actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
     
     required init?(coder: NSCoder) {

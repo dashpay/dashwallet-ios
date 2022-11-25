@@ -21,9 +21,22 @@ class SendAmountModel: BaseAmountModel {
     override var showMaxButton: Bool { return false }
     
     var isSendAllowed: Bool {
-        (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-         DWEnvironment.sharedInstance().currentChainManager.syncPhase == .chainSync)
+        amount.plainAmount > 0 && !canShowInsufficientFunds && (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
+         DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced)
     }
+    
+    var canShowInsufficientFunds: Bool {
+        let plainAmount = amount.plainAmount
+        
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let allAvailableFunds = account.maxOutputAmount
+        
+        let authenticationManager = DSAuthenticationManager.sharedInstance()
+        let canShowInsufficientFunds = authenticationManager.didAuthenticate
+        
+        return canShowInsufficientFunds && (plainAmount > allAvailableFunds)
+    }
+    
     
     override init() {
         super.init()
@@ -50,22 +63,5 @@ class SendAmountModel: BaseAmountModel {
         if allAvailableFunds > 0 {
             updateCurrentAmountObject(with: Int64(allAvailableFunds))
         }
-    }
-    
-    internal func updateCurrentAmountObject(with amount: Int64) {
-        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-        updateCurrentAmountObject(with: amountObject)
-    }
-    
-    internal func updateCurrentAmountObject(with newObject: AmountObject) {
-        if activeAmountType == .main {
-            mainAmount = newObject
-            supplementaryAmount = nil
-        } else {
-            mainAmount = nil
-            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
-        }
-        
-        amountChangeHandler?(newObject)
     }
 }

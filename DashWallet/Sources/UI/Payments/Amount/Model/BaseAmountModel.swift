@@ -74,7 +74,43 @@ class BaseAmountModel {
         rebuildAmounts()
     }
 
-    func updateAmount(with replacementString: String, range: NSRange) {
+    func updateInputField(with replacementText: String, in range: NSRange) {
+        let lastInputString = amount.amountInternalRepresentation
+        
+        guard let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range, replacementString: replacementText) else {
+            return
+        }
+        
+        updateAmountObjects(with: validatedString)
+    }
+    
+    internal func updateCurrentAmountObject(with amount: Int64) {
+        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        updateCurrentAmountObject(with: amountObject)
+    }
+    
+    func updateAmountObjects(with inputString: String) {
+        if activeAmountType == .main {
+            mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            supplementaryAmount = nil
+        }else if let amount = AmountObject(localAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter) {
+            supplementaryAmount = amount
+            mainAmount = nil
+        }
+        
+        amountDidChange()
+    }
+    
+    internal func updateCurrentAmountObject(with newObject: AmountObject) {
+        if activeAmountType == .main {
+            mainAmount = newObject
+            supplementaryAmount = nil
+        } else {
+            mainAmount = nil
+            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+        }
+        
+        amountDidChange()
     }
     
     internal func rebuildAmounts() {
@@ -86,7 +122,11 @@ class BaseAmountModel {
             mainAmount = nil
         }
         
-        amountChangeHandler?(mainAmount ?? supplementaryAmount)
+        amountDidChange()
+    }
+    
+    internal func amountDidChange() {
+        amountChangeHandler?(amount)
     }
 }
 
@@ -139,28 +179,8 @@ extension BaseAmountModel: AmountViewDelegate {
     var amountInputStyle: AmountInputControl.Style {
         .oppositeAmount
     }
+
     
-    func updateInputField(with replacementText: String, in range: NSRange) {
-        let lastInputString = amount.amountInternalRepresentation
-        
-        guard let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range, replacementString: replacementText) else {
-            return
-        }
-        
-        updateAmountObjects(with: validatedString)
-    }
-    
-    func updateAmountObjects(with inputString: String) {
-        if activeAmountType == .main {
-            mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            supplementaryAmount = nil
-        }else if let amount = AmountObject(localAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter) {
-            supplementaryAmount = amount
-            mainAmount = nil
-        }
-        
-        amountChangeHandler?(amount)
-    }
     
     func amountInputControlDidSwapInputs() {
         assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
@@ -177,7 +197,7 @@ extension BaseAmountModel: AmountViewDelegate {
             activeAmountType = .main
         }
         
-        amountChangeHandler?(amount)
+        amountDidChange()
     }
     
     func amountInputControlChangeCurrencyDidTap() {
@@ -186,18 +206,13 @@ extension BaseAmountModel: AmountViewDelegate {
     
     func amountInputWantToPasteFromClipboard() {
         guard var string = UIPasteboard.general.string else { return }
+        
         string = string.localizedAmount()
         
         let amount = AmountObject(dashAmountString: string, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
         
-        if activeAmountType == .main {
-            mainAmount = amount
-            supplementaryAmount = nil
-        } else {
-            supplementaryAmount = amount.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
-            mainAmount = nil
-        }
-        
-        amountChangeHandler?(amount)
+        updateCurrentAmountObject(with: amount)
     }
+    
+    
 }

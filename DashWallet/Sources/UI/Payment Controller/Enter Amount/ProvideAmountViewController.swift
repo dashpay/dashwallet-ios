@@ -25,6 +25,7 @@ final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
     
     private var balanceLabel: UILabel!
+    private var errorLabel: UILabel!
     
     private let address: String
     private var isBalanceHidden: Bool = true
@@ -36,6 +37,12 @@ final class ProvideAmountViewController: SendAmountViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func amountDidChange() {
+        super.amountDidChange()
+        
+        errorLabel.isHidden = !sendAmountModel.canShowInsufficientFunds
     }
     
     override func actionButtonAction(sender: UIView) {
@@ -135,6 +142,14 @@ final class ProvideAmountViewController: SendAmountViewController {
         
         amountView.removeFromSuperview()
         stackView.addArrangedSubview(amountView)
+        
+        errorLabel = UILabel()
+        errorLabel.textColor = .systemRed
+        errorLabel.font = .dw_font(forTextStyle: .body)
+        errorLabel.text = NSLocalizedString("Insufficient funds", comment: "Send screen")
+        errorLabel.isHidden = true
+        errorLabel.textAlignment = .center
+        stackView.addArrangedSubview(errorLabel)
         
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
