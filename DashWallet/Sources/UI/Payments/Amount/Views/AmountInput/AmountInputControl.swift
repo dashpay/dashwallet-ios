@@ -30,6 +30,7 @@ protocol AmountInputControlDelegate: AnyObject {
     func updateInputField(with replacementText: String, in range: NSRange)
     func amountInputControlDidSwapInputs()
     func amountInputControlChangeCurrencyDidTap()
+    func amountInputWantToPasteFromClipboard()
 }
 
 protocol AmountInputControlDataSource: AnyObject {
@@ -209,6 +210,7 @@ class AmountInputControl: UIControl {
     
     internal func pasteAction() {
         self.becomeFirstResponder()
+        delegate?.amountInputWantToPasteFromClipboard()
     }
     
     internal func copyAction() {
@@ -368,8 +370,6 @@ extension AmountInputControl {
         label.clipsToBounds = false
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(switchAmountCurrencyAction))
         label.addGestureRecognizer(tapGesture)
-        
-        
     }
 }
 

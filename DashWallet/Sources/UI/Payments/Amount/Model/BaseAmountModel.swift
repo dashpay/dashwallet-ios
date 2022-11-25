@@ -183,4 +183,21 @@ extension BaseAmountModel: AmountViewDelegate {
     func amountInputControlChangeCurrencyDidTap() {
         presentCurrencyPickerHandler?()
     }
+    
+    func amountInputWantToPasteFromClipboard() {
+        guard var string = UIPasteboard.general.string else { return }
+        string = string.localizedAmount()
+        
+        let amount = AmountObject(dashAmountString: string, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        
+        if activeAmountType == .main {
+            mainAmount = amount
+            supplementaryAmount = nil
+        } else {
+            supplementaryAmount = amount.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+            mainAmount = nil
+        }
+        
+        amountChangeHandler?(amount)
+    }
 }
