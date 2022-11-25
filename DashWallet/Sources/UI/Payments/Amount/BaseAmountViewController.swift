@@ -52,8 +52,8 @@ class BaseAmountViewController: ActionButtonViewController {
     
     internal func validateInputAmount() -> Bool {
         if (model.isEnteredAmountLessThenMinimumOutputAmount) {
-            let msg = "Dash payments can't be less than %@".localized( model.minimumOutputAmountFormattedString)
-            showAlert(with: "Amount too small".localized(), message: msg)
+            let msg = String(format: "Dash payments can't be less than %@", model.minimumOutputAmountFormattedString)
+            showAlert(with: NSLocalizedString("Amount too small", comment: ""), message: msg)
             return false
         }
         

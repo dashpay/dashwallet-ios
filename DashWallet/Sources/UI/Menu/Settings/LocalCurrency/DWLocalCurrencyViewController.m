@@ -60,10 +60,10 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    
+
     UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
     self.navigationItem.rightBarButtonItem = barButton;
-    
+
     self.title = NSLocalizedString(@"Local Currency", nil);
 
     [self setupView];

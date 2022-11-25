@@ -43,10 +43,8 @@ class BaseAmountModel {
     
     public var minimumOutputAmountFormattedString: String {
         let chain = DWEnvironment.sharedInstance().currentChain
-        return DSPriceManager.sharedInstance().string(forDashAmount: Int64(chain.minOutputAmount)) ?? "Unknown".localized()
+        return DSPriceManager.sharedInstance().string(forDashAmount: Int64(chain.minOutputAmount)) ?? NSLocalizedString("Unknown", comment: "")
     }
-
-
     
     internal var mainAmountValidator: DWAmountInputValidator!
     internal var supplementaryAmountValidator: DWAmountInputValidator!
