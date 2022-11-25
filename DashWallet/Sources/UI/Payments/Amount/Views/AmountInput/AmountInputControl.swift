@@ -373,6 +373,7 @@ extension AmountInputControl {
     }
 }
 
+//MARK: UITextFieldDelegate
 extension AmountInputControl: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         delegate?.updateInputField(with: string, in: range)
@@ -381,6 +382,7 @@ extension AmountInputControl: UITextFieldDelegate {
     }
 }
 
+//MARK: SupplementaryAmountLabel
 final class SupplementaryAmountLabel: UILabel {
     
     override func textRect(forBounds bounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
@@ -396,6 +398,7 @@ final class SupplementaryAmountLabel: UILabel {
     }
 }
 
+//MARK: CopyPasteableContol
 final class CopyPasteableContol: UIControl {
     var didCopyHandler: (() -> ())?
     var didPasteHandler: (() -> ())?
@@ -440,6 +443,6 @@ final class CopyPasteableContol: UIControl {
     }
     
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        return action == #selector(UIResponderStandardEditActions.copy) || action == #selector(UIResponderStandardEditActions.paste)
+        return (UIPasteboard.general.hasStrings && action == #selector(UIResponderStandardEditActions.paste)) || action == #selector(UIResponderStandardEditActions.copy)
     }
 }
