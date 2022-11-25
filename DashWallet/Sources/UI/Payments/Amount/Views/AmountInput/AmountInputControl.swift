@@ -66,6 +66,8 @@ class AmountInputControl: UIControl {
         }
     }
     
+    public var swapingHandler: ((AmountType) -> Void)?
+    
     public var text: String? { return mainText }
     public var mainText: String?
     public var supplementaryText: String?
@@ -194,6 +196,7 @@ class AmountInputControl: UIControl {
         
         let nextType = amountType.toggle()
         setActiveType(nextType, animated: true)
+        swapingHandler?(nextType)
     }
     
     @objc func currencySelectorButtonAction() {

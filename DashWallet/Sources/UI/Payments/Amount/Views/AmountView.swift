@@ -124,13 +124,16 @@ extension AmountView {
         addSubview(maxButton)
         
         self.amountInputControl = AmountInputControl(style: amountInputStyle)
+        amountInputControl.swapingHandler = { [weak self] type in
+            self?.inputTypeSwitcher.selectedNextItem()
+        }
         amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(amountInputControl)
     
         self.inputTypeSwitcher = .init(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
-        inputTypeSwitcher.selectItem = { [weak self] item in
+        inputTypeSwitcher.selectItemHandler = { [weak self] item in
             let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
             self?.amountInputControl.setActiveType(type, animated: true, completion: nil)
         }

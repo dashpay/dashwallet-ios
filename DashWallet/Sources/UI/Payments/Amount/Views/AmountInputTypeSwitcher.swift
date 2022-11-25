@@ -33,10 +33,10 @@ class AmountInputTypeSwitcher: UIView {
         }
     }
     
-    public var selectItem: ((AmountInputTypeItem) -> Void)?
+    public var selectItemHandler: ((AmountInputTypeItem) -> Void)?
     
     private var containerView: UIStackView!
-    private var currentSelectedItemButton: UIButton!
+    private var currentSelectedIndex: Int = 0
     
     override var intrinsicContentSize: CGSize {
         .init(width: AmountInputTypeSwitcher.noIntrinsicMetric, height: CGFloat(items.count)*kItemHeight)
@@ -52,13 +52,28 @@ class AmountInputTypeSwitcher: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    public func selectedNextItem() {
+        var nextTag = currentSelectedIndex + 1
+        
+        if nextTag == items.count {
+            nextTag = 0
+        }
+        
+        currentSelectedIndex = nextTag
+        reloadData()
+    }
+    
     @objc func itemAction(sender: UIButton) {
+        var currentSelectedItemButton = containerView.arrangedSubviews[currentSelectedIndex] as! UIButton
         currentSelectedItemButton.isSelected = false
         currentSelectedItemButton.isUserInteractionEnabled = true
+        
         currentSelectedItemButton = sender
         currentSelectedItemButton.isSelected = true
         currentSelectedItemButton.isUserInteractionEnabled = false
-        selectItem?(items[sender.tag])
+        
+        currentSelectedIndex = currentSelectedItemButton.tag
+        selectItemHandler?(items[sender.tag])
     }
 }
 
@@ -71,24 +86,19 @@ extension AmountInputTypeSwitcher {
         
         for (i, item) in items.enumerated() {
             let button = containerView.arrangedSubviews[i] as! UIButton
+            button.isSelected = currentSelectedIndex == i
+            button.isUserInteractionEnabled = !button.isSelected
             button.setTitle(item.currencySymbol, for: .normal)
         }
     }
     
     private func presentItems() {
-        var onceToken: Bool = false
-        
         for (i, item) in items.enumerated() {
             let button = itemButton(title: item.currencySymbol)
             button.tag = i
+            button.isSelected = currentSelectedIndex == i
+            button.isUserInteractionEnabled = !button.isSelected
             containerView.addArrangedSubview(button)
-            
-            if !onceToken {
-                button.isSelected = true
-                currentSelectedItemButton = button
-            }
-            
-            onceToken = true
         }
     }
     
