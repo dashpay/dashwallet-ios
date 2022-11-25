@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 #import "dashwallet-Swift.h"
 
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWBiometricAuthViewController : DWBaseViewController <DWNavigationFullscreenable>
+@interface DWBiometricAuthViewController : UIViewController <DWNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWBiometricAuthViewControllerDelegate> delegate;
 

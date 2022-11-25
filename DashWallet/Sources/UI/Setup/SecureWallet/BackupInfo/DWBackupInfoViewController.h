@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
 #import "DWSecureWalletDelegate.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPreviewSeedPhraseModel;
 
-@interface DWBackupInfoViewController : DWBaseViewController
+@interface DWBackupInfoViewController : UIViewController
 
 @property (nonatomic, assign) BOOL shouldCreateNewWalletOnScreenshot;
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;

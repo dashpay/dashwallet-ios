@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWOnboardingViewController : DWBaseViewController
+@interface DWOnboardingViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWOnboardingViewControllerDelegate> delegate;
 

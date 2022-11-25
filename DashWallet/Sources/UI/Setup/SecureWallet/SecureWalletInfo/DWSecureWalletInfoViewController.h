@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 #import "DWSecureWalletDelegate.h"
 #import "dashwallet-Swift.h"
@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DWSecureWalletInfoType) {
     DWSecureWalletInfoType_Reminder,
 };
 
-@interface DWSecureWalletInfoViewController : DWBaseViewController <DWNavigationFullscreenable>
+@interface DWSecureWalletInfoViewController : UIViewController <DWNavigationFullscreenable>
 
 @property (nonatomic, assign) DWSecureWalletInfoType type;
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;

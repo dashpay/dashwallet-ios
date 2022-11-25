@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWResetWalletInfoViewController : DWBaseViewController
+@interface DWResetWalletInfoViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
 
