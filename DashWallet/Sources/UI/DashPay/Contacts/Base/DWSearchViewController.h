@@ -15,13 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWNavigationChildViewController.h"
-
 #import "dashwallet-Swift.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSearchViewController : DWNavigationChildViewController <DWNavigationFullscreenable, UISearchBarDelegate>
+@interface DWSearchViewController : UIViewController <DWNavigationFullscreenable, UISearchBarDelegate>
 
 @property (readonly, nonatomic, strong) UISearchBar *searchBar;
 @property (readonly, nonatomic, strong) UIView *contentView;
