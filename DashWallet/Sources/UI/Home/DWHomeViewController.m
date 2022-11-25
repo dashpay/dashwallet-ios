@@ -74,6 +74,12 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleLightContent;
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.navigationController.navigationBar dw_applyOpaqueAppearanceWithColor:[UIColor dw_dashNavigationBlueColor]];
+}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
@@ -86,8 +92,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model registerForPushNotifications];
 
     [self showReclassifyYourTransactionsIfPossibleWithTransaction:self.model.allDataSource.items.firstObject];
-
-    [self.navigationController.navigationBar dw_applyOpaqueAppearanceWithColor:[UIColor dw_dashNavigationBlueColor]];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

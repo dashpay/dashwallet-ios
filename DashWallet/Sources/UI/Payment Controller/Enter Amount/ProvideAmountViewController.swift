@@ -175,6 +175,25 @@ final class ProvideAmountViewController: SendAmountViewController {
         updateBalance()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        let standardAppearance = UINavigationBarAppearance()
+        standardAppearance.configureWithOpaqueBackground()
+        standardAppearance.backgroundColor = .dw_secondaryBackground()
+        standardAppearance.shadowColor = .clear
+        
+        let compactAppearance = standardAppearance.copy()
+        
+        let navigationBar = navigationController!.navigationBar
+        navigationBar.isTranslucent = true
+        navigationBar.standardAppearance = standardAppearance
+        navigationBar.scrollEdgeAppearance = standardAppearance
+        navigationBar.compactAppearance = compactAppearance
+        if #available(iOS 15.0, *) {
+            navigationBar.compactScrollEdgeAppearance = compactAppearance
+        }
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         
