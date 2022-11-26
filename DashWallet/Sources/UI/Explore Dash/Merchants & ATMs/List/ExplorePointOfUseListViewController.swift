@@ -258,8 +258,12 @@ extension ExplorePointOfUseListViewController {
         let empty = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: self, action: nil)
         let filter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain, target: self, action: nil)
         filter.tintColor = .dw_dashBlue()
+        
+        let fakeFilter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain, target: self, action: nil)
+        fakeFilter.tintColor = .clear
+        
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
-        toolbarItems = [filter, spacer, appliedFilters, spacer, empty]
+        toolbarItems = [filter, spacer, appliedFilters, spacer, fakeFilter]
         
         let standardAppearance = UIToolbarAppearance()
         standardAppearance.configureWithDefaultBackground()

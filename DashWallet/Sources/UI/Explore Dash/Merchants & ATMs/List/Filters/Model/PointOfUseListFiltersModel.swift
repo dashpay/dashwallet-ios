@@ -111,7 +111,16 @@ struct PointOfUseListFilters: Equatable {
         var string: [String] = []
         
         if DWLocationManager.shared.isAuthorized, let radius = self.radius {
-            let stringValue = ExploreDash.distanceFormatter.string(from: Measurement(value: Double(radius.rawValue), unit: UnitLength.miles))
+            let stringValue: String
+            
+            if Locale.current.usesMetricSystem {
+                let value = ExploreDash.distanceFormatter.string(from: Measurement(value: radius.meters, unit: UnitLength.meters))
+                stringValue = value
+            }else{
+                let value = ExploreDash.distanceFormatter.string(from: Measurement(value: Double(radius.rawValue), unit: UnitLength.miles))
+                stringValue = value
+            }
+            
             string.append(stringValue)
         }
         
