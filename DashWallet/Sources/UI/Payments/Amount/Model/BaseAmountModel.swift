@@ -84,11 +84,6 @@ class BaseAmountModel {
         updateAmountObjects(with: validatedString)
     }
     
-    internal func updateCurrentAmountObject(with amount: Int64) {
-        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-        updateCurrentAmountObject(with: amountObject)
-    }
-    
     func updateAmountObjects(with inputString: String) {
         if activeAmountType == .main {
             mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
@@ -99,6 +94,11 @@ class BaseAmountModel {
         }
         
         amountDidChange()
+    }
+    
+    internal func updateCurrentAmountObject(with amount: Int64) {
+        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        updateCurrentAmountObject(with: amountObject)
     }
     
     internal func updateCurrentAmountObject(with newObject: AmountObject) {
@@ -114,15 +114,8 @@ class BaseAmountModel {
     }
     
     internal func rebuildAmounts() {
-        if activeAmountType == .main {
-            mainAmount = AmountObject(dashAmountString: mainAmount.amountInternalRepresentation, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            supplementaryAmount = nil
-        } else {
-            supplementaryAmount = AmountObject(localAmountString: supplementaryAmount.amountInternalRepresentation, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            mainAmount = nil
-        }
-        
-        amountDidChange()
+        let amount = activeAmountType == .main ? mainAmount.amountInternalRepresentation : supplementaryAmount.amountInternalRepresentation
+        updateAmountObjects(with: amount)
     }
     
     internal func amountDidChange() {
@@ -180,8 +173,6 @@ extension BaseAmountModel: AmountViewDelegate {
         .oppositeAmount
     }
 
-    
-    
     func amountInputControlDidSwapInputs() {
         assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
         
@@ -206,13 +197,31 @@ extension BaseAmountModel: AmountViewDelegate {
     
     func amountInputWantToPasteFromClipboard() {
         guard var string = UIPasteboard.general.string else { return }
-        
         string = string.localizedAmount()
         
-        let amount = AmountObject(dashAmountString: string, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        guard let decimal = Decimal(string: string, locale: .current) else { return }
+        let decimalNumber = NSDecimalNumber(decimal: decimal)
         
-        updateCurrentAmountObject(with: amount)
+        let formattedString: String?
+        
+        var formatter: NumberFormatter
+        
+        if activeAmountType == .main {
+            formatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = NumberFormatter.dashFormatter.minimumFractionDigits
+            formatter.maximumFractionDigits = NumberFormatter.dashFormatter.maximumFractionDigits
+            formattedString = formatter.string(from: decimalNumber)
+        }else{
+            formatter = localFormatter.copy() as! NumberFormatter
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = localFormatter.minimumFractionDigits
+            formatter.maximumFractionDigits = localFormatter.maximumFractionDigits
+            formattedString = formatter.string(from: decimalNumber)
+        }
+        
+        guard let string = formattedString else { return }
+        
+        updateAmountObjects(with: string)
     }
-    
-    
 }
