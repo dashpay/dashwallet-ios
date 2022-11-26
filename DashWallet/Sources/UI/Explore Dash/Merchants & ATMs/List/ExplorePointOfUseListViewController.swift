@@ -128,6 +128,8 @@ enum ExplorePointOfUseSections: Int {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        navigationController?.setToolbarHidden(true, animated: true)
+        
         super.viewWillDisappear(animated)
         
         DWLocationManager.shared.remove(observer: self)
