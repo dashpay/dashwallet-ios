@@ -308,6 +308,7 @@ extension AmountInputControl {
         addSubview(textField)
         
         self.contentView = CopyPasteableContol(frame: .zero)
+        contentView.canCopy = false
         contentView.didCopyHandler = { [weak self] in
             self?.copyAction()
         }
@@ -403,6 +404,9 @@ final class CopyPasteableContol: UIControl {
     var didCopyHandler: (() -> ())?
     var didPasteHandler: (() -> ())?
     
+    var canCopy: Bool = true
+    var canPaste: Bool = true
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureMenuControl()
@@ -443,6 +447,13 @@ final class CopyPasteableContol: UIControl {
     }
     
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        return (UIPasteboard.general.hasStrings && action == #selector(UIResponderStandardEditActions.paste)) || action == #selector(UIResponderStandardEditActions.copy)
+        switch action {
+        case #selector(UIResponderStandardEditActions.paste):
+            return UIPasteboard.general.hasStrings && canPaste
+        case #selector(UIResponderStandardEditActions.copy):
+            return canCopy
+        default:
+            return false
+        }
     }
 }
