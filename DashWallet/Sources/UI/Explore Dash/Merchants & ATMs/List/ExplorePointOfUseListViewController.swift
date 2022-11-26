@@ -264,7 +264,6 @@ extension ExplorePointOfUseListViewController {
         let standardAppearance = UIToolbarAppearance()
         standardAppearance.configureWithDefaultBackground()
         standardAppearance.backgroundColor = .systemBackground
-        //standardAppearance.shadowColor = .opaqueSeparator
         navigationController?.toolbar.standardAppearance = standardAppearance
         if #available(iOS 15.0, *) {
             navigationController?.toolbar.scrollEdgeAppearance = standardAppearance

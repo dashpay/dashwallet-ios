@@ -125,13 +125,6 @@ final class PointOfUseListModel {
     }
     
     var currentMapBounds: ExploreMapBounds?
-//    {
-//        didSet {
-//            if showMap && DWLocationManager.shared.isAuthorized {
-//                _fetch(query: lastQuery)
-//            }
-//        }
-//    }
     
     var userCoordinates: CLLocationCoordinate2D? { return DWLocationManager.shared.currentLocation?.coordinate }
     
