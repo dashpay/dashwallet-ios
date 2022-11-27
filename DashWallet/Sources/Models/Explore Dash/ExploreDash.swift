@@ -18,6 +18,11 @@
 import Foundation
 import CoreLocation
 
+typealias TerritoryDataSource = (@escaping (Result<[Territory], any Error>) -> Void) -> ()
+
+//In meters
+let kDefaultRadius: Double = 32000
+
 extension ExploreDatabaseSyncManager.State {
     var objcState: ExploreDashObjcWrapper.SyncState {
         switch self {
@@ -119,31 +124,36 @@ public class ExploreDash {
 }
 
 extension ExploreDash {
-    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.onlineMerchants(query: query, onlineOnly: onlineOnly, userPoint: userPoint, offset: offset, completion: completion)
+    func onlineMerchants(query: String?, onlineOnly: Bool, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, userPoint: CLLocationCoordinate2D?, sortDirection: PointOfUseListFilters.SortDirection?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        merchantDAO.onlineMerchants(query: query, onlineOnly: onlineOnly, userPoint: userPoint, paymentMethods: paymentMethods, sortDirection: sortDirection, offset: offset, completion: completion)
     }
     
-    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
+    func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, sortDirection: PointOfUseListFilters.SortDirection?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        merchantDAO.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: paymentMethods, sortBy: sortBy, sortDirection: sortDirection, territory: territory, offset: offset, completion: completion)
     }
-    
-    func allMerchants(by query: String?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.allMerchants(by: query, offset: offset, completion: completion)
-    }
-    
-    func allMerchants(by query: String?, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
+
+    func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, sortDirection: PointOfUseListFilters.SortDirection?, territory: Territory?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: paymentMethods, sortBy: sortBy, sortDirection: sortDirection, territory: territory, offset: offset, completion: completion)
     }
     
     func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
     }
+    
+    func fetchTerritoriesForMerchants(completion: @escaping (Swift.Result<[Territory], Error>) -> Void) {
+        merchantDAO.territories(completion: completion)
+    }
+    
+    func fetchTerritoriesForAtms(completion: @escaping (Swift.Result<[Territory], Error>) -> Void) {
+        atmDAO.territories(completion: completion)
+    }
 }
 
 extension ExploreDash {
-    func atms(query: String?, in types: [ExplorePointOfUse.Atm.`Type`]?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        let filters = PointOfUseDAOFilters(filters: ["query": query, "types": types, "bounds": bounds, "userLocation": userPoint, "offset": offset])
-        atmDAO.items(filters: filters, completion: completion)
+    func atms(query: String?, in types: [ExplorePointOfUse.Atm.`Type`]?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int = 0, completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        let filters: [PointOfUseDAOFilterKey: Any?] = [.query: query, .types: types, .bounds: bounds, .userLocation: userPoint, .territory: filters?.territory, .sortDirection: filters?.sortNameDirection ]
+        
+        atmDAO.items(filters: filters, offset: offset, completion: completion)
     }
 }
 

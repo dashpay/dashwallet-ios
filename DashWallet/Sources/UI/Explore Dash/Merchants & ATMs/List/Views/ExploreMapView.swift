@@ -94,8 +94,13 @@ class ExploreMapView: UIView {
     }
     
     private var mapView: MKMapView!
+    
     var mapBounds: ExploreMapBounds {
-        return .init(rect: MKCircle(center: centerCoordinate, radius: 32000).boundingMapRect)
+        return mapBounds(with: 32000)
+    }
+    
+    func mapBounds(with radius: Double) -> ExploreMapBounds {
+        return .init(rect: MKCircle(center: centerCoordinate, radius: radius).boundingMapRect)
     }
     
     private var shownMerchantsAnnotations: [MerchantAnnotation] = []

@@ -33,7 +33,7 @@ extension ExplorePointOfUse {
         
         enum PaymentMethod: String {
             case dash
-            case giftCard
+            case giftCard = "gift card"
             
             init?(rawValue: String) {
                 if rawValue == "dash" {
@@ -133,7 +133,7 @@ extension ExplorePointOfUse: RowDecodable {
     static let name = Expression<String>("name")
     static let deeplink = Expression<String>("deeplink")
     static let plusCode = Expression<String?>("plusCode")
-    static let paymentMethod = Expression<String?>("paymentMethod")
+    static let paymentMethod = Expression<String>("paymentMethod")
     static let merchantId = Expression<Int64>("merchantId")
     static let id = Expression<Int64>("id")
     static let active = Expression<Bool>("active")

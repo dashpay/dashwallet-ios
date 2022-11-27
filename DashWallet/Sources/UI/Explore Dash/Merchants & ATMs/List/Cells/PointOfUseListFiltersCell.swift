@@ -35,6 +35,7 @@ class PointOfUseListFiltersCell: UITableViewCell {
     var titleLabel: UILabel!
     var subLabel: UILabel!
     var filterButton: UIButton!
+    var filterAction: (() -> ())?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -43,6 +44,10 @@ class PointOfUseListFiltersCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc func filterButtonAction() {
+        filterAction?()
     }
     
     func configureHierarchy() {
@@ -80,11 +85,14 @@ class PointOfUseListFiltersCell: UITableViewCell {
         let filterButton = UIButton(type: .custom)
         filterButton.translatesAutoresizingMaskIntoConstraints = false
         filterButton.semanticContentAttribute = .forceRightToLeft
+        filterButton.contentHorizontalAlignment = .leading
         filterButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 10)
         filterButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         filterButton.setTitleColor(.label, for: .normal)
-        filterButton.setTitle(NSLocalizedString("Filter", comment: ""), for: .normal)
-        filterButton.setImage(UIImage(named: "image.explore.dash.wts.filter"), for: .normal)
+        filterButton.setTitle(NSLocalizedString(" ", comment: ""), for: .normal)
+        filterButton.setImage(UIImage(systemName: "slider.horizontal.3"), for: .normal)
+        filterButton.tintColor = .label
+        filterButton.addTarget(self, action: #selector(filterButtonAction), for: .touchUpInside)
         stackView.addArrangedSubview(filterButton)
         self.filterButton = filterButton
         

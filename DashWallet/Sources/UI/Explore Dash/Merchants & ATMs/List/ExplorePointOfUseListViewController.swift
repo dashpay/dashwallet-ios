@@ -53,30 +53,38 @@ enum ExplorePointOfUseSections: Int {
     internal var tableView: UITableView!
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
+    internal var appliedFiltersLabel: UILabel!
     
+    internal var isFiltered: Bool { model.hasFilters }
+    internal var emptyResultsView: PointOfUseListEmptyResultsView!
+    
+    internal var locationServicePopupTitle: String { return "" }
+    internal var locationServicePopupDetails: String { return "" }
     
     //MARK: Map
     internal func updateMapVisibility() {
-        if !currentSegment.showMap || DWLocationManager.shared.isPermissionDenied {
+        if !model.showMap || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
-        }else if DWLocationManager.shared.isAuthorized {
+        }else{
             showMapIfNeeded()
         }
     }
     
     internal func showMapIfNeeded() {
-        guard currentSegment.showMap else { return }
+        guard model.showMap else { return }
         
         if DWLocationManager.shared.needsAuthorization {
-            PointOfUseLocationServicePopup.show(in: self.view) {
+            PointOfUseLocationServicePopup.show(in: self.view, title: locationServicePopupTitle, details: locationServicePopupDetails) {
                 DWLocationManager.shared.requestAuthorization()
             }
-        }else if DWLocationManager.shared.isAuthorized && self.contentViewTopLayoutConstraint.constant != kDefaultOpenedMapPosition {
+        }else if DWLocationManager.shared.isAuthorized {
             showMap()
         }
     }
     
     internal func showMap() {
+        guard self.contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition else { return }
+        
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
             self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultOpenedMapPosition, right: 0)
@@ -87,6 +95,8 @@ enum ExplorePointOfUseSections: Int {
     }
     
     internal func hideMapIfNeeded() {
+        guard self.contentViewTopLayoutConstraint.constant != kDefaultClosedMapPosition else { return }
+        
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             self.contentViewTopLayoutConstraint.constant = kDefaultClosedMapPosition
             self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - kDefaultClosedMapPosition, right: 0)
@@ -97,7 +107,7 @@ enum ExplorePointOfUseSections: Int {
     }
     
     internal func updateShowMapButtonVisibility() {
-        let isVisible = currentSegment.showMap && contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition && DWLocationManager.shared.isAuthorized
+        let isVisible = model.showMap && contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition && DWLocationManager.shared.isAuthorized
         
         showMapButton.isHidden = !isVisible
     }
@@ -107,21 +117,19 @@ enum ExplorePointOfUseSections: Int {
         let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
-        navigationController?.pushViewController(vc, animated: true)    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        DWLocationManager.shared.add(observer: self)
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         showMapIfNeeded()
+        DWLocationManager.shared.add(observer: self)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        navigationController?.setToolbarHidden(true, animated: true)
+        
         super.viewWillDisappear(animated)
         
         DWLocationManager.shared.remove(observer: self)
@@ -137,10 +145,12 @@ enum ExplorePointOfUseSections: Int {
             wSelf.refreshFilterCell()
             wSelf.tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue], with: .none)
             
-            if wSelf.model.currentSegment.showMap
+            if wSelf.model.showMap
             {
                 wSelf.mapView.show(merchants: wSelf.model.items)
             }
+            
+            wSelf.updateEmptyResultsForFilters()
         }
         
         model.nextPageDidLoaded = { [weak self] offset, count in
@@ -178,7 +188,7 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
     }
     
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
-        if currentSegment.showMap {
+        if model.showMap {
             updateMapVisibility()
             mapView.showUserLocationInCenter(animated: false)
             model.fetch(query: nil)
@@ -190,6 +200,23 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 }
 
 extension ExplorePointOfUseListViewController {
+    internal func updateEmptyResultsForFilters() {
+        if model.showEmptyResults {
+            if emptyResultsView != nil && tableView.tableFooterView == emptyResultsView { return }
+            
+            emptyResultsView = PointOfUseListEmptyResultsView()
+            emptyResultsView.resetHandler = { [weak self] in
+                self?.apply(filters: nil)
+            }
+            emptyResultsView.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 60)
+            tableView.tableFooterView = emptyResultsView
+        }else{
+            tableView.tableFooterView = nil
+            emptyResultsView?.removeFromSuperview()
+            emptyResultsView = nil
+        }
+    }
+    
     @objc internal func subtitleForFilterCell() -> String? {
         return nil
     }
@@ -200,7 +227,7 @@ extension ExplorePointOfUseListViewController {
         
         if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
             DWLocationManager.shared.reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
-                if self?.currentSegment.showMap ?? false {
+                if self?.model.showMap ?? false {
                     self?.filterCell?.title = location
                 }
             }
@@ -209,6 +236,45 @@ extension ExplorePointOfUseListViewController {
     
     @objc internal func configureHierarchy() {
         self.view.backgroundColor = .dw_background()
+        
+        let appliedFiltersStackView = UIStackView()
+        appliedFiltersStackView.translatesAutoresizingMaskIntoConstraints = false
+        appliedFiltersStackView.alignment = .center
+        appliedFiltersStackView.axis = .vertical
+        appliedFiltersStackView.spacing = 2
+        
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.text = NSLocalizedString("Filtered by:", comment: "Explore Dash/Merchants/Filters")
+        titleLabel.font = .dw_font(forTextStyle: .footnote)
+        appliedFiltersStackView.addArrangedSubview(titleLabel)
+        
+        appliedFiltersLabel = UILabel()
+        appliedFiltersLabel.translatesAutoresizingMaskIntoConstraints = false
+        appliedFiltersLabel.textAlignment = .center
+        appliedFiltersLabel.font = .dw_font(forTextStyle: .footnote)
+        appliedFiltersLabel.textColor = .dw_dashBlue()
+        appliedFiltersStackView.addArrangedSubview(appliedFiltersLabel)
+        
+        let appliedFilters = UIBarButtonItem(customView: appliedFiltersStackView)
+        let empty = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: self, action: nil)
+        let filter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain, target: self, action: nil)
+        filter.tintColor = .dw_dashBlue()
+        
+        let fakeFilter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain, target: self, action: nil)
+        fakeFilter.tintColor = .clear
+        
+        let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
+        toolbarItems = [filter, spacer, appliedFilters, spacer, fakeFilter]
+        
+        let standardAppearance = UIToolbarAppearance()
+        standardAppearance.configureWithDefaultBackground()
+        standardAppearance.backgroundColor = .systemBackground
+        navigationController?.toolbar.standardAppearance = standardAppearance
+        if #available(iOS 15.0, *) {
+            navigationController?.toolbar.scrollEdgeAppearance = standardAppearance
+        }
+        navigationController?.setToolbarHidden(true, animated: false)
         
         mapView = ExploreMapView(frame: .zero)
         mapView.delegate = self
@@ -224,28 +290,37 @@ extension ExplorePointOfUseListViewController {
         contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.addSubview(contentView)
         
-        tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.showsVerticalScrollIndicator = false
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.clipsToBounds = false
-        tableView.register(PointOfUseListSegmentedCell.self, forCellReuseIdentifier: PointOfUseListSegmentedCell.dw_reuseIdentifier)
-        tableView.register(PointOfUseListSearchCell.self, forCellReuseIdentifier: PointOfUseListSearchCell.dw_reuseIdentifier)
-        tableView.register(PointOfUseListFiltersCell.self, forCellReuseIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier)
-        tableView.register(MerchantListLocationOffCell.self, forCellReuseIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier)
-        tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
-        
-        contentView.addSubview(tableView)
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(stackView)
         
         let handlerView = ListHandlerView(frame: .zero)
+        handlerView.layer.zPosition = 1
         handlerView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(handlerView)
+        stackView.addArrangedSubview(handlerView)
         
         let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(moveAction(sender:)))
         panRecognizer.minimumNumberOfTouches = 1
         panRecognizer.maximumNumberOfTouches = 1
         handlerView.addGestureRecognizer(panRecognizer)
+        
+        tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.showsVerticalScrollIndicator = false
+        tableView.delegate = self
+        tableView.layer.zPosition = -1
+        tableView.dataSource = self
+        tableView.clipsToBounds = false
+        tableView.estimatedRowHeight = 0
+        tableView.estimatedSectionHeaderHeight = 0
+        tableView.estimatedSectionFooterHeight = 0
+        tableView.register(PointOfUseListSegmentedCell.self, forCellReuseIdentifier: PointOfUseListSegmentedCell.dw_reuseIdentifier)
+        tableView.register(PointOfUseListSearchCell.self, forCellReuseIdentifier: PointOfUseListSearchCell.dw_reuseIdentifier)
+        tableView.register(PointOfUseListFiltersCell.self, forCellReuseIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier)
+        tableView.register(MerchantListLocationOffCell.self, forCellReuseIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier)
+        tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
+        stackView.addArrangedSubview(tableView)
         
         self.showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
@@ -260,6 +335,8 @@ extension ExplorePointOfUseListViewController {
         showMapButton.layer.backgroundColor = UIColor.black.cgColor
         contentView.addSubview(showMapButton)
         
+        
+        
         let showMapButtonWidth: CGFloat = 92
         let showMapButtonHeight: CGFloat = 40
         let handlerViewHeight: CGFloat = 24
@@ -273,15 +350,12 @@ extension ExplorePointOfUseListViewController {
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            handlerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             handlerView.heightAnchor.constraint(equalToConstant: handlerViewHeight),
-            handlerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            handlerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-            tableView.topAnchor.constraint(equalTo: handlerView.bottomAnchor),
-            tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
             mapView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             mapView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
@@ -296,9 +370,26 @@ extension ExplorePointOfUseListViewController {
     }
 }
 
-
 //MARK: Actions
 extension ExplorePointOfUseListViewController {
+    private func showFilters() {
+        let vc = PointOfUseListFiltersViewController.controller()
+        vc.filtersToUse = currentSegment.filterGroups
+        vc.territoriesDataSource = currentSegment.territoriesDataSource
+        vc.delegate = self
+        vc.defaultFilters = model.initialFilters
+        vc.filters = model.filters ?? model.initialFilters
+        let nvc = UINavigationController(rootViewController: vc)
+        present(nvc, animated: true)
+    }
+    
+    private func updateAppliedFiltersView() {
+        let str = model.appliedFiltersLocalizedString
+        appliedFiltersLabel.text = str
+        let isHidden = str == nil
+        navigationController?.setToolbarHidden(isHidden, animated: false)
+    }
+    
     @objc private func showMapAction() {
         showMap()
     }
@@ -340,13 +431,7 @@ extension ExplorePointOfUseListViewController {
 
         let segment = model.segments[index]
         model.currentSegment = segment
-        refreshFilterCell()
-        
-        if segment.showMap {
-            self.showMapIfNeeded()
-        }else{
-            self.hideMapIfNeeded()
-        }
+        refreshView()
     }
 }
 
@@ -355,7 +440,8 @@ extension ExplorePointOfUseListViewController {
 extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
         refreshFilterCell()
-        model.currentMapBounds = bounds
+        model.currentMapBounds = mapView.mapBounds(with: model.currentRadius)
+        model.refreshItems()
     }
     
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: ExplorePointOfUse) {
@@ -410,6 +496,9 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             cell = searchCell
         case .filters:
             let filterCell: PointOfUseListFiltersCell = self.filterCell ?? tableView.dequeueReusableCell(withIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier, for: indexPath) as! PointOfUseListFiltersCell
+            filterCell.filterAction = { [weak self] in
+                self?.showFilters()
+            }
             self.filterCell = filterCell
             refreshFilterCell()
             cell = filterCell
@@ -440,7 +529,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .items:
             return items.count
         case .nextPage:
-            return model.hasNextPage ? 1 : 0
+            return 0 //model.hasNextPage ? 1 : 0
         default:
             return 1
         }
@@ -466,7 +555,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .items:
             return 56.0
         case .nextPage:
-            return 60
+            return 60.0
         }
     }
     
@@ -484,9 +573,27 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if let cell = cell as? FetchingNextPageCell {
-            cell.start()
+        guard !items.isEmpty else { return }
+        
+        let lastSectionIndex = ExplorePointOfUseSections.items.rawValue
+        let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
+        if model.hasNextPage && indexPath.section == lastSectionIndex && indexPath.row == lastRowIndex {
+            
+            let activity = UIActivityIndicatorView()
+            activity.translatesAutoresizingMaskIntoConstraints = false
+            activity.tintColor = .secondaryLabel
+            activity.color = .secondaryLabel
+            activity.startAnimating()
+            activity.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 44.0)
+            contentView.addSubview(activity)
+            
+            tableView.tableFooterView = activity
+            tableView.tableFooterView?.isHidden = false
+            
             model.fetchNextPage()
+        }else{
+            tableView.tableFooterView?.isHidden = true
+            tableView.tableFooterView = nil
         }
     }
     
@@ -497,35 +604,16 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
     }
 }
 
-//MARK: Extra UI
-class ListHandlerView: UIView {
-    private var handler: UIView!
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        configureHierarchy()
+extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControllerDelegate {
+    func apply(filters: PointOfUseListFilters?) {
+        model.currentMapBounds = mapView.mapBounds(with: filters?.currentRadius ?? kDefaultRadius)
+        model.apply(filters: filters)
+        updateAppliedFiltersView()
+        refreshView()
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func configureHierarchy() {
-        layer.backgroundColor = UIColor.dw_background().cgColor
-        layer.masksToBounds = true
-        layer.cornerRadius = 20
-        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        
-        handler = UIView(frame: .init(x: 0, y: 0, width: 40, height: 4))
-        handler.layer.backgroundColor = UIColor.dw_separatorLine().cgColor
-        handler.layer.cornerRadius = 2
-        addSubview(handler)
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        handler.center = center
+    func refreshView() {
+        refreshFilterCell()
+        updateMapVisibility()
     }
 }

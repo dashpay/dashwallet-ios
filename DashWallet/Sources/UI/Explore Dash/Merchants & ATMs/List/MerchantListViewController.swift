@@ -29,14 +29,37 @@ enum MerchantsListSegment: Int {
     }
     
     var pointOfUseListSegment: PointOfUseListSegment {
+        let dataProvider: PointOfUseDataProvider
+        let showReversedLocation: Bool
+        let showMap: Bool
+        let showLocationServiceSettings: Bool
+        var defaultFilters: PointOfUseListFilters = PointOfUseListFilters()
+        defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
+        defaultFilters.radius = .twenty
+        defaultFilters.sortBy = .distance
+        defaultFilters.sortNameDirection = .ascending
+        
         switch self {
         case .online:
-            return .init(tag: rawValue, title: title, showMap: false, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: OnlineMerchantsDataProvider())
+            showLocationServiceSettings = false
+            showReversedLocation = false
+            showMap = false
+            dataProvider = OnlineMerchantsDataProvider()
+            
         case .nearby:
-            return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: true, showReversedLocation: true, dataProvider: NearbyMerchantsDataProvider())
+            showLocationServiceSettings = true
+            showReversedLocation = true
+            showMap = true
+            dataProvider = NearbyMerchantsDataProvider()
+            
         case .all:
-            return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: AllMerchantsDataProvider())
+            showLocationServiceSettings = false
+            showReversedLocation = false
+            showMap = true
+            dataProvider = AllMerchantsDataProvider()
         }
+        
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories)
     }
 }
 
@@ -51,9 +74,32 @@ extension MerchantsListSegment {
             return NSLocalizedString("All", comment: "All")
         }
     }
+    
+    var filterGroups: [PointOfUseListFiltersGroup] {
+        switch self {
+        case .online:
+            return [.paymentType]
+        case .nearby:
+            return [.paymentType, .sortByDistanceOrName, .radius]
+        case .all:
+            return [.paymentType, .sortByName, .territory, .radius]
+        }
+    }
+    
+    var territories: TerritoryDataSource {
+        return ExploreDash.shared.fetchTerritoriesForMerchants
+    }
 }
 
 @objc class MerchantListViewController: ExplorePointOfUseListViewController {
+    
+    override var locationServicePopupTitle: String {
+        NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
+    }
+    
+    override var locationServicePopupDetails: String {
+        NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.", comment: "")
+    }
     
     internal var locationOffCell: MerchantListLocationOffCell?
     //MARK: Table View
@@ -85,6 +131,8 @@ extension MerchantsListSegment {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        
         guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }
@@ -94,7 +142,6 @@ extension MerchantsListSegment {
         case .filters, .search:
             return currentSegment == .nearby ? (DWLocationManager.shared.isPermissionDenied ? 0 : 1) : 1
         case .items:
-            
             if currentSegment == .nearby {
                 if(DWLocationManager.shared.isAuthorized){
                     return items.count;
@@ -137,11 +184,11 @@ extension MerchantsListSegment {
     }
     
     override func subtitleForFilterCell() -> String? {
-        if currentSegment.showMap {
+        if model.showMap && DWLocationManager.shared.isAuthorized {
             if Locale.current.usesMetricSystem {
-                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 32, unit: UnitLength.kilometers)))
+                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
             }else{
-                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: 20, unit: UnitLength.miles)))
+                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
             }
         }else{
             return nil
@@ -177,16 +224,18 @@ extension MerchantsListSegment {
             if wSelf.currentSegment.showLocationServiceSettings && DWLocationManager.shared.isPermissionDenied {
                 wSelf.tableView.reloadData()
             }else if wSelf.locationOffCell != nil {
-                wSelf.locationOffCell = nil
                 wSelf.tableView.reloadData()
+                wSelf.locationOffCell = nil
             }else{
                 wSelf.tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue], with: .none)
             }
             
-            if wSelf.model.currentSegment.showMap
+            if wSelf.model.showMap
             {
                 wSelf.mapView.show(merchants: wSelf.model.items)
             }
+            
+            wSelf.updateEmptyResultsForFilters()
         }
     }
     
