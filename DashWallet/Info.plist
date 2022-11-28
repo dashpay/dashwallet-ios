@@ -130,18 +130,14 @@
 	<string>Used to scan barcodes</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Used to authorize payments</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We will use your location to determine where you are. Your location will never be recorded or shared with anyone.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We will use your location to determine where you are. Your location will never be recorded or shared with anyone.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Used to save media data</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to save media data</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Montserrat-Regular.otf</string>
-		<string>Montserrat-SemiBold.otf</string>
-		<string>Montserrat-Medium.otf</string>
-	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) DWPaymentCurrency selectedPaymentCurrency;
 
+@property (nonatomic, assign) BOOL exploreDashMerchantsInfoShown;
+
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

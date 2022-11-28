@@ -67,6 +67,10 @@ NS_ASSUME_NONNULL_BEGIN
     self.lastActiveDate = [NSDate date];
 }
 
+- (void)applicationWillResignActiveNotification {
+    self.lastActiveDate = [NSDate date];
+}
+
 - (BOOL)shouldShowLockScreen {
     if (!self.hasAWallet) {
         return NO;

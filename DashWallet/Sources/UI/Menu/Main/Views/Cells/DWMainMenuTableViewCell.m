@@ -25,6 +25,8 @@ static UIImage *ImageByType(DWMainMenuItemType type) {
     switch (type) {
         case DWMainMenuItemType_BuySellDash:
             return [UIImage imageNamed:@"menu_buySellDash"];
+        case DWMainMenuItemType_Explore:
+            return [UIImage imageNamed:@"shortcut_explore"];
         case DWMainMenuItemType_Security:
             return [UIImage imageNamed:@"menu_security"];
         case DWMainMenuItemType_Settings:
@@ -40,6 +42,8 @@ static NSString *TitleByType(DWMainMenuItemType type) {
     switch (type) {
         case DWMainMenuItemType_BuySellDash:
             return NSLocalizedString(@"Buy & Sell Dash", nil);
+        case DWMainMenuItemType_Explore:
+            return NSLocalizedString(@"Explore", nil);
         case DWMainMenuItemType_Security:
             return NSLocalizedString(@"Security", nil);
         case DWMainMenuItemType_Settings:
@@ -55,6 +59,8 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
     switch (type) {
         case DWMainMenuItemType_BuySellDash:
             return NSLocalizedString(@"Connect with third party exchanges", nil);
+        case DWMainMenuItemType_Explore:
+            return NSLocalizedString(@"Show with DASH at over 150k merchants", nil);
         case DWMainMenuItemType_Security:
             return NSLocalizedString(@"View passphrase, backup wallet…", nil);
         case DWMainMenuItemType_Settings:

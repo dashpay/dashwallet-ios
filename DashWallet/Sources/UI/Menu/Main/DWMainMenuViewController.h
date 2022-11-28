@@ -17,6 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWPaymentsViewController.h"
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -28,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
 - (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
+- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex;
 
 @end
 

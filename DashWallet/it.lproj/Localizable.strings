@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ ha accettato la tua richiesta di contatto";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 ora";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 minuto";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 ore";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 minuti";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" non è una parola della frase di recupero";
@@ -60,6 +87,9 @@
 
 /* No comment provided by engineer. */
 "Accept" = "Accetta";
+
+/* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
 
 /* No comment provided by engineer. */
 "Activity" = "Attività";
@@ -119,7 +149,16 @@
 "Are you sure?" = "Sei sicuro??";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "L'autenticazione non è disponibile";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Auto Logout";
@@ -148,11 +187,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Blocco #%1$d di %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Compra & Vendi Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Compra / Vendi Dash";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Compra Dash";
@@ -161,7 +210,19 @@
 "Buy Dash with Uphold account" = "Acquista Dash con account Uphold";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Cancellando questo dispositivo non avrai più accesso ai fondi su questo dispositivo. Questo dovrebbe essere fatto solo se non hai più accesso alla tua \"passphrase\" e hai anche dimenticato il tuo codice PIN.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancella";
@@ -242,7 +303,7 @@
 "Copy Logs" = "Copia i Logs";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Non è stato possibile recuperare automaticamente le parole mancanti od errate.";
@@ -265,8 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Utente corrente: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "I pagamneti in Dash non possono essere inferiori a %@";
@@ -283,11 +353,20 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Valuta predefinita, scorciatoie, riguardo ...";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi Dash).";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi Dash). Elimina subito questo portafoglio e ripristina su un dispositivo sicuro.";
+
+/* Direction */
+"Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Non scattare screenshot";
@@ -300,6 +379,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Prima";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "es: johndoe";
@@ -344,10 +426,16 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Limite \"Face ID\"";
+
+/* Explore Dash */
+"Failed to sync on" = "Failed to sync on";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "\nAggiornamento del portafoglio fallito";
@@ -361,11 +449,29 @@
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "La commissione verrà detratta dall'importo richiesto.";
 
+/* Explore Dash */
+"Fetching Info" = "Fetching Info";
+
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtra Transazioni";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
+
+/* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Trova un utente su Dash Network";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Hai dimenticato il PIN?";
@@ -388,8 +494,14 @@
 /* No comment provided by engineer. */
 "Get Started" = "Iniziare";
 
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
+
 /* No comment provided by engineer. */
 "Go to Website" = "Vai al sito web";
+
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "ha chiesto di essere tuo amico";
@@ -411,6 +523,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Storia";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "Accetto";
@@ -478,6 +593,15 @@
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
+/* Explore Dash */
+"Last device sync" = "Last device sync";
+
+/* Explore Dash */
+"Last server update" = "Last server update";
+
+/* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Fammi sapere quando è fatto";
 
@@ -495,6 +619,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Quantità locale richiesta: %@";
+
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
 
 /* No comment provided by engineer. */
 "Locked" = "Bloccato";
@@ -521,7 +648,13 @@
 "Low" = "Basso";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "Gestisci Nodo Affidabile";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "lista masternode #%1$d di %2$d";
@@ -544,6 +677,9 @@
 /* adjective, security level */
 "Medium" = "Medio";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Minimo 3 caratteri";
 
@@ -565,6 +701,15 @@
 /* No comment provided by engineer. */
 "Name" = "Nome";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
+/* Nearby */
+"Nearby" = "Nearby";
+
 /* No comment provided by engineer. */
 "Network" = "Network";
 
@@ -579,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Il dispositivo NFC non ha trasmesso un indirizzo Dash valido";
+
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Nodo";
@@ -596,6 +744,12 @@
 "Not a valid Dash address" = "Non un indirizzo Dash valido";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Non ancora usato";
 
 /* No comment provided by engineer. */
@@ -606,6 +760,12 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Una volta che %@ accetta la tua richiesta, puoi pagare direttamente al nome utente";
+
+/* Online */
+"Online" = "Online";
+
+/* Online Merchant */
+"Online Merchant" = "Online Merchant";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Chiavi operatore";
@@ -625,8 +785,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Paga direttamente all'username";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Paga con facilità";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Pagamento in corso";
@@ -639,6 +805,9 @@
 
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Pagamento in corso...";
+
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
 
 /* No comment provided by engineer. */
 "Payments" = "Pagamenti";
@@ -697,6 +866,9 @@
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorum validati: %1$d/%2$d";
 
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
+
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Tasso: %1$@ = %2$@";
 
@@ -733,6 +905,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "La frase di recupero deve avere 12, 15, 18, 21 o 24 parole";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Registrati";
 
@@ -757,11 +932,17 @@
 /* No comment provided by engineer. */
 "Reset" = "Reset";
 
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "Riportare alle condizioni originali";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Resetta portafoglio";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Conserva la cronologia delle transazioni reciproche";
@@ -838,6 +1019,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Vedi su Uphold";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "Invia";
 
@@ -905,6 +1092,9 @@
 "Show Recovery Phrase" = "Mostra la frase di recupero";
 
 /* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
+
+/* No comment provided by engineer. */
 "Skip" = "Salta";
 
 /* No comment provided by engineer. */
@@ -918,6 +1108,18 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Ordina contatti";
+
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Specifica Importo";
@@ -949,6 +1151,9 @@
 /* No comment provided by engineer. */
 "Syncing Balance" = "Sincronizzazione bilancio";
 
+/* Explore Dash */
+"Syncing..." = "Syncing...";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Tocca";
 
@@ -975,6 +1180,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Questa app è open source:";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Questo PIN ti sarà richiesto per sbloccare l'app ogni volta che la usi.";
@@ -1051,6 +1259,9 @@
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
+
 /* No comment provided by engineer. */
 "Used" = "Usato";
 
@@ -1080,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "Mostra tutto";
+
+/* View all locations */
+"View all locations" = "View all locations";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Visualizza in Block Explorer";
@@ -1115,16 +1329,28 @@
 "We do not store this recovery phrase." = "Noi non memorizziamo la frase di recupero.";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Abbiamo rilevato che Dash Wallet si è arrestato in modo anomalo durante la migrazione. Ricontrollare la blockchain può risolvere questo problema altrimenti prova a rifare la procedura. Il controllo dovrebbe preferibilmente essere eseguito su wifi e può durare fino a mezz'ora. I fondi saranno disponibili una volta completato il processo di sincronizzazione.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Abbiamo aggiornato";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "Benvenuto";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "A transazione confermata, il portafoglio di origine  sarà privo di valore e non dovrebbe essere riutilizzato per motivi di sicurezza.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Perché non devo scattare screenshot?";
@@ -1179,6 +1405,12 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Il tuo nome utente DashPay è pronto per l'uso";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "La tua transazione è stata inviata e l'importo dovrebbe essere visualizzato nel tuo portafoglio entro pochi minuti.";

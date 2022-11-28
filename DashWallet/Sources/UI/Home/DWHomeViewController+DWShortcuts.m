@@ -21,12 +21,14 @@
 
 #import "DWBackupInfoViewController.h"
 #import "DWDashPaySetupFlowController.h"
+#import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWNavigationController.h"
 #import "DWPayModelProtocol.h"
+#import "DWPaymentsViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
 #import "DWShortcutAction.h"
@@ -34,7 +36,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate>
+@interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate>
 
 @end
 
@@ -98,7 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_Receive: {
-            [self.delegate homeViewControllerShowReceivePayment:self];
+            [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+            break;
+        }
+        case DWShortcutActionType_Explore: {
+            [self showExploreDash];
             break;
         }
         case DWShortcutActionType_AddShortcut: {
@@ -177,6 +183,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
+- (void)showExploreDash {
+    DWExploreTestnetViewController *controller = [[DWExploreTestnetViewController alloc] init];
+    controller.delegate = self;
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
+}
+
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {
     if (@available(iOS 13.0, *)) {
         [self presentControllerModallyInNavigationController:controller
@@ -216,6 +229,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)localCurrencyViewControllerDidCancel:(DWLocalCurrencyViewController *)controller {
     [controller.navigationController dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWExploreTestnetViewControllerDelegate
+
+- (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller {
+    [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+}
+
+- (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreTestnetViewController *)controller {
+    [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
 
 @end
