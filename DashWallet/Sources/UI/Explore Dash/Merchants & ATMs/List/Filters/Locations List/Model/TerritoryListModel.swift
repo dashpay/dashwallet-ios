@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,23 +19,25 @@ import Foundation
 
 typealias Territory = String
 
+// MARK: - TerritoriesListModel
+
 final class TerritoriesListModel {
     var territories: [Territory] = []
-    
+
     var territoriesDidChange: (() -> ())?
     var territoriesDataSource: TerritoryDataSource? {
         didSet {
             fetchTerritories()
         }
     }
-    
+
     init() {
         fetchTerritories()
     }
-    
+
     private func fetchTerritories() {
         guard let dataSource = territoriesDataSource else { return }
-        
+
         dataSource {
             [weak self] result in
             switch result {

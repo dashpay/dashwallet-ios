@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,37 +15,40 @@
 //  limitations under the License.
 //
 
-import UIKit
 import MapKit
+import UIKit
+
+// MARK: - PointOfUseDetailsViewController
 
 class PointOfUseDetailsViewController: UIViewController {
     internal let pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
-    
+
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
-    
+
     private var contentView: UIView!
     private var detailsView: PointOfUseDetailsView!
     private var mapView: ExploreMapView!
-    
+
     public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
-        
+
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
-        mapView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10, right: 0)
+
+        mapView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10,
+                                             right: 0)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = pointOfUse.name
@@ -57,32 +60,32 @@ extension PointOfUseDetailsViewController {
     @objc func payAction() {
         payWithDashHandler?()
     }
-    
+
     @objc func callAction() {
         guard let phone = pointOfUse.phone else { return }
-        
+
         let fixedPhone = phone.replacingOccurrences(of: " ", with: "")
-        
+
         guard let url = URL(string: "telprompt://\(fixedPhone)") else { return }
-        
+
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
-    
+
     @objc func websiteAction() {
         guard let website = pointOfUse.website, let url = URL(string: website) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
-    
+
     private func showMapIfNeeded() {
         guard pointOfUse.showMap else { return }
-        
+
         mapView = ExploreMapView()
         mapView.show(merchants: [pointOfUse])
         mapView.centerRadius = 5
         mapView.initialCenterLocation = .init(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
-        
+
         NSLayoutConstraint.activate([
             mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -90,15 +93,15 @@ extension PointOfUseDetailsViewController {
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
     }
-    
+
     private func prepareContentView() {
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = UIColor.dw_background()
         view.addSubview(contentView)
-        
+
         let constraint: [NSLayoutConstraint]
-        
+
         if pointOfUse.showMap {
             contentView.clipsToBounds = false
             contentView.layer.masksToBounds = true
@@ -109,7 +112,7 @@ extension PointOfUseDetailsViewController {
                 contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ]
-        }else{
+        } else {
             constraint = [
                 contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
                 contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -117,17 +120,17 @@ extension PointOfUseDetailsViewController {
                 contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             ]
         }
-        
+
         NSLayoutConstraint.activate(constraint)
     }
-    
+
     private func showDetailsView() {
         detailsView = detailsView(for: pointOfUse)
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
-            
+
             let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
@@ -135,7 +138,7 @@ extension PointOfUseDetailsViewController {
         }
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(detailsView)
-        
+
         NSLayoutConstraint.activate([
             detailsView.topAnchor.constraint(equalTo: contentView.topAnchor),
             detailsView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
@@ -143,7 +146,7 @@ extension PointOfUseDetailsViewController {
             detailsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
         ])
     }
-    
+
     private func configureHierarchy() {
         showMapIfNeeded()
         prepareContentView()
@@ -156,24 +159,24 @@ extension PointOfUseDetailsViewController {
         switch pointOfUse.category {
         case .merchant(let m):
             return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
-        case .atm(_):
+        case .atm:
             return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
         case .unknown:
             return nil
         }
     }
-    
-    
+
+
 }
 
 
 extension ExplorePointOfUse {
     var showMap: Bool {
-        guard case let .merchant(m) = category, m.type == .online else { return true }
-        
+        guard case .merchant(let m) = category, m.type == .online else { return true }
+
         return false
     }
-    
+
     var title: String? {
         switch category {
         case .merchant(let m):
@@ -184,20 +187,21 @@ extension ExplorePointOfUse {
             return nil
         }
     }
-    
+
     var subtitle: String? {
         switch category {
         case .merchant(let m):
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
-            }else if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
-                let distance = CLLocation(latitude: self.latitude!, longitude: self.longitude!).distance(from: currentLocation)
-                let distanceString = ExploreDash.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
+            } else if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
+                let distance = CLLocation(latitude: latitude!, longitude: longitude!).distance(from: currentLocation)
+                let distanceString = ExploreDash.distanceFormatter
+                    .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
                 return "\(distanceString)) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
-            }else{
+            } else {
                 return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
             }
-        case .atm(_):
+        case .atm:
             return nil
         case .unknown:
             return nil

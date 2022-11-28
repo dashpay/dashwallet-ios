@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,10 +19,14 @@ import Foundation
 
 let pageLimit = 100
 
+// MARK: - PaginationResult
+
 struct PaginationResult<Item> {
     var items: [Item]
     var offset: Int
 }
+
+// MARK: - PointOfUseDAOFilterKey
 
 enum PointOfUseDAOFilterKey: Int {
     case radius
@@ -36,8 +40,11 @@ enum PointOfUseDAOFilterKey: Int {
 
 typealias PointOfUseDAOFilters = [PointOfUseDAOFilterKey: Any?]
 
+// MARK: - PointOfUseDAO
+
 protocol PointOfUseDAO {
     associatedtype Item
-    
-    func items(filters: PointOfUseDAOFilters, offset: Int?, completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void)
+
+    func items(filters: PointOfUseDAOFilters, offset: Int?,
+               completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void)
 }

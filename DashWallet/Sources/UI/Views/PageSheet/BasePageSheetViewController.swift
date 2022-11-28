@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,13 +18,13 @@
 import UIKit
 
 class BasePageSheetViewController: UIViewController {
-    
+
     private var closeButton: UIButton!
-    
+
     @IBAction @objc func closeButtonAction() {
         dismiss(animated: true, completion: nil)
     }
-    
+
     private func configureHierarchy() {
         let configuration = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
         let closeImage = UIImage(systemName: "xmark", withConfiguration: configuration)
@@ -34,19 +34,19 @@ class BasePageSheetViewController: UIViewController {
         closeButton.setImage(closeImage, for: .normal)
         closeButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
         view.addSubview(closeButton)
-        
+
         NSLayoutConstraint.activate([
             closeButton.widthAnchor.constraint(equalToConstant: 40),
             closeButton.heightAnchor.constraint(equalToConstant: 40),
-            
+
             closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            closeButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 10)
+            closeButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
         ])
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureHierarchy()
     }
 }

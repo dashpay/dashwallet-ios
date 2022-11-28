@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,32 +19,32 @@ import UIKit
 
 final class ListHandlerView: UIView {
     private var handler: UIView!
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         configureHierarchy()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func configureHierarchy() {
         layer.backgroundColor = UIColor.dw_background().cgColor
         layer.masksToBounds = true
         layer.cornerRadius = 20
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        
+
         handler = UIView(frame: .init(x: 0, y: 0, width: 40, height: 4))
         handler.layer.backgroundColor = UIColor.dw_separatorLine().cgColor
         handler.layer.cornerRadius = 2
         addSubview(handler)
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+
         handler.center = center
     }
 }
