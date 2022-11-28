@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,21 +19,21 @@ import UIKit
 
 class PointOfUseListEmptyResultsView: UIView {
     var resetHandler: (() -> Void)?
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         configureHierarchy()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     @objc func resetButtonAction() {
         resetHandler?()
     }
-    
+
     private func configureHierarchy() {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -41,13 +41,13 @@ class PointOfUseListEmptyResultsView: UIView {
         stackView.axis = .vertical
         stackView.spacing = 2
         addSubview(stackView)
-        
+
         let noResultsLabel = UILabel()
         noResultsLabel.translatesAutoresizingMaskIntoConstraints = false
         noResultsLabel.text = NSLocalizedString("No Results Found", comment: "Explore Dash/Merchants/Filters")
         noResultsLabel.font = .dw_font(forTextStyle: .headline).withWeight(500)
         stackView.addArrangedSubview(noResultsLabel)
-        
+
         let resetFiltersButton = UIButton()
         resetFiltersButton.addTarget(self, action: #selector(resetButtonAction), for: .touchUpInside)
         resetFiltersButton.translatesAutoresizingMaskIntoConstraints = false
@@ -57,11 +57,11 @@ class PointOfUseListEmptyResultsView: UIView {
         resetFiltersButton.setTitleColor(.dw_red(), for: .normal)
         resetFiltersButton.backgroundColor = .clear
         stackView.addArrangedSubview(resetFiltersButton)
-        
+
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 }

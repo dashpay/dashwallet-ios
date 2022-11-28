@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,33 +19,37 @@ import UIKit
 
 private let tableViewCellIdentifier = "TerritoryCell"
 
+// MARK: - TerritoriesListViewControllerDelegate
+
 protocol TerritoriesListViewControllerDelegate: AnyObject {
     func didSelectTerritory(_ territory: Territory)
     func didSelectCurrentLocation()
 }
 
+// MARK: - TerritoriesListViewController
+
 class TerritoriesListViewController: UITableViewController {
     public var selectedTerritory: Territory?
     public weak var delegate: TerritoriesListViewControllerDelegate?
-    
+
     private var searchController: UISearchController!
     private var searchResultsController: SelectLocationResultsViewController!
-    
+
     private var model: TerritoriesListModel!
-   
+
     public var territoriesDataSource: TerritoryDataSource? {
         didSet {
             model?.territoriesDataSource = territoriesDataSource
         }
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureModel()
         configureHierarchy()
     }
-    
+
     class func controller() -> TerritoriesListViewController {
         let storyboard = UIStoryboard(name: "ExploreDash", bundle: nil)
         return storyboard.instantiateViewController(withIdentifier: "SelectStateViewController") as! TerritoriesListViewController
@@ -60,19 +64,19 @@ extension TerritoriesListViewController {
             self?.tableView.reloadData()
         }
     }
-    
+
     private func configureHierarchy() {
         title = NSLocalizedString("Location", comment: "Explore Dash/Merchants/Filters/Location")
-        
+
         let standardAppearance = UINavigationBarAppearance()
         standardAppearance.configureWithOpaqueBackground()
         standardAppearance.backgroundColor = .systemBackground
         standardAppearance.shadowColor = nil
         standardAppearance.shadowImage = nil
-        
+
         let compactAppearance = standardAppearance.copy()
-        
-        let navBar = self.navigationController!.navigationBar
+
+        let navBar = navigationController!.navigationBar
         navBar.isTranslucent = true
         navBar.standardAppearance = standardAppearance
         navBar.scrollEdgeAppearance = standardAppearance
@@ -83,29 +87,30 @@ extension TerritoriesListViewController {
 
         tableView.layoutMargins = .init(top: 0.0, left: 15, bottom: 0.0, right: 0)
         tableView.separatorInset = tableView.layoutMargins
-        
-        searchResultsController = self.storyboard?.instantiateViewController(withIdentifier: "SelectLocationResultsViewController") as? SelectLocationResultsViewController
+
+        searchResultsController = storyboard?
+            .instantiateViewController(withIdentifier: "SelectLocationResultsViewController") as? SelectLocationResultsViewController
         searchResultsController.tableView.delegate = self
-        
+
         searchController = UISearchController(searchResultsController: searchResultsController)
         searchController.automaticallyShowsCancelButton = true
         searchController.delegate = self
         searchController.searchResultsUpdater = self
         searchController.searchBar.autocapitalizationType = .none
         searchController.searchBar.delegate = self
-        
+
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
-        
+
         definesPresentationContext = true
     }
 }
 
 extension TerritoriesListViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        2
     }
-    
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:
@@ -114,7 +119,7 @@ extension TerritoriesListViewController {
             return model.territories.count
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0:
@@ -123,14 +128,14 @@ extension TerritoriesListViewController {
         default:
             let territory = model.territories[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: tableViewCellIdentifier, for: indexPath)
-            var configuration =  cell.defaultContentConfiguration()
+            var configuration = cell.defaultContentConfiguration()
             configuration.text = territory
             cell.contentConfiguration = configuration
-            
+
             return cell
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         switch indexPath.section {
         case 0:
@@ -140,7 +145,7 @@ extension TerritoriesListViewController {
             cell.isSelected = territory == selectedTerritory
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.section {
         case 0:
@@ -151,41 +156,40 @@ extension TerritoriesListViewController {
             selectedTerritory = territory
             delegate?.didSelectTerritory(territory)
         }
-        
+
         tableView.reloadData()
     }
 }
 
+// MARK: UISearchControllerDelegate
+
 extension TerritoriesListViewController: UISearchControllerDelegate {
-    func presentSearchController(_ searchController: UISearchController) {
-    }
-    
-    func willPresentSearchController(_ searchController: UISearchController) {
-    }
-    
-    func didPresentSearchController(_ searchController: UISearchController) {
-    }
-    
-    func willDismissSearchController(_ searchController: UISearchController) {
-    }
-    
-    func didDismissSearchController(_ searchController: UISearchController) {
-    }
+    func presentSearchController(_ searchController: UISearchController) { }
+
+    func willPresentSearchController(_ searchController: UISearchController) { }
+
+    func didPresentSearchController(_ searchController: UISearchController) { }
+
+    func willDismissSearchController(_ searchController: UISearchController) { }
+
+    func didDismissSearchController(_ searchController: UISearchController) { }
 }
 
-extension TerritoriesListViewController: UISearchBarDelegate {
-    
-}
+// MARK: UISearchBarDelegate
+
+extension TerritoriesListViewController: UISearchBarDelegate { }
+
+// MARK: UISearchResultsUpdating
 
 extension TerritoriesListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         var filtered: [Territory] = model.territories
-        
+
         let whitespaceCharacterSet = CharacterSet.whitespaces
         let strippedString = searchController.searchBar.text!.trimmingCharacters(in: whitespaceCharacterSet).lowercased()
-        
+
         filtered = filtered.filter { $0.lowercased().hasPrefix(strippedString) }
-        
+
         if let resultsController = searchController.searchResultsController as? SelectLocationResultsViewController {
             resultsController.result = filtered
             resultsController.tableView.reloadData()
@@ -193,22 +197,24 @@ extension TerritoriesListViewController: UISearchResultsUpdating {
     }
 }
 
+// MARK: - SelectLocationResultsViewController
+
 class SelectLocationResultsViewController: UITableViewController {
     var result: [String] = []
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
     }
-    
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return result.count
+        result.count
     }
-    
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let product = result[indexPath.row]
-        
+
         let cell = tableView.dequeueReusableCell(withIdentifier: tableViewCellIdentifier, for: indexPath)
-        var configuration =  cell.defaultContentConfiguration()
+        var configuration = cell.defaultContentConfiguration()
         configuration.text = product
         cell.contentConfiguration = configuration
         return cell

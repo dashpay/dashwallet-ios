@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,32 +17,36 @@
 
 import UIKit
 
+// MARK: - TerritoriesListCurrentLocationCell
+
 final class TerritoriesListCurrentLocationCell: UITableViewCell {
     @IBOutlet var iconView: UIImageView!
     @IBOutlet var label: UILabel!
-        
+
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        
+
         let color: UIColor = selected ? .dw_dashBlue() : .label
-        
+
         label.textColor = color
         iconView.tintColor = color
-        
+
         accessoryType = selected ? .checkmark : .none
         tintColor = selected ? .dw_dashBlue() : .label
     }
 }
 
 
+// MARK: - TerritoriesListItemCell
+
 final class TerritoriesListItemCell: UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        
+
         guard var configuration = contentConfiguration as? UIListContentConfiguration else { return }
         configuration.textProperties.color = selected ? .dw_dashBlue() : .label
         contentConfiguration = configuration
-        
+
         accessoryType = selected ? .checkmark : .none
         tintColor = selected ? .dw_dashBlue() : .label
     }

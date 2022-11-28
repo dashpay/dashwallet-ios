@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,22 +17,26 @@
 
 import Foundation
 
+// MARK: - AtmListSegmnets
+
 enum AtmListSegmnets: Int {
     case all = 0
     case buy
     case sell
     case buyAndSell
-    
+
     static func ==(lhs: PointOfUseListSegment, rhs: AtmListSegmnets) -> Bool {
-        return lhs.tag == rhs.rawValue
+        lhs.tag == rhs.rawValue
     }
-    
+
     var pointOfUseListSegment: PointOfUseListSegment {
         var defaultFilters = PointOfUseListFilters()
         defaultFilters.sortNameDirection = .ascending
         defaultFilters.radius = .twenty
-        
-        return .init(tag: self.rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories)
+
+        return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true,
+                     dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters,
+                     territoriesDataSource: territories)
     }
 }
 
@@ -49,7 +53,7 @@ extension AtmListSegmnets {
             return NSLocalizedString("Buy/Sell", comment: "Buy/Sell")
         }
     }
-    
+
     var dataProvider: PointOfUseDataProvider {
         switch self {
         case .all:
@@ -62,44 +66,57 @@ extension AtmListSegmnets {
             return BuyAndSellAtmsDataProvider()
         }
     }
-    
+
     var filterGroups: [PointOfUseListFiltersGroup] {
-        return [.sortByName, .territory, .radius, .locationService]
+        [.sortByName, .territory, .radius, .locationService]
     }
-    
+
     var territories: TerritoryDataSource {
-        return ExploreDash.shared.fetchTerritoriesForAtms
+        ExploreDash.shared.fetchTerritoriesForAtms
     }
 }
 
-@objc class AtmListViewController: ExplorePointOfUseListViewController {
+// MARK: - AtmListViewController
+
+@objc
+class AtmListViewController: ExplorePointOfUseListViewController {
     override var locationServicePopupTitle: String {
         NSLocalizedString("ATM search works better with Location Services turned on", comment: "")
     }
-    
+
     override var locationServicePopupDetails: String {
-        NSLocalizedString("Your location is used to show your position on the map, ATMs in the selected redius and improve search results.", comment: "")
+        NSLocalizedString("Your location is used to show your position on the map, ATMs in the selected redius and improve search results.",
+                          comment: "")
     }
-    
+
     override func subtitleForFilterCell() -> String? {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
-                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
-            }else{
-                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),  items.count, ExploreDash.distanceFormatter.string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
+                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"), items.count,
+                              ExploreDash.distanceFormatter
+                                  .string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
+            } else {
+                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"), items.count,
+                              ExploreDash.distanceFormatter
+                                  .string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
             }
-        }else{
+        } else {
             return super.subtitleForFilterCell()
         }
     }
-    
+
     override func configureModel() {
-        model = PointOfUseListModel(segments: [AtmListSegmnets.all.pointOfUseListSegment, AtmListSegmnets.buy.pointOfUseListSegment, AtmListSegmnets.sell.pointOfUseListSegment, AtmListSegmnets.buyAndSell.pointOfUseListSegment])
+        model = PointOfUseListModel(segments: [
+            AtmListSegmnets.all.pointOfUseListSegment,
+            AtmListSegmnets.buy.pointOfUseListSegment,
+            AtmListSegmnets.sell.pointOfUseListSegment,
+            AtmListSegmnets.buyAndSell.pointOfUseListSegment,
+        ])
     }
-    
+
     override func configureHierarchy() {
-        self.title = NSLocalizedString("ATMs", comment: "");
-        
+        title = NSLocalizedString("ATMs", comment: "");
+
         super.configureHierarchy()
         tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.dw_reuseIdentifier)
     }

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -50,25 +50,27 @@ extension PointOfUseListFilters.SortDirection {
     }
 }
 
-//MARK: PointOfUseListFilters
+// MARK: - PointOfUseListFilters
+
+// MARK: PointOfUseListFilters
 struct PointOfUseListFilters: Equatable {
-    
+
     enum SortBy {
         case distance
         case name
     }
-    
+
     enum SortDirection {
         case ascending
         case descending
     }
-    
+
     enum Radius: Int {
         case one = 1
         case five = 5
         case twenty = 20
         case fifty = 50
-        
+
         var filterItem: PointOfUseListFilterItem {
             switch self {
             case .one:
@@ -81,7 +83,7 @@ struct PointOfUseListFilters: Equatable {
                 return .radius50
             }
         }
-        
+
         var meters: Double {
             switch self {
             case .one:
@@ -95,51 +97,52 @@ struct PointOfUseListFilters: Equatable {
             }
         }
     }
-    
+
     var sortBy: SortBy?
     var sortNameDirection: SortDirection?
     var merchantPaymentTypes: [ExplorePointOfUse.Merchant.PaymentMethod]?
     var radius: Radius?
     var territory: Territory?
-  
-    //In meters
+
+    // In meters
     var currentRadius: Double {
         radius?.meters ?? kDefaultRadius
     }
-    
+
     var appliedFiltersLocalizedString: String? {
         var string: [String] = []
-        
-        if DWLocationManager.shared.isAuthorized, let radius = self.radius {
+
+        if DWLocationManager.shared.isAuthorized, let radius {
             let stringValue: String
-            
+
             if Locale.current.usesMetricSystem {
                 let value = ExploreDash.distanceFormatter.string(from: Measurement(value: radius.meters, unit: UnitLength.meters))
                 stringValue = value
-            }else{
-                let value = ExploreDash.distanceFormatter.string(from: Measurement(value: Double(radius.rawValue), unit: UnitLength.miles))
+            } else {
+                let value = ExploreDash.distanceFormatter
+                    .string(from: Measurement(value: Double(radius.rawValue), unit: UnitLength.miles))
                 stringValue = value
             }
-            
+
             string.append(stringValue)
         }
-        
+
         if let value = merchantPaymentTypes {
-            string += value.map({ $0.filterLocalizedString })
+            string += value.map { $0.filterLocalizedString }
         }
-        
+
         if let value = territory {
             string.append(value)
         }
-        
+
         if let value = sortBy {
             string.append(value.filterLocalizedString)
         }
-        
+
         if let value = sortNameDirection {
             string.append(value.filterLocalizedString)
         }
-        
+
         return string.isEmpty ? nil : string.joined(separator: ", ")
     }
 }
@@ -147,31 +150,33 @@ struct PointOfUseListFilters: Equatable {
 extension PointOfUseListFilters {
     var items: Set<PointOfUseListFilterItem> {
         var set: Set<PointOfUseListFilterItem> = []
-        
+
         if let value = sortBy {
             set.insert(value == .name ? .sortName : .sortDistance)
         }
-        
+
         if let value = sortNameDirection {
             set.insert(value == .ascending ? .sortAZ : .sortZA)
         }
-        
+
         if let value = merchantPaymentTypes {
             let filterItems: [PointOfUseListFilterItem] = value.map { $0 == .dash ? .paymentTypeDash : .paymentTypeGiftCard }
             for item in filterItems {
                 set.insert(item)
             }
         }
-        
+
         if let value = radius {
             set.insert(value.filterItem)
         }
-        
+
         return set
     }
 }
 
-//MARK: PointOfUseListFilterItem
+// MARK: - PointOfUseListFilterItem
+
+// MARK: PointOfUseListFilterItem
 enum PointOfUseListFilterItem: String {
     case sortAZ
     case sortZA
@@ -186,10 +191,9 @@ enum PointOfUseListFilterItem: String {
     case location
     case locationService
     case reset
-    
+
     var otherItems: [PointOfUseListFilterItem] {
         switch self {
-            
         case .sortAZ:
             return [.sortZA]
         case .sortZA:
@@ -214,10 +218,9 @@ enum PointOfUseListFilterItem: String {
             return []
         }
     }
-    
+
     var itemsToUnselect: [PointOfUseListFilterItem] {
         switch self {
-            
         case .sortAZ:
             return [.sortZA]
         case .sortZA:
@@ -238,7 +241,7 @@ enum PointOfUseListFilterItem: String {
             return []
         }
     }
-    
+
     var cellIdentifier: String {
         switch self {
         case .reset: return "FilterItemResetCell"
@@ -246,7 +249,7 @@ enum PointOfUseListFilterItem: String {
         default: return "FilterItemSelectableCell"
         }
     }
-    
+
     var image: String? {
         switch self {
         case .paymentTypeDash:
@@ -256,10 +259,9 @@ enum PointOfUseListFilterItem: String {
         default: return nil
         }
     }
-    
+
     var title: String {
         switch self {
-            
         case .sortAZ:
             return NSLocalizedString("Name: from A to Z", comment: "Explore Dash: Filters")
         case .sortZA:
@@ -271,25 +273,25 @@ enum PointOfUseListFilterItem: String {
         case .radius1:
             if Locale.usesMetricMeasurementSystem {
                 return NSLocalizedString("2 km", comment: "Explore Dash: Filters")
-            }else{
+            } else {
                 return NSLocalizedString("1 mile", comment: "Explore Dash: Filters")
             }
         case .radius5:
             if Locale.usesMetricMeasurementSystem {
                 return NSLocalizedString("8 km", comment: "Explore Dash: Filters")
-            }else{
+            } else {
                 return NSLocalizedString("5 miles", comment: "Explore Dash: Filters")
             }
         case .radius20:
             if Locale.usesMetricMeasurementSystem {
                 return NSLocalizedString("32 km", comment: "Explore Dash: Filters")
-            }else{
+            } else {
                 return NSLocalizedString("20 miles", comment: "Explore Dash: Filters")
             }
         case .radius50:
             if Locale.usesMetricMeasurementSystem {
                 return NSLocalizedString("80 km", comment: "Explore Dash: Filters")
-            }else{
+            } else {
                 return NSLocalizedString("50 miles", comment: "Explore Dash: Filters")
             }
         case .location:
@@ -302,12 +304,13 @@ enum PointOfUseListFilterItem: String {
             return NSLocalizedString("Distance", comment: "Explore Dash: Filters")
         case .sortName:
             return NSLocalizedString("Name", comment: "Explore Dash: Filters")
-            
         }
     }
 }
 
-//MARK: PointOfUseListFiltersModel
+// MARK: - PointOfUseListFiltersModel
+
+// MARK: PointOfUseListFiltersModel
 final class PointOfUseListFiltersModel {
     var selected: Set<PointOfUseListFilterItem> = []
     var initialFilters: Set<PointOfUseListFilterItem>!
@@ -318,110 +321,110 @@ final class PointOfUseListFiltersModel {
             selectedTerritory = initialSelectedTerritory
         }
     }
-    
+
     var canApply: Bool {
-        //TODO: Optimize
-        return selected != initialFilters || selectedTerritory != initialSelectedTerritory
+        // TODO: Optimize
+        selected != initialFilters || selectedTerritory != initialSelectedTerritory
     }
-    
+
     var canReset: Bool {
-        return selected != defaultFilters || canApply
+        selected != defaultFilters || canApply
     }
-    
+
     func isFilterSelected(_ filter: PointOfUseListFilterItem) -> Bool {
         selected.contains(filter)
     }
-    
+
     func toggle(filter: PointOfUseListFilterItem) -> Bool {
         if isFilterSelected(filter) {
             if !filter.otherItems.filter({ isFilterSelected($0) }).isEmpty {
                 selected.remove(filter)
                 return true
             }
-        }else{
+        } else {
             unselect(filters: filter.itemsToUnselect)
             selected.insert(filter)
             return true
         }
-        
+
         return false
     }
-    
+
     func unselect(filters: [PointOfUseListFilterItem]) {
         for item in filters {
             selected.remove(item)
         }
     }
-    
+
     func select(territory: Territory?) {
         if territory == nil {
             selected.remove(.location)
-        }else{
+        } else {
             selected.insert(.location)
         }
 
         selectedTerritory = territory
     }
-    
+
     func resetFilters() {
         selected = defaultFilters
         selectedTerritory = nil
     }
 }
 
-//MARK: PointOfUseListFiltersModel
+// MARK: PointOfUseListFiltersModel
 extension PointOfUseListFiltersModel {
     var appliedFilters: PointOfUseListFilters? {
         if selected.isEmpty && selectedTerritory == nil { return nil }
-        
-        var filters: PointOfUseListFilters = PointOfUseListFilters()
-        
+
+        var filters = PointOfUseListFilters()
+
         if selected.contains(.sortName) {
             filters.sortBy = .name
         }
-        
+
         if selected.contains(.sortDistance) {
             filters.sortBy = .distance
         }
-        
+
         if selected.contains(.sortAZ) {
             filters.sortNameDirection = .ascending
         }
-        
+
         if selected.contains(.sortZA) {
             filters.sortNameDirection = .descending
         }
-        
+
         if selected.contains(.radius1) {
             filters.radius = .one
-        }else if selected.contains(.radius5) {
+        } else if selected.contains(.radius5) {
             filters.radius = .five
-        }else if selected.contains(.radius20) {
+        } else if selected.contains(.radius20) {
             filters.radius = .twenty
-        }else if selected.contains(.radius50) {
+        } else if selected.contains(.radius50) {
             filters.radius = .fifty
         }
-        
+
         if selected.contains(.paymentTypeDash) {
             filters.merchantPaymentTypes = [.dash]
         }
-        
+
         if selected.contains(.paymentTypeGiftCard) {
             var arr = (filters.merchantPaymentTypes ?? [])
             arr.append(.giftCard)
-            
+
             filters.merchantPaymentTypes = arr
         }
-        
+
         if let territory = selectedTerritory {
             filters.territory = territory
         }
-        
+
         return filters
     }
 }
 
-//MARK: Locale
+// MARK: Locale
 extension Locale {
     static var usesMetricMeasurementSystem: Bool {
         if #available(iOS 16, *) {
