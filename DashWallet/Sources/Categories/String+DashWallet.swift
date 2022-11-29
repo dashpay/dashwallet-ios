@@ -21,8 +21,19 @@ private let kCurrencySymbol = "¤"
 private var kDashSymbolAssetName = "icon_dash_currency"
 
 //MARK: Formatted Amount
-
 extension String {
+    func localizedAmount() -> String {
+        let locale = Locale.current
+        let separator = locale.decimalSeparator ?? "."
+        
+        guard self.contains(separator) else {
+            let currentSeparator = locale.decimalSeparator == "." ? "," : "."
+            return replacingOccurrences(of: currentSeparator, with: separator)
+        }
+        
+        return self
+    }
+    
     func dashSymbolAttributedString(with tintColor: UIColor) -> NSAttributedString {
         let image = UIImage(named: kDashSymbolAssetName)!.withTintColor(tintColor)
         

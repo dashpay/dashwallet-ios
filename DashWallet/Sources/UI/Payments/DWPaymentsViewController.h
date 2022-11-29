@@ -18,7 +18,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWDemoDelegate.h"
-#import "DWNavigationFullscreenable.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

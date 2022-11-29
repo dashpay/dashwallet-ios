@@ -24,7 +24,6 @@
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
-#import "DWNavigationController.h"
 #import "DWSecurityMenuViewController.h"
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"

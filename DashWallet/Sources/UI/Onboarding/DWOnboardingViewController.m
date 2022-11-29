@@ -20,12 +20,12 @@
 #import "DWDemoAdvancedSecurityViewController.h"
 #import "DWDemoAppRootViewController.h"
 #import "DWModalPresentationController.h"
-#import "DWNavigationController.h"
 #import "DWOnboardingCollectionViewCell.h"
 #import "DWOnboardingModel.h"
 #import "DWUIKit.h"
 #import "DevicesCompatibility.h"
 #import "UIViewController+DWEmbedding.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

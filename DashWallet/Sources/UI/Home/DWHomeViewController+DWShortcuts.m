@@ -26,7 +26,6 @@
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
-#import "DWNavigationController.h"
 #import "DWPayModelProtocol.h"
 #import "DWPaymentsViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -155,8 +154,8 @@ NS_ASSUME_NONNULL_BEGIN
     PortalViewController *controller = [PortalViewController controller];
     controller.showCloseButton = true;
 
-    BaseNavigationController *navigationController =
-        [[BaseNavigationController alloc] initWithRootViewController:controller];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];
 }
 

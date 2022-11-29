@@ -119,7 +119,7 @@ extension AmountObject {
         let number = localFormatter.number(from: supplementaryFormatted)!
         let rawAmount = localValidator.stringFromNumber(usingInternalFormatter: number)!
         
-        return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .main, mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted, localFormatter: localFormatter, fiatCurrencyCode: currencyCode)
+        return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .supplementary, mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted, localFormatter: localFormatter, fiatCurrencyCode: currencyCode)
     }
     
     init(amountInternalRepresentation: String, plainAmount: Int64, amountType: AmountType, mainFormatted: String, supplementaryFormatted: String, localFormatter: NumberFormatter, fiatCurrencyCode: String) {

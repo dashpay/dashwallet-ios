@@ -35,8 +35,8 @@ enum ConverterViewDirection {
 }
 
 protocol ConverterViewDataSource: AnyObject {
-    var coinbaseBalance: String { get }
-    var walletBalance: String { get }
+    var coinbaseBalanceFormatted: String { get }
+    var walletBalanceFormatted: String { get }
 }
 
 protocol ConverterViewDelegate: AnyObject {
@@ -96,7 +96,7 @@ class ConverterView: UIView {
 
 extension ConverterView {
     private var balance: String {
-        let balance = direction == .toCoinbase ? dataSource?.walletBalance : dataSource?.coinbaseBalance
+        let balance = direction == .toCoinbase ? dataSource?.walletBalanceFormatted : dataSource?.coinbaseBalanceFormatted
         return balance ?? "0"
     }
     

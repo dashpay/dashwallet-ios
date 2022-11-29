@@ -36,6 +36,12 @@
 #import "DWPaymentOutput.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
+#import "DWLocalCurrencyViewController.h"
+#import "DWPayModelProtocol.h"
+#import "DWDemoDelegate.h"
+#import "DWQRScanViewController.h"
+#import "DWQRScanModel.h"
+#import "DWModalPopupTransition.h"
 
 #import "UIView+DWHUD.h"
 #import "DWConfirmSendPaymentViewController.h"

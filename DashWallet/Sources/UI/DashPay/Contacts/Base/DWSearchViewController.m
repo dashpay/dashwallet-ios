@@ -161,7 +161,7 @@ NS_ASSUME_NONNULL_END
         searchBar.translatesAutoresizingMaskIntoConstraints = NO;
         searchBar.delegate = self;
         searchBar.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        searchBar.barTintColor = [UIColor dw_secondaryBackgroundColor];
+        searchBar.barTintColor = [UIColor labelColor];
         searchBar.searchBarStyle = UISearchBarStyleMinimal;
         searchBar.tintColor = [UIColor dw_dashBlueColor];
         UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];

@@ -26,7 +26,6 @@
 #import "DWPaymentProcessor.h"
 #import "DWQRScanModel.h"
 #import "DWQRScanViewController.h"
-#import "DWSendAmountViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWEmbedding.h"
@@ -35,13 +34,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBasePayViewController () <DWPaymentProcessorDelegate,
-                                       DWSendAmountViewControllerDelegate,
                                        DWQRScanModelDelegate,
                                        DWConfirmPaymentViewControllerDelegate,
-                                       SuccessTxDetailViewControllerDelegate>
+                                       SuccessTxDetailViewControllerDelegate,
+                                       PaymentControllerDelegate,
+                                       PaymentControllerPresentationContextProviding>
 
-@property (nullable, nonatomic, weak) DWSendAmountViewController *amountViewController;
-@property (nullable, nonatomic, weak) DWConfirmSendPaymentViewController *confirmViewController;
+@property (nonatomic, strong) PaymentController *paymentController;
 
 @end
 
@@ -51,15 +50,13 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     NSParameterAssert(self.payModel);
+
+    self.paymentController = [[PaymentController alloc] init];
+    _paymentController.delegate = self;
+    _paymentController.presentationContextProvider = self;
+    _paymentController.contactItem = [self contactItem];
 }
 
-- (DWPaymentProcessor *)paymentProcessor {
-    if (_paymentProcessor == nil) {
-        _paymentProcessor = [[DWPaymentProcessor alloc] initWithDelegate:self];
-    }
-
-    return _paymentProcessor;
-}
 
 - (void)performScanQRCodeAction {
     if ([self.presentedViewController isKindOfClass:DWQRScanViewController.class]) {
@@ -108,8 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    self.paymentProcessor = nil;
-    [self.paymentProcessor processPaymentInput:paymentInput];
+    [self processPaymentInput:paymentInput];
 }
 
 - (void)performNFCReadingAction {
@@ -120,28 +116,23 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        strongSelf.paymentProcessor = nil;
-        [strongSelf.paymentProcessor processPaymentInput:paymentInput];
+        [strongSelf processPaymentInput:paymentInput];
     }];
 }
 
 - (void)performPayToURL:(NSURL *)url {
     DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
 
-    self.paymentProcessor = nil;
-    [self.paymentProcessor processPaymentInput:paymentInput];
+    [self processPaymentInput:paymentInput];
 }
 
 - (void)performPayToUser:(id<DWDPBasicUserItem>)userItem {
     DWPaymentInput *paymentInput = [self.payModel paymentInputWithUser:userItem];
-
-    self.paymentProcessor = nil;
-    [self.paymentProcessor processPaymentInput:paymentInput];
+    [self processPaymentInput:paymentInput];
 }
 
 - (void)handleFile:(NSData *)file {
-    self.paymentProcessor = nil;
-    [self.paymentProcessor processFile:file];
+    [self.paymentController performPaymentWithFile:file];
 }
 
 - (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
@@ -152,188 +143,8 @@ NS_ASSUME_NONNULL_BEGIN
     return nil; // to be overriden
 }
 
-#pragma mark - DWPaymentProcessorDelegate
-
-// User Actions
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    requestAmountWithDestination:(NSString *)sendingDestination
-                         details:(nullable DSPaymentProtocolDetails *)details
-                     contactItem:(id<DWDPBasicUserItem>)contactItem {
-    DWSendAmountViewController *controller =
-        [[DWSendAmountViewController alloc] initWithDestination:sendingDestination
-                                                 paymentDetails:nil
-                                                    contactItem:contactItem ?: [self contactItem]];
-    controller.delegate = self;
-    controller.demoMode = self.demoMode;
-    [self.navigationController pushViewController:controller animated:YES];
-    self.amountViewController = controller;
-}
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    requestUserActionTitle:(nullable NSString *)title
-                   message:(nullable NSString *)message
-               actionTitle:(NSString *)actionTitle
-               cancelBlock:(nullable void (^)(void))cancelBlock
-               actionBlock:(nullable void (^)(void))actionBlock {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:title
-                         message:message
-                  preferredStyle:UIAlertControllerStyleAlert];
-
-    UIAlertAction *cancelAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                  style:UIAlertActionStyleCancel
-                handler:^(UIAlertAction *action) {
-                    NSParameterAssert(cancelBlock);
-                    if (cancelBlock) {
-                        cancelBlock();
-                    }
-
-                    NSAssert(!self.confirmViewController || self.confirmViewController.sendingEnabled,
-                             @"paymentProcessorDidCancelTransactionSigning: should be called");
-                }];
-    [alert addAction:cancelAction];
-
-    UIAlertAction *actionAction = [UIAlertAction
-        actionWithTitle:actionTitle
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction *action) {
-                    NSParameterAssert(actionBlock);
-                    if (actionBlock) {
-                        actionBlock();
-                    }
-
-                    self.confirmViewController.sendingEnabled = YES;
-                }];
-    [alert addAction:actionAction];
-
-    [self showModalController:alert];
-}
-
-// Confirmation
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    confirmPaymentOutput:(DWPaymentOutput *)paymentOutput {
-    if (self.confirmViewController) {
-        self.confirmViewController.paymentOutput = paymentOutput;
-    }
-    else {
-        DWConfirmSendPaymentViewController *controller = [[DWConfirmSendPaymentViewController alloc] init];
-        controller.paymentOutput = paymentOutput;
-        controller.delegate = self;
-
-        if (self.demoMode) {
-            controller.transitioningDelegate = nil;
-            controller.modalPresentationStyle = UIModalPresentationPageSheet;
-
-            [self.demoDelegate presentModalController:controller sender:self];
-        }
-        else {
-            [self presentViewController:controller animated:YES completion:nil];
-        }
-
-        self.confirmViewController = controller;
-    }
-}
-
-- (void)paymentProcessorDidCancelTransactionSigning:(DWPaymentProcessor *)processor {
-    self.confirmViewController.sendingEnabled = YES;
-}
-
-// Result
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-        didFailWithError:(nullable NSError *)error
-                   title:(nullable NSString *)title
-                 message:(nullable NSString *)message {
-    if ([error.domain isEqual:DSErrorDomain] &&
-        (error.code == DSErrorInsufficientFunds || error.code == DSErrorInsufficientFundsForNetworkFee)) {
-        [self.amountViewController insufficientFundsErrorWasShown];
-    }
-
-    [self.navigationController.view dw_hideProgressHUD];
-    [self showAlertWithTitle:title message:message];
-    if (self.confirmViewController) {
-        self.confirmViewController.sendingEnabled = YES;
-    }
-}
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-          didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
-             transaction:(DSTransaction *)transaction
-             contactItem:(nullable id<DWDPBasicUserItem>)contactItem {
-    [self.navigationController.view dw_hideProgressHUD];
-
-    if (self.confirmViewController) {
-        [self dismissViewControllerAnimated:YES
-                                 completion:^{
-                                     if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
-                                         [self.navigationController popViewControllerAnimated:YES];
-                                     }
-                                 }];
-    }
-    else {
-        if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
-            [self.navigationController popViewControllerAnimated:YES];
-        }
-    }
-
-    SuccessTxDetailViewController *controller = [SuccessTxDetailViewController controller];
-    controller.modalPresentationStyle = UIModalPresentationFullScreen;
-    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
-    controller.contactItem = contactItem;
-    controller.delegate = self;
-    [self presentViewController:controller
-                       animated:YES
-                     completion:nil];
-}
-
-- (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor
-         didSweepRequest:(nonnull DSPaymentRequest *)protocolRequest
-             transaction:(nonnull DSTransaction *)transaction {
-    [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"Swept!", nil)];
-
-    if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
-        [self.navigationController popViewControllerAnimated:YES];
-    }
-}
-
-// Handle File
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor displayFileProcessResult:(NSString *)result {
-    [self showAlertWithTitle:result message:nil];
-}
-
-- (void)paymentProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor {
-    // NOP
-}
-
-// Progress HUD
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    showProgressHUDWithMessage:(nullable NSString *)message {
-    NSAssert(self.confirmViewController == nil, @"Consider showing HUD on confirmViewController?");
-    [self.navigationController.view dw_showProgressHUDWithMessage:message];
-}
-
-- (void)paymentInputProcessorHideProgressHUD:(DWPaymentProcessor *)processor {
-    NSAssert(self.confirmViewController == nil, @"Consider hiding HUD from confirmViewController?");
-    [self.navigationController.view dw_hideProgressHUD];
-}
-
-#pragma mark - DWSendAmountViewControllerDelegate
-
-- (void)sendAmountViewController:(DWSendAmountViewController *)controller
-                  didInputAmount:(uint64_t)amount {
-    NSParameterAssert(self.paymentProcessor);
-    [self.paymentProcessor provideAmount:amount];
-}
-
-#pragma mark - DWConfirmPaymentViewControllerDelegate
-
-- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmSendPaymentViewController *)controller {
-    [self.paymentProcessor confirmPaymentOutput:controller.paymentOutput];
+- (void)processPaymentInput:(DWPaymentInput *)input {
+    [self.paymentController performPaymentWith:input];
 }
 
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
@@ -349,8 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.userInteractionEnabled = NO;
     [self dismissViewControllerAnimated:YES
                              completion:^{
-                                 self.paymentProcessor = nil;
-                                 [self.paymentProcessor processPaymentInput:paymentInput];
+                                 [self processPaymentInput:paymentInput];
 
                                  self.view.userInteractionEnabled = YES;
                              }];
@@ -362,23 +172,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)showAlertWithTitle:(NSString *_Nullable)title message:(NSString *_Nullable)message {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:title
-                         message:message
-                  preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *okAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"OK", nil)
-                  style:UIAlertActionStyleCancel
-                handler:nil];
-    [alert addAction:okAction];
-    [self showModalController:alert];
+- (void)paymentControllerDidCancelTransaction:(PaymentController *_Nonnull)controller {
 }
 
-- (void)showModalController:(UIViewController *)controller {
-    UIViewController *presentingViewController = self.confirmViewController ?: self.navigationController;
-    [presentingViewController presentViewController:controller animated:YES completion:nil];
+- (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
+
+    SuccessTxDetailViewController *vc = [SuccessTxDetailViewController controller];
+    vc.modalPresentationStyle = UIModalPresentationFullScreen;
+    vc.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    vc.contactItem = _paymentController.contactItem;
+    vc.delegate = self;
+    [self presentViewController:vc
+                       animated:YES
+                     completion:nil];
 }
+
+- (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {
+    return self;
+}
+
 
 @end
 

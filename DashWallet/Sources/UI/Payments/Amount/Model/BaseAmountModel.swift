@@ -22,10 +22,6 @@ enum AmountType {
     case supplementary
 }
 
-protocol BaseAmountModelDelegate: AnyObject {
-    func amountDidChange()
-}
-
 class BaseAmountModel {
     var showMaxButton: Bool { true }
     var activeAmountType: AmountType = .main
@@ -37,12 +33,24 @@ class BaseAmountModel {
     }
     
     public var amountChangeHandler: ((AmountObject) -> Void)?
+    public var presentCurrencyPickerHandler: (() -> Void)?
+    public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let amount = amount.plainAmount
+        
+        return amount < chain.minOutputAmount
+    }
+    
+    public var minimumOutputAmountFormattedString: String {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        return DSPriceManager.sharedInstance().string(forDashAmount: Int64(chain.minOutputAmount)) ?? NSLocalizedString("Unknown", comment: "")
+    }
     
     internal var mainAmountValidator: DWAmountInputValidator!
     internal var supplementaryAmountValidator: DWAmountInputValidator!
     
     internal var localFormatter: NumberFormatter
-    internal var localCurrencyCode: String
+    var localCurrencyCode: String
     
     init() {
         localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
@@ -54,9 +62,64 @@ class BaseAmountModel {
         updateAmountObjects(with: "0")
     }
     
+    func setupCurrencyCode(_ code: String) {
+        guard let price = DSPriceManager.sharedInstance().price(forCurrencyCode: code) else { return }
+        
+        localFormatter.currencyCode = code
+        localCurrencyCode = code
+        
+        let max = NSDecimalNumber(value: MAX_MONEY/DUFFS)
+        localFormatter.maximum = NSDecimalNumber(decimal: price.price.decimalValue).multiplying(by: max)
+        
+        rebuildAmounts()
+    }
+
+    func updateInputField(with replacementText: String, in range: NSRange) {
+        let lastInputString = amount.amountInternalRepresentation
+        
+        guard let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range, replacementString: replacementText) else {
+            return
+        }
+        
+        updateAmountObjects(with: validatedString)
+    }
     
+    func updateAmountObjects(with inputString: String) {
+        if activeAmountType == .main {
+            mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+            supplementaryAmount = nil
+        }else if let amount = AmountObject(localAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter) {
+            supplementaryAmount = amount
+            mainAmount = nil
+        }
+        
+        amountDidChange()
+    }
     
-    func updateAmount(with replacementString: String, range: NSRange) {
+    internal func updateCurrentAmountObject(with amount: Int64) {
+        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+        updateCurrentAmountObject(with: amountObject)
+    }
+    
+    internal func updateCurrentAmountObject(with newObject: AmountObject) {
+        if activeAmountType == .main {
+            mainAmount = newObject
+            supplementaryAmount = nil
+        } else {
+            mainAmount = nil
+            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator, localFormatter: localFormatter, currencyCode: localCurrencyCode)
+        }
+        
+        amountDidChange()
+    }
+    
+    internal func rebuildAmounts() {
+        let amount = activeAmountType == .main ? mainAmount.amountInternalRepresentation : supplementaryAmount.amountInternalRepresentation
+        updateAmountObjects(with: amount)
+    }
+    
+    internal func amountDidChange() {
+        amountChangeHandler?(amount)
     }
 }
 
@@ -75,6 +138,14 @@ extension BaseAmountModel {
     
     var isSwapToLocalCurrencyAllowed: Bool {
         return DSPriceManager.sharedInstance().localCurrencyDashPrice != nil
+    }
+    
+    var walletBalance: UInt64 {
+        DWEnvironment.sharedInstance().currentWallet.balance
+    }
+    
+    var walletBalanceFormatted: String {
+        walletBalance.formattedDashAmount
     }
 }
 
@@ -101,29 +172,7 @@ extension BaseAmountModel: AmountViewDelegate {
     var amountInputStyle: AmountInputControl.Style {
         .oppositeAmount
     }
-    
-    func updateInputField(with replacementText: String, in range: NSRange) {
-        let lastInputString = amount.amountInternalRepresentation
-        
-        guard let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range, replacementString: replacementText) else {
-            return
-        }
-        
-        updateAmountObjects(with: validatedString)
-    }
-    
-    func updateAmountObjects(with inputString: String) {
-        if activeAmountType == .main {
-            mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
-            supplementaryAmount = nil
-        }else if let amount = AmountObject(localAmountString: inputString, fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter) {
-            supplementaryAmount = amount
-            mainAmount = nil
-        }
-        
-        amountChangeHandler?(amount)
-    }
-    
+
     func amountInputControlDidSwapInputs() {
         assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
         
@@ -139,10 +188,40 @@ extension BaseAmountModel: AmountViewDelegate {
             activeAmountType = .main
         }
         
-        amountChangeHandler?(amount)
+        amountDidChange()
     }
     
     func amountInputControlChangeCurrencyDidTap() {
+        presentCurrencyPickerHandler?()
+    }
+    
+    func amountInputWantToPasteFromClipboard() {
+        guard var string = UIPasteboard.general.string else { return }
+        string = string.localizedAmount()
         
+        guard let decimal = Decimal(string: string, locale: .current) else { return }
+        let decimalNumber = NSDecimalNumber(decimal: decimal)
+        
+        let formattedString: String?
+        
+        var formatter: NumberFormatter
+        
+        if activeAmountType == .main {
+            formatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = NumberFormatter.dashFormatter.minimumFractionDigits
+            formatter.maximumFractionDigits = NumberFormatter.dashFormatter.maximumFractionDigits
+            formattedString = formatter.string(from: decimalNumber)
+        }else{
+            formatter = localFormatter.copy() as! NumberFormatter
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = localFormatter.minimumFractionDigits
+            formatter.maximumFractionDigits = localFormatter.maximumFractionDigits
+            formattedString = formatter.string(from: decimalNumber)
+        }
+        
+        guard let string = formattedString else { return }
+        
+        updateAmountObjects(with: string)
     }
 }
