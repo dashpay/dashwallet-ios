@@ -28,12 +28,6 @@ class SendAmountViewController: BaseAmountViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        view.backgroundColor = .dw_secondaryBackground()
-    }
-
     override func initializeModel() {
         model = SendAmountModel()
     }

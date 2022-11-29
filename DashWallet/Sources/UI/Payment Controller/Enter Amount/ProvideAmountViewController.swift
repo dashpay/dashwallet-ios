@@ -131,7 +131,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         showHideBalanceButton.backgroundColor = UIColor(red: 0.098, green: 0.11, blue: 0.122, alpha: 0.05)
         showHideBalanceButton.layer.cornerRadius = 12
         showHideBalanceButton.setImage(UIImage(systemName: "eye.fill", withConfiguration: configuration), for: .normal)
-        showHideBalanceButton.tintColor = .label.withAlphaComponent(0.8)
+        showHideBalanceButton.tintColor = .dw_darkTitle()
         showHideBalanceButton.addTarget(self, action: #selector(toggleBalanceVisibilityAction), for: .touchUpInside)
         balanceStackView.addArrangedSubview(showHideBalanceButton)
 
