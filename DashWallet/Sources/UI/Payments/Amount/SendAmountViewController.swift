@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,37 +19,47 @@ import UIKit
 
 class SendAmountViewController: BaseAmountViewController {
     override var actionButtonTitle: String? { return NSLocalizedString("Send", comment: "Send Dash") }
-    
+
     internal var sendAmountModel: SendAmountModel {
         model as! SendAmountModel
     }
-    
+
     init() {
         super.init(nibName: nil, bundle: nil)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .dw_secondaryBackground()
     }
-    
+
     override func initializeModel() {
         model = SendAmountModel()
     }
-  
+
+    override func configureModel() {
+        super.configureModel()
+        sendAmountModel.errorHandler = { [weak self] error in
+            self?.show(error: error)
+        }
+    }
+
+    internal func show(error: SendAmountError) {}
+
     override func maxButtonAction() {
         sendAmountModel.selectAllFunds { [weak self] in
             self?.amountView.amountType = .main
         }
     }
-     
+
     override func amountDidChange() {
         super.amountDidChange()
-        
+
         actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
-    
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
