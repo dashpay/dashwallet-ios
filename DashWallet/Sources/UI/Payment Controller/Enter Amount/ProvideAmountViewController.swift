@@ -69,7 +69,6 @@ final class ProvideAmountViewController: SendAmountViewController {
         stackView.axis = .vertical
         stackView.spacing = 26
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        // stackView.alignment = .leading
         contentView.addSubview(stackView)
 
         let textContainer = UIStackView()
@@ -77,24 +76,21 @@ final class ProvideAmountViewController: SendAmountViewController {
         textContainer.spacing = 4
         stackView.addArrangedSubview(textContainer)
 
-        let topStackView = UIStackView()
-        topStackView.axis = .horizontal
-        topStackView.spacing = 2
-        topStackView.alignment = .bottom
-        textContainer.addArrangedSubview(topStackView)
+        let sendContainer = UIView()
+        textContainer.addArrangedSubview(sendContainer)
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.bold.rawValue)
         titleLabel.text = NSLocalizedString("Send", comment: "Send Screen")
-        topStackView.addArrangedSubview(titleLabel)
+        sendContainer.addSubview(titleLabel)
 
         let toLabel = UILabel()
         toLabel.translatesAutoresizingMaskIntoConstraints = false
         toLabel.font = .dw_font(forTextStyle: .body)
         toLabel.textColor = .label
         toLabel.text = NSLocalizedString("to", comment: "Send Screen: to address")
-        topStackView.addArrangedSubview(toLabel)
+        sendContainer.addSubview(toLabel)
 
         let addressLabel = UILabel()
         addressLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -102,7 +98,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         addressLabel.textColor = .label
         addressLabel.text = address
         addressLabel.lineBreakMode = .byTruncatingMiddle
-        topStackView.addArrangedSubview(addressLabel)
+        sendContainer.addSubview(addressLabel)
 
         let balanceStackView = UIStackView()
         balanceStackView.axis = .horizontal
@@ -160,8 +156,16 @@ final class ProvideAmountViewController: SendAmountViewController {
             stackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
 
-            toLabel.heightAnchor.constraint(equalToConstant: 27),
-            addressLabel.heightAnchor.constraint(equalToConstant: 27),
+            titleLabel.leadingAnchor.constraint(equalTo: sendContainer.leadingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: sendContainer.topAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: sendContainer.bottomAnchor),
+
+            toLabel.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 2),
+            toLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
+
+            addressLabel.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 2),
+            addressLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
+            addressLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor),
 
             spacer.widthAnchor.constraint(equalToConstant: 6),
 
