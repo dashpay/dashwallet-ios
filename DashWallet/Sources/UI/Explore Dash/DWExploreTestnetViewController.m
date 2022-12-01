@@ -105,8 +105,7 @@
     [self.view addSubview:parentView];
 
     [NSLayoutConstraint activateConstraints:@[
-        [headerView.widthAnchor constraintLessThanOrEqualToConstant:kExploreHeaderViewHeight],
-
+        [headerView.heightAnchor constraintLessThanOrEqualToConstant:kExploreHeaderViewHeight],
         [parentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
                                              constant:10],
         [parentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],

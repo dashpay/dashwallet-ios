@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,88 +15,93 @@
 //  limitations under the License.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
+
+// MARK: - TransferAmountView
 
 struct TransferAmountView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> TransferAmountViewController {
-        return TransferAmountViewController()
+        TransferAmountViewController()
     }
-    
-    func updateUIViewController(_ viewController: TransferAmountViewController, context: Context) {
-    }
+
+    func updateUIViewController(_ viewController: TransferAmountViewController, context: Context) { }
 }
+
+// MARK: - TransferAmountViewController
 
 final class TransferAmountViewController: SendAmountViewController {
     private var converterView: ConverterView!
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
-    
+
     private var networkUnavailableView: UIView!
-    
+
     override var amountInputStyle: AmountInputControl.Style { .basic }
-    
+
     private weak var codeConfirmationController: TwoFactorAuthViewController?
-    
+
     override var actionButtonTitle: String? {
-        return NSLocalizedString("Transfer", comment: "Coinbase")
+        NSLocalizedString("Transfer", comment: "Coinbase")
     }
-    
+
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         transferModel.initializeTransfer()
     }
-    
+
     override func initializeModel() {
         model = TransferAmountModel()
     }
-    
+
     override func configureModel() {
         super.configureModel()
-        
-        transferModel.networkStatusDidChange = { [weak self] status in
+
+        transferModel.networkStatusDidChange = { [weak self] _ in
             self?.reloadView()
         }
         transferModel.delegate = self
     }
-    
+
     override func configureHierarchy() {
         super.configureHierarchy()
-        
-        self.converterView = ConverterView(direction: .toCoinbase)
+
+        converterView = ConverterView(direction: .toCoinbase)
         converterView.delegate = self
         converterView.dataSource = model
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
-        
+
         networkUnavailableView = NetworkUnavailableView(frame: .zero)
         networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
         networkUnavailableView.isHidden = true
         contentView.addSubview(networkUnavailableView)
-        
+
         NSLayoutConstraint.activate([
             converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
             converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             converterView.heightAnchor.constraint(equalToConstant: 128),
-            
+
             networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor)
+            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
         ])
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .dw_background()
-        
+
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
     }
 }
 
-//MARK: TransferAmountModelDelegate
+// MARK: TransferAmountModelDelegate
+
+// MARK: TransferAmountModelDelegate
 extension TransferAmountViewController: TransferAmountModelDelegate {
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
@@ -108,10 +113,10 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
     func transferFromCoinbaseToWalletDidSucceed() {
         codeConfirmationController?.dismiss(animated: true)
         codeConfirmationController = nil
-        
+
         showSuccessTransactionStatus()
     }
-    
+
     func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason) {
         switch reason {
         case .twoFactorRequired:
@@ -123,7 +128,7 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
             showFailedTransactionStatus()
         }
     }
-    
+
     private func initiateTwoFactorAuth() {
         let vc = TwoFactorAuthViewController.controller()
         vc.verifyHandler = { [weak self] code in
@@ -131,28 +136,32 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         }
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
-        
+
         codeConfirmationController = vc
     }
 }
 
-//MARK: ConverterViewDelegate
+// MARK: ConverterViewDelegate
+
+// MARK: ConverterViewDelegate
 extension TransferAmountViewController: ConverterViewDelegate {
     func didChangeDirection(_ direction: ConverterViewDirection) {
         transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
     }
 }
 
-//MARK: ConverterViewDataSource
+// MARK: - BaseAmountModel + ConverterViewDataSource
+
+// MARK: ConverterViewDataSource
 extension BaseAmountModel: ConverterViewDataSource {
     var coinbaseBalanceFormatted: String {
         guard let balance = Coinbase.shared.lastKnownBalance else {
             return NSLocalizedString("Unknown Balance", comment: "Coinbase")
         }
-        
+
         return balance.formattedDashAmount
     }
-    
+
 }
 
 extension TransferAmountViewController {
@@ -163,7 +172,7 @@ extension TransferAmountViewController {
         actionButton?.isHidden = !isOnline
         converterView.hasNetwork = isOnline
     }
-    
+
     private func showSuccessTransactionStatus() {
         let vc = SuccessfulOperationStatusViewController.initiate(from: sb("Coinbase"))
         vc.closeHandler = { [weak self] in
@@ -171,16 +180,19 @@ extension TransferAmountViewController {
             wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
         }
         vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
-        vc.descriptionText = NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device", comment: "Coinbase")
+        vc
+            .descriptionText =
+            NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
+                              comment: "Coinbase")
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
-
     }
-    
+
     private func showFailedTransactionStatus() {
         let vc = FailedOperationStatusViewController.initiate(from: sb("Coinbase"))
         vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
-        vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase")
+        vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device",
+                                               comment: "Coinbase")
         vc.retryHandler = { [weak self] in
             guard let wSelf = self else { return }
             wSelf.navigationController?.popToViewController(wSelf, animated: true)
@@ -194,20 +206,24 @@ extension TransferAmountViewController {
     }
 }
 
-//MARK: PaymentControllerDelegate
+// MARK: - TransferAmountViewController + PaymentControllerDelegate
+
+// MARK: PaymentControllerDelegate
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
         hideActivityIndicator()
         showSuccessTransactionStatus()
     }
-    
+
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
         hideActivityIndicator()
     }
 }
 
+// MARK: - TransferAmountViewController + PaymentControllerPresentationContextProviding
+
 extension TransferAmountViewController: PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
-        return self
+        self
     }
 }

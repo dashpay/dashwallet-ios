@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,63 +20,66 @@ import UIKit
 private let kKeyboardHeight: CGFloat = 215.0
 private let kDescKeyboardPadding: CGFloat = 8.0
 
+// MARK: - BaseAmountViewController
+
 class BaseAmountViewController: ActionButtonViewController {
     internal var contentView: UIView!
     internal var amountView: AmountView!
-    
+
     internal var keyboardContainer: UIView!
     internal var numberKeyboard: NumberKeyboard!
-    
+
     internal var model: BaseAmountModel!
     internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
-    
-    func maxButtonAction() {}
-    
+
+    func maxButtonAction() { }
+
     internal func initializeModel() {
         model = BaseAmountModel()
     }
-    
+
     internal func configureModel() {
-        model.amountChangeHandler = { [weak self] amount in
+        model.amountChangeHandler = { [weak self] _ in
             self?.amountDidChange()
         }
-        
+
         model.presentCurrencyPickerHandler = { [weak self] in
             self?.showCurrencyList()
         }
     }
-    
+
     internal func amountDidChange() {
         amountView.reloadData()
     }
-    
+
     internal func validateInputAmount() -> Bool {
-        if (model.isEnteredAmountLessThenMinimumOutputAmount) {
+        if model.isEnteredAmountLessThenMinimumOutputAmount {
             let msg = String(format: "Dash payments can't be less than %@", model.minimumOutputAmountFormattedString)
             showAlert(with: NSLocalizedString("Amount too small", comment: ""), message: msg)
             return false
         }
-        
+
         return true
     }
-    
+
     internal func showCurrencyList() {
-        let currencyController = DWLocalCurrencyViewController(navigationAppearance: .white, currencyCode: model.localCurrencyCode)
+        let currencyController = DWLocalCurrencyViewController(navigationAppearance: .white,
+                                                               currencyCode: model.localCurrencyCode)
         currencyController.isGlobal = false
         currencyController.delegate = self
         let nvc = BaseNavigationController(rootViewController: currencyController)
         present(nvc, animated: true)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         amountView.becomeFirstResponder()
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         initializeModel()
         configureModel()
         configureHierarchy()
@@ -85,13 +88,13 @@ class BaseAmountViewController: ActionButtonViewController {
 
 extension BaseAmountViewController {
     @objc internal func configureHierarchy() {
-        self.contentView = UIView()
+        contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
         contentView.preservesSuperviewLayoutMargins = true
         setupContentView(contentView)
-        
-        self.amountView = AmountView(style: amountInputStyle)
+
+        amountView = AmountView(style: amountInputStyle)
         amountView.maxButtonAction = { [weak self] in
             self?.maxButtonAction()
         }
@@ -99,38 +102,40 @@ extension BaseAmountViewController {
         amountView.delegate = model
         amountView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(amountView)
-        
+
         keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
         keyboardContainer.translatesAutoresizingMaskIntoConstraints = false
         keyboardContainer.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         keyboardContainer.layer.cornerRadius = 10
         contentView.addSubview(keyboardContainer)
-        
-        self.numberKeyboard = NumberKeyboard()
+
+        numberKeyboard = NumberKeyboard()
         numberKeyboard.customButtonBackgroundColor = .dw_background()
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = false
         numberKeyboard.backgroundColor = .clear
         numberKeyboard.textInput = amountView.textInput
         keyboardContainer.addSubview(numberKeyboard)
-        
+
         NSLayoutConstraint.activate([
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            amountView.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 22),
+            amountView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
             amountView.heightAnchor.constraint(equalToConstant: 60),
-            
-            keyboardContainer.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
-            keyboardContainer.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
-            keyboardContainer.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
-        
+
+            keyboardContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            keyboardContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+
             numberKeyboard.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 15),
             numberKeyboard.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
             numberKeyboard.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
-            numberKeyboard.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15)
+            numberKeyboard.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15),
         ])
     }
 }
+
+// MARK: DWLocalCurrencyViewControllerDelegate
 
 extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
     func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
@@ -138,10 +143,10 @@ extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
         amountView.reloadInputTypeSwitcher()
         controller.dismiss(animated: true)
     }
-    
+
     func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
         controller.dismiss(animated: true)
     }
-    
-    
+
+
 }

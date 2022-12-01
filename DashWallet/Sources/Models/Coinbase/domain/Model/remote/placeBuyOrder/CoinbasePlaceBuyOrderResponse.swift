@@ -7,7 +7,8 @@
 
 import Foundation
 
-// MARK: - DataClass
+// MARK: - CoinbasePlaceBuyOrder
+
 struct CoinbasePlaceBuyOrder: Codable {
     let id: String?
     let fee: Amount?
@@ -25,7 +26,9 @@ struct CoinbasePlaceBuyOrder: Codable {
     let nextStep: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, fee, status
+        case id
+        case fee
+        case status
         case userReference = "user_reference"
         case transaction
         case createdAt = "created_at"
@@ -44,16 +47,19 @@ struct CoinbasePlaceBuyOrder: Codable {
 }
 
 // MARK: - PaymentMethod
+
 struct PaymentMethod: Codable {
     let id, resource, resourcePath: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, resource
+        case id
+        case resource
         case resourcePath = "resource_path"
     }
 }
 
 // MARK: - UnitPrice
+
 struct UnitPrice: Codable {
     let amount, currency: String?
     let scale: Int?

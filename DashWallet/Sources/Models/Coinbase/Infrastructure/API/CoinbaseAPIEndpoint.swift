@@ -6,13 +6,16 @@
 //
 
 import Foundation
+
 /// BaseUrl API Endpoint
 private let baseURL = URL(string: "https://api.coinbase.com/")
 let authBaseURL = URL(string: "https://coinbase.com/")
 
+// MARK: - APIEndpoint
+
 enum APIEndpoint: Endpoint {
     var url: URL {
-        return URL(string: path, relativeTo: baseURL)!
+        URL(string: path, relativeTo: baseURL)!
     }
 
     var path: String {

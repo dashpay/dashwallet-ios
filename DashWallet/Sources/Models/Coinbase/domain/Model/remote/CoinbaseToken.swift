@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 // MARK: - CoinbaseToken
 struct CoinbaseToken: Codable {
     let accessToken: String?

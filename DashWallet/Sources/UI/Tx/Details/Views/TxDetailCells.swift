@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,25 +17,27 @@
 
 import UIKit
 
+// MARK: - TxDetailHeaderCell
+
 class TxDetailHeaderCell: UITableViewCell {
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var dashAmountLabel: UILabel!
     @IBOutlet var fiatAmountLabel: UILabel!
-    
+
     @IBOutlet var iconImageView: UIImageView!
-    
+
     var model: TxDetailModel! {
         didSet {
             updateView()
         }
     }
-        
+
     private func updateView() {
         var title: String!
         var iconTintColor: UIColor!
         var iconName: String!
-        
-        switch (self.model.direction) {
+
+        switch model.direction {
         case .moved:
             iconName = "arrow.up.circle.fill"
             title = NSLocalizedString("Moved to Address", comment: "");
@@ -55,77 +57,81 @@ class TxDetailHeaderCell: UITableViewCell {
         default:
             break
         }
-        
-        if (self.model.direction == .notAccountFunds) {
-            self.fiatAmountLabel.text = "";
-            self.dashAmountLabel.text = "";
+
+        if model.direction == .notAccountFunds {
+            fiatAmountLabel.text = "";
+            dashAmountLabel.text = "";
         }
         else {
-            self.fiatAmountLabel.text = self.model.fiatAmountString;
-            self.dashAmountLabel.attributedText = model.dashAmountString(with: UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue), tintColor: .label)
+            fiatAmountLabel.text = model.fiatAmountString;
+            dashAmountLabel.attributedText = model
+                .dashAmountString(with: UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue),
+                                  tintColor: .label)
         }
-      
-        self.titleLabel.text = title
-        self.titleLabel.textColor = iconTintColor
-        
-        if let name = iconName
-        {
+
+        titleLabel.text = title
+        titleLabel.textColor = iconTintColor
+
+        if let name = iconName {
             let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
-        
+
             let image = UIImage(systemName: name, withConfiguration: iconConfig)
-            
+
             iconImageView.image = image
             iconImageView.tintColor = iconTintColor
         }
     }
-    
+
     override func awakeFromNib() {
         iconImageView.contentMode = .center
         iconImageView.clipsToBounds = false
-        
+
         titleLabel.font = UIFont.dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
         dashAmountLabel.font = UIFont.dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
         fiatAmountLabel.font = UIFont.dw_font(forTextStyle: .footnote)
     }
-    
-    override class var dw_reuseIdentifier: String { return "TxDetailHeaderCell" }
+
+    override class var dw_reuseIdentifier: String { "TxDetailHeaderCell" }
 }
+
+// MARK: - TxDetailActionCell
 
 class TxDetailActionCell: TxDetailTitleCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         titleLabel.textColor = .label
     }
-    
-    override class var dw_reuseIdentifier: String { return "TxDetailActionCell" }
+
+    override class var dw_reuseIdentifier: String { "TxDetailActionCell" }
 }
+
+// MARK: - TxDetailInfoCell
 
 class TxDetailInfoCell: TxDetailTitleDetailsCell {
     @IBOutlet var valueLabelsStack: UIStackView!
-    
+
     override func update(with item: TXDetailViewController.Item) {
         var title: String?
-        
+
         let valueLabel: ((DWTitleDetailItem) -> UILabel) = { item in
             let view = UILabel()
             view.lineBreakMode = .byTruncatingMiddle
             view.attributedText = item.attributedDetail
             view.textAlignment = .right
             view.font = UIFont.dw_font(forTextStyle: .footnote)
-            
+
             if let text = item.plainDetail {
                 view.text = text
             }
-            
+
             if let text = item.attributedDetail {
                 view.attributedText = text
             }
-            
+
             return view
         }
-        
-        switch item
-        {
+
+        switch item {
         case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
             title = items.first?.title
             for item in items {
@@ -140,29 +146,30 @@ class TxDetailInfoCell: TxDetailTitleDetailsCell {
         default:
             break
         }
-        
+
         titleLabel.text = title
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+
         let views = valueLabelsStack.arrangedSubviews
-        
+
         for view in views {
             valueLabelsStack.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
     }
-    
-    override class var dw_reuseIdentifier: String { return "TxDetailInfoCell" }
+
+    override class var dw_reuseIdentifier: String { "TxDetailInfoCell" }
 }
+
+// MARK: - TxDetailTaxCategoryCell
 
 class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
     @IBOutlet var categoryLabel: UILabel!
-    
+
     override func update(with item: TXDetailViewController.Item) {
-        
         switch item {
         case .taxCategory(let item):
             titleLabel.text = item.title
@@ -170,26 +177,28 @@ class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
         default:
             break
         }
-        
     }
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+
         categoryLabel?.font = UIFont.dw_font(forTextStyle: .footnote)
     }
-    
-    override class var dw_reuseIdentifier: String { return "TxDetailTaxCategoryCell" }
+
+    override class var dw_reuseIdentifier: String { "TxDetailTaxCategoryCell" }
 }
 
+// MARK: - TxDetailTitleDetailsCell
+
 class TxDetailTitleDetailsCell: TxDetailTitleCell {
-    func update(with item: TXDetailViewController.Item) {
-    }
+    func update(with item: TXDetailViewController.Item) { }
 }
+
+// MARK: - TxDetailTitleCell
 
 class TxDetailTitleCell: UITableViewCell {
     @IBOutlet var titleLabel: UILabel!
-    
+
     override func awakeFromNib() {
         titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
         titleLabel.textColor = UIColor.dw_secondaryText()

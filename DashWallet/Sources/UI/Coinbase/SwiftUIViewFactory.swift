@@ -1,4 +1,4 @@
-//  
+//
 //  Created by hadia
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,6 +20,6 @@ import SwiftUI
 
 class SwiftUIViewFactory: NSObject {
     @objc static func makeSwiftUIView(dismissHandler: @escaping (() -> Void)) -> UIViewController {
-        return UIHostingController(rootView: BuyAndSellDashServiceList(dismiss: dismissHandler))
+        UIHostingController(rootView: BuyAndSellDashServiceList(dismiss: dismissHandler))
     }
 }

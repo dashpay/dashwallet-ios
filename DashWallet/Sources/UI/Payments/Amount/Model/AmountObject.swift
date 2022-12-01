@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,39 +17,43 @@
 
 import Foundation
 
+// MARK: - AmountObject
+
 struct AmountObject {
     let amountInternalRepresentation: String
     let plainAmount: Int64
     let amountType: AmountType
-    
+
     let mainFormatted: String
     let supplementaryFormatted: String
-    
+
     let localFormatter: NumberFormatter
     let fiatCurrencyCode: String
 
     init(dashAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
         var dashAmountString = dashAmountString
-        
+
         if dashAmountString.isEmpty {
             dashAmountString = "0"
         }
-        
-        self.amountType = .main
-        self.amountInternalRepresentation = dashAmountString
+
+        amountType = .main
+        amountInternalRepresentation = dashAmountString
         self.fiatCurrencyCode = fiatCurrencyCode
         self.localFormatter = localFormatter
-        
+
         let dashNumber = Decimal(string: dashAmountString, locale: .current)!
         let duffsNumber = Decimal(DUFFS)
         let plainAmount = dashNumber * duffsNumber
-        
+
         self.plainAmount = NSDecimalNumber(decimal: plainAmount).int64Value
-        
-        mainFormatted = NumberFormatter.dashFormatter.inputString(from: dashNumber as NSNumber, and: dashAmountString) ?? NSLocalizedString("Invalid Input", comment: "Invalid Amount Input")
-        
+
+        mainFormatted = NumberFormatter.dashFormatter
+            .inputString(from: dashNumber as NSNumber, and: dashAmountString) ??
+            NSLocalizedString("Invalid Input", comment: "Invalid Amount Input")
+
         let priceManager = DSPriceManager.sharedInstance()
-        
+
         if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrencyCode, forDashAmount: self.plainAmount),
            let str = localFormatter.string(from: localNumber) {
             supplementaryFormatted = str
@@ -57,72 +61,81 @@ struct AmountObject {
             supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
         }
     }
-    
+
     init?(localAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
-        
         var localAmountString = localAmountString
-        
+
         if localAmountString.isEmpty {
             localAmountString = "0"
         }
-        
-        self.amountType = .supplementary
-        self.amountInternalRepresentation = localAmountString
+
+        amountType = .supplementary
+        amountInternalRepresentation = localAmountString
         self.fiatCurrencyCode = fiatCurrencyCode
         self.localFormatter = localFormatter
-        
+
         let localNumber = Decimal(string: localAmountString, locale: .current)!
         let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString)!
-        
-        //TODO: Refactor the way we calculate price for dash
+
+        // TODO: Refactor the way we calculate price for dash
         let priceManager = DSPriceManager.sharedInstance()
         let localPrice = priceManager.price(forCurrencyCode: fiatCurrencyCode)!.price
-        
-        let plainAmount = priceManager.amount(forLocalCurrencyString: localCurrencyFormatted, localFormatter: localFormatter, localPrice: localPrice)
-        
+
+        let plainAmount = priceManager.amount(forLocalCurrencyString: localCurrencyFormatted, localFormatter: localFormatter,
+                                              localPrice: localPrice)
+
         if plainAmount == 0 && localNumber != .zero {
             return nil
         }
-        
+
         self.plainAmount = Int64(plainAmount)
         mainFormatted = priceManager.string(forDashAmount: self.plainAmount)!
         supplementaryFormatted = localCurrencyFormatted
     }
-    
+
     init(plainAmount: Int64, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
         let plainNumber = Decimal(plainAmount)
         let duffsNumber = Decimal(DUFFS)
         let dashNumber = plainNumber/duffsNumber
         let dashAmounString = NSDecimalNumber(decimal: dashNumber).description(withLocale: Locale.current)
-        
+
         self.init(dashAmountString: dashAmounString, fiatCurrencyCode: fiatCurrencyCode, localFormatter: localFormatter)
     }
 }
 
 extension AmountObject {
-    func dashAmount(dashValidator: DWAmountInputValidator, localFormatter: NumberFormatter, currencyCode: String) -> AmountObject {
+    func dashAmount(dashValidator: DWAmountInputValidator, localFormatter: NumberFormatter,
+                    currencyCode: String)
+        -> AmountObject {
         if amountType == .main { return self }
-        
+
         let priceManager = DSPriceManager.sharedInstance()
-        
+
         let number = NumberFormatter.dashFormatter.number(from: mainFormatted)!
         let rawAmount = dashValidator.stringFromNumber(usingInternalFormatter: number)!
-        
-        return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .main, mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted, localFormatter: localFormatter, fiatCurrencyCode: currencyCode)
+
+        return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .main,
+                            mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted,
+                            localFormatter: localFormatter, fiatCurrencyCode: currencyCode)
     }
-    
-    func localAmount(localValidator: DWAmountInputValidator, localFormatter: NumberFormatter, currencyCode: String) -> AmountObject {
+
+    func localAmount(localValidator: DWAmountInputValidator, localFormatter: NumberFormatter,
+                     currencyCode: String)
+        -> AmountObject {
         if amountType == .supplementary { return self }
-        
+
         let priceManager = DSPriceManager.sharedInstance()
-        
+
         let number = localFormatter.number(from: supplementaryFormatted)!
         let rawAmount = localValidator.stringFromNumber(usingInternalFormatter: number)!
-        
-        return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .supplementary, mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted, localFormatter: localFormatter, fiatCurrencyCode: currencyCode)
+
+        return AmountObject(amountInternalRepresentation: rawAmount, plainAmount: plainAmount, amountType: .supplementary,
+                            mainFormatted: mainFormatted, supplementaryFormatted: supplementaryFormatted,
+                            localFormatter: localFormatter, fiatCurrencyCode: currencyCode)
     }
-    
-    init(amountInternalRepresentation: String, plainAmount: Int64, amountType: AmountType, mainFormatted: String, supplementaryFormatted: String, localFormatter: NumberFormatter, fiatCurrencyCode: String) {
+
+    init(amountInternalRepresentation: String, plainAmount: Int64, amountType: AmountType, mainFormatted: String,
+         supplementaryFormatted: String, localFormatter: NumberFormatter, fiatCurrencyCode: String) {
         self.amountInternalRepresentation = amountInternalRepresentation
         self.plainAmount = plainAmount
         self.amountType = amountType

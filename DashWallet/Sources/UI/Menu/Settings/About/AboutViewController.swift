@@ -17,30 +17,30 @@
 
 import UIKit
 
-@objc class AboutViewController: UIViewController {
-    private var model: DWAboutModel = {
-        return DWAboutModel()
-    }()
-    
+// MARK: - AboutViewController
+
+@objc
+class AboutViewController: UIViewController {
+    private var model = DWAboutModel()
+
     private weak var techInfoAlert: UIAlertController?
-    
+
     @objc static func controller() -> AboutViewController {
         let controller = AboutViewController()
         controller.hidesBottomBarWhenPushed = true
         controller.title = NSLocalizedString("About", comment: "")
         return controller
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.navigationBar.prefersLargeTitles = false
@@ -48,8 +48,6 @@ import UIKit
 }
 
 extension AboutViewController {
-    private func configureHierarchy() {
-        
-    }
+    private func configureHierarchy() { }
 }
 

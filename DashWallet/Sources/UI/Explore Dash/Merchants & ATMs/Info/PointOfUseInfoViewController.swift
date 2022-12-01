@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -21,28 +21,31 @@ class PointOfUseInfoViewController: UIViewController {
     @objc func closeButtonAction() {
         dismiss(animated: true)
     }
-    
+
     internal func configureHierarchy() {
         view.backgroundColor = .dw_background()
-        
+
+        let configuration = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
+        let closeImage = UIImage(systemName: "xmark", withConfiguration: configuration)
+
         let closeButton = UIButton(type: .custom)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.setImage(.init(named: "close.button"), for: .normal)
+        closeButton.setImage(closeImage, for: .normal)
         closeButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
         view.addSubview(closeButton)
-        
+
         NSLayoutConstraint.activate([
             closeButton.widthAnchor.constraint(equalToConstant: 30),
             closeButton.heightAnchor.constraint(equalToConstant: 30),
             closeButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
             closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
-            
+
         ])
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureHierarchy()
     }
 }

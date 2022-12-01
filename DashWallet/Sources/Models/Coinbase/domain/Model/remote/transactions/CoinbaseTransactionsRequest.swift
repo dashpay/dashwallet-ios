@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - CoinBaseTransactionsRequest
+// MARK: - CoinbaseTransactionsRequest
 
 struct CoinbaseTransactionsRequest: Codable {
     let type: TransactionsType
@@ -17,8 +17,12 @@ struct CoinbaseTransactionsRequest: Codable {
     let idem: UUID
 }
 
+// MARK: CoinbaseTransactionsRequest.TransactionsType
+
 extension CoinbaseTransactionsRequest {
     enum TransactionsType: String, Codable {
-        case send, transfer, request
+        case send
+        case transfer
+        case request
     }
 }

@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@zaakceptował twoje zaproszenie do znajomych";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 godzina";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 minuta";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 godziny";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 minut";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "%@ to nie słowo frazy odzyskiwania danych";
@@ -122,10 +149,16 @@
 "Are you sure?" = "Jesteś pewien?";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
 "ATMs" = "ATMs";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Autoryzacja jest niedostępna";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Automatyczne wylogowanie";
@@ -147,12 +180,6 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Saldo ukryte";
-
-/* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
-
-/* Dash Service Overview */
-"Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d z %2$d";
@@ -176,14 +203,8 @@
 /* No comment provided by engineer. */
 "Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
-/* Dash Service Overview */
-"Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
-
 /* No comment provided by engineer. */
 "Buy Dash" = "Kup Dashe";
-
-/* Dash Service Overview */
-"Buy Dash with fiat" = "Buy Dash with fiat";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Kup Dash za pomocą konta Uphold";
@@ -236,12 +257,6 @@
 /* No comment provided by engineer. */
 "Close App" = "Zamknij Aplikacje";
 
-/* Dash Portal */
-"Coinbase" = "Coinbase";
-
-/* Coinbase Two Factor Auth */
-"Coinbase 2FA code" = "Coinbase 2FA code";
-
 /* No comment provided by engineer. */
 "Confirm" = "Potwierdź";
 
@@ -257,17 +272,11 @@
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Połącz się z giełdą stron trzecich";
 
-/* Buy Sell Portal */
-"Connected" = "Connected";
-
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Podłączone peery %d ";
 
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Trwa łączenie z serwerem płatności";
-
-/* Coinbase Two Factor Auth */
-"Contact Coinbase Support" = "Contact Coinbase Support";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Zaproszenie do kontaktów czeka na odpowiedź";
@@ -283,9 +292,6 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Dalej";
-
-/* Coinbase Entry Point */
-"Convert Crypto" = "Convert Crypto";
 
 /* No comment provided by engineer. */
 "Copied" = "Skopiowano";
@@ -320,11 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Obecny użytkownik: %@";
 
-/* Coinbase Entry Point */
-"Dash balance on Coinbase" = "Dash balance on Coinbase";
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Płatności Dash nie mogą być mniejsze niż %@";
@@ -341,6 +353,9 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Domyślna waluta, skróty, o…";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "BEZPIECZEŃSTWO URZĄDZENIA ZŁAMANE\nKażda aplikacja \"jailbreak\" ma dostęp do danych twoich kluczy w innych aplikacjach (i może ukraść twoje Dashe).";
 
@@ -350,11 +365,8 @@
 /* Direction */
 "Direction" = "Direction";
 
-/* Coinbase Entry Point */
-"Disconnect Coinbase Account" = "Disconnect Coinbase Account";
-
-/* Buy Sell Portal */
-"Disconnected" = "Disconnected";
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Nie rób zrzutu ekranu";
@@ -385,9 +397,6 @@
 
 /* No comment provided by engineer. */
 "Enter" = "Wejdź";
-
-/* Coinbase Two Factor Auth */
-"Enter Coinbase 2FA code" = "Enter Coinbase 2FA code";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "Wpisz PIN";
@@ -425,9 +434,6 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
 
-/* Buy Sell Portal */
-"Failed to sync" = "Failed to sync";
-
 /* Explore Dash */
 "Failed to sync on" = "Failed to sync on";
 
@@ -447,10 +453,13 @@
 "Fetching Info" = "Fetching Info";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
-
-/* No comment provided by engineer. */
 "Filter Transactions" = "Filtruj Transakcje";
+
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
 
 /* No comment provided by engineer. */
 "Find a merchant." = "Find a merchant.";
@@ -476,12 +485,6 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Znalazłem potencjalnie brakujące słowa:\n%@";
 
-/* Coinbase: transfer dash to/from */
-"FROM" = "FROM";
-
-/* Dash Service Overview */
-"From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
-
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Chcesz stworzyć rozszerzone klucze publiczne?";
 
@@ -490,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "Get Started" = "Zacznij";
+
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Przejdź do strony internetowej";
@@ -554,9 +560,6 @@
 /* No comment provided by engineer. */
 "Income" = "Income";
 
-/* Buy Sell Portal */
-"Initializing" = "Initializing";
-
 /* No comment provided by engineer. */
 "Insufficient funds" = "Niewystarczająca ilość funduszy";
 
@@ -569,20 +572,11 @@
 /* Invalid transaction */
 "Invalid" = "Niewłaściwy";
 
-/* Invalid Amount Input */
-"Invalid Input" = "Invalid Input";
-
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Niewłaściwe rzadanie płatności";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Niewłaściwy kod QR";
-
-/* Coinbase Two Factor Auth */
-"It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
-
-/* Coinbase */
-"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Wygląda na to, że próbujesz przywrócić swój portfel za pomocą 12-wyrazowej frazy odzyskiwania, jednak wprowadziłeś tylko 10 słów, czy chcesz automatycznie odzyskać brakujące słowa? Może to zająć około godziny. Zalecamy podłączenie urządzenia do zasilania.";
@@ -602,9 +596,6 @@
 /* Explore Dash */
 "Last device sync" = "Last device sync";
 
-/* Buy Sell Portal */
-"Last known balance" = "Last known balance";
-
 /* Explore Dash */
 "Last server update" = "Last server update";
 
@@ -617,23 +608,8 @@
 /* Validation rule */
 "Letters and numbers only" = "Tylko litery i cyfry";
 
-/* Dash Service Overview */
-"Link Coinbase Account" = "Link Coinbase Account";
-
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Podlinkuj konto Uphold";
-
-/* Dash Service Overview */
-"Link Uphold account" = "Link Uphold account";
-
-/* Buy Sell Portal */
-"Link your account" = "Link your account";
-
-/* Dash Service Overview */
-"Link your Coinbase account" = "Link your Coinbase account";
-
-/* Dash Service Overview */
-"Link your Uphold account" = "Link your Uphold account";
 
 /* No comment provided by engineer. */
 "Load more" = "Załaduj więcej";
@@ -643,6 +619,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Lokalna żądana kwota %@";
+
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
 
 /* No comment provided by engineer. */
 "Locked" = "Zablokowane";
@@ -722,20 +701,20 @@
 /* No comment provided by engineer. */
 "Name" = "Imię";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
 /* Nearby */
 "Nearby" = "Nearby";
-
-/* Coinbase Two Factor Auth */
-"Need help? " = "Need help? ";
 
 /* No comment provided by engineer. */
 "Network" = "Sieć";
 
 /* No comment provided by engineer. */
 "Network fee" = "Opłata sieci";
-
-/* Network Unavailable */
-"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "Nowe";
@@ -745,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Urządzenie NFC nie wysłało poprawnego adresu Dash";
+
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
 
 /* No comment provided by engineer. */
 "Node IP" = "Węzeł IP";
@@ -763,6 +745,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Jeszcze nie użyty";
@@ -821,6 +806,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Płacę...";
 
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
+
 /* No comment provided by engineer. */
 "Payments" = "Płatności";
 
@@ -829,9 +817,6 @@
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN jest zawsze wymagany by dokonać płatności";
-
-/* Network Unavailable */
-"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Proszę podaj PIN aby aktualizować portfel";
@@ -881,17 +866,14 @@
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Zweryfikowane przez Kworum %1$d/%2$d";
 
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
+
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Stawka %1$@ = %2$@";
 
 /* No comment provided by engineer. */
 "Receive" = "Odbierz";
-
-/* Coinbase Entry Point */
-"Receive directly into Coinbase" = "Receive directly into Coinbase";
-
-/* Coinbase Entry Point */
-"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
 
 /* Received transaction */
 "Received" = "Otrzymano";
@@ -950,11 +932,17 @@
 /* No comment provided by engineer. */
 "Reset" = "Resetuj";
 
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "Resetuj do domyślne";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Resetuj portfel";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Zachowaj Wspólną Historię Transakcji";
@@ -1030,9 +1018,6 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Sprawdź na Uphold";
-
-/* Buy Sell Dash */
-"Select a service" = "Select a service";
 
 /* Sell */
 "Sell" = "Sell";
@@ -1124,6 +1109,18 @@
 /* No comment provided by engineer. */
 "Sort Contacts" = "Sortuj kontakty";
 
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
+
 /* No comment provided by engineer. */
 "Specify Amount" = "Określ Kwotę";
 
@@ -1169,9 +1166,6 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
-/* Coinbase Two Factor Auth */
-"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
-
 /* No comment provided by engineer. */
 "There are no new notifications" = "Nie ma nowych powiadomień";
 
@@ -1184,17 +1178,11 @@
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Twoje kontakty nie zawierają żadnego użytkownika pasującego do nazwy %@";
 
-/* Coinbase */
-"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
-
 /* No comment provided by engineer. */
 "This app is open source:" = "Ta aplikacja jest open source:";
 
 /* This ATM is located in the */
 "This ATM is located in the" = "This ATM is located in the";
-
-/* Coinbase Two Factor Auth */
-"This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Ten kod PIN będzie wymagany do odblokowania Twojej aplikacji za każdym razem, gdy z niej korzystasz.";
@@ -1214,9 +1202,6 @@
 /* No comment provided by engineer. */
 "This will move all coins from that wallet to your wallet on this device." = "Spowoduje to przeniesienie wszystkich monet z tego portfela do portfela na tym urządzeniu.";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
-
 /* No comment provided by engineer. */
 "Tools" = "Narzędzia";
 
@@ -1232,14 +1217,8 @@
 /* A verb, button title. */
 "Transfer" = "Prześlij";
 
-/* Dash Service Overview */
-"Transfer Dash" = "Transfer Dash";
-
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Prześlij Dash ze swojego konta Uphold do tego portfela";
-
-/* Coinbase */
-"Transfer Failed" = "Transfer Failed";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Prześlij z Uphold";
@@ -1249,9 +1228,6 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
-
-/* Coinbase */
-"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "Spróbuj jeszcze raz";
@@ -1265,9 +1241,6 @@
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Pobranie nowego kodu QR niemożliwe";
 
-/* Coinbase */
-"Unknown Balance" = "Unknown Balance";
-
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Nieobsługiwany lub uszkodzony dokument";
 
@@ -1277,9 +1250,6 @@
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Zaktualizowany %@";
 
-/* Updating Price */
-"Updating Price" = "Updating Price";
-
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Opłata za Ulepszenie";
 
@@ -1288,6 +1258,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
 
 /* No comment provided by engineer. */
 "Used" = "Użyty";
@@ -1306,9 +1279,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Walidacja nazwy użytkownika...";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Zweryfikowano Pomyślnie";
@@ -1435,6 +1405,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Twoja nazwa użytkownika na DashPay jest gotowa";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";

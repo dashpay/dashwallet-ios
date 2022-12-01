@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,8 +17,10 @@
 
 import UIKit
 
+// MARK: - NumberKeyboardValue
+
 enum NumberKeyboardValue: Equatable {
-    
+
     enum Digit: Int, CaseIterable {
         case digit0
         case digit1
@@ -31,13 +33,13 @@ enum NumberKeyboardValue: Equatable {
         case digit8
         case digit9
     }
-    
+
     case digit(Digit)
     case custom(String)
     case separator
     case empty
     case delete
-    
+
     var stringValue: String {
         switch self {
         case .digit(let d): return String(d.rawValue)
@@ -49,6 +51,8 @@ enum NumberKeyboardValue: Equatable {
     }
 }
 
+// MARK: - NumberKeyboardButtonDelegate
+
 protocol NumberKeyboardButtonDelegate: AnyObject {
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchBegan touch: UITouch)
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchMoved touch: UITouch)
@@ -56,8 +60,10 @@ protocol NumberKeyboardButtonDelegate: AnyObject {
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchCanceled touch: UITouch)
 }
 
+// MARK: - NumberKeyboardButton.Styles
+
 extension NumberKeyboardButton {
-    struct Styles {
+    enum Styles {
         static var textColor: UIColor { .dw_numberKeyboardText() }
         static var textHighlightedColor: UIColor { .dw_numberKeyboardHighlightedText() }
         static var backgroundColor: UIColor { .dw_secondaryBackground() }
@@ -66,23 +72,25 @@ extension NumberKeyboardButton {
     }
 }
 
+// MARK: - NumberKeyboardButton
+
 class NumberKeyboardButton: UIView {
     weak var delegate: NumberKeyboardButtonDelegate?
-    
+
     var value: NumberKeyboardValue {
         didSet {
             reloadTitle()
         }
     }
-    
-    var isHighlighted: Bool = false {
+
+    var isHighlighted = false {
         didSet {
             if oldValue != isHighlighted {
                 updateBackgroundView()
             }
         }
     }
-    
+
     private var _customBackgroundColor: UIColor?
     var customBackgroundColor: UIColor? {
         get {
@@ -95,39 +103,39 @@ class NumberKeyboardButton: UIView {
             }
         }
     }
-    
+
     private var titleLabel: UILabel!
-    
+
     init(value: NumberKeyboardValue) {
         self.value = value
-        
+
         super.init(frame: .zero)
-        self.configureHierarchy()
+        configureHierarchy()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private func reloadTitle() {
-#if SNAPSHOT
+        #if SNAPSHOT
         if value == .separator {
-            self.titleLabel.accessibilityIdentifier = "amount_button_separator"
+            titleLabel.accessibilityIdentifier = "amount_button_separator"
         }
-#endif /* SNAPSHOT */
-        
+        #endif // SNAPSHOT
+
         switch value {
-        case .custom( _), .digit(_), .separator, .empty:
-            self.titleLabel.text = value.stringValue
+        case .custom(_), .digit(_), .separator, .empty:
+            titleLabel.text = value.stringValue
         case .delete:
-            
+
             let image = UIImage(systemName: "delete.backward")!.withTintColor(Styles.textColor)
-            
+
             let textAttachment = NSTextAttachment()
             textAttachment.image = image
             textAttachment.adjustsImageSizeForAccessibilityContentSizeCategory = true
             textAttachment.bounds = CGRect(x: -3.0, y: -2.0, width: image.size.width, height: image.size.height)
-            
+
             // Workaround to make UIKit correctly set text color of the attribute string:
             // Attributed string that consists only of NSTextAttachment will not change it's color
             // To solve it append any regular string at the begining (and at the end to center the image)
@@ -136,11 +144,11 @@ class NumberKeyboardButton: UIView {
             attributedText.append(NSAttributedString(string: ""))
             attributedText.append(NSAttributedString(attachment: textAttachment))
             attributedText.append(NSAttributedString(string: " "))
-            
-            self.titleLabel.attributedText = attributedText
+
+            titleLabel.attributedText = attributedText
         }
     }
-    
+
     private func updateBackgroundView() {
         UIView.animate(withDuration: 0.075,
                        delay: 0,
@@ -154,21 +162,21 @@ class NumberKeyboardButton: UIView {
             }
         }
     }
-    
+
     private func configureHierarchy() {
-        self.isExclusiveTouch = true
-        self.backgroundColor = Styles.backgroundColor
-        
-        self.layer.cornerRadius = 8
-        self.layer.masksToBounds = true
-        
-        self.titleLabel = UILabel()
+        isExclusiveTouch = true
+        backgroundColor = Styles.backgroundColor
+
+        layer.cornerRadius = 8
+        layer.masksToBounds = true
+
+        titleLabel = UILabel()
         titleLabel.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         titleLabel.textAlignment = .center
         titleLabel.textColor = .dw_numberKeyboardText()
         titleLabel.font = .dw_font(forTextStyle: .title3)
         addSubview(titleLabel)
-        
+
         reloadTitle()
     }
 }
@@ -178,34 +186,34 @@ extension NumberKeyboardButton {
         defer {
             super.touchesBegan(touches, with: event)
         }
-        
+
         guard let touch = touches.first else { return }
         delegate?.numberKeyboardButton(self, touchBegan: touch)
     }
-    
+
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         defer {
             super.touchesMoved(touches, with: event)
         }
-        
+
         guard let touch = touches.first else { return }
         delegate?.numberKeyboardButton(self, touchMoved: touch)
     }
-    
+
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         defer {
             super.touchesEnded(touches, with: event)
         }
-        
+
         guard let touch = touches.first else { return }
         delegate?.numberKeyboardButton(self, touchEnded: touch)
     }
-    
+
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         defer {
             super.touchesCancelled(touches, with: event)
         }
-        
+
         guard let touch = touches.first else { return }
         delegate?.numberKeyboardButton(self, touchCanceled: touch)
     }

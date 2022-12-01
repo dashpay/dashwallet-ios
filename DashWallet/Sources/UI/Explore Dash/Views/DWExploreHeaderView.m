@@ -70,6 +70,13 @@ CGFloat const kExploreHeaderViewHeight = 351.0f;
         [iconImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
         [titleLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
         [descLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+
+        [NSLayoutConstraint activateConstraints:@[
+            [descLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
+                                                    constant:15.0],
+            [descLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor
+                                                     constant:-15.0],
+        ]];
     }
     return self;
 }

@@ -17,20 +17,22 @@
 
 import WatchKit
 
+// MARK: - DWTxInfoDisplayableInterfaceController
+
 protocol DWTxInfoDisplayableInterfaceController {
     func subscribeToTxNotifications()
     func unsubsribeFromTxNotifications()
 }
 
+// MARK: - WKInterfaceController + DWTxInfoDisplayableInterfaceController
+
 extension WKInterfaceController: DWTxInfoDisplayableInterfaceController {
     func subscribeToTxNotifications() {
         let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(txReceived(_:)),
-            name: DWWatchDataManager.WalletTxReceiveNotification,
-            object: nil
-        )
+        notificationCenter.addObserver(self,
+                                       selector: #selector(txReceived(_:)),
+                                       name: DWWatchDataManager.WalletTxReceiveNotification,
+                                       object: nil)
     }
 
     func unsubsribeFromTxNotifications() {
@@ -40,8 +42,7 @@ extension WKInterfaceController: DWTxInfoDisplayableInterfaceController {
                                           object: nil)
     }
 
-    @objc
-    private func txReceived(_ notification: Notification?) {
+    @objc private func txReceived(_ notification: Notification?) {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.txReceived(notification)

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,73 +19,83 @@ import Foundation
 
 extension NumberFormatter {
     func inputString(from number: NSNumber, and inputString: String, locale: Locale = Locale.current) -> String? {
-        guard let formattedString = self.string(from: number) else {
+        guard let formattedString = string(from: number) else {
             return nil
         }
-        
+
         let numberFormatter = self
-        
+
         assert(numberFormatter.numberStyle == .currency, "Invalid number formatter")
-                guard let decimalSeparator = locale.decimalSeparator else { return "" }
+        guard let decimalSeparator = locale.decimalSeparator else { return "" }
         assert(numberFormatter.decimalSeparator == decimalSeparator, "Custom decimal separators are not supported")
-        
+
         guard let inputSeparatorRange = inputString.range(of: decimalSeparator) else {
             return formattedString
         }
-        
+
         var currencySymbol = formattedString.extractCurrencySymbol(using: numberFormatter)
-        
+
         if currencySymbol == nil &&
             numberFormatter.currencySymbol.range(of: DASH) != nil {
             currencySymbol = numberFormatter.currencySymbol
         }
-        
-        guard let currencySymbol = currencySymbol else {
+
+        guard let currencySymbol else {
             return formattedString
         }
-        
+
         guard let currencySymbolRange = formattedString.range(of: currencySymbol) else {
             assertionFailure("Invalid formatted string")
             return ""
         }
-        
-        
+
+
         let isCurrencySymbolAtTheBeginning = currencySymbolRange.lowerBound == formattedString.startIndex
         var currencySymbolNumberSeparator: String
-        
+
         if isCurrencySymbolAtTheBeginning {
-            currencySymbolNumberSeparator = String(formattedString[ currencySymbolRange.upperBound..<formattedString.index(after: currencySymbolRange.upperBound)])
+            currencySymbolNumberSeparator =
+                String(formattedString[
+                    currencySymbolRange.upperBound..<formattedString
+                        .index(after: currencySymbolRange.upperBound)
+                ])
         } else {
-            currencySymbolNumberSeparator = String(formattedString[formattedString.index(before: currencySymbolRange.upperBound)..<currencySymbolRange.upperBound])
+            currencySymbolNumberSeparator =
+                String(formattedString[
+                    formattedString.index(before: currencySymbolRange.upperBound)..<currencySymbolRange
+                        .upperBound
+                ])
         }
-        
+
         if currencySymbolNumberSeparator.rangeOfCharacter(from: .whitespaces) == nil {
             currencySymbolNumberSeparator = ""
         }
-        
-        var formattedStringWithoutCurrency = formattedString.replacingCharacters(in: currencySymbolRange, with: "").trimmingCharacters(in: .whitespaces)
-        
+
+        var formattedStringWithoutCurrency = formattedString.replacingCharacters(in: currencySymbolRange, with: "")
+            .trimmingCharacters(in: .whitespaces)
+
         let inputFractionPartWithSeparator = inputString.suffix(from: inputSeparatorRange.lowerBound)
-        
+
         var formattedSeparatorIndex: String.Index! = formattedStringWithoutCurrency.range(of: decimalSeparator)?.lowerBound
-        
+
         if formattedSeparatorIndex == nil {
             formattedSeparatorIndex = formattedStringWithoutCurrency.endIndex
             formattedStringWithoutCurrency = formattedStringWithoutCurrency + decimalSeparator
         }
-        
+
         let formattedFractionPartRange = formattedSeparatorIndex..<formattedStringWithoutCurrency.endIndex
-        
-        let formattedStringWithFractionInput = formattedStringWithoutCurrency.replacingCharacters(in: formattedFractionPartRange, with: inputFractionPartWithSeparator)
-        
+
+        let formattedStringWithFractionInput = formattedStringWithoutCurrency.replacingCharacters(in: formattedFractionPartRange,
+                                                                                                  with: inputFractionPartWithSeparator)
+
         let resut: String
-        
+
         if isCurrencySymbolAtTheBeginning {
             resut = currencySymbol + currencySymbolNumberSeparator + formattedStringWithFractionInput
         } else {
             resut = formattedStringWithFractionInput + currencySymbolNumberSeparator + currencySymbol
         }
-        
+
         return resut
     }
 }

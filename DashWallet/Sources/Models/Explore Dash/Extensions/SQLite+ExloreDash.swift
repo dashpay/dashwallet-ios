@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,10 +19,22 @@ import SQLite
 
 extension Row {
     public func get<V: Value>(_ column: String) throws -> V? {
-        return try self.get(Expression<V>(column))
+        try get(Expression<V>(column))
     }
 }
 
+// MARK: - RowDecodable
+
 protocol RowDecodable {
     init(row: Row)
+}
+
+// MARK: - String + RowDecodable
+
+extension String: RowDecodable {
+    private static let territory = Expression<String?>("territory")
+
+    init(row: Row) {
+        self.init(row[String.territory]!)
+    }
 }

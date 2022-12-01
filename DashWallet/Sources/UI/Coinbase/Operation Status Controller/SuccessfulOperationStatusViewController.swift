@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,41 +18,41 @@
 import UIKit
 
 final class SuccessfulOperationStatusViewController: ActionButtonViewController, NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { return true }
-    
+    var isBackButtonHidden: Bool { true }
+
     @IBOutlet var contentView: UIView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
-    
+
     var closeHandler: (() -> ())?
-    
+
     var headerText: String! {
         didSet {
             titleLabel?.text = headerText
         }
     }
-    
+
     var descriptionText: String! {
         didSet {
             descriptionLabel?.text = descriptionText
         }
     }
-    
+
     override var actionButtonTitle: String? {
-        return NSLocalizedString("Close", comment: "Action Button")
+        NSLocalizedString("Close", comment: "Action Button")
     }
-    
+
     override func actionButtonAction(sender: UIView) {
         navigationController?.popToRootViewController(animated: true)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         titleLabel.text = headerText
         descriptionLabel.text = descriptionText
         actionButton?.isEnabled = true
-        
+
         setupContentView(contentView)
     }
 }

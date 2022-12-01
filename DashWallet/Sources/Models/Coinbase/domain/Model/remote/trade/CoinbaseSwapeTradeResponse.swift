@@ -7,7 +7,8 @@
 
 import Foundation
 
-// MARK: - DataClass
+// MARK: - CoinbaseSwapeTrade
+
 struct CoinbaseSwapeTrade: Codable {
     let createdAt: Date?
     let displayInputAmount: DisplayInputAmount?
@@ -37,11 +38,13 @@ struct CoinbaseSwapeTrade: Codable {
 }
 
 // MARK: - DisplayInputAmount
+
 struct DisplayInputAmount: Codable {
     let amount, currency: String?
 }
 
-// MARK: - UnitPrice
+// MARK: - CoinbaseSwapeTradeUnitPrice
+
 struct CoinbaseSwapeTradeUnitPrice: Codable {
     let targetToFiat, targetToSource: DisplayInputAmount?
 
@@ -51,28 +54,31 @@ struct CoinbaseSwapeTradeUnitPrice: Codable {
     }
 }
 
-// MARK: - Encode/decode helpers
+// MARK: - JSONNull
 
 class JSONNull: Codable, Hashable {
 
     public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
-        return true
+        true
     }
 
     public var hashValue: Int {
-        return 0
+        0
     }
 
     public func hash(into hasher: inout Hasher) {
         // No-op
     }
 
-    public init() {}
+    public init() { }
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if !container.decodeNil() {
-            throw DecodingError.typeMismatch(JSONNull.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for JSONNull"))
+            throw DecodingError.typeMismatch(JSONNull.self,
+                                             DecodingError
+                                                 .Context(codingPath: decoder.codingPath,
+                                                          debugDescription: "Wrong type for JSONNull"))
         }
     }
 
@@ -82,11 +88,13 @@ class JSONNull: Codable, Hashable {
     }
 }
 
+// MARK: - JSONCodingKey
+
 class JSONCodingKey: CodingKey {
     let key: String
 
     required init?(intValue: Int) {
-        return nil
+        nil
     }
 
     required init?(stringValue: String) {
@@ -94,11 +102,11 @@ class JSONCodingKey: CodingKey {
     }
 
     var intValue: Int? {
-        return nil
+        nil
     }
 
     var stringValue: String {
-        return key
+        key
     }
 }
 

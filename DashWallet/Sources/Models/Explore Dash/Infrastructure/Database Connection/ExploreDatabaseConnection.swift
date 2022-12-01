@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,54 +18,57 @@
 import Foundation
 import SQLite
 
-enum ExploreDatabaseConnectionError: Error  {
+// MARK: - ExploreDatabaseConnectionError
+
+enum ExploreDatabaseConnectionError: Error {
     case fileNotFound
 }
 
-class ExploreDatabaseConnection
-{
+// MARK: - ExploreDatabaseConnection
+
+class ExploreDatabaseConnection {
     private var db: Connection!
-    
+
     init() {
-        NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil, queue: .main) { [weak self] notification in
+        NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
             try? self?.connect()
         }
     }
-    
+
     func connect() throws {
         db = nil
-        
-        guard let dbPath = dbPath() else { throw ExploreDatabaseConnectionError.fileNotFound}
-        
+
+        guard let dbPath = dbPath() else { throw ExploreDatabaseConnectionError.fileNotFound }
+
         do {
             db = try Connection(nil ?? dbPath)
-        }catch{
+        } catch {
             print(error)
         }
-        
     }
-    
+
     private func dbPath() -> String? {
         let downloadedPath = FileManager.documentsDirectoryURL.appendingPathComponent("explore.db/explore.db").path
-        
+
         return FileManager.default.fileExists(atPath: downloadedPath) ? downloadedPath : nil
     }
-    
+
     func execute<Item: RowDecodable>(query: QueryType) throws -> [Item] {
         let items = try db.prepare(query)
-        
+
         var resultItems: [Item] = []
-        
+
         for item in items {
             resultItems.append(Item(row: item))
         }
-        
+
         return resultItems
     }
-    
+
     func execute<Item: RowDecodable>(query: String) throws -> [Item] {
-        return try db.prepare(query).prepareRowIterator().map { Item(row: $0) }
+        try db.prepare(query).prepareRowIterator().map { Item(row: $0) }
     }
-    
+
 }
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,17 +18,15 @@
 import UIKit
 
 func sb(_ name: String) -> UIStoryboard {
-    return UIStoryboard(name: name, bundle: .main)
+    UIStoryboard(name: name, bundle: .main)
 }
 
-func vc<T>(_ name: T.Type, from storyboard: UIStoryboard) -> T
-{
-    return viewController(name, from: storyboard)
+func vc<T>(_ name: T.Type, from storyboard: UIStoryboard) -> T {
+    viewController(name, from: storyboard)
 }
 
-func viewController<T>(_ name: T.Type, from storyBoard: UIStoryboard) -> T
-{
-    let identifier: String = String(String(describing: type(of: name)).split(separator: ".").first!)
+func viewController<T>(_ name: T.Type, from storyBoard: UIStoryboard) -> T {
+    let identifier = String(String(describing: type(of: name)).split(separator: ".").first!)
     return storyBoard.instantiateViewController(withIdentifier: identifier) as! T
 }
 

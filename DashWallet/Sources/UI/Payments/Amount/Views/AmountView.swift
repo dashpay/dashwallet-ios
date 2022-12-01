@@ -17,13 +17,19 @@
 
 import UIKit
 
+// MARK: - AmountViewDataSource
+
 protocol AmountViewDataSource: AmountInputControlDataSource {
     var localCurrency: String { get }
 }
 
+// MARK: - AmountViewDelegate
+
 protocol AmountViewDelegate: AmountInputControlDelegate {
     var amountInputStyle: AmountInputControl.Style { get }
 }
+
+// MARK: - AmountView
 
 class AmountView: UIView {
     public weak var dataSource: AmountViewDataSource? {
@@ -41,12 +47,12 @@ class AmountView: UIView {
     }
 
     public var textInput: UITextInput {
-        return amountInputControl.textField
+        amountInputControl.textField
     }
 
     public var amountInputStyle: AmountInputControl.Style
 
-    public var isMaxButtonHidden: Bool = false {
+    public var isMaxButtonHidden = false {
         didSet {
             maxButton.isHidden = isMaxButtonHidden
         }
@@ -71,9 +77,8 @@ class AmountView: UIView {
         .init(width: AmountView.noIntrinsicMetric, height: 60)
     }
 
-    @discardableResult
-    override func becomeFirstResponder() -> Bool {
-        return amountInputControl.becomeFirstResponder()
+    @discardableResult  override func becomeFirstResponder() -> Bool {
+        amountInputControl.becomeFirstResponder()
     }
 
     init(style: AmountInputControl.Style) {
@@ -113,7 +118,10 @@ class AmountView: UIView {
 
 extension AmountView {
     private func updateView() {
-        inputTypeSwitcher.items = [.init(currencySymbol: "DASH", currencyCode: "DASH"), .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT")]
+        inputTypeSwitcher.items = [
+            .init(currencySymbol: "DASH", currencyCode: "DASH"),
+            .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT"),
+        ]
     }
 
     private func configureHierarchy() {
@@ -123,7 +131,7 @@ extension AmountView {
         addSubview(maxButton)
 
         amountInputControl = AmountInputControl(style: amountInputStyle)
-        amountInputControl.swapingHandler = { [weak self] type in
+        amountInputControl.swapingHandler = { [weak self] _ in
             self?.inputTypeSwitcher.selectedNextItem()
         }
         amountInputControl.dataSource = dataSource
@@ -158,11 +166,11 @@ extension AmountView {
     }
 }
 
-// MARK: MaxButton
+// MARK: - MaxButton
 
 private class MaxButton: UIButton {
     override var isHighlighted: Bool {
-        didSet {}
+        didSet { }
     }
 
     override init(frame: CGRect) {

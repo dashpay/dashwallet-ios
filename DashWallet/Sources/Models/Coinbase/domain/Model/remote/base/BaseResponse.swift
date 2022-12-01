@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,14 +17,20 @@
 
 import Foundation
 
+// MARK: - BasePaginationResponse
+
 struct BasePaginationResponse<T: Codable>: Codable {
     let pagination: Pagination
     let data: [T]
 }
 
+// MARK: - BaseDataResponse
+
 struct BaseDataResponse<T: Codable>: Codable {
     let data: T?
 }
+
+// MARK: - BaseDataCollectionResponse
 
 struct BaseDataCollectionResponse<T: Codable>: Codable {
     let data: [T]

@@ -6,24 +6,29 @@
 //
 
 import Foundation
+
 // MARK: - CoinbaseUserAuthInformation
+
 struct CoinbaseUserAuthInformation: Codable {
     let data: CoinbaseUserAuthData?
 }
 
-// MARK: - DataClass
+// MARK: - CoinbaseUserAuthData
+
 struct CoinbaseUserAuthData: Codable {
     let method: String?
     let scopes: [String]?
     let oauthMeta: OauthMeta?
 
     enum CodingKeys: String, CodingKey {
-        case method, scopes
+        case method
+        case scopes
         case oauthMeta = "oauth_meta"
     }
 }
 
 // MARK: - OauthMeta
+
 struct OauthMeta: Codable {
     let sendLimitAmount, sendLimitCurrency, sendLimitPeriod: String?
 

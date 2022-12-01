@@ -17,12 +17,19 @@
 
 import UIKit
 
+// MARK: - ActionButtonProtocol
+
 protocol ActionButtonProtocol: AnyObject {
     var isEnabled: Bool { get set }
     var isHidden: Bool { get set }
 }
 
-extension DWActionButton: ActionButtonProtocol {}
+// MARK: - DWActionButton + ActionButtonProtocol
+
+extension DWActionButton: ActionButtonProtocol { }
+
+// MARK: - UIBarButtonItem + ActionButtonProtocol
+
 extension UIBarButtonItem: ActionButtonProtocol {
     var isHidden: Bool {
         set {
@@ -34,12 +41,14 @@ extension UIBarButtonItem: ActionButtonProtocol {
     }
 }
 
+// MARK: - ActionButtonViewController
+
 class ActionButtonViewController: BaseViewController {
     public weak var actionButton: ActionButtonProtocol?
 
-    internal var isKeyboardNotificationsEnabled: Bool = false
-    internal var showsActionButton: Bool { return true }
-    internal var isActionButtonInNavigationBar: Bool { return false }
+    internal var isKeyboardNotificationsEnabled = false
+    internal var showsActionButton: Bool { true }
+    internal var isActionButtonInNavigationBar: Bool { false }
     internal var actionButtonTitle: String? {
         fatalError("Must be overriden in subclass")
         return nil
@@ -78,7 +87,7 @@ class ActionButtonViewController: BaseViewController {
         }
     }
 
-    @objc func actionButtonAction(sender: UIView) {}
+    @objc func actionButtonAction(sender: UIView) { }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -138,7 +147,8 @@ extension ActionButtonViewController {
 
     private func configureActionButton() {
         if isActionButtonInNavigationBar {
-            barButton = UIBarButtonItem(title: actionButtonTitle, style: .plain, target: self, action: #selector(actionButtonAction(sender:)))
+            barButton = UIBarButtonItem(title: actionButtonTitle, style: .plain, target: self,
+                                        action: #selector(actionButtonAction(sender:)))
             navigationItem.rightBarButtonItem = barButton
             actionButton = barButton
         }
@@ -180,7 +190,8 @@ extension ActionButtonViewController {
 }
 
 extension ActionButtonViewController {
-    override func ka_keyboardShowOrHideAnimation(withHeight height: CGFloat, animationDuration: TimeInterval, animationCurve: UIView.AnimationCurve) {
+    override func ka_keyboardShowOrHideAnimation(withHeight height: CGFloat, animationDuration: TimeInterval,
+                                                 animationCurve: UIView.AnimationCurve) {
         let padding = deviceSpecificBottomPadding()
         contentBottomConstraint.constant = height + padding
         view.layoutSubviews()

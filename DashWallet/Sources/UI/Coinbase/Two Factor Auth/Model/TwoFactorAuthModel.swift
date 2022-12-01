@@ -17,11 +17,15 @@
 
 import Foundation
 
+// MARK: - TwoFactorAuthModelDelegate
+
 protocol TwoFactorAuthModelDelegate: AnyObject {
     func transferFromCoinbaseSuccess()
     func transferFromCoinbaseForTwoFactorAuthError(error: Error)
     func transferFromCoinbaseForUnkownError(error: Error)
 }
+
+// MARK: - TwoFactorAuthModel
 
 class TwoFactorAuthModel {
     weak var delegate: TwoFactorAuthModelDelegate?

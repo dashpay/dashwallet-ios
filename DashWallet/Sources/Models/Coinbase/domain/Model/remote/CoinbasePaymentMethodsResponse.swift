@@ -9,6 +9,7 @@ import Foundation
 
 
 // MARK: - CoinbasePaymentMethod
+
 struct CoinbasePaymentMethod: Codable {
     let id, type, name, currency: String?
     let primaryBuy, primarySell, instantBuy, instantSell: Bool?
@@ -20,7 +21,10 @@ struct CoinbasePaymentMethod: Codable {
     let minimumPurchaseAmount: MinimumPurchaseAmount?
 
     enum CodingKeys: String, CodingKey {
-        case id, type, name, currency
+        case id
+        case type
+        case name
+        case currency
         case primaryBuy = "primary_buy"
         case primarySell = "primary_sell"
         case instantBuy = "instant_buy"
@@ -41,16 +45,19 @@ struct CoinbasePaymentMethod: Codable {
 }
 
 // MARK: - FiatAccount
+
 struct FiatAccount: Codable {
     let id, resource, resourcePath: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, resource
+        case id
+        case resource
         case resourcePath = "resource_path"
     }
 }
 
 // MARK: - MinimumPurchaseAmount
+
 struct MinimumPurchaseAmount: Codable {
     let amount, currency: String?
 }

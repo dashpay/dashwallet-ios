@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,22 +15,26 @@
 //  limitations under the License.
 //
 
-import UIKit
 import CoreLocation
+import UIKit
+
+// MARK: - MerchantItemCell
 
 class MerchantItemCell: PointOfUseItemCell {
     private var paymentTypeIconView: UIImageView!
-    
+
     override func update(with pointOfUse: ExplorePointOfUse) {
         super.update(with: pointOfUse)
-        
+
         guard let merchant = pointOfUse.merchant else { return }
-        
+
         if let currentLocation = DWLocationManager.shared.currentLocation,
            DWLocationManager.shared.isAuthorized, merchant.type != .online {
             subLabel.isHidden = false
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!).distance(from: currentLocation)
-            let distanceText: String = ExploreDash.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
+            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+                .distance(from: currentLocation)
+            let distanceText: String = ExploreDash.distanceFormatter
+                .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
             subLabel.text = distanceText
         } else {
             subLabel.isHidden = true
@@ -45,12 +49,12 @@ class MerchantItemCell: PointOfUseItemCell {
 extension MerchantItemCell {
     override func configureHierarchy() {
         super.configureHierarchy()
-        
+
         paymentTypeIconView = UIImageView(image: UIImage(named: "image.explore.dash.wts.payment.dash"))
         paymentTypeIconView.translatesAutoresizingMaskIntoConstraints = false
         paymentTypeIconView.contentMode = .center
         mainStackView.addArrangedSubview(paymentTypeIconView)
-        
+
         NSLayoutConstraint.activate([
             paymentTypeIconView.widthAnchor.constraint(equalToConstant: 24),
             paymentTypeIconView.heightAnchor.constraint(equalToConstant: 24),

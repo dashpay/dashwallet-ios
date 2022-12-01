@@ -18,11 +18,15 @@
 import WatchConnectivity
 import WatchKit
 
+// MARK: - WalletStatus
+
 enum WalletStatus {
     case unknown
     case hasSetup
     case notSetup
 }
+
+// MARK: - DWWatchDataManager
 
 final class DWWatchDataManager: NSObject {
     static let ApplicationDataDidUpdateNotification = Notification.Name("ApplicationDataDidUpdateNotification")
@@ -39,11 +43,11 @@ final class DWWatchDataManager: NSObject {
 
     private var appleWatchData: BRAppleWatchData?
 
-    var balance: String? { return appleWatchData?.balance }
-    var balanceInLocalCurrency: String? { return appleWatchData?.balanceInLocalCurrency }
-    var receiveMoneyAddress: String? { return appleWatchData?.receiveMoneyAddress }
-    var receiveMoneyQRCodeImage: UIImage? { return appleWatchData?.receiveMoneyQRCodeImage }
-    var lastestTransction: String? { return appleWatchData?.lastestTransction }
+    var balance: String? { appleWatchData?.balance }
+    var balanceInLocalCurrency: String? { appleWatchData?.balanceInLocalCurrency }
+    var receiveMoneyAddress: String? { appleWatchData?.receiveMoneyAddress }
+    var receiveMoneyQRCodeImage: UIImage? { appleWatchData?.receiveMoneyQRCodeImage }
+    var lastestTransction: String? { appleWatchData?.lastestTransction }
     var transactionHistory: [BRAppleWatchTransactionData] {
         if let unwrappedAppleWatchData: BRAppleWatchData = appleWatchData {
             return unwrappedAppleWatchData.transactions
@@ -54,7 +58,7 @@ final class DWWatchDataManager: NSObject {
     }
 
     var walletStatus: WalletStatus {
-        guard let appleWatchData = appleWatchData else {
+        guard let appleWatchData else {
             return .unknown
         }
 
@@ -85,41 +89,37 @@ final class DWWatchDataManager: NSObject {
 
     func requestQRCodeForBalance(_ bits: String,
                                  responseHandler: @escaping (_ qrImage: UIImage?, _ error: NSError?)
-                                     -> Void)
-    {
+                                     -> Void) {
         if session.isReachable {
             let msg = [
                 AW_SESSION_REQUEST_TYPE: NSNumber(value: AWSessionRquestTypeFetchData.rawValue as UInt32),
                 AW_SESSION_REQUEST_DATA_TYPE_KEY: NSNumber(value: AWSessionRquestDataTypeQRCodeBits.rawValue as UInt32),
                 AW_SESSION_QR_CODE_BITS_KEY: bits,
             ] as [String: Any]
-            session.sendMessage(
-                msg,
-                replyHandler: { ctx -> Void in
-                    if let dat = ctx[AW_QR_CODE_BITS_KEY],
-                       let datDat = dat as? Data,
-                       let img = UIImage(data: datDat)
-                    {
-                        responseHandler(img, nil)
-                        return
-                    }
-                    let error = NSError(domain: "",
-                                        code: 500,
-                                        userInfo: [
-                                            NSLocalizedDescriptionKey:
-                                                "Unable to get new QR code",
-                                        ])
-                    responseHandler(nil, error)
-                }, errorHandler: { _ in
-                    let error = NSError(domain: "",
-                                        code: 500,
-                                        userInfo: [
-                                            NSLocalizedDescriptionKey:
-                                                NSLocalizedString("Unable to get new QR code", comment: ""),
-                                        ])
-                    responseHandler(nil, error)
-                }
-            )
+            session.sendMessage(msg,
+                                replyHandler: { ctx in
+                                    if let dat = ctx[AW_QR_CODE_BITS_KEY],
+                                       let datDat = dat as? Data,
+                                       let img = UIImage(data: datDat) {
+                                        responseHandler(img, nil)
+                                        return
+                                    }
+                                    let error = NSError(domain: "",
+                                                        code: 500,
+                                                        userInfo: [
+                                                            NSLocalizedDescriptionKey:
+                                                                "Unable to get new QR code",
+                                                        ])
+                                    responseHandler(nil, error)
+                                }, errorHandler: { _ in
+                                    let error = NSError(domain: "",
+                                                        code: 500,
+                                                        userInfo: [
+                                                            NSLocalizedDescriptionKey:
+                                                                NSLocalizedString("Unable to get new QR code", comment: ""),
+                                                        ])
+                                    responseHandler(nil, error)
+                                })
         }
     }
 
@@ -152,7 +152,7 @@ final class DWWatchDataManager: NSObject {
     }
 
     func destroyTimer() {
-        guard let timer = timer else {
+        guard let timer else {
             return
         }
 
@@ -161,8 +161,7 @@ final class DWWatchDataManager: NSObject {
 
     // MARK: Private
 
-    @objc
-    private func requestAllData() {
+    @objc private func requestAllData() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.requestAllData()
@@ -181,24 +180,19 @@ final class DWWatchDataManager: NSObject {
             session.sendMessage(messageToSend, replyHandler: { [unowned self] replyMessage in
                 if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? Data {
                     if let unwrappedAppleWatchData
-                        = NSKeyedUnarchiver.unarchiveObject(with: data) as? BRAppleWatchData
-                    {
+                        = NSKeyedUnarchiver.unarchiveObject(with: data) as? BRAppleWatchData {
                         let previousAppleWatchData = self.appleWatchData
                         let previousWalletStatus = self.walletStatus
                         self.appleWatchData = unwrappedAppleWatchData
                         let notificationCenter = NotificationCenter.default
                         if previousAppleWatchData != self.appleWatchData {
                             self.archiveData(unwrappedAppleWatchData)
-                            notificationCenter.post(
-                                name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
-                                object: nil
-                            )
+                            notificationCenter.post(name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
+                                                    object: nil)
                         }
                         if self.walletStatus != previousWalletStatus {
-                            notificationCenter.post(
-                                name: DWWatchDataManager.WalletStatusDidChangeNotification,
-                                object: nil
-                            )
+                            notificationCenter.post(name: DWWatchDataManager.WalletStatusDidChangeNotification,
+                                                    object: nil)
                         }
                     }
                 }
@@ -211,24 +205,22 @@ final class DWWatchDataManager: NSObject {
     private func attributedStringForBalance(_ balance: String?) -> NSAttributedString {
         let attributedString = NSMutableAttributedString()
 
-        attributedString.append(
-            NSAttributedString(string: "Đ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray])
-        )
+        attributedString
+            .append(NSAttributedString(string: "Đ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]))
 
-        attributedString.append(
-            NSAttributedString(string: balance ?? "0", attributes:
-                [NSAttributedString.Key.foregroundColor: UIColor.white])
-        )
+        attributedString.append(NSAttributedString(string: balance ?? "0", attributes:
+            [NSAttributedString.Key.foregroundColor: UIColor.white]))
 
         return attributedString
     }
 }
 
+// MARK: WCSessionDelegate
+
 extension DWWatchDataManager: WCSessionDelegate {
     func session(_ session: WCSession,
                  activationDidCompleteWith activationState: WCSessionActivationState,
-                 error: Error?)
-    {
+                 error: Error?) {
         // TODO: proper error handling
         setupTimerAndReloadIfActive()
     }
@@ -236,44 +228,35 @@ extension DWWatchDataManager: WCSessionDelegate {
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         if let applicationContextData = applicationContext[AW_APPLICATION_CONTEXT_KEY] as? Data {
             if let transferedAppleWatchData
-                = NSKeyedUnarchiver.unarchiveObject(with: applicationContextData) as? BRAppleWatchData
-            {
+                = NSKeyedUnarchiver.unarchiveObject(with: applicationContextData) as? BRAppleWatchData {
                 let previousWalletStatus = walletStatus
                 appleWatchData = transferedAppleWatchData
                 archiveData(transferedAppleWatchData)
                 let notificationCenter = NotificationCenter.default
                 if walletStatus != previousWalletStatus {
-                    notificationCenter.post(
-                        name: DWWatchDataManager.WalletStatusDidChangeNotification,
-                        object: nil
-                    )
+                    notificationCenter.post(name: DWWatchDataManager.WalletStatusDidChangeNotification,
+                                            object: nil)
                 }
-                notificationCenter.post(
-                    name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
-                    object: nil
-                )
+                notificationCenter.post(name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
+                                        object: nil)
             }
         }
     }
 
     func session(_ session: WCSession,
                  didReceiveMessage message: [String: Any],
-                 replyHandler: @escaping ([String: Any]) -> Void)
-    {
+                 replyHandler: @escaping ([String: Any]) -> Void) {
         print("Handle message from phone \(message)")
         if let noteV = message[AW_PHONE_NOTIFICATION_KEY],
            let noteStr = noteV as? String,
            let noteTypeV = message[AW_PHONE_NOTIFICATION_TYPE_KEY],
            let noteTypeN = noteTypeV as? NSNumber,
-           noteTypeN.uint32Value == AWPhoneNotificationTypeTxReceive.rawValue
-        {
-            let note = Notification(
-                name: DWWatchDataManager.WalletTxReceiveNotification,
-                object: nil,
-                userInfo: [
-                    NSLocalizedDescriptionKey: noteStr,
-                ]
-            )
+           noteTypeN.uint32Value == AWPhoneNotificationTypeTxReceive.rawValue {
+            let note = Notification(name: DWWatchDataManager.WalletTxReceiveNotification,
+                                    object: nil,
+                                    userInfo: [
+                                        NSLocalizedDescriptionKey: noteStr,
+                                    ])
             NotificationCenter.default.post(note)
         }
     }

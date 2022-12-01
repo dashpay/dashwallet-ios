@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,61 +15,64 @@
 //  limitations under the License.
 //
 
+import CoreLocation
 import Foundation
 import UIKit
-import CoreLocation
 
-@objc class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
+@objc
+class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     private let pointOfUse: ExplorePointOfUse
-    
+
     init(pointOfUse: ExplorePointOfUse) {
         self.pointOfUse = pointOfUse
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func showMapIfNeeded() {
-        guard currentSegment.showMap else { return }
-        
+        guard model.showMap else { return }
+
         showMap()
     }
-    
-    //MARK: Table View
-    
+
+    // MARK: Table View
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }
-        
-        switch section
-        {
+
+        switch section {
         case .filters, .search, .segments:
             return 0
         default:
             return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
         }
     }
-        
-    //MARK: Life cycle
-    
+
+    // MARK: Life cycle
+
     override func subtitleForFilterCell() -> String? {
-        return nil
+        nil
     }
-    
+
     override func configureModel() {
-        model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false, showReversedLocation: false, dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse))])
+        model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false,
+                                                     showReversedLocation: false,
+                                                     dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse),
+                                                     filterGroups: [], defaultFilters: nil, territoriesDataSource: nil)])
     }
-    
+
     override func configureHierarchy() {
-        self.title = NSLocalizedString("Where to Spend", comment: "");
-        
+        title = NSLocalizedString("Where to Spend", comment: "");
+
         super.configureHierarchy()
-        
-        self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
+
+        contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
         tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.dw_reuseIdentifier)
     }
-    
+
 }

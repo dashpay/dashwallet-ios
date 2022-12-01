@@ -19,8 +19,8 @@ import Foundation
 
 private let kChainManagerNotificationChainKey = "DSChainManagerNotificationChainKey"
 
-private let kSyncingCompleteProgress: Double = 1.0
-private let kMaxProgressDelta: Double = 0.1 // 10%
+private let kSyncingCompleteProgress = 1.0
+private let kMaxProgressDelta = 0.1 // 10%
 
 // Wait for 2.5 seconds to update progress to the new peak value.
 // Peak is considered to be a difference between progress values more than 10%.
@@ -30,10 +30,15 @@ private let kSyncLoopInterval: TimeInterval = 0.2
 private let kSyncStateChangedNewStateKey = "DWSyncStateChangedNewStateKey"
 private let kSyncStateChangedFromStateKey = "DWSyncStateChangedFromStateKey"
 
-@objc protocol SyncingActivityMonitorObserver: AnyObject {
+// MARK: - SyncingActivityMonitorObserver
+
+@objc
+protocol SyncingActivityMonitorObserver: AnyObject {
     func syncingActivityMonitorProgressDidChange(_ progress: Double)
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State)
 }
+
+// MARK: - SyncingActivityMonitor
 
 @objc
 class SyncingActivityMonitor: NSObject {
@@ -60,13 +65,17 @@ class SyncingActivityMonitor: NSObject {
                 DWGlobalOptions.sharedInstance().isResyncingWallet = false
             }
 
-            NotificationCenter.default.post(name: .syncStateChangedNotification, object: nil, userInfo: [kSyncStateChangedFromStateKey: oldValue, kSyncStateChangedNewStateKey: state])
+            NotificationCenter.default.post(name: .syncStateChangedNotification, object: nil,
+                                            userInfo: [
+                                                kSyncStateChangedFromStateKey: oldValue,
+                                                kSyncStateChangedNewStateKey: state,
+                                            ])
 
             observers.forEach { $0.syncingActivityMonitorStateDidChange(previousState: oldValue, state: state) }
         }
     }
 
-    private var isSyncing: Bool = false {
+    private var isSyncing = false {
         didSet {
             UIApplication.shared.isIdleTimerDisabled = isSyncing
         }
@@ -87,18 +96,15 @@ class SyncingActivityMonitor: NSObject {
         startSyncingIfNeeded()
     }
 
-    @objc
-    public func forceStartSyncingActivity() {
+    @objc  public func forceStartSyncingActivity() {
         startSyncingActivity()
     }
 
-    @objc(addObserver:)
-    public func add(observer: SyncingActivityMonitorObserver) {
+    @objc(addObserver:)  public func add(observer: SyncingActivityMonitorObserver) {
         observers.append(observer)
     }
 
-    @objc(removeObserver:)
-    public func remove(observer: SyncingActivityMonitorObserver) {
+    @objc(removeObserver:)  public func remove(observer: SyncingActivityMonitorObserver) {
         if let idx = observers.firstIndex(where: { $0 === observer }) {
             observers.remove(at: idx)
         }
@@ -220,12 +226,13 @@ extension SyncingActivityMonitor {
             reachability.startMonitoring()
         }
 
-        reachabilityObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                                                                      object: nil,
-                                                                      queue: nil,
-                                                                      using: { [weak self] notification in
-                                                                          self?.updateNetworkStatus()
-                                                                      })
+        reachabilityObserver = NotificationCenter.default
+            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
+                         object: nil,
+                         queue: nil,
+                         using: { [weak self] _ in
+                             self?.updateNetworkStatus()
+                         })
 
         updateNetworkStatus()
     }
@@ -237,11 +244,16 @@ extension SyncingActivityMonitor {
 
     private func configureObserver() {
         let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncStartedNotification(notification:)), name: .chainManagerSyncStarted, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerParametersUpdatedNotification(notification:)), name: .chainManagerParametersUpdated, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncFinishedNotification(notification:)), name: .chainManagerSyncFinished, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncFailedNotification(notification:)), name: .chainManagerSyncFailed, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerChainBlocksDidChangeNotification(notification:)), name: .chainManagerChainSyncBlocksDidChange, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncStartedNotification(notification:)),
+                                       name: .chainManagerSyncStarted, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(chainManagerParametersUpdatedNotification(notification:)),
+                                       name: .chainManagerParametersUpdated, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncFinishedNotification(notification:)),
+                                       name: .chainManagerSyncFinished, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncFailedNotification(notification:)),
+                                       name: .chainManagerSyncFailed, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(chainManagerChainBlocksDidChangeNotification(notification:)),
+                                       name: .chainManagerChainSyncBlocksDidChange, object: nil)
     }
 }
 
@@ -277,8 +289,10 @@ extension Notification.Name {
     static let syncStateChangedNotification: Notification.Name = .init(rawValue: "DWSyncStateChangedNotification")
 
     static let chainManagerSyncStarted: Notification.Name = .init(rawValue: "DSChainManagerSyncWillStartNotification")
-    static let chainManagerParametersUpdated: Notification.Name = .init(rawValue: "DSChainManagerSyncParametersUpdatedNotification")
+    static let chainManagerParametersUpdated: Notification
+        .Name = .init(rawValue: "DSChainManagerSyncParametersUpdatedNotification")
     static let chainManagerSyncFinished: Notification.Name = .init(rawValue: "DSChainManagerSyncFinishedNotification")
     static let chainManagerSyncFailed: Notification.Name = .init(rawValue: "DSChainManagerSyncFailedNotification")
-    static let chainManagerChainSyncBlocksDidChange: Notification.Name = .init(rawValue: "DSChainChainSyncBlocksDidChangeNotification")
+    static let chainManagerChainSyncBlocksDidChange: Notification
+        .Name = .init(rawValue: "DSChainChainSyncBlocksDidChangeNotification")
 }

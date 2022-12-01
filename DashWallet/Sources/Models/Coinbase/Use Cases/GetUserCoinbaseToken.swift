@@ -11,7 +11,7 @@ import Resolver
 
 class GetUserCoinbaseToken: NSObject, ObservableObject {
     @Injected private var remoteService: CoinbaseService
-    
+
     func invoke(code: String) -> AnyPublisher<CoinbaseToken?, Error> {
         remoteService.getToken(code: code)
             .map { (response: CoinbaseToken) in
@@ -22,7 +22,7 @@ class GetUserCoinbaseToken: NSObject, ObservableObject {
     }
 
     func isUserLoginedIn() -> Bool {
-        return NetworkRequest.accessToken != nil
+        NetworkRequest.accessToken != nil
     }
 
     func signOut() {

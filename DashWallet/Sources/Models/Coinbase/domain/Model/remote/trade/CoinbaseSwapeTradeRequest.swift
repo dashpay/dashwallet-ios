@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 // MARK: - CoinbaseSwapeTradeRequest
 struct CoinbaseSwapeTradeRequest: Codable {
     let amount, amountAsset, amountFrom, targetAsset: String?

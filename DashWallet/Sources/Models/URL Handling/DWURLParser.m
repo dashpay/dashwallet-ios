@@ -23,6 +23,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWURLParser
 
++ (BOOL)shouldIgnoreURL:(NSURL *)url {
+    if ([url.host isEqualToString:@"google"]) {
+        NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+        for (NSURLQueryItem *item in components.queryItems) {
+            if ([item.name isEqual:@"match_message"]) {
+                return [item.value isEqualToString:@"No pre-install link matched for this device."];
+            }
+        }
+    }
+
+    return NO;
+}
+
 + (BOOL)allowsURLHandling {
     // Don't allow URL handling without a wallet
     return [DWEnvironment sharedInstance].currentChain.hasAWallet;

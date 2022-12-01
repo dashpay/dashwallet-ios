@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,54 +17,60 @@
 
 import Foundation
 
-@objc enum TxUserInfoTaxCategory: Int {
+// MARK: - TxUserInfoTaxCategory
+
+@objc
+enum TxUserInfoTaxCategory: Int {
     /// Unknown
     case unknown
-    
+
     /// Income
     case income
-    
+
     /// Transfer In
     case transferIn
-    
+
     /// Transfer Out
     case transferOut
-    
+
     /// Expense
     case expense
 }
 
-@objc class Taxes: NSObject {
-    
+// MARK: - Taxes
+
+@objc
+class Taxes: NSObject {
+
     var addressesUserInfos: AddressUserInfoDAO = AddressUserInfoDAOImpl()
     var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl()
-    
+
     @objc func initialize() {
         DispatchQueue.main.async {
             // Prefetch all items
             let _ = self.addressesUserInfos.all()
         }
     }
-    
+
     @objc func mark(address: String, with taxCategory: TxUserInfoTaxCategory) {
         addressesUserInfos.create(dto: AddressUserInfo(address: address, taxCategory: taxCategory))
     }
-    
+
     func taxCategory(for tx: DSTransaction) -> TxUserInfoTaxCategory {
         var taxCategory: TxUserInfoTaxCategory = tx.defaultTaxCategory()
-        
+
         if let inputAddress = tx.inputAddresses.first as? String, let txCategory = self.taxCategory(for: inputAddress) {
             taxCategory = txCategory
         }
-        
+
         taxCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory ?? taxCategory
-        
+
         return taxCategory
     }
-    
+
     func taxCategory(for address: String) -> TxUserInfoTaxCategory? {
-        return addressesUserInfos.get(by: address)?.taxCategory
+        addressesUserInfos.get(by: address)?.taxCategory
     }
-    
-    @objc static let shared: Taxes = Taxes()
+
+    @objc static let shared = Taxes()
 }
