@@ -9,8 +9,11 @@ import Foundation
 
 // MARK: - CoinBasePlaceBuyOrderRequest
 struct CoinbasePlaceBuyOrderRequest: Codable {
-    let amount, currency, paymentMethod: String?
-    let commit, quote: Bool?
+    let amount: String?
+    let currency: String?
+    let paymentMethod: String?
+    let commit: Bool?
+    let quote: Bool?
 
     enum CodingKeys: String, CodingKey {
         case amount

@@ -1,5 +1,5 @@
 //
-//  Created by hadia
+//  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -14,15 +14,24 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-import Combine
+
 import Foundation
 
-class GetActivePaymentMethods {
-    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
-    func invoke() -> AnyPublisher<[CoinbasePaymentMethod], Error> {
-        remoteService.getCoinbaseActivePaymentMethods()
-            .map { response in
-                response.data
-            }.eraseToAnyPublisher()
-    }
+// MARK: - BasePaginationResponse
+
+struct BasePaginationResponse<T: Codable>: Codable {
+    let pagination: Pagination
+    let data: [T]
+}
+
+// MARK: - BaseDataResponse
+
+struct BaseDataResponse<T: Codable>: Codable {
+    let data: T
+}
+
+// MARK: - BaseDataCollectionResponse
+
+struct BaseDataCollectionResponse<T: Codable>: Codable {
+    let data: [T]
 }

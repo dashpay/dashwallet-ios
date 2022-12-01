@@ -77,7 +77,7 @@ class AmountView: UIView {
         .init(width: AmountView.noIntrinsicMetric, height: 60)
     }
 
-    @discardableResult  override func becomeFirstResponder() -> Bool {
+    @discardableResult override func becomeFirstResponder() -> Bool {
         amountInputControl.becomeFirstResponder()
     }
 

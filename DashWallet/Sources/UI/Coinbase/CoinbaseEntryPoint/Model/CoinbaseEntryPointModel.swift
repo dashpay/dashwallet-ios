@@ -89,7 +89,9 @@ final class CoinbaseEntryPointModel {
     }
 
     public func signOut() {
-        Coinbase.shared.signOut()
+        Task {
+            try await Coinbase.shared.signOut()
+        }
     }
 
     deinit {

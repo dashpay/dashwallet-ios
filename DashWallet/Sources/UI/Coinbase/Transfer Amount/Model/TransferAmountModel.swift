@@ -107,45 +107,40 @@ final class TransferAmountModel: SendAmountModel {
     private func transferToWallet(with verificationCode: String? = nil) {
         guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
 
-        Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode,
-                                                         coinAmountInDash: amount.amountInternalRepresentation,
-                                                         dashWalletAddress: address)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    guard let restError = error as? RestClientError,
-                          case RestClientError.requestFailed(let code) = restError else {
-                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
-                        return
-                    }
-
-                    if verificationCode == nil && code == 402 {
-                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
-                    } else if verificationCode != nil && code == 400 {
-                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
-                    } else {
-                        self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
+        let amount = amount.amountInternalRepresentation
+        Task {
+            do {
+                let _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode,
+                                                                                   coinAmountInDash: amount,
+                                                                                   dashWalletAddress: address)
+                await MainActor.run {
+                    self.delegate?.transferFromCoinbaseToWalletDidSucceed()
+                }
+            } catch HTTPClientError.statusCode(let response) {
+                await MainActor.run {
+                    switch response.statusCode {
+                    case 402:
+                        self.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
+                    case 400:
+                        self.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
+                    default:
+                        self.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
                     }
                 }
-            } receiveValue: { [weak self] _ in
-                self?.delegate?.transferFromCoinbaseToWalletDidSucceed()
+            } catch {
+                await MainActor.run {
+                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
+                }
             }
-            .store(in: &cancellables)
+        }
     }
 
     private func obtainNewAddress(completion: @escaping ((String?) -> Void)) {
-        Coinbase.shared.createNewCoinbaseDashAddress()
-            .receive(on: RunLoop.main)
-            .sink { completion in
-                print(completion)
-            } receiveValue: { address in
-                self.address = address
-                completion(address)
-            }
-            .store(in: &cancellables)
+        Task {
+            let address = try await Coinbase.shared.createNewCoinbaseDashAddress()
+            self.address = address
+            completion(address)
+        }
     }
 }
 

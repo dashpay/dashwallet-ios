@@ -127,7 +127,6 @@ extension PortalViewController {
 
 // MARK: UICollectionViewDelegate, UICollectionViewDataSource
 
-// MARK: UICollectionViewDelegate, UICollectionViewDataSource
 extension PortalViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         model.items.count

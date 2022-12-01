@@ -702,12 +702,7 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.1.1)
-<<<<<<< Updated upstream
   - Protobuf (3.21.10)
-  - Resolver (1.5.0)
-=======
-  - Protobuf (3.21.9)
->>>>>>> Stashed changes
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -834,12 +829,7 @@ SPEC CHECKSUMS:
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-<<<<<<< Updated upstream
   Protobuf: ced4c17d029d7566cbfc51cfb44193e4aaafae27
-  Resolver: 68984624572763018fd8ec7b8e3e8df0e3b6bba5
-=======
-  Protobuf: 02524ec14183fe08fb259741659e79683788158b
->>>>>>> Stashed changes
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
@@ -849,10 +839,6 @@ SPEC CHECKSUMS:
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-<<<<<<< Updated upstream
-PODFILE CHECKSUM: fc227f7a3b3bb192c1344753b7e0da0412c3b55c
-=======
-PODFILE CHECKSUM: bafa6616252f730134bdaeaed45b056079341cfa
->>>>>>> Stashed changes
+PODFILE CHECKSUM: 1e9bad5d64d9e6ab80e1f2595e0d7b8335c13b2e
 
 COCOAPODS: 1.11.2

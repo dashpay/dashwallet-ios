@@ -191,14 +191,14 @@ class AmountInputControl: UIControl {
         }
     }
 
-    @discardableResult  override func becomeFirstResponder() -> Bool {
+    @discardableResult override func becomeFirstResponder() -> Bool {
         let val = textField.becomeFirstResponder()
         let endOfDocumentPosition = textField.endOfDocument
         textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
         return val
     }
 
-    @discardableResult  override func resignFirstResponder() -> Bool {
+    @discardableResult override func resignFirstResponder() -> Bool {
         textField.resignFirstResponder()
     }
 
@@ -423,7 +423,7 @@ final class CopyPasteableContol: UIControl {
         configureMenuControl()
     }
 
-    @available(*, unavailable)  required init?(coder: NSCoder) {
+    @available(*, unavailable) required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 

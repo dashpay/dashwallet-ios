@@ -18,7 +18,8 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     let createdAt, updatedAt: String?
     let resource: Resource
     let resourcePath: String
-    let allowDeposits, allowWithdrawals: Bool
+    let allowDeposits: Bool
+    let allowWithdrawals: Bool
     let rewards: Rewards?
     let rewardsApy: String?
 

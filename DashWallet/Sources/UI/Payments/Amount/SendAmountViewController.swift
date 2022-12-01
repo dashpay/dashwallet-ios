@@ -53,7 +53,7 @@ class SendAmountViewController: BaseAmountViewController {
         actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
 
-    @available(*, unavailable)  required init?(coder: NSCoder) {
+    @available(*, unavailable) required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }

@@ -10,17 +10,19 @@ import Foundation
 // MARK: - Datum
 
 struct CoinbaseAccountAddress: Codable {
-    let id, address: String?
-    let addressInfo: AddressInfo?
+    let id: String?
+    let address: String
     let name: String?
-    let network, uriScheme, resource, resourcePath: String?
+    let network: String?
+    let uriScheme: String?
+    let resource: String?
+    let resourcePath: String?
     let qrCodeImageURL: String?
     let addressLabel, depositURI: String?
 
     enum CodingKeys: String, CodingKey {
         case id
         case address
-        case addressInfo = "address_info"
         case name
         case network
         case uriScheme = "uri_scheme"

@@ -101,7 +101,6 @@ final class TransferAmountViewController: SendAmountViewController {
 
 // MARK: TransferAmountModelDelegate
 
-// MARK: TransferAmountModelDelegate
 extension TransferAmountViewController: TransferAmountModelDelegate {
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
@@ -143,7 +142,6 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
 
 // MARK: ConverterViewDelegate
 
-// MARK: ConverterViewDelegate
 extension TransferAmountViewController: ConverterViewDelegate {
     func didChangeDirection(_ direction: ConverterViewDirection) {
         transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
@@ -152,7 +150,6 @@ extension TransferAmountViewController: ConverterViewDelegate {
 
 // MARK: - BaseAmountModel + ConverterViewDataSource
 
-// MARK: ConverterViewDataSource
 extension BaseAmountModel: ConverterViewDataSource {
     var coinbaseBalanceFormatted: String {
         guard let balance = Coinbase.shared.lastKnownBalance else {
@@ -208,7 +205,6 @@ extension TransferAmountViewController {
 
 // MARK: - TransferAmountViewController + PaymentControllerDelegate
 
-// MARK: PaymentControllerDelegate
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
         hideActivityIndicator()

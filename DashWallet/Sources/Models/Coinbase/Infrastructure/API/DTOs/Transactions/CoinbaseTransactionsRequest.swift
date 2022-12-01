@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - CoinbaseTransactionsRequest
 
-struct CoinbaseTransactionsRequest: Codable {
+public struct CoinbaseTransactionsRequest: Codable {
     let type: TransactionsType
     let to: String
     let amount: String
@@ -20,7 +20,7 @@ struct CoinbaseTransactionsRequest: Codable {
 // MARK: CoinbaseTransactionsRequest.TransactionsType
 
 extension CoinbaseTransactionsRequest {
-    enum TransactionsType: String, Codable {
+    public enum TransactionsType: String, Codable {
         case send
         case transfer
         case request

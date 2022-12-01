@@ -17,6 +17,7 @@ protocol ServiceOverviewScreenModelDelegate: AnyObject {
 
 // MARK: - ServiceOverviewScreenModel
 
+@MainActor
 class ServiceOverviewScreenModel {
     weak var delegate: ServiceOverviewScreenModelDelegate?
 
@@ -27,14 +28,12 @@ class ServiceOverviewScreenModel {
     }
 
     public func initiateCoinbaseAuthorization(with context: ASWebAuthenticationPresentationContextProviding) {
-        Coinbase.shared.signIn(with: context) { [weak self] result in
-            switch result {
-            case .success(let completed):
+        Task { [weak self] in
+            do {
+                try await Coinbase.shared.signIn(with: context)
                 self?.delegate?.didSignIn()
-                break
-            case .failure(let error):
+            } catch {
                 self?.delegate?.signInDidFail(error: error)
-                break
             }
         }
     }

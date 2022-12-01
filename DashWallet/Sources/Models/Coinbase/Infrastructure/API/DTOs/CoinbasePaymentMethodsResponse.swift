@@ -11,11 +11,23 @@ import Foundation
 // MARK: - CoinbasePaymentMethod
 
 struct CoinbasePaymentMethod: Codable {
-    let id, type, name, currency: String?
-    let primaryBuy, primarySell, instantBuy, instantSell: Bool?
-    let createdAt, updatedAt: Date?
-    let resource, resourcePath, pmsvcID: String?
-    let allowBuy, allowSell, allowDeposit, allowWithdraw: Bool?
+    let id: String?
+    let type: String?
+    let name: String?
+    let currency: String?
+    let primaryBuy: Bool?
+    let primarySell: Bool?
+    let instantBuy: Bool?
+    let instantSell: Bool?
+    let createdAt: Date?
+    let updatedAt: Date?
+    let resource: String?
+    let resourcePath: String?
+    let pmsvcID: String?
+    let allowBuy: Bool?
+    let allowSell: Bool?
+    let allowDeposit: Bool?
+    let allowWithdraw: Bool?
     let fiatAccount: FiatAccount?
     let verified: Bool?
     let minimumPurchaseAmount: MinimumPurchaseAmount?
