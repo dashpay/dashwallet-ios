@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,36 +17,38 @@
 
 import UIKit
 
+// MARK: - CoinbaseInfoViewController
+
 class CoinbaseInfoViewController: UIViewController {
-    
+
     @IBOutlet var contentView: UIView!
     @IBOutlet var actionButton: UIButton!
     @IBOutlet var hairline: UIView!
-    
+
     @IBAction func gotItAction() {
         dismiss(animated: true)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureHierarchy()
     }
-    
+
     class func controller() -> CoinbaseInfoViewController {
-        return vc(CoinbaseInfoViewController.self, from: sb("Coinbase"))
+        vc(CoinbaseInfoViewController.self, from: sb("Coinbase"))
     }
 }
 
 extension CoinbaseInfoViewController {
     private func configureHierarchy() {
-        self.definesPresentationContext = true
-        self.view.backgroundColor = .black.withAlphaComponent(0.4)
-        
+        definesPresentationContext = true
+        view.backgroundColor = .black.withAlphaComponent(0.4)
+
         contentView.layer.cornerRadius = 15
         contentView.layer.masksToBounds = true
         contentView.backgroundColor = .white
-        
+
         hairline.heightAnchor.constraint(equalToConstant: 1/UIScreen.main.scale).isActive = true
     }
 }

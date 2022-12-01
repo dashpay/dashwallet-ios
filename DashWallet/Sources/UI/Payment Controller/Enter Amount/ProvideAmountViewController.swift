@@ -17,9 +17,13 @@
 
 import UIKit
 
+// MARK: - ProvideAmountViewControllerDelegate
+
 protocol ProvideAmountViewControllerDelegate: AnyObject {
     func provideAmountViewControllerDidInput(amount: UInt64)
 }
+
+// MARK: - ProvideAmountViewController
 
 final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
@@ -28,15 +32,14 @@ final class ProvideAmountViewController: SendAmountViewController {
     private var errorLabel: UILabel!
 
     private let address: String
-    private var isBalanceHidden: Bool = true
+    private var isBalanceHidden = true
 
     init(address: String) {
         self.address = address
         super.init()
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)  required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -206,7 +209,8 @@ final class ProvideAmountViewController: SendAmountViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(walletBalanceDidChangeNotification(notification:)), name: .balanceChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(walletBalanceDidChangeNotification(notification:)),
+                                               name: .balanceChangeNotification, object: nil)
 
         updateBalance()
         updateError()
@@ -217,7 +221,7 @@ final class ProvideAmountViewController: SendAmountViewController {
     }
 }
 
-private extension ProvideAmountViewController {
+extension ProvideAmountViewController {
     private func updateBalance() {
         let balance = model.walletBalance
 

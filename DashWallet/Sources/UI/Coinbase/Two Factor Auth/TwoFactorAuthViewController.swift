@@ -18,6 +18,8 @@
 import Foundation
 import UIKit
 
+// MARK: - TwoFactorAuthViewController
+
 final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var screenLabel: UILabel!
     @IBOutlet var subTitle: UILabel!
@@ -26,21 +28,21 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var hintLabel: UILabel!
 
     public var verifyHandler: ((String) -> ())?
-    
+
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
     let contactCoinbaseString = NSLocalizedString("Contact Coinbase Support", comment: "Coinbase Two Factor Auth")
 
-    internal var isErrorShown: Bool = false
-    
+    internal var isErrorShown = false
+
     public func showInvalidCodeState() {
         isErrorShown = true
         styleHintFieldErrorState()
         styleTwoFactorAuthFieldErrorState()
         hideActivityIndicator()
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         contentView = UIView()
@@ -48,7 +50,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         setupContentView(contentView)
 
         twoFactorAuthField.delegate = self
-        
+
         styleTitle()
         styleSubTitle()
         styleContactCoinbase()
@@ -82,14 +84,14 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     override var actionButtonTitle: String? {
-        return NSLocalizedString("Verfiy", comment: "Coinbase")
+        NSLocalizedString("Verfiy", comment: "Coinbase")
     }
 
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         verifyHandler?(twoFactorAuthField.text!)
     }
-    
+
     func styleTitle() {
         screenLabel.text = NSLocalizedString("Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
         screenLabel.font = UIFont.dw_font(forTextStyle: .headline).withWeight(UIFont.Weight.semibold.rawValue).withSize(20)
@@ -98,7 +100,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     func styleSubTitle() {
-        subTitle.text = NSLocalizedString("This extra step shows it’s really you trying to make a transaction.", comment: "Coinbase Two Factor Auth")
+        subTitle.text = NSLocalizedString("This extra step shows it’s really you trying to make a transaction.",
+                                          comment: "Coinbase Two Factor Auth")
         subTitle.font = UIFont.dw_font(forTextStyle: .body)
         subTitle.numberOfLines = 0
         subTitle.translatesAutoresizingMaskIntoConstraints = false
@@ -112,8 +115,15 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         contactCoinbase.addGestureRecognizer(tapGesture)
         contactCoinbase.isUserInteractionEnabled = true
 
-        let needHelpAttributedString = NSMutableAttributedString(string: NSLocalizedString("Need help? ", comment: "Coinbase Two Factor Auth"), attributes: nil)
-        let contactCoinbasnAttributedLinkString = NSMutableAttributedString(string: contactCoinbaseString, attributes: [.foregroundColor: UIColor.dw_dashBlue(), NSAttributedString.Key.link: URL(string: "https://help.coinbase.com/en/contact-us")!])
+        let needHelpAttributedString =
+            NSMutableAttributedString(string: NSLocalizedString("Need help? ", comment: "Coinbase Two Factor Auth"),
+                                      attributes: nil)
+        let contactCoinbasnAttributedLinkString = NSMutableAttributedString(string: contactCoinbaseString,
+                                                                            attributes: [
+                                                                                .foregroundColor: UIColor.dw_dashBlue(),
+                                                                                NSAttributedString.Key
+                                                                                    .link: URL(string: "https://help.coinbase.com/en/contact-us")!,
+                                                                            ])
 
         let fullAttributedString = NSMutableAttributedString()
         fullAttributedString.append(needHelpAttributedString)
@@ -126,7 +136,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         guard let text = contactCoinbase.text else { return }
         let contactCoinbaseRange = (text as NSString).range(of: contactCoinbaseString)
 
-        fullAttributedString.enumerateAttributes(in: contactCoinbaseRange, options: []) { attributes, range, stop in
+        fullAttributedString.enumerateAttributes(in: contactCoinbaseRange, options: []) { _, range, _ in
             fullAttributedString.removeAttribute(.link, range: range)
             fullAttributedString.removeAttribute(.underlineStyle, range: range)
         }
@@ -154,8 +164,10 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     func styleHintFieldDefaultState() {
-        hintLabel.text = NSLocalizedString("It could be the code from the SMS on your phone.If not, enter the code from the authentication app.",
-                                           comment: "Coinbase Two Factor Auth")
+        hintLabel
+            .text =
+            NSLocalizedString("It could be the code from the SMS on your phone.If not, enter the code from the authentication app.",
+                              comment: "Coinbase Two Factor Auth")
         hintLabel.font = UIFont.dw_font(forTextStyle: .caption1)
         hintLabel.numberOfLines = 0
         hintLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -179,7 +191,9 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         attributedText.append(NSAttributedString(string: ""))
         attributedText.append(NSAttributedString(attachment: textAttachment))
         attributedText.append(NSAttributedString(string: " "))
-        attributedText.append(NSAttributedString(string: NSLocalizedString("The code is incorrect. Please check and try again!", comment: "Coinbase Two Factor Auth")))
+        attributedText
+            .append(NSAttributedString(string: NSLocalizedString("The code is incorrect. Please check and try again!",
+                                                                 comment: "Coinbase Two Factor Auth")))
 
         hintLabel.attributedText = attributedText
     }
@@ -204,9 +218,11 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     @objc class func controller() -> TwoFactorAuthViewController {
-        return vc(TwoFactorAuthViewController.self, from: sb("Coinbase"))
+        vc(TwoFactorAuthViewController.self, from: sb("Coinbase"))
     }
 }
+
+// MARK: UITextFieldDelegate
 
 extension TwoFactorAuthViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -216,10 +232,13 @@ extension TwoFactorAuthViewController: UITextFieldDelegate {
             styleTwoFactorAuthFieldDefaultState()
             isErrorShown = false
         }
-        
+
         return true
     }
 }
+
+// MARK: TwoFactorAuthModelDelegate
+
 extension TwoFactorAuthViewController: TwoFactorAuthModelDelegate {
     func transferFromCoinbaseSuccess() {
         // TODO: naigate to success screen
@@ -252,12 +271,17 @@ extension UITapGestureRecognizer {
 
         let locationOfTouchInLabel = location(in: label)
         let textBoundingBox = layoutManager.usedRect(for: textContainer)
-        let textContainerOffset = CGPoint(x: (labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x, y: (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y)
-        let locationOfTouchInTextContainer = CGPoint(x: locationOfTouchInLabel.x - textContainerOffset.x, y: locationOfTouchInLabel.y - textContainerOffset.y)
-        let indexOfCharacter = layoutManager.characterIndex(for: locationOfTouchInTextContainer, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+        let textContainerOffset = CGPoint(x: (labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x,
+                                          y: (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y)
+        let locationOfTouchInTextContainer = CGPoint(x: locationOfTouchInLabel.x - textContainerOffset.x,
+                                                     y: locationOfTouchInLabel.y - textContainerOffset.y)
+        let indexOfCharacter = layoutManager.characterIndex(for: locationOfTouchInTextContainer, in: textContainer,
+                                                            fractionOfDistanceBetweenInsertionPoints: nil)
         return NSLocationInRange(indexOfCharacter, targetRange)
     }
 }
+
+// MARK: - TwoFactorAuthTextField
 
 class TwoFactorAuthTextField: UITextField {
     var textInsets: UIEdgeInsets = .init(top: 0, left: 15, bottom: 0, right: 15) {
@@ -265,17 +289,15 @@ class TwoFactorAuthTextField: UITextField {
             setNeedsLayout()
         }
     }
-    
+
     override func textRect(forBounds bounds: CGRect) -> CGRect {
-        return CGRect(
-            x: bounds.origin.x + textInsets.left,
-            y: bounds.origin.y + textInsets.top,
-            width: bounds.size.width - (textInsets.left + textInsets.right),
-            height: bounds.size.height - (textInsets.top + textInsets.bottom)
-        )
+        CGRect(x: bounds.origin.x + textInsets.left,
+               y: bounds.origin.y + textInsets.top,
+               width: bounds.size.width - (textInsets.left + textInsets.right),
+               height: bounds.size.height - (textInsets.top + textInsets.bottom))
     }
-    
+
     override func editingRect(forBounds bounds: CGRect) -> CGRect {
-        return self.textRect(forBounds: bounds)
+        textRect(forBounds: bounds)
     }
 }

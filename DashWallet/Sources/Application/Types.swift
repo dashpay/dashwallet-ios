@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,13 +17,15 @@
 
 import Foundation
 
+// MARK: - NetworkStatus
+
 public enum NetworkStatus {
     case online
     case offline
 }
 
 extension DSReachabilityManager {
-    var networkStatus:  NetworkStatus {
-        return self.isReachable ? .online : .offline
+    var networkStatus: NetworkStatus {
+        isReachable ? .online : .offline
     }
 }

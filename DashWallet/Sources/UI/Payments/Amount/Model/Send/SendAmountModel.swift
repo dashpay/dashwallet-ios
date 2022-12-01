@@ -17,6 +17,8 @@
 
 import Foundation
 
+// MARK: - SendAmountError
+
 enum SendAmountError {
     case insufficientFunds
     case syncingChain
@@ -24,7 +26,8 @@ enum SendAmountError {
     var localizedString: String {
         switch self {
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
-        case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction", comment: "Send screen")
+        case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
+                                                     comment: "Send screen")
         }
     }
 
@@ -36,8 +39,10 @@ enum SendAmountError {
     }
 }
 
+// MARK: - SendAmountModel
+
 class SendAmountModel: BaseAmountModel {
-    override var showMaxButton: Bool { return false }
+    override var showMaxButton: Bool { false }
 
     var error: SendAmountError? {
         didSet {
@@ -81,11 +86,13 @@ class SendAmountModel: BaseAmountModel {
             selectAllFunds()
         }
         else {
-            authManager.authenticate(withPrompt: nil, usingBiometricAuthentication: true, alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
-                if authenticatedOrSuccess {
-                    self?.selectAllFunds()
+            authManager
+                .authenticate(withPrompt: nil, usingBiometricAuthentication: true,
+                              alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
+                    if authenticatedOrSuccess {
+                        self?.selectAllFunds()
+                    }
                 }
-            }
         }
     }
 
@@ -125,12 +132,14 @@ class SendAmountModel: BaseAmountModel {
     }
 }
 
+// MARK: SyncingActivityMonitorObserver
+
 extension SendAmountModel: SyncingActivityMonitorObserver {
     private func initializeSyncingActivityMonitor() {
         syncingActivityMonitor.add(observer: self)
     }
 
-    func syncingActivityMonitorProgressDidChange(_ progress: Double) {}
+    func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         checkError()

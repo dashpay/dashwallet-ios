@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,6 +17,8 @@
 
 import Foundation
 
+// MARK: - CoinbaseEntryPointItem
+
 enum CoinbaseEntryPointItem: CaseIterable {
     case buyDash
     case sellDash
@@ -25,10 +27,8 @@ enum CoinbaseEntryPointItem: CaseIterable {
 }
 
 extension CoinbaseEntryPointItem {
-    var title: String
-    {
+    var title: String {
         switch self {
-            
         case .buyDash:
             return NSLocalizedString("Buy Dash", comment: "Coinbase Entry Point")
         case .sellDash:
@@ -39,10 +39,9 @@ extension CoinbaseEntryPointItem {
             return NSLocalizedString("Transfer Dash", comment: "Coinbase Entry Point")
         }
     }
-    
+
     var description: String {
         switch self {
-            
         case .buyDash:
             return NSLocalizedString("Receive directly into Dash Wallet", comment: "Coinbase Entry Point")
         case .sellDash:
@@ -53,10 +52,9 @@ extension CoinbaseEntryPointItem {
             return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         }
     }
-    
+
     var icon: String {
         switch self {
-            
         case .buyDash:
             return "buyCoinbase"
         case .sellDash:
@@ -69,50 +67,53 @@ extension CoinbaseEntryPointItem {
     }
 }
 
+// MARK: - CoinbaseEntryPointModel
+
 final class CoinbaseEntryPointModel {
     let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.allCases
-    
+
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var networkStatus: NetworkStatus!
-    
+
     var balance: UInt64 {
         guard let amount = Coinbase.shared.lastKnownBalance else { return 0 }
-        
+
         return amount
     }
-    
-    private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
+
+    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
     private var reachabilityObserver: Any!
-    
+
     init() {
         initializeReachibility()
     }
-    
+
     public func signOut() {
         Coinbase.shared.signOut()
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(reachabilityObserver!)
     }
 }
 
-private extension CoinbaseEntryPointModel {
+extension CoinbaseEntryPointModel {
     private func initializeReachibility() {
-        if (!reachability.isMonitoring) {
+        if !reachability.isMonitoring {
             reachability.startMonitoring()
         }
-        
-        self.reachabilityObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                                                                           object: nil,
-                                                                           queue: nil,
-                                                                           using: { [weak self] notification in
-            self?.updateNetworkStatus()
-        })
-        
+
+        reachabilityObserver = NotificationCenter.default
+            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
+                         object: nil,
+                         queue: nil,
+                         using: { [weak self] _ in
+                             self?.updateNetworkStatus()
+                         })
+
         updateNetworkStatus()
     }
-    
+
     private func updateNetworkStatus() {
         networkStatus = reachability.networkStatus
         networkStatusDidChange?(networkStatus)

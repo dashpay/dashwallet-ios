@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,13 +15,17 @@
 //  limitations under the License.
 //
 
-import Foundation
 import AuthenticationServices
+import Foundation
+
+// MARK: - Service
 
 enum Service: CaseIterable {
     case coinbase
     case uphold
 }
+
+// MARK: - PortalModel.Section
 
 extension PortalModel {
     enum Section: Int {
@@ -36,88 +40,93 @@ extension Service {
         case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
         }
     }
-    
+
     var icon: String {
         switch self {
         case .coinbase: return "portal.coinbase"
         case .uphold: return "portal.uphold"
         }
     }
-    
+
     var status: Bool {
         switch self {
         case .coinbase: return false
         case .uphold: return true
         }
     }
-    
+
     var usageCount: Int {
-        return UserDefaults.standard.integer(forKey: kServiceUsageCount)
+        UserDefaults.standard.integer(forKey: kServiceUsageCount)
     }
-    
+
     func increaseUsageCount() {
         UserDefaults.standard.set(usageCount + 1, forKey: kServiceUsageCount)
     }
 }
 
+// MARK: - PortalModelDelegate
+
 protocol PortalModelDelegate: AnyObject {
     func serviceItemsDidChange();
 }
 
+// MARK: - PortalModel
+
 class PortalModel {
     weak var delegate: PortalModelDelegate?
-    
+
     var networkStatusDidChange: ((NetworkStatus) -> ())?
-    
+
     var items: [ServiceItem] = [] {
         didSet {
             delegate?.serviceItemsDidChange()
         }
     }
-    
+
     var services: [Service] = Service.allCases
     var networkStatus: NetworkStatus!
-    
-    private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
+
+    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
     private var reachabilityObserver: Any!
     private var upholdDashCard: DWUpholdCardObject?
-   
+
     private var serviceItemDataProvider: ServiceDataProvider
-    
+
     init() {
         serviceItemDataProvider = ServiceDataProviderImpl()
         serviceItemDataProvider.listenForData { [weak self] items in
             self?.items = items
             self?.delegate?.serviceItemsDidChange()
         }
-        
+
         initializeReachibility()
     }
-    
+
     public func refreshData() {
         serviceItemDataProvider.refresh()
     }
-    
+
     private func initializeReachibility() {
-        if (!reachability.isMonitoring) {
+        if !reachability.isMonitoring {
             reachability.startMonitoring()
         }
-        
-        self.reachabilityObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                                                                           object: nil,
-                                                                           queue: nil,
-                                                                           using: { [weak self] notification in
-            self?.updateNetworkStatus()
-        })
-        
+
+        reachabilityObserver = NotificationCenter.default
+            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
+                         object: nil,
+                         queue: nil,
+                         using: { [weak self] _ in
+                             self?.updateNetworkStatus()
+                         })
+
         updateNetworkStatus()
     }
-    
+
     private func updateNetworkStatus() {
         networkStatus = reachability.networkStatus
         networkStatusDidChange?(networkStatus)
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(reachabilityObserver!)
     }

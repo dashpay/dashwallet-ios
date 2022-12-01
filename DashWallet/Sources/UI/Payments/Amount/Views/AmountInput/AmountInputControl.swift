@@ -26,12 +26,16 @@ private let kSupplementaryAmountLabelHeight: CGFloat = 20
 private let kMainAmountFontSize: CGFloat = 34
 private let kSupplementaryAmountFontSize: CGFloat = 17
 
+// MARK: - AmountInputControlDelegate
+
 protocol AmountInputControlDelegate: AnyObject {
     func updateInputField(with replacementText: String, in range: NSRange)
     func amountInputControlDidSwapInputs()
     func amountInputControlChangeCurrencyDidTap()
     func amountInputWantToPasteFromClipboard()
 }
+
+// MARK: - AmountInputControlDataSource
 
 protocol AmountInputControlDataSource: AnyObject {
     var currentInputString: String { get }
@@ -44,6 +48,8 @@ extension AmountInputControl.AmountType {
         self == .main ? .supplementary : .main
     }
 }
+
+// MARK: - AmountInputControl
 
 class AmountInputControl: UIControl {
     enum Style {
@@ -69,12 +75,12 @@ class AmountInputControl: UIControl {
 
     public var swapingHandler: ((AmountType) -> Void)?
 
-    public var text: String? { return mainText }
+    public var text: String? { mainText }
     public var mainText: String?
     public var supplementaryText: String?
 
     override var intrinsicContentSize: CGSize {
-        return CGSize(width: mainAmountLabel.bounds.width, height: contentHeight)
+        CGSize(width: mainAmountLabel.bounds.width, height: contentHeight)
     }
 
     private var style: Style
@@ -102,12 +108,13 @@ class AmountInputControl: UIControl {
     }
 
     func reloadData() {
-        guard let dataSource = dataSource else { return }
+        guard let dataSource else { return }
 
         textField.text = dataSource.currentInputString
 
         let mainString = dataSource.mainAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_darkTitle())
-        let supplementaryString = dataSource.supplementaryAmountString.attributedAmountForLocalCurrency(textColor: .dw_darkTitle())
+        let supplementaryString = dataSource.supplementaryAmountString
+            .attributedAmountForLocalCurrency(textColor: .dw_darkTitle())
 
         mainAmountLabel.attributedText = mainString
         supplementaryAmountLabel.attributedText = supplementaryString
@@ -148,7 +155,8 @@ class AmountInputControl: UIControl {
 
         // Change possition
         let bigFramePosition = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
-        let smallFramePosition = CGRect(x: 0, y: kMainAmountLabelHeight, width: bounds.width, height: kSupplementaryAmountLabelHeight)
+        let smallFramePosition = CGRect(x: 0, y: kMainAmountLabelHeight, width: bounds.width,
+                                        height: kSupplementaryAmountLabelHeight)
 
         let changePossiton = {
             bigLabel.frame = smallFramePosition
@@ -183,16 +191,14 @@ class AmountInputControl: UIControl {
         }
     }
 
-    @discardableResult
-    override func becomeFirstResponder() -> Bool {
+    @discardableResult  override func becomeFirstResponder() -> Bool {
         let val = textField.becomeFirstResponder()
         let endOfDocumentPosition = textField.endOfDocument
         textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
         return val
     }
 
-    @discardableResult
-    override func resignFirstResponder() -> Bool {
+    @discardableResult  override func resignFirstResponder() -> Bool {
         textField.resignFirstResponder()
     }
 
@@ -387,7 +393,7 @@ extension AmountInputControl: UITextFieldDelegate {
     }
 }
 
-// MARK: SupplementaryAmountLabel
+// MARK: - SupplementaryAmountLabel
 
 final class SupplementaryAmountLabel: UILabel {
     override func textRect(forBounds bounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
@@ -403,22 +409,21 @@ final class SupplementaryAmountLabel: UILabel {
     }
 }
 
-// MARK: CopyPasteableContol
+// MARK: - CopyPasteableContol
 
 final class CopyPasteableContol: UIControl {
     var didCopyHandler: (() -> Void)?
     var didPasteHandler: (() -> Void)?
 
-    var canCopy: Bool = true
-    var canPaste: Bool = true
+    var canCopy = true
+    var canPaste = true
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureMenuControl()
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)  required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -434,7 +439,8 @@ final class CopyPasteableContol: UIControl {
     }
 
     private func configureMenuControl() {
-        let longTapGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressGestureRecognizerAction(gesture:)))
+        let longTapGesture = UILongPressGestureRecognizer(target: self,
+                                                          action: #selector(longPressGestureRecognizerAction(gesture:)))
         longTapGesture.cancelsTouchesInView = true
         addGestureRecognizer(longTapGesture)
     }
@@ -448,7 +454,7 @@ final class CopyPasteableContol: UIControl {
     }
 
     override var canBecomeFirstResponder: Bool {
-        return true
+        true
     }
 
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {

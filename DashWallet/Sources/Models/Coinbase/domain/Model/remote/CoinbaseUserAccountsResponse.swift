@@ -8,6 +8,7 @@
 import Foundation
 
 // MARK: - CoinbaseUserAccountData
+
 struct CoinbaseUserAccountData: Codable, Identifiable {
     let id, name: String
     let primary: Bool
@@ -22,7 +23,12 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     let rewardsApy: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, primary, type, currency, balance
+        case id
+        case name
+        case primary
+        case type
+        case currency
+        case balance
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case resource
@@ -35,15 +41,16 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
 }
 
 // MARK: - Balance
+
 struct Balance: Codable {
     let amount: String
     let currency: String
-    
+
     var plainAmount: UInt64 {
         guard let dashNumber = Decimal(string: amount) else {
             return 0
         }
-        
+
         let duffsNumber = Decimal(DUFFS)
         let plainAmount = dashNumber * duffsNumber
         return NSDecimalNumber(decimal: plainAmount).uint64Value
@@ -51,6 +58,7 @@ struct Balance: Codable {
 }
 
 // MARK: - Currency
+
 struct Currency: Codable {
     let code, name, color: String
     let sortIndex, exponent: Int
@@ -59,7 +67,9 @@ struct Currency: Codable {
     let destinationTagRegex: String?
 
     enum CodingKeys: String, CodingKey {
-        case code, name, color
+        case code
+        case name
+        case color
         case sortIndex = "sort_index"
         case exponent, type
         case addressRegex = "address_regex"
@@ -70,16 +80,21 @@ struct Currency: Codable {
     }
 }
 
+// MARK: - CurrencyType
+
 enum CurrencyType: String, Codable {
-    case crypto = "crypto"
-    case fiat = "fiat"
+    case crypto
+    case fiat
 }
 
+// MARK: - Resource
+
 enum Resource: String, Codable {
-    case account = "account"
+    case account
 }
 
 // MARK: - Rewards
+
 struct Rewards: Codable {
     let apy, formattedApy, label: String
 
@@ -90,7 +105,9 @@ struct Rewards: Codable {
     }
 }
 
+// MARK: - DatumType
+
 enum DatumType: String, Codable {
-    case fiat = "fiat"
-    case wallet = "wallet"
+    case fiat
+    case wallet
 }

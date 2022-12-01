@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,63 +17,67 @@
 
 import Foundation
 
+// MARK: - ServiceDataProvider
+
 protocol ServiceDataProvider {
     func listenForData(handler: @escaping (([ServiceItem]) -> Void))
     func refresh()
 }
 
+// MARK: - MookServiceDataProvider
+
 class MookServiceDataProvider: ServiceDataProvider {
     func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
         handler([.init(status: .authorized, service: .uphold), .init(status: .idle, service: .coinbase)])
     }
-    
-    func refresh() {
-        
-    }
+
+    func refresh() { }
 }
+
+// MARK: - ServiceDataProviderImpl
 
 class ServiceDataProviderImpl: ServiceDataProvider {
     private var handler: (([ServiceItem]) -> Void)?
-    
+
     private var upholdDataSource: ServiceDataSource = UpholdDataSource()
     private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
-    
+
     private var items: [ServiceItem] = []
-    
+
     init() {
-        self.initializeDataSources()
+        initializeDataSources()
     }
-    
+
     func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
         self.handler = handler
     }
-    
+
     func refresh() {
         upholdDataSource.refresh()
         coinbaseDataSource.refresh()
     }
-    
+
     private func initializeDataSources() {
         upholdDataSource.serviceDidUpdate = { [weak self] item in
             self?.updateService(with: item)
         }
-        
+
         coinbaseDataSource.serviceDidUpdate = { [weak self] item in
             self?.updateService(with: item)
         }
     }
-    
+
     private func updateService(with item: ServiceItem) {
         if let idx = items.firstIndex(where: { $0.service == item.service }) {
             items[idx] = item
         } else {
             items.append(item)
         }
-        
+
         let sortedItems = items
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })
-        
-        self.handler?(sortedItems)
+
+        handler?(sortedItems)
     }
 }

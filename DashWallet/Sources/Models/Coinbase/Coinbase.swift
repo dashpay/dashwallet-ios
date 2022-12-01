@@ -21,7 +21,9 @@ import Foundation
 import Resolver
 
 let kDashCurrency = "DASH"
-var kCoinbaseContactURL: URL = { URL(string: "https://help.coinbase.com/en/contact-us")! }()
+var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
+
+// MARK: - Coinbase
 
 class Coinbase {
     @Injected
@@ -39,11 +41,11 @@ class Coinbase {
     @Injected
     private var sendDashFromCoinbaseToDashWallet: SendDashFromCoinbaseToDashWallet
 
-    var isAuthorized: Bool { return getUserCoinbaseToken.isUserLoginedIn() }
+    var isAuthorized: Bool { getUserCoinbaseToken.isUserLoginedIn() }
 
     private var cancelables = [AnyCancellable]()
 
-    public static let shared: Coinbase = Coinbase()
+    public static let shared = Coinbase()
 }
 
 extension Coinbase {
@@ -51,17 +53,18 @@ extension Coinbase {
         guard let balance = getUserCoinbaseAccounts.lastKnownBalance, let dashNumber = Decimal(string: balance) else {
             return nil
         }
-        
+
         let duffsNumber = Decimal(DUFFS)
         let plainAmount = dashNumber * duffsNumber
         return NSDecimalNumber(decimal: plainAmount).uint64Value
     }
 
     var hasLastKnownBalance: Bool {
-        return getUserCoinbaseAccounts.hasLastKnownBalance
+        getUserCoinbaseAccounts.hasLastKnownBalance
     }
 
-    public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+    public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding,
+                       completion: @escaping ((Result<Bool, Error>) -> Void)) {
         // TODO: Refactor this method
         let path = APIEndpoint.signIn.path
 
@@ -95,43 +98,42 @@ extension Coinbase {
         let callbackURLScheme = NetworkRequest.callbackURLScheme
         print(signInURL)
 
-        let authenticationSession = ASWebAuthenticationSession(
-            url: signInURL,
-            callbackURLScheme: callbackURLScheme) { callbackURL, error in
-                // 1
-                guard error == nil,
-                      let callbackURL = callbackURL,
-                      let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
-                      let code = queryItems.first(where: { $0.name == "code" })?.value
-                else {
-                    completion(.failure(error!))
-                    return
-                }
-
-                self.authorize(with: code)
-                    .receive(on: DispatchQueue.main)
-                    .sink(receiveCompletion: { completion in
-                        print(completion)
-                    }, receiveValue: { [weak self] _ in
-                            self!.fetchUser()
-                            .receive(on: DispatchQueue.main)
-                            .sink(receiveCompletion: { [weak self] completion in
-                                
-                            }, receiveValue: { [weak self] response in
-                                completion(.success(true))
-                            })
-                            .store(in: &self!.cancelables)
-                        
-                        
-                    })
-                    .store(in: &self.cancelables)
+        let authenticationSession = ASWebAuthenticationSession(url: signInURL,
+                                                               callbackURLScheme: callbackURLScheme) { callbackURL, error in
+            // 1
+            guard error == nil,
+                  let callbackURL,
+                  let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
+                  let code = queryItems.first(where: { $0.name == "code" })?.value
+            else {
+                completion(.failure(error!))
+                return
             }
+
+            self.authorize(with: code)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { completion in
+                    print(completion)
+                }, receiveValue: { [weak self] _ in
+                    self!.fetchUser()
+                        .receive(on: DispatchQueue.main)
+                        .sink(receiveCompletion: { [weak self] _ in
+
+                        }, receiveValue: { [weak self] _ in
+                            completion(.success(true))
+                        })
+                        .store(in: &self!.cancelables)
+
+
+                })
+                .store(in: &self.cancelables)
+        }
 
         authenticationSession.presentationContextProvider = presentationContext
         authenticationSession.prefersEphemeralWebBrowserSession = true
 
         if !authenticationSession.start() {
-            //TODO: throw an error
+            // TODO: throw an error
             print("Failed to start ASWebAuthenticationSession")
         }
     }
@@ -141,7 +143,7 @@ extension Coinbase {
     }
 
     public func fetchUser() -> AnyPublisher<CoinbaseUserAccountData?, Error> {
-        return getUserCoinbaseAccounts.invoke()
+        getUserCoinbaseAccounts.invoke()
     }
 
     public func createNewCoinbaseDashAddress() -> AnyPublisher<String?, Error> {
@@ -152,20 +154,21 @@ extension Coinbase {
     }
 
     public func getDashExchangeRate() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
-        return getExchangeRate.invoke()
+        getExchangeRate.invoke()
     }
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
-                                                coinAmountInDash: String,
-                                                dashWalletAddress: String) -> AnyPublisher<CoinbaseTransaction?, Error> {
+                                                 coinAmountInDash: String,
+                                                 dashWalletAddress: String) -> AnyPublisher<CoinbaseTransaction?, Error> {
         if let coinbaseUserAccountId = NetworkRequest.coinbaseUserAccountId {
             return sendDashFromCoinbaseToDashWallet.invoke(accountId: coinbaseUserAccountId,
                                                            verificationCode: verificationCode,
-                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest.TransactionsType.send,
-                                                                                                to: dashWalletAddress,
-                                                                                                amount: coinAmountInDash,
-                                                                                                currency: kDashCurrency,
-                                                                                                idem: UUID()))
+                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest
+                                                               .TransactionsType.send,
+                                                               to: dashWalletAddress,
+                                                               amount: coinAmountInDash,
+                                                               currency: kDashCurrency,
+                                                               idem: UUID()))
         }
         return Empty(completeImmediately: true).eraseToAnyPublisher()
     }

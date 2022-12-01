@@ -18,7 +18,8 @@ struct CoinbaseAccountAddress: Codable {
     let addressLabel, depositURI: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, address
+        case id
+        case address
         case addressInfo = "address_info"
         case name
         case network

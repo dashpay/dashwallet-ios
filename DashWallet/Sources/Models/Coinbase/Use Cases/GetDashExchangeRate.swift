@@ -21,7 +21,7 @@ import Resolver
 
 class GetDashExchangeRate {
     @Injected private var remoteService: CoinbaseService
-    
+
     func invoke() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
         remoteService.getCoinbaseExchangeRates(currency: kDashCurrency)
             .map { response in

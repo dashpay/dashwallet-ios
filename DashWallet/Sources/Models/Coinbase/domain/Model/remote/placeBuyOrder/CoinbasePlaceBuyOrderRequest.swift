@@ -13,7 +13,8 @@ struct CoinbasePlaceBuyOrderRequest: Codable {
     let commit, quote: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case amount, currency
+        case amount
+        case currency
         case paymentMethod = "payment_method"
         case commit, quote
     }

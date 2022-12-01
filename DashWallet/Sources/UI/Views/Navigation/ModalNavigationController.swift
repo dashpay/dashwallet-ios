@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,22 +20,22 @@ import UIKit
 @objc(DWModalNavigationController)
 final class ModalNavigationController: BaseNavigationController {
     var modalTransition: DWModalPopupTransition!
-    
+
     override init(rootViewController: UIViewController) {
         super.init(rootViewController: rootViewController)
         modalNavigationControllerSetup()
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func modalNavigationControllerSetup() {
         modalTransition = DWModalPopupTransition()
         modalTransition.appearanceStyle = .fullscreen
-        
-        self.transitioningDelegate = modalTransition
-        self.modalPresentationStyle = .custom
-        self.modalPresentationCapturesStatusBarAppearance = true
+
+        transitioningDelegate = modalTransition
+        modalPresentationStyle = .custom
+        modalPresentationCapturesStatusBarAppearance = true
     }
 }

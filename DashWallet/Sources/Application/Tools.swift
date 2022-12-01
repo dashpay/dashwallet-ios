@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@ import Foundation
 
 private var _dashFormatter: NumberFormatter = {
     let maximumFractionDigits = 8
-    
+
     var dashFormat = NumberFormatter()
     dashFormat.isLenient = true
     dashFormat.numberStyle = .currency
@@ -33,13 +33,13 @@ private var _dashFormatter: NumberFormatter = {
     dashFormat.maximumFractionDigits = maximumFractionDigits
     dashFormat.minimumFractionDigits = 0
     dashFormat.maximum = (Decimal(MAX_MONEY)/pow(10, maximumFractionDigits)) as NSNumber
-    
+
     return dashFormat
 }()
 
 extension NumberFormatter {
     static var dashFormatter: NumberFormatter {
-        return _dashFormatter
+        _dashFormatter
     }
 }
 

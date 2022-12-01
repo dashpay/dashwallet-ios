@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - DataClass
+// MARK: - CoinbaseTransaction
 
 struct CoinbaseTransaction: Codable {
     let id, type, status: String?
@@ -24,7 +24,10 @@ struct CoinbaseTransaction: Codable {
     let hideNativeAmount: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case id, type, status, amount
+        case id
+        case type
+        case status
+        case amount
         case nativeAmount = "native_amount"
         case dataDescription = "description"
         case createdAt = "created_at"
@@ -43,7 +46,8 @@ struct Application: Codable {
     let id, resource, resourcePath: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, resource
+        case id
+        case resource
         case resourcePath = "resource_path"
     }
 }
@@ -83,7 +87,9 @@ struct To: Codable {
     let addressURL: String?
 
     enum CodingKeys: String, CodingKey {
-        case resource, address, currency
+        case resource
+        case address
+        case currency
         case addressInfo = "address_info"
         case addressURL = "address_url"
     }

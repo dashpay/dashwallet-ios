@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,36 +20,36 @@ import UIKit
 final class NetworkUnavailableView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         let mainStackView = UIStackView()
         mainStackView.axis = .vertical
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         mainStackView.alignment = .center
         mainStackView.spacing = 15
         addSubview(mainStackView)
-        
+
         let icon = UIImageView(image: UIImage(named: "network.unavailable"))
         mainStackView.addArrangedSubview(icon)
-        
+
         let textStackView = UIStackView()
         textStackView.axis = .vertical
         textStackView.translatesAutoresizingMaskIntoConstraints = false
         textStackView.alignment = .center
         textStackView.spacing = 15
         mainStackView.addArrangedSubview(textStackView)
-        
+
         let title = UILabel()
         title.font = .dw_mediumFont(ofSize: 17)
         title.textColor = .label
         title.text = NSLocalizedString("Network Unavailable", comment: "Network Unavailable")
         textStackView.addArrangedSubview(title)
-        
+
         let subtitle = UILabel()
         subtitle.font = .dw_mediumFont(ofSize: 17)
         subtitle.textColor = .label
         subtitle.text = NSLocalizedString("Please check your network connection", comment: "Network Unavailable")
         textStackView.addArrangedSubview(subtitle)
-        
+
         NSLayoutConstraint.activate([
             mainStackView.topAnchor.constraint(equalTo: topAnchor),
             mainStackView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -57,7 +57,7 @@ final class NetworkUnavailableView: UIView {
             mainStackView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

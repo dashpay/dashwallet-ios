@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,10 +17,12 @@
 
 import UIKit
 
+// MARK: - BaseViewController
+
 class BaseViewController: UIViewController {
     override func loadView() {
         super.loadView()
-        
+
         viewRespectsSystemMinimumLayoutMargins = false
         view.directionalLayoutMargins = .init(top: 0, leading: 15, bottom: 0, trailing: 15)
     }

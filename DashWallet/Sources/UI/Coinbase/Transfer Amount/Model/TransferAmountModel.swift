@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,10 @@
 //  limitations under the License.
 //
 
-import Foundation
 import Combine
+import Foundation
+
+// MARK: - TransferAmountModelDelegate
 
 protocol TransferAmountModelDelegate: AnyObject {
     func initiatePayment(with input: DWPaymentInput)
@@ -25,48 +27,53 @@ protocol TransferAmountModelDelegate: AnyObject {
     func transferFromCoinbaseToWalletDidSucceed()
 }
 
+// MARK: - TransferFromCoinbaseFailureReason
+
 enum TransferFromCoinbaseFailureReason {
     case twoFactorRequired
     case invalidVerificationCode
     case unknown
 }
 
+// MARK: - TransferAmountModel
+
 final class TransferAmountModel: SendAmountModel {
     enum TransferDirection {
         case toWallet
         case toCoinbase
     }
-    
+
     public weak var delegate: TransferAmountModelDelegate?
-    
+
     private var cancellables: Set<AnyCancellable> = []
-    
+
     public var address: String!
     public var direction: TransferDirection = .toCoinbase
 
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var networkStatus: NetworkStatus!
 
-    private var reachability: DSReachabilityManager { return DSReachabilityManager.shared() }
+    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
     private var reachabilityObserver: Any!
-    
+
     override init() {
         super.init()
-        
+
         initializeReachibility()
     }
-   
-    override func selectAllFunds(_ preparationHandler: (() -> Void)) {
+
+    override func selectAllFunds(_ preparationHandler: () -> Void) {
         if direction == .toCoinbase {
             super.selectAllFunds(preparationHandler)
         } else {
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
-        
-            let maxAmount = AmountObject(plainAmount: Int64(balance), fiatCurrencyCode: localCurrencyCode, localFormatter: localFormatter)
+
+            let maxAmount = AmountObject(plainAmount: Int64(balance), fiatCurrencyCode: localCurrencyCode,
+                                         localFormatter: localFormatter)
             updateCurrentAmountObject(with: maxAmount)
         }
     }
-    
+
     func initializeTransfer() {
         if direction == .toCoinbase {
             transferToCoinbase()
@@ -74,58 +81,61 @@ final class TransferAmountModel: SendAmountModel {
             transferToWallet()
         }
     }
-    
+
     func continueTransferFromCoinbase(with verificationCode: String) {
         transferToWallet(with: verificationCode)
     }
-    
+
     private func transferToCoinbase() {
-        //TODO: validate
+        // TODO: validate
         let amount = UInt64(amount.plainAmount)
-        
+
         obtainNewAddress { [weak self] address in
-            guard let address = address else {
+            guard let address else {
                 self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
                 return
             }
-            
+
             guard let paymentInput = DWPaymentInputBuilder().pay(toAddress: address, amount: amount) else {
                 return
             }
-            
+
             self?.delegate?.initiatePayment(with: paymentInput)
         }
     }
-    
+
     private func transferToWallet(with verificationCode: String? = nil) {
         guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
-                
-        Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, coinAmountInDash: amount.amountInternalRepresentation, dashWalletAddress: address)
+
+        Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode,
+                                                         coinAmountInDash: amount.amountInternalRepresentation,
+                                                         dashWalletAddress: address)
             .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 switch completion {
                 case .finished:
                     break
                 case .failure(let error):
-                    guard let restError = error as? RestClientError, case let RestClientError.requestFailed(code) = restError else {
+                    guard let restError = error as? RestClientError,
+                          case RestClientError.requestFailed(let code) = restError else {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
                         return
                     }
-                    
+
                     if verificationCode == nil && code == 402 {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
-                    }else if verificationCode != nil && code == 400 {
+                    } else if verificationCode != nil && code == 400 {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
                     } else {
                         self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
                     }
                 }
-            } receiveValue: { [weak self] tx in
+            } receiveValue: { [weak self] _ in
                 self?.delegate?.transferFromCoinbaseToWalletDidSucceed()
             }
             .store(in: &cancellables)
     }
-    
+
     private func obtainNewAddress(completion: @escaping ((String?) -> Void)) {
         Coinbase.shared.createNewCoinbaseDashAddress()
             .receive(on: RunLoop.main)
@@ -139,22 +149,23 @@ final class TransferAmountModel: SendAmountModel {
     }
 }
 
-private extension TransferAmountModel {
+extension TransferAmountModel {
     private func initializeReachibility() {
-        if (!reachability.isMonitoring) {
+        if !reachability.isMonitoring {
             reachability.startMonitoring()
         }
-        
-        self.reachabilityObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                                                                           object: nil,
-                                                                           queue: nil,
-                                                                           using: { [weak self] notification in
-            self?.updateNetworkStatus()
-        })
-        
+
+        reachabilityObserver = NotificationCenter.default
+            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
+                         object: nil,
+                         queue: nil,
+                         using: { [weak self] _ in
+                             self?.updateNetworkStatus()
+                         })
+
         updateNetworkStatus()
     }
-    
+
     private func updateNetworkStatus() {
         networkStatus = reachability.networkStatus
         networkStatusDidChange?(networkStatus)

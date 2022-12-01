@@ -11,15 +11,17 @@ import Resolver
 
 private let lastKnownBalanceKey = "lastKnownBalance"
 
+// MARK: - GetUserCoinbaseAccounts
+
 class GetUserCoinbaseAccounts {
     @Injected private var remoteService: CoinbaseService
-    
+
     var lastKnownBalance: String? {
         GetUserCoinbaseAccounts.lastKnownBalance
     }
 
     var hasLastKnownBalance: Bool {
-        return lastKnownBalance != nil
+        lastKnownBalance != nil
     }
 
     func invoke(limit: Int = 300) -> AnyPublisher<CoinbaseUserAccountData?, Error> {

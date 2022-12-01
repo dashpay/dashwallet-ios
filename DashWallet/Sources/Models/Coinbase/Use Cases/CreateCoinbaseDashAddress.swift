@@ -21,9 +21,10 @@ import Resolver
 
 class CreateCoinbaseDashAddress {
     @Injected private var remoteService: CoinbaseService
-    
+
     func invoke(accountId: String) -> AnyPublisher<String?, Error> {
-        remoteService.createCoinbaseAccountAddress(accountId: accountId, request: CoinbaseCreateAddressesRequest(name: "New receive address"))
+        remoteService.createCoinbaseAccountAddress(accountId: accountId,
+                                                   request: CoinbaseCreateAddressesRequest(name: "New receive address"))
             .map { (response: BaseDataResponse<CoinbaseAccountAddress>) in
                 let address = response.data?.address
                 return address
