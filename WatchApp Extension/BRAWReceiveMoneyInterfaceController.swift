@@ -40,12 +40,10 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, BRAWKeyp
         customQR = nil
         updateReceiveUI()
         let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(BRAWReceiveMoneyInterfaceController.updateReceiveUI),
-            name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
-            object: nil
-        )
+        notificationCenter.addObserver(self,
+                                       selector: #selector(BRAWReceiveMoneyInterfaceController.updateReceiveUI),
+                                       name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
+                                       object: nil)
 
         subscribeToTxNotifications()
     }
@@ -57,8 +55,7 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, BRAWKeyp
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc
-    func updateReceiveUI() {
+    @objc func updateReceiveUI() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.updateReceiveUI()
@@ -93,8 +90,8 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, BRAWKeyp
     func keypadDidFinish(_ stringValueBits: String) {
         qrCodeButton.setHidden(true)
         loadingIndicator.setHidden(false)
-        DWWatchDataManager.shared.requestQRCodeForBalance(stringValueBits) { qrImage, error -> Void in
-            if let qrImage = qrImage {
+        DWWatchDataManager.shared.requestQRCodeForBalance(stringValueBits) { qrImage, error in
+            if let qrImage {
                 self.customQR = qrImage
             }
             self.updateReceiveUI()

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -20,7 +20,7 @@ import SQLite
 
 extension TxUserInfoTaxCategory {
     var stringValue: String {
-        switch (self) {
+        switch self {
         case .unknown:
             return NSLocalizedString("Transfer", comment: "")
         case .transferOut:
@@ -33,8 +33,8 @@ extension TxUserInfoTaxCategory {
             return NSLocalizedString("Income", comment: "")
         }
     }
-    
-    
+
+
     var nextTaxCategory: TxUserInfoTaxCategory {
         switch self {
         case .unknown:
@@ -51,37 +51,42 @@ extension TxUserInfoTaxCategory {
     }
 }
 
+// MARK: - TxUserInfo
+
 @objc class TxUserInfo: NSObject {
     @objc var txHash: Data
     @objc var taxCategory: TxUserInfoTaxCategory = .unknown
-    
+
     @objc init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
-        self.txHash = hash
+        txHash = hash
         self.taxCategory = taxCategory
     }
-    
+
     init(row: Row) {
-        self.txHash = row[TxUserInfo.txHashColumn]
-        self.taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
-        
+        txHash = row[TxUserInfo.txHashColumn]
+        taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
+
         super.init()
     }
 }
 
-@objc extension TxUserInfo {
+@objc
+extension TxUserInfo {
     @objc func taxCategoryString() -> String {
-        return taxCategory.stringValue
+        taxCategory.stringValue
     }
 }
+
 extension TxUserInfo {
-    static var table: Table { return Table("tx_userinfo") }
-    static var txCategoryColumn: Expression<Int> { return Expression<Int>("taxCategory") }
-    static var txHashColumn: Expression<Data> { return Expression<Data>("txHash") }
+    static var table: Table { Table("tx_userinfo") }
+    static var txCategoryColumn: Expression<Int> { Expression<Int>("taxCategory") }
+    static var txHashColumn: Expression<Data> { Expression<Data>("txHash") }
 }
 
-@objc extension DSTransaction {
+@objc
+extension DSTransaction {
     @objc func defaultTaxCategory() -> TxUserInfoTaxCategory {
-        switch (self.direction()) {
+        switch direction() {
         case .moved:
             return .expense
         case .sent:
@@ -94,7 +99,7 @@ extension TxUserInfo {
             return .unknown
         }
     }
-    
+
     @objc func defaultTaxCategoryString() -> String {
         let category = defaultTaxCategory()
         return category.stringValue

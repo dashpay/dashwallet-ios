@@ -17,4 +17,4 @@
 
 import WatchKit
 
-final class DWSetupInfoInterfaceController: WKInterfaceController {}
+final class DWSetupInfoInterfaceController: WKInterfaceController { }

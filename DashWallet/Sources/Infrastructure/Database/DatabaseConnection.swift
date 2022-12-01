@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,42 +19,44 @@ import Foundation
 import SQLite
 import SQLiteMigrationManager
 
-private let kDatabaseName: String = "store.db"
+private let kDatabaseName = "store.db"
 
-@objc class DatabaseConnection: NSObject {
+// MARK: - DatabaseConnection
+
+@objc
+class DatabaseConnection: NSObject {
     var db: Connection!
     var migrationManager: SQLiteMigrationManager!
-    
+
     override init() {
         print("SQLite: ", DatabaseConnection.storeURL().absoluteString)
         do {
-            self.db = try Connection(DatabaseConnection.storeURL().absoluteString)
-            self.migrationManager = SQLiteMigrationManager(db: self.db,
-                                                           migrations: DatabaseConnection.migrations(),
-                                                           bundle: DatabaseConnection.migrationsBundle())
-        }catch{
+            db = try Connection(DatabaseConnection.storeURL().absoluteString)
+            migrationManager = SQLiteMigrationManager(db: db,
+                                                      migrations: DatabaseConnection.migrations(),
+                                                      bundle: DatabaseConnection.migrationsBundle())
+        } catch {
             print("DatabaseConnection", error)
-            
         }
-        
+
         super.init()
     }
-    
+
     @objc func migrateIfNeeded() throws {
         if !migrationManager.hasMigrationsTable() {
             try migrationManager.createMigrationsTable()
         }
-        
+
         if migrationManager.needsMigration() {
             try migrationManager.migrateDatabase()
         }
     }
-    
-    @objc static let shared: DatabaseConnection = DatabaseConnection()
+
+    @objc static let shared = DatabaseConnection()
 }
 
 extension DatabaseConnection {
-    
+
     static func storeURL() -> URL {
         let dirPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         let docsDir = dirPaths[0] as String
@@ -62,14 +64,14 @@ extension DatabaseConnection {
         guard let documentsURL = URL(string: docsDir) else {
             fatalError("could not get user documents directory URL")
         }
-        
+
         return documentsURL.appendingPathComponent(kDatabaseName)
     }
-    
+
     static func migrations() -> [Migration] {
-        return [ SeedDB() ]
+        [SeedDB()]
     }
-    
+
     static func migrationsBundle() -> Bundle {
         guard let bundleURL = Bundle.main.url(forResource: "Migrations", withExtension: "bundle") else {
             fatalError("could not find migrations bundle")
@@ -77,7 +79,7 @@ extension DatabaseConnection {
         guard let bundle = Bundle(url: bundleURL) else {
             fatalError("could not load migrations bundle")
         }
-        
+
         return bundle
     }
 }

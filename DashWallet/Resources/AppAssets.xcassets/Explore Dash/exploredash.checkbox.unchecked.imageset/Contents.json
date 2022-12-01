@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icon-where.to.spend.png",
+      "filename" : "Checked status.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icon-where.to.spend@2x.png",
+      "filename" : "Checked status@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icon-where.to.spend@3x.png",
+      "filename" : "Checked status@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
