@@ -17,10 +17,9 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class CreateCoinbaseDashAddress {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
 
     func invoke(accountId: String) -> AnyPublisher<String?, Error> {
         remoteService.createCoinbaseAccountAddress(accountId: accountId,

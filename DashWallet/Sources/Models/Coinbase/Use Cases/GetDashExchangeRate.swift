@@ -17,10 +17,9 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class GetDashExchangeRate {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
 
     func invoke() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
         remoteService.getCoinbaseExchangeRates(currency: kDashCurrency)

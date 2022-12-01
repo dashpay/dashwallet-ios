@@ -8,7 +8,8 @@
 import Foundation
 
 /// BaseUrl API Endpoint
-private let baseURL = URL(string: "https://api.coinbase.com/")
+private let kBaseURL = URL(string: "https://api.coinbase.com/")!
+
 let authBaseURL = URL(string: "https://coinbase.com/")
 
 // MARK: - APIEndpoint
@@ -32,8 +33,8 @@ enum APIEndpoint: Endpoint {
         case .swapTradeCommit(let tradeId): return "v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "v2/accounts/\(accountId)/addresses"
         case .createCoinbaseAccountAddress(let accountId): return "v2/accounts/\(accountId)/addresses"
-        case .getToken: return "oauth/token"
-        case .revokeToken: return "oauth/revoke"
+        case .getToken: return "/oauth/token"
+        case .revokeToken: return "/oauth/revoke"
         case .signIn: return "/oauth/authorize"
         }
     }

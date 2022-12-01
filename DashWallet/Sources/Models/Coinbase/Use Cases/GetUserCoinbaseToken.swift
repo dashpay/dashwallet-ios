@@ -7,10 +7,9 @@
 import AuthenticationServices
 import Combine
 import Foundation
-import Resolver
 
 class GetUserCoinbaseToken: NSObject, ObservableObject {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
 
     func invoke(code: String) -> AnyPublisher<CoinbaseToken?, Error> {
         remoteService.getToken(code: code)

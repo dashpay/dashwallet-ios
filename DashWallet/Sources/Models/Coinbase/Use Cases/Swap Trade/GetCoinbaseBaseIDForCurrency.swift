@@ -16,10 +16,9 @@
 //
 import Combine
 import Foundation
-import Resolver
 
 class GetCoinbaseBaseIDForCurrency {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
 
     func invoke(baseCurrency: String) -> AnyPublisher<[CoinbaseBaseIDForCurrency], Error> {
         remoteService.getCoinbaseBaseIDForCurrency(baseCurrency: "baseCurrency")

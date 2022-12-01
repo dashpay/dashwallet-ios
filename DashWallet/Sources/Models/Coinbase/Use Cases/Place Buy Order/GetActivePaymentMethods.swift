@@ -16,10 +16,9 @@
 //
 import Combine
 import Foundation
-import Resolver
 
 class GetActivePaymentMethods {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
     func invoke() -> AnyPublisher<[CoinbasePaymentMethod], Error> {
         remoteService.getCoinbaseActivePaymentMethods()
             .map { response in

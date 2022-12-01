@@ -11,7 +11,6 @@
 		0F36937F2919A70B007F4E91 /* Coinbase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0F3693812919A70B007F4E91 /* Coinbase.storyboard */; };
 		0F651D0329047716006EFDD8 /* GetDashExchangeRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */; };
 		0F651D0529048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */; };
-		0F6EDF9628C89675000427E7 /* AppModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9528C89675000427E7 /* AppModule.swift */; };
 		0F6EDFC328C896BD000427E7 /* TokenNetworkRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9B28C896BC000427E7 /* TokenNetworkRequest.swift */; };
 		0F6EDFC428C896BD000427E7 /* CoinbaseUserAuthInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */; };
 		0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9F28C896BC000427E7 /* CoinbaseSwapeTradeRequest.swift */; };
@@ -728,7 +727,6 @@
 		0F3693802919A70B007F4E91 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Coinbase.storyboard; sourceTree = "<group>"; };
 		0F651D0229047716006EFDD8 /* GetDashExchangeRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDashExchangeRate.swift; sourceTree = "<group>"; };
 		0F651D0429048EE3006EFDD8 /* SendDashFromCoinbaseToDashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDashFromCoinbaseToDashWallet.swift; sourceTree = "<group>"; };
-		0F6EDF9528C89675000427E7 /* AppModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppModule.swift; sourceTree = "<group>"; };
 		0F6EDF9B28C896BC000427E7 /* TokenNetworkRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenNetworkRequest.swift; sourceTree = "<group>"; };
 		0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseUserAuthInformation.swift; sourceTree = "<group>"; };
 		0F6EDF9F28C896BC000427E7 /* CoinbaseSwapeTradeRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseSwapeTradeRequest.swift; sourceTree = "<group>"; };
@@ -1997,18 +1995,9 @@
 				47838B83290665EC0003E8AB /* Infrastructure */,
 				0F6EDF9728C896BC000427E7 /* Domain */,
 				0F6EDFB728C896BD000427E7 /* Use Cases */,
-				0F6EDF9428C89675000427E7 /* di */,
 				4774DCDA28F3FA9C008CF87D /* Coinbase.swift */,
 			);
 			path = Coinbase;
-			sourceTree = "<group>";
-		};
-		0F6EDF9428C89675000427E7 /* di */ = {
-			isa = PBXGroup;
-			children = (
-				0F6EDF9528C89675000427E7 /* AppModule.swift */,
-			);
-			path = di;
 			sourceTree = "<group>";
 		};
 		0F6EDF9728C896BC000427E7 /* Domain */ = {
@@ -6142,7 +6131,6 @@
 				2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */,
 				472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */,
-				0F6EDF9628C89675000427E7 /* AppModule.swift in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,

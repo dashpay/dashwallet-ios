@@ -7,7 +7,7 @@
 
 import Combine
 import Foundation
-import Resolver
+import Moya
 
 // MARK: - CoinbaseService
 
@@ -35,7 +35,7 @@ protocol CoinbaseService {
 // MARK: - CoinbaseServiceImpl
 
 class CoinbaseServiceImpl: CoinbaseService {
-    @Injected private var restClient: RestClient
+    private var restClient: RestClient = RestClientImpl(sessionConfig: .default)
 
     func getToken(code: String) -> AnyPublisher<CoinbaseToken, Error> {
         var queryItems: [URLQueryItem] = [

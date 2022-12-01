@@ -17,10 +17,9 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class RequestSwapTrade {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
     func invoke(amount: String, amountCurrency: String, targetAsset: String,
                 sourceAsset: String?) -> AnyPublisher<[CoinbaseSwapeTrade], Error> {
         remoteService.swapTradeCoinbase(request: CoinbaseSwapeTradeRequest(amount: amount,

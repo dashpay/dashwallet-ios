@@ -17,14 +17,13 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class SendDashFromCoinbaseToDashWallet {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
     func invoke(accountId: String, verificationCode: String?,
                 request: CoinbaseTransactionsRequest) -> AnyPublisher<CoinbaseTransaction?, Error> {
         remoteService.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, request: request)
-            .map { (response:BaseDataResponse<CoinbaseTransaction>) in
+            .map { (response: BaseDataResponse<CoinbaseTransaction>) in
                 response.data
             }.eraseToAnyPublisher()
     }

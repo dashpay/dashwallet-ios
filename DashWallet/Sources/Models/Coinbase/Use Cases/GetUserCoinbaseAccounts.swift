@@ -7,14 +7,13 @@
 
 import Combine
 import Foundation
-import Resolver
 
 private let lastKnownBalanceKey = "lastKnownBalance"
 
 // MARK: - GetUserCoinbaseAccounts
 
 class GetUserCoinbaseAccounts {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
 
     var lastKnownBalance: String? {
         GetUserCoinbaseAccounts.lastKnownBalance

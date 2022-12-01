@@ -18,28 +18,19 @@
 import AuthenticationServices
 import Combine
 import Foundation
-import Resolver
 
 let kDashCurrency = "DASH"
 var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
 
 // MARK: - Coinbase
 
+
 class Coinbase {
-    @Injected
-    private var getUserCoinbaseAccounts: GetUserCoinbaseAccounts
-
-    @Injected
-    private var createCoinbaseDashAddress: CreateCoinbaseDashAddress
-
-    @Injected
-    private var getExchangeRate: GetDashExchangeRate
-
-    @Injected
-    private var getUserCoinbaseToken: GetUserCoinbaseToken
-
-    @Injected
-    private var sendDashFromCoinbaseToDashWallet: SendDashFromCoinbaseToDashWallet
+    private lazy var getUserCoinbaseAccounts = GetUserCoinbaseAccounts()
+    private lazy var createCoinbaseDashAddress = CreateCoinbaseDashAddress()
+    private lazy var getExchangeRate = GetDashExchangeRate()
+    private lazy var getUserCoinbaseToken = GetUserCoinbaseToken()
+    private lazy var sendDashFromCoinbaseToDashWallet = SendDashFromCoinbaseToDashWallet()
 
     var isAuthorized: Bool { getUserCoinbaseToken.isUserLoginedIn() }
 
@@ -100,7 +91,6 @@ extension Coinbase {
 
         let authenticationSession = ASWebAuthenticationSession(url: signInURL,
                                                                callbackURLScheme: callbackURLScheme) { callbackURL, error in
-            // 1
             guard error == nil,
                   let callbackURL,
                   let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
@@ -120,11 +110,10 @@ extension Coinbase {
                         .sink(receiveCompletion: { [weak self] _ in
 
                         }, receiveValue: { [weak self] _ in
+
                             completion(.success(true))
                         })
                         .store(in: &self!.cancelables)
-
-
                 })
                 .store(in: &self.cancelables)
         }

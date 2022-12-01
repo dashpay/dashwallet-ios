@@ -17,10 +17,9 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class CommitBuyOrder {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
     func invoke(accountId: String, orderID: String) -> AnyPublisher<[CoinbasePlaceBuyOrder], Error> {
         remoteService.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
             .map { response in

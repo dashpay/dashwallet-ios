@@ -17,10 +17,9 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class CommitSwapTrade {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
     func invoke(tradeId: String) -> AnyPublisher<[CoinbaseSwapeTrade], Error> {
         remoteService.swapTradeCommitCoinbase(tradeId: tradeId)
             .map { response in

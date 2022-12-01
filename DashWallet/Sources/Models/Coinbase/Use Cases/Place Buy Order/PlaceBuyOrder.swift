@@ -17,10 +17,9 @@
 
 import Combine
 import Foundation
-import Resolver
 
 class PlaceBuyOrder {
-    @Injected private var remoteService: CoinbaseService
+    private var remoteService: CoinbaseService = CoinbaseServiceImpl()
     func invoke(accountId: String, request: CoinbasePlaceBuyOrderRequest) -> AnyPublisher<[CoinbasePlaceBuyOrder], Error> {
         remoteService.placeCoinbaseBuyOrder(accountId: accountId, request: request)
             .map { response in
