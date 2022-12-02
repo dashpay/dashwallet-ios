@@ -27,12 +27,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAboutViewController ()
+@interface DWAboutViewController () <DWAboutModelDelegate>
 
 @property (strong, nonatomic) IBOutlet UIImageView *dashLogoImageView;
 @property (strong, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashSyncVersionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
+
+@property (strong, nonatomic) IBOutlet UILabel *exploreDashLastDeviceSyncLabel;
+@property (strong, nonatomic) IBOutlet UILabel *exploreDashLastServerUpdateLabel;
 
 @property (strong, nonatomic) IBOutlet UIButton *repositoryURLButton;
 
@@ -61,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DWAboutModel *)model {
     if (!_model) {
         _model = [[DWAboutModel alloc] init];
+        _model.delegate = self;
     }
     return _model;
 }
@@ -82,7 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.rateReviewLabel.text = NSLocalizedString(@"Help us improve your experience", nil);
     [self.rateReviewButton setTitle:NSLocalizedString(@"Review & Rate the app", nil) forState:UIControlStateNormal];
     [self.contactSupportButton setTitle:NSLocalizedString(@"Contact Support", nil) forState:UIControlStateNormal];
-    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2020 Dash Core", nil);
+    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2022 Dash Core", nil);
+    self.exploreDashLastDeviceSyncLabel.text = [self.model exploreDashSyncState];
+    self.exploreDashLastServerUpdateLabel.text = [self.model exploreLastServerUpdateDate];
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -277,6 +283,11 @@ NS_ASSUME_NONNULL_BEGIN
 
         [self presentViewController:alert animated:YES completion:nil];
     }
+}
+
+- (void)exploreDashDatabaseSyncStateChanged {
+    self.exploreDashLastDeviceSyncLabel.text = [self.model exploreDashSyncState];
+    self.exploreDashLastServerUpdateLabel.text = [self.model exploreLastServerUpdateDate];
 }
 
 @end

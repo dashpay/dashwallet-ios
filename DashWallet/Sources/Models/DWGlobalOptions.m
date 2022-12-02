@@ -44,6 +44,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic selectedPaymentCurrency;
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
 @dynamic dateReclassifyYourTransactionsFlowActivated;
+@dynamic exploreDashMerchantsInfoShown;
 
 #pragma mark - Init
 
@@ -134,6 +135,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
     self.dateReclassifyYourTransactionsFlowActivated = nil;
+    self.exploreDashMerchantsInfoShown = NO;
 }
 
 @end

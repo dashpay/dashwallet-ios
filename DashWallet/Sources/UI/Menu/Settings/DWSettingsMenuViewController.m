@@ -17,8 +17,6 @@
 
 #import "DWSettingsMenuViewController.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWAboutViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWLocalCurrencyViewController.h"
@@ -26,6 +24,7 @@
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWDisplayError.h"
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

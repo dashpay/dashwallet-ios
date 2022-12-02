@@ -18,6 +18,7 @@
 #import "DWBasePayViewController.h"
 
 #import "DWHomeProtocol.h"
+#import "DWPaymentsViewController.h"
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -26,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWHomeViewControllerDelegate <NSObject>
 
-- (void)homeViewControllerShowReceivePayment:(DWHomeViewController *)controller;
+- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex;
 
 @end
 

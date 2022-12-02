@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ 님이 당신의 연락처 요청을 수락하였습니다";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1시간";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1분";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24시간";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5분";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"는 복원 문구에 쓰이는 단어가 아닙니다.";
@@ -60,6 +87,9 @@
 
 /* No comment provided by engineer. */
 "Accept" = "수락";
+
+/* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
 
 /* No comment provided by engineer. */
 "Activity" = "활동";
@@ -119,7 +149,16 @@
 "Are you sure?" = "확실합니까?";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "인증할 수 없습니다";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "자동 로그아웃";
@@ -148,11 +187,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "%2$d개중 %1$d번째 블록";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "대시 매수 & 매도";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "대시 매수 / 매도";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "대시 매수";
@@ -161,7 +210,19 @@
 "Buy Dash with Uphold account" = "업홀드 계정으로 대시 매수";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "이 기기를 삭제하면 더 이상 이 기기의 금액에 액세스할 수 없습니다. 이 작업은 더 이상 암호 문장에 접근할 수 없고 PIN 코드도 분실한 경우에만 실행하십시오.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "취소";
@@ -242,7 +303,7 @@
 "Copy Logs" = "로그 복사하기";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 대시 코어";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "입력되지 않거나 잘못 입력된 단어를 자동을 복구할 수 없었습니다.";
@@ -265,8 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "현재 사용자: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
@@ -283,11 +353,20 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "통화 기본값, 단축키, 관련 정보...";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다). 이 지갑을 즉시 삭제하시고 안전한 기기에서 지갑을 복구하십시오.";
+
+/* Direction */
+"Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "스크린샷을 찍지 마세요";
@@ -300,6 +379,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "예시: 홍길동";
@@ -344,10 +426,16 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID 제한";
+
+/* Explore Dash */
+"Failed to sync on" = "Failed to sync on";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "지갑 업데이트 실패";
@@ -361,11 +449,29 @@
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "요청한 금액에서 수수료가 공제됩니다.";
 
+/* Explore Dash */
+"Fetching Info" = "Fetching Info";
+
 /* No comment provided by engineer. */
 "Filter Transactions" = "거래 필터링 하기";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
+
+/* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "대시 네트워크에서 사용자를 검색합니다";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PIN을 잊어버리셨나요?";
@@ -388,8 +494,14 @@
 /* No comment provided by engineer. */
 "Get Started" = "시작하기";
 
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
+
 /* No comment provided by engineer. */
 "Go to Website" = "웹사이트로 가기";
+
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "님이 친구 요청을 보냈습니다";
@@ -411,6 +523,9 @@
 
 /* No comment provided by engineer. */
 "History" = "내역";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "수락합니다";
@@ -478,6 +593,15 @@
 /* No comment provided by engineer. */
 "Keypair %ld" = "키페어 %ld";
 
+/* Explore Dash */
+"Last device sync" = "Last device sync";
+
+/* Explore Dash */
+"Last server update" = "Last server update";
+
+/* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "완료되면 알려주세요";
 
@@ -495,6 +619,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "요청된 로컬 금액: %@";
+
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
 
 /* No comment provided by engineer. */
 "Locked" = "잠김";
@@ -521,7 +648,13 @@
 "Low" = "낮음";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "신뢰할 수 있는 노드 관리";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "마스터노드 리스트%2$d 중 #%1$d";
@@ -544,6 +677,9 @@
 /* adjective, security level */
 "Medium" = "중간";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "최소 세 글자";
 
@@ -565,6 +701,15 @@
 /* No comment provided by engineer. */
 "Name" = "이름";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
+/* Nearby */
+"Nearby" = "Nearby";
+
 /* No comment provided by engineer. */
 "Network" = "네트워크";
 
@@ -579,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC 장치가 유효한 대시 주소를 전송하지 못했습니다";
+
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
 
 /* No comment provided by engineer. */
 "Node IP" = "노드 IP";
@@ -596,6 +744,12 @@
 "Not a valid Dash address" = "유효한 대시 주소가 아닙니다";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
+/* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
 
 /* No comment provided by engineer. */
@@ -606,6 +760,12 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "%@ 님이 당신의 요청을 수락하면 사용자 이름에 직접 지불할 수 있습니다";
+
+/* Online */
+"Online" = "Online";
+
+/* Online Merchant */
+"Online Merchant" = "Online Merchant";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "운영자 키";
@@ -625,8 +785,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "사용자 이름에 직접 지불하기";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "쉬운 지불";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "지불 중";
@@ -639,6 +805,9 @@
 
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "지불 중...";
+
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
 
 /* No comment provided by engineer. */
 "Payments" = "지불";
@@ -697,6 +866,9 @@
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "유효한 쿼럼: %1$d/%2$d";
 
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
+
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "요율: %1$@ = %2$@ ";
 
@@ -733,6 +905,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "복구 문구는 12, 15, 18, 21 및 24 단어를 지녀야 합니다";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "등록";
 
@@ -757,11 +932,17 @@
 /* No comment provided by engineer. */
 "Reset" = "리셋";
 
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "기본값으로 리셋하기";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "지갑 리셋하기";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";
@@ -838,6 +1019,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "업홀드에서 확인";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "보내기";
 
@@ -905,6 +1092,9 @@
 "Show Recovery Phrase" = "복원 문구 확인하기";
 
 /* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
+
+/* No comment provided by engineer. */
 "Skip" = "건너뛰기";
 
 /* No comment provided by engineer. */
@@ -918,6 +1108,18 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "연락처 분류";
+
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "금액 특정하기";
@@ -949,6 +1151,9 @@
 /* No comment provided by engineer. */
 "Syncing Balance" = "잔고 동기화 중";
 
+/* Explore Dash */
+"Syncing..." = "Syncing...";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "탭";
 
@@ -975,6 +1180,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "이 어플은 오픈 소스입니다:";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "당신이 어플을 언락하실 때마다 이 PIN이 필요합니다.";
@@ -1051,6 +1259,9 @@
 /* No comment provided by engineer. */
 "Uphold" = "업홀드";
 
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
+
 /* No comment provided by engineer. */
 "Used" = "사용됨";
 
@@ -1080,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "모두 보기";
+
+/* View all locations */
+"View all locations" = "View all locations";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "블록 탐색기에서 보기";
@@ -1115,16 +1329,28 @@
 "We do not store this recovery phrase." = "이 복원 문구를 저장하지 마십시오.";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "대시 지갑의 마이그레이션 중 충돌을 감지하였습니다. 블록체인을 재스캔하거나 다시 시도하여 이 문제를 해결할 수 있습니다. 재스캔은 와이파이에서 수행하실 것을 권장하며 30분 가량 소요됩니다. 당신의 자금은 동기화 과정이 완료되게 되면 이용할 수 있습니다.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "다음을 업그레이드 하였습니다";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "환영합니다";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "거래가 확인되면 다른 지갑은 가치를 가지지 않게 되며, 보안 관련 사유를 위해서는 이를 다시 사용해서는 안됩니다.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
@@ -1179,6 +1405,12 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";

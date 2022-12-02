@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ έχει αποδεχτεί το αίτημα επαφής σας";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 ώρα";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 λεπτό";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 ώρες";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 λεπτά";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" δεν είναι μια φράση ανάκτησης";
@@ -60,6 +87,9 @@
 
 /* No comment provided by engineer. */
 "Accept" = "Αποδοχή";
+
+/* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
 
 /* No comment provided by engineer. */
 "Activity" = "Δραστηριότητα";
@@ -119,7 +149,16 @@
 "Are you sure?" = "Είστε σίγουροι;";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Η ταυτοποίηση δεν είναι διαθέσιμη";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Αυτόματη Αποσύνδεση";
@@ -148,11 +187,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Μπλόκ #%1$d από %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Αγορά και Πώληση Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Αγορά / Πώληση Dash";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Αγορά Dash";
@@ -161,7 +210,19 @@
 "Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Με την εκκαθάριση αυτής της συσκευής δεν θα έχετε πλέον πρόσβαση στα χρήματα αυτής της συσκευής. Αυτό θα πρέπει να γίνει μόνο εάν δεν έχετε πλέον πρόσβαση στη φράση πρόσβασης και έχετε ξεχάσει και τον κωδικό PIN.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Ακύρωση";
@@ -242,7 +303,7 @@
 "Copy Logs" = "αντιγραφή αρχείων καταγραφής";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Δεν ήταν δυνατή η αυτόματη ανάκτηση των χαμένων λέξεων ";
@@ -265,8 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Τρέχων χρήστης: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Οι Dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
@@ -283,11 +353,20 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Προεπιλεγμένο νόμισμα, συντομεύσεις, σχετικά με...";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας).";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
+
+/* Direction */
+"Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Μην τραβήξετε στιγμιότυπο οθόνης";
@@ -300,6 +379,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Νωρίτερα";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "πχ: johndoe";
@@ -344,10 +426,16 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "όριο Face ID ";
+
+/* Explore Dash */
+"Failed to sync on" = "Failed to sync on";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Η ενημέρωση του πορτοφολιού απέτυχε";
@@ -361,11 +449,29 @@
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Το τέλος θα αφαιρεθεί από το ποσό που ζητήσατε.";
 
+/* Explore Dash */
+"Fetching Info" = "Fetching Info";
+
 /* No comment provided by engineer. */
 "Filter Transactions" = "Φίλτρο Συναλλαγών";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
+
+/* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Βρείτε έναν χρήστη στο Δίκτυο του Dash";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Ξεχάσατε το PIN;";
@@ -388,8 +494,14 @@
 /* No comment provided by engineer. */
 "Get Started" = "Ξεκινήστε";
 
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
+
 /* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
+
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "αιτήθηκε να γίνει φίλος / φίλη σας";
@@ -411,6 +523,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Ιστορικό";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "Αποδέχομαι";
@@ -478,6 +593,15 @@
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
+/* Explore Dash */
+"Last device sync" = "Last device sync";
+
+/* Explore Dash */
+"Last server update" = "Last server update";
+
+/* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
 
@@ -495,6 +619,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Τοπικό ποσό που ζητήθηκε: %@";
+
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
 
 /* No comment provided by engineer. */
 "Locked" = "Κλείδωσε";
@@ -521,7 +648,13 @@
 "Low" = "χαμηλά";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "Διαχείριση Έμπιστου Κόμβου";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "Λίστα masternode #%1$d of %2$d";
@@ -544,6 +677,9 @@
 /* adjective, security level */
 "Medium" = "Μέσο";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Ελάχιστο 3 χαρακτήρες";
 
@@ -565,6 +701,15 @@
 /* No comment provided by engineer. */
 "Name" = "Όνομα";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
+/* Nearby */
+"Nearby" = "Nearby";
+
 /* No comment provided by engineer. */
 "Network" = "Δίκτυο";
 
@@ -579,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Η συσκευή NFC δεν μεταδίδει έγκυρη διεύθυνση Dash";
+
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Κόμβου";
@@ -596,6 +744,12 @@
 "Not a valid Dash address" = "Δεν είναι μια έγκυρη διεύθυνση Dash";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Δεν έχουν χρησιμοποιηθεί ακόμη";
 
 /* No comment provided by engineer. */
@@ -606,6 +760,12 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Μόλις ο/η %@ αποδεχτεί το αίτημα σας, θα μπορείτε να πληρώσετε απευθείας στο όνομα χρήστη";
+
+/* Online */
+"Online" = "Online";
+
+/* Online Merchant */
+"Online Merchant" = "Online Merchant";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Κλειδιά Χειριστή";
@@ -625,8 +785,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Πληρώστε απευθείας στο όνομα χρήστη";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Πληρώστε με ευκολία";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Πληρωμή";
@@ -639,6 +805,9 @@
 
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Πληρωμή...";
+
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
 
 /* No comment provided by engineer. */
 "Payments" = "Πληρωμές";
@@ -697,6 +866,9 @@
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorums που επικυρώθηκαν: %1$d/%2$d";
 
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
+
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Ρυθμός: %1$@ = %2$@";
 
@@ -733,6 +905,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Η φράση ανάκτησης πρέπει να έχει 12, 15, 18, 21 ή 24 λέξεις";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Εγγραφή";
 
@@ -757,11 +932,17 @@
 /* No comment provided by engineer. */
 "Reset" = "Επαναφορά";
 
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "Επαναφορά στα Προεπιλεγμένα";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Επαναφορά Πορτοφολιού";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
@@ -838,6 +1019,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Δείτε στο Uphold";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "Αποστολή";
 
@@ -905,6 +1092,9 @@
 "Show Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";
 
 /* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
+
+/* No comment provided by engineer. */
 "Skip" = "Παράλειψη";
 
 /* No comment provided by engineer. */
@@ -918,6 +1108,18 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Ταξινόμηση Επαφών";
+
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Καθορίστε το ποσό";
@@ -949,6 +1151,9 @@
 /* No comment provided by engineer. */
 "Syncing Balance" = "Συγχρονισμός Υπολοίπου";
 
+/* Explore Dash */
+"Syncing..." = "Syncing...";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Πατήστε";
 
@@ -975,6 +1180,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Αυτή η εφαρμογή είναι ανοικτού κώδικα";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Αυτός ο κωδικός PIN θα χρειαστεί να ξεκλειδώσετε την εφαρμογή σας κάθε φορά που την χρησιμοποιείτε.";
@@ -1051,6 +1259,9 @@
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
+
 /* No comment provided by engineer. */
 "Used" = "Χρησιμοποιήθηκε";
 
@@ -1080,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "Προβολή Όλων";
+
+/* View all locations */
+"View all locations" = "View all locations";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Προβολή στον Explorer των Block";
@@ -1115,16 +1329,28 @@
 "We do not store this recovery phrase." = "Δεν αποθηκεύουμε αυτήν την φράση ανάκτησης";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Εντοπίσαμε ότι το Dash Wallet κατέρρευσε κατά τη διάρκεια της μεταφοράς. Η επανασάρωση του blockchain θα λύσει αυτό το ζήτημα ή μπορείτε να προσπαθήσετε ξανά. Η επανασάρωση  θα πρέπει κατά προτίμηση να εκτελεστει σε wifi και θα διαρκέσει έως και μισή ώρα. Τα χρηματά σας θα είναι διαθέσιμα μόλις ολοκληρωθεί η διαδικασία συγχρονισμού.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Αναβαθμίσαμε";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "Καλώς ορίσατε";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Όταν επιβεβαιωθεί η συναλλαγή, το άλλο πορτοφόλι θα είναι άχρηστο και δεν θα πρέπει να επαναχρησιμοποιηθεί για λόγους ασφαλείας.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
@@ -1179,6 +1405,12 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";

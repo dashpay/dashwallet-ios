@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Khk-i4-iGF">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Khk-i4-iGF">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,32 +14,32 @@
             <objects>
                 <viewController id="Khk-i4-iGF" customClass="DWAboutViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Lne-qW-KeG">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash_logo_template" translatesAutoresizingMaskIntoConstraints="NO" id="bL4-py-5Pp">
-                                <rect key="frame" x="240.5" y="75" width="119" height="33"/>
+                                <rect key="frame" x="147.5" y="119" width="119" height="33"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="App Version Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pJw-Vp-Xdk">
-                                <rect key="frame" x="20" y="146" width="560" height="24"/>
+                                <rect key="frame" x="20" y="190" width="374" height="20.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
                                 <color key="textColor" name="DarkTitleColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashSync Version Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HJF-Ju-zuu">
-                                <rect key="frame" x="20" y="180" width="560" height="16"/>
+                                <rect key="frame" x="20" y="220.5" width="374" height="14.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                 <color key="textColor" name="QuaternaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Description Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qL5-kd-XMW">
-                                <rect key="frame" x="20" y="226" width="560" height="19.5"/>
+                                <rect key="frame" x="20" y="335" width="374" height="16"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DWButton">
-                                <rect key="frame" x="20" y="245.5" width="560" height="44"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DWButton">
+                                <rect key="frame" x="20" y="351" width="374" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="N9b-1b-4qG"/>
                                 </constraints>
@@ -51,13 +53,13 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Rate Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZKZ-c6-sFB">
-                                <rect key="frame" x="20" y="414.5" width="560" height="19.5"/>
+                                <rect key="frame" x="20" y="681.5" width="374" height="16"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="QEh-Hn-zyc" userLabel="Review Rate Button" customClass="DWActionButton">
-                                <rect key="frame" x="200" y="450" width="200" height="39"/>
+                                <rect key="frame" x="107" y="713.5" width="200" height="39"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="pEd-iP-fQY"/>
@@ -71,7 +73,7 @@
                                 </connections>
                             </view>
                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="y5q-5a-QDG" userLabel="Support Button" customClass="DWActionButton">
-                                <rect key="frame" x="200" y="497" width="200" height="39"/>
+                                <rect key="frame" x="107" y="760.5" width="200" height="39"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="j7K-2U-YzK"/>
@@ -86,12 +88,36 @@
                                 </connections>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vjR-PV-utO">
-                                <rect key="frame" x="20" y="580" width="560" height="16"/>
+                                <rect key="frame" x="20" y="843.5" width="374" height="14.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                 <color key="textColor" name="QuaternaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Explore Dash" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AjW-TX-RBq">
+                                <rect key="frame" x="157" y="249" width="100" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="aFo-fd-7Pl">
+                                <rect key="frame" x="152.5" y="277.5" width="109.5" height="33"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last device sync " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PIm-EL-Mxu">
+                                        <rect key="frame" x="0.0" y="0.0" width="109.5" height="14.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <color key="textColor" name="QuaternaryTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last server update " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iAP-pI-diT">
+                                        <rect key="frame" x="0.0" y="18.5" width="109.5" height="14.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                        <color key="textColor" name="QuaternaryTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="3ga-QA-gmh"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="ZKZ-c6-sFB" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="285-gf-rut"/>
@@ -103,14 +129,18 @@
                             <constraint firstAttribute="trailingMargin" secondItem="odB-g7-n30" secondAttribute="trailing" id="L85-x6-v3i"/>
                             <constraint firstAttribute="trailingMargin" secondItem="pJw-Vp-Xdk" secondAttribute="trailing" id="Las-np-yke"/>
                             <constraint firstItem="y5q-5a-QDG" firstAttribute="top" secondItem="QEh-Hn-zyc" secondAttribute="bottom" constant="8" id="MEf-KO-0cK"/>
+                            <constraint firstItem="aFo-fd-7Pl" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="Qli-lk-e6r"/>
                             <constraint firstItem="pJw-Vp-Xdk" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="Sns-l5-ovQ"/>
                             <constraint firstItem="bL4-py-5Pp" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="Tg2-Pg-9sW"/>
+                            <constraint firstItem="AjW-TX-RBq" firstAttribute="top" secondItem="HJF-Ju-zuu" secondAttribute="bottom" constant="14" id="URj-Xq-T9e"/>
                             <constraint firstItem="odB-g7-n30" firstAttribute="top" secondItem="qL5-kd-XMW" secondAttribute="bottom" id="Wno-o3-AkN"/>
                             <constraint firstItem="HJF-Ju-zuu" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="b4l-JB-G3P"/>
+                            <constraint firstItem="aFo-fd-7Pl" firstAttribute="top" secondItem="AjW-TX-RBq" secondAttribute="bottom" constant="8" id="bBx-9X-UeY"/>
                             <constraint firstItem="HJF-Ju-zuu" firstAttribute="top" secondItem="pJw-Vp-Xdk" secondAttribute="bottom" constant="10" id="fix-LI-K1s"/>
                             <constraint firstItem="odB-g7-n30" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="gXR-eA-Fgo"/>
                             <constraint firstItem="QEh-Hn-zyc" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="j7a-Xp-zy9"/>
-                            <constraint firstItem="qL5-kd-XMW" firstAttribute="top" secondItem="HJF-Ju-zuu" secondAttribute="bottom" constant="30" id="o8k-Nd-Rfi"/>
+                            <constraint firstItem="AjW-TX-RBq" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="kth-Pl-Kwb"/>
+                            <constraint firstItem="qL5-kd-XMW" firstAttribute="top" secondItem="HJF-Ju-zuu" secondAttribute="bottom" constant="100" id="o8k-Nd-Rfi"/>
                             <constraint firstItem="bL4-py-5Pp" firstAttribute="top" secondItem="3ga-QA-gmh" secondAttribute="top" constant="75" id="p3n-zV-4Zt"/>
                             <constraint firstItem="y5q-5a-QDG" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="s5l-wt-zhl"/>
                             <constraint firstItem="qL5-kd-XMW" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="vdN-ng-k5H"/>
@@ -119,7 +149,6 @@
                             <constraint firstAttribute="trailingMargin" secondItem="HJF-Ju-zuu" secondAttribute="trailing" id="yZF-Gm-Qe5"/>
                             <constraint firstItem="pJw-Vp-Xdk" firstAttribute="top" secondItem="bL4-py-5Pp" secondAttribute="bottom" constant="38" id="yv8-Eg-e37"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="3ga-QA-gmh"/>
                     </view>
                     <connections>
                         <outlet property="appVersionLabel" destination="pJw-Vp-Xdk" id="Yxy-lr-OnK"/>
@@ -128,6 +157,8 @@
                         <outlet property="dashLogoImageView" destination="bL4-py-5Pp" id="ue8-PG-Zkc"/>
                         <outlet property="dashSyncVersionLabel" destination="HJF-Ju-zuu" id="Av7-Z6-NVw"/>
                         <outlet property="descriptionLabel" destination="qL5-kd-XMW" id="GH0-e0-Mom"/>
+                        <outlet property="exploreDashLastDeviceSyncLabel" destination="PIm-EL-Mxu" id="9cq-HK-Q7q"/>
+                        <outlet property="exploreDashLastServerUpdateLabel" destination="iAP-pI-diT" id="h7C-qv-E1z"/>
                         <outlet property="rateReviewButton" destination="QEh-Hn-zyc" id="9V3-vL-TZe"/>
                         <outlet property="rateReviewLabel" destination="ZKZ-c6-sFB" id="4jg-cL-4Lc"/>
                         <outlet property="repositoryURLButton" destination="odB-g7-n30" id="uk8-QQ-Meg"/>

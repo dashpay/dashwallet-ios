@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ đã chấp nhận yêu cầu liên hệ của bạn";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 giờ";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 phút";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 giờ";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 phút";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" không phải là một cụm từ khôi phục";
@@ -60,6 +87,9 @@
 
 /* No comment provided by engineer. */
 "Accept" = "Chấp nhận";
+
+/* No comment provided by engineer. */
+"Accepts DASH directly" = "Accepts DASH directly";
 
 /* No comment provided by engineer. */
 "Activity" = "Các hoạt động";
@@ -119,7 +149,16 @@
 "Are you sure?" = "Bạn chắc chứ?";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
+"ATMs" = "ATMs";
+
+/* No comment provided by engineer. */
 "Authentication is unvailable" = "Xác thực không sẵn sàng";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Tự động khoá";
@@ -148,11 +187,21 @@
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Khối #%1$d của %2$d";
 
+/* Buy
+   buy */
+"Buy" = "Buy";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Mua & Bán Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Mua & Bán Dash";
+
+/* Buy a Gift Card */
+"Buy a Gift Card" = "Buy a Gift Card";
+
+/* No comment provided by engineer. */
+"Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Mua Dash";
@@ -161,7 +210,19 @@
 "Buy Dash with Uphold account" = "Mua Dash với tài khoản Uphold";
 
 /* No comment provided by engineer. */
+"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+
+/* No comment provided by engineer. */
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Buy/Sell */
+"Buy/Sell" = "Buy/Sell";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Bằng việc xoá thiết bị này bạn sẽ không còn có thể truy cập vào số tiền trong thiết bị này nữa. Điều này chỉ nên thực hiện nếu bạn không còn nhớ mật khẩu hoặc quên mất mã PIN.";
+
+/* Call */
+"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Huỷ bỏ";
@@ -242,7 +303,7 @@
 "Copy Logs" = "Sao chép logs";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Bản quyền © 2020 Dash Core";
+"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
@@ -265,8 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Người dùng hiện tại: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Số Dash cho giao dịch không thể nhỏ hơn %@";
@@ -283,11 +353,20 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Tiền tệ ngầm định, lối tắt, về...";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "THIẾT BỊ NÀY KHÔNG CÒN BẢO MẬT\nBất kỳ ứng dụng 'jailbreak' nào đều có thể truy cập vào dữ liệu chìa khoá của tất cả các ứng dụng khác (và đánh cắp Dash của bạn).";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "THIẾT BỊ NÀY KHÔNG CÒN BẢO MẬT\nBất kỳ ứng dụng 'jailbreak' nào đều có thể truy cập vào dữ liệu chìa khoá của tất cả các ứng dụng khác (và đánh cắp Dash của bạn). Hãy xoá sạch ví ngày ngay lập trức và khôi phục tính năng bảo mật của thiết bị.";
+
+/* Direction */
+"Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Đừng chụp ảnh màn hình";
@@ -300,6 +379,9 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Trước đó";
+
+/* No comment provided by engineer. */
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "ví dụ: johndoe";
@@ -344,10 +426,16 @@
 "Explore" = "Explore";
 
 /* No comment provided by engineer. */
+"Explore Dash" = "Explore Dash";
+
+/* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Giới hạn Face ID";
+
+/* Explore Dash */
+"Failed to sync on" = "Failed to sync on";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Không cập nhận được ví";
@@ -361,11 +449,29 @@
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Phí chuyển sẽ được trừ từ số lượng yêu cầu.";
 
+/* Explore Dash */
+"Fetching Info" = "Fetching Info";
+
 /* No comment provided by engineer. */
 "Filter Transactions" = "Lọc các giao dịch";
 
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
+
+/* No comment provided by engineer. */
+"Find a merchant." = "Find a merchant.";
+
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Tìm một người dùng trên mạng lưới Dash";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+
+/* No comment provided by engineer. */
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Quên mã PIN";
@@ -388,8 +494,14 @@
 /* No comment provided by engineer. */
 "Get Started" = "Bắt đầu";
 
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
+
 /* No comment provided by engineer. */
 "Go to Website" = "Đến Website";
+
+/* No comment provided by engineer. */
+"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "đã yêu cầu làm bạn với bạn";
@@ -411,6 +523,9 @@
 
 /* No comment provided by engineer. */
 "History" = "Lịch sử";
+
+/* No comment provided by engineer. */
+"How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
 "I Accept" = "Tôi chấp nhận";
@@ -478,6 +593,15 @@
 /* No comment provided by engineer. */
 "Keypair %ld" = "Cặp khoá %ld";
 
+/* Explore Dash */
+"Last device sync" = "Last device sync";
+
+/* Explore Dash */
+"Last server update" = "Last server update";
+
+/* No comment provided by engineer. */
+"Learn More" = "Learn More";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Hãy cho tôi biết khi nó xong";
 
@@ -495,6 +619,9 @@
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Số lượng được yêu cầu: %@";
+
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
 
 /* No comment provided by engineer. */
 "Locked" = "Đã khoá";
@@ -521,7 +648,13 @@
 "Low" = "Thấp";
 
 /* No comment provided by engineer. */
+"Manage GPS Permission" = "Manage GPS Permission";
+
+/* No comment provided by engineer. */
 "Manage Trusted Node" = "Quản lý nút tin cậy";
+
+/* Map */
+"Map" = "Map";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "masternode list #%1$d of %2$d";
@@ -544,6 +677,9 @@
 /* adjective, security level */
 "Medium" = "Trung bình";
 
+/* No comment provided by engineer. */
+"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+
 /* Validation rule */
 "Minimum 3 characters" = "Tối thiểu 3 ký tự";
 
@@ -565,6 +701,15 @@
 /* No comment provided by engineer. */
 "Name" = "Tên";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
+/* Nearby */
+"Nearby" = "Nearby";
+
 /* No comment provided by engineer. */
 "Network" = "Mạng";
 
@@ -579,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "Thiết bị NFC không gửi một địa chỉ Dash hợp lệ";
+
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
 
 /* No comment provided by engineer. */
 "Node IP" = "Địa chỉ IP của nút";
@@ -596,6 +744,12 @@
 "Not a valid Dash address" = "Không phải một địa chỉ Dash hợp lệ";
 
 /* No comment provided by engineer. */
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
+
+/* No comment provided by engineer. */
 "Not yet used" = "Chưa từng được dùng";
 
 /* No comment provided by engineer. */
@@ -606,6 +760,12 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Một khi %@ chấp nhận yêu cầu của bạn thì bạn có thể gửi tiền trực tiếp theo tên người dùng đó";
+
+/* Online */
+"Online" = "Online";
+
+/* Online Merchant */
+"Online Merchant" = "Online Merchant";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Chìa khoá của người vận hành";
@@ -625,8 +785,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Trả trực tiếp cho Tên Người dùng";
 
+/* Pay with Dash */
+"Pay with Dash" = "Pay with Dash";
+
 /* No comment provided by engineer. */
 "Pay with Ease" = "Giao dịch một cách đơn giản";
+
+/* No comment provided by engineer. */
+"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Đang gửi";
@@ -639,6 +805,9 @@
 
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Đang gửi...";
+
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
 
 /* No comment provided by engineer. */
 "Payments" = "Các giao dịch";
@@ -697,6 +866,9 @@
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorums xác nhận: %1$d/%2$d";
 
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
+
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Tỷ giá: %1$@ = %2$@";
 
@@ -733,6 +905,9 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
+/* No comment provided by engineer. */
+"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+
 /* Button title, Register (username) */
 "Register" = "Đăng ký";
 
@@ -757,11 +932,17 @@
 /* No comment provided by engineer. */
 "Reset" = "Thiết lập lại";
 
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "Thiết lập lại về giá trị ngầm định";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Thiết lập lại ví";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Giữ lại lịch sử các giao dịch qua lại";
@@ -838,6 +1019,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Xem trên Uphold";
 
+/* Sell */
+"Sell" = "Sell";
+
+/* Buy Dash */
+"Sell Dash" = "Sell Dash";
+
 /* No comment provided by engineer. */
 "Send" = "Gửi";
 
@@ -905,6 +1092,9 @@
 "Show Recovery Phrase" = "Hiển thị câu phục hồi";
 
 /* No comment provided by engineer. */
+"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
+
+/* No comment provided by engineer. */
 "Skip" = "Bỏ qua";
 
 /* No comment provided by engineer. */
@@ -918,6 +1108,18 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Sắp xếp các liên lạc";
+
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Xác định số lượng";
@@ -949,6 +1151,9 @@
 /* No comment provided by engineer. */
 "Syncing Balance" = "Syncing Balance";
 
+/* Explore Dash */
+"Syncing..." = "Syncing...";
+
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Bấm";
 
@@ -975,6 +1180,9 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ứng dụng này là mã nguồn mở:";
+
+/* This ATM is located in the */
+"This ATM is located in the" = "This ATM is located in the";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Mã PIN này sẽ được hỏi để mở ứng dụng của bạn mỗi khi bạn sử dụng nó.";
@@ -1051,6 +1259,9 @@
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
+
 /* No comment provided by engineer. */
 "Used" = "Đã dùng";
 
@@ -1080,6 +1291,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "Xem tất cả";
+
+/* View all locations */
+"View all locations" = "View all locations";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Xem trên công cụ khám phá khối";
@@ -1115,16 +1329,28 @@
 "We do not store this recovery phrase." = "Chúng tôi không lưu giữ dòng chữ phục hồi này.";
 
 /* No comment provided by engineer. */
+"We have 2 types of merchants" = "We have 2 types of merchants";
+
+/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Chúng tôi phát hiện thấy ví Dash bị lỗi trong quá trình nhập dữ liệu. Quét lại blockchain sẽ giải quyết được vấn đề hoặc bạn có thể thử lại. Việc quét lại nên được thực hiện với kết nối wifi và nó sẽ mất khoảng nửa giờ đồng hồ. Số tiền của bạn sẽ được sẵn sàng cho chi tiêu một khi việc đồng bộ hoàn tất.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Chúng tôi đã Nâng cấp";
+
+/* Website */
+"Website" = "Website";
 
 /* No comment provided by engineer. */
 "Welcome" = "Chào mừng";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Khi các giao dịch được xác thực, ví kia sẽ trở nên vô giá trị và không nên được tiếp tục sử dụng vì những lý do an toàn.";
+
+/* No comment provided by engineer. */
+"Where to Spend" = "Where to Spend";
+
+/* No comment provided by engineer. */
+"Where to Spend?" = "Where to Spend?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Tại sao tôi không nên chụp ảnh màn hình?";
@@ -1179,6 +1405,12 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Tên người dùng DashPay của bạn đã sẵn sàng để sử dụng";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Giao dịch của bạn đã được gửi và số tiền sẽ xuất hiện trong ví của bạn trong vài phút.";

@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
     dispatch_once(&onceToken, ^{
         items = @[
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_BuySellDash],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Explore],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
@@ -75,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         items = @[
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Explore],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],

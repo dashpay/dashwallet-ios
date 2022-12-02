@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWAboutModel.h"
+#import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
@@ -34,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
-                                        DWSettingsMenuViewControllerDelegate>
+                                        DWSettingsMenuViewControllerDelegate,
+                                        DWExploreTestnetViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
@@ -96,6 +98,14 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWMainMenuItemType_Explore: {
+            DWExploreTestnetViewController *controller = [[DWExploreTestnetViewController alloc] init];
+            controller.delegate = self;
+            DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+            [self presentViewController:nvc animated:YES completion:nil];
+
+            break;
+        }
         case DWMainMenuItemType_Security: {
             DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
             controller.delegate = self.delegate;
@@ -145,6 +155,16 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate mainMenuViewControllerOpenHomeScreen:self];
 }
 
+#pragma mark - DWExploreTestnetViewControllerDelegate
+- (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller {
+    [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+}
+
+- (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreTestnetViewController *)controller {
+    [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+}
+
 @end
+
 
 NS_ASSUME_NONNULL_END
