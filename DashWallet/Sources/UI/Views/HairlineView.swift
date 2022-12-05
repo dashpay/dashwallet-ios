@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,20 +19,19 @@ import UIKit
 
 class HairlineView: UIView {
     @IBInspectable var separatorColor: UIColor = .separator
-    
+
     func drawHairline(in context: CGContext, scale: CGFloat, color: CGColor) {
-        
         let center: CGFloat
         if Int(scale) % 2 == 0 {
             center = 1/(scale * 2)
         } else {
             center = 0
         }
-        
+
         let offset = 0.5 - center
         let p1 = CGPoint(x: offset, y: offset)
         let p2 = CGPoint(x: offset, y: offset)
-        
+
         let width = 1/scale
         context.setLineWidth(width)
         context.setStrokeColor(color)
@@ -41,7 +40,7 @@ class HairlineView: UIView {
         context.addLine(to: p2)
         context.strokePath()
     }
-    
+
     override func draw(_ rect: CGRect) {
         let context = UIGraphicsGetCurrentContext()
         drawHairline(in: context!, scale: UIScreen.main.scale, color: UIColor.separator.cgColor)

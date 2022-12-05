@@ -59,12 +59,10 @@ final class BRAWBalanceInterfaceController: WKInterfaceController {
         updateBalance()
         updateTransactionList()
         let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(BRAWBalanceInterfaceController.updateUI),
-            name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
-            object: nil
-        )
+        notificationCenter.addObserver(self,
+                                       selector: #selector(BRAWBalanceInterfaceController.updateUI),
+                                       name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
+                                       object: nil)
 
         subscribeToTxNotifications()
     }
@@ -78,8 +76,7 @@ final class BRAWBalanceInterfaceController: WKInterfaceController {
 
     // MARK: UI update
 
-    @objc
-    func updateUI() {
+    @objc  func updateUI() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.updateUI()

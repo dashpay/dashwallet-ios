@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,30 +15,34 @@
 //  limitations under the License.
 //
 
-import UIKit
 import CoreLocation
+import UIKit
+
+// MARK: - AtmItemCell
 
 class AtmItemCell: PointOfUseItemCell {
-    
-    private var buyTag: AtmOperationTagView = AtmOperationTagView(operation: .buy)
-    private var sellTag: AtmOperationTagView = AtmOperationTagView(operation: .sell)
-    
+
+    private var buyTag = AtmOperationTagView(operation: .buy)
+    private var sellTag = AtmOperationTagView(operation: .sell)
+
     override func update(with pointOfUse: ExplorePointOfUse) {
         super.update(with: pointOfUse)
-        
+
         guard let atm = pointOfUse.atm else { return }
-        
+
         subLabel.isHidden = false
-        
+
         if let currentLocation = DWLocationManager.shared.currentLocation,
            DWLocationManager.shared.isAuthorized {
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!).distance(from: currentLocation)
-            let distanceText: String = ExploreDash.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
+            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+                .distance(from: currentLocation)
+            let distanceText: String = ExploreDash.distanceFormatter
+                .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
             subLabel.text = "\(distanceText) • \(pointOfUse.source!)"
-        }else{
+        } else {
             subLabel.text = pointOfUse.source
         }
-        
+
         buyTag.isHidden = atm.type == .sell
         sellTag.isHidden = atm.type != .buySell
     }
@@ -47,12 +51,12 @@ class AtmItemCell: PointOfUseItemCell {
 extension AtmItemCell {
     override func configureHierarchy() {
         super.configureHierarchy()
-        
+
         buyTag.translatesAutoresizingMaskIntoConstraints = false
         sellTag.translatesAutoresizingMaskIntoConstraints = false
-        
+
         mainStackView.addArrangedSubview(UIView())
-        
+
         let tagsStackView = UIStackView()
         tagsStackView.axis = .horizontal
         tagsStackView.spacing = 5
@@ -61,7 +65,7 @@ extension AtmItemCell {
         tagsStackView.addArrangedSubview(buyTag)
         tagsStackView.addArrangedSubview(sellTag)
         mainStackView.addArrangedSubview(tagsStackView)
-        
+
         NSLayoutConstraint.activate([
             tagsStackView.heightAnchor.constraint(equalToConstant: 20),
             buyTag.heightAnchor.constraint(equalToConstant: 20),
@@ -70,18 +74,20 @@ extension AtmItemCell {
     }
 }
 
+// MARK: - AtmOperationTagView
+
 private class AtmOperationTagView: UIView {
     enum Operation {
         case buy
         case sell
-        
+
         var title: String {
             switch self {
             case .buy: return NSLocalizedString("Buy", comment: "Buy")
             case .sell: return NSLocalizedString("Sell", comment: "Sell")
             }
         }
-        
+
         var color: UIColor {
             switch self {
             case .buy: return .dw_green()
@@ -89,15 +95,15 @@ private class AtmOperationTagView: UIView {
             }
         }
     }
-    
+
     init(operation: Operation) {
         super.init(frame: .zero)
-        
+
         layer.masksToBounds = true
         layer.cornerRadius = 10
-        
+
         backgroundColor = operation.color
-        
+
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .dw_mediumFont(ofSize: 10)
@@ -106,15 +112,15 @@ private class AtmOperationTagView: UIView {
         label.minimumScaleFactor = 0.5
         label.adjustsFontSizeToFitWidth = true
         addSubview(label)
-        
+
         NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 6),
-            label.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -6),
-            label.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
+            label.centerXAnchor.constraint(equalTo: centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

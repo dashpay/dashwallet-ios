@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - TxDetailDisplayType
+
 enum TxDetailDisplayType {
     case moved
     case sent
@@ -25,24 +27,30 @@ enum TxDetailDisplayType {
     case masternodeRegistration
 }
 
-@objc class TXDetailViewController: UIViewController {
+// MARK: - TXDetailViewController
+
+@objc
+class TXDetailViewController: UIViewController {
     @objc var model: TxDetailModel!
-    
+
     @IBOutlet var tableView: UITableView!
     @IBOutlet var closeButton: DWActionButton!
-    
+
     var dataSource: UITableViewDiffableDataSource<Section, Item>! = nil
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
-    
+
     enum Section: CaseIterable {
-        case header, info, taxCategory, explorer
+        case header
+        case info
+        case taxCategory
+        case explorer
     }
-    
+
     enum Item: Hashable {
         static func == (lhs: TXDetailViewController.Item, rhs: TXDetailViewController.Item) -> Bool {
             lhs.hashValue == rhs.hashValue
         }
-        
+
         case header
         case receivedAt([DWTitleDetailItem])
         case sentFrom([DWTitleDetailItem])
@@ -53,7 +61,7 @@ enum TxDetailDisplayType {
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
         case explorer
-        
+
         func hash(into hasher: inout Hasher) {
             switch self {
             case .header:
@@ -70,29 +78,29 @@ enum TxDetailDisplayType {
                 if let value = item.plainDetail ?? item.attributedDetail?.string {
                     hasher.combine(value.hashValue)
                 }
-                
+
             case .explorer:
                 hasher.combine("Explorer")
             }
         }
-        
-        
+
+
     }
-    
+
     @IBAction func closeButtonAction(sender: UIButton) {
         dismiss(animated: true)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         assert(model != nil, "Model must be initiated at this moment")
-        
+
         configureHierarchy()
         configureDataSource()
         reloadDataSource()
     }
-    
+
     @objc class func controller() -> TXDetailViewController {
         let storyboard = UIStoryboard(name: "Tx", bundle: nil)
         let vc = storyboard.instantiateInitialViewController() as! TXDetailViewController
@@ -102,58 +110,59 @@ enum TxDetailDisplayType {
 
 extension TXDetailViewController {
     private func viewInBlockExplorer() {
-        guard let explorerURL = self.model.explorerURL else {
+        guard let explorerURL = model.explorerURL else {
             return
         }
-        
+
         let vc = SFSafariViewController.dw_controller(with: explorerURL)
-        
+
         // The views beneath the presented content are not removed from the view hierarchy when the presentation finishes.
         vc.modalPresentationStyle = .overFullScreen
         vc.modalPresentationCapturesStatusBarAppearance = true
-        self.present(vc, animated: true) {
-            
-        }
+        present(vc, animated: true) { }
     }
 }
 
 extension TXDetailViewController {
-    
+
     func configureDataSource() {
-        self.dataSource = UITableViewDiffableDataSource
+        dataSource = UITableViewDiffableDataSource
         <Section, Item>(tableView: tableView) { [weak self]
             (tableView: UITableView, indexPath: IndexPath, item: Item) -> UITableViewCell? in
-            
-            guard let wSelf = self else { return UITableViewCell() }
-            
-            let section = wSelf.currentSnapshot.sectionIdentifiers[indexPath.section]
-            
-            switch section
-            {
-            case .header:
-                let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.dw_reuseIdentifier, for: indexPath) as! TxDetailHeaderCell
-                cell.model = self?.model
-                cell.selectionStyle = .none
-                cell.backgroundColor = .clear
-                cell.backgroundView?.backgroundColor = .clear
-                
-                return cell
-            case .info:
-                let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailInfoCell.dw_reuseIdentifier, for: indexPath) as! TxDetailInfoCell
-                cell.update(with: item)
-                cell.selectionStyle = .none
-                cell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0)
-                return cell
-            case .taxCategory:
-                let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.dw_reuseIdentifier, for: indexPath) as! TxDetailTaxCategoryCell
-                cell.update(with: item)
-                return cell
-                
-            case .explorer:
-                let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.dw_reuseIdentifier, for: indexPath) as! TxDetailActionCell
-                cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
-                return cell
-            }
+
+                guard let wSelf = self else { return UITableViewCell() }
+
+                let section = wSelf.currentSnapshot.sectionIdentifiers[indexPath.section]
+
+                switch section {
+                case .header:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.dw_reuseIdentifier,
+                                                             for: indexPath) as! TxDetailHeaderCell
+                    cell.model = self?.model
+                    cell.selectionStyle = .none
+                    cell.backgroundColor = .clear
+                    cell.backgroundView?.backgroundColor = .clear
+
+                    return cell
+                case .info:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailInfoCell.dw_reuseIdentifier,
+                                                             for: indexPath) as! TxDetailInfoCell
+                    cell.update(with: item)
+                    cell.selectionStyle = .none
+                    cell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0)
+                    return cell
+                case .taxCategory:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.dw_reuseIdentifier,
+                                                             for: indexPath) as! TxDetailTaxCategoryCell
+                    cell.update(with: item)
+                    return cell
+
+                case .explorer:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.dw_reuseIdentifier,
+                                                             for: indexPath) as! TxDetailActionCell
+                    cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
+                    return cell
+                }
         }
     }
 
@@ -161,21 +170,25 @@ extension TXDetailViewController {
         let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
         let date = model.date
         let taxCategory = model.taxCategory
-        
+
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
         currentSnapshot.appendItems([.header], toSection: .header)
-        
-        switch (self.model.direction) {
+
+        switch model.direction {
         case .moved:
             let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
-            currentSnapshot.appendItems([.movedFrom(model.inputAddresses(with: detailFont)),
-                                         .movedTo(model.outputAddresses(with: detailFont))], toSection: .info)
+            currentSnapshot.appendItems([
+                .movedFrom(model.inputAddresses(with: detailFont)),
+                .movedTo(model.outputAddresses(with: detailFont)),
+            ], toSection: .info)
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .sent:
             let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
-            currentSnapshot.appendItems([.sentFrom(model.inputAddresses(with: detailFont)),
-                                         .sentTo(model.outputAddresses(with: detailFont))], toSection: .info)
+            currentSnapshot.appendItems([
+                .sentFrom(model.inputAddresses(with: detailFont)),
+                .sentTo(model.outputAddresses(with: detailFont)),
+            ], toSection: .info)
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .received:
             currentSnapshot.appendItems([.receivedAt(model.outputAddresses(with: detailFont))], toSection: .info)
@@ -184,33 +197,33 @@ extension TXDetailViewController {
         default:
             break;
         }
-        
+
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
-        self.dataSource.apply(currentSnapshot, animatingDifferences: false)
-        self.dataSource.defaultRowAnimation = .none
-
+        dataSource.apply(currentSnapshot, animatingDifferences: false)
+        dataSource.defaultRowAnimation = .none
     }
-    
+
     @objc func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
-        
+
         // Make sure we have 20pt padding on the sides
-        //tableView.contentInset = .init(top: 0, left: 0, bottom: 0, right: 5)
+        // tableView.contentInset = .init(top: 0, left: 0, bottom: 0, right: 5)
         tableView.backgroundColor = UIColor.dw_secondaryBackground()
         tableView.delegate = self
     }
 }
 
+// MARK: UITableViewDelegate
+
 extension TXDetailViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
+
         let section = currentSnapshot.sectionIdentifiers[indexPath.section]
-        
-        switch section
-        {
+
+        switch section {
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
             reloadDataSource()
@@ -221,36 +234,42 @@ extension TXDetailViewController: UITableViewDelegate {
             break
         }
     }
-    
+
     public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return nil
+        nil
     }
-    
+
     public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        return nil
+        nil
     }
-    
+
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 7
+        7
     }
-    
+
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 8
+        8
     }
 }
 
-@objc protocol SuccessTxDetailViewControllerDelegate: AnyObject {
+// MARK: - SuccessTxDetailViewControllerDelegate
+
+@objc
+protocol SuccessTxDetailViewControllerDelegate: AnyObject {
     func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController)
 }
 
-@objc class SuccessTxDetailViewController: TXDetailViewController {
-    
+// MARK: - SuccessTxDetailViewController
+
+@objc
+class SuccessTxDetailViewController: TXDetailViewController {
+
     // TODO: think how we can avoid storing contactItem here
     // passthrough context, not used internally
     @objc var contactItem: DWDPBasicUserItem?
-    
+
     @objc weak var delegate: SuccessTxDetailViewControllerDelegate?
-    
+
     @IBAction override func closeButtonAction(sender: UIButton) {
         dismiss(animated: true) { [weak self] in
             if let wSelf = self {
@@ -258,18 +277,19 @@ extension TXDetailViewController: UITableViewDelegate {
             }
         }
     }
-    
+
     override func configureHierarchy() {
         super.configureHierarchy()
-        
-        self.closeButton.usedOnDarkBackground = true
+
+        closeButton.usedOnDarkBackground = true
         closeButton.small = true
         closeButton.setTitle(NSLocalizedString("Close", comment: ""), for: .normal)
     }
-    
+
     @objc override static func controller() -> SuccessTxDetailViewController {
         let storyboard = UIStoryboard(name: "Tx", bundle: nil)
-        let vc = storyboard.instantiateViewController(identifier: "SuccessTxDetailViewController") as! SuccessTxDetailViewController
+        let vc = storyboard
+            .instantiateViewController(identifier: "SuccessTxDetailViewController") as! SuccessTxDetailViewController
         return vc
     }
 }

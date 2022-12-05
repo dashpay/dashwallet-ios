@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,11 +18,13 @@
 import Foundation
 import SQLite
 
+// MARK: - ExplorePointOfUse + Hashable
+
 extension ExplorePointOfUse: Hashable {
     static func == (lhs: ExplorePointOfUse, rhs: ExplorePointOfUse) -> Bool {
         lhs.hashValue == rhs.hashValue
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -30,44 +32,44 @@ extension ExplorePointOfUse: Hashable {
 
 extension ExplorePointOfUse {
     struct Merchant {
-        
+
         enum PaymentMethod: String {
             case dash
-            case giftCard
-            
+            case giftCard = "gift card"
+
             init?(rawValue: String) {
                 if rawValue == "dash" {
                     self = .dash
-                }else{
+                } else {
                     self = .giftCard
                 }
             }
         }
-        
+
         enum `Type`: String {
             case online
             case physical
             case onlineAndPhysical = "both"
         }
-        
+
         let merchantId: Int64
         let paymentMethod: PaymentMethod
         let type: `Type`
         let deeplink: String?
     }
-    
+
     var merchant: Merchant? {
-        guard case let .merchant(m) = category else { return nil }
-        
+        guard case .merchant(let m) = category else { return nil }
+
         return m
     }
-    
+
     var atm: Atm? {
-        guard case let .atm(atm) = category else { return nil }
-        
+        guard case .atm(let atm) = category else { return nil }
+
         return atm
     }
-    
+
     var pointOfUseId: Int64 {
         switch category {
         case .merchant(let m):
@@ -80,13 +82,15 @@ extension ExplorePointOfUse {
     }
 }
 
+// MARK: - ExplorePointOfUse.Atm
+
 extension ExplorePointOfUse {
     struct Atm {
         enum `Type`: String {
             case buy = "Buy Only"
             case sell = "Sell Only"
             case buySell = "Buy and Sell"
-            
+
             public init?(rawValue: String) {
                 switch rawValue {
                 case "Buy Only": self = .buy
@@ -96,11 +100,13 @@ extension ExplorePointOfUse {
                 }
             }
         }
-        
+
         let manufacturer: String
         let type: `Type`
     }
 }
+
+// MARK: - ExplorePointOfUse
 
 struct ExplorePointOfUse {
     enum Category {
@@ -110,7 +116,7 @@ struct ExplorePointOfUse {
     }
 
     let id: Int64
-    
+
     let name: String
     let category: Category
     let active: Bool
@@ -129,11 +135,13 @@ struct ExplorePointOfUse {
     let source: String?
 }
 
+// MARK: RowDecodable
+
 extension ExplorePointOfUse: RowDecodable {
     static let name = Expression<String>("name")
     static let deeplink = Expression<String>("deeplink")
     static let plusCode = Expression<String?>("plusCode")
-    static let paymentMethod = Expression<String?>("paymentMethod")
+    static let paymentMethod = Expression<String>("paymentMethod")
     static let merchantId = Expression<Int64>("merchantId")
     static let id = Expression<Int64>("id")
     static let active = Expression<Bool>("active")
@@ -152,14 +160,14 @@ extension ExplorePointOfUse: RowDecodable {
     static let type = Expression<String>("type")
     static let source = Expression<String>("source")
     static let manufacturer = Expression<String?>("manufacturer")
-    
-    
+
+
     init(row: Row) {
         let name = row[ExplorePointOfUse.name]
-        
+
         let id = row[ExplorePointOfUse.id]
         let active = row[ExplorePointOfUse.active]
-        
+
         let city = row[ExplorePointOfUse.city]
         let territory = row[ExplorePointOfUse.territory]
         let address1 = row[ExplorePointOfUse.address1]
@@ -173,21 +181,25 @@ extension ExplorePointOfUse: RowDecodable {
         let logoLocation = row[ExplorePointOfUse.logoLocation]
         let coverImage: String? = row[ExplorePointOfUse.coverImage]
         let source: String? = row[ExplorePointOfUse.source]
-        
+
         let category: Category
-        if  let paymentMethodRaw = try? row.get(ExplorePointOfUse.paymentMethod) {
+        if let paymentMethodRaw = try? row.get(ExplorePointOfUse.paymentMethod) {
             let merchantId = row[ExplorePointOfUse.merchantId]
             let type: Merchant.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             let deeplink = row[ExplorePointOfUse.deeplink]
-            category = .merchant(Merchant(merchantId: merchantId, paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!, type: type, deeplink: deeplink))
-        }else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
+            category = .merchant(Merchant(merchantId: merchantId,
+                                          paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!, type: type,
+                                          deeplink: deeplink))
+        } else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))
-        }else{
+        } else {
             category = .unknown
         }
-        
-        self.init(id: id, name: name, category: category, active: active, city: city, territory: territory, address1: address1, address2: address2, address3: address3, address4: address4, latitude: latitude, longitude: longitude, website: website, phone: phone, logoLocation: logoLocation, coverImage: coverImage, source: source)
+
+        self.init(id: id, name: name, category: category, active: active, city: city, territory: territory, address1: address1,
+                  address2: address2, address3: address3, address4: address4, latitude: latitude, longitude: longitude,
+                  website: website, phone: phone, logoLocation: logoLocation, coverImage: coverImage, source: source)
     }
 }
 

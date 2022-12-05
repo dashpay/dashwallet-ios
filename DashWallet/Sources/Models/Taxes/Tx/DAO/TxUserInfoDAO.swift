@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,6 +18,8 @@
 import Foundation
 import SQLite
 
+// MARK: - TxUserInfoDAO
+
 protocol TxUserInfoDAO {
     func create(dto: TxUserInfo)
     func get(by hash: Data) -> TxUserInfo?
@@ -26,69 +28,73 @@ protocol TxUserInfoDAO {
     func delete(dto: TxUserInfo)
 }
 
-@objc class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
+// MARK: - TxUserInfoDAOImpl
+
+@objc
+class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [Data: TxUserInfo] = [:]
-    
+
     @objc func create(dto: TxUserInfo) {
         do {
-            let txUserInfo = TxUserInfo.table.insert(or: .replace, TxUserInfo.txHashColumn <- dto.txHash, TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
+            let txUserInfo = TxUserInfo.table.insert(or: .replace, TxUserInfo.txHashColumn <- dto.txHash,
+                                                     TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
             try db.run(txUserInfo)
-            
-        }catch{
+
+        } catch {
             print(error)
         }
-        
+
         cache[dto.txHash] = dto
     }
-    
+
     @objc func all() -> [TxUserInfo] {
         let txUserInfos = TxUserInfo.table
-        
+
         var userInfos: [TxUserInfo] = []
-        
+
         do {
             for txInfo in try db.prepare(txUserInfos) {
                 let userInfo = TxUserInfo(row: txInfo)
                 cache[userInfo.txHash] = userInfo
                 userInfos.append(userInfo)
             }
-        }catch{
+        } catch {
             print(error)
         }
-        
+
         return userInfos
     }
-        
+
     @objc func get(by hash: Data) -> TxUserInfo? {
         if let cached = cache[hash] {
             return cached
         }
-        
+
         let txUserInfo = TxUserInfo.table.filter(TxUserInfo.txHashColumn == hash)
-        
+
         do {
             for txInfo in try db.prepare(txUserInfo) {
                 let userInfo = TxUserInfo(row: txInfo)
                 cache[hash] = userInfo
                 return userInfo
             }
-        }catch{
+        } catch {
             print(error)
         }
-        
+
         return nil
     }
-    
+
     @objc func update(dto: TxUserInfo) {
         create(dto: dto)
     }
-    
+
     @objc func delete(dto: TxUserInfo) {
         cache[dto.txHash] = nil
     }
-    
-    @objc static let shared: TxUserInfoDAOImpl = TxUserInfoDAOImpl()
+
+    @objc static let shared = TxUserInfoDAOImpl()
 }
 
 extension TxUserInfoDAOImpl {

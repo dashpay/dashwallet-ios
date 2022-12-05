@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-import Foundation
 import Firebase
+import Foundation
 import SSZipArchive
 
 let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore.db"
@@ -28,8 +28,10 @@ private let checksumKey = "Data-Checksum"
 
 let bundleExploreDatabaseSyncTime: TimeInterval = 1647448290711/1000
 
+// MARK: - ExploreDatabaseSyncManager
+
 public class ExploreDatabaseSyncManager {
-    
+
     enum State {
         case inititialing
         case fetchingInfo
@@ -37,70 +39,69 @@ public class ExploreDatabaseSyncManager {
         case synced(Date)
         case error(Date, Error?)
     }
-    
+
     static let databaseHasBeenUpdatedNotification = NSNotification.Name(rawValue: "databaseHasBeenUpdatedNotification")
-    
+
     private let storage = Storage.storage()
     private let storageRef: StorageReference
-    
+
     private var timer: Timer!
-    
+
     private var databaseVersion: Double = 0
     private var lastSync: Double = 0
-    
+
     var syncState: State
     var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
-    
-    init()
-    {
+
+    init() {
         syncState = .inititialing
         storageRef = storage.reference(forURL: gsFilePath)
     }
-    
+
     public func start() {
         syncIfNeeded()
-        
+
         // Try to sync every 24h
-        timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] timer in
+        timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] _ in
             self?.syncIfNeeded()
         }
     }
-    
+
     private func syncIfNeeded() {
         syncState = .fetchingInfo
-        
-        storageRef.getMetadata { [weak self] metadata, error in
+
+        storageRef.getMetadata { [weak self] metadata, _ in
             guard let wSelf = self else { return }
-            
-            guard let metadata = metadata else {
+
+            guard let metadata else {
                 wSelf.syncState = .error(Date(), nil)
                 return
             }
-            
+
             guard let timestamp = metadata.customMetadata?[timestampKey],
                   let timeIntervalMillesecond = TimeInterval(timestamp) else {
                 wSelf.syncState = .error(Date(), nil)
                 return
             }
-            
+
             let timeInterval = timeIntervalMillesecond/1000
             let savedTs = wSelf.exploreDatabaseLastSyncTimestamp
             wSelf.exploreDatabaseLastVersion = timeInterval
-            
+
             guard timeInterval > savedTs else {
                 wSelf.syncState = .synced(Date())
                 return
             }
-            
+
             wSelf.downloadDatabase(metadata: metadata)
         }
     }
-        
+
     deinit {
         timer.invalidate()
         timer = nil
     }
-    
+
     static let share = ExploreDatabaseSyncManager()
 }
 
@@ -111,17 +112,17 @@ extension ExploreDatabaseSyncManager {
             syncState = .error(Date(), nil)
             return
         }
-        
+
         syncState = .syncing
         let urlToSave = getDocumentsDirectory().appendingPathComponent("\(fileName)-\(timestamp).zip")
-    
+
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
             let date = Date()
             let timestamp = date.timeIntervalSince1970
-            
+
             if let e = error {
                 self?.syncState = .error(date, e)
-            }else{
+            } else {
                 try? data?.write(to: urlToSave)
                 self?.exploreDatabaseLastSyncTimestamp = timestamp
                 self?.syncState = .synced(date)
@@ -129,16 +130,18 @@ extension ExploreDatabaseSyncManager {
             }
         }
     }
-    
+
     private func unzipFile(at path: String, password: String) {
         var error: NSError?
         let urlToUnzip = getDocumentsDirectory()
-        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true, nestedZipLevel: 0, password: password, error: &error, delegate: nil, progressHandler: nil) { path, succeded, error in
+        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
+                               nestedZipLevel: 0, password: password, error: &error, delegate: nil,
+                               progressHandler: nil) { path, _, _ in
             NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
             try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
         }
     }
-    
+
     private func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
@@ -158,7 +161,7 @@ extension ExploreDatabaseSyncManager {
             return value == 0 ? bundleExploreDatabaseSyncTime : value
         }
     }
-    
+
     var exploreDatabaseLastVersion: TimeInterval {
         set {
             UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseLastVersion)

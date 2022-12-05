@@ -26,18 +26,24 @@
 import Foundation
 import WatchKit
 
+// MARK: - BRAWKeypadDelegate
+
 protocol BRAWKeypadDelegate: AnyObject {
     func keypadDidFinish(_ stringValueBits: String)
 }
 
+// MARK: - BRAWKeypadModel
+
 final class BRAWKeypadModel {
     weak var delegate: BRAWKeypadDelegate?
-    var valueInBits: String = "0"
+    var valueInBits = "0"
 
     init(delegate: BRAWKeypadDelegate?) {
         self.delegate = delegate
     }
 }
+
+// MARK: - BRAWKeypad
 
 final class BRAWKeypad: WKInterfaceController {
     var digits = [String]()
@@ -87,7 +93,7 @@ final class BRAWKeypad: WKInterfaceController {
     }
 
     @IBAction private func ok(_ sender: AnyObject?) {
-        guard let ctx = ctx else { return }
+        guard let ctx else { return }
         ctx.delegate?.keypadDidFinish(ctx.valueInBits)
     }
 

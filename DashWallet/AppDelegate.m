@@ -193,6 +193,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         return NO;
     }
     
+    if ([DWURLParser shouldIgnoreURL:url]) {
+        return NO;
+    }
+    
     if (![DWURLParser canHandleURL:url]) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)

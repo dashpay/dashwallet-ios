@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,56 +19,57 @@ import MapKit
 
 extension MerchantAnnotation {
     static func ==(lhs: MerchantAnnotation, rhs: MerchantAnnotation) -> Bool {
-        return lhs.hashValue == rhs.hashValue
+        lhs.hashValue == rhs.hashValue
     }
 }
+
+// MARK: - MerchantAnnotation
 
 class MerchantAnnotation: MKPointAnnotation {
     var merchant: ExplorePointOfUse
-    
+
     override var hash: Int {
-        return merchant.hashValue
+        merchant.hashValue
     }
-    
+
     init(merchant: ExplorePointOfUse, location: CLLocationCoordinate2D) {
         self.merchant = merchant
         super.init()
-        self.coordinate = location
-        
+        coordinate = location
     }
 }
 
+// MARK: - ExploreMapAnnotationView
+
 final class ExploreMapAnnotationView: MKAnnotationView {
-    
+
     private var imageView: UIImageView!
-    
+
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        
+
         frame = CGRect(x: 0, y: 0, width: 36, height: 36)
         centerOffset = CGPoint(x: 0, y: -frame.size.height / 2)
-        
+
         canShowCallout = true
         configureHierarchy()
     }
-    
-    @available(*, unavailable)
-    required init?(coder aDecoder: NSCoder) {
+
+    @available(*, unavailable)  required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     public func update(with pointOfUse: ExplorePointOfUse) {
-        if let str = pointOfUse.logoLocation, let url = URL(string: str)
-        {
+        if let str = pointOfUse.logoLocation, let url = URL(string: str) {
             imageView.sd_setImage(with: url, completed: nil)
-        }else{
+        } else {
             imageView.image = UIImage(named: "image.explore.dash.wts.item.logo.empty")
         }
     }
-    
+
     private func configureHierarchy() {
         backgroundColor = .clear
-        
+
         imageView = UIImageView()
         imageView.backgroundColor = .white
         imageView.layer.cornerRadius = 18
@@ -76,11 +77,11 @@ final class ExploreMapAnnotationView: MKAnnotationView {
         imageView.layer.borderColor = UIColor.white.cgColor
         imageView.layer.borderWidth = 2
         addSubview(imageView)
-        
+
         imageView.frame = bounds
     }
-    
-    static var reuseIdentifier: String { return "MerchantAnnotationView" }
+
+    static var reuseIdentifier: String { "MerchantAnnotationView" }
 }
 
 
