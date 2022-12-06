@@ -19,23 +19,17 @@ import Foundation
 
 // MARK: - CBSecureTokenService
 
-class CBSecureTokenService {
+class CBSecureTokenService: Codable {
     private(set) var accessToken: String
     private(set) var refreshToken: String
     private(set) var accessTokenExpirationDate: Date
 
-    private lazy var httpClient = HTTPClient<CoinbaseAPI>()
+    private lazy var httpClient = HTTPClient<CoinbaseEndpoint>()
 
     init(accessToken: String, refreshToken: String, accessTokenExpirationDate: Date) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
         self.accessTokenExpirationDate = accessTokenExpirationDate
-    }
-
-    required init?(coder: NSCoder) {
-        accessToken = coder.decodeObject(forKey: CBSecureTokenService.kAccessTokenKey) as! String
-        refreshToken = coder.decodeObject(forKey: CBSecureTokenService.kRefreshTokenKey) as! String
-        accessTokenExpirationDate = coder.decodeObject(forKey: CBSecureTokenService.kAccessTokenExpirationDate) as! Date
     }
 
     var hasValidAccessToken: Bool {
@@ -49,20 +43,8 @@ class CBSecureTokenService {
         accessTokenExpirationDate = result.expirationDate
         return result.accessToken
     }
-}
 
-// MARK: NSSecureCoding
-
-extension CBSecureTokenService: NSSecureCoding {
-    static let kAccessTokenKey = "kAccessTokenKey"
-    static let kRefreshTokenKey = "kRefreshTokenKey"
-    static let kAccessTokenExpirationDate = "kAccessTokenExpirationDate"
-
-    static var supportsSecureCoding = true
-
-    func encode(with coder: NSCoder) {
-        coder.encode(accessToken, forKey: CBSecureTokenService.kAccessTokenKey)
-        coder.encode(refreshToken, forKey: CBSecureTokenService.kRefreshTokenKey)
-        coder.encode(accessTokenExpirationDate, forKey: CBSecureTokenService.kAccessTokenExpirationDate)
+    func revokeAccessToken() async throws {
+        try await httpClient.request(.revokeToken(token: accessToken))
     }
 }

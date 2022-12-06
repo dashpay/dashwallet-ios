@@ -578,6 +578,8 @@
 		47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47EEE23B293F041E00049E0B /* CBUserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23A293F041E00049E0B /* CBUserManager.swift */; };
+		47EEE23F293F404400049E0B /* CBTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23E293F404400049E0B /* CBTransactions.swift */; };
+		47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
 		47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */; };
@@ -1734,6 +1736,8 @@
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47EEE23A293F041E00049E0B /* CBUserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBUserManager.swift; sourceTree = "<group>"; };
+		47EEE23E293F404400049E0B /* CBTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBTransactions.swift; sourceTree = "<group>"; };
+		47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseAPIClient.swift; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
 		47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsInfoViewController.swift; sourceTree = "<group>"; };
 		47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsWhereToChangeViewController.swift; sourceTree = "<group>"; };
@@ -1974,7 +1978,7 @@
 		0F6EDF9328C894B9000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
-				47A2A2EA293E616600938DB7 /* User */,
+				47EEE23C293F402E00049E0B /* Transactions */,
 				47A2A2E5293E5C4700938DB7 /* Auth */,
 				47A2A2E4293DF71600938DB7 /* Services */,
 				47838B83290665EC0003E8AB /* Infrastructure */,
@@ -4442,6 +4446,7 @@
 			children = (
 				47A2A2E3293DF63F00938DB7 /* DTOs */,
 				0F6EDFB528C896BC000427E7 /* CoinbaseAPIEndpoint.swift */,
+				47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -4512,6 +4517,7 @@
 		47A2A2E5293E5C4700938DB7 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
+				47A2A2EA293E616600938DB7 /* User */,
 				47A2A2E6293E5C7900938DB7 /* CBAuthCredential.swift */,
 				47A2A2E8293E612900938DB7 /* CBAuth.swift */,
 			);
@@ -4799,6 +4805,14 @@
 				47E71F74286AED1900CDF2BD /* DWCSVExporter.m */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		47EEE23C293F402E00049E0B /* Transactions */ = {
+			isa = PBXGroup;
+			children = (
+				47EEE23E293F404400049E0B /* CBTransactions.swift */,
+			);
+			path = Transactions;
 			sourceTree = "<group>";
 		};
 		47F2C67B28602D3800C2B774 /* PageSheet */ = {
@@ -5946,6 +5960,7 @@
 				47A50F3E29192F8D00C70123 /* TerritoriesListViewController.swift in Sources */,
 				47C6E6E02919578C003FEDF2 /* TerritoryListModel.swift in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
+				47EEE23F293F404400049E0B /* CBTransactions.swift in Sources */,
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
 				47AE8C0E28C540C100490F5E /* GiftCardInfoViewController.swift in Sources */,
 				471DD1B8290A92CD00E030C8 /* Tools.swift in Sources */,
@@ -6177,6 +6192,7 @@
 				0F36937E2919A5DB007F4E91 /* TwoFactorAuthViewController.swift in Sources */,
 				471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
+				47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */,
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,

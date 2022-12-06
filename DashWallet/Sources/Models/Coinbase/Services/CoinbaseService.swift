@@ -12,7 +12,9 @@ import Moya
 // MARK: - CoinbaseService
 
 class CoinbaseService {
-    private lazy var httpClient = HTTPClient<CoinbaseAPI>()
+    private var httpClient: CoinbaseAPI {
+        CoinbaseAPI.shared
+    }
 }
 
 extension CoinbaseService { }
@@ -40,22 +42,6 @@ extension CoinbaseService {
 
     func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> [CoinbasePlaceBuyOrder] {
         let result: BaseDataCollectionResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
-        return result.data
-    }
-
-    func send(amount: String, to address: String, verificationCode: String?) async throws -> [CoinbaseTransaction] {
-        guard let coinbaseUserAccountId = Coinbase.coinbaseUserAccountId else {
-            throw Coinbase.Error.noActiveUser
-        }
-
-        let dto = CoinbaseTransactionsRequest(type: .send,
-                                              to: address,
-                                              amount: amount,
-                                              currency: kDashCurrency,
-                                              idem: UUID())
-
-        let result: BaseDataCollectionResponse<CoinbaseTransaction> = try await httpClient
-            .request(.sendCoinsToWallet(accountId: coinbaseUserAccountId, verificationCode: verificationCode, dto: dto))
         return result.data
     }
 

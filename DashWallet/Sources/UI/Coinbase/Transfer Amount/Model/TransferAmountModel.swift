@@ -139,7 +139,9 @@ final class TransferAmountModel: SendAmountModel {
         Task {
             let address = try await Coinbase.shared.createNewCoinbaseDashAddress()
             self.address = address
-            completion(address)
+            await MainActor.run {
+                completion(address)
+            }
         }
     }
 }

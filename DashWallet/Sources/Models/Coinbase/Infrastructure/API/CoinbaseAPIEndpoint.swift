@@ -25,9 +25,9 @@ struct CoinbaseAPIError: Codable {
     var errors: [Error]
 }
 
-// MARK: - CoinbaseAPI
+// MARK: - CoinbaseEndpoint
 
-public enum CoinbaseAPI {
+public enum CoinbaseEndpoint {
     case userAccount
     case userAuthInformation
     case exchangeRates(String)
@@ -41,17 +41,17 @@ public enum CoinbaseAPI {
     case accountAddress(String)
     case createCoinbaseAccountAddress(String)
     case getToken(String)
-    case revokeToken
+    case revokeToken(token: String)
     case refreshToken(refreshToken: String)
     case signIn
 }
 
 // MARK: TargetType, AccessTokenAuthorizable
 
-extension CoinbaseAPI: TargetType, AccessTokenAuthorizable {
+extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     public var authorizationType: Moya.AuthorizationType? {
         switch self {
-        case .signIn, .getToken:
+        case .signIn, .getToken, .refreshToken:
             return nil
         default:
             return .bearer
@@ -84,7 +84,7 @@ extension CoinbaseAPI: TargetType, AccessTokenAuthorizable {
 
     public var method: Moya.Method {
         switch self {
-        case .getToken, .commitBuyOrder, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken:
+        case .getToken, .commitBuyOrder, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken, .revokeToken:
             return .post
         default:
             return .get
@@ -123,6 +123,8 @@ extension CoinbaseAPI: TargetType, AccessTokenAuthorizable {
                 queryItems["client_secret"] = value
             }
             return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
+        case .revokeToken(let token):
+            return .requestParameters(parameters: ["token": token], encoding: JSONEncoding.default)
         case .sendCoinsToWallet(_, _, let dto):
             return .requestJSONEncodable(dto)
         case .swapTrade(let dto):
@@ -135,8 +137,6 @@ extension CoinbaseAPI: TargetType, AccessTokenAuthorizable {
     public var headers: [String : String]? {
         var headers = ["CB-VERSION": "2021-09-07"]
 
-        // TODO: auth middleware
-        //        request.setValue("Bearer \(apiAccessToken)", forHTTPHeaderField: "Authorization")
         switch self {
         case .sendCoinsToWallet(_, let verificationCode, _):
             headers["CB-2FA-TOKEN"] = verificationCode

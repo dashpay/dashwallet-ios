@@ -32,42 +32,39 @@ class Coinbase {
         case failedToAuth
     }
 
-    private lazy var auth = CBAuth()
+
     private lazy var coinbaseService = CoinbaseService()
 
+    private var auth = CBAuth()
+    private var tx = CBTransactions()
+
     public static let shared = Coinbase()
+
+    init() {
+        CoinbaseAPI.shared.secureTokenProvider = auth
+    }
 }
 
 extension Coinbase {
-    var isAuthorized: Bool { Coinbase.accessToken != nil }
+    var isAuthorized: Bool { auth.currentUser != nil }
 
     var lastKnownBalance: UInt64? {
-        guard let balance = Coinbase.lastKnownBalance, let dashNumber = Decimal(string: balance) else {
+        guard let balance = auth.currentUser?.balance else {
             return nil
         }
 
-        let duffsNumber = Decimal(DUFFS)
-        let plainAmount = dashNumber * duffsNumber
-        return NSDecimalNumber(decimal: plainAmount).uint64Value
+        return balance
     }
 }
 
 extension Coinbase {
-    @MainActor  public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
+    @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
         try await auth.signIn(with: presentationContext)
     }
 
-//    private func authorize(with code: String) async throws -> CoinbaseTokenResponse {
-//        try await auth.authorize(with: code)
-//    }
-
-//    private func fetchAccount() async throws -> CoinbaseUserAccountData {
-//        try await auth.account()
-//    }
-
     public func createNewCoinbaseDashAddress() async throws -> String {
-        guard let coinbaseUserAccountId = Coinbase.coinbaseUserAccountId else {
-            fatalError("We need coinbaseUserAccountId here")
+        guard let coinbaseUserAccountId = auth.currentUser?.accountId else {
+            throw Coinbase.Error.noActiveUser
         }
 
         return try await coinbaseService.createCoinbaseAccountAddress(accountId: coinbaseUserAccountId)
@@ -79,8 +76,12 @@ extension Coinbase {
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                  coinAmountInDash: String,
-                                                 dashWalletAddress: String) async throws -> [CoinbaseTransaction] {
-        try await coinbaseService.send(amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
+                                                 dashWalletAddress: String) async throws -> CoinbaseTransaction {
+        guard let accountId = auth.currentUser?.accountId else {
+            throw Coinbase.Error.noActiveUser
+        }
+
+        return try await tx.send(from: accountId, amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
     }
 
     public func signOut() async throws {

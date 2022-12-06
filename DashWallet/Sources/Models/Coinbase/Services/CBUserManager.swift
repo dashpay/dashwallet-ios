@@ -27,11 +27,12 @@ class CBUserManager {
         var error: NSError?
         let data = getKeychainData(kKeychainUserAccessKey, &error)
 
-        guard error != nil else {
+        guard error == nil else {
             return nil
         }
 
-        return nil
+        let decoder = JSONDecoder()
+        return try? decoder.decode(CBUser.self, from: data)
     }
 
     @discardableResult func removeUser() -> Bool {
@@ -39,11 +40,9 @@ class CBUserManager {
     }
 
     @discardableResult func store(user: CBUser) -> Bool {
-        let archiver = NSKeyedArchiver(requiringSecureCoding: true)
-        archiver.encode(user, forKey: kStoredUserCoderKey)
-        archiver.finishEncoding()
+        let encoder = JSONEncoder()
+        let data = try? encoder.encode(user)
 
-        let data = archiver.encodedData
         let result = setKeychainData(data, kKeychainUserAccessKey, false)
 
         return result

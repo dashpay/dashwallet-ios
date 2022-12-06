@@ -94,20 +94,7 @@ class CoinbaseDataSource: ServiceDataSource {
                 item = ServiceItem(status: .authorized, service: .coinbase, dashBalance: balance)
             } else {
                 item = ServiceItem(status: .syncing, service: .coinbase)
-
-//                coinbase.fetchUser()
-//                    .receive(on: DispatchQueue.main)
-//                    .sink(receiveCompletion: { [weak self] completion in
-//                        switch completion {
-//                        case .failure: self?.item = .init(status: .failed, service: .coinbase)
-//                        case .finished: break
-//                        }
-//                    }, receiveValue: { [weak self] response in
-//                        self?.item = .init(status: .authorized, service: .coinbase, dashBalance: response?.balance.plainAmount)
-//                    })
-//                    .store(in: &cancelables)
             }
-
         } else {
             item = .init(status: .idle, service: .coinbase)
         }

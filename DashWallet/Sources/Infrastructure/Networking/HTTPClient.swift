@@ -48,17 +48,21 @@ protocol SecureTokenProvider: AnyObject {
 
 // MARK: - HTTPClient
 
-public final class HTTPClient<Target: TargetType> {
+public class HTTPClient<Target: TargetType> {
     private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .utility, attributes: .concurrent)
     private var provider: MoyaProvider<Target>!
-    private weak var secureTokenProvider: SecureTokenProvider?
+    weak var secureTokenProvider: SecureTokenProvider?
+
+    var accessToken: String? {
+        secureTokenProvider?.accessToken
+    }
 
     init(tokenProvider: SecureTokenProvider? = nil) {
         let config: NetworkLoggerPlugin.Configuration = .init(formatter: .init(responseData: JSONResponseDataFormatter),
                                                               logOptions: .verbose)
         let logger = NetworkLoggerPlugin(configuration: config)
         let accessTokenPlugin = AccessTokenPlugin { [weak self] _ in
-            self?.secureTokenProvider?.accessToken ?? "TOKEN_NOT_FOUND"
+            self?.accessToken ?? "" // TODO: Passing empty access token isn't good idea either
         }
 
         provider = MoyaProvider<Target>(plugins: [logger, accessTokenPlugin])
@@ -69,6 +73,10 @@ public final class HTTPClient<Target: TargetType> {
         let cancellableToken = CancellableWrapper()
         cancellableToken.innerCancellable = _request(target, completion: completion)
         return cancellableToken
+    }
+
+    public func request(_ target: Target) async throws {
+        let _: Void = try await request(target)
     }
 
     public func request<R: Decodable>(_ target: Target) async throws -> R {

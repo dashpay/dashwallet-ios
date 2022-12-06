@@ -23,12 +23,22 @@ import Foundation
 class CBAuth {
     public var currentUser: CBUser?
 
-    private lazy var httpClient = HTTPClient<CoinbaseAPI>()
-    private lazy var coinbaseService = CoinbaseService()
+    private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
     private lazy var userManager = CBUserManager()
 
     private var tokenRefreshTask: Task<Void, any Error>?
     private var timer: Timer?
+
+    init() {
+        currentUser = userManager.storedUser
+
+        guard let currentUser else {
+            return
+        }
+
+        tokenRefreshHandler()
+        scheduleAutoTokenRefresh()
+    }
 
     @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
         let signInURL: URL = oAuth2URL
@@ -57,18 +67,21 @@ class CBAuth {
         }
 
         let token = try await authorize(with: code)
-        let account = try await fetchAccount()
+
+        let tokenService = CBSecureTokenService(accessToken: token.accessToken, refreshToken: token.refreshToken, accessTokenExpirationDate: token.expirationDate)
+
+        let user = CBUser(tokenService: tokenService)
+        currentUser = user
+
+        try await user.refreshAccount()
+
+        save(user: user)
 
         scheduleAutoTokenRefresh()
     }
 
     public func authorize(with code: String) async throws -> CoinbaseTokenResponse {
         try await httpClient.request(.getToken(code))
-    }
-
-    public func fetchAccount() async throws -> CoinbaseUserAccountData {
-        let result: BaseDataResponse<CoinbaseUserAccountData> = try await httpClient.request(.userAccount)
-        return result.data
     }
 
     private func refreshUserToken() async throws {
@@ -79,16 +92,22 @@ class CBAuth {
         try await currentUser.refreshAccessToken()
     }
 
-    public func signOut() async throws {
-        Coinbase.accessToken = nil
-        Coinbase.refreshToken = nil
-        Coinbase.coinbaseUserAccountId = nil
-        Coinbase.lastKnownBalance = nil
-        // TODO: call appropriate api endpoint
+    private func refreshAccount() async throws {
+        guard let currentUser else {
+            throw Coinbase.Error.noActiveUser
+        }
 
+        try await currentUser.refreshAccount()
+    }
+
+    public func signOut() async throws {
         userManager.removeUser()
         timer?.invalidate()
         timer = nil
+
+        try await currentUser?.revokeAccessToken()
+        currentUser = nil
+        save(user: nil)
     }
 }
 
@@ -102,7 +121,7 @@ extension CBAuth: SecureTokenProvider {
 
 extension CBAuth {
     private var oAuth2URL: URL {
-        let path = CoinbaseAPI.signIn.path
+        let path = CoinbaseEndpoint.signIn.path
 
         var queryItems = [
             URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
@@ -131,7 +150,7 @@ extension CBAuth {
         return url
     }
 
-    private func save(user: CBUser?) -> Bool {
+    @discardableResult private func save(user: CBUser?) -> Bool {
         if let user {
             return userManager.store(user: user)
         } else {
@@ -140,7 +159,8 @@ extension CBAuth {
     }
 
     private func scheduleAutoTokenRefresh() {
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+        Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true) { [weak self] _ in
+            self?.tokenRefreshHandler()
         }
     }
 
@@ -148,7 +168,13 @@ extension CBAuth {
         tokenRefreshTask?.cancel()
 
         tokenRefreshTask = Task {
-            try await refreshUserToken()
+            do {
+                try await refreshUserToken()
+                try await refreshAccount()
+                save(user: currentUser)
+            } catch {
+                try await signOut()
+            }
         }
     }
 }

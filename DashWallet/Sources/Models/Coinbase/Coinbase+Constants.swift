@@ -33,48 +33,48 @@ extension Coinbase {
     static let account = "all"
 }
 
-extension Coinbase {
-    // MARK: Private Constants
-    private static let accessTokenKey = "accessToken"
-    private static let refreshTokenKey = "refreshToken"
-    private static let coinbaseUserAccountIdKey = "coinbaseUserAccountId"
-    private static let lastKnownBalanceKey = "lastKnownBalance"
-
-    // MARK: Properties
-    static var coinbaseUserAccountId: String? {
-        get {
-            UserDefaults.standard.string(forKey: coinbaseUserAccountIdKey)
-        }
-        set {
-            UserDefaults.standard.setValue(newValue, forKey: coinbaseUserAccountIdKey)
-        }
-    }
-
-    // MARK: Properties
-    static var accessToken: String? {
-        get {
-            UserDefaults.standard.string(forKey: accessTokenKey)
-        }
-        set {
-            UserDefaults.standard.setValue(newValue, forKey: accessTokenKey)
-        }
-    }
-
-    static var refreshToken: String? {
-        get {
-            UserDefaults.standard.string(forKey: refreshTokenKey)
-        }
-        set {
-            UserDefaults.standard.setValue(newValue, forKey: refreshTokenKey)
-        }
-    }
-
-    static var lastKnownBalance: String? {
-        get {
-            UserDefaults.standard.string(forKey: lastKnownBalanceKey)
-        }
-        set {
-            UserDefaults.standard.setValue(newValue, forKey: lastKnownBalanceKey)
-        }
-    }
-}
+// extension Coinbase {
+//    // MARK: Private Constants
+//    private static let accessTokenKey = "accessToken"
+//    private static let refreshTokenKey = "refreshToken"
+//    private static let coinbaseUserAccountIdKey = "coinbaseUserAccountId"
+//    private static let lastKnownBalanceKey = "lastKnownBalance"
+//
+//    // MARK: Properties
+//    static var coinbaseUserAccountId: String? {
+//        get {
+//            UserDefaults.standard.string(forKey: coinbaseUserAccountIdKey)
+//        }
+//        set {
+//            UserDefaults.standard.setValue(newValue, forKey: coinbaseUserAccountIdKey)
+//        }
+//    }
+//
+//    // MARK: Properties
+//    static var accessToken: String? {
+//        get {
+//            UserDefaults.standard.string(forKey: accessTokenKey)
+//        }
+//        set {
+//            UserDefaults.standard.setValue(newValue, forKey: accessTokenKey)
+//        }
+//    }
+//
+//    static var refreshToken: String? {
+//        get {
+//            UserDefaults.standard.string(forKey: refreshTokenKey)
+//        }
+//        set {
+//            UserDefaults.standard.setValue(newValue, forKey: refreshTokenKey)
+//        }
+//    }
+//
+//    static var lastKnownBalance: String? {
+//        get {
+//            UserDefaults.standard.string(forKey: lastKnownBalanceKey)
+//        }
+//        set {
+//            UserDefaults.standard.setValue(newValue, forKey: lastKnownBalanceKey)
+//        }
+//    }
+// }

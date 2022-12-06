@@ -22,9 +22,13 @@ private let kTokenServiceKey = "kAccountKey"
 
 // MARK: - CBUser
 
-class CBUser {
-    private var account: CoinbaseUserAccountData
+class CBUser: Codable {
+    private var account: CoinbaseUserAccountData!
     private var tokenService: CBSecureTokenService
+
+    init(tokenService: CBSecureTokenService) {
+        self.tokenService = tokenService
+    }
 
     required init?(coder: NSCoder) {
         let accountData = coder.decodeObject(forKey: kAccountKey) as! Data
@@ -38,6 +42,10 @@ extension CBUser {
         account.id
     }
 
+    var balance: UInt64 {
+        account.balance.plainAmount
+    }
+
     var accessToken: String {
         tokenService.accessToken
     }
@@ -46,19 +54,26 @@ extension CBUser {
         tokenService.refreshToken
     }
 
+    func refreshAccount() async throws {
+        try await fetchAccount()
+    }
+
     func refreshAccessToken() async throws {
         try await tokenService.fetchAccessToken(refreshing: true)
     }
-}
 
-// MARK: NSSecureCoding
+    func revokeAccessToken() async throws {
+        try await tokenService.revokeAccessToken()
+    }
 
-extension CBUser: NSSecureCoding {
-    static var supportsSecureCoding = true
+    public func fetchAccount() async throws -> CoinbaseUserAccountData {
+        if let account {
+            return account
+        }
 
-    func encode(with coder: NSCoder) {
-        let data = try! JSONEncoder().encode(account)
-        coder.encode(data, forKey: kAccountKey)
-        coder.encode(tokenService, forKey: kTokenServiceKey)
+        let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.userAccount)
+        account = result.data
+        return account
     }
 }
+

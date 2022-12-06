@@ -54,5 +54,7 @@ final class SuccessfulOperationStatusViewController: ActionButtonViewController,
         actionButton?.isEnabled = true
 
         setupContentView(contentView)
+
+        stackView.backgroundColor = .dw_background()
     }
 }
