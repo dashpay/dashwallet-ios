@@ -10,7 +10,8 @@ import Foundation
 // MARK: - CoinbaseUserAccountData
 
 struct CoinbaseUserAccountData: Codable, Identifiable {
-    let id, name: String
+    let id: String
+    let name: String
     let primary: Bool
     let type: DatumType
     let currency: Currency

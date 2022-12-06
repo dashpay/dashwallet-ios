@@ -9,6 +9,6 @@ import Foundation
 
 // MARK: - Amount
 struct Amount: Codable {
-    let amount: String?
-    let currency: String?
+    let amount: String
+    let currency: String
 }

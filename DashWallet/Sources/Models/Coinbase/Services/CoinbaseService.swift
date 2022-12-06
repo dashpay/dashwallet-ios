@@ -15,52 +15,10 @@ class CoinbaseService {
     private lazy var httpClient = HTTPClient<CoinbaseAPI>()
 }
 
-extension CoinbaseService {
-    var OAuth2URL: URL! {
-        let path = CoinbaseAPI.signIn.path
-
-        var queryItems = [
-            URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
-            URLQueryItem(name: "response_type", value: Coinbase.responseType),
-            URLQueryItem(name: "scope", value: Coinbase.scope),
-            URLQueryItem(name: "meta[send_limit_amount]", value: "\(Coinbase.send_limit_amount)"),
-            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.send_limit_currency),
-            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.send_limit_period),
-            URLQueryItem(name: "account", value: Coinbase.account),
-        ]
-
-        if let clientID = Coinbase.clientID as? String {
-            queryItems.append(URLQueryItem(name: "client_id", value: clientID))
-        }
-
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "coinbase.com"
-        urlComponents.path = path
-        urlComponents.queryItems = queryItems
-
-        guard let url = urlComponents.url else {
-            fatalError("URL must be valid")
-            return nil
-        }
-
-        return url
-    }
-}
+extension CoinbaseService { }
 
 extension CoinbaseService {
-    func authorize(code: String) async throws -> CoinbaseToken {
-        let result: CoinbaseToken = try await httpClient.request(.getToken(code))
-        Coinbase.accessToken = result.accessToken
-        Coinbase.refreshToken = result.refreshToken
-        return result
-    }
-
-    func account() async throws -> CoinbaseUserAccountData {
-        let result: BaseDataResponse<CoinbaseUserAccountData> = try await httpClient.request(.userAccount)
-        return result.data
-    }
-
+    // NOTE: not used
     func getCoinbaseUserAuthInformation() async throws -> CoinbaseUserAuthInformation {
         try await httpClient.request(.userAuthInformation)
     }

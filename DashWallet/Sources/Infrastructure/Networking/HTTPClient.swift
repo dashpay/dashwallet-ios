@@ -40,42 +40,34 @@ enum HTTPClientError: Error {
     case moya(MoyaError)
 }
 
+// MARK: - SecureTokenProvider
+
+protocol SecureTokenProvider: AnyObject {
+    var accessToken: String? { get }
+}
 
 // MARK: - HTTPClient
 
 public final class HTTPClient<Target: TargetType> {
     private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .utility, attributes: .concurrent)
-    private let provider: MoyaProvider<Target>
+    private var provider: MoyaProvider<Target>!
+    private weak var secureTokenProvider: SecureTokenProvider?
 
-    init() {
+    init(tokenProvider: SecureTokenProvider? = nil) {
         let config: NetworkLoggerPlugin.Configuration = .init(formatter: .init(responseData: JSONResponseDataFormatter),
                                                               logOptions: .verbose)
         let logger = NetworkLoggerPlugin(configuration: config)
-        provider = MoyaProvider<Target>(plugins: [logger])
+        let accessTokenPlugin = AccessTokenPlugin { [weak self] _ in
+            self?.secureTokenProvider?.accessToken ?? "TOKEN_NOT_FOUND"
+        }
+
+        provider = MoyaProvider<Target>(plugins: [logger, accessTokenPlugin])
+        secureTokenProvider = tokenProvider
     }
 
     @discardableResult func request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
         let cancellableToken = CancellableWrapper()
-
-//        if target.needAuthToken {
-//            refreshAuthTokenIfNeeded { [weak self] err in
-//                if let error = err {
-//                    DispatchQueue.main.async {
-//                        completion(.failure(error))
-//                    }
-//
-//                } else if let wSelf = self {
-//                    DispatchQueue.main.async {
-//                        cancellableToken.innerCancellable = wSelf._request(target, completion: completion)
-//                    }
-//                }
-//            }
-//        } else {
-//            cancellableToken.innerCancellable = _request(target, completion: completion)
-//        }
-
         cancellableToken.innerCancellable = _request(target, completion: completion)
-
         return cancellableToken
     }
 

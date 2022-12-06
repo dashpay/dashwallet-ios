@@ -42,12 +42,22 @@ public enum CoinbaseAPI {
     case createCoinbaseAccountAddress(String)
     case getToken(String)
     case revokeToken
+    case refreshToken(refreshToken: String)
     case signIn
 }
 
-// MARK: TargetType
+// MARK: TargetType, AccessTokenAuthorizable
 
-extension CoinbaseAPI: TargetType {
+extension CoinbaseAPI: TargetType, AccessTokenAuthorizable {
+    public var authorizationType: Moya.AuthorizationType? {
+        switch self {
+        case .signIn, .getToken:
+            return nil
+        default:
+            return .bearer
+        }
+    }
+
     public var baseURL: URL {
         kBaseURL
     }
@@ -60,13 +70,13 @@ extension CoinbaseAPI: TargetType {
         case .activePaymentMethods: return "/v2/payment-methods"
         case .placeBuyOrder(let accountId): return "/v2/accounts/\(accountId)/buys"
         case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
-        case .sendCoinsToWallet(let accountId): return "/v2/accounts/\(accountId)/transactions"
+        case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
         case .getBaseIdForUSDModel(let baseCurrency): return "/v2//assets/prices?base=\(baseCurrency)&filter=holdable&resolution=latest"
         case .swapTrade: return "/v2/trades"
         case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
         case .createCoinbaseAccountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
-        case .getToken: return "/oauth/token"
+        case .getToken, .refreshToken: return "/oauth/token"
         case .revokeToken: return "/oauth/revoke"
         case .signIn: return "/oauth/authorize"
         }
@@ -74,7 +84,7 @@ extension CoinbaseAPI: TargetType {
 
     public var method: Moya.Method {
         switch self {
-        case .getToken, .commitBuyOrder, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress:
+        case .getToken, .commitBuyOrder, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken:
             return .post
         default:
             return .get
@@ -88,10 +98,6 @@ extension CoinbaseAPI: TargetType {
                 "redirect_uri": Coinbase.redirectUri,
                 "code": code,
                 "grant_type": Coinbase.grantType,
-//                "scope": Coinbase.scope,
-//                "meta[send_limit_amount]": Coinbase.send_limit_amount,
-//                "meta[send_limit_currency]": Coinbase.send_limit_currency,
-//                "meta[send_limit_period]": Coinbase.send_limit_period,
                 "account": Coinbase.account,
             ]
 
@@ -103,7 +109,21 @@ extension CoinbaseAPI: TargetType {
                 queryItems["client_secret"] = value
             }
             return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
-        case .sendCoinsToWallet(let _, let _, let dto):
+        case .refreshToken(let refreshToken):
+            var queryItems: [String: Any] = [
+                "refresh_token": refreshToken,
+                "grant_type": "refresh_token",
+            ]
+
+            if let value = Coinbase.clientID as? String {
+                queryItems["client_id"] = value
+            }
+
+            if let value = Coinbase.clientSecret as? String {
+                queryItems["client_secret"] = value
+            }
+            return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
+        case .sendCoinsToWallet(_, _, let dto):
             return .requestJSONEncodable(dto)
         case .swapTrade(let dto):
             return .requestJSONEncodable(dto)
@@ -118,7 +138,7 @@ extension CoinbaseAPI: TargetType {
         // TODO: auth middleware
         //        request.setValue("Bearer \(apiAccessToken)", forHTTPHeaderField: "Authorization")
         switch self {
-        case .sendCoinsToWallet(let _, let verificationCode, let _):
+        case .sendCoinsToWallet(_, let verificationCode, _):
             headers["CB-2FA-TOKEN"] = verificationCode
         default:
             break

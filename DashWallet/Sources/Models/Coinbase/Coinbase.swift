@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+
 import AuthenticationServices
 import Combine
 import Foundation
@@ -31,6 +32,7 @@ class Coinbase {
         case failedToAuth
     }
 
+    private lazy var auth = CBAuth()
     private lazy var coinbaseService = CoinbaseService()
 
     public static let shared = Coinbase()
@@ -52,42 +54,16 @@ extension Coinbase {
 
 extension Coinbase {
     @MainActor  public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
-        let signInURL: URL! = coinbaseService.OAuth2URL
-        let callbackURLScheme = Coinbase.callbackURLScheme
-
-        let code = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Swift.Error>) in
-            let authenticationSession = ASWebAuthenticationSession(url: signInURL,
-                                                                   callbackURLScheme: callbackURLScheme) { callbackURL, error in
-                guard error == nil,
-                      let callbackURL,
-                      let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
-                      let code = queryItems.first(where: { $0.name == "code" })?.value else {
-                    continuation.resume(throwing: Coinbase.Error.failedToAuth)
-                    return
-                }
-
-                continuation.resume(returning: code)
-            }
-
-            authenticationSession.presentationContextProvider = presentationContext
-            authenticationSession.prefersEphemeralWebBrowserSession = true
-
-            if !authenticationSession.start() {
-                continuation.resume(throwing: Coinbase.Error.failedToStartAuthSession)
-            }
-        }
-
-        let _ = try await authorize(with: code)
-        let _ = try await fetchAccount()
+        try await auth.signIn(with: presentationContext)
     }
 
-    public func authorize(with code: String) async throws -> CoinbaseToken {
-        try await coinbaseService.authorize(code: code)
-    }
+//    private func authorize(with code: String) async throws -> CoinbaseTokenResponse {
+//        try await auth.authorize(with: code)
+//    }
 
-    public func fetchAccount() async throws -> CoinbaseUserAccountData {
-        try await coinbaseService.account()
-    }
+//    private func fetchAccount() async throws -> CoinbaseUserAccountData {
+//        try await auth.account()
+//    }
 
     public func createNewCoinbaseDashAddress() async throws -> String {
         guard let coinbaseUserAccountId = Coinbase.coinbaseUserAccountId else {
@@ -108,10 +84,6 @@ extension Coinbase {
     }
 
     public func signOut() async throws {
-        Coinbase.accessToken = nil
-        Coinbase.refreshToken = nil
-        Coinbase.coinbaseUserAccountId = nil
-        Coinbase.lastKnownBalance = nil
-        // TODO: call appropriate api endpoint
+        try await auth.signOut()
     }
 }
