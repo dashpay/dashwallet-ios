@@ -506,7 +506,6 @@
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
 		47A2A2E2293DCCEA00938DB7 /* Coinbase+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E1293DCCEA00938DB7 /* Coinbase+Constants.swift */; };
-		47A2A2E7293E5C7900938DB7 /* CBAuthCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E6293E5C7900938DB7 /* CBAuthCredential.swift */; };
 		47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E8293E612900938DB7 /* CBAuth.swift */; };
 		47A2A2EC293E618600938DB7 /* CBUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2EB293E618600938DB7 /* CBUser.swift */; };
 		47A2A2EE293E622700938DB7 /* CBSecureTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2ED293E622700938DB7 /* CBSecureTokenService.swift */; };
@@ -1658,7 +1657,6 @@
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
 		47A2A2E1293DCCEA00938DB7 /* Coinbase+Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coinbase+Constants.swift"; sourceTree = "<group>"; };
-		47A2A2E6293E5C7900938DB7 /* CBAuthCredential.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAuthCredential.swift; sourceTree = "<group>"; };
 		47A2A2E8293E612900938DB7 /* CBAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAuth.swift; sourceTree = "<group>"; };
 		47A2A2EB293E618600938DB7 /* CBUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBUser.swift; sourceTree = "<group>"; };
 		47A2A2ED293E622700938DB7 /* CBSecureTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBSecureTokenService.swift; sourceTree = "<group>"; };
@@ -4518,7 +4516,6 @@
 			isa = PBXGroup;
 			children = (
 				47A2A2EA293E616600938DB7 /* User */,
-				47A2A2E6293E5C7900938DB7 /* CBAuthCredential.swift */,
 				47A2A2E8293E612900938DB7 /* CBAuth.swift */,
 			);
 			path = Auth;
@@ -5811,7 +5808,6 @@
 				2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				47AF180529070B720025803E /* Types.swift in Sources */,
-				47A2A2E7293E5C7900938DB7 /* CBAuthCredential.swift in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
 				4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */,
