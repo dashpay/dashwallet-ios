@@ -150,8 +150,6 @@ extension Swift.Result where Success: Moya.Response, Failure: Error {
         switch self {
         case .success(let r):
             let jsonDecoder = JSONDecoder()
-            // jsonDecoder.dateDecodingStrategy = .secondsSince1970
-            // jsonDecoder.keyDecodingStrategy = .convertFromSnakeCase
             do {
                 let result = try jsonDecoder.decode(T.self, from: r.data)
                 return result
