@@ -330,7 +330,6 @@ extension NumberKeyboard {
 
 // MARK: NumberKeyboardButtonDelegate
 
-// MARK: NumberKeyboardButtonDelegate
 extension NumberKeyboard: NumberKeyboardButtonDelegate {
     func numberKeyboardButton(_ button: NumberKeyboardButton, touchBegan touch: UITouch) {
         guard isEnabled else { return }

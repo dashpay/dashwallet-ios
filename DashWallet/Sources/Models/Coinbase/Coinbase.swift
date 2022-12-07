@@ -15,10 +15,10 @@
 //  limitations under the License.
 //
 
+
 import AuthenticationServices
 import Combine
 import Foundation
-import Resolver
 
 let kDashCurrency = "DASH"
 var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
@@ -26,154 +26,65 @@ var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")
 // MARK: - Coinbase
 
 class Coinbase {
-    @Injected
-    private var getUserCoinbaseAccounts: GetUserCoinbaseAccounts
+    enum Error: Swift.Error {
+        case noActiveUser
+        case failedToStartAuthSession
+        case failedToAuth
+    }
 
-    @Injected
-    private var createCoinbaseDashAddress: CreateCoinbaseDashAddress
 
-    @Injected
-    private var getExchangeRate: GetDashExchangeRate
+    private lazy var coinbaseService = CoinbaseService()
 
-    @Injected
-    private var getUserCoinbaseToken: GetUserCoinbaseToken
-
-    @Injected
-    private var sendDashFromCoinbaseToDashWallet: SendDashFromCoinbaseToDashWallet
-
-    var isAuthorized: Bool { getUserCoinbaseToken.isUserLoginedIn() }
-
-    private var cancelables = [AnyCancellable]()
+    private var auth = CBAuth()
+    private var tx = CBTransactions()
 
     public static let shared = Coinbase()
+
+    init() {
+        CoinbaseAPI.shared.secureTokenProvider = auth
+    }
 }
 
 extension Coinbase {
+    var isAuthorized: Bool { auth.currentUser != nil }
+
     var lastKnownBalance: UInt64? {
-        guard let balance = getUserCoinbaseAccounts.lastKnownBalance, let dashNumber = Decimal(string: balance) else {
+        guard let balance = auth.currentUser?.balance else {
             return nil
         }
 
-        let duffsNumber = Decimal(DUFFS)
-        let plainAmount = dashNumber * duffsNumber
-        return NSDecimalNumber(decimal: plainAmount).uint64Value
+        return balance
+    }
+}
+
+extension Coinbase {
+    @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
+        try await auth.signIn(with: presentationContext)
     }
 
-    var hasLastKnownBalance: Bool {
-        getUserCoinbaseAccounts.hasLastKnownBalance
-    }
-
-    public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding,
-                       completion: @escaping ((Result<Bool, Error>) -> Void)) {
-        // TODO: Refactor this method
-        let path = APIEndpoint.signIn.path
-
-        var queryItems = [
-            URLQueryItem(name: "redirect_uri", value: NetworkRequest.redirect_uri),
-            URLQueryItem(name: "response_type", value: NetworkRequest.response_type),
-            URLQueryItem(name: "scope", value: NetworkRequest.scope),
-            URLQueryItem(name: "meta[\("send_limit_amount")]", value: "\(NetworkRequest.send_limit_amount)"),
-            URLQueryItem(name: "meta[\("send_limit_currency")]", value: NetworkRequest.send_limit_currency),
-            URLQueryItem(name: "meta[\("send_limit_period")]", value: NetworkRequest.send_limit_period),
-            URLQueryItem(name: "account", value: NetworkRequest.account),
-        ]
-
-        if let clientID = NetworkRequest.clientID as? String {
-            queryItems.append(URLQueryItem(name: "client_id", value: clientID))
+    public func createNewCoinbaseDashAddress() async throws -> String {
+        guard let coinbaseUserAccountId = auth.currentUser?.accountId else {
+            throw Coinbase.Error.noActiveUser
         }
 
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "coinbase.com"
-        urlComponents.path = path
-        urlComponents.queryItems = queryItems
-        //
-
-        guard let signInURL = urlComponents.url
-        else {
-            print("Could not create the sign in URL .")
-            return
-        }
-
-        let callbackURLScheme = NetworkRequest.callbackURLScheme
-        print(signInURL)
-
-        let authenticationSession = ASWebAuthenticationSession(url: signInURL,
-                                                               callbackURLScheme: callbackURLScheme) { callbackURL, error in
-            // 1
-            guard error == nil,
-                  let callbackURL,
-                  let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
-                  let code = queryItems.first(where: { $0.name == "code" })?.value
-            else {
-                completion(.failure(error!))
-                return
-            }
-
-            self.authorize(with: code)
-                .receive(on: DispatchQueue.main)
-                .sink(receiveCompletion: { completion in
-                    print(completion)
-                }, receiveValue: { [weak self] _ in
-                    self!.fetchUser()
-                        .receive(on: DispatchQueue.main)
-                        .sink(receiveCompletion: { [weak self] _ in
-
-                        }, receiveValue: { [weak self] _ in
-                            completion(.success(true))
-                        })
-                        .store(in: &self!.cancelables)
-
-
-                })
-                .store(in: &self.cancelables)
-        }
-
-        authenticationSession.presentationContextProvider = presentationContext
-        authenticationSession.prefersEphemeralWebBrowserSession = true
-
-        if !authenticationSession.start() {
-            // TODO: throw an error
-            print("Failed to start ASWebAuthenticationSession")
-        }
+        return try await coinbaseService.createCoinbaseAccountAddress(accountId: coinbaseUserAccountId)
     }
 
-    public func authorize(with code: String) -> AnyPublisher<CoinbaseToken?, Error> {
-        getUserCoinbaseToken.invoke(code: code)
-    }
-
-    public func fetchUser() -> AnyPublisher<CoinbaseUserAccountData?, Error> {
-        getUserCoinbaseAccounts.invoke()
-    }
-
-    public func createNewCoinbaseDashAddress() -> AnyPublisher<String?, Error> {
-        if let coinbaseUserAccountId = NetworkRequest.coinbaseUserAccountId {
-            return createCoinbaseDashAddress.invoke(accountId: coinbaseUserAccountId)
-        }
-        return Empty(completeImmediately: true).eraseToAnyPublisher()
-    }
-
-    public func getDashExchangeRate() -> AnyPublisher<CoinbaseExchangeRate?, Error> {
-        getExchangeRate.invoke()
+    public func getDashExchangeRate() async throws -> CoinbaseExchangeRate? {
+        try await coinbaseService.getCoinbaseExchangeRates(currency: kDashCurrency)
     }
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                  coinAmountInDash: String,
-                                                 dashWalletAddress: String) -> AnyPublisher<CoinbaseTransaction?, Error> {
-        if let coinbaseUserAccountId = NetworkRequest.coinbaseUserAccountId {
-            return sendDashFromCoinbaseToDashWallet.invoke(accountId: coinbaseUserAccountId,
-                                                           verificationCode: verificationCode,
-                                                           request: CoinbaseTransactionsRequest(type: CoinbaseTransactionsRequest
-                                                               .TransactionsType.send,
-                                                               to: dashWalletAddress,
-                                                               amount: coinAmountInDash,
-                                                               currency: kDashCurrency,
-                                                               idem: UUID()))
+                                                 dashWalletAddress: String) async throws -> CoinbaseTransaction {
+        guard let accountId = auth.currentUser?.accountId else {
+            throw Coinbase.Error.noActiveUser
         }
-        return Empty(completeImmediately: true).eraseToAnyPublisher()
+
+        return try await tx.send(from: accountId, amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
     }
 
-    public func signOut() {
-        getUserCoinbaseToken.signOut()
+    public func signOut() async throws {
+        try await auth.signOut()
     }
 }

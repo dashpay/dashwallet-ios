@@ -96,15 +96,15 @@ class SyncingActivityMonitor: NSObject {
         startSyncingIfNeeded()
     }
 
-    @objc  public func forceStartSyncingActivity() {
+    @objc public func forceStartSyncingActivity() {
         startSyncingActivity()
     }
 
-    @objc(addObserver:)  public func add(observer: SyncingActivityMonitorObserver) {
+    @objc(addObserver:) public func add(observer: SyncingActivityMonitorObserver) {
         observers.append(observer)
     }
 
-    @objc(removeObserver:)  public func remove(observer: SyncingActivityMonitorObserver) {
+    @objc(removeObserver:) public func remove(observer: SyncingActivityMonitorObserver) {
         if let idx = observers.firstIndex(where: { $0 === observer }) {
             observers.remove(at: idx)
         }

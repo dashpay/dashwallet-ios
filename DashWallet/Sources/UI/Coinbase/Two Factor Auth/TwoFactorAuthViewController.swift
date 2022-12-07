@@ -43,6 +43,11 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         hideActivityIndicator()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        twoFactorAuthField.becomeFirstResponder()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         contentView = UIView()

@@ -23,7 +23,7 @@ extension ServiceItem {
             return NSAttributedString(string: NSLocalizedString("Syncing...", comment: "Buy and Sell Dash"))
         }
 
-        if let balance = dashBalance, let fiat = fiatBalance {
+        if let balance = dashBalanceFormatted, let fiat = fiatBalanceFormatted {
             let dashStr = "\(balance) DASH"
             let fiatStr = " ≈ \(fiat)"
             let fullStr = "\(dashStr)\(fiatStr)"
@@ -37,7 +37,15 @@ extension ServiceItem {
         return nil
     }
 
-    var fiatBalance: String? {
+    var dashBalanceFormatted: String? {
+        guard let dashBalance else {
+            return nil
+        }
+
+        return dashBalance.formattedDashAmount
+    }
+
+    var fiatBalanceFormatted: String? {
         guard let balance = dashBalance else { return nil }
 
         let priceManger = DSPriceManager.sharedInstance()

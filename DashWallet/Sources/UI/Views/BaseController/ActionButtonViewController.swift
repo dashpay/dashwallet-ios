@@ -56,7 +56,7 @@ class ActionButtonViewController: BaseViewController {
 
     internal var actionButtonDisabledTitle: String? { actionButtonTitle }
 
-    private var stackView: UIStackView!
+    internal var stackView: UIStackView!
     private var button: DWActionButton!
     private var barButton: UIBarButtonItem!
     private var contentBottomConstraint: NSLayoutConstraint!

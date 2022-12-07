@@ -66,7 +66,7 @@ final class PaymentController: NSObject {
         paymentProcessor.processPaymentInput(input)
     }
 
-    @objc(performPaymentWithFile:)  public func performPayment(with file: Data) {
+    @objc(performPaymentWithFile:) public func performPayment(with file: Data) {
         paymentProcessor.reset()
         paymentProcessor.processFile(file)
     }
@@ -92,7 +92,6 @@ extension PaymentController {
 
 // MARK: DWConfirmPaymentViewControllerDelegate
 
-// MARK: DWConfirmPaymentViewControllerDelegate
 extension PaymentController: DWConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: DWConfirmPaymentViewController) {
         if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput {
@@ -103,7 +102,6 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
 
 // MARK: DWPaymentProcessorDelegate
 
-// MARK: DWPaymentProcessorDelegate
 extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest,
                           transaction: DSTransaction) {
@@ -218,7 +216,6 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
 // MARK: ProvideAmountViewControllerDelegate
 
-// MARK: ProvideAmountViewControllerDelegate
 extension PaymentController: ProvideAmountViewControllerDelegate {
     func provideAmountViewControllerDidInput(amount: UInt64) {
         paymentProcessor.provideAmount(amount)
