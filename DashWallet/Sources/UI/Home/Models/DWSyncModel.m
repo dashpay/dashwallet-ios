@@ -17,7 +17,6 @@
 
 #import "DWSyncModel.h"
 
-#import <DashSync/DSNetworkActivityIndicatorManager.h>
 #import <DashSync/DashSync.h>
 
 #import "DWEnvironment.h"
