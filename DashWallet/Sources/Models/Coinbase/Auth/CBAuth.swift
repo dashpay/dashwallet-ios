@@ -32,7 +32,7 @@ class CBAuth {
     init() {
         currentUser = userManager.storedUser
 
-        guard let currentUser else {
+        guard currentUser != nil else {
             return
         }
 

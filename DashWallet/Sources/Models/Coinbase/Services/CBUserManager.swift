@@ -27,7 +27,7 @@ class CBUserManager {
         var error: NSError?
         let data = getKeychainData(kKeychainUserAccessKey, &error)
 
-        guard error == nil else {
+        guard error == nil, !data.isEmpty else {
             return nil
         }
 
