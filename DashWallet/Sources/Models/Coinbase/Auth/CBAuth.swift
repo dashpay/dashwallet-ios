@@ -32,8 +32,11 @@ typealias UserDidChangeListenerBlock = (CBUser?) -> Void
 class CBAuth {
     public var currentUser: CBUser? {
         didSet {
-            if currentUser != oldValue {
-                NotificationCenter.default.post(name: .userDidChangeNotification, object: currentUser)
+            let user = currentUser
+            if user != oldValue {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .userDidChangeNotification, object: self)
+                }
             }
         }
     }
@@ -65,7 +68,7 @@ class CBAuth {
         }
 
         tokenRefreshHandler()
-        scheduleAutoTokenRefresh()
+        scheduleAutoTokenRefreshIfNeeded()
     }
 
     @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
@@ -117,15 +120,20 @@ class CBAuth {
         userManager.removeUser()
         stopAutoTokenRefresh()
 
-        try await currentUser?.revokeAccessToken()
+        // Detach task to avoid waiting for response
+        Task {
+            // Ignore if fails
+            try? await currentUser?.revokeAccessToken()
+        }
+
         currentUser = nil
         save(user: nil)
     }
 
     public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
         let handle = NotificationCenter.default.addObserver(forName: .userDidChangeNotification, object: self, queue: .main) { notification in
-            guard let user = notification.object as? CBUser else { return }
-            listener(user)
+            guard let auth = notification.object as? CBAuth else { return }
+            listener(auth.currentUser)
         }
         listeners.append(handle)
 

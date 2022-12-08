@@ -87,7 +87,16 @@ public class HTTPClient<Target: TargetType> {
     }
 
     public func request(_ target: Target) async throws {
-        let _: Void = try await request(target)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            request(target) { result in
+                switch result {
+                case .success:
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public func request<R: Decodable>(_ target: Target) async throws -> R {

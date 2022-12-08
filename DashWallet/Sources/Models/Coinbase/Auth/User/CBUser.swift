@@ -31,7 +31,7 @@ extension CBUser: Equatable {
 // MARK: - CBUser
 
 class CBUser: Codable {
-    private var account: CoinbaseUserAccountData!
+    private var account: CoinbaseUserAccountData?
     private var tokenService: CBSecureTokenService
 
     init(tokenService: CBSecureTokenService) {
@@ -46,12 +46,12 @@ class CBUser: Codable {
 }
 
 extension CBUser {
-    var accountId: String {
-        account.id
+    var accountId: String? {
+        account?.id
     }
 
-    var balance: UInt64 {
-        account.balance.plainAmount
+    var balance: UInt64? {
+        account?.balance.plainAmount
     }
 
     var accessToken: String {
@@ -80,8 +80,9 @@ extension CBUser {
         }
 
         let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.userAccount)
-        account = result.data
-        return account
+        let newAccount = result.data
+        account = newAccount
+        return newAccount
     }
 }
 
