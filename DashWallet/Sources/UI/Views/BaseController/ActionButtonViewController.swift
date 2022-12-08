@@ -75,6 +75,7 @@ class ActionButtonViewController: BaseViewController {
         }
         else {
             button.showActivityIndicator()
+            button.isEnabled = false
         }
     }
 
@@ -84,6 +85,7 @@ class ActionButtonViewController: BaseViewController {
         }
         else {
             button.hideActivityIndicator()
+            button.isEnabled = true
         }
     }
 
