@@ -35,9 +35,8 @@ final class BRAWWeakTimerTarget: NSObject {
         selector = initSelector
     }
 
-    @objc
-    func timerDidFire() {
-        guard let target = target, let selector = selector else { return }
+    @objc  func timerDidFire() {
+        guard let target, let selector else { return }
 
         if target.responds(to: selector) {
             _ = target.perform(selector)

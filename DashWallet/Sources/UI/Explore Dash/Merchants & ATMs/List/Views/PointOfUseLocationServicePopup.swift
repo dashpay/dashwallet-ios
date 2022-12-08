@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -19,31 +19,38 @@ import UIKit
 
 class PointOfUseLocationServicePopup: UIView {
     var continueBlock: (() -> ())?
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+
+    private var title: String
+    private var details: String
+
+    init(title: String, details: String) {
+        self.title = title
+        self.details = details
+        super.init(frame: .zero)
+
         configureHierarchy()
     }
-    
+
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     @objc func continueButtonAction() {
         continueBlock?()
         removeFromSuperview()
     }
-    
+
     func configureHierarchy() {
         backgroundColor = UIColor.black.withAlphaComponent(0.2)
-        
+
         let container = UIView(frame: .zero)
         container.translatesAutoresizingMaskIntoConstraints = false
         container.backgroundColor = .dw_background()
         container.layer.cornerRadius = 14.0
         container.layer.masksToBounds = true
         addSubview(container)
-        
+
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.alignment = .center
@@ -51,7 +58,7 @@ class PointOfUseLocationServicePopup: UIView {
         stackView.axis = .vertical
         stackView.distribution = .fill
         container.addSubview(stackView)
-        
+
         let iconView = UIImageView(image: UIImage(systemName: "location.fill"))
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.layer.cornerRadius = 25.0
@@ -60,7 +67,7 @@ class PointOfUseLocationServicePopup: UIView {
         iconView.contentMode = .center
         iconView.tintColor = .dw_dashBlue()
         stackView.addArrangedSubview(iconView)
-        
+
         let textStackView = UIStackView()
         textStackView.translatesAutoresizingMaskIntoConstraints = false
         textStackView.alignment = .center
@@ -68,72 +75,64 @@ class PointOfUseLocationServicePopup: UIView {
         textStackView.axis = .vertical
         textStackView.distribution = .fill
         stackView.addArrangedSubview(textStackView)
-        
+
         var label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
         label.textAlignment = .center
         label.font = .dw_font(forTextStyle: UIFont.TextStyle.body)
-        label.text = NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
+        label.text = title
         textStackView.addArrangedSubview(label)
-        
+
         label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.footnote)
-        label.text = NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.", comment: "")
+        label.text = details
         textStackView.addArrangedSubview(label)
         let continueButton = DWActionButton()
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
         continueButton.addTarget(self, action: #selector(continueButtonAction), for: .touchUpInside)
         stackView.addArrangedSubview(continueButton)
-        NSLayoutConstraint.activate(
-            [
-                container.centerYAnchor.constraint(equalTo: centerYAnchor),
-                container.leadingAnchor.constraint(
-                    equalTo: leadingAnchor,
-                    constant: 15),
-                container.trailingAnchor.constraint(
-                    equalTo: trailingAnchor,
-                    constant: -15),
-                stackView.topAnchor.constraint(
-                    equalTo: container.topAnchor,
-                    constant: 20),
-                stackView.bottomAnchor.constraint(
-                    equalTo: container.bottomAnchor,
-                    constant: -20),
-                stackView.leadingAnchor.constraint(
-                    equalTo: container.leadingAnchor,
-                    constant: 20),
-                stackView.trailingAnchor.constraint(
-                    equalTo: container.trailingAnchor,
-                    constant: -20),
-                iconView.widthAnchor.constraint(equalToConstant: 50.0),
-                iconView.heightAnchor.constraint(equalToConstant: 50.0),
-                continueButton.heightAnchor.constraint(equalToConstant: 40.0),
-                continueButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-                continueButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
-                ])
+        NSLayoutConstraint.activate([
+            container.centerYAnchor.constraint(equalTo: centerYAnchor),
+            container.leadingAnchor.constraint(equalTo: leadingAnchor,
+                                               constant: 15),
+            container.trailingAnchor.constraint(equalTo: trailingAnchor,
+                                                constant: -15),
+            stackView.topAnchor.constraint(equalTo: container.topAnchor,
+                                           constant: 20),
+            stackView.bottomAnchor.constraint(equalTo: container.bottomAnchor,
+                                              constant: -20),
+            stackView.leadingAnchor.constraint(equalTo: container.leadingAnchor,
+                                               constant: 20),
+            stackView.trailingAnchor.constraint(equalTo: container.trailingAnchor,
+                                                constant: -20),
+            iconView.widthAnchor.constraint(equalToConstant: 50.0),
+            iconView.heightAnchor.constraint(equalToConstant: 50.0),
+            continueButton.heightAnchor.constraint(equalToConstant: 40.0),
+            continueButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            continueButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+        ])
     }
-    
+
     func show(in view: UIView) {
         translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(self)
-        
-        NSLayoutConstraint.activate(
-            [
-                topAnchor.constraint(equalTo: view.topAnchor),
-                bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                trailingAnchor.constraint(equalTo: view.trailingAnchor)
-            ])
+
+        NSLayoutConstraint.activate([
+            topAnchor.constraint(equalTo: view.topAnchor),
+            bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
     }
-    
-    static func show(in view: UIView, completion: @escaping () -> Void) {
-        let popup = PointOfUseLocationServicePopup(frame: CGRect.zero)
+
+    static func show(in view: UIView, title: String, details: String, completion: @escaping () -> Void) {
+        let popup = PointOfUseLocationServicePopup(title: title, details: details)
         popup.continueBlock = completion
         popup.show(in: view.window!)
     }

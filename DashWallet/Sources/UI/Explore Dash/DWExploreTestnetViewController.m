@@ -152,7 +152,6 @@
 
     [NSLayoutConstraint activateConstraints:@[
         [headerView.heightAnchor constraintLessThanOrEqualToConstant:kExploreHeaderViewHeight],
-
         [parentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
                                              constant:10],
         [parentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Pavel Tikhonenko
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -17,40 +17,38 @@
 
 import UIKit
 
-class FetchingNextPageCell: UITableViewCell
-{
+class FetchingNextPageCell: UITableViewCell {
     var activity: UIActivityIndicatorView!
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
+
         configureLayout()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         configureLayout()
     }
-    
+
     func start() {
         activity.startAnimating()
     }
-    
+
     func stop() {
         activity.stopAnimating()
     }
-    
-    func configureLayout()
-    {
+
+    func configureLayout() {
         activity = UIActivityIndicatorView()
         activity.translatesAutoresizingMaskIntoConstraints = false
         activity.tintColor = .secondaryLabel
         activity.color = .secondaryLabel
         contentView.addSubview(activity)
-        
+
         NSLayoutConstraint.activate([
             contentView.heightAnchor.constraint(equalToConstant: 60),
-            
+
             activity.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             activity.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
         ])
