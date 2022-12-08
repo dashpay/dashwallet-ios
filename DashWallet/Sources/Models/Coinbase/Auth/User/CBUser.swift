@@ -20,6 +20,14 @@ import Foundation
 private let kAccountKey = "kAccountKey"
 private let kTokenServiceKey = "kAccountKey"
 
+// MARK: - CBUser + Equatable
+
+extension CBUser: Equatable {
+    static func == (lhs: CBUser, rhs: CBUser) -> Bool {
+        lhs.account == rhs.account
+    }
+}
+
 // MARK: - CBUser
 
 class CBUser: Codable {

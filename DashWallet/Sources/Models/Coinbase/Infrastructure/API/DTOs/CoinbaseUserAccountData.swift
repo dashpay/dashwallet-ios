@@ -7,6 +7,16 @@
 
 import Foundation
 
+// MARK: - CoinbaseUserAccountData + Equatable
+
+extension CoinbaseUserAccountData: Equatable {
+    static func == (lhs: CoinbaseUserAccountData, rhs: CoinbaseUserAccountData) -> Bool {
+        lhs.name == rhs.name &&
+            lhs.currency.code == rhs.currency.code &&
+            lhs.balance.amount == rhs.balance.amount
+    }
+}
+
 // MARK: - CoinbaseUserAccountData
 
 struct CoinbaseUserAccountData: Codable, Identifiable {
