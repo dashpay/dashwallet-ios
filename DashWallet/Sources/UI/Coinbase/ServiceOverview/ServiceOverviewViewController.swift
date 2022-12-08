@@ -20,17 +20,22 @@ protocol ServiceOverviewDelegate : AnyObject {
 
 // MARK: - ServiceOverviewViewController
 
-class ServiceOverviewViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    @IBOutlet weak var serviceIcon: UIImageView!
-    @IBOutlet weak var serviceHint: UILabel!
-    @IBOutlet weak var serviceLinkButton: UIButton!
-    @IBOutlet weak var serviceFeaturesTables: UITableView!
+class ServiceOverviewViewController: ActionButtonViewController, UITableViewDelegate, UITableViewDataSource {
+    @IBOutlet var serviceIcon: UIImageView!
+    @IBOutlet var serviceHint: UILabel!
+    @IBOutlet var serviceFeaturesTables: UITableView!
+    @IBOutlet var mainContentView: UIView!
 
     weak var delegate: ServiceOverviewDelegate?
 
     var model = ServiceOverviewScreenModel.getCoinbaseServiceEnteryPoint
 
-    @IBAction func actionHandler() {
+    override var actionButtonTitle: String? {
+        model.serviceType.serviceButtonTitle
+    }
+
+    override func actionButtonAction(sender: UIView) {
+        showActivityIndicator()
         model.initiateCoinbaseAuthorization(with: self)
     }
 
@@ -49,15 +54,15 @@ class ServiceOverviewViewController: UIViewController, UITableViewDelegate, UITa
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        view.backgroundColor = .dw_secondaryBackground()
         model.delegate = self
+
+        setupContentView(mainContentView)
         setupHeaderAndTitleLabel()
-
-        serviceLinkButton.setTitle(model.serviceType.serviceButtonTitle, for: .normal)
-    }
-
-    override func loadView() {
-        super.loadView()
         setupTableView()
+
+        actionButton?.isEnabled = true
     }
 
     func setupHeaderAndTitleLabel() {
@@ -69,8 +74,6 @@ class ServiceOverviewViewController: UIViewController, UITableViewDelegate, UITa
         serviceFeaturesTables.estimatedRowHeight = 80
         serviceFeaturesTables.rowHeight = UITableView.automaticDimension
         serviceFeaturesTables.allowsSelection = false
-        serviceFeaturesTables.delegate = self
-        serviceFeaturesTables.dataSource = self
         serviceFeaturesTables.separatorStyle = .none
     }
 
@@ -109,6 +112,7 @@ extension ServiceOverviewViewController: ASWebAuthenticationPresentationContextP
 extension ServiceOverviewViewController: ServiceOverviewScreenModelDelegate {
     func didSignIn() {
         let vc = CoinbaseEntryPointViewController.controller()
+        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 
