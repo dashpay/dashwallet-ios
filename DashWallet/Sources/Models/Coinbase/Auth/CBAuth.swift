@@ -30,6 +30,17 @@ class CBAuth {
     private var timer: Timer?
 
     init() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(didBecomeActive(notification:)),
+                                               name: UIApplication.didBecomeActiveNotification,
+                                               object: nil)
+
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(didEnterBackground(notification:)),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
+
         currentUser = userManager.storedUser
 
         guard currentUser != nil else {
@@ -38,6 +49,15 @@ class CBAuth {
 
         tokenRefreshHandler()
         scheduleAutoTokenRefresh()
+    }
+
+    @objc func didBecomeActive(notification: Notification) {
+        tokenRefreshHandler()
+        scheduleAutoTokenRefreshIfNeeded()
+    }
+
+    @objc func didEnterBackground(notification: Notification) {
+        stopAutoTokenRefresh()
     }
 
     @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
@@ -102,8 +122,7 @@ class CBAuth {
 
     public func signOut() async throws {
         userManager.removeUser()
-        timer?.invalidate()
-        timer = nil
+        stopAutoTokenRefresh()
 
         try await currentUser?.revokeAccessToken()
         currentUser = nil
@@ -158,10 +177,23 @@ extension CBAuth {
         }
     }
 
+    private func scheduleAutoTokenRefreshIfNeeded() {
+        guard currentUser != nil else { return }
+
+        scheduleAutoTokenRefresh()
+    }
+
     private func scheduleAutoTokenRefresh() {
-        Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true) { [weak self] _ in
+        guard let currentTimer = timer, !currentTimer.isValid else { return }
+
+        timer = Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true) { [weak self] _ in
             self?.tokenRefreshHandler()
         }
+    }
+
+    private func stopAutoTokenRefresh() {
+        timer?.invalidate()
+        timer = nil
     }
 
     private func tokenRefreshHandler() {
