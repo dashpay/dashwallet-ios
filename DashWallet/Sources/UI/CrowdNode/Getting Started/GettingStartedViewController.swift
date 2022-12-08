@@ -35,6 +35,11 @@ final class GettingStartedViewController: UIViewController {
         configureHierarchy()
         configureObservers()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancellableBag.removeAll()
+    }
 
     @IBAction func newAccountAction() {
         if viewModel.canSignUp {

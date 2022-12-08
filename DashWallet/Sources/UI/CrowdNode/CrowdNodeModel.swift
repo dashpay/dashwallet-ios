@@ -27,6 +27,9 @@ import Combine
 
         case .fundingWallet, .acceptingTerms, .signingUp:
             return AccountCreatingController.controller()
+            
+        case .acceptTermsRequired:
+            return NewAccountViewController.controller()
 
         default:
             if DWGlobalOptions.sharedInstance().crowdNodeInfoShown {
@@ -160,7 +163,9 @@ final class CrowdNodeModel {
         crowdNode.restoreState()
         getAccountAddress()
     }
+}
 
+extension CrowdNodeModel {
     private func observeBalance() {
         checkBalance()
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
@@ -170,5 +175,17 @@ final class CrowdNodeModel {
 
     private func checkBalance() {
         hasEnoughBalance = DWEnvironment.sharedInstance().currentAccount.balance >= CrowdNodeConstants.minimumRequiredDash
+    }
+}
+
+extension CrowdNodeModel {
+    func deposit(amount: Int64) async throws {
+        guard amount > 0 else { return }
+        try await crowdNode.deposit(amount: UInt64(amount))
+    }
+    
+    func withdraw(permil: UInt) async throws {
+        guard permil > 0 else { return }
+        try await crowdNode.withdraw(permil: permil)
     }
 }

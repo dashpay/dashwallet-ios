@@ -83,6 +83,14 @@ public final class CrowdNode {
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
     }
+    
+    private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
+        let topUpTx = try await sendCoinsService.sendCoins(
+            address: accountAddress,
+            amount: amount
+        )
+        return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
+    }
 }
 
 // Restoring state
@@ -192,14 +200,6 @@ extension CrowdNode {
         }
     }
 
-    private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
-        let topUpTx = try await sendCoinsService.sendCoins(
-            address: accountAddress,
-            amount: amount
-        )
-        return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
-    }
-
     private func makeSignUpRequest(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let requestValue = CrowdNodeConstants.apiOffset + ApiCode.signUp.rawValue
         let signUpTx = try await sendCoinsService.sendCoins(
@@ -267,5 +267,81 @@ extension CrowdNode {
         let request = UNNotificationRequest(identifier: CrowdNodeConstants.notificationID, content: content, trigger: nil)
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.add(request)
+    }
+}
+
+// Deposits / withdrawals
+extension CrowdNode {
+    func deposit(amount: UInt64) async throws {
+        guard !accountAddress.isEmpty else { return }
+        
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let requiredTopUp = amount + TX_FEE_PER_INPUT
+        let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
+        
+        let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
+        print("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
+        
+        let depositTx = try await sendCoinsService.sendCoins(
+            address: CrowdNodeConstants.crowdNodeAddress,
+            amount: min(account.maxOutputAmount, amount),
+            inputSelector: SingleInputAddressSelector(candidates: [topUpTx], address: accountAddress)
+        )
+        print("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
+        
+        let successResponse = CrowdNodeResponse(
+            responseCode: ApiCode.depositReceived,
+            accountAddress: accountAddress
+        )
+        let errorResponse = CrowdNodeErrorResponse(
+            errorValue: amount,
+            accountAddress: accountAddress
+        )
+
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
+        print("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
+
+        if errorResponse.matches(tx: responseTx) {
+            throw CrowdNodeError.deposit
+        }
+    }
+    
+    func withdraw(permil: UInt) async throws {
+        guard !accountAddress.isEmpty else { return }
+        
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let requestValue = CrowdNodeConstants.apiOffset + UInt64(permil)
+        let requiredTopUp = requestValue + TX_FEE_PER_INPUT
+        let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
+        
+        let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
+        print("CrowdNode withdraw topup tx hash: \(topUpTx.txHashHexString)")
+        
+        let withdrawTx = try await sendCoinsService.sendCoins(
+            address: CrowdNodeConstants.crowdNodeAddress,
+            amount: requestValue,
+            inputSelector: SingleInputAddressSelector(candidates: [topUpTx], address: accountAddress)
+        )
+        print("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
+        
+        let successResponse = CrowdNodeResponse(
+            responseCode: ApiCode.withdrawalQueue,
+            accountAddress: accountAddress
+        )
+        let errorResponse = CrowdNodeErrorResponse(
+            errorValue: requestValue,
+            accountAddress: accountAddress
+        )
+        let withdrawalDeniedResponse = CrowdNodeResponse(
+            responseCode: ApiCode.withdrawalDenied,
+            accountAddress: accountAddress
+        )
+        
+        let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
+        print("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
+
+        if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
+            throw CrowdNodeError.withdraw
+        }
     }
 }

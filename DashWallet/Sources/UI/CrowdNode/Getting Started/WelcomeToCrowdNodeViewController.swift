@@ -28,6 +28,11 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         viewModel.didShowInfoScreen()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancellableBag.removeAll()
+    }
 
     @IBAction func continueAction() {
         navigationController?.replaceLast(with: GettingStartedViewController.controller())

@@ -34,6 +34,7 @@ final class AccountCreatingController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         viewModel.showNotificationOnResult = true
+        cancellableBag.removeAll()
     }
 
     @objc static func controller() -> AccountCreatingController {
