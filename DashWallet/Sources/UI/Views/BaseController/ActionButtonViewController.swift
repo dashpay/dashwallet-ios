@@ -124,7 +124,7 @@ extension ActionButtonViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.alignment = .fill
-        stackView.distribution = .equalSpacing
+        stackView.distribution = .fill
         stackView.spacing = 0
         stackView.preservesSuperviewLayoutMargins = true
         stackView.backgroundColor = .dw_secondaryBackground()
@@ -203,7 +203,7 @@ extension ActionButtonViewController {
 extension ActionButtonViewController {
     private func configuredActivityIndicator() -> UIActivityIndicatorView {
         let activityIndicatorView = UIActivityIndicatorView(style: .medium)
-        activityIndicatorView.color = .dw_tint()
+        activityIndicatorView.color = .dw_darkBlue()
         return activityIndicatorView
     }
 
