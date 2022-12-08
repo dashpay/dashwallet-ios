@@ -42,7 +42,8 @@ final class CoinbaseEntryPointViewController: BaseViewController {
     private func popCoinbaseFlow() {
         if isNeedToShowSignOutError {
             showAlert(with: NSLocalizedString("Error", comment: ""),
-                      message: NSLocalizedString("You were signed out from Coinbase, please sign in again", comment: "Sign out from coinbase due to error"))
+                      message: NSLocalizedString("You were signed out from Coinbase, please sign in again", comment: "Sign out from coinbase due to error"),
+                      presentingViewController: navigationController)
         }
 
         let portalVC = navigationController!.controller(by: PortalViewController.self)!
