@@ -27,8 +27,9 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var twoFactorAuthField: UITextField!
     @IBOutlet var hintLabel: UILabel!
 
-    public var verifyHandler: ((String) -> ())?
-
+    public var isVerifying = false
+    public var verifyHandler: ((String) -> Void)?
+    public var cancelHandler: (() -> Void)?
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
@@ -37,15 +38,19 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     internal var isErrorShown = false
 
     public func showInvalidCodeState() {
+        isVerifying = false
         isErrorShown = true
         styleHintFieldErrorState()
         styleTwoFactorAuthFieldErrorState()
         hideActivityIndicator()
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        twoFactorAuthField.becomeFirstResponder()
+    override func viewWillDisappear(_ animated: Bool) {
+        if !isVerifying {
+            cancelHandler?()
+        }
+
+        super.viewWillDisappear(animated)
     }
 
     override func viewDidLoad() {
@@ -94,6 +99,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
+        isVerifying = true
         verifyHandler?(twoFactorAuthField.text!)
     }
 
