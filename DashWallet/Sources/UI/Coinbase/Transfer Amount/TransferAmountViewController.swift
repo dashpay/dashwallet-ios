@@ -46,6 +46,7 @@ final class TransferAmountViewController: SendAmountViewController {
     }
 
     override func actionButtonAction(sender: UIView) {
+        DSLogger.log("Tranfer from coinbase: actionButtonAction")
         showActivityIndicator()
         transferModel.initializeTransfer()
     }
@@ -102,8 +103,14 @@ final class TransferAmountViewController: SendAmountViewController {
 // MARK: TransferAmountModelDelegate
 
 extension TransferAmountViewController: TransferAmountModelDelegate {
+    func coinbaseUserDidChange() {
+        converterView.reloadView()
+    }
+
     func transferFromCoinbaseToWalletDidFail(with error: Error) {
+        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToWalletDidFail")
         showAlert(with: "Error", message: error.localizedDescription)
+        hideActivityIndicator()
     }
 
     func transferFromCoinbaseToWalletDidCancel() {

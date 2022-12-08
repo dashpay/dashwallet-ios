@@ -118,6 +118,7 @@ extension HTTPClient {
                 if acceptableCodes.contains(response.statusCode) {
                     completion(.success(response))
                 } else {
+                    DSLogger.log("Tranfer from coinbase: HTTPClient._request - data: \(response.errorDescription)")
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):

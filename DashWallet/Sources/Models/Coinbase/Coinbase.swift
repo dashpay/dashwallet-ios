@@ -32,7 +32,6 @@ class Coinbase {
         case failedToAuth
     }
 
-
     private lazy var coinbaseService = CoinbaseService()
 
     private var auth = CBAuth()
@@ -77,14 +76,27 @@ extension Coinbase {
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                  coinAmountInDash: String,
                                                  dashWalletAddress: String) async throws -> CoinbaseTransaction {
+        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet")
+
         guard let accountId = auth.currentUser?.accountId else {
+            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
             throw Coinbase.Error.noActiveUser
         }
 
-        return try await tx.send(from: accountId, amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
+        let tx = try await tx.send(from: accountId, amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
+        try? await auth.currentUser?.refreshAccount()
+        return tx
     }
 
     public func signOut() async throws {
         try await auth.signOut()
+    }
+
+    public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
+        auth.addUserDidChangeListener(listener)
+    }
+
+    public func removeUserDidChangeListener(handle: UserDidChangeListenerHandle) {
+        auth.removeUserDidChangeListener(handle: handle)
     }
 }

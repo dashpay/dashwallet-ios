@@ -53,5 +53,6 @@
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
+#import <DashSync/DSLogger.h>
 
 #import <SDWebImage/SDWebImage.h>
