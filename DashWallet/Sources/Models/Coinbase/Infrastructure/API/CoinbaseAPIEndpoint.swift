@@ -159,4 +159,10 @@ extension Moya.Response {
             return nil
         }
     }
+
+    var errorDescription: String? {
+        guard let error else { return nil }
+
+        return String(describing: error.errors)
+    }
 }

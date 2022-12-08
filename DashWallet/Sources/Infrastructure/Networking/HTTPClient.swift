@@ -38,6 +38,17 @@ enum HTTPClientError: Error {
     case statusCode(Moya.Response)
     case mapping(Moya.Response)
     case moya(MoyaError)
+
+    var localizedDescription: String {
+        switch self {
+        case .statusCode(let response):
+            return "\(response.debugDescription)\nError: \(response.errorDescription ?? "")"
+        case .mapping(let response):
+            return "\(response.debugDescription)"
+        case .moya(let error):
+            return "\(String(describing: error.errorDescription))"
+        }
+    }
 }
 
 // MARK: - SecureTokenProvider

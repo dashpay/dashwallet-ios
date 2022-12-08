@@ -102,6 +102,14 @@ final class TransferAmountViewController: SendAmountViewController {
 // MARK: TransferAmountModelDelegate
 
 extension TransferAmountViewController: TransferAmountModelDelegate {
+    func transferFromCoinbaseToWalletDidFail(with error: Error) {
+        showAlert(with: "Error", message: error.localizedDescription)
+    }
+
+    func transferFromCoinbaseToWalletDidCancel() {
+        hideActivityIndicator()
+    }
+
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
         paymentController.delegate = self
@@ -132,6 +140,9 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         let vc = TwoFactorAuthViewController.controller()
         vc.verifyHandler = { [weak self] code in
             self?.transferModel.continueTransferFromCoinbase(with: code)
+        }
+        vc.cancelHandler = { [weak self] in
+            self?.transferModel.cancelTransferOperation()
         }
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
