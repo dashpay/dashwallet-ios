@@ -89,6 +89,10 @@ class ConverterView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    public func reloadView() {
+        updateView()
+    }
+
     @objc func swapAction() {
         direction = direction.next
         updateView()

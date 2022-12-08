@@ -32,9 +32,21 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 
     private let model = CoinbaseEntryPointModel()
 
+    private var isNeedToShowSignOutError = true
+
     @IBAction func signOutAction() {
+        isNeedToShowSignOutError = false
         model.signOut()
-        navigationController?.popToRootViewController(animated: true)
+    }
+
+    private func popCoinbaseFlow() {
+        if isNeedToShowSignOutError {
+            showAlert(with: NSLocalizedString("Error", comment: ""),
+                      message: NSLocalizedString("You were signed out from Coinbase, please sign in again", comment: "Sign out from coinbase due to error"))
+        }
+
+        let portalVC = navigationController!.controller(by: PortalViewController.self)!
+        navigationController!.popToViewController(portalVC, animated: true)
     }
 
     override func viewDidLoad() {
@@ -51,6 +63,12 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 
 extension CoinbaseEntryPointViewController {
     private func configureModel() {
+        model.userDidSignOut = { [weak self] in
+            self?.popCoinbaseFlow()
+        }
+        model.userDidChange = { [weak self] in
+            self?.reloadView()
+        }
         model.networkStatusDidChange = { [weak self] _ in
             self?.reloadView()
         }

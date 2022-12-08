@@ -74,6 +74,8 @@ final class CoinbaseEntryPointModel {
 
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var networkStatus: NetworkStatus!
+    var userDidSignOut: (() -> ())?
+    var userDidChange: (() -> ())?
 
     var balance: UInt64 {
         guard let amount = Coinbase.shared.lastKnownBalance else { return 0 }
@@ -84,8 +86,18 @@ final class CoinbaseEntryPointModel {
     private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
     private var reachabilityObserver: Any!
 
+    private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
+
     init() {
         initializeReachibility()
+
+        userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
+            if user == nil {
+                self?.userDidSignOut?()
+            } else {
+                self?.userDidChange?()
+            }
+        }
     }
 
     public func signOut() {
@@ -96,6 +108,7 @@ final class CoinbaseEntryPointModel {
 
     deinit {
         NotificationCenter.default.removeObserver(reachabilityObserver!)
+        Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
     }
 }
 
