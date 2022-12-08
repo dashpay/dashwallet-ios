@@ -17,6 +17,8 @@
 
 import Combine
 
+// MARK: - CrowdNodeModelObjcWrapper
+
 @objc public class CrowdNodeModelObjcWrapper: NSObject {
     @objc public class func getRootVC() -> UIViewController {
         let state = CrowdNode.shared.signUpState
@@ -27,7 +29,7 @@ import Combine
 
         case .fundingWallet, .acceptingTerms, .signingUp:
             return AccountCreatingController.controller()
-            
+
         case .acceptTermsRequired:
             return NewAccountViewController.controller()
 
@@ -42,6 +44,8 @@ import Combine
     }
 }
 
+// MARK: - CrowdNodeModel
+
 @MainActor
 final class CrowdNodeModel {
     private var cancellableBag = Set<AnyCancellable>()
@@ -50,18 +54,18 @@ final class CrowdNodeModel {
 
     public static let shared: CrowdNodeModel = .init()
 
-    @Published var outputMessage: String = ""
-    @Published var accountAddress: String = ""
-    @Published var signUpEnabled: Bool = false
+    @Published var outputMessage = ""
+    @Published var accountAddress = ""
+    @Published var signUpEnabled = false
     @Published var signUpState: CrowdNode.SignUpState
-    @Published var hasEnoughBalance: Bool = false
+    @Published var hasEnoughBalance = false
 
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
     }
 
     var showNotificationOnResult: Bool {
-        get { return crowdNode.showNotificationOnResult }
+        get { crowdNode.showNotificationOnResult }
         set(value) { crowdNode.showNotificationOnResult = value }
     }
 
@@ -108,10 +112,10 @@ final class CrowdNodeModel {
 
     func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
         let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
-        return await DSAuthenticationManager.sharedInstance().authenticate(
-            withPrompt: message,
-            usingBiometricAuthentication: allowBiometric && biometricEnabled, alertIfLockout: true
-        ).0
+        return await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: message,
+                                                                           usingBiometricAuthentication: allowBiometric &&
+                                                                               biometricEnabled,
+                                                                           alertIfLockout: true).0
     }
 
     func didShowInfoScreen() {
@@ -183,7 +187,7 @@ extension CrowdNodeModel {
         guard amount > 0 else { return }
         try await crowdNode.deposit(amount: UInt64(amount))
     }
-    
+
     func withdraw(permil: UInt) async throws {
         guard permil > 0 else { return }
         try await crowdNode.withdraw(permil: permil)

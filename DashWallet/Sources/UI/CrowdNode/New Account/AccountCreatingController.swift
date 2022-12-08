@@ -17,6 +17,8 @@
 
 import Combine
 
+// MARK: - AccountCreatingController
+
 final class AccountCreatingController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()

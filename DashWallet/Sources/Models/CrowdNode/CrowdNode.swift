@@ -18,13 +18,16 @@
 import BackgroundTasks
 import Combine
 
-@objc public class CrowdNodeObjcWrapper: NSObject {
+// MARK: - CrowdNodeObjcWrapper
+
+@objc
+public class CrowdNodeObjcWrapper: NSObject {
     @objc public class func restoreState() {
         CrowdNode.shared.restoreState()
     }
 
     @objc public class func isInterrupted() -> Bool {
-        return CrowdNode.shared.signUpState == .acceptTermsRequired
+        CrowdNode.shared.signUpState == .acceptTermsRequired
     }
 
     @objc public class func continueInterrupted() {
@@ -39,13 +42,15 @@ import Combine
     }
 
     @objc public class func crowdNodeWebsiteUrl() -> URL {
-        return URL(string: CrowdNodeConstants.websiteUrl)!
+        URL(string: CrowdNodeConstants.websiteUrl)!
     }
 
     @objc public class func notificationID() -> String {
-        return CrowdNodeConstants.notificationID
+        CrowdNodeConstants.notificationID
     }
 }
+
+// MARK: - CrowdNode
 
 public final class CrowdNode {
     enum SignUpState: Comparable {
@@ -68,9 +73,9 @@ public final class CrowdNode {
     private let txObserver = TransactionObserver()
     @Published private(set) var signUpState = SignUpState.notInitiated
 
-    private(set) var accountAddress: String = ""
+    private(set) var accountAddress = ""
     private(set) var apiError: Error?
-    var showNotificationOnResult: Bool = false
+    var showNotificationOnResult = false
 
     public static let shared: CrowdNode = .init()
 
@@ -83,12 +88,10 @@ public final class CrowdNode {
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
     }
-    
+
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
-        let topUpTx = try await sendCoinsService.sendCoins(
-            address: accountAddress,
-            amount: amount
-        )
+        let topUpTx = try await sendCoinsService.sendCoins(address: accountAddress,
+                                                           amount: amount)
         return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
     }
 }
@@ -200,23 +203,19 @@ extension CrowdNode {
         }
     }
 
-    private func makeSignUpRequest(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
+    private func makeSignUpRequest(_ accountAddress: String,
+                                   _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let requestValue = CrowdNodeConstants.apiOffset + ApiCode.signUp.rawValue
-        let signUpTx = try await sendCoinsService.sendCoins(
-            address: CrowdNodeConstants.crowdNodeAddress,
-            amount: requestValue,
-            inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
-        )
+        let signUpTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+                                                            amount: requestValue,
+                                                            inputSelector: SingleInputAddressSelector(candidates: inputs,
+                                                                                                      address: accountAddress))
         print("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
 
-        let successResponse = CrowdNodeResponse(
-            responseCode: ApiCode.pleaseAcceptTerms,
-            accountAddress: accountAddress
-        )
-        let errorResponse = CrowdNodeErrorResponse(
-            errorValue: requestValue,
-            accountAddress: accountAddress
-        )
+        let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
+                                                accountAddress: accountAddress)
+        let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
+                                                   accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse)
         print("CrowdNode AcceptTerms response tx hash: \(responseTx.txHashHexString)")
@@ -228,23 +227,19 @@ extension CrowdNode {
         return (req: signUpTx, resp: responseTx)
     }
 
-    private func acceptTerms(_ accountAddress: String, _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
+    private func acceptTerms(_ accountAddress: String,
+                             _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
         let requestValue = CrowdNodeConstants.apiOffset + ApiCode.acceptTerms.rawValue
-        let termsAcceptedTx = try await sendCoinsService.sendCoins(
-            address: CrowdNodeConstants.crowdNodeAddress,
-            amount: requestValue,
-            inputSelector: SingleInputAddressSelector(candidates: inputs, address: accountAddress)
-        )
+        let termsAcceptedTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+                                                                   amount: requestValue,
+                                                                   inputSelector: SingleInputAddressSelector(candidates: inputs,
+                                                                                                             address: accountAddress))
         print("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
 
-        let successResponse = CrowdNodeResponse(
-            responseCode: ApiCode.welcomeToApi,
-            accountAddress: accountAddress
-        )
-        let errorResponse = CrowdNodeErrorResponse(
-            errorValue: requestValue,
-            accountAddress: accountAddress
-        )
+        let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,
+                                                accountAddress: accountAddress)
+        let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
+                                                   accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse)
         print("CrowdNode Welcome response tx hash: \(responseTx.txHashHexString)")
@@ -274,29 +269,24 @@ extension CrowdNode {
 extension CrowdNode {
     func deposit(amount: UInt64) async throws {
         guard !accountAddress.isEmpty else { return }
-        
+
         let account = DWEnvironment.sharedInstance().currentAccount
         let requiredTopUp = amount + TX_FEE_PER_INPUT
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
-        
+
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         print("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
-        
-        let depositTx = try await sendCoinsService.sendCoins(
-            address: CrowdNodeConstants.crowdNodeAddress,
-            amount: min(account.maxOutputAmount, amount),
-            inputSelector: SingleInputAddressSelector(candidates: [topUpTx], address: accountAddress)
-        )
+
+        let depositTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+                                                             amount: min(account.maxOutputAmount, amount),
+                                                             inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
+                                                                                                       address: accountAddress))
         print("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
-        
-        let successResponse = CrowdNodeResponse(
-            responseCode: ApiCode.depositReceived,
-            accountAddress: accountAddress
-        )
-        let errorResponse = CrowdNodeErrorResponse(
-            errorValue: amount,
-            accountAddress: accountAddress
-        )
+
+        let successResponse = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
+                                                accountAddress: accountAddress)
+        let errorResponse = CrowdNodeErrorResponse(errorValue: amount,
+                                                   accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse)
         print("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
@@ -305,38 +295,31 @@ extension CrowdNode {
             throw CrowdNodeError.deposit
         }
     }
-    
+
     func withdraw(permil: UInt) async throws {
         guard !accountAddress.isEmpty else { return }
-        
+
         let account = DWEnvironment.sharedInstance().currentAccount
         let requestValue = CrowdNodeConstants.apiOffset + UInt64(permil)
         let requiredTopUp = requestValue + TX_FEE_PER_INPUT
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
-        
+
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         print("CrowdNode withdraw topup tx hash: \(topUpTx.txHashHexString)")
-        
-        let withdrawTx = try await sendCoinsService.sendCoins(
-            address: CrowdNodeConstants.crowdNodeAddress,
-            amount: requestValue,
-            inputSelector: SingleInputAddressSelector(candidates: [topUpTx], address: accountAddress)
-        )
+
+        let withdrawTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+                                                              amount: requestValue,
+                                                              inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
+                                                                                                        address: accountAddress))
         print("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
-        
-        let successResponse = CrowdNodeResponse(
-            responseCode: ApiCode.withdrawalQueue,
-            accountAddress: accountAddress
-        )
-        let errorResponse = CrowdNodeErrorResponse(
-            errorValue: requestValue,
-            accountAddress: accountAddress
-        )
-        let withdrawalDeniedResponse = CrowdNodeResponse(
-            responseCode: ApiCode.withdrawalDenied,
-            accountAddress: accountAddress
-        )
-        
+
+        let successResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalQueue,
+                                                accountAddress: accountAddress)
+        let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
+                                                   accountAddress: accountAddress)
+        let withdrawalDeniedResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalDenied,
+                                                         accountAddress: accountAddress)
+
         let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
         print("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
 

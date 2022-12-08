@@ -29,7 +29,7 @@ public final class SingleInputAddressSelector {
         var balance: UInt64 = 0
 
         candidates
-            .filter { candidate in !account.transactionOutputsAreLocked(tx) }
+            .filter { _ in !account.transactionOutputsAreLocked(tx) }
             .forEach { candidate in
                 for (i, output) in candidate.outputs.enumerated() {
                     if output.address == self.address {

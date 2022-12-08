@@ -35,7 +35,7 @@ enum CrowdNodeConstants {
 
     static var notificationID = "CrowdNode"
 
-    static var websiteUrl: String = "https://crowdnode.io/"
-    static var termsOfUseUrl: String = "https://crowdnode.io/terms/"
-    static var privacyPolicyUrl: String = "https://crowdnode.io/privacy/"
+    static var websiteUrl = "https://crowdnode.io/"
+    static var termsOfUseUrl = "https://crowdnode.io/terms/"
+    static var privacyPolicyUrl = "https://crowdnode.io/privacy/"
 }

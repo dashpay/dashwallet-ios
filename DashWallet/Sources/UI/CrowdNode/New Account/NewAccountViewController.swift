@@ -18,6 +18,8 @@
 import Combine
 import UIKit
 
+// MARK: - NewAccountViewController
+
 final class NewAccountViewController: UIViewController, UITextViewDelegate {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
@@ -91,10 +93,13 @@ extension NewAccountViewController {
         let baseString = NSMutableAttributedString(string: NSLocalizedString("I agree to CrowdNode", comment: "").description)
         let termsOfUseString = NSMutableAttributedString(string: NSLocalizedString(" Terms of Use ", comment: "").description)
         let andString = NSMutableAttributedString(string: NSLocalizedString("and", comment: "").description)
-        let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "").description)
+        let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "")
+            .description)
 
-        termsOfUseString.addAttribute(.link, value: CrowdNodeConstants.termsOfUseUrl, range: NSRange(location: 0, length: termsOfUseString.length))
-        privacyPolicyString.addAttribute(.link, value: CrowdNodeConstants.privacyPolicyUrl, range: NSRange(location: 0, length: privacyPolicyString.length))
+        termsOfUseString.addAttribute(.link, value: CrowdNodeConstants.termsOfUseUrl,
+                                      range: NSRange(location: 0, length: termsOfUseString.length))
+        privacyPolicyString.addAttribute(.link, value: CrowdNodeConstants.privacyPolicyUrl,
+                                         range: NSRange(location: 0, length: privacyPolicyString.length))
 
         baseString.append(termsOfUseString)
         baseString.append(andString)
@@ -106,7 +111,9 @@ extension NewAccountViewController {
         acceptTermsCheckBox.isOn = false
     }
 
-    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange,
+                  interaction: UITextItemInteraction)
+        -> Bool {
         UIApplication.shared.open(URL)
         return false
     }

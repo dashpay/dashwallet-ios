@@ -28,7 +28,7 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         viewModel.didShowInfoScreen()
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         cancellableBag.removeAll()
@@ -40,7 +40,8 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
 
     @objc static func controller() -> WelcomeToCrowdNodeViewController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "WelcomeToCrowdNodeViewController") as! WelcomeToCrowdNodeViewController
+        let vc = storyboard
+            .instantiateViewController(withIdentifier: "WelcomeToCrowdNodeViewController") as! WelcomeToCrowdNodeViewController
         return vc
     }
 }
