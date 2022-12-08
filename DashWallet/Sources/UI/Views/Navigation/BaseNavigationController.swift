@@ -116,6 +116,10 @@ extension UINavigationController {
         guard let index = viewControllers.firstIndex(of: controller), index >= 1 else { return nil }
         return viewControllers[index - 1]
     }
+
+    func controller<T>(by type: T.Type) -> UIViewController? {
+        viewControllers.first(where: { $0 is T })
+    }
 }
 
 extension UIViewController {
