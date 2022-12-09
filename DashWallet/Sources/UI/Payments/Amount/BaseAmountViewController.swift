@@ -147,7 +147,7 @@ extension BaseAmountViewController {
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            keyboardStackView.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 15),
+            keyboardStackView.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 10),
             keyboardStackView.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
             keyboardStackView.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
             keyboardStackView.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15),

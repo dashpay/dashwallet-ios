@@ -45,14 +45,10 @@ final class BuyDashViewController: BaseAmountViewController {
 
         // amountView.removeFromSuperview()
 
-        let sendingToView = UIView()
+        let sendingToView = SendingToView()
         sendingToView.translatesAutoresizingMaskIntoConstraints = false
 
         topKeyboardView = sendingToView
-
-        NSLayoutConstraint.activate([
-            sendingToView.heightAnchor.constraint(equalToConstant: 56),
-        ])
     }
 
     override func amountDidChange() {

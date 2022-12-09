@@ -506,6 +506,7 @@
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */; };
 		478C98292942DDB800FAA0F0 /* BuyDashModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98282942DDB800FAA0F0 /* BuyDashModel.swift */; };
+		478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C982B2942F03500FAA0F0 /* SendingToView.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
 		47A2A2E2293DCCEA00938DB7 /* Coinbase+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E1293DCCEA00938DB7 /* Coinbase+Constants.swift */; };
 		47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E8293E612900938DB7 /* CBAuth.swift */; };
@@ -1659,6 +1660,7 @@
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyDashViewController.swift; sourceTree = "<group>"; };
 		478C98282942DDB800FAA0F0 /* BuyDashModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyDashModel.swift; sourceTree = "<group>"; };
+		478C982B2942F03500FAA0F0 /* SendingToView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendingToView.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
 		47A2A2E1293DCCEA00938DB7 /* Coinbase+Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coinbase+Constants.swift"; sourceTree = "<group>"; };
 		47A2A2E8293E612900938DB7 /* CBAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAuth.swift; sourceTree = "<group>"; };
@@ -4484,6 +4486,7 @@
 		478C98242942DBF200FAA0F0 /* Buy Dash */ = {
 			isa = PBXGroup;
 			children = (
+				478C982A2942F02800FAA0F0 /* Views */,
 				478C98272942DDAD00FAA0F0 /* Model */,
 				478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */,
 			);
@@ -4496,6 +4499,14 @@
 				478C98282942DDB800FAA0F0 /* BuyDashModel.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		478C982A2942F02800FAA0F0 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				478C982B2942F03500FAA0F0 /* SendingToView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		479E7922287C00A000D0F7D7 /* Infrastructure */ = {
@@ -6084,6 +6095,7 @@
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
+				478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */,
 				4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
