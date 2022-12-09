@@ -18,9 +18,27 @@
 import UIKit
 
 class HairlineView: UIView {
-    @IBInspectable var separatorColor: UIColor = .separator
+    @IBInspectable var separatorColor: UIColor = .separator {
+        didSet {
+            setNeedsDisplay()
+        }
+    }
 
-    override var intrinsicContentSize: CGSize { .init(width: HairlineView.noIntrinsicMetric, height: 1/UIScreen.main.scale) }
+    override init(frame: CGRect) {
+        super.init(frame: .zero)
+
+        backgroundColor = .clear
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+
+        backgroundColor = .clear
+    }
+
+    override var intrinsicContentSize: CGSize {
+        .init(width: HairlineView.noIntrinsicMetric, height: 1)
+    }
 
     func drawHairline(in context: CGContext, scale: CGFloat, color: CGColor, rect: CGRect) {
         let center: CGFloat
@@ -35,6 +53,7 @@ class HairlineView: UIView {
         let p2 = CGPoint(x: rect.maxX, y: rect.maxY - offset)
 
         let width = 1/scale
+        context.setFillColor(UIColor.clear.cgColor)
         context.setLineWidth(width)
         context.setStrokeColor(color)
         context.beginPath()
@@ -45,7 +64,7 @@ class HairlineView: UIView {
 
     override func draw(_ rect: CGRect) {
         let context = UIGraphicsGetCurrentContext()
-        drawHairline(in: context!, scale: UIScreen.main.scale, color: UIColor.separator.withAlphaComponent(0.5).cgColor,
+        drawHairline(in: context!, scale: UIScreen.main.scale, color: separatorColor.cgColor,
                      rect: rect)
     }
 
