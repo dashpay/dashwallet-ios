@@ -40,6 +40,21 @@ final class BuyDashViewController: BaseAmountViewController {
         super.configureModel()
     }
 
+    override func configureHierarchy() {
+        super.configureHierarchy()
+
+        // amountView.removeFromSuperview()
+
+        let sendingToView = UIView()
+        sendingToView.translatesAutoresizingMaskIntoConstraints = false
+
+        topKeyboardView = sendingToView
+
+        NSLayoutConstraint.activate([
+            sendingToView.heightAnchor.constraint(equalToConstant: 56),
+        ])
+    }
+
     override func amountDidChange() {
         super.amountDidChange()
 
