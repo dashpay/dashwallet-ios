@@ -12,7 +12,7 @@ import Foundation
 
 struct CoinbasePaymentMethod: Codable {
     let id: String?
-    let type: String?
+    let type: PaymentMethodType
     let name: String?
     let currency: String?
     let primaryBuy: Bool?
@@ -72,4 +72,18 @@ struct FiatAccount: Codable {
 
 struct MinimumPurchaseAmount: Codable {
     let amount, currency: String?
+}
+
+// MARK: - PaymentMethodType
+
+public enum PaymentMethodType: String, Codable {
+    case achBankAccount = "ach_bank_account"
+    case sepaBankAccount = "sepa_bank_account"
+    case idealBankAccount = "ideal_bank_account"
+    case fiatAccount = "fiat_account"
+    case bankWire = "bank_wire"
+    case creditCard = "credit_card"
+    case secure3dCard = "secure3d_card"
+    case eftBankAccount = "eft_bank_account"
+    case interac
 }
