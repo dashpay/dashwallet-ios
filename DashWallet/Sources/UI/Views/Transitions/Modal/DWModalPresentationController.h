@@ -23,9 +23,14 @@ extern CGFloat DWModalPresentedHeightPercent(void);
 
 @class DWModalInteractiveTransition;
 
+@protocol DWModalPresentationControllerDelegate <NSObject>
+- (CGFloat)contentViewHeight;
+@end
+
 @interface DWModalPresentationController : UIPresentationController
 
 @property (nonatomic, strong) DWModalInteractiveTransition *interactiveTransition;
+@property (nonatomic, weak, nullable) id<DWModalPresentationControllerDelegate> delegate;
 
 @end
 

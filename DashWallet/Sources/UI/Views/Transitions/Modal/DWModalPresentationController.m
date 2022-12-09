@@ -50,6 +50,13 @@ CGFloat DWModalPresentedHeightPercent(void) {
     const CGRect bounds = self.containerView.bounds;
     const CGFloat height = CGRectGetHeight(bounds);
     const CGFloat width = CGRectGetWidth(bounds);
+
+    if (self.delegate && [self.delegate respondsToSelector:@selector(contentViewHeight)]) {
+        CGFloat contentViewHeight = [self.delegate contentViewHeight];
+
+        return CGRectMake(0.0, height - contentViewHeight, width, contentViewHeight);
+    }
+
     const CGFloat viewHeight = ceil(height * DWModalPresentedHeightPercent());
     const CGRect frame = CGRectMake(0.0, height - viewHeight, width, viewHeight);
 
