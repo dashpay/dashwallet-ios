@@ -18,6 +18,8 @@
 import Foundation
 
 private let kAccountKey = "kAccountKey"
+private let kPaymentMethodsKey = "kPaymentMethodsKey"
+
 private let kTokenServiceKey = "kAccountKey"
 
 // MARK: - CBUser + Equatable
@@ -32,6 +34,7 @@ extension CBUser: Equatable {
 
 class CBUser: Codable {
     private var account: CoinbaseUserAccountData?
+    private var paymentMethods: [CoinbasePaymentMethod]?
     private var tokenService: CBSecureTokenService
 
     init(tokenService: CBSecureTokenService) {
@@ -39,8 +42,14 @@ class CBUser: Codable {
     }
 
     required init?(coder: NSCoder) {
-        let accountData = coder.decodeObject(forKey: kAccountKey) as! Data
-        account = try! JSONDecoder().decode(CoinbaseUserAccountData.self, from: accountData)
+        if let accountData = coder.decodeObject(forKey: kAccountKey) as? Data {
+            account = try? JSONDecoder().decode(CoinbaseUserAccountData.self, from: accountData)
+        }
+
+        if let paymentMethodsData = coder.decodeObject(forKey: kPaymentMethodsKey) as? Data {
+            paymentMethods = try? JSONDecoder().decode([CoinbasePaymentMethod].self, from: paymentMethodsData)
+        }
+
         tokenService = coder.decodeObject(forKey: kTokenServiceKey) as! CBSecureTokenService
     }
 }
@@ -64,6 +73,7 @@ extension CBUser {
 
     func refreshAccount() async throws {
         try await fetchAccount()
+        try await fetchPaymentMethods()
     }
 
     func refreshAccessToken() async throws {
@@ -83,6 +93,11 @@ extension CBUser {
         let newAccount = result.data
         account = newAccount
         return newAccount
+    }
+
+    public func fetchPaymentMethods() async throws {
+        let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await CoinbaseAPI.shared.request(.activePaymentMethods)
+        paymentMethods = result.data
     }
 }
 

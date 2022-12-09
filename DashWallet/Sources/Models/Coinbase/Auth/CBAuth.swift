@@ -106,7 +106,8 @@ class CBAuth {
         let user = CBUser(tokenService: tokenService)
         currentUser = user
 
-        try await user.refreshAccount()
+        // Ignore if fails
+        try? await user.refreshAccount()
 
         save(user: user)
         scheduleAutoTokenRefreshIfNeeded()

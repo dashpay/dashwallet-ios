@@ -11,25 +11,21 @@ import Foundation
 // MARK: - CoinbasePaymentMethod
 
 struct CoinbasePaymentMethod: Codable {
-    let id: String?
+    let id: String
+    let name: String
     let type: PaymentMethodType
-    let name: String?
+    let allowBuy: Bool
+    let allowSell: Bool
+    let allowDeposit: Bool
+    let allowWithdraw: Bool
     let currency: String?
-    let primaryBuy: Bool?
-    let primarySell: Bool?
-    let instantBuy: Bool?
-    let instantSell: Bool?
-    let createdAt: Date?
-    let updatedAt: Date?
-    let resource: String?
-    let resourcePath: String?
-    let pmsvcID: String?
-    let allowBuy: Bool?
-    let allowSell: Bool?
-    let allowDeposit: Bool?
-    let allowWithdraw: Bool?
+    let primaryBuy: Bool
+    let primarySell: Bool
+    let instantBuy: Bool
+    let instantSell: Bool
+
     let fiatAccount: FiatAccount?
-    let verified: Bool?
+    let verified: Bool
     let minimumPurchaseAmount: MinimumPurchaseAmount?
 
     enum CodingKeys: String, CodingKey {
@@ -41,11 +37,6 @@ struct CoinbasePaymentMethod: Codable {
         case primarySell = "primary_sell"
         case instantBuy = "instant_buy"
         case instantSell = "instant_sell"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case resource
-        case resourcePath = "resource_path"
-        case pmsvcID = "pmsvc_id"
         case allowBuy = "allow_buy"
         case allowSell = "allow_sell"
         case allowDeposit = "allow_deposit"
@@ -59,7 +50,9 @@ struct CoinbasePaymentMethod: Codable {
 // MARK: - FiatAccount
 
 struct FiatAccount: Codable {
-    let id, resource, resourcePath: String?
+    let id: String?
+    let resource: String?
+    let resourcePath: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -86,4 +79,5 @@ public enum PaymentMethodType: String, Codable {
     case secure3dCard = "secure3d_card"
     case eftBankAccount = "eft_bank_account"
     case interac
+    case applePay = "apple_pay"
 }
