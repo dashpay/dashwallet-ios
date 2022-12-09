@@ -46,7 +46,7 @@ final class SendingToView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textColor = .secondaryLabel
         titleLabel.font = .dw_font(forTextStyle: .footnote)
-        titleLabel.text = NSLocalizedString("Sending to", comment: "Buy Dash")
+        titleLabel.text = NSLocalizedString("Sending to:", comment: "Buy Dash")
         stackView.addArrangedSubview(titleLabel)
 
         let destinationStackView = UIStackView()
@@ -70,10 +70,9 @@ final class SendingToView: UIView {
         addSubview(hairline)
 
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
 
             hairline.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
             hairline.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),

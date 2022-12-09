@@ -30,8 +30,12 @@ class BaseAmountViewController: ActionButtonViewController {
                 view.removeFromSuperview()
             }
 
-            guard let view = topKeyboardView else { return }
+            guard let view = topKeyboardView else {
+                keyboardTopConstraint.constant = 10
+                return
+            }
 
+            keyboardTopConstraint.constant = 0
             keyboardStackView.insertArrangedSubview(view, at: 0)
         }
     }
@@ -41,6 +45,7 @@ class BaseAmountViewController: ActionButtonViewController {
 
     internal var keyboardContainer: UIView!
     internal var keyboardStackView: UIStackView!
+    private var keyboardTopConstraint: NSLayoutConstraint!
 
     internal var numberKeyboard: NumberKeyboard!
 
@@ -137,6 +142,8 @@ extension BaseAmountViewController {
         numberKeyboard.textInput = amountView.textInput
         keyboardStackView.addArrangedSubview(numberKeyboard)
 
+        keyboardTopConstraint = keyboardStackView.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 10)
+
         NSLayoutConstraint.activate([
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
@@ -147,7 +154,7 @@ extension BaseAmountViewController {
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            keyboardStackView.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 10),
+            keyboardTopConstraint,
             keyboardStackView.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
             keyboardStackView.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
             keyboardStackView.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15),
