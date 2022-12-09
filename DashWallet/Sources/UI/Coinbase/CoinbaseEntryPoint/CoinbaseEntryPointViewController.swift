@@ -140,30 +140,19 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         tableView.deselectRow(at: indexPath, animated: true)
 
         let item = model.items[indexPath.item]
+        let vc: UIViewController
 
-        if item == .sellDash {
-            let vc = FailedOperationStatusViewController.initiate(from: storyboard!)
-            vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
-            vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device",
-                                                   comment: "Coinbase")
-            vc.hidesBottomBarWhenPushed = true
-            navigationController?.pushViewController(vc, animated: true)
-            return
+        switch item {
+        case .buyDash:
+            vc = BuyDashViewController()
+        case .sellDash:
+            vc = BuyDashViewController()
+        case .convertCrypto:
+            vc = TransferAmountViewController()
+        case .transferDash:
+            vc = TransferAmountViewController()
         }
 
-        if item == .buyDash {
-            let vc = SuccessfulOperationStatusViewController.initiate(from: storyboard!)
-            vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
-            vc
-                .descriptionText =
-                NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
-                                  comment: "Coinbase")
-            vc.hidesBottomBarWhenPushed = true
-            navigationController?.pushViewController(vc, animated: true)
-            return
-        }
-
-        let vc = TransferAmountViewController()
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
