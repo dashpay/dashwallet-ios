@@ -27,13 +27,16 @@ enum AmountType {
 // MARK: - BaseAmountModel
 
 class BaseAmountModel {
-    var showMaxButton: Bool { true }
     var activeAmountType: AmountType = .main
 
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
     var amount: AmountObject {
         activeAmountType == .main ? mainAmount : supplementaryAmount
+    }
+
+    var isMaxButtonHidden: Bool {
+        true
     }
 
     public var amountChangeHandler: ((AmountObject) -> Void)?

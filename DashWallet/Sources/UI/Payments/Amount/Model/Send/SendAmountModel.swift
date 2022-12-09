@@ -42,7 +42,7 @@ enum SendAmountError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
-    override var showMaxButton: Bool { false }
+    override var isMaxButtonHidden: Bool { false }
 
     var error: SendAmountError? {
         didSet {
