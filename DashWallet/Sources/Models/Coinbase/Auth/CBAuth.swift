@@ -250,9 +250,9 @@ extension CBAuth {
         tokenRefreshTask = Task {
             do {
                 try await refreshUserToken()
-                try await refreshAccount()
+                try? await refreshAccount()
                 save(user: currentUser)
-            } catch {
+            } catch HTTPClientError.statusCode(let response) {
                 try await signOut()
             }
         }
