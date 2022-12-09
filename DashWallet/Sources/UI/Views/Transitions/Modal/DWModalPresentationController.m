@@ -37,6 +37,7 @@ CGFloat DWModalPresentedHeightPercent(void) {
 @interface DWModalPresentationController ()
 
 @property (null_resettable, nonatomic, strong) UIView *dimmingView;
+@property (null_resettable, nonatomic, strong) UIView *bottomView;
 
 @end
 
@@ -76,6 +77,19 @@ CGFloat DWModalPresentedHeightPercent(void) {
     UIView *presentedView = self.presentedView;
     NSParameterAssert(presentedView);
     [self.containerView addSubview:presentedView];
+
+    if (IS_IPHONE) {
+        UIView *bottomView = self.bottomView;
+        [presentedView addSubview:bottomView];
+
+        CGFloat height = CGRectGetMaxY(presentedView.frame);
+
+        [NSLayoutConstraint activateConstraints:@[
+            [bottomView.topAnchor constraintEqualToAnchor:presentedView.bottomAnchor],
+            [bottomView.heightAnchor constraintEqualToConstant:height],
+            [bottomView.widthAnchor constraintEqualToAnchor:presentedView.widthAnchor],
+        ]];
+    }
 
     [self.containerView insertSubview:self.dimmingView atIndex:0];
     [self performBlockAnimatedIfPossible:^{
@@ -132,6 +146,26 @@ CGFloat DWModalPresentedHeightPercent(void) {
         _dimmingView = dimmingView;
     }
     return _dimmingView;
+}
+
+- (UIView *)bottomView {
+    if (!_bottomView) {
+        UIView *presentedView = self.presentedView;
+
+        CGRect frame = presentedView.frame;
+
+        UIView *bottomView = [[UIView alloc] initWithFrame:frame];
+        bottomView.translatesAutoresizingMaskIntoConstraints = NO;
+        bottomView.backgroundColor = presentedView.backgroundColor;
+
+#if SNAPSHOT
+        bottomView.accessibilityIdentifier = @"modal_bottom_view";
+#endif /* SNAPSHOT */
+
+        _bottomView = bottomView;
+    }
+
+    return _bottomView;
 }
 
 - (void)tapGestureRecognizerAction:(id)sender {
