@@ -42,6 +42,7 @@
 #import "DWQRScanViewController.h"
 #import "DWQRScanModel.h"
 #import "DWModalPopupTransition.h"
+#import "DWModalTransition.h"
 
 #import "UIView+DWHUD.h"
 #import "DWConfirmSendPaymentViewController.h"

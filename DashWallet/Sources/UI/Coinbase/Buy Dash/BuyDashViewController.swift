@@ -32,6 +32,11 @@ final class BuyDashViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    @objc func payWithTapGestureRecognizerAction() {
+        let vc = PaymentMethodsController.controller()
+        present(vc, animated: true)
+    }
+
     override func initializeModel() {
         model = BuyDashModel()
     }
@@ -46,8 +51,11 @@ final class BuyDashViewController: BaseAmountViewController {
         amountView.removeFromSuperview()
         contentView.addSubview(amountView)
 
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(payWithTapGestureRecognizerAction))
+
         let payWithView = PayWithView(frame: .zero)
         payWithView.translatesAutoresizingMaskIntoConstraints = false
+        payWithView.addGestureRecognizer(tapGestureRecognizer)
         contentView.addSubview(payWithView)
 
         let sendingToView = SendingToView(frame: .zero)
