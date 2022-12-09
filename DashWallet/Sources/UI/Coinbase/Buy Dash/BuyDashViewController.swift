@@ -43,12 +43,29 @@ final class BuyDashViewController: BaseAmountViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        // amountView.removeFromSuperview()
+        amountView.removeFromSuperview()
+        contentView.addSubview(amountView)
 
-        let sendingToView = SendingToView()
+        let payWithView = PayWithView(frame: .zero)
+        payWithView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(payWithView)
+
+        let sendingToView = SendingToView(frame: .zero)
         sendingToView.translatesAutoresizingMaskIntoConstraints = false
 
         topKeyboardView = sendingToView
+
+        NSLayoutConstraint.activate([
+            payWithView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
+            payWithView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            payWithView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            payWithView.heightAnchor.constraint(equalToConstant: 46),
+
+            amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            amountView.topAnchor.constraint(equalTo: payWithView.bottomAnchor, constant: 30),
+            amountView.heightAnchor.constraint(equalToConstant: 60),
+        ])
     }
 
     override func amountDidChange() {
