@@ -23,7 +23,12 @@ final class PaymentMethodCell: UITableViewCell {
     @IBOutlet var paymentNameLabel: UILabel!
     @IBOutlet var checkboxButton: UIButton!
 
-    func update(with paymentMethod: CoinbasePaymentMethod) { }
+    func update(with paymentMethod: CoinbasePaymentMethod) {
+        paymentTypeLabel.text = paymentMethod.type.displayString
+
+        paymentNameLabel.text = paymentMethod.name
+        paymentNameLabel.isHidden = !paymentMethod.type.showNameLabel
+    }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

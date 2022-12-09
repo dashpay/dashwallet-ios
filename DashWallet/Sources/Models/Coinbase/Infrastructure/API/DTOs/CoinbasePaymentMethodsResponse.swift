@@ -80,4 +80,43 @@ public enum PaymentMethodType: String, Codable {
     case eftBankAccount = "eft_bank_account"
     case interac
     case applePay = "apple_pay"
+    case googlePay = "google_pay"
+
+    var displayString: String {
+        switch self {
+        case .achBankAccount, .sepaBankAccount, .idealBankAccount, .eftBankAccount:
+            return NSLocalizedString("Bank Account", comment: "Coinbase/Payment Methods")
+        case .fiatAccount:
+            return NSLocalizedString("Fiat Account", comment: "Coinbase/Payment Methods")
+        case .bankWire:
+            return NSLocalizedString("Bank Wire", comment: "Coinbase/Payment Methods")
+        case .creditCard:
+            return NSLocalizedString("Credit Card", comment: "Coinbase/Payment Methods")
+        case .secure3dCard:
+            return NSLocalizedString("Credit Card", comment: "Coinbase/Payment Methods")
+        case .interac:
+            return NSLocalizedString("Interac", comment: "Coinbase/Payment Methods")
+        case .applePay:
+            return NSLocalizedString("Apple Pay", comment: "Coinbase/Payment Methods")
+        case .googlePay:
+            return NSLocalizedString("Google Pay", comment: "Coinbase/Payment Methods")
+        }
+    }
+
+    var showNameLabel: Bool {
+        switch self {
+        case .achBankAccount, .sepaBankAccount, .idealBankAccount, .eftBankAccount:
+            return true
+        case .fiatAccount:
+            return true
+        case .bankWire:
+            return true
+        case .creditCard:
+            return true
+        case .secure3dCard:
+            return true
+        case .interac, .applePay, .googlePay:
+            return false
+        }
+    }
 }

@@ -47,6 +47,14 @@ class Coinbase {
 extension Coinbase {
     var isAuthorized: Bool { auth.currentUser != nil }
 
+    var paymentMethods: [CoinbasePaymentMethod] {
+        guard let paymentMethods = auth.currentUser?.paymentMethods else {
+            return []
+        }
+
+        return paymentMethods
+    }
+
     var lastKnownBalance: UInt64? {
         guard let balance = auth.currentUser?.balance else {
             return nil

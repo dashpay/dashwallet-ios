@@ -33,8 +33,9 @@ extension CBUser: Equatable {
 // MARK: - CBUser
 
 class CBUser: Codable {
+    public var paymentMethods: [CoinbasePaymentMethod]?
+
     private var account: CoinbaseUserAccountData?
-    private var paymentMethods: [CoinbasePaymentMethod]?
     private var tokenService: CBSecureTokenService
 
     init(tokenService: CBSecureTokenService) {

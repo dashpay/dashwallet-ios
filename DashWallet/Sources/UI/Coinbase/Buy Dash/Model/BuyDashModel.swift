@@ -17,4 +17,8 @@
 
 import Foundation
 
-class BuyDashModel: BaseAmountModel { }
+class BuyDashModel: BaseAmountModel {
+    var paymentMethods: [CoinbasePaymentMethod] {
+        Coinbase.shared.paymentMethods
+    }
+}

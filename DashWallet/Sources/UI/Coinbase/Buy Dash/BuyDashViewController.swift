@@ -34,6 +34,7 @@ final class BuyDashViewController: BaseAmountViewController {
 
     @objc func payWithTapGestureRecognizerAction() {
         let vc = PaymentMethodsController.controller()
+        vc.paymentMethods = buyDashModel.paymentMethods
         present(vc, animated: true)
     }
 
