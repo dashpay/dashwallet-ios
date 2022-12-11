@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - PaymentMethodCell
+
 final class PaymentMethodCell: UITableViewCell {
     @IBOutlet var paymentIconView: UIImageView!
     @IBOutlet var paymentTypeLabel: UILabel!
@@ -24,6 +26,8 @@ final class PaymentMethodCell: UITableViewCell {
     @IBOutlet var checkboxButton: UIButton!
 
     func update(with paymentMethod: CoinbasePaymentMethod) {
+        paymentIconView.image = UIImage(named: paymentMethod.icon)
+
         paymentTypeLabel.text = paymentMethod.type.displayString
 
         paymentNameLabel.text = paymentMethod.name
@@ -38,6 +42,26 @@ final class PaymentMethodCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
+        paymentIconView.layer.cornerRadius = 15
         checkboxButton.isUserInteractionEnabled = false
+    }
+}
+
+extension CoinbasePaymentMethod {
+    var icon: String {
+        switch type {
+        case .achBankAccount, .sepaBankAccount, .idealBankAccount, .bankWire, .eftBankAccount, .interac:
+            return "coinbase.payment-method.bank.icon"
+        case .fiatAccount:
+            return "coinbase.payment-method.wallet.icon"
+        case .creditCard, .secure3dCard:
+            return "coinbase.payment-method.credit-card.icon"
+        case .applePay:
+            return "coinbase.payment-method.applepay.icon"
+        case .googlePay:
+            return "coinbase.payment-method.gpay.icon"
+        case .payPal:
+            return "coinbase.payment-method.paypal.icon"
+        }
     }
 }

@@ -81,6 +81,7 @@ public enum PaymentMethodType: String, Codable {
     case interac
     case applePay = "apple_pay"
     case googlePay = "google_pay"
+    case payPal = "paypal"
 
     var displayString: String {
         switch self {
@@ -100,6 +101,8 @@ public enum PaymentMethodType: String, Codable {
             return NSLocalizedString("Apple Pay", comment: "Coinbase/Payment Methods")
         case .googlePay:
             return NSLocalizedString("Google Pay", comment: "Coinbase/Payment Methods")
+        case .payPal:
+            return NSLocalizedString("PayPal", comment: "Coinbase/Payment Methods")
         }
     }
 
@@ -116,6 +119,8 @@ public enum PaymentMethodType: String, Codable {
         case .secure3dCard:
             return true
         case .interac, .applePay, .googlePay:
+            return false
+        case .payPal:
             return false
         }
     }
