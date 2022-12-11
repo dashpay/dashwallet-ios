@@ -20,6 +20,7 @@ import UIKit
 final class PayWithView: UIView {
     private var paymentMethodTitleLabel: UILabel!
     private var paymentMethodValueLabel: UILabel!
+    private var chevronView: UIView!
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -33,6 +34,20 @@ final class PayWithView: UIView {
         configureHierarchy()
     }
 
+    public func update(with paymentMethod: CoinbasePaymentMethod?) {
+        guard let paymentMethod else {
+            paymentMethodValueLabel.text = NSLocalizedString("No payment methods", comment: "Coinbase/Buy Dash")
+            return
+        }
+
+        paymentMethodTitleLabel.text = paymentMethod.type.displayString
+        paymentMethodValueLabel.text = paymentMethod.name
+    }
+
+    public func setChevronButtonHidden(_ isHidden: Bool) {
+        chevronView.isHidden = isHidden
+    }
+
     private func configureHierarchy() {
         backgroundColor = .dw_background()
         layer.cornerRadius = 10
@@ -43,21 +58,25 @@ final class PayWithView: UIView {
         titleLabel.text = NSLocalizedString("Pay with", comment: "Coinbase/Buy Dash")
         addSubview(titleLabel)
 
-        let chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
         chevronView.translatesAutoresizingMaskIntoConstraints = false
         chevronView.tintColor = .secondaryLabel
         addSubview(chevronView)
 
         let paymentMethodStackView = UIStackView()
         paymentMethodStackView.translatesAutoresizingMaskIntoConstraints = false
-        paymentMethodStackView.spacing = 2
+        paymentMethodStackView.spacing = 3
         paymentMethodStackView.axis = .horizontal
         addSubview(paymentMethodStackView)
 
         paymentMethodTitleLabel = UILabel()
-        paymentMethodTitleLabel.text = "Credit Card *****1111"
-        paymentMethodTitleLabel.textColor = .secondaryLabel
+        paymentMethodTitleLabel.textColor = .label
+        paymentMethodTitleLabel.isHidden = true
         paymentMethodStackView.addArrangedSubview(paymentMethodTitleLabel)
+
+        paymentMethodValueLabel = UILabel()
+        paymentMethodValueLabel.textColor = .secondaryLabel
+        paymentMethodStackView.addArrangedSubview(paymentMethodValueLabel)
 
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
@@ -66,7 +85,7 @@ final class PayWithView: UIView {
             chevronView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
             chevronView.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            paymentMethodStackView.trailingAnchor.constraint(equalTo: chevronView.leadingAnchor, constant: -14),
+            paymentMethodStackView.trailingAnchor.constraint(equalTo: chevronView.leadingAnchor, constant: -10),
             paymentMethodStackView.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
     }

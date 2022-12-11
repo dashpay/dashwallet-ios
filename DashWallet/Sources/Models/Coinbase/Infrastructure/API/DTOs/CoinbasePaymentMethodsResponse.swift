@@ -8,6 +8,14 @@
 import Foundation
 
 
+// MARK: - CoinbasePaymentMethod + Equatable
+
+extension CoinbasePaymentMethod: Equatable {
+    static func == (lhs: CoinbasePaymentMethod, rhs: CoinbasePaymentMethod) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
 // MARK: - CoinbasePaymentMethod
 
 struct CoinbasePaymentMethod: Codable {

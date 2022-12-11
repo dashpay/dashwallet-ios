@@ -22,6 +22,10 @@ final class BuyDashModel: BaseAmountModel {
         Coinbase.shared.paymentMethods
     }
 
+    var activePaymentMethod: CoinbasePaymentMethod? {
+        selectedPaymentMethod ?? paymentMethods.first
+    }
+
     var dashPriceDisplayString: String {
         let dashAmount = kOneDash
         let dashAmountFormatted = dashAmount.formattedDashAmount
@@ -33,7 +37,13 @@ final class BuyDashModel: BaseAmountModel {
         return displayString
     }
 
+    private var selectedPaymentMethod: CoinbasePaymentMethod?
+
     override init() {
         super.init()
+    }
+
+    public func select(paymentMethod: CoinbasePaymentMethod) {
+        selectedPaymentMethod = paymentMethod
     }
 }

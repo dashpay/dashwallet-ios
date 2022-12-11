@@ -23,6 +23,8 @@ final class PaymentMethodsController: BaseViewController {
     @IBOutlet var tableView: UITableView!
 
     public var paymentMethods: [CoinbasePaymentMethod] = []
+    public var selectedPaymentMethod: CoinbasePaymentMethod?
+    public var selectPaymentMethodAction: ((CoinbasePaymentMethod) -> Void)?
 
     private let modalTransition = DWModalTransition()
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -82,7 +84,24 @@ extension PaymentMethodsController: UITableViewDelegate, UITableViewDataSource {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: PaymentMethodCell.dw_reuseIdentifier, for: indexPath) as! PaymentMethodCell
         cell.update(with: paymentMethod)
+        cell.selectionStyle = .none
         return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let method = paymentMethods[indexPath.row]
+
+        DispatchQueue.main.async {
+            self.selectPaymentMethodAction?(method)
+        }
+    }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let method = paymentMethods[indexPath.row]
+
+        if method == selectedPaymentMethod {
+            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+        }
     }
 }
 

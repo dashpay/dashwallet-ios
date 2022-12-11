@@ -24,6 +24,8 @@ final class BuyDashViewController: BaseAmountViewController {
         model as! BuyDashModel
     }
 
+    private var payWithView: PayWithView!
+
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -35,6 +37,11 @@ final class BuyDashViewController: BaseAmountViewController {
     @objc func payWithTapGestureRecognizerAction() {
         let vc = PaymentMethodsController.controller()
         vc.paymentMethods = buyDashModel.paymentMethods
+        vc.selectedPaymentMethod = buyDashModel.activePaymentMethod
+        vc.selectPaymentMethodAction = { [weak self] method in
+            self?.buyDashModel.select(paymentMethod: method)
+            self?.payWithView.update(with: method)
+        }
         present(vc, animated: true)
     }
 
@@ -74,7 +81,9 @@ final class BuyDashViewController: BaseAmountViewController {
 
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(payWithTapGestureRecognizerAction))
 
-        let payWithView = PayWithView(frame: .zero)
+        payWithView = PayWithView(frame: .zero)
+        payWithView.update(with: buyDashModel.activePaymentMethod)
+        payWithView.setChevronButtonHidden(buyDashModel.paymentMethods.isEmpty)
         payWithView.translatesAutoresizingMaskIntoConstraints = false
         payWithView.addGestureRecognizer(tapGestureRecognizer)
         contentView.addSubview(payWithView)
