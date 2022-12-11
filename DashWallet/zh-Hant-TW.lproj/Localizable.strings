@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+" " = " ";
+
+/* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ has accepted your contact request";
 
 /* Username has sent you a contact request */
@@ -34,14 +37,38 @@
 /* No comment provided by engineer. */
 "1 hour" = "1 hour";
 
+/* Explore Dash: Filters */
+"1 mile" = "1 mile";
+
 /* Shorten version of minute */
 "1 min" = "1 min";
+
+/* Explore Dash: Filters */
+"2 km" = "2 km";
+
+/* Explore Dash: Filters */
+"20 miles" = "20 miles";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 hours";
 
+/* Explore Dash: Filters */
+"32 km" = "32 km";
+
+/* Explore Dash: Filters */
+"5 miles" = "5 miles";
+
 /* Shorten version of minutes */
 "5 min" = "5 min";
+
+/* Explore Dash: Filters */
+"50 miles" = "50 miles";
+
+/* Explore Dash: Filters */
+"8 km" = "8 km";
+
+/* Explore Dash: Filters */
+"80 km" = "80 km";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" 不是恢復詞組的單詞";
@@ -122,10 +149,16 @@
 "Are you sure?" = "你確定嗎?";
 
 /* No comment provided by engineer. */
+"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+
+/* No comment provided by engineer. */
 "ATMs" = "ATMs";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Authentication is unvailable";
+
+/* Location Service Status */
+"Authorized" = "Authorized";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Auto Logout";
@@ -293,8 +326,17 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash: Filters */
+"Current location" = "Current location";
+
+/* Explore Dash/Merchants/Filters */
+"Current Location Settings" = "Current Location Settings";
+
 /* No comment provided by engineer. */
 "Current user: %@" = "Current user: %@";
+
+/* Explore Dash: Filters */
+"Dash" = "Dash";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -311,6 +353,9 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
 
+/* Location Service Status */
+"Denied" = "Denied";
+
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
 
@@ -319,6 +364,9 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Explore Dash: Filters */
+"Distance" = "Distance";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Do not take a screenshot";
@@ -405,10 +453,13 @@
 "Fetching Info" = "Fetching Info";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
-
-/* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
+
+/* Explore Dash/Merchants/Filters */
+"Filtered by:" = "Filtered by:";
+
+/* Explore Dash */
+"Filters" = "Filters";
 
 /* No comment provided by engineer. */
 "Find a merchant." = "Find a merchant.";
@@ -442,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
+
+/* Explore Dash: Filters */
+"Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Go to Website";
@@ -566,6 +620,9 @@
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
 
+/* Explore Dash/Merchants/Filters */
+"Location" = "Location";
+
 /* No comment provided by engineer. */
 "Locked" = "Locked";
 
@@ -644,6 +701,12 @@
 /* No comment provided by engineer. */
 "Name" = "Name";
 
+/* Explore Dash: Filters */
+"Name: from A to Z" = "Name: from A to Z";
+
+/* Explore Dash: Filters */
+"Name: from Z to A" = "Name: from Z to A";
+
 /* Nearby */
 "Nearby" = "Nearby";
 
@@ -662,6 +725,9 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
 
+/* Explore Dash/Merchants/Filters */
+"No Results Found" = "No Results Found";
+
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
@@ -679,6 +745,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Location Service Status */
+"Not Determined" = "Not Determined";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Not yet used";
@@ -737,6 +806,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Paying...";
 
+/* Explore Dash/Merchants/Filters */
+"Payment Type" = "Payment Type";
+
 /* No comment provided by engineer. */
 "Payments" = "Payments";
 
@@ -793,6 +865,9 @@
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
+
+/* Explore Dash/Merchants/Filters */
+"Radius" = "Radius";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
@@ -857,11 +932,17 @@
 /* No comment provided by engineer. */
 "Reset" = "Reset";
 
+/* Explore Dash: Filters */
+"Reset Filters" = "Reset Filters";
+
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Reset Wallet";
+
+/* Location Service Status */
+"Restricted" = "Restricted";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Retain Mutual Transaction History";
@@ -1028,6 +1109,18 @@
 /* No comment provided by engineer. */
 "Sort Contacts" = "Sort Contacts";
 
+/* Explore Dash/Filters */
+"Sorted by distance" = "Sorted by distance";
+
+/* Explore Dash/Filters */
+"Sorted by name" = "Sorted by name";
+
+/* Explore Dash/Filters */
+"Sorting: A to Z" = "Sorting: A to Z";
+
+/* Explore Dash/Filters */
+"Sorting: Z to A" = "Sorting: Z to A";
+
 /* No comment provided by engineer. */
 "Specify Amount" = "Specify Amount";
 
@@ -1165,6 +1258,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Explore Dash/Filters */
+"Use gift card" = "Use gift card";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
@@ -1309,6 +1405,9 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";
+
+/* No comment provided by engineer. */
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
