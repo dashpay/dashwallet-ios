@@ -17,8 +17,23 @@
 
 import Foundation
 
-class BuyDashModel: BaseAmountModel {
+final class BuyDashModel: BaseAmountModel {
     var paymentMethods: [CoinbasePaymentMethod] {
         Coinbase.shared.paymentMethods
+    }
+
+    var dashPriceDisplayString: String {
+        let dashAmount = kOneDash
+        let dashAmountFormatted = dashAmount.formattedDashAmount
+
+        let priceManger = DSPriceManager.sharedInstance()
+        let fiatBalanceFormatted = priceManger.localCurrencyString(forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
+
+        let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
+        return displayString
+    }
+
+    override init() {
+        super.init()
     }
 }

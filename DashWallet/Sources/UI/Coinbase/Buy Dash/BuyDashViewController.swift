@@ -49,6 +49,26 @@ final class BuyDashViewController: BaseAmountViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
+        let titleViewStackView = UIStackView()
+        titleViewStackView.alignment = .center
+        titleViewStackView.translatesAutoresizingMaskIntoConstraints = false
+        titleViewStackView.axis = .vertical
+        titleViewStackView.spacing = 1
+        navigationItem.titleView = titleViewStackView
+
+        let titleLabel = UILabel()
+        titleLabel.font = .dw_mediumFont(ofSize: 16)
+        titleLabel.minimumScaleFactor = 0.5
+        titleLabel.text = NSLocalizedString("Buy Dash", comment: "Coinbase/Buy Dash")
+        titleViewStackView.addArrangedSubview(titleLabel)
+
+        let dashPriceLabel = UILabel()
+        dashPriceLabel.font = .dw_font(forTextStyle: .footnote)
+        dashPriceLabel.textColor = .dw_secondaryText()
+        dashPriceLabel.minimumScaleFactor = 0.5
+        dashPriceLabel.text = buyDashModel.dashPriceDisplayString
+        titleViewStackView.addArrangedSubview(dashPriceLabel)
+
         amountView.removeFromSuperview()
         contentView.addSubview(amountView)
 
