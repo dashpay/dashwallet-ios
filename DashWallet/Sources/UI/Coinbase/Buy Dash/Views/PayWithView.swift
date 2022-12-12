@@ -58,16 +58,17 @@ final class PayWithView: UIView {
         titleLabel.text = NSLocalizedString("Pay with", comment: "Coinbase/Buy Dash")
         addSubview(titleLabel)
 
-        chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
-        chevronView.translatesAutoresizingMaskIntoConstraints = false
-        chevronView.tintColor = .secondaryLabel
-        addSubview(chevronView)
+        let trailingStackView = UIStackView()
+        trailingStackView.translatesAutoresizingMaskIntoConstraints = false
+        trailingStackView.spacing = 10
+        trailingStackView.axis = .horizontal
+        addSubview(trailingStackView)
 
         let paymentMethodStackView = UIStackView()
         paymentMethodStackView.translatesAutoresizingMaskIntoConstraints = false
         paymentMethodStackView.spacing = 3
         paymentMethodStackView.axis = .horizontal
-        addSubview(paymentMethodStackView)
+        trailingStackView.addArrangedSubview(paymentMethodStackView)
 
         paymentMethodTitleLabel = UILabel()
         paymentMethodTitleLabel.textColor = .label
@@ -78,15 +79,17 @@ final class PayWithView: UIView {
         paymentMethodValueLabel.textColor = .secondaryLabel
         paymentMethodStackView.addArrangedSubview(paymentMethodValueLabel)
 
+        chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+        chevronView.tintColor = .secondaryLabel
+        trailingStackView.addArrangedSubview(chevronView)
+
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            chevronView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
-            chevronView.centerYAnchor.constraint(equalTo: centerYAnchor),
-
-            paymentMethodStackView.trailingAnchor.constraint(equalTo: chevronView.leadingAnchor, constant: -10),
-            paymentMethodStackView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            trailingStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
+            trailingStackView.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
     }
 }

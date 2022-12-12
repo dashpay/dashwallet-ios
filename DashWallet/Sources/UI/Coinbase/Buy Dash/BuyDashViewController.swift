@@ -83,7 +83,7 @@ final class BuyDashViewController: BaseAmountViewController {
 
         payWithView = PayWithView(frame: .zero)
         payWithView.update(with: buyDashModel.activePaymentMethod)
-        payWithView.setChevronButtonHidden(buyDashModel.paymentMethods.isEmpty)
+        payWithView.setChevronButtonHidden(buyDashModel.paymentMethods.count <= 1)
         payWithView.translatesAutoresizingMaskIntoConstraints = false
         payWithView.addGestureRecognizer(tapGestureRecognizer)
         contentView.addSubview(payWithView)
