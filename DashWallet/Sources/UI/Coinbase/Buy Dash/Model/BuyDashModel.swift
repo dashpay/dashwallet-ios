@@ -17,6 +17,8 @@
 
 import Foundation
 
+// MARK: - BuyDashModel
+
 final class BuyDashModel: BaseAmountModel {
     var paymentMethods: [CoinbasePaymentMethod] {
         Coinbase.shared.paymentMethods
@@ -45,5 +47,11 @@ final class BuyDashModel: BaseAmountModel {
 
     public func select(paymentMethod: CoinbasePaymentMethod) {
         selectedPaymentMethod = paymentMethod
+    }
+}
+
+extension BuyDashModel {
+    override var isCurrencySelectorHidden: Bool {
+        true
     }
 }

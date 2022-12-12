@@ -29,10 +29,18 @@ private let kSupplementaryAmountFontSize: CGFloat = 17
 // MARK: - AmountInputControlDelegate
 
 protocol AmountInputControlDelegate: AnyObject {
+    var isCurrencySelectorHidden: Bool { get }
+
     func updateInputField(with replacementText: String, in range: NSRange)
     func amountInputControlDidSwapInputs()
     func amountInputControlChangeCurrencyDidTap()
     func amountInputWantToPasteFromClipboard()
+}
+
+extension AmountInputControlDelegate {
+    var isCurrencySelectorHidden: Bool {
+        false
+    }
 }
 
 // MARK: - AmountInputControlDataSource
@@ -64,7 +72,14 @@ class AmountInputControl: UIControl {
 
     public var amountType: AmountType = .main
 
-    public weak var delegate: AmountInputControlDelegate?
+    public weak var delegate: AmountInputControlDelegate? {
+        didSet {
+            if delegate != nil {
+                updateAppearance()
+            }
+        }
+    }
+
     public weak var dataSource: AmountInputControlDataSource? {
         didSet {
             if dataSource != nil {
@@ -75,9 +90,10 @@ class AmountInputControl: UIControl {
 
     public var swapingHandler: ((AmountType) -> Void)?
 
-    public var text: String? { mainText }
-    public var mainText: String?
-    public var supplementaryText: String?
+    public var isCurrencySelectorHidden: Bool {
+        (style == .basic && amountType == .main) ||
+            (delegate?.isCurrencySelectorHidden ?? false)
+    }
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: mainAmountLabel.bounds.width, height: contentHeight)
@@ -175,7 +191,7 @@ class AmountInputControl: UIControl {
                 UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, animations: {
                     changePossiton()
                 }) { _ in
-                    self.currencySelectorButton.isHidden = false
+                    self.currencySelectorButton.isHidden = self.isCurrencySelectorHidden
                     self.updateCurrencySelectorPossition()
                     self.delegate?.amountInputControlDidSwapInputs()
                     completion?()
@@ -237,18 +253,17 @@ extension AmountInputControl {
             supplementaryAmountLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
             supplementaryAmountLabel.alpha = 1
 
-            currencySelectorButton.isHidden = amountType == .main
             mainAmountLabel.isHidden = amountType != .main
             supplementaryAmountLabel.isHidden = amountType != .supplementary
-        }
-        else {
+        } else {
             supplementaryAmountLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
             supplementaryAmountLabel.alpha = 1
 
             mainAmountLabel.isHidden = false
-            currencySelectorButton.isHidden = false
+            supplementaryAmountLabel.isHidden = false
         }
 
+        currencySelectorButton.isHidden = isCurrencySelectorHidden
         supplementaryAmountHelperLabel.font = supplementaryAmountLabel.font
     }
 

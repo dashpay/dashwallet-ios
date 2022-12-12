@@ -192,6 +192,10 @@ extension BaseAmountModel: AmountViewDelegate {
         .oppositeAmount
     }
 
+    @objc var isCurrencySelectorHidden: Bool {
+        false
+    }
+
     func amountInputControlDidSwapInputs() {
         assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
 
