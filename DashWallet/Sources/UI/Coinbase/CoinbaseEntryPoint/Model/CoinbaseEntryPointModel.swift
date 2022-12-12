@@ -72,6 +72,8 @@ extension CoinbaseEntryPointItem {
 final class CoinbaseEntryPointModel {
     let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.allCases
 
+    var hasPaymentMethods: Bool { !Coinbase.shared.paymentMethods.isEmpty }
+
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var networkStatus: NetworkStatus!
     var userDidSignOut: (() -> ())?

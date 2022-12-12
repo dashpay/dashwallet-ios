@@ -22,6 +22,7 @@ import Foundation
 
 let kDashCurrency = "DASH"
 var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
+var kCoinbaseAddPaymentMethodsURL = URL(string: "https://www.coinbase.com/settings/linked-accounts")!
 
 // MARK: - Coinbase
 

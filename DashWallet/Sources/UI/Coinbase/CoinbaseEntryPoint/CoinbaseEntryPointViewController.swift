@@ -20,6 +20,8 @@ import UIKit
 // MARK: - CoinbaseEntryPointViewController
 
 final class CoinbaseEntryPointViewController: BaseViewController {
+    public var userSignedOutBlock: ((Bool) -> Void)?
+
     @IBOutlet var connectionStatusView: UIView!
     @IBOutlet var connectionStatusLabel: UILabel!
     @IBOutlet var balanceTitleLabel: UILabel!
@@ -40,14 +42,7 @@ final class CoinbaseEntryPointViewController: BaseViewController {
     }
 
     private func popCoinbaseFlow() {
-        if isNeedToShowSignOutError {
-            showAlert(with: NSLocalizedString("Error", comment: ""),
-                      message: NSLocalizedString("You were signed out from Coinbase, please sign in again", comment: "Sign out from coinbase due to error"),
-                      presentingViewController: navigationController)
-        }
-
-        let portalVC = navigationController!.controller(by: PortalViewController.self)!
-        navigationController!.popToViewController(portalVC, animated: true)
+        userSignedOutBlock?(isNeedToShowSignOutError)
     }
 
     override func viewDidLoad() {
@@ -115,6 +110,27 @@ extension CoinbaseEntryPointViewController {
 
         reloadView()
     }
+
+    private func showNoPaymentMethodsFlow() {
+        let title = NSLocalizedString("No payment methods found", comment: "Coinbase/Buy Dash")
+        let message = NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let addAction = UIAlertAction(title: NSLocalizedString("Add", comment: ""), style: .default) { [weak self] _ in
+            self?.addPaymentMethod()
+        }
+        alert.addAction(addAction)
+
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
+        alert.addAction(cancelAction)
+
+
+
+        present(alert, animated: true)
+    }
+
+    private func addPaymentMethod() {
+        UIApplication.shared.open(kCoinbaseAddPaymentMethodsURL)
+    }
 }
 
 // MARK: UITableViewDelegate, UITableViewDataSource
@@ -144,6 +160,11 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
 
         switch item {
         case .buyDash:
+            guard model.hasPaymentMethods else {
+                showNoPaymentMethodsFlow()
+                return
+            }
+
             vc = BuyDashViewController()
         case .sellDash:
             vc = BuyDashViewController()
