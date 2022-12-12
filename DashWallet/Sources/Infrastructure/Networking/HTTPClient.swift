@@ -127,10 +127,12 @@ extension HTTPClient {
                 if acceptableCodes.contains(response.statusCode) {
                     completion(.success(response))
                 } else {
-                    DSLogger.log("Tranfer from coinbase: HTTPClient._request - data: \(response.errorDescription)")
+                    let responseString = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
+                    DSLogger.log("Tranfer from coinbase: HTTPClient._request - data: \(String(describing: response.errorDescription)), \(String(describing: responseString))")
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
+                DSLogger.log("Tranfer from coinbase: HTTPClient._request - fail: \(String(describing: error.localizedDescription)), \(String(describing: error))")
                 completion(.failure(.moya(error)))
             }
         }
