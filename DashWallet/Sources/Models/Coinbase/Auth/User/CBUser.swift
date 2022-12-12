@@ -18,12 +18,24 @@
 import Foundation
 
 private let kAccountKey = "kAccountKey"
+private let kPaymentMethodsKey = "kPaymentMethodsKey"
+
 private let kTokenServiceKey = "kAccountKey"
+
+// MARK: - CBUser + Equatable
+
+extension CBUser: Equatable {
+    static func == (lhs: CBUser, rhs: CBUser) -> Bool {
+        lhs.account == rhs.account
+    }
+}
 
 // MARK: - CBUser
 
 class CBUser: Codable {
-    private var account: CoinbaseUserAccountData!
+    public var paymentMethods: [CoinbasePaymentMethod]?
+
+    private var account: CoinbaseUserAccountData?
     private var tokenService: CBSecureTokenService
 
     init(tokenService: CBSecureTokenService) {
@@ -31,19 +43,25 @@ class CBUser: Codable {
     }
 
     required init?(coder: NSCoder) {
-        let accountData = coder.decodeObject(forKey: kAccountKey) as! Data
-        account = try! JSONDecoder().decode(CoinbaseUserAccountData.self, from: accountData)
+        if let accountData = coder.decodeObject(forKey: kAccountKey) as? Data {
+            account = try? JSONDecoder().decode(CoinbaseUserAccountData.self, from: accountData)
+        }
+
+        if let paymentMethodsData = coder.decodeObject(forKey: kPaymentMethodsKey) as? Data {
+            paymentMethods = try? JSONDecoder().decode([CoinbasePaymentMethod].self, from: paymentMethodsData)
+        }
+
         tokenService = coder.decodeObject(forKey: kTokenServiceKey) as! CBSecureTokenService
     }
 }
 
 extension CBUser {
-    var accountId: String {
-        account.id
+    var accountId: String? {
+        account?.id
     }
 
-    var balance: UInt64 {
-        account.balance.plainAmount
+    var balance: UInt64? {
+        account?.balance.plainAmount
     }
 
     var accessToken: String {
@@ -56,6 +74,7 @@ extension CBUser {
 
     func refreshAccount() async throws {
         try await fetchAccount()
+        try await fetchPaymentMethods()
     }
 
     func refreshAccessToken() async throws {
@@ -67,13 +86,15 @@ extension CBUser {
     }
 
     public func fetchAccount() async throws -> CoinbaseUserAccountData {
-        if let account {
-            return account
-        }
-
         let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.userAccount)
-        account = result.data
-        return account
+        let newAccount = result.data
+        account = newAccount
+        return newAccount
+    }
+
+    public func fetchPaymentMethods() async throws {
+        let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await CoinbaseAPI.shared.request(.activePaymentMethods)
+        paymentMethods = result.data
     }
 }
 

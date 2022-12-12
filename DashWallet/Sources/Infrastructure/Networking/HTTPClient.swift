@@ -38,6 +38,17 @@ enum HTTPClientError: Error {
     case statusCode(Moya.Response)
     case mapping(Moya.Response)
     case moya(MoyaError)
+
+    var localizedDescription: String {
+        switch self {
+        case .statusCode(let response):
+            return "\(response.debugDescription)\nError: \(response.errorDescription ?? "")"
+        case .mapping(let response):
+            return "\(response.debugDescription)"
+        case .moya(let error):
+            return "\(String(describing: error.errorDescription))"
+        }
+    }
 }
 
 // MARK: - SecureTokenProvider
@@ -76,7 +87,16 @@ public class HTTPClient<Target: TargetType> {
     }
 
     public func request(_ target: Target) async throws {
-        let _: Void = try await request(target)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            request(target) { result in
+                switch result {
+                case .success:
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public func request<R: Decodable>(_ target: Target) async throws -> R {
@@ -107,9 +127,12 @@ extension HTTPClient {
                 if acceptableCodes.contains(response.statusCode) {
                     completion(.success(response))
                 } else {
+                    let responseString = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
+                    DSLogger.log("Tranfer from coinbase: HTTPClient._request - data: \(String(describing: response.errorDescription)), \(String(describing: responseString))")
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
+                DSLogger.log("Tranfer from coinbase: HTTPClient._request - fail: \(String(describing: error.localizedDescription)), \(String(describing: error))")
                 completion(.failure(.moya(error)))
             }
         }

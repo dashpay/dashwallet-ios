@@ -27,6 +27,7 @@ protocol AmountViewDataSource: AmountInputControlDataSource {
 
 protocol AmountViewDelegate: AmountInputControlDelegate {
     var amountInputStyle: AmountInputControl.Style { get }
+    var isMaxButtonHidden: Bool { get }
 }
 
 // MARK: - AmountView
@@ -52,10 +53,8 @@ class AmountView: UIView {
 
     public var amountInputStyle: AmountInputControl.Style
 
-    public var isMaxButtonHidden = false {
-        didSet {
-            maxButton.isHidden = isMaxButtonHidden
-        }
+    public var isMaxButtonHidden: Bool {
+        delegate?.isMaxButtonHidden ?? false
     }
 
     public var amountType: AmountInputControl.AmountType {
@@ -122,6 +121,8 @@ extension AmountView {
             .init(currencySymbol: "DASH", currencyCode: "DASH"),
             .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT"),
         ]
+
+        maxButton.isHidden = isMaxButtonHidden
     }
 
     private func configureHierarchy() {

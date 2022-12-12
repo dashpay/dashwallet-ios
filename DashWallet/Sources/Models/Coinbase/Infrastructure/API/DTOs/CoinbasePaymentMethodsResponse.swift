@@ -8,28 +8,32 @@
 import Foundation
 
 
+// MARK: - CoinbasePaymentMethod + Equatable
+
+extension CoinbasePaymentMethod: Equatable {
+    static func == (lhs: CoinbasePaymentMethod, rhs: CoinbasePaymentMethod) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
 // MARK: - CoinbasePaymentMethod
 
 struct CoinbasePaymentMethod: Codable {
-    let id: String?
-    let type: String?
-    let name: String?
+    let id: String
+    let name: String
+    let type: PaymentMethodType
+    let allowBuy: Bool
+    let allowSell: Bool
+    let allowDeposit: Bool
+    let allowWithdraw: Bool
     let currency: String?
-    let primaryBuy: Bool?
-    let primarySell: Bool?
-    let instantBuy: Bool?
-    let instantSell: Bool?
-    let createdAt: Date?
-    let updatedAt: Date?
-    let resource: String?
-    let resourcePath: String?
-    let pmsvcID: String?
-    let allowBuy: Bool?
-    let allowSell: Bool?
-    let allowDeposit: Bool?
-    let allowWithdraw: Bool?
+    let primaryBuy: Bool
+    let primarySell: Bool
+    let instantBuy: Bool
+    let instantSell: Bool
+
     let fiatAccount: FiatAccount?
-    let verified: Bool?
+    let verified: Bool
     let minimumPurchaseAmount: MinimumPurchaseAmount?
 
     enum CodingKeys: String, CodingKey {
@@ -41,11 +45,6 @@ struct CoinbasePaymentMethod: Codable {
         case primarySell = "primary_sell"
         case instantBuy = "instant_buy"
         case instantSell = "instant_sell"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case resource
-        case resourcePath = "resource_path"
-        case pmsvcID = "pmsvc_id"
         case allowBuy = "allow_buy"
         case allowSell = "allow_sell"
         case allowDeposit = "allow_deposit"
@@ -59,7 +58,9 @@ struct CoinbasePaymentMethod: Codable {
 // MARK: - FiatAccount
 
 struct FiatAccount: Codable {
-    let id, resource, resourcePath: String?
+    let id: String?
+    let resource: String?
+    let resourcePath: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -72,4 +73,63 @@ struct FiatAccount: Codable {
 
 struct MinimumPurchaseAmount: Codable {
     let amount, currency: String?
+}
+
+// MARK: - PaymentMethodType
+
+public enum PaymentMethodType: String, Codable {
+    case achBankAccount = "ach_bank_account"
+    case sepaBankAccount = "sepa_bank_account"
+    case idealBankAccount = "ideal_bank_account"
+    case fiatAccount = "fiat_account"
+    case bankWire = "bank_wire"
+    case creditCard = "credit_card"
+    case secure3dCard = "secure3d_card"
+    case eftBankAccount = "eft_bank_account"
+    case interac
+    case applePay = "apple_pay"
+    case googlePay = "google_pay"
+    case payPal = "paypal"
+
+    var displayString: String {
+        switch self {
+        case .achBankAccount, .sepaBankAccount, .idealBankAccount, .eftBankAccount:
+            return NSLocalizedString("Bank Account", comment: "Coinbase/Payment Methods")
+        case .fiatAccount:
+            return NSLocalizedString("Fiat Account", comment: "Coinbase/Payment Methods")
+        case .bankWire:
+            return NSLocalizedString("Bank Wire", comment: "Coinbase/Payment Methods")
+        case .creditCard:
+            return NSLocalizedString("Credit Card", comment: "Coinbase/Payment Methods")
+        case .secure3dCard:
+            return NSLocalizedString("Credit Card", comment: "Coinbase/Payment Methods")
+        case .interac:
+            return NSLocalizedString("Interac", comment: "Coinbase/Payment Methods")
+        case .applePay:
+            return NSLocalizedString("Apple Pay", comment: "Coinbase/Payment Methods")
+        case .googlePay:
+            return NSLocalizedString("Google Pay", comment: "Coinbase/Payment Methods")
+        case .payPal:
+            return NSLocalizedString("PayPal", comment: "Coinbase/Payment Methods")
+        }
+    }
+
+    var showNameLabel: Bool {
+        switch self {
+        case .achBankAccount, .sepaBankAccount, .idealBankAccount, .eftBankAccount:
+            return true
+        case .fiatAccount:
+            return true
+        case .bankWire:
+            return true
+        case .creditCard:
+            return true
+        case .secure3dCard:
+            return true
+        case .interac, .applePay, .googlePay:
+            return false
+        case .payPal:
+            return false
+        }
+    }
 }

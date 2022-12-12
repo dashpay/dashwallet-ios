@@ -46,6 +46,7 @@ final class TransferAmountViewController: SendAmountViewController {
     }
 
     override func actionButtonAction(sender: UIView) {
+        DSLogger.log("Tranfer from coinbase: actionButtonAction")
         showActivityIndicator()
         transferModel.initializeTransfer()
     }
@@ -102,6 +103,20 @@ final class TransferAmountViewController: SendAmountViewController {
 // MARK: TransferAmountModelDelegate
 
 extension TransferAmountViewController: TransferAmountModelDelegate {
+    func coinbaseUserDidChange() {
+        converterView.reloadView()
+    }
+
+    func transferFromCoinbaseToWalletDidFail(with error: Error) {
+        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToWalletDidFail")
+        showAlert(with: "Error", message: error.localizedDescription)
+        hideActivityIndicator()
+    }
+
+    func transferFromCoinbaseToWalletDidCancel() {
+        hideActivityIndicator()
+    }
+
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
         paymentController.delegate = self
@@ -132,6 +147,9 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         let vc = TwoFactorAuthViewController.controller()
         vc.verifyHandler = { [weak self] code in
             self?.transferModel.continueTransferFromCoinbase(with: code)
+        }
+        vc.cancelHandler = { [weak self] in
+            self?.transferModel.cancelTransferOperation()
         }
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)

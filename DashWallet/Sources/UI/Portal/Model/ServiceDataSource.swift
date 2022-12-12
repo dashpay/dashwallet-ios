@@ -34,8 +34,6 @@ class ServiceDataSource {
     func refresh() {
         assertionFailure("Override it")
     }
-
-
 }
 
 // MARK: - UpholdDataSource
@@ -82,10 +80,16 @@ class CoinbaseDataSource: ServiceDataSource {
 
     private var cancelables = [AnyCancellable]()
 
+    private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
+
     override init() {
         super.init()
 
         item = .init(status: .initializing, service: .coinbase)
+
+        userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] _ in
+            self?.refresh()
+        }
     }
 
     override func refresh() {
@@ -98,5 +102,9 @@ class CoinbaseDataSource: ServiceDataSource {
         } else {
             item = .init(status: .idle, service: .coinbase)
         }
+    }
+
+    deinit {
+        Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
     }
 }

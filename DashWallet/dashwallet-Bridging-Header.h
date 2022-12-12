@@ -42,6 +42,7 @@
 #import "DWQRScanViewController.h"
 #import "DWQRScanModel.h"
 #import "DWModalPopupTransition.h"
+#import "DWModalTransition.h"
 
 #import "UIView+DWHUD.h"
 #import "DWConfirmSendPaymentViewController.h"
@@ -53,5 +54,6 @@
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
+#import <DashSync/DSLogger.h>
 
 #import <SDWebImage/SDWebImage.h>

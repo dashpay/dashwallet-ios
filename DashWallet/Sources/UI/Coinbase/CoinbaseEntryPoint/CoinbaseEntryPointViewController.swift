@@ -20,6 +20,8 @@ import UIKit
 // MARK: - CoinbaseEntryPointViewController
 
 final class CoinbaseEntryPointViewController: BaseViewController {
+    public var userSignedOutBlock: ((Bool) -> Void)?
+
     @IBOutlet var connectionStatusView: UIView!
     @IBOutlet var connectionStatusLabel: UILabel!
     @IBOutlet var balanceTitleLabel: UILabel!
@@ -32,9 +34,15 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 
     private let model = CoinbaseEntryPointModel()
 
+    private var isNeedToShowSignOutError = true
+
     @IBAction func signOutAction() {
+        isNeedToShowSignOutError = false
         model.signOut()
-        navigationController?.popToRootViewController(animated: true)
+    }
+
+    private func popCoinbaseFlow() {
+        userSignedOutBlock?(isNeedToShowSignOutError)
     }
 
     override func viewDidLoad() {
@@ -51,6 +59,12 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 
 extension CoinbaseEntryPointViewController {
     private func configureModel() {
+        model.userDidSignOut = { [weak self] in
+            self?.popCoinbaseFlow()
+        }
+        model.userDidChange = { [weak self] in
+            self?.reloadView()
+        }
         model.networkStatusDidChange = { [weak self] _ in
             self?.reloadView()
         }
@@ -96,6 +110,27 @@ extension CoinbaseEntryPointViewController {
 
         reloadView()
     }
+
+    private func showNoPaymentMethodsFlow() {
+        let title = NSLocalizedString("No payment methods found", comment: "Coinbase/Buy Dash")
+        let message = NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let addAction = UIAlertAction(title: NSLocalizedString("Add", comment: ""), style: .default) { [weak self] _ in
+            self?.addPaymentMethod()
+        }
+        alert.addAction(addAction)
+
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
+        alert.addAction(cancelAction)
+
+
+
+        present(alert, animated: true)
+    }
+
+    private func addPaymentMethod() {
+        UIApplication.shared.open(kCoinbaseAddPaymentMethodsURL)
+    }
 }
 
 // MARK: UITableViewDelegate, UITableViewDataSource
@@ -121,30 +156,24 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         tableView.deselectRow(at: indexPath, animated: true)
 
         let item = model.items[indexPath.item]
+        let vc: UIViewController
 
-        if item == .sellDash {
-            let vc = FailedOperationStatusViewController.initiate(from: storyboard!)
-            vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
-            vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device",
-                                                   comment: "Coinbase")
-            vc.hidesBottomBarWhenPushed = true
-            navigationController?.pushViewController(vc, animated: true)
-            return
+        switch item {
+        case .buyDash:
+            guard model.hasPaymentMethods else {
+                showNoPaymentMethodsFlow()
+                return
+            }
+
+            vc = BuyDashViewController()
+        case .sellDash:
+            vc = BuyDashViewController()
+        case .convertCrypto:
+            vc = TransferAmountViewController()
+        case .transferDash:
+            vc = TransferAmountViewController()
         }
 
-        if item == .buyDash {
-            let vc = SuccessfulOperationStatusViewController.initiate(from: storyboard!)
-            vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
-            vc
-                .descriptionText =
-                NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
-                                  comment: "Coinbase")
-            vc.hidesBottomBarWhenPushed = true
-            navigationController?.pushViewController(vc, animated: true)
-            return
-        }
-
-        let vc = TransferAmountViewController()
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }

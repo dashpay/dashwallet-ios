@@ -69,7 +69,6 @@ class ConverterView: UIView {
     private var toView: SourceView!
     private var swapImageView: UIImageView!
 
-    private var hairlineView: UIView!
     private var direction: ConverterViewDirection = .toCoinbase
 
     init(direction: ConverterViewDirection) {
@@ -87,6 +86,10 @@ class ConverterView: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    public func reloadView() {
+        updateView()
     }
 
     @objc func swapAction() {
@@ -174,7 +177,7 @@ extension ConverterView {
         fromView.translatesAutoresizingMaskIntoConstraints = false
         rightContainer.addArrangedSubview(fromView)
 
-        let hairlineView = HairlineView()
+        let hairlineView = HairlineView(frame: .zero)
         hairlineView.translatesAutoresizingMaskIntoConstraints = false
         hairlineView.alpha = 0.2
         rightContainer.addArrangedSubview(hairlineView)

@@ -27,8 +27,11 @@ final class CBTransactions {
                                               currency: kDashCurrency,
                                               idem: UUID())
 
+        DSLogger.log("Tranfer from coinbase: CBTransactions.send")
+
         let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
             .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
+        DSLogger.log("Tranfer from coinbase: CBTransactions.send - receive response")
         return result.data
     }
 }

@@ -48,6 +48,19 @@ final class PortalViewController: UIViewController {
     @objc func coinbaseAction() {
         if Coinbase.shared.isAuthorized {
             let vc = CoinbaseEntryPointViewController.controller()
+            vc.userSignedOutBlock = { [weak self] isNeedToShowSignOutError in
+                guard let self else { return }
+
+                self.navigationController!.popToViewController(self, animated: true)
+
+                if isNeedToShowSignOutError {
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .milliseconds(500))) {
+                        self.showAlert(with: NSLocalizedString("Error", comment: ""),
+                                       message: NSLocalizedString("You were signed out from Coinbase, please sign in again", comment: "Sign out from coinbase due to error"),
+                                       presentingViewController: self)
+                    }
+                }
+            }
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
         } else {

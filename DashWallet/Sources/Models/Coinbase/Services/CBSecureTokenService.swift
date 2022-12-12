@@ -37,6 +37,10 @@ class CBSecureTokenService: Codable {
     }
 
     func fetchAccessToken(refreshing: Bool = false) async throws -> String {
+        if !refreshing && hasValidAccessToken {
+            return accessToken
+        }
+
         let result: CoinbaseTokenResponse = try await httpClient.request(.refreshToken(refreshToken: refreshToken))
         accessToken = result.accessToken
         refreshToken = result.refreshToken

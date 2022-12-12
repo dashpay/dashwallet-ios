@@ -20,8 +20,26 @@ import Foundation
 
 // MARK: - CBAuth
 
+extension Notification.Name {
+    static let userDidChangeNotification: Notification.Name = .init(rawValue: "userDidChangeNotification")
+}
+
+typealias UserDidChangeListenerHandle = AnyObject
+typealias UserDidChangeListenerBlock = (CBUser?) -> Void
+
+// MARK: - CBAuth
+
 class CBAuth {
-    public var currentUser: CBUser?
+    public var currentUser: CBUser? {
+        didSet {
+            let user = currentUser
+            if user != oldValue {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .userDidChangeNotification, object: self)
+                }
+            }
+        }
+    }
 
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
     private lazy var userManager = CBUserManager()
@@ -29,7 +47,20 @@ class CBAuth {
     private var tokenRefreshTask: Task<Void, any Error>?
     private var timer: Timer?
 
+    private var listeners: [UserDidChangeListenerHandle] = []
+
     init() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(didBecomeActive(notification:)),
+                                               name: UIApplication.didBecomeActiveNotification,
+                                               object: nil)
+
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(didEnterBackground(notification:)),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
+
         currentUser = userManager.storedUser
 
         guard currentUser != nil else {
@@ -37,7 +68,7 @@ class CBAuth {
         }
 
         tokenRefreshHandler()
-        scheduleAutoTokenRefresh()
+        scheduleAutoTokenRefreshIfNeeded()
     }
 
     @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
@@ -68,46 +99,66 @@ class CBAuth {
 
         let token = try await authorize(with: code)
 
-        let tokenService = CBSecureTokenService(accessToken: token.accessToken, refreshToken: token.refreshToken, accessTokenExpirationDate: token.expirationDate)
+        let tokenService = CBSecureTokenService(accessToken: token.accessToken,
+                                                refreshToken: token.refreshToken,
+                                                accessTokenExpirationDate: token.expirationDate)
 
         let user = CBUser(tokenService: tokenService)
         currentUser = user
 
-        try await user.refreshAccount()
+        // Ignore if fails
+        try? await user.refreshAccount()
 
         save(user: user)
-
-        scheduleAutoTokenRefresh()
+        scheduleAutoTokenRefreshIfNeeded()
     }
 
     public func authorize(with code: String) async throws -> CoinbaseTokenResponse {
         try await httpClient.request(.getToken(code))
     }
 
-    private func refreshUserToken() async throws {
-        guard let currentUser else {
-            throw Coinbase.Error.noActiveUser
-        }
-
-        try await currentUser.refreshAccessToken()
-    }
-
-    private func refreshAccount() async throws {
-        guard let currentUser else {
-            throw Coinbase.Error.noActiveUser
-        }
-
-        try await currentUser.refreshAccount()
-    }
-
     public func signOut() async throws {
         userManager.removeUser()
-        timer?.invalidate()
-        timer = nil
+        stopAutoTokenRefresh()
 
-        try await currentUser?.revokeAccessToken()
+        // Detach task to avoid waiting for response
+        Task {
+            // Ignore if fails
+            try? await currentUser?.revokeAccessToken()
+        }
+
         currentUser = nil
         save(user: nil)
+    }
+
+    public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
+        let handle = NotificationCenter.default.addObserver(forName: .userDidChangeNotification, object: self, queue: .main) { notification in
+            guard let auth = notification.object as? CBAuth else { return }
+            listener(auth.currentUser)
+        }
+        listeners.append(handle)
+
+        DispatchQueue.main.async { [weak self] in
+            listener(self?.currentUser)
+        }
+        return handle
+    }
+
+    public func removeUserDidChangeListener(handle: UserDidChangeListenerHandle) {
+        listeners.removeAll(where: { $0 === handle })
+    }
+}
+
+// MARK: Notifications
+
+extension CBAuth {
+    @objc func didBecomeActive(notification: Notification) {
+        tokenRefreshHandler()
+        scheduleAutoTokenRefreshIfNeeded()
+    }
+
+    @objc func didEnterBackground(notification: Notification) {
+        stopAutoTokenRefresh()
     }
 }
 
@@ -150,6 +201,22 @@ extension CBAuth {
         return url
     }
 
+    private func refreshUserToken() async throws {
+        guard let currentUser else {
+            throw Coinbase.Error.noActiveUser
+        }
+
+        try await currentUser.refreshAccessToken()
+    }
+
+    private func refreshAccount() async throws {
+        guard let currentUser else {
+            throw Coinbase.Error.noActiveUser
+        }
+
+        try await currentUser.refreshAccount()
+    }
+
     @discardableResult private func save(user: CBUser?) -> Bool {
         if let user {
             return userManager.store(user: user)
@@ -158,10 +225,23 @@ extension CBAuth {
         }
     }
 
+    private func scheduleAutoTokenRefreshIfNeeded() {
+        guard currentUser != nil else { return }
+
+        scheduleAutoTokenRefresh()
+    }
+
     private func scheduleAutoTokenRefresh() {
-        Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true) { [weak self] _ in
+        guard let currentTimer = timer, !currentTimer.isValid else { return }
+
+        timer = Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true) { [weak self] _ in
             self?.tokenRefreshHandler()
         }
+    }
+
+    private func stopAutoTokenRefresh() {
+        timer?.invalidate()
+        timer = nil
     }
 
     private func tokenRefreshHandler() {
@@ -170,9 +250,9 @@ extension CBAuth {
         tokenRefreshTask = Task {
             do {
                 try await refreshUserToken()
-                try await refreshAccount()
+                try? await refreshAccount()
                 save(user: currentUser)
-            } catch {
+            } catch HTTPClientError.statusCode(let response) {
                 try await signOut()
             }
         }

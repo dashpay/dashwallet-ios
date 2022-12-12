@@ -23,10 +23,30 @@ private let kDescKeyboardPadding: CGFloat = 8.0
 // MARK: - BaseAmountViewController
 
 class BaseAmountViewController: ActionButtonViewController {
+    public var topKeyboardView: UIView? {
+        didSet {
+            if let view = oldValue {
+                keyboardStackView.removeArrangedSubview(view)
+                view.removeFromSuperview()
+            }
+
+            guard let view = topKeyboardView else {
+                keyboardTopConstraint.constant = 10
+                return
+            }
+
+            keyboardTopConstraint.constant = 0
+            keyboardStackView.insertArrangedSubview(view, at: 0)
+        }
+    }
+
     internal var contentView: UIView!
     internal var amountView: AmountView!
 
     internal var keyboardContainer: UIView!
+    internal var keyboardStackView: UIStackView!
+    private var keyboardTopConstraint: NSLayoutConstraint!
+
     internal var numberKeyboard: NumberKeyboard!
 
     internal var model: BaseAmountModel!
@@ -110,12 +130,19 @@ extension BaseAmountViewController {
         keyboardContainer.layer.cornerRadius = 10
         contentView.addSubview(keyboardContainer)
 
+        keyboardStackView = UIStackView()
+        keyboardStackView.translatesAutoresizingMaskIntoConstraints = false
+        keyboardStackView.axis = .vertical
+        keyboardContainer.addSubview(keyboardStackView)
+
         numberKeyboard = NumberKeyboard()
         numberKeyboard.customButtonBackgroundColor = .dw_background()
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = false
         numberKeyboard.backgroundColor = .clear
         numberKeyboard.textInput = amountView.textInput
-        keyboardContainer.addSubview(numberKeyboard)
+        keyboardStackView.addArrangedSubview(numberKeyboard)
+
+        keyboardTopConstraint = keyboardStackView.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 10)
 
         NSLayoutConstraint.activate([
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
@@ -127,10 +154,10 @@ extension BaseAmountViewController {
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            numberKeyboard.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 15),
-            numberKeyboard.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
-            numberKeyboard.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
-            numberKeyboard.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15),
+            keyboardTopConstraint,
+            keyboardStackView.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
+            keyboardStackView.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
+            keyboardStackView.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15),
         ])
     }
 }

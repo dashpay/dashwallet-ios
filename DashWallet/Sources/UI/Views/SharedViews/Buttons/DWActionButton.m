@@ -129,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL dark = self.usedOnDarkBackground;
     BOOL inverted = self.inverted;
 
-    _activityIndicator.color = [self _textColorForInverted:inverted usedOnDarkBackground:dark];
+    _activityIndicator.color = [UIColor labelColor];
     _activityIndicator.hidden = YES;
 
     UIColor *color = [self _backgroundColorForInverted:inverted usedOnDarkBackground:dark];
