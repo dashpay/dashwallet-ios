@@ -17,7 +17,7 @@
 
 import UIKit
 
-final class PayWithView: UIView {
+final class ActivePaymentMethodView: UIView {
     private var paymentMethodTitleLabel: UILabel!
     private var paymentMethodValueLabel: UILabel!
     private var chevronView: UIView!

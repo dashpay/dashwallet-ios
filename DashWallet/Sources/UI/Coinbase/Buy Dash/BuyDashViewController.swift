@@ -24,7 +24,7 @@ final class BuyDashViewController: BaseAmountViewController {
         model as! BuyDashModel
     }
 
-    private var payWithView: PayWithView!
+    private var activePaymentMethodView: ActivePaymentMethodView!
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -40,7 +40,7 @@ final class BuyDashViewController: BaseAmountViewController {
         vc.selectedPaymentMethod = buyDashModel.activePaymentMethod
         vc.selectPaymentMethodAction = { [weak self] method in
             self?.buyDashModel.select(paymentMethod: method)
-            self?.payWithView.update(with: method)
+            self?.activePaymentMethodView.update(with: method)
         }
         present(vc, animated: true)
     }
@@ -81,12 +81,12 @@ final class BuyDashViewController: BaseAmountViewController {
 
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(payWithTapGestureRecognizerAction))
 
-        payWithView = PayWithView(frame: .zero)
-        payWithView.update(with: buyDashModel.activePaymentMethod)
-        payWithView.setChevronButtonHidden(buyDashModel.paymentMethods.count <= 1)
-        payWithView.translatesAutoresizingMaskIntoConstraints = false
-        payWithView.addGestureRecognizer(tapGestureRecognizer)
-        contentView.addSubview(payWithView)
+        activePaymentMethodView = ActivePaymentMethodView(frame: .zero)
+        activePaymentMethodView.update(with: buyDashModel.activePaymentMethod)
+        activePaymentMethodView.setChevronButtonHidden(buyDashModel.paymentMethods.count <= 1)
+        activePaymentMethodView.translatesAutoresizingMaskIntoConstraints = false
+        activePaymentMethodView.addGestureRecognizer(tapGestureRecognizer)
+        contentView.addSubview(activePaymentMethodView)
 
         let sendingToView = SendingToView(frame: .zero)
         sendingToView.translatesAutoresizingMaskIntoConstraints = false
@@ -94,14 +94,14 @@ final class BuyDashViewController: BaseAmountViewController {
         topKeyboardView = sendingToView
 
         NSLayoutConstraint.activate([
-            payWithView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
-            payWithView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            payWithView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            payWithView.heightAnchor.constraint(equalToConstant: 46),
+            activePaymentMethodView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
+            activePaymentMethodView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            activePaymentMethodView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            activePaymentMethodView.heightAnchor.constraint(equalToConstant: 46),
 
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            amountView.topAnchor.constraint(equalTo: payWithView.bottomAnchor, constant: 30),
+            amountView.topAnchor.constraint(equalTo: activePaymentMethodView.bottomAnchor, constant: 30),
             amountView.heightAnchor.constraint(equalToConstant: 60),
         ])
     }

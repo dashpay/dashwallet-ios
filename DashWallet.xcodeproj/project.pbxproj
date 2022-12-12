@@ -507,7 +507,7 @@
 		478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */; };
 		478C98292942DDB800FAA0F0 /* BuyDashModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98282942DDB800FAA0F0 /* BuyDashModel.swift */; };
 		478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C982B2942F03500FAA0F0 /* SendingToView.swift */; };
-		478C982F294305D800FAA0F0 /* PayWithView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C982E294305D800FAA0F0 /* PayWithView.swift */; };
+		478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C982E294305D800FAA0F0 /* ActivePaymentMethodView.swift */; };
 		478C983229433C5700FAA0F0 /* PaymentMethodsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C983129433C5700FAA0F0 /* PaymentMethodsController.swift */; };
 		478C98372943A60000FAA0F0 /* PaymentMethodCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98362943A60000FAA0F0 /* PaymentMethodCell.swift */; };
 		478C983C2945801D00FAA0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C983B2945801D00FAA0F0 /* Constants.swift */; };
@@ -1665,7 +1665,7 @@
 		478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyDashViewController.swift; sourceTree = "<group>"; };
 		478C98282942DDB800FAA0F0 /* BuyDashModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyDashModel.swift; sourceTree = "<group>"; };
 		478C982B2942F03500FAA0F0 /* SendingToView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendingToView.swift; sourceTree = "<group>"; };
-		478C982E294305D800FAA0F0 /* PayWithView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayWithView.swift; sourceTree = "<group>"; };
+		478C982E294305D800FAA0F0 /* ActivePaymentMethodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivePaymentMethodView.swift; sourceTree = "<group>"; };
 		478C983129433C5700FAA0F0 /* PaymentMethodsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethodsController.swift; sourceTree = "<group>"; };
 		478C98362943A60000FAA0F0 /* PaymentMethodCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethodCell.swift; sourceTree = "<group>"; };
 		478C983B2945801D00FAA0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -4514,7 +4514,7 @@
 			isa = PBXGroup;
 			children = (
 				478C982B2942F03500FAA0F0 /* SendingToView.swift */,
-				478C982E294305D800FAA0F0 /* PayWithView.swift */,
+				478C982E294305D800FAA0F0 /* ActivePaymentMethodView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5814,7 +5814,7 @@
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				2A7A7C10234B591300451078 /* DWBalanceNotifier.m in Sources */,
 				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
-				478C982F294305D800FAA0F0 /* PayWithView.swift in Sources */,
+				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
 				0F7258F4291BF6B100A785A0 /* TwoFactorAuthModel.swift in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */,
