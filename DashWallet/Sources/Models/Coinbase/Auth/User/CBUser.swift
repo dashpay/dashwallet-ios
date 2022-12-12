@@ -86,10 +86,6 @@ extension CBUser {
     }
 
     public func fetchAccount() async throws -> CoinbaseUserAccountData {
-        if let account {
-            return account
-        }
-
         let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.userAccount)
         let newAccount = result.data
         account = newAccount
