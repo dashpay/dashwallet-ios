@@ -94,6 +94,9 @@
 /* No comment provided by engineer. */
 "Activity" = "Activity";
 
+/* No comment provided by engineer. */
+"Add" = "Add";
+
 /* Add <username> as your contact... */
 "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
 
@@ -135,6 +138,9 @@
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "全てのデバイスで直感的かつ使いやすい使用感";
+
+/* Coinbase/Payment Methods */
+"Apple Pay" = "Apple Pay";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = " %@ というアプリがリクエストしている支払い先：";
@@ -178,8 +184,23 @@
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "正しくない復元フレーズ";
 
+/* Send Screen: to address */
+"Balance" = "Balance";
+
 /* No comment provided by engineer. */
 "Balance hidden" = "非表示にされた残高";
+
+/* Coinbase/Payment Methods */
+"Bank Account" = "Bank Account";
+
+/* Coinbase/Payment Methods */
+"Bank Wire" = "Bank Wire";
+
+/* Coinbase Entry Point */
+"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
+
+/* Dash Service Overview */
+"Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "ブロック #%1$d / %2$d";
@@ -203,8 +224,14 @@
 /* No comment provided by engineer. */
 "Buy a gift card with Dash." = "Buy a gift card with Dash.";
 
+/* Dash Service Overview */
+"Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
+
 /* No comment provided by engineer. */
 "Buy Dash" = "Dashを買う";
+
+/* Dash Service Overview */
+"Buy Dash with fiat" = "Buy Dash with fiat";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "UpholdアカウントでDashを買う";
@@ -257,6 +284,12 @@
 /* No comment provided by engineer. */
 "Close App" = "アプリを閉じる";
 
+/* Dash Portal */
+"Coinbase" = "Coinbase";
+
+/* Coinbase Two Factor Auth */
+"Coinbase 2FA code" = "Coinbase 2FA code";
+
 /* No comment provided by engineer. */
 "Confirm" = "確認する";
 
@@ -272,11 +305,19 @@
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "サードパーティーの取引所に接続する";
 
+/* Buy Sell Portal
+   Coinbase Entry Point */
+"Connected" = "Connected";
+
 /* No comment provided by engineer. */
 "Connected peers: %d" = "接続しているピア: %d";
 
 /* No comment provided by engineer. */
 "Connecting to payment server" = "支払い元に接続中";
+
+/* Coinbase
+   Coinbase Two Factor Auth */
+"Contact Coinbase Support" = "Contact Coinbase Support";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Contact Request Pending";
@@ -292,6 +333,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "続ける";
+
+/* Coinbase Entry Point */
+"Convert Crypto" = "Convert Crypto";
 
 /* No comment provided by engineer. */
 "Copied" = "コピーされた";
@@ -323,6 +367,9 @@
 /* No comment provided by engineer. */
 "Create a New Wallet" = "新しいウォレットを作成する";
 
+/* Coinbase/Payment Methods */
+"Credit Card" = "Credit Card";
+
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
@@ -338,11 +385,17 @@
 /* Explore Dash: Filters */
 "Dash" = "Dash";
 
+/* Coinbase Entry Point */
+"Dash balance on Coinbase" = "Dash balance on Coinbase";
+
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
 
 /* No comment provided by engineer. */
 "Dash username" = "Dash username";
+
+/* Buy Dash */
+"Dash Wallet on this device" = "Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay Upgrade Fee";
@@ -364,6 +417,13 @@
 
 /* Direction */
 "Direction" = "Direction";
+
+/* Coinbase Entry Point */
+"Disconnect Coinbase Account" = "Disconnect Coinbase Account";
+
+/* Buy Sell Portal
+   Coinbase Entry Point */
+"Disconnected" = "Disconnected";
 
 /* Explore Dash: Filters */
 "Distance" = "Distance";
@@ -397,6 +457,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "入力";
+
+/* Coinbase Two Factor Auth */
+"Enter Coinbase 2FA code" = "Enter Coinbase 2FA code";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "PINを入力してください";
@@ -434,6 +497,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Face IDの送金可能額";
 
+/* Buy Sell Portal */
+"Failed to sync" = "Failed to sync";
+
 /* Explore Dash */
 "Failed to sync on" = "Failed to sync on";
 
@@ -451,6 +517,9 @@
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
+
+/* Coinbase/Payment Methods */
+"Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "取引をフィルタリングする";
@@ -485,6 +554,12 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Found potential missing words:\n%@";
 
+/* Coinbase: transfer dash to/from */
+"FROM" = "FROM";
+
+/* Dash Service Overview */
+"From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
 
@@ -499,6 +574,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "ウェブサイトへ行く";
+
+/* Coinbase/Payment Methods */
+"Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
@@ -560,8 +638,14 @@
 /* No comment provided by engineer. */
 "Income" = "Income";
 
+/* Buy Sell Portal */
+"Initializing" = "Initializing";
+
 /* No comment provided by engineer. */
 "Insufficient funds" = "資金不足";
+
+/* Coinbase/Payment Methods */
+"Interac" = "Interac";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "内部の送金";
@@ -572,11 +656,20 @@
 /* Invalid transaction */
 "Invalid" = "無効";
 
+/* Invalid Amount Input */
+"Invalid Input" = "Invalid Input";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "無効な支払のリクエスト";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "無効なQRコード";
+
+/* Coinbase Two Factor Auth */
+"It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
+
+/* Coinbase */
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
@@ -596,6 +689,10 @@
 /* Explore Dash */
 "Last device sync" = "Last device sync";
 
+/* Buy Sell Portal
+   Coinbase Entry Point */
+"Last known balance" = "Last known balance";
+
 /* Explore Dash */
 "Last server update" = "Last server update";
 
@@ -608,8 +705,23 @@
 /* Validation rule */
 "Letters and numbers only" = "Letters and numbers only";
 
+/* Dash Service Overview */
+"Link Coinbase Account" = "Link Coinbase Account";
+
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Upholdアカウントをリンクさせる";
+
+/* Dash Service Overview */
+"Link Uphold account" = "Link Uphold account";
+
+/* Buy Sell Portal */
+"Link your account" = "Link your account";
+
+/* Dash Service Overview */
+"Link your Coinbase account" = "Link your Coinbase account";
+
+/* Dash Service Overview */
+"Link your Uphold account" = "Link your Uphold account";
 
 /* No comment provided by engineer. */
 "Load more" = "さらにロードする";
@@ -710,11 +822,17 @@
 /* Nearby */
 "Nearby" = "Nearby";
 
+/* Coinbase Two Factor Auth */
+"Need help? " = "Need help? ";
+
 /* No comment provided by engineer. */
 "Network" = "ネットワーク";
 
 /* No comment provided by engineer. */
 "Network fee" = "ネットワーク手数料";
+
+/* Network Unavailable */
+"Network Unavailable" = "Network Unavailable";
 
 /* (List of) New (notifications) */
 "New" = "New";
@@ -724,6 +842,12 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFCデバイスは有効なDashアドレスを送信しませんでした";
+
+/* Coinbase/Buy Dash */
+"No payment methods" = "No payment methods";
+
+/* Coinbase/Buy Dash */
+"No payment methods found" = "No payment methods found";
 
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "No Results Found";
@@ -785,6 +909,9 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Pay Directly to Username";
 
+/* Coinbase/Buy Dash */
+"Pay with" = "Pay with";
+
 /* Pay with Dash */
 "Pay with Dash" = "Pay with Dash";
 
@@ -812,11 +939,20 @@
 /* No comment provided by engineer. */
 "Payments" = "お支払い";
 
+/* Coinbase/Payment Methods */
+"PayPal" = "PayPal";
+
 /* No comment provided by engineer. */
 "Pending" = "保留中";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "お支払いにはPINが必要です";
+
+/* Coinbase/Buy Dash */
+"Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
+
+/* Network Unavailable */
+"Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "ウォレットをアップグレードするためPINを入力してください";
@@ -874,6 +1010,12 @@
 
 /* No comment provided by engineer. */
 "Receive" = "入金";
+
+/* Coinbase Entry Point */
+"Receive directly into Coinbase" = "Receive directly into Coinbase";
+
+/* Coinbase Entry Point */
+"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
 
 /* Received transaction */
 "Received" = "受取済み";
@@ -1019,6 +1161,9 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Upholdで確認する";
 
+/* Buy Sell Dash */
+"Select a service" = "Select a service";
+
 /* Sell */
 "Sell" = "Sell";
 
@@ -1051,6 +1196,9 @@
 
 /* No comment provided by engineer. */
 "Sending to" = "Sending to";
+
+/* Buy Dash */
+"Sending to:" = "Sending to:";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "送金中.";
@@ -1166,6 +1314,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Coinbase Two Factor Auth */
+"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
@@ -1178,11 +1329,17 @@
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
 
+/* Coinbase */
+"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
+
 /* No comment provided by engineer. */
 "This app is open source:" = "このアプリはオープンソースです: ";
 
 /* This ATM is located in the */
 "This ATM is located in the" = "This ATM is located in the";
+
+/* Coinbase Two Factor Auth */
+"This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "このアプリをアンロックして使用するときは必ずこのPINが必要となります";
@@ -1202,6 +1359,12 @@
 /* No comment provided by engineer. */
 "This will move all coins from that wallet to your wallet on this device." = "これによって全てのコインがそのウォレットからこの端末のウォレットに移動します";
 
+/* Send Screen: to address */
+"to" = "to";
+
+/* Coinbase: transfer dash to/from */
+"TO" = "TO";
+
 /* No comment provided by engineer. */
 "Tools" = "ツール";
 
@@ -1217,8 +1380,16 @@
 /* A verb, button title. */
 "Transfer" = "送金";
 
+/* Coinbase
+   Coinbase Entry Point
+   Dash Service Overview */
+"Transfer Dash" = "Transfer Dash";
+
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "あなたのUpholdアカウントからこのウォレットにDashを送金する";
+
+/* Coinbase */
+"Transfer Failed" = "Transfer Failed";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Upholdから送金する";
@@ -1228,6 +1399,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Coinbase */
+"Transfer successful" = "Transfer successful";
 
 /* An action */
 "Try again" = "もう一度お試しください";
@@ -1242,6 +1416,12 @@
 "Unable to get new QR code" = "新しいQRコードが取得できません";
 
 /* No comment provided by engineer. */
+"Unknown" = "Unknown";
+
+/* Coinbase */
+"Unknown Balance" = "Unknown Balance";
+
+/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "サポートされていないか破損しているドキュメント";
 
 /* No comment provided by engineer. */
@@ -1249,6 +1429,9 @@
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "アップデート: %@";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Upgrade Fee";
@@ -1280,6 +1463,9 @@
 /* No comment provided by engineer. */
 "Validating username…" = "Validating username…";
 
+/* Coinbase */
+"Verfiy" = "Verfiy";
+
 /* No comment provided by engineer. */
 "Verified Successfully" = "無事に検証されました";
 
@@ -1309,6 +1495,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "投票の諸々のキー";
+
+/* Send screen */
+"Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "ウォレットは機能停止しています";
@@ -1393,6 +1582,9 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "You sent the contact request to %@";
+
+/* Sign out from coinbase due to error */
+"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "またブラウザーを使ってUpholdのウェブサイトからログアウトする必要もあります";
