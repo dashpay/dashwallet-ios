@@ -34,6 +34,19 @@ final class BuyDashViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: Actions
+    override func amountDidChange() {
+        super.amountDidChange()
+
+        actionButton?.isEnabled = true
+    }
+
+    override func actionButtonAction(sender: UIView) {
+        let vc = ConfirmOrderController()
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
     @objc func payWithTapGestureRecognizerAction() {
         let vc = PaymentMethodsController.controller()
         vc.paymentMethods = buyDashModel.paymentMethods
@@ -45,6 +58,7 @@ final class BuyDashViewController: BaseAmountViewController {
         present(vc, animated: true)
     }
 
+    // MARK: Life cycle
     override func initializeModel() {
         model = BuyDashModel()
     }
@@ -104,11 +118,5 @@ final class BuyDashViewController: BaseAmountViewController {
             amountView.topAnchor.constraint(equalTo: activePaymentMethodView.bottomAnchor, constant: 30),
             amountView.heightAnchor.constraint(equalToConstant: 60),
         ])
-    }
-
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        actionButton?.isEnabled = true
     }
 }
