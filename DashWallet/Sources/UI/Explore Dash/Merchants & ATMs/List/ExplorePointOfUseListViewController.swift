@@ -600,8 +600,8 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         if model.hasNextPage && indexPath.section == lastSectionIndex && indexPath.row == lastRowIndex {
             let activity = UIActivityIndicatorView()
             activity.translatesAutoresizingMaskIntoConstraints = false
-            activity.tintColor = .secondaryLabel
-            activity.color = .secondaryLabel
+            activity.tintColor = .dw_secondaryText()
+            activity.color = .dw_secondaryText()
             activity.startAnimating()
             activity.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 44.0)
             contentView.addSubview(activity)

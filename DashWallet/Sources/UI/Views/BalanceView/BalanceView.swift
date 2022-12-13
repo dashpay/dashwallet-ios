@@ -82,7 +82,7 @@ extension BalanceView {
         fiatBalanceLabel = UILabel()
         fiatBalanceLabel.translatesAutoresizingMaskIntoConstraints = false
         fiatBalanceLabel.font = .dw_font(forTextStyle: .callout)
-        fiatBalanceLabel.textColor = .secondaryLabel
+        fiatBalanceLabel.textColor = .dw_secondaryText()
         fiatBalanceLabel.textAlignment = .center
         container.addArrangedSubview(fiatBalanceLabel)
 
