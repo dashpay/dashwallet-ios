@@ -32,7 +32,7 @@ public enum CoinbaseEndpoint {
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
-    case placeBuyOrder(String)
+    case placeBuyOrder(String, CoinbasePlaceBuyOrderRequest)
     case commitBuyOrder(String, String)
     case sendCoinsToWallet(accountId: String, verificationCode: String?, dto: CoinbaseTransactionsRequest)
     case getBaseIdForUSDModel(String)
@@ -68,7 +68,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
         case .activePaymentMethods: return "/v2/payment-methods"
-        case .placeBuyOrder(let accountId): return "/v2/accounts/\(accountId)/buys"
+        case .placeBuyOrder(let accountId, _): return "/v2/accounts/\(accountId)/buys"
         case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
         case .getBaseIdForUSDModel(let baseCurrency): return "/v2//assets/prices?base=\(baseCurrency)&filter=holdable&resolution=latest"
@@ -128,6 +128,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .sendCoinsToWallet(_, _, let dto):
             return .requestJSONEncodable(dto)
         case .swapTrade(let dto):
+            return .requestJSONEncodable(dto)
+        case .placeBuyOrder(_, let dto):
             return .requestJSONEncodable(dto)
         default:
             return .requestPlain

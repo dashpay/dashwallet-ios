@@ -36,7 +36,7 @@ extension CoinbaseService {
     }
 
     func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) async throws -> [CoinbasePlaceBuyOrder] {
-        let result: BaseDataCollectionResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId))
+        let result: BaseDataCollectionResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
         return result.data
     }
 
