@@ -29,13 +29,19 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
         viewModel.didShowInfoScreen()
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancellableBag.removeAll()
+    }
+
     @IBAction func continueAction() {
         navigationController?.replaceLast(with: GettingStartedViewController.controller())
     }
 
     @objc static func controller() -> WelcomeToCrowdNodeViewController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "WelcomeToCrowdNodeViewController") as! WelcomeToCrowdNodeViewController
+        let vc = storyboard
+            .instantiateViewController(withIdentifier: "WelcomeToCrowdNodeViewController") as! WelcomeToCrowdNodeViewController
         return vc
     }
 }

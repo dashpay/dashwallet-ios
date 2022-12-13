@@ -24,7 +24,7 @@ public final class SpendableTransaction: TransactionFilter {
     }
 
     func matches(tx: DSTransaction) -> Bool {
-        return tx.txHashData == txHashData &&
+        tx.txHashData == txHashData &&
             !account.transactionOutputsAreLocked(tx)
     }
 }

@@ -17,6 +17,8 @@
 
 import Combine
 
+// MARK: - GettingStartedViewController
+
 final class GettingStartedViewController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
@@ -36,6 +38,11 @@ final class GettingStartedViewController: UIViewController {
         configureObservers()
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancellableBag.removeAll()
+    }
+
     @IBAction func newAccountAction() {
         if viewModel.canSignUp {
             navigationController?.pushViewController(NewAccountViewController.controller(), animated: true)
@@ -47,35 +54,42 @@ final class GettingStartedViewController: UIViewController {
     }
 
     @IBAction func backupPassphraseAction() {
-        let alert = UIAlertController(
-            title: NSLocalizedString("Backup your passphrase to create a CrowdNode account", comment: ""),
-            message: NSLocalizedString("If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.", comment: ""),
-            preferredStyle: UIAlertController.Style.alert
-        )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Backup Passphrase", comment: ""), style: UIAlertAction.Style.default, handler: { [weak self] _ in
-            self?.backupPassphrase()
-        }))
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel, handler: nil))
+        let alert =
+            UIAlertController(title: NSLocalizedString("Backup your passphrase to create a CrowdNode account", comment: ""),
+                              message: NSLocalizedString("If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.",
+                                                         comment: ""),
+                              preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Backup Passphrase", comment: ""),
+                                      style: UIAlertAction.Style.default, handler: { [weak self] _ in
+                                          self?.backupPassphrase()
+                                      }))
+        alert
+            .addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel,
+                                     handler: nil))
         navigationController?.present(alert, animated: true, completion: nil)
     }
 
     @IBAction func buyDashAction() {
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNodeConstants.minimumRequiredDash))!
-        let alert = UIAlertController(
-            title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
-            message: NSLocalizedString("You should have at least \(minimumDash) to proceed with the CrowdNode verification.", comment: ""),
-            preferredStyle: UIAlertController.Style.alert
-        )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default, handler: { [weak self] _ in
-            self?.buyDash()
-        }))
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel, handler: nil))
+        let alert = UIAlertController(title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
+                                      message: NSLocalizedString("You should have at least \(minimumDash) to proceed with the CrowdNode verification.",
+                                                                 comment: ""),
+                                      preferredStyle: UIAlertController.Style.alert)
+        alert
+            .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
+                                     handler: { [weak self] _ in
+                                         self?.buyDash()
+                                     }))
+        alert
+            .addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel,
+                                     handler: nil))
         navigationController?.present(alert, animated: true, completion: nil)
     }
 
     @objc static func controller() -> GettingStartedViewController {
         let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "GettingStartedViewController") as! GettingStartedViewController
+        let vc = storyboard
+            .instantiateViewController(withIdentifier: "GettingStartedViewController") as! GettingStartedViewController
         return vc
     }
 }
@@ -116,6 +130,8 @@ extension GettingStartedViewController {
     }
 }
 
+// MARK: DWSecureWalletDelegate
+
 extension GettingStartedViewController: DWSecureWalletDelegate {
     private func backupPassphrase() {
         Task {
@@ -131,7 +147,8 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
         let controller = DWBackupInfoViewController(model: model)
         controller.delegate = self
         let navigationController = DWNavigationController(rootViewController: controller)
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel, target: self, action: #selector(dismissModalControllerBarButtonAction))
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel, target: self,
+                                           action: #selector(dismissModalControllerBarButtonAction))
         controller.navigationItem.leftBarButtonItem = cancelButton
         self.navigationController?.present(navigationController, animated: true)
     }
@@ -140,7 +157,7 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
         dismiss(animated: true)
     }
 
-    internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) {}
+    internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) { }
 
     internal func secureWalletRoutineDidVerify(_ controller: UIViewController) {
         refreshCreateAccountButton()

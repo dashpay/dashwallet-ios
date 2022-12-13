@@ -20,8 +20,9 @@ import Combine
 public final class SendCoinsService {
     private let transactionManager: DSTransactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
 
-    func sendCoins(address: String, amount: UInt64, inputSelector: SingleInputAddressSelector? = nil) async throws -> DSTransaction {
-        let amount = UInt64(amount)
+    func sendCoins(address: String, amount: UInt64,
+                   inputSelector: SingleInputAddressSelector? = nil) async throws
+        -> DSTransaction {
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
         let transaction = DSTransaction(on: chain)
@@ -38,9 +39,12 @@ public final class SendCoinsService {
 
             let feeAmount = chain.fee(forTxSize: UInt(transaction.size) + UInt(TX_OUTPUT_SIZE))
             let change = balance - (amount + feeAmount)
-            let changeAddress = inputSelector!.address
-            transaction.addOutputAddress(changeAddress, amount: change)
-            transaction.sortOutputsAccordingToBIP69()
+
+            if change > 0 {
+                let changeAddress = inputSelector!.address
+                transaction.addOutputAddress(changeAddress, amount: change)
+                transaction.sortOutputsAccordingToBIP69()
+            }
         }
 
         await account.sign(transaction, withPrompt: nil)

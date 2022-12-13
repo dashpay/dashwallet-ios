@@ -17,6 +17,8 @@
 
 import Combine
 
+// MARK: - AccountCreatingController
+
 final class AccountCreatingController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
@@ -34,6 +36,7 @@ final class AccountCreatingController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         viewModel.showNotificationOnResult = true
+        cancellableBag.removeAll()
     }
 
     @objc static func controller() -> AccountCreatingController {
