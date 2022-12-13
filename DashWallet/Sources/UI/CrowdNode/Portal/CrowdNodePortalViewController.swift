@@ -49,7 +49,9 @@ final class CrowdNodePortalController: UIViewController {
         Task {
             do {
                 try await viewModel.deposit(amount: dash)
-                dismiss(animated: true, completion: nil)
+                await MainActor.run {
+                    dismiss(animated: true, completion: nil)
+                }
             } catch {
                 outputLabel.text = error.localizedDescription
             }
@@ -63,7 +65,9 @@ final class CrowdNodePortalController: UIViewController {
         Task {
             do {
                 try await viewModel.withdraw(permil: permil)
-                dismiss(animated: true, completion: nil)
+                await MainActor.run {
+                    dismiss(animated: true, completion: nil)
+                }
             } catch {
                 outputLabel.text = error.localizedDescription
             }
