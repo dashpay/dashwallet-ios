@@ -11,7 +11,6 @@ import Foundation
 
 struct CoinbasePlaceBuyOrder: Codable {
     let id: String?
-    let fee: Amount?
     let status: String?
     let userReference, transaction, createdAt, updatedAt: String?
     let resource: String?
@@ -20,7 +19,10 @@ struct CoinbasePlaceBuyOrder: Codable {
     let holdUntil: String?
     let holdDays: Int?
     let isFirstBuy: Bool?
-    let amount, total, subtotal: Amount?
+    let fee: Amount
+    let amount: Amount
+    let total: Amount
+    let subtotal: Amount
     let unitPrice: UnitPrice?
     let requiresCompletionStep: Bool?
     let nextStep: String?

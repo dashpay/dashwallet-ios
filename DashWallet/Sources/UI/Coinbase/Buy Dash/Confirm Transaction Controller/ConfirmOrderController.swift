@@ -214,22 +214,27 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath) as! ConfirmOrderGeneralInfoCell
 
-        var value = ""
+        let value: String
 
         switch item {
         case .paymentMethod:
             value = model.paymentMethod.name
         case .purchaseAmount:
-            value = model.order.subtotal?.formattedFiatAmount ?? ""
+            value = model.order.subtotal.formattedFiatAmount
         case .feeAmount:
-            value = model.order.fee?.formattedFiatAmount ?? ""
+            value = model.order.fee.formattedFiatAmount
         case .totalAmount:
-            value = model.order.total?.formattedFiatAmount ?? ""
+            value = model.order.total.formattedFiatAmount
         case .amountInDash:
-            value = model.order.amount?.formattedDashAmount ?? ""
+            value = model.order.amount.formattedDashAmount
         }
 
-        cell.update(with: item, value: value)
+        if let cell = cell as? ConfirmOrderAmountInDashCell {
+            cell.update(with: item, value: value, amountString: model.order.amount.amount)
+        } else {
+            cell.update(with: item, value: value)
+        }
+
         cell.infoHandle = { [weak self] in
             self?.feeInfoAction()
         }

@@ -34,13 +34,13 @@ final class DashTextAttachment: NSTextAttachment {
                                    glyphPosition position: CGPoint, characterIndex charIndex: Int)
         -> CGRect {
         let height = lineFrag.size.height
-        var scale: CGFloat = 1.0
+        var scale: CGFloat = 1
         let imageSize = image?.size ?? .zero
 
         if height < imageSize.height {
-            scale = height/imageSize.height - 0.3;
+            scale = height/imageSize.height - 0.2
         }
 
-        return CGRect(x: 0, y: verticalOffset, width: imageSize.width*scale, height: imageSize.height*scale);
+        return CGRect(x: 0, y: -1, width: imageSize.width*scale, height: imageSize.height*scale);
     }
 }
