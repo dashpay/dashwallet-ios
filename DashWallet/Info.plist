@@ -6,6 +6,8 @@
 	<array>
 		<string>org.dashcore.dashsync.backgroundblocksync</string>
 	</array>
+	<key>CALL_BACK_URL_SCHEME</key>
+	<string>$(CALL_BACK_URL_SCHEME)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -108,6 +110,10 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CLIENT_ID</key>
+	<string>$(CLIENT_ID)</string>
+	<key>CLIENT_SECRET</key>
+	<string>$(CLIENT_SECRET)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -138,6 +144,8 @@
 	<string>Used to save media data</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to save media data</string>
+	<key>REDIRECT_URI</key>
+	<string>$(REDIRECT_URI)</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

@@ -43,17 +43,31 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSAttributedString *)dw_dashAttributedStringForAmount:(uint64_t)amount
                                                tintColor:(UIColor *)tintColor
                                                     font:(UIFont *)font {
+    return [self dw_dashAttributedStringForAmount:amount tintColor:tintColor dashSymbolColor:nil font:font];
+}
+
++ (NSAttributedString *)dw_dashAttributedStringForAmount:(uint64_t)amount
+                                               tintColor:(UIColor *)tintColor
+                                         dashSymbolColor:(UIColor *_Nullable)dashSymbolColor
+                                                    font:(UIFont *)font {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSString *string = [priceManager stringForDashAmount:amount];
 
-    return [self dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor font:font];
+    return [self dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor dashSymbolColor:dashSymbolColor font:font];
 }
 
 + (NSAttributedString *)dw_dashAttributedStringForFormattedAmount:(NSString *)string
                                                         tintColor:(UIColor *)tintColor
                                                              font:(UIFont *)font {
+    return [self dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor dashSymbolColor:tintColor font:font];
+}
+
++ (NSAttributedString *)dw_dashAttributedStringForFormattedAmount:(NSString *)string
+                                                        tintColor:(UIColor *)tintColor
+                                                  dashSymbolColor:(UIColor *_Nullable)dashSymbolColor
+                                                             font:(UIFont *)font {
     NSAttributedString *dashSymbolAttributedString = [self dw_dashSymbolAttributedStringForFont:font
-                                                                                      tintColor:tintColor];
+                                                                                      tintColor:(dashSymbolColor != nil ? dashSymbolColor : tintColor)];
 
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:string];
 

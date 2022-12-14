@@ -27,15 +27,16 @@
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWNavigationController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
 #import "DWSyncingAlertViewController.h"
 #import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
+#import "UINavigationBar+DWAppearance.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
@@ -77,6 +78,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.navigationController.navigationBar dw_applyOpaqueAppearanceWithColor:[UIColor dw_dashNavigationBlueColor]];
 }
 
 - (void)viewDidAppear:(BOOL)animated {

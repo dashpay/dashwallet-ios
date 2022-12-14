@@ -6,6 +6,8 @@
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
+#import "DSReachabilityManager.h"
+#import "DSCurrencyPriceObject.h"
 
 //MARK: DashWallet
 #import "DWTransactionListDataProviderProtocol.h"
@@ -27,9 +29,33 @@
 #import "DWNavigationController.h"
 #import "DWSecureWalletDelegate.h"
 #import "DWVerifiedSuccessfullyViewController.h"
-#import "DWUpholdViewController.h"
 // -- end CrowdNode
+#import "DWAmountObject.h"
+#import "DWUpholdViewController.h"
+#import "DWUpholdClient.h"
+#import "DWUpholdCardObject.h"
+#import "DWAmountModel.h"
+#import "DWBaseActionButtonViewController.h"
+#import "DWBaseViewController.h"
+#import "DWNumberKeyboardInputViewAudioFeedback.h"
+#import "DWInputValidator.h"
+#import "DWAmountInputValidator.h"
+#import "DWPaymentProcessor.h"
+#import "DWConfirmSendPaymentViewController.h"
+#import "DWPaymentOutput.h"
+#import "DWPaymentInput.h"
+#import "DWPaymentInputBuilder.h"
+#import "DWLocalCurrencyViewController.h"
+#import "DWPayModelProtocol.h"
+#import "DWDemoDelegate.h"
+#import "DWQRScanViewController.h"
+#import "DWQRScanModel.h"
+#import "DWModalPopupTransition.h"
+#import "DWModalTransition.h"
 
+#import "UIView+DWHUD.h"
+#import "DWConfirmSendPaymentViewController.h"
+#import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"
 #import "DSTransaction+DashWallet.h"
 #import "NSAttributedString+DWBuilder.h"
@@ -37,5 +63,6 @@
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
+#import <DashSync/DSLogger.h>
 
 #import <SDWebImage/SDWebImage.h>

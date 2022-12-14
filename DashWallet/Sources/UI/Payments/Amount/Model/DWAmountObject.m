@@ -69,7 +69,7 @@ typedef NS_ENUM(NSUInteger, DWAmountObjectInternalType) {
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         NSString *dashFormatted = [priceManager.dashFormat stringFromNumber:dashNumber];
-
+        _dashFormatted = dashFormatted;
         _dashFormatted = [self.class formattedAmountWithInputString:dashAmountString
                                                     formattedString:dashFormatted
                                                     numberFormatter:priceManager.dashFormat];

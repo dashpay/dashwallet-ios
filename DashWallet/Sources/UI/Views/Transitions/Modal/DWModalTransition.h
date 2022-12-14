@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DWModalPresentationController.h"
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Defaults to `YES`.
 @property (nonatomic, assign) BOOL interactiveTransitionAllowed;
+@property (nonatomic, weak, nullable) id<DWModalPresentationControllerDelegate> modalPresentationControllerDelegate;
 
 @end
 

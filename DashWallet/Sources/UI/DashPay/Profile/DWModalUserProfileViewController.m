@@ -17,9 +17,9 @@
 
 #import "DWModalUserProfileViewController.h"
 
-#import "DWNavigationController.h"
 #import "DWUserProfileViewController.h"
 #import "UIViewController+DWEmbedding.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -47,6 +47,10 @@ NS_ASSUME_NONNULL_BEGIN
     return [UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium];
 }
 
++ (UIFont *)dw_boldFontOfSize:(CGFloat)fontSize;
+{
+    return [UIFont systemFontOfSize:fontSize weight:UIFontWeightBold];
+}
 @end
 
 NS_ASSUME_NONNULL_END
