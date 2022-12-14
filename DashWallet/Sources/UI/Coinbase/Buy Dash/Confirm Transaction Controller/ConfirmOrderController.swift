@@ -162,7 +162,7 @@ final class ConfirmOrderController: BaseViewController {
 
 extension ConfirmOrderController {
     private func cancelTransaction() {
-        dismiss(animated: true)
+        navigationController?.popViewController(animated: true)
     }
 
     private func startCounting() {
