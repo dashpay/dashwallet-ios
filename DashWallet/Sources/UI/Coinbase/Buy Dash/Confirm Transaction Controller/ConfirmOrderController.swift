@@ -38,14 +38,6 @@ enum ConfirmOrderItem {
         }
     }
 
-    var valueTextColor: UIColor {
-        if self == .totalAmount {
-            return .dw_label()
-        } else {
-            return .dw_secondaryText()
-        }
-    }
-
     var localizedTitle: String {
         switch self {
         case .paymentMethod:
@@ -221,13 +213,13 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
         case .paymentMethod:
             value = model.paymentMethod.name
         case .purchaseAmount:
-            value = model.order.subtotal?.amount ?? ""
+            value = model.order.subtotal?.formattedFiatAmount ?? ""
         case .feeAmount:
-            value = model.order.fee?.amount ?? ""
+            value = model.order.fee?.formattedFiatAmount ?? ""
         case .totalAmount:
-            value = model.order.total?.amount ?? ""
+            value = model.order.total?.formattedFiatAmount ?? ""
         case .amountInDash:
-            value = model.order.amount?.amount ?? ""
+            value = model.order.amount?.formattedDashAmount ?? ""
         }
 
         cell.update(with: item, value: value)

@@ -146,4 +146,8 @@ extension String {
 
         return dashAmount.uint64Value
     }
+
+    func decimal(locale: Locale? = nil) -> Decimal? {
+        Decimal(string: self, locale: locale)
+    }
 }

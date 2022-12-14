@@ -37,20 +37,26 @@ class ConfirmOrderGeneralInfoCell: UITableViewCell {
 
     func update(with item: ConfirmOrderItem, value: String) {
         nameLabel.text = item.localizedTitle.uppercased()
-
         valueLabel.text = value
-        valueLabel.textColor = item.valueTextColor
+
+        if item == .totalAmount {
+            valueLabel.font = valueLabel.font.withWeight(UIFont.Weight.medium.rawValue)
+        } else {
+            valueLabel.font = .dw_font(forTextStyle: .subheadline)
+        }
     }
 
     internal func configureHierarchy() {
         nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.font = .dw_font(forTextStyle: .subheadline)
+        nameLabel.textColor = .dw_secondaryText()
         contentView.addSubview(nameLabel)
 
         valueLabel = UILabel()
         valueLabel.translatesAutoresizingMaskIntoConstraints = false
         valueLabel.font = .dw_font(forTextStyle: .subheadline)
+        valueLabel.textColor = .dw_label()
         contentView.addSubview(valueLabel)
 
         NSLayoutConstraint.activate([
@@ -70,5 +76,7 @@ final class ConfirmOrderAmountInDashCell: ConfirmOrderGeneralInfoCell {
 
     override func update(with item: ConfirmOrderItem, value: String) {
         super.update(with: item, value: value)
+
+        valueLabel.attributedText = value.attributedAmountStringWithDashSymbol(tintColor: .dw_dashBlue())
     }
 }
