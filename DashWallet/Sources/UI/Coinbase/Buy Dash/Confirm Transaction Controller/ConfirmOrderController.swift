@@ -69,6 +69,10 @@ enum ConfirmOrderItem {
             return ConfirmOrderGeneralInfoCell.dw_reuseIdentifier
         }
     }
+
+    var isInfoButtonHidden: Bool {
+        self != .feeAmount
+    }
 }
 
 // MARK: - ConfirmOrderSection
@@ -117,7 +121,10 @@ final class ConfirmOrderController: BaseViewController {
         present(alert, animated: true)
     }
 
-    @IBAction func feeInfoAction() { }
+    @IBAction func feeInfoAction() {
+        let nvc = BaseNavigationController(rootViewController: CoinbaseFeeInfoController())
+        present(nvc, animated: true)
+    }
 
     @IBAction func retryAction() { }
 
@@ -223,6 +230,9 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
         }
 
         cell.update(with: item, value: value)
+        cell.infoHandle = { [weak self] in
+            self?.feeInfoAction()
+        }
         return cell
     }
 
