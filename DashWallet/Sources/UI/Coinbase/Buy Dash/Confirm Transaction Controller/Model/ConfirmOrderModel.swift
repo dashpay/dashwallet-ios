@@ -18,6 +18,12 @@
 import UIKit
 
 
+// MARK: - ConfirmOrderError
+
+enum ConfirmOrderError: Error {
+    case error
+}
+
 // MARK: - ConfirmOrderModel
 
 final class ConfirmOrderModel {
@@ -27,12 +33,36 @@ final class ConfirmOrderModel {
     /// Plain amount in Dash
     let plainAmount: UInt64
 
+    var completionHandle: (() -> Void)?
+    var failureHandle: ((ConfirmOrderError) -> Void)?
     var orderChangeHandle: (() -> Void)?
 
     init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
         self.order = order
         self.paymentMethod = paymentMethod
         self.plainAmount = plainAmount
+    }
+
+    public func placeOrder() {
+        guard let orderId = order.id else {
+            failureHandle?(.error)
+            return
+        }
+
+        Task { [weak self] in
+            do {
+                let order = try await Coinbase.shared.commitCoinbaseBuyOrder(orderID: orderId)
+                self?.order = order
+
+                await MainActor.run { [weak self] in
+                    self?.completionHandle?()
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.failureHandle?(.error)
+                }
+            }
+        }
     }
 
     public func retry() {

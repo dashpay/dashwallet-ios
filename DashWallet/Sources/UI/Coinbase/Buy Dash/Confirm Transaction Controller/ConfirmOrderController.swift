@@ -112,12 +112,7 @@ final class ConfirmOrderController: BaseViewController {
 
         super.init(nibName: nil, bundle: nil)
 
-        model.orderChangeHandle = { [weak self] in
-            self?.tableView.reloadData()
-            self?.retryButton.hideActivityIndicator()
-            self?.retryButton.isEnabled = true
-            self?.startCounting()
-        }
+        configureModel()
     }
 
     required init?(coder: NSCoder) {
@@ -125,9 +120,14 @@ final class ConfirmOrderController: BaseViewController {
     }
 
     // MARK: Actions
-    @IBAction func confirmAction() { }
+    @objc func confirmAction() {
+        actionButton.showActivityIndicator()
+        actionButton.isEnabled = false
 
-    @IBAction func cancelAction() {
+        model.placeOrder()
+    }
+
+    @objc func cancelAction() {
         let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order    "),
                                       preferredStyle: .alert)
         let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
@@ -139,12 +139,12 @@ final class ConfirmOrderController: BaseViewController {
         present(alert, animated: true)
     }
 
-    @IBAction func feeInfoAction() {
+    @objc func feeInfoAction() {
         let nvc = BaseNavigationController(rootViewController: CoinbaseFeeInfoController())
         present(nvc, animated: true)
     }
 
-    @IBAction func retryAction() {
+    @objc func retryAction() {
         retryButton.showActivityIndicator()
         retryButton.isEnabled = false
         model.retry()
@@ -199,6 +199,27 @@ extension ConfirmOrderController {
 
 // MARK: Life cycle
 extension ConfirmOrderController {
+    private func configureModel() {
+        model.orderChangeHandle = { [weak self] in
+            self?.tableView.reloadData()
+            self?.retryButton.hideActivityIndicator()
+            self?.retryButton.isEnabled = true
+            self?.startCounting()
+        }
+
+        model.completionHandle = { [weak self] in
+            self?
+                .showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 2-3 minutes for the Dash to be transfered to your Dash Wallet on this device.",
+                                                                      comment: "Coinbase/Buy Dash/Confirm Order"))
+        }
+
+        model.failureHandle = { [weak self] _ in
+            self?
+                .showFailedTransactionStatus(text: NSLocalizedString("The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.",
+                                                                     comment: "Coinbase/Buy Dash/Confirm Order"))
+        }
+    }
+
     private func configureHierarchy() {
         title = NSLocalizedString("Order Preview", comment: "Coinbase/Buy Dash/Confirm Order")
         view.backgroundColor = .dw_secondaryBackground()
