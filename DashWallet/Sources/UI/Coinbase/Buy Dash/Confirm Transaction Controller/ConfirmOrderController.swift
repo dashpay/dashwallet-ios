@@ -213,7 +213,7 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
         let item = items[indexPath.section][indexPath.row]
 
         let cell = tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath) as! ConfirmOrderGeneralInfoCell
-
+        cell.selectionStyle = .none
         let value: String
 
         switch item {
