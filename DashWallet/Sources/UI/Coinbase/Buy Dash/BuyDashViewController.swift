@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - BuyDashViewController
+
 final class BuyDashViewController: BaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
@@ -42,9 +44,8 @@ final class BuyDashViewController: BaseAmountViewController {
     }
 
     override func actionButtonAction(sender: UIView) {
-        let vc = ConfirmOrderController()
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
+        showActivityIndicator()
+        buyDashModel.buy()
     }
 
     @objc func payWithTapGestureRecognizerAction() {
@@ -65,6 +66,8 @@ final class BuyDashViewController: BaseAmountViewController {
 
     override func configureModel() {
         super.configureModel()
+
+        buyDashModel.delegate = self
     }
 
     override func configureHierarchy() {
@@ -119,4 +122,19 @@ final class BuyDashViewController: BaseAmountViewController {
             amountView.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
+}
+
+// MARK: BuyDashModelDelegate
+
+extension BuyDashViewController: BuyDashModelDelegate {
+    func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder) {
+        guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
+
+        let vc = ConfirmOrderController(order: order, paymentMethod: paymentMethod)
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+        hideActivityIndicator()
+    }
+
+    func buyDashModelFailedToPlaceOrder(with reason: BuyDashFailureReason) { }
 }

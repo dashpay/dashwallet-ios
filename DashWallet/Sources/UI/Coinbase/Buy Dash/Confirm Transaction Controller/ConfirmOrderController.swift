@@ -40,9 +40,9 @@ enum ConfirmOrderItem {
 
     var valueTextColor: UIColor {
         if self == .totalAmount {
-            return .dw_secondaryText()
-        } else {
             return .dw_label()
+        } else {
+            return .dw_secondaryText()
         }
     }
 
@@ -92,17 +92,30 @@ final class ConfirmOrderController: BaseViewController {
     private var tableView: UITableView!
     private var actionButton: DWActionButton!
 
+    private let model: ConfirmOrderModel
+
     private let sections: [ConfirmOrderSection] = [.generalInfo, .amountIntDash]
     private let items: [[ConfirmOrderItem]] = [
         [.paymentMethod, .purchaseAmount, .feeAmount, .totalAmount],
         [.amountInDash],
     ]
 
+    init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod) {
+        model = ConfirmOrderModel(order: order, paymentMethod: paymentMethod)
+
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     // MARK: Actions
     @IBAction func confirmAction() { }
 
     @IBAction func cancelAction() {
-        let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order    "), preferredStyle: .alert)
+        let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order    "),
+                                      preferredStyle: .alert)
         let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
         alert.addAction(noAction)
         let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
@@ -127,7 +140,7 @@ final class ConfirmOrderController: BaseViewController {
 
 extension ConfirmOrderController {
     private func cancelTransaction() {
-
+        dismiss(animated: true)
     }
 }
 
@@ -136,7 +149,7 @@ extension ConfirmOrderController {
     private func configureHierarchy() {
         title = NSLocalizedString("Order Preview", comment: "Coinbase/Buy Dash/Confirm Order")
         view.backgroundColor = .dw_secondaryBackground()
-        
+
         tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = .dw_secondaryBackground()
         tableView.preservesSuperviewLayoutMargins = true
@@ -181,7 +194,7 @@ extension ConfirmOrderController {
             view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor, constant: 15),
 
             actionButton.heightAnchor.constraint(equalToConstant: 46),
-            actionButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor, multiplier: 1.4)
+            actionButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor, multiplier: 1.4),
         ])
     }
 }
@@ -192,6 +205,7 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
         sections.count
     }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         items[section].count
     }
@@ -200,7 +214,39 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
         let item = items[indexPath.section][indexPath.row]
 
         let cell = tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath) as! ConfirmOrderGeneralInfoCell
-        cell.update(with: item, value: "")
+
+        var value = ""
+
+        switch item {
+        case .paymentMethod:
+            value = model.paymentMethod.name
+        case .purchaseAmount:
+            value = model.order.subtotal?.amount ?? ""
+        case .feeAmount:
+            value = model.order.fee?.amount ?? ""
+        case .totalAmount:
+            value = model.order.total?.amount ?? ""
+        case .amountInDash:
+            value = model.order.amount?.amount ?? ""
+        }
+
+        cell.update(with: item, value: value)
         return cell
+    }
+
+    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        nil
+    }
+
+    public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        nil
+    }
+
+    public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        7
+    }
+
+    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        8
     }
 }

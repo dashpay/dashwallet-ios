@@ -97,6 +97,45 @@ extension Coinbase {
         return tx
     }
 
+    /// Place Buy Order
+    ///
+    /// - Parameters:
+    ///   - amount: Plain amount in Dash
+    ///
+    /// - Returns: CoinbasePlaceBuyOrder
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+        guard let accountId = auth.currentUser?.accountId else {
+            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
+            throw Coinbase.Error.noActiveUser
+        }
+
+        let amount = amount.formattedDashAmount
+
+        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: nil, quote: true)
+        return try await tx.placeCoinbaseBuyOrder(accountId: accountId, request: request)
+    }
+
+    /// Commit Buy Order
+    ///
+    /// - Parameters:
+    ///   - orderID: Order id from `CoinbasePlaceBuyOrder` you receive by calling `placeCoinbaseBuyOrder`
+    ///
+    /// - Returns: CoinbasePlaceBuyOrder
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
+        guard let accountId = auth.currentUser?.accountId else {
+            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
+            throw Coinbase.Error.noActiveUser
+        }
+
+        return try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
+    }
+
     public func signOut() async throws {
         try await auth.signOut()
     }

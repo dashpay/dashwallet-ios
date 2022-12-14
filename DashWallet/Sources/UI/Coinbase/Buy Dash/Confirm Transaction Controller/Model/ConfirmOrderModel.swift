@@ -19,5 +19,11 @@ import UIKit
 
 
 final class ConfirmOrderModel {
-    var paymentMethod: CoinbasePaymentMethod!
+    let order: CoinbasePlaceBuyOrder
+    let paymentMethod: CoinbasePaymentMethod
+
+    init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod) {
+        self.order = order
+        self.paymentMethod = paymentMethod
+    }
 }

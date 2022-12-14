@@ -34,4 +34,14 @@ final class CBTransactions {
         DSLogger.log("Tranfer from coinbase: CBTransactions.send - receive response")
         return result.data
     }
+
+    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) async throws -> CoinbasePlaceBuyOrder {
+        let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
+        return result.data
+    }
+
+    func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
+        let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
+        return result.data
+    }
 }
