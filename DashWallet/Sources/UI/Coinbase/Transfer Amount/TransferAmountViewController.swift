@@ -176,7 +176,6 @@ extension BaseAmountModel: ConverterViewDataSource {
 
         return balance.formattedDashAmount
     }
-
 }
 
 extension TransferAmountViewController {

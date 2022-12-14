@@ -238,14 +238,10 @@ private class SourceView: UIView {
         imageView.image = UIImage(named: source.imageName)
         titleLabel.text = source.title
 
-        if let balance, let dashNumber = Decimal(string: balance, locale: .current) {
+        if let balance, let plainDashAmount = balance.plainDashAmount(locale: .current) {
             walletBalanceStackView.isHidden = false
 
-            let duffsNumber = Decimal(DUFFS)
-            let plainAmount = dashNumber * duffsNumber
-
-            let dashAmount = NSDecimalNumber(decimal: plainAmount).int64Value
-            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: dashAmount) ?? "Fetching..."
+            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(plainDashAmount)) ?? "Fetching..."
 
             let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
             let dashStr = "\(balance) DASH"
