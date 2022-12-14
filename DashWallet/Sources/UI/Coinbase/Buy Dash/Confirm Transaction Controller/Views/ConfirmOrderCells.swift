@@ -23,12 +23,44 @@ class ConfirmOrderGeneralInfoCell: UITableViewCell {
     var nameLabel: UILabel!
     var valueLabel: UILabel!
 
-    func update(with item: ConfirmOrderItem, value: String) {
-        nameLabel?.text = item.localizedTitle
-        valueLabel?.text = value
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+
+        configureHierarchy()
     }
 
-    internal func configureHierarchy() { }
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+
+        configureHierarchy()
+    }
+
+    func update(with item: ConfirmOrderItem, value: String) {
+        nameLabel.text = item.localizedTitle.uppercased()
+
+        valueLabel.text = value
+        valueLabel.textColor = item.valueTextColor
+    }
+
+    internal func configureHierarchy() {
+        nameLabel = UILabel()
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        nameLabel.font = .dw_font(forTextStyle: .subheadline)
+        contentView.addSubview(nameLabel)
+
+        valueLabel = UILabel()
+        valueLabel.translatesAutoresizingMaskIntoConstraints = false
+        valueLabel.font = .dw_font(forTextStyle: .subheadline)
+        contentView.addSubview(valueLabel)
+
+        NSLayoutConstraint.activate([
+            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
+            valueLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            valueLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+        ])
+    }
 }
 
 // MARK: - ConfirmOrderAmountInDashCell
