@@ -87,6 +87,7 @@ enum ConfirmOrderSection: Int {
 final class ConfirmOrderController: BaseViewController {
     private var tableView: UITableView!
     private var actionButton: DWActionButton!
+    private var retryButton: DWTintedButton!
 
     private let model: ConfirmOrderModel
 
@@ -96,10 +97,27 @@ final class ConfirmOrderController: BaseViewController {
         [.amountInDash],
     ]
 
-    init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod) {
-        model = ConfirmOrderModel(order: order, paymentMethod: paymentMethod)
+    private var timer: Timer!
+    private var timeRemaining = 10
+    let measurementFormatter: MeasurementFormatter = {
+        let measurementFormatter = MeasurementFormatter()
+        measurementFormatter.locale = Locale.current
+        measurementFormatter.unitOptions = .providedUnit
+        measurementFormatter.unitStyle = .short
+        return measurementFormatter
+    }()
+
+    init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
+        model = ConfirmOrderModel(order: order, paymentMethod: paymentMethod, plainAmount: plainAmount)
 
         super.init(nibName: nil, bundle: nil)
+
+        model.orderChangeHandle = { [weak self] in
+            self?.tableView.reloadData()
+            self?.retryButton.hideActivityIndicator()
+            self?.retryButton.isEnabled = true
+            self?.startCounting()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -126,12 +144,17 @@ final class ConfirmOrderController: BaseViewController {
         present(nvc, animated: true)
     }
 
-    @IBAction func retryAction() { }
+    @IBAction func retryAction() {
+        retryButton.showActivityIndicator()
+        retryButton.isEnabled = false
+        model.retry()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         configureHierarchy()
+        startCounting()
     }
 }
 
@@ -140,6 +163,37 @@ final class ConfirmOrderController: BaseViewController {
 extension ConfirmOrderController {
     private func cancelTransaction() {
         dismiss(animated: true)
+    }
+
+    private func startCounting() {
+        timeRemaining = 10
+        startTimer()
+        updateActionButton()
+    }
+
+    private func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { [weak self] _ in
+            guard let wSelf = self else { return }
+
+            wSelf.timeRemaining -= 1
+
+            if wSelf.timeRemaining == 0 {
+                wSelf.updateActionButton()
+                wSelf.timer.invalidate()
+                return
+            }
+
+            wSelf.updateActionButton()
+        })
+    }
+
+    private func updateActionButton() {
+        retryButton.isHidden = timeRemaining != 0
+        actionButton.isHidden = timeRemaining == 0
+
+        let title = String(format: NSLocalizedString("Confirm (%d%@)", comment: "Coinbase/Buy Dash/Confirm Order"), timeRemaining,
+                           measurementFormatter.string(from: UnitDuration.seconds))
+        actionButton.setTitle(title, for: .normal)
     }
 }
 
@@ -179,9 +233,19 @@ extension ConfirmOrderController {
 
         actionButton = DWActionButton(frame: .zero)
         actionButton.translatesAutoresizingMaskIntoConstraints = false
-        actionButton.setTitle(NSLocalizedString("Confirm", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
+        actionButton.setTitle(NSLocalizedString("Confirm (%@)", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
         actionButton.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
+        actionButton.isHidden = true
         buttonStackView.addArrangedSubview(actionButton)
+
+        retryButton = DWTintedButton(frame: .zero)
+        retryButton.translatesAutoresizingMaskIntoConstraints = false
+        retryButton.addTarget(self, action: #selector(retryAction), for: .touchUpInside)
+        retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
+        // retryButton.setImage(nil, for: .disabled)
+        retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
+        retryButton.isHidden = false
+        buttonStackView.addArrangedSubview(retryButton)
 
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -194,6 +258,9 @@ extension ConfirmOrderController {
 
             actionButton.heightAnchor.constraint(equalToConstant: 46),
             actionButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor, multiplier: 1.4),
+
+            retryButton.heightAnchor.constraint(equalToConstant: 46),
+            retryButton.widthAnchor.constraint(equalTo: actionButton.widthAnchor),
         ])
     }
 }
@@ -214,21 +281,7 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: item.cellIdentifier, for: indexPath) as! ConfirmOrderGeneralInfoCell
         cell.selectionStyle = .none
-        let value: String
-
-        switch item {
-        case .paymentMethod:
-            value = model.paymentMethod.name
-        case .purchaseAmount:
-            value = model.order.subtotal.formattedFiatAmount
-        case .feeAmount:
-            value = model.order.fee.formattedFiatAmount
-        case .totalAmount:
-            value = model.order.total.formattedFiatAmount
-        case .amountInDash:
-            value = model.order.amount.formattedDashAmount
-        }
-
+        let value = model.formattedValue(for: item)
         if let cell = cell as? ConfirmOrderAmountInDashCell {
             cell.update(with: item, value: value, amountString: model.order.amount.amount)
         } else {

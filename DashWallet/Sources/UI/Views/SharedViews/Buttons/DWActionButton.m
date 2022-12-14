@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWActionButton ()
 
 @property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
+@property (strong, nonatomic) UIImage *activeImage;
 
 @end
 
@@ -86,13 +87,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showActivityIndicator {
     [self.titleLabel setAlpha:0.0];
+    [self.imageView setAlpha:0.0];
     [_activityIndicator setHidden:NO];
     [_activityIndicator startAnimating];
+
+    [super setImage:nil forState:UIControlStateNormal];
 }
 
 - (void)hideActivityIndicator {
     [self.titleLabel setAlpha:1.0];
+    [self.imageView setAlpha:1.0];
     [_activityIndicator stopAnimating];
+
+    [super setImage:_activeImage forState:UIControlStateNormal];
+}
+
+- (void)setImage:(UIImage *__nullable)image forState:(UIControlState)state {
+    [super setImage:image forState:state];
+
+    if (state == UIControlStateNormal) {
+        self.activeImage = image;
+    }
 }
 
 #pragma mark - Private
@@ -107,6 +122,9 @@ NS_ASSUME_NONNULL_BEGIN
         [_activityIndicator.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
         [_activityIndicator.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
     ]];
+
+    self.adjustsImageWhenHighlighted = NO;
+    self.adjustsImageSizeForAccessibilityContentSizeCategory = YES;
 
     self.usedOnDarkBackground = NO;
     self.inverted = NO;
@@ -158,6 +176,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     color = [self _disabledBorderColorForInverted:inverted usedOnDarkBackground:dark];
     [self setBorderColor:color forState:UIControlStateDisabled];
+
+    self.tintColor = self.accentColor;
+    self.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, 14.0);
 }
 
 #pragma mark - Styles
@@ -223,4 +244,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@implementation DWTintedButton
+
+- (void)resetAppearance {
+    [super resetAppearance];
+}
+
+- (UIColor *)_backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return [self.accentColor colorWithAlphaComponent:0.1f];
+}
+
+- (UIColor *)_textColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return self.accentColor;
+}
+
+- (UIColor *)_borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return [self.accentColor colorWithAlphaComponent:0.1f];
+}
+
+- (CGFloat)_borderWidthForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return 0.0;
+}
+
+@end
 NS_ASSUME_NONNULL_END

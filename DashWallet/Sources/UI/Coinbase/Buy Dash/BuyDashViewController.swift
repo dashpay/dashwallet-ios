@@ -130,7 +130,7 @@ extension BuyDashViewController: BuyDashModelDelegate {
     func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder) {
         guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
 
-        let vc = ConfirmOrderController(order: order, paymentMethod: paymentMethod)
+        let vc = ConfirmOrderController(order: order, paymentMethod: paymentMethod, plainAmount: UInt64(buyDashModel.amount.plainAmount))
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
         hideActivityIndicator()
