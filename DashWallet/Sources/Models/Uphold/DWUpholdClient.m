@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 static NSString *const UPHOLD_LAST_ACCESS = @"DW_UPHOLD_LAST_ACCESS";
+static NSString *const UPHOLD_LAST_KNOWN_BALANCE = @"UPHOLD_LAST_KNOWN_BALANCE";
 
 static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
@@ -178,6 +179,8 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
 
                                       if (success) {
                                           if (dashCard) {
+                                              [strongSelf setLastKnownBalance:dashCard.available];
+
                                               if (!dashCard.address) {
                                                   [strongSelf createDashCardAddress:dashCard
                                                                          completion:^(DWUpholdCardObject *_Nullable card) {
@@ -435,6 +438,14 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
 
 - (void)setLastAccessDate:(nullable NSDate *)lastAccessDate {
     [[NSUserDefaults standardUserDefaults] setObject:lastAccessDate forKey:UPHOLD_LAST_ACCESS];
+}
+
+- (nullable NSDecimalNumber *)lastKnownBalance {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:UPHOLD_LAST_KNOWN_BALANCE];
+}
+
+- (void)setLastKnownBalance:(nullable NSDecimalNumber *)balance {
+    [[NSUserDefaults standardUserDefaults] setObject:balance forKey:UPHOLD_LAST_KNOWN_BALANCE];
 }
 
 - (void)performLogOutShouldNotifyObservers:(BOOL)shouldNotify {

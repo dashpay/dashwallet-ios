@@ -41,8 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
     requestUserActionTitle:(nullable NSString *)title
                    message:(nullable NSString *)message
                actionTitle:(NSString *)actionTitle
-               cancelBlock:(void (^)(void))cancelBlock
-               actionBlock:(void (^)(void))actionBlock;
+               cancelBlock:(nullable void (^)(void))cancelBlock
+               actionBlock:(nullable void (^)(void))actionBlock;
 
 // Confirmation
 
@@ -84,6 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPaymentProcessor : NSObject
 
+@property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
+
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput;
 - (void)processFile:(NSData *)file;
 
@@ -91,9 +93,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
 
+- (void)reset;
+
 - (instancetype)initWithDelegate:(id<DWPaymentProcessorDelegate>)delegate;
 
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init;
 
 @end
 

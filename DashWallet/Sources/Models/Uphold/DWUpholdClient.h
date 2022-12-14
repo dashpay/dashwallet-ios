@@ -30,6 +30,7 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 @interface DWUpholdClient : NSObject
 
 @property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
+@property (nullable, strong, nonatomic) NSDecimalNumber *lastKnownBalance;
 
 + (instancetype)sharedInstance;
 

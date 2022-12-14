@@ -132,8 +132,8 @@ extension DWLocationManager: CLLocationManagerDelegate {
     }
 
     @available(iOS, deprecated: 14.0,
-               message: "Use locationManagerDidChangeAuthorization")  func locationManager(_ manager: CLLocationManager,
-                                                                                           didChangeAuthorization status: CLAuthorizationStatus) {
+               message: "Use locationManagerDidChangeAuthorization") func locationManager(_ manager: CLLocationManager,
+                                                                                          didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedAlways || status == .authorizedWhenInUse {
             startMonitoring(manager)
         } else {
@@ -143,7 +143,7 @@ extension DWLocationManager: CLLocationManagerDelegate {
         observers.forEach { $0.locationManagerDidChangeServiceAvailability(self) }
     }
 
-    @available(iOS 14.0, *)  func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    @available(iOS 14.0, *) func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse {
             startMonitoring(manager)
         } else {

@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Utu-rb-kVa">
-    <device id="retina6_1" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Utu-rb-kVa">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -20,10 +18,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v2G-4u-CtF" userLabel="Top View">
-                                <rect key="frame" x="20" y="44" width="374" height="599"/>
+                                <rect key="frame" x="20" y="48" width="374" height="595"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nx0-Xr-XMt" userLabel="Center View">
-                                        <rect key="frame" x="0.0" y="225.5" width="374" height="148.5"/>
+                                        <rect key="frame" x="0.0" y="223.5" width="374" height="148.5"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="infinite" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="wky-gc-BHo" customClass="DWPinView">
                                                 <rect key="frame" x="0.0" y="0.0" width="374" height="90"/>
@@ -56,7 +54,7 @@
                                     <constraint firstItem="Nx0-Xr-XMt" firstAttribute="centerY" secondItem="v2G-4u-CtF" secondAttribute="centerY" id="lao-Ct-zj1"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q99-sn-r0g" userLabel="Keyboard View" customClass="DWNumberKeyboard">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q99-sn-r0g" userLabel="Keyboard View" customClass="NumberKeyboard" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="20" y="643" width="374" height="215"/>
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <constraints>
@@ -64,6 +62,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="sHo-4f-2nX"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="v2G-4u-CtF" firstAttribute="top" secondItem="S7h-Wf-pds" secondAttribute="topMargin" id="0uW-G3-rll"/>
@@ -74,7 +73,6 @@
                             <constraint firstAttribute="trailingMargin" secondItem="v2G-4u-CtF" secondAttribute="trailing" id="kb9-CR-E8Q"/>
                             <constraint firstItem="q99-sn-r0g" firstAttribute="top" secondItem="v2G-4u-CtF" secondAttribute="bottom" id="rzO-TL-Hxu"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="sHo-4f-2nX"/>
                     </view>
                     <connections>
                         <outlet property="contentBottomConstraint" destination="LO1-hG-b3x" id="O4f-rP-Yds"/>
@@ -93,7 +91,7 @@
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryTextColor">
-            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.28627450980392155" green="0.28627450980392155" blue="0.28627450980392155" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

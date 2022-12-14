@@ -197,7 +197,6 @@ class PointOfUseListFiltersViewController: UIViewController {
 
 // MARK: UITableViewDelegate
 
-// MARK: UITableViewDelegate
 extension PointOfUseListFiltersViewController: UITableViewDelegate {
     func toggleCells(for items: [Item]) {
         for item in items {
@@ -389,7 +388,6 @@ extension PointOfUseListFiltersViewController {
 
 // MARK: TerritoriesListViewControllerDelegate
 
-// MARK: TerritoriesListViewControllerDelegate
 extension PointOfUseListFiltersViewController: TerritoriesListViewControllerDelegate {
     func didSelectTerritory(_ territory: Territory) {
         model.select(territory: territory)
@@ -425,7 +423,6 @@ extension PointOfUseListFiltersViewController: DWLocationObserver {
 
 // MARK: - FilterItemSelectableCell
 
-// MARK: FilterItemSelectableCell
 class FilterItemSelectableCell: FilterItemCell {
     @IBOutlet var iconImageView: UIImageView!
     @IBOutlet var checkboxButton: UIButton!
@@ -456,7 +453,6 @@ class FilterItemSelectableCell: FilterItemCell {
 
 // MARK: - FilterItemCell
 
-// MARK: FilterItemCell
 class FilterItemCell: UITableViewCell {
     @IBOutlet var nameLabel: UILabel!
 
@@ -467,7 +463,6 @@ class FilterItemCell: UITableViewCell {
 
 // MARK: - FilterItemResetCell
 
-// MARK: FilterItemResetCell
 class FilterItemResetCell: UITableViewCell {
     @IBOutlet var resetLabel: UILabel!
 

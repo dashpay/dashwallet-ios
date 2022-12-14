@@ -19,11 +19,11 @@
 
 #import <DWAlertController/DWAlertController.h>
 
-#import "DWBaseViewController.h"
 #import "DWUIKit.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
 #import "DWUpholdTransferViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

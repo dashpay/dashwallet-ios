@@ -191,7 +191,6 @@ extension ExplorePointOfUseListViewController {
 
 // MARK: DWLocationObserver
 
-// MARK: DWLocationObserver
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
         mapView.setCenter(location, animated: false)
@@ -452,8 +451,6 @@ extension ExplorePointOfUseListViewController {
 
 // MARK: ExploreMapViewDelegate
 
-// MARK: ExploreMapViewDelegate
-
 extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
         refreshFilterCell()
@@ -468,8 +465,6 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
 
 // MARK: PointOfUseListSearchCellDelegate
 
-// MARK: DWExploreWhereToSpendSearchCellDelegate
-
 extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate {
     private func stopSearching() {
         model.fetch(query: nil)
@@ -483,8 +478,6 @@ extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate 
         stopSearching()
     }
 }
-
-// MARK: UITableViewDelegate, UITableViewDataSource
 
 // MARK: UITableViewDelegate, UITableViewDataSource
 

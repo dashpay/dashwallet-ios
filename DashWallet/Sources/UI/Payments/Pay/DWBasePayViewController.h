@@ -19,7 +19,6 @@
 
 #import "DWDPBasicUserItem.h"
 #import "DWDemoDelegate.h"
-#import "DWNavigationChildViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,11 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTransactionListDataProviderProtocol;
 @protocol DWDPBasicUserItem;
 
-@interface DWBasePayViewController : DWNavigationChildViewController
+@interface DWBasePayViewController : UIViewController
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
-@property (null_resettable, nonatomic, strong) DWPaymentProcessor *paymentProcessor;
 
 @property (nonatomic, assign) BOOL demoMode;
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;

@@ -18,9 +18,9 @@
 #import "DWVerifySeedPhraseViewController.h"
 
 #import "DWUIKit.h"
-#import "DWVerifiedSuccessfullyViewController.h"
 #import "DWVerifySeedPhraseContentView.h"
 #import "DWVerifySeedPhraseModel.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -21,12 +21,12 @@
 #import "DWBiometricAuthViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWMainTabbarViewController.h"
-#import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWRecoverViewController.h"
 #import "DWSecureWalletInfoViewController.h"
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

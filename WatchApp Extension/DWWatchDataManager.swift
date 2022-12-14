@@ -161,7 +161,7 @@ final class DWWatchDataManager: NSObject {
 
     // MARK: Private
 
-    @objc  private func requestAllData() {
+    @objc private func requestAllData() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.requestAllData()

@@ -68,10 +68,27 @@
 
         navigationBar.scrollEdgeAppearance = standardAppearance;
         navigationBar.compactAppearance = standardAppearance;
-
         if (@available(iOS 15.0, *)) {
             navigationBar.compactScrollEdgeAppearance = standardAppearance;
         }
+    }
+}
+
+- (void)dw_applyOpaqueAppearanceWithColor:(UIColor *)color {
+    UINavigationBarAppearance *standardAppearance = [[UINavigationBarAppearance alloc] init];
+    [standardAppearance configureWithOpaqueBackground];
+    standardAppearance.backgroundColor = color;
+    standardAppearance.shadowColor = [UIColor clearColor];
+
+    UINavigationBarAppearance *compactAppearance = [standardAppearance copy];
+
+    UINavigationBar *navigationBar = self;
+    [navigationBar setTranslucent:YES];
+    navigationBar.standardAppearance = standardAppearance;
+    navigationBar.scrollEdgeAppearance = standardAppearance;
+    navigationBar.compactAppearance = compactAppearance;
+    if (@available(iOS 15.0, *)) {
+        navigationBar.compactScrollEdgeAppearance = compactAppearance;
     }
 }
 

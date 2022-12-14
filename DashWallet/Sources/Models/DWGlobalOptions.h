@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL crowdNodeInfoShown;
 
+@property (nonatomic, assign) BOOL coinbaseInfoShown;
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

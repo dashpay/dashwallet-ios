@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Warning: After applying standard appearance switching between defualt / white won't be possible
 - (void)dw_applyStandardAppearance;
+- (void)dw_applyOpaqueAppearanceWithColor:(UIColor *)color;
 
 @end
 

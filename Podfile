@@ -14,6 +14,7 @@ target 'dashwallet' do
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   pod 'SDWebImage', '5.13.2'
+  pod 'Moya', '~> 15.0'
   # Debugging purposes
 #  pod 'Reveal-SDK', :configurations => ['Debug']
   
