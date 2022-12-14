@@ -53,7 +53,7 @@
                                                     <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
                                                 </userDefinedRuntimeAttributes>
                                                 <connections>
-                                                    <action selector="continueButtonAction:" destination="PEk-iI-57W" eventType="touchUpInside" id="afH-Y5-9po"/>
+                                                    <action selector="continueButtonAction" destination="PEk-iI-57W" eventType="touchUpInside" id="afH-Y5-9po"/>
                                                 </connections>
                                             </button>
                                         </subviews>

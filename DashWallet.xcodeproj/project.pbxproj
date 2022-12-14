@@ -57,6 +57,31 @@
 		0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */; };
 		0F7258F4291BF6B100A785A0 /* TwoFactorAuthModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7258F3291BF6B100A785A0 /* TwoFactorAuthModel.swift */; };
 		0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FC75A8E28F03E22000E4858 /* libDashSync.a */; };
+		110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
+		110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* NavigationControllerExtensions.swift */; };
+		1121A8B728E5DB6E00464C31 /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */; };
+		1141E4C2291BB12200ACDA9E /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */; };
+		1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */; };
+		114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */; };
+		117ED4A128EC86E0006E3EE4 /* TransactionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */; };
+		117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */; };
+		117ED4AA28ED6766006E3EE4 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */; };
+		118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118A1392291AA21B002641E4 /* AccountCreatingController.swift */; };
+		119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */; };
+		119E8D062905200300D406C1 /* CoinsToAddressTxFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */; };
+		119E8D082905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */; };
+		119E8D0A2905413F00D406C1 /* TransactionWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D092905413F00D406C1 /* TransactionWrapper.swift */; };
+		119E8D0C2907C61400D406C1 /* CrowdNodeTopUpTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0B2907C61400D406C1 /* CrowdNodeTopUpTx.swift */; };
+		119E8D10290949B900D406C1 /* CrowdNodeErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0F290949B900D406C1 /* CrowdNodeErrorResponse.swift */; };
+		119E8D122909513F00D406C1 /* CrowdNodeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D112909513F00D406C1 /* CrowdNodeError.swift */; };
+		11B8449428F27C470082770C /* ApiCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449328F27C460082770C /* ApiCode.swift */; };
+		11B8449628F5B9F80082770C /* CrowdNodeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449528F5B9F80082770C /* CrowdNodeResponse.swift */; };
+		11B8449A28F6D5480082770C /* SingleInputAddressSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449928F6D5480082770C /* SingleInputAddressSelector.swift */; };
+		11BD737E28E6BD7400A34022 /* NewAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BD737D28E6BD7400A34022 /* NewAccountViewController.swift */; };
+		11BD738128E7356100A34022 /* CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BD738028E7356100A34022 /* CrowdNode.swift */; };
+		11E47BA828EAE7AD0097CFA0 /* CrowdNodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */; };
+		11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
+		11E47BAD28EB3A7D0097CFA0 /* CrowdNodeConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAC28EB3A7D0097CFA0 /* CrowdNodeConstants.swift */; };
 		1FC212F0BAB5FB85C59E9CD3 /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02771AC5DDCA0A1749C6A05B /* libPods-TodayExtension.a */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
@@ -426,7 +451,6 @@
 		2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */; };
 		2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */; };
 		2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AD1CE9822DE63FA00C99324 /* GameplayKit.framework */; };
-		2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9C22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m */; };
 		2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */; };
 		2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */; };
 		2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */; };
@@ -778,6 +802,7 @@
 		1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		1141E4C1291BB12200ACDA9E /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
 		1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToCrowdNodeViewController.swift; sourceTree = "<group>"; };
+		114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiedSuccessfullyViewController.swift; sourceTree = "<group>"; };
 		117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionObserver.swift; sourceTree = "<group>"; };
 		117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFilter.swift; sourceTree = "<group>"; };
 		117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
@@ -1548,8 +1573,6 @@
 		2AD1CE9522DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWSeedWordModel+DWLayoutSupport.h"; sourceTree = "<group>"; };
 		2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWSeedWordModel+DWLayoutSupport.m"; sourceTree = "<group>"; };
 		2AD1CE9822DE63FA00C99324 /* GameplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameplayKit.framework; path = System/Library/Frameworks/GameplayKit.framework; sourceTree = SDKROOT; };
-		2AD1CE9B22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWVerifiedSuccessfullyViewController.h; sourceTree = "<group>"; };
-		2AD1CE9C22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWVerifiedSuccessfullyViewController.m; sourceTree = "<group>"; };
 		2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifiedSuccessfully.storyboard; sourceTree = "<group>"; };
 		2AD1CEA022DFC80800C99324 /* DWCenteredScrollView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCenteredScrollView.h; sourceTree = "<group>"; };
 		2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCenteredScrollView.m; sourceTree = "<group>"; };
@@ -4191,9 +4214,8 @@
 		2AD1CE9A22DFBA0900C99324 /* VerifiedSuccessfully */ = {
 			isa = PBXGroup;
 			children = (
-				2AD1CE9B22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.h */,
-				2AD1CE9C22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m */,
 				2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */,
+				114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */,
 			);
 			path = VerifiedSuccessfully;
 			sourceTree = "<group>";
@@ -6089,6 +6111,7 @@
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
+				114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
@@ -6144,7 +6167,6 @@
 				0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */,
-				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
 				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */,

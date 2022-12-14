@@ -146,7 +146,7 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
         model.getOrCreateNewWallet()
         let controller = DWBackupInfoViewController(model: model)
         controller.delegate = self
-        let navigationController = DWNavigationController(rootViewController: controller)
+        let navigationController = BaseNavigationController(rootViewController: controller)
         let cancelButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel, target: self,
                                            action: #selector(dismissModalControllerBarButtonAction))
         controller.navigationItem.leftBarButtonItem = cancelButton
@@ -163,7 +163,7 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
         refreshCreateAccountButton()
     }
 
-    internal func secureWalletRoutineDidFinish(_ controller: DWVerifiedSuccessfullyViewController) {
+    internal func secureWalletRoutineDidFinish(_ controller: VerifiedSuccessfullyViewController) {
         dismissModalControllerBarButtonAction()
     }
 }
@@ -179,7 +179,7 @@ extension GettingStartedViewController {
 
     private func buyDashAuthenticated() {
         let controller = DWUpholdViewController()
-        let navigationController = DWNavigationController(rootViewController: controller)
+        let navigationController = BaseNavigationController(rootViewController: controller)
         self.navigationController?.present(navigationController, animated: true)
     }
 }
