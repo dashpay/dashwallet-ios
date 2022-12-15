@@ -1597,6 +1597,7 @@
 		47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppliedFiltersView.swift; sourceTree = "<group>"; };
 		47C6E6E6291A90B2003FEDF2 /* ListHandlerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListHandlerView.swift; sourceTree = "<group>"; };
 		47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+DashWallet.swift"; sourceTree = "<group>"; };
+		47CDEED0294B8230008AE06D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
@@ -5760,6 +5761,7 @@
 				2A9FFF41223654D300956D5F /* id */,
 				2A8E79BC2406772900AA7C3D /* cs */,
 				477A963B292BA4B90013605B /* uk */,
+				47CDEED0294B8230008AE06D /* sk */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
