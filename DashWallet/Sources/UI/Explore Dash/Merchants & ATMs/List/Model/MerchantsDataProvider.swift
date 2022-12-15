@@ -24,6 +24,11 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        lastQuery = query
+        lastUserPoint = userPoint
+        lastBounds = bounds
+        lastFilters = filters
+
         if DWLocationManager.shared.isPermissionDenied || DWLocationManager.shared.needsAuthorization {
             fetch(by: query, in: nil, userPoint: nil, with: filters, offset: 0) { [weak self] result in
                 self?.handle(result: result, completion: completion)
