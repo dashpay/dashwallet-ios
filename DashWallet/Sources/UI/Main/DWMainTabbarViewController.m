@@ -149,14 +149,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 /// helper
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
-    //    if ([self.currentController.presentedViewController isKindOfClass:[DWNavigationController class]]) {
-    //        DWNavigationController *nvc = (DWNavigationController *)self.currentController.presentedViewController;
-    //
-    //        if (![nvc.topViewController isKindOfClass:[DWPaymentsViewController class]]) {
-    //            return;
-    //        }
-    //    }
-
     tabBarView.userInteractionEnabled = NO;
     [tabBarView setPaymentsButtonOpened:NO];
 

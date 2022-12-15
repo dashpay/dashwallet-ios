@@ -76,7 +76,7 @@ final class BRAWBalanceInterfaceController: WKInterfaceController {
 
     // MARK: UI update
 
-    @objc  func updateUI() {
+    @objc func updateUI() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.updateUI()

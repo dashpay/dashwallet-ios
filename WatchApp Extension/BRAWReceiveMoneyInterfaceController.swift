@@ -55,7 +55,7 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, BRAWKeyp
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc  func updateReceiveUI() {
+    @objc func updateReceiveUI() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.updateReceiveUI()
