@@ -525,7 +525,6 @@ static BOOL IsJailbroken(void) {
             if (receivedNewTransaction) {
                 id<DWTransactionListDataItem> dataItem = [self.dataProvider transactionDataForTransaction:newTransaction];
 
-
                 // TODO: try to do for all transactions
                 if (dataItem.direction == DSTransactionDirection_Received) {
                     [self.updatesObserver homeModel:self didReceiveNewIncomingTransaction:newTransaction];

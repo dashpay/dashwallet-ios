@@ -22,5 +22,45 @@
 			<string>%Id użyty</string>
 		</dict>
 	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d handlowiec w %@</string>
+			<key>few</key>
+			<string>%d handlowców w %@</string>
+			<key>many</key>
+			<string>%d handlowców w %@</string>
+			<key>other</key>
+			<string>%d handlowców w %@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d handlowiec</string>
+			<key>few</key>
+			<string>%d handlowców</string>
+			<key>many</key>
+			<string>%d handlowców</string>
+			<key>other</key>
+			<string>%d handlowcy</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
