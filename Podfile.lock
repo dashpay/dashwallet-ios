@@ -697,7 +697,7 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.1.1)
-  - Protobuf (3.21.9)
+  - Protobuf (3.21.11)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -819,7 +819,7 @@ SPEC CHECKSUMS:
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  Protobuf: 02524ec14183fe08fb259741659e79683788158b
+  Protobuf: 3acb308a1e208605afd50866b98ec220141bcb8c
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da

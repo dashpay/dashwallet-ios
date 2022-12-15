@@ -17,7 +17,6 @@
 
 #import "DWSyncModel.h"
 
-#import <DashSync/DSNetworkActivityIndicatorManager.h>
 #import <DashSync/DashSync.h>
 
 #import "DWEnvironment.h"
@@ -204,13 +203,6 @@ static float const MAX_PROGRESS_DELTA = 0.1;            // 10%
     _syncing = syncing;
 
     [UIApplication sharedApplication].idleTimerDisabled = syncing;
-
-    if (syncing) {
-        [DSNetworkActivityIndicatorManager increaseActivityCounter];
-    }
-    else {
-        [DSNetworkActivityIndicatorManager decreaseActivityCounter];
-    }
 }
 
 - (void)setState:(DWSyncModelState)state {
