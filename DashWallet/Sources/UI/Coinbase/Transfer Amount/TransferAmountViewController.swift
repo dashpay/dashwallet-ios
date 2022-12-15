@@ -139,7 +139,7 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
             codeConfirmationController?.showInvalidCodeState()
         case .unknown:
             hideActivityIndicator()
-            showFailedTransactionStatus()
+            showFailedTransactionStatus(text: NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase"))
         }
     }
 
@@ -176,7 +176,6 @@ extension BaseAmountModel: ConverterViewDataSource {
 
         return balance.formattedDashAmount
     }
-
 }
 
 extension TransferAmountViewController {
@@ -189,35 +188,7 @@ extension TransferAmountViewController {
     }
 
     private func showSuccessTransactionStatus() {
-        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("Coinbase"))
-        vc.closeHandler = { [weak self] in
-            guard let wSelf = self else { return }
-            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
-        }
-        vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
-        vc
-            .descriptionText =
-            NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
-                              comment: "Coinbase")
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
-    }
-
-    private func showFailedTransactionStatus() {
-        let vc = FailedOperationStatusViewController.initiate(from: sb("Coinbase"))
-        vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
-        vc.descriptionText = NSLocalizedString("There was a problem transferring it to Dash Wallet on this device",
-                                               comment: "Coinbase")
-        vc.retryHandler = { [weak self] in
-            guard let wSelf = self else { return }
-            wSelf.navigationController?.popToViewController(wSelf, animated: true)
-        }
-        vc.cancelHandler = { [weak self] in
-            guard let wSelf = self else { return }
-            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
-        }
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
+        showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device", comment: "Coinbase"))
     }
 }
 

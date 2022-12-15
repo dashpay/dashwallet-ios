@@ -123,7 +123,7 @@ final class TransferAmountModel: SendAmountModel {
     private func transferToWallet(with verificationCode: String? = nil) {
         guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
 
-        let amount = amount.amountInternalRepresentation
+        let amount = amount.plainAmount.formattedDashAmount
         DSLogger.log("Tranfer from coinbase: transferToWallet \(amount) \(address)")
         Task {
             do {

@@ -91,14 +91,14 @@ final class ProvideAmountViewController: SendAmountViewController {
         let toLabel = UILabel()
         toLabel.translatesAutoresizingMaskIntoConstraints = false
         toLabel.font = .dw_font(forTextStyle: .body)
-        toLabel.textColor = .label
+        toLabel.textColor = .dw_label()
         toLabel.text = NSLocalizedString("to", comment: "Send Screen: to address")
         sendContainer.addSubview(toLabel)
 
         let addressLabel = UILabel()
         addressLabel.translatesAutoresizingMaskIntoConstraints = false
         addressLabel.font = .dw_font(forTextStyle: .body)
-        addressLabel.textColor = .label
+        addressLabel.textColor = .dw_label()
         addressLabel.text = address
         addressLabel.lineBreakMode = .byTruncatingMiddle
         sendContainer.addSubview(addressLabel)
@@ -112,14 +112,14 @@ final class ProvideAmountViewController: SendAmountViewController {
         let balanceTitleLabel = UILabel()
         balanceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         balanceTitleLabel.font = .dw_font(forTextStyle: .body)
-        balanceTitleLabel.textColor = .secondaryLabel
+        balanceTitleLabel.textColor = .dw_secondaryText()
         balanceTitleLabel.text = NSLocalizedString("Balance", comment: "Send Screen: to address") + ":"
         balanceStackView.addArrangedSubview(balanceTitleLabel)
 
         balanceLabel = UILabel()
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
         balanceLabel.font = .dw_font(forTextStyle: .body)
-        balanceLabel.textColor = .secondaryLabel
+        balanceLabel.textColor = .dw_secondaryText()
         balanceLabel.text = "5.50 DASH ~ 320.74€"
         balanceStackView.addArrangedSubview(balanceLabel)
 

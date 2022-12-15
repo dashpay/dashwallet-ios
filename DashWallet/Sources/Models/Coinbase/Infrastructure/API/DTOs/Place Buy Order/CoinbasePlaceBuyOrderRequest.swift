@@ -8,10 +8,10 @@
 import Foundation
 
 // MARK: - CoinBasePlaceBuyOrderRequest
-struct CoinbasePlaceBuyOrderRequest: Codable {
-    let amount: String?
-    let currency: String?
-    let paymentMethod: String?
+public struct CoinbasePlaceBuyOrderRequest: Codable {
+    let amount: String
+    let currency: String
+    let paymentMethod: String
     let commit: Bool?
     let quote: Bool?
 

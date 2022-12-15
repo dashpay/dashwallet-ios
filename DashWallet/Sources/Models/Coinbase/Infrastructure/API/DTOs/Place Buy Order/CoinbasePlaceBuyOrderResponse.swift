@@ -10,8 +10,7 @@ import Foundation
 // MARK: - CoinbasePlaceBuyOrder
 
 struct CoinbasePlaceBuyOrder: Codable {
-    let id: String?
-    let fee: Amount?
+    let id: String? // TODO: Use just String and handle error
     let status: String?
     let userReference, transaction, createdAt, updatedAt: String?
     let resource: String?
@@ -20,10 +19,14 @@ struct CoinbasePlaceBuyOrder: Codable {
     let holdUntil: String?
     let holdDays: Int?
     let isFirstBuy: Bool?
-    let amount, total, subtotal: Amount?
+    let fee: Amount
+    let amount: Amount
+    let total: Amount
+    let subtotal: Amount
     let unitPrice: UnitPrice?
     let requiresCompletionStep: Bool?
     let nextStep: String?
+    let committed: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -43,6 +46,7 @@ struct CoinbasePlaceBuyOrder: Codable {
         case unitPrice = "unit_price"
         case requiresCompletionStep = "requires_completion_step"
         case nextStep = "next_step"
+        case committed
     }
 }
 

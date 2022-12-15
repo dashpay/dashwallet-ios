@@ -35,15 +35,7 @@ extension CoinbaseService {
         return result.data
     }
 
-    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) async throws -> [CoinbasePlaceBuyOrder] {
-        let result: BaseDataCollectionResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId))
-        return result.data
-    }
 
-    func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> [CoinbasePlaceBuyOrder] {
-        let result: BaseDataCollectionResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
-        return result.data
-    }
 
     func getCoinbaseBaseIDForCurrency(baseCurrency: String) async throws -> BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> {
         try await httpClient.request(.getBaseIdForUSDModel(baseCurrency))

@@ -23,6 +23,7 @@ import Foundation
 let kDashCurrency = "DASH"
 var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
 var kCoinbaseAddPaymentMethodsURL = URL(string: "https://www.coinbase.com/settings/linked-accounts")!
+var kCoinbaseFeeInfoURL = URL(string: "https://help.coinbase.com/en/coinbase/trading-and-funding/pricing-and-fees/fees")!
 
 // MARK: - Coinbase
 
@@ -95,6 +96,45 @@ extension Coinbase {
         let tx = try await tx.send(from: accountId, amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
         try? await auth.currentUser?.refreshAccount()
         return tx
+    }
+
+    /// Place Buy Order
+    ///
+    /// - Parameters:
+    ///   - amount: Plain amount in Dash
+    ///
+    /// - Returns: CoinbasePlaceBuyOrder
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+        guard let accountId = auth.currentUser?.accountId else {
+            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
+            throw Coinbase.Error.noActiveUser
+        }
+
+        let amount = amount.formattedDashAmount
+
+        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: nil, quote: true)
+        return try await tx.placeCoinbaseBuyOrder(accountId: accountId, request: request)
+    }
+
+    /// Commit Buy Order
+    ///
+    /// - Parameters:
+    ///   - orderID: Order id from `CoinbasePlaceBuyOrder` you receive by calling `placeCoinbaseBuyOrder`
+    ///
+    /// - Returns: CoinbasePlaceBuyOrder
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
+        guard let accountId = auth.currentUser?.accountId else {
+            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
+            throw Coinbase.Error.noActiveUser
+        }
+
+        return try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
     }
 
     public func signOut() async throws {

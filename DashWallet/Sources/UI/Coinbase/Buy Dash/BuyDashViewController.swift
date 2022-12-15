@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - BuyDashViewController
+
 final class BuyDashViewController: BaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
@@ -34,6 +36,18 @@ final class BuyDashViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: Actions
+    override func amountDidChange() {
+        super.amountDidChange()
+
+        actionButton?.isEnabled = true
+    }
+
+    override func actionButtonAction(sender: UIView) {
+        showActivityIndicator()
+        buyDashModel.buy()
+    }
+
     @objc func payWithTapGestureRecognizerAction() {
         let vc = PaymentMethodsController.controller()
         vc.paymentMethods = buyDashModel.paymentMethods
@@ -45,12 +59,15 @@ final class BuyDashViewController: BaseAmountViewController {
         present(vc, animated: true)
     }
 
+    // MARK: Life cycle
     override func initializeModel() {
         model = BuyDashModel()
     }
 
     override func configureModel() {
         super.configureModel()
+
+        buyDashModel.delegate = self
     }
 
     override func configureHierarchy() {
@@ -105,10 +122,19 @@ final class BuyDashViewController: BaseAmountViewController {
             amountView.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
+}
 
-    override func amountDidChange() {
-        super.amountDidChange()
+// MARK: BuyDashModelDelegate
 
-        actionButton?.isEnabled = true
+extension BuyDashViewController: BuyDashModelDelegate {
+    func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder) {
+        guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
+
+        let vc = ConfirmOrderController(order: order, paymentMethod: paymentMethod, plainAmount: UInt64(buyDashModel.amount.plainAmount))
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+        hideActivityIndicator()
     }
+
+    func buyDashModelFailedToPlaceOrder(with reason: BuyDashFailureReason) { }
 }

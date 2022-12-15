@@ -29,7 +29,7 @@ class BasePageSheetViewController: UIViewController {
         let configuration = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
         let closeImage = UIImage(systemName: "xmark", withConfiguration: configuration)
         closeButton = UIButton(type: .custom)
-        closeButton.tintColor = .label
+        closeButton.tintColor = .dw_label()
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.setImage(closeImage, for: .normal)
         closeButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)

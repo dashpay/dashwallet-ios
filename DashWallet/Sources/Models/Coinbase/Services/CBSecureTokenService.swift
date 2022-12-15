@@ -41,6 +41,10 @@ class CBSecureTokenService: Codable {
             return accessToken
         }
 
+        if hasValidAccessToken && accessTokenExpirationDate.timeIntervalSince1970 - Date().timeIntervalSince1970 > 6600 {
+            return accessToken
+        }
+
         let result: CoinbaseTokenResponse = try await httpClient.request(.refreshToken(refreshToken: refreshToken))
         accessToken = result.accessToken
         refreshToken = result.refreshToken
