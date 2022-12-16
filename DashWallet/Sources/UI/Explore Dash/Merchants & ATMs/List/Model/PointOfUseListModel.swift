@@ -153,7 +153,7 @@ final class PointOfUseListModel {
     }
 
     var showMap: Bool {
-        filters?.territory == nil && currentSegment.showMap
+        lastQuery == nil && filters?.territory == nil && currentSegment.showMap
     }
 
     var showEmptyResults: Bool {

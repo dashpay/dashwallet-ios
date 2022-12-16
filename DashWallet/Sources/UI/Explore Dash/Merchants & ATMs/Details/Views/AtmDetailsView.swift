@@ -46,12 +46,12 @@ class AtmDetailsView: PointOfUseDetailsView {
             buttonsStackView.addArrangedSubview(sellButton)
         }
 
+        // TODO: Change to hairline view
         let separator = UIView()
         separator.translatesAutoresizingMaskIntoConstraints = false
         separator.backgroundColor = .black.withAlphaComponent(0.3)
         containerView.addArrangedSubview(separator)
 
-        let imageSize: CGFloat = 50
         let buttonHeight: CGFloat = 48
 
         NSLayoutConstraint.activate([
