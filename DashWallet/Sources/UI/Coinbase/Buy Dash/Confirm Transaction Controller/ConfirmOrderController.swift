@@ -331,3 +331,13 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
         8
     }
 }
+
+// MARK: NavigationStackControllable
+
+extension ConfirmOrderController: NavigationStackControllable {
+    func shouldPopViewController() -> Bool {
+        cancelAction()
+
+        return false
+    }
+}
