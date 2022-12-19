@@ -44,6 +44,63 @@ import Combine
     }
 }
 
+enum CrowdNodePortalItem: CaseIterable {
+    case deposit
+    case withdraw
+//    case onlineAccount
+//    case support
+}
+
+extension CrowdNodePortalItem {
+    var title: String {
+        switch self {
+        case .deposit:
+            return NSLocalizedString("Deposit", comment: "CrowdNode Portal")
+        case .withdraw:
+            return NSLocalizedString("Withdraw", comment: "CrowdNode Portal")
+//        case .onlineAccount:
+//            return NSLocalizedString("Create Online Account", comment: "CrowdNode Portal")
+//        case .support:
+//            return NSLocalizedString("CrowdNode Support", comment: "CrowdNode Portal")
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .deposit:
+            return NSLocalizedString("DashWallet ➝ CrowdNode", comment: "CrowdNode Portal")
+        case .withdraw:
+            return NSLocalizedString("CrowdNode ➝ DashWallet", comment: "CrowdNode Portal")
+//        case .onlineAccount:
+//            return NSLocalizedString("Protect your savings", comment: "CrowdNode Portal")
+//        case .support:
+//            return ""
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .deposit:
+            return "image.crowdnode.deposit"
+        case .withdraw:
+            return "image.crowdnode.withdraw"
+//        case .onlineAccount:
+//            return "image.crowdnode.online"
+//        case .support:
+//            return "image.crowdnode.support"
+        }
+    }
+    
+    var iconCircleColor: UIColor {
+        switch self {
+        case .deposit:
+            return UIColor.systemGreen
+        default:
+            return UIColor.dw_dashBlue()
+        }
+    }
+}
+
 // MARK: - CrowdNodeModel
 
 @MainActor
@@ -59,6 +116,7 @@ final class CrowdNodeModel {
     @Published var signUpEnabled = false
     @Published var signUpState: CrowdNode.SignUpState
     @Published var hasEnoughBalance = false
+    @Published var crowdNodeBalance: UInt64 = 0
 
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
@@ -71,11 +129,13 @@ final class CrowdNodeModel {
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughBalance }
+    
+    let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
 
     init() {
         signUpState = crowdNode.signUpState
         observeState()
-        observeBalance()
+        observeBalances()
     }
 
     func getAccountAddress() {
@@ -170,10 +230,14 @@ final class CrowdNodeModel {
 }
 
 extension CrowdNodeModel {
-    private func observeBalance() {
+    private func observeBalances() {
         checkBalance()
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.checkBalance() }
+            .store(in: &cancellableBag)
+        
+        crowdNode.$balance
+            .sink(receiveValue: { [weak self] value in self?.crowdNodeBalance = value})
             .store(in: &cancellableBag)
     }
 

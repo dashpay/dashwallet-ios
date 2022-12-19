@@ -129,7 +129,7 @@ class NumberKeyboardButton: UIView {
             titleLabel.text = value.stringValue
         case .delete:
 
-            let image = UIImage(systemName: "delete.backward")!.withTintColor(Styles.textColor)
+            let image = UIImage(systemName: "delete.left")!.withTintColor(Styles.textColor)
 
             let textAttachment = NSTextAttachment()
             textAttachment.image = image

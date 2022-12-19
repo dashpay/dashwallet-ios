@@ -27,6 +27,7 @@
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "DWSecureWalletDelegate.h"
+#import "UINavigationBar+DWAppearance.h"
 // -- end CrowdNode
 #import "DWAmountObject.h"
 #import "DWUpholdViewController.h"

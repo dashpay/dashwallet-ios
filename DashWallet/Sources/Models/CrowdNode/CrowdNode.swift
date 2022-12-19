@@ -17,6 +17,7 @@
 
 import BackgroundTasks
 import Combine
+import Moya
 
 // MARK: - CrowdNodeObjcWrapper
 
@@ -34,7 +35,7 @@ public class CrowdNodeObjcWrapper: NSObject {
         let crowdNode = CrowdNode.shared
 
         if crowdNode.signUpState == .acceptTermsRequired {
-            Task {
+            _Concurrency.Task {
                 let address = crowdNode.accountAddress
                 await crowdNode.signUp(accountAddress: address)
             }
@@ -68,10 +69,12 @@ public final class CrowdNode {
     }
 
     private var cancellableBag = Set<AnyCancellable>()
-    private var syncStateObserver: AnyCancellable?
-    private let sendCoinsService = SendCoinsService()
-    private let txObserver = TransactionObserver()
+    private lazy var sendCoinsService = SendCoinsService()
+    private lazy var txObserver = TransactionObserver()
+    private lazy var crowdNodeWebService = CrowdNodeService()
+    
     @Published private(set) var signUpState = SignUpState.notInitiated
+    @Published private(set) var balance: UInt64 = 0
 
     private(set) var accountAddress = ""
     private(set) var apiError: Error?
@@ -104,7 +107,7 @@ extension CrowdNode {
             return
         }
 
-        print("restoring CrowdNode state")
+        DSLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
         let fullSet = FullCrowdNodeSignUpTxSet()
         let wallet = DWEnvironment.sharedInstance().currentWallet
@@ -138,32 +141,32 @@ extension CrowdNode {
 
     private func setFinished(address: String) {
         accountAddress = address
-        print("found finished CrowdNode sign up, account: \(address)")
+        DSLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
-        // TODO: refreshBalance()
+        refreshBalance()
         // TODO: tax category
     }
 
     private func setAcceptingTerms(address: String) {
         accountAddress = address
-        print("found accept terms CrowdNode response, account: \(address)")
+        DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptingTerms
     }
 
     private func setAcceptTermsRequired(address: String) {
         accountAddress = address
-        print("found accept terms CrowdNode response, account: \(address)")
+        DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptTermsRequired
     }
 
     private func setSigningUp(address: String) {
         accountAddress = address
-        print("found signUp CrowdNode request, account: \(address)")
+        DSLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
     }
 
     private func reset() {
-        print("CrowdNode reset triggered")
+        DSLogger.log("CrowdNode reset triggered")
         signUpState = .notStarted
         accountAddress = ""
         apiError = nil
@@ -195,9 +198,10 @@ extension CrowdNode {
 
             notifyIfNeeded()
             signUpState = SignUpState.finished
+            refreshBalance()
         }
         catch {
-            print("CrowdNode error: \(error)")
+            DSLogger.log("CrowdNode error: \(error)")
             signUpState = SignUpState.error
             apiError = error
         }
@@ -210,7 +214,7 @@ extension CrowdNode {
                                                             amount: requestValue,
                                                             inputSelector: SingleInputAddressSelector(candidates: inputs,
                                                                                                       address: accountAddress))
-        print("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
+        DSLogger.log("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
                                                 accountAddress: accountAddress)
@@ -218,7 +222,7 @@ extension CrowdNode {
                                                    accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-        print("CrowdNode AcceptTerms response tx hash: \(responseTx.txHashHexString)")
+        DSLogger.log("CrowdNode AcceptTerms response tx hash: \(responseTx.txHashHexString)")
 
         if errorResponse.matches(tx: responseTx) {
             throw CrowdNodeError.signUp
@@ -242,7 +246,7 @@ extension CrowdNode {
                                                    accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-        print("CrowdNode Welcome response tx hash: \(responseTx.txHashHexString)")
+        DSLogger.log("CrowdNode Welcome response tx hash: \(responseTx.txHashHexString)")
 
         if errorResponse.matches(tx: responseTx) {
             throw CrowdNodeError.signUp
@@ -275,13 +279,13 @@ extension CrowdNode {
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
 
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
-        print("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
+        DSLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
 
         let depositTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
                                                              amount: min(account.maxOutputAmount, amount),
                                                              inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
                                                                                                        address: accountAddress))
-        print("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
+        DSLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
                                                 accountAddress: accountAddress)
@@ -289,7 +293,7 @@ extension CrowdNode {
                                                    accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-        print("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
+        DSLogger.log("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
 
         if errorResponse.matches(tx: responseTx) {
             throw CrowdNodeError.deposit
@@ -305,13 +309,13 @@ extension CrowdNode {
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
 
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
-        print("CrowdNode withdraw topup tx hash: \(topUpTx.txHashHexString)")
+        DSLogger.log("CrowdNode withdraw topup tx hash: \(topUpTx.txHashHexString)")
 
         let withdrawTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
                                                               amount: requestValue,
                                                               inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
                                                                                                         address: accountAddress))
-        print("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
+        DSLogger.log("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalQueue,
                                                 accountAddress: accountAddress)
@@ -321,10 +325,29 @@ extension CrowdNode {
                                                          accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
-        print("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
+        DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
 
         if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
             throw CrowdNodeError.withdraw
+        }
+    }
+}
+
+// Balance
+extension CrowdNode {
+    func refreshBalance(attempts: Int = 3) {
+        guard !accountAddress.isEmpty else { return }
+        
+        _Concurrency.Task {
+            do {
+                let result = try await crowdNodeWebService.getCrowdNodeBalance(address: accountAddress)
+                let dashNumber = Decimal(result.totalBalance)
+                let duffsNumber = Decimal(DUFFS)
+                let plainAmount = dashNumber * duffsNumber
+                balance = NSDecimalNumber(decimal: plainAmount).uint64Value
+            } catch {
+                print("CrowdNode error: \((error as! HTTPClientError).localizedDescription)")
+            }
         }
     }
 }
