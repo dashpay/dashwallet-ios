@@ -60,7 +60,7 @@ protocol SecureTokenProvider: AnyObject {
 // MARK: - HTTPClient
 
 public class HTTPClient<Target: TargetType> {
-    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .utility, attributes: .concurrent)
+    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .background, attributes: .concurrent)
     private var provider: MoyaProvider<Target>!
     weak var secureTokenProvider: SecureTokenProvider?
 
@@ -128,11 +128,14 @@ extension HTTPClient {
                     completion(.success(response))
                 } else {
                     let responseString = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
-                    DSLogger.log("Tranfer from coinbase: HTTPClient._request - data: \(String(describing: response.errorDescription)), \(String(describing: responseString))")
+                    DSLogger.log("HTTPClient failure begin")
+                    DSLogger.log("HTTPClient request: \(String(describing: response.request))")
+                    DSLogger.log("HTTPClient response: \(String(describing: responseString))")
+                    DSLogger.log("HTTPClient failure end")
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
-                DSLogger.log("Tranfer from coinbase: HTTPClient._request - fail: \(String(describing: error.localizedDescription)), \(String(describing: error))")
+                DSLogger.log("HTTPClient failure: \(String(describing: error))")
                 completion(.failure(.moya(error)))
             }
         }
