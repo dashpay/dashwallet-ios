@@ -40,7 +40,7 @@ final class BuyDashViewController: BaseAmountViewController {
     override func amountDidChange() {
         super.amountDidChange()
 
-        actionButton?.isEnabled = true
+        actionButton?.isEnabled = buyDashModel.canContinue
     }
 
     override func actionButtonAction(sender: UIView) {
