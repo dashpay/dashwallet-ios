@@ -22,8 +22,7 @@ private var kDashSymbolAssetName = "icon_dash_currency"
 
 // MARK: Formatted Amount
 extension String {
-    func localizedAmount() -> String {
-        let locale = Locale.current
+    func localizedAmount(locale: Locale = .current) -> String {
         let separator = locale.decimalSeparator ?? "."
 
         guard contains(separator) else {

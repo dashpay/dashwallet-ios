@@ -113,7 +113,8 @@ extension Coinbase {
             throw Coinbase.Error.noActiveUser
         }
 
-        let amount = amount.formattedDashAmount
+        // NOTE: Make sure we format the amount back into coinbase format (en_US)
+        let amount = amount.formattedDashAmount.coinbaseAmount()
 
         let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: nil, quote: true)
         return try await tx.placeCoinbaseBuyOrder(accountId: accountId, request: request)
@@ -147,5 +148,17 @@ extension Coinbase {
 
     public func removeUserDidChangeListener(handle: UserDidChangeListenerHandle) {
         auth.removeUserDidChangeListener(handle: handle)
+    }
+}
+
+extension String {
+    func coinbaseAmount() -> String {
+        let locale = Locale(identifier: "en_US")
+
+        guard locale.decimalSeparator != Locale.current.decimalSeparator else {
+            return self
+        }
+
+        return localizedAmount(locale: locale)
     }
 }
