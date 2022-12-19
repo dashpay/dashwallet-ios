@@ -84,8 +84,11 @@ extension Coinbase {
     }
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
-                                                 coinAmountInDash: String,
-                                                 dashWalletAddress: String) async throws -> CoinbaseTransaction {
+                                                 coinAmountInDash: String) async throws -> CoinbaseTransaction {
+        guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
+            fatalError("No wallet")
+        }
+
         DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet")
 
         guard let accountId = auth.currentUser?.accountId else {
@@ -116,7 +119,7 @@ extension Coinbase {
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
         let amount = amount.formattedDashAmount.coinbaseAmount()
 
-        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: nil, quote: true)
+        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: false, quote: nil)
         return try await tx.placeCoinbaseBuyOrder(accountId: accountId, request: request)
     }
 
@@ -135,7 +138,9 @@ extension Coinbase {
             throw Coinbase.Error.noActiveUser
         }
 
-        return try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
+        let order = try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
+
+        return order
     }
 
     public func signOut() async throws {

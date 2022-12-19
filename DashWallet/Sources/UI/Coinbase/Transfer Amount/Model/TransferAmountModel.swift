@@ -121,15 +121,11 @@ final class TransferAmountModel: SendAmountModel {
     }
 
     private func transferToWallet(with verificationCode: String? = nil) {
-        guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
-
         let amount = amount.plainAmount.formattedDashAmount
-        DSLogger.log("Tranfer from coinbase: transferToWallet \(amount) \(address)")
         Task {
             do {
                 let _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode,
-                                                                                   coinAmountInDash: amount,
-                                                                                   dashWalletAddress: address)
+                                                                                   coinAmountInDash: amount)
                 DSLogger.log("Tranfer from coinbase: transferToWallet - success")
                 await MainActor.run {
                     self.delegate?.transferFromCoinbaseToWalletDidSucceed()
