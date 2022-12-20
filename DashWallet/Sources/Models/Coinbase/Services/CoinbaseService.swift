@@ -50,7 +50,13 @@ extension CoinbaseService {
     }
 
     func createCoinbaseAccountAddress(accountId: String) async throws -> String {
-        let result: BaseDataResponse<CoinbaseAccountAddress> = try await httpClient.request(.createCoinbaseAccountAddress(accountId))
-        return result.data.address
+        do {
+            let result: BaseDataResponse<CoinbaseAccountAddress> = try await httpClient.request(.createCoinbaseAccountAddress(accountId))
+            return result.data.address
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
+            throw Coinbase.Error.userSessionExpired
+        } catch {
+            throw Coinbase.Error.transactionFailed(.failedToObtainNewAddress)
+        }
     }
 }

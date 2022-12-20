@@ -21,7 +21,7 @@ import Foundation
 
 protocol BuyDashModelDelegate: AnyObject {
     func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder)
-    func buyDashModelFailedToPlaceOrder(with reason: BuyDashFailureReason)
+    func buyDashModelFailedToPlaceOrder(with error: Coinbase.Error)
 }
 
 // MARK: - BuyDashFailureReason
@@ -75,10 +75,19 @@ final class BuyDashModel: BaseAmountModel {
             return
         }
 
+        let amount = UInt64(amount.plainAmount)
         Task {
-            let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: UInt64(amount.plainAmount), paymentMethod: paymentMethod)
-            await MainActor.run { [weak self] in
-                self?.delegate?.buyDashModelDidPlace(order: order)
+            do {
+                let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
+                await MainActor.run { [weak self] in
+                    self?.delegate?.buyDashModelDidPlace(order: order)
+                }
+            } catch let error as Coinbase.Error {
+                await MainActor.run { [weak self] in
+                    self?.delegate?.buyDashModelFailedToPlaceOrder(with: error)
+                }
+            } catch {
+                // TODO: do smth
             }
         }
     }

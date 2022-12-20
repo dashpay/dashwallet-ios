@@ -15,11 +15,103 @@ let authBaseURL = URL(string: "https://coinbase.com")
 
 // MARK: - CoinbaseAPIError
 
-struct CoinbaseAPIError: Codable {
-    struct Error: Codable {
-        let id: String
+struct CoinbaseAPIError: Decodable {
+    struct Error: Decodable {
+        let id: ClientErrorID!
+
+        /// Human readable message.
         let message: String
-        let url: URL
+
+        /// Link to the documentation.
+        let url: URL?
+
+        /// List of available error codes.
+        enum ClientErrorID: String, Decodable {
+            /// When sending money over 2fa limit.
+            ///
+            /// Status Code: `402`.
+            case twoFactorRequired = "two_factor_required"
+
+            /// Missing parameter.
+            ///
+            /// Status Code: `400`.
+            case paramRequired = "param_required"
+
+            /// Unable to validate POST/PUT.
+            ///
+            /// Status Code: `400`.
+            case validationError = "validation_error"
+
+            /// Invalid request.
+            ///
+            /// Status Code: `400`.
+            case invalidRequest = "invalid_request"
+
+            /// User’s personal detail required to complete this request.
+            ///
+            /// Status Code: `400`.
+            case personalDetailsRequired = "personal_details_required"
+
+            /// Identity verification is required to complete this request.
+            ///
+            /// Status Code: `400`.
+            case identityVerificationRequired = "identity_verification_required"
+
+            /// Document verification is required to complete this request.
+            ///
+            /// Status Code: `400`.
+            case jumioVerificationRequired = "jumio_verification_required"
+
+            /// Document verification including face match is required to complete this request.
+            ///
+            /// Status Code: `400`.
+            case jumioFaceMatchVerificationRequired = "jumio_face_match_verification_required"
+
+            /// User has not verified their email.
+            ///
+            /// Status Code: `400`.
+            case unverifiedEmail = "unverified_email"
+
+            /// Invalid auth (generic).
+            ///
+            /// Status Code: `401`.
+            case authenticationError = "authentication_error"
+
+            /// Invalid Oauth token.
+            ///
+            /// Status Code: `401`.
+            case invalidToken = "invalid_token"
+
+            /// Revoked Oauth token.
+            ///
+            /// Status Code: `401`.
+            case revokedToken = "revoked_token"
+
+            /// Expired Oauth token.
+            ///
+            /// Status Code: `401`.
+            case expiredToken = "expired_token"
+
+            /// User hasn’t authenticated necessary scope.
+            ///
+            /// Status Code: `403`.
+            case invalidScope = "invalid_scope"
+
+            /// Resource not found.
+            ///
+            /// Status Code: `404`.
+            case notFound = "not_found"
+
+            /// Rate limit exceeded.
+            ///
+            /// Status Code: `429`.
+            case rateLimitExceeded = "rate_limit_exceeded"
+
+            /// Internal server error.
+            ///
+            /// Status Code: `500`.
+            case internalServerError = "internal_server_error"
+        }
     }
 
     var errors: [Error]
@@ -144,6 +236,13 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             headers["CB-2FA-TOKEN"] = verificationCode
         default:
             break
+        }
+
+        // NOTE: Coinbase supports localizations (https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/localization)
+        if #available(iOS 16, *), let lang = Locale.current.language.languageCode?.identifier(.alpha2) {
+            headers["Accept-Language"] = lang
+        } else if let lang = Locale.current.languageCode {
+            headers["Accept-Language"] = lang
         }
 
         return headers

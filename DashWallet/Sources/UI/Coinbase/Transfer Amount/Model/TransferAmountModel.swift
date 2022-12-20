@@ -25,21 +25,15 @@ protocol TransferAmountModelDelegate: AnyObject {
 
     func initiatePayment(with input: DWPaymentInput)
 
-    func transferFromCoinbaseToWalletDidFail(with error: Error)
-    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason)
+    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error)
+    func transferFromCoinbaseToWalletDidFail(with reason: Coinbase.Error.TransactionFailureReason)
     func transferFromCoinbaseToWalletDidSucceed()
     func transferFromCoinbaseToWalletDidCancel()
 }
 
-// MARK: - TransferFromCoinbaseFailureReason
-
-enum TransferFromCoinbaseFailureReason {
-    case twoFactorRequired
-    case invalidVerificationCode
-    case unknown
-}
-
 // MARK: - TransferAmountModel
+
+
 
 final class TransferAmountModel: SendAmountModel {
     enum TransferDirection {
@@ -108,7 +102,7 @@ final class TransferAmountModel: SendAmountModel {
 
         obtainNewAddress { [weak self] address in
             guard let address else {
-                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
+                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .transactionFailed(.failedToObtainNewAddress))
                 return
             }
 
@@ -124,26 +118,17 @@ final class TransferAmountModel: SendAmountModel {
         let amount = amount.plainAmount.formattedDashAmount
         Task {
             do {
-                let _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode,
-                                                                                   coinAmountInDash: amount)
-                DSLogger.log("Tranfer from coinbase: transferToWallet - success")
+                let _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, coinAmountInDash: amount)
                 await MainActor.run {
                     self.delegate?.transferFromCoinbaseToWalletDidSucceed()
                 }
-            } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
-                DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 402")
+            } catch Coinbase.Error.transactionFailed(let r) {
                 await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
-                }
-            } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
-                DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
+                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: r)
                 }
             } catch {
-                DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error) - \(error.localizedDescription)")
                 await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error)
+                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error as! Coinbase.Error)
                 }
             }
         }
@@ -159,7 +144,7 @@ final class TransferAmountModel: SendAmountModel {
                 }
             } catch let error {
                 await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error)
+                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error as! Coinbase.Error)
                 }
             }
         }

@@ -130,6 +130,7 @@ extension HTTPClient {
                     let responseString = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
                     DSLogger.log("HTTPClient failure begin")
                     DSLogger.log("HTTPClient request: \(String(describing: response.request))")
+                    DSLogger.log("HTTPClient request params: \(String(describing: response.request))")
                     DSLogger.log("HTTPClient response: \(String(describing: responseString))")
                     DSLogger.log("HTTPClient failure end")
                     completion(.failure(.statusCode(response)))

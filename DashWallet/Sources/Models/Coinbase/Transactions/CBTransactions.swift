@@ -20,28 +20,60 @@ import Foundation
 final class CBTransactions {
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
 
-    func send(from accountId: String, amount: String, to address: String, verificationCode: String?) async throws -> CoinbaseTransaction {
-        let dto = CoinbaseTransactionsRequest(type: .send,
-                                              to: address,
-                                              amount: amount,
-                                              currency: kDashCurrency,
-                                              idem: UUID())
+    func send(from accountId: String, amount: String, verificationCode: String?) async throws -> CoinbaseTransaction {
+        guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
+            fatalError("No wallet")
+        }
 
-        DSLogger.log("Tranfer from coinbase: CBTransactions.send")
+        // TODO: validate amount here
 
-        let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
-            .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
-        DSLogger.log("Tranfer from coinbase: CBTransactions.send - receive response")
-        return result.data
+        do {
+            let dto = CoinbaseTransactionsRequest(type: .send,
+                                                  to: dashWalletAddress,
+                                                  amount: amount,
+                                                  currency: kDashCurrency,
+                                                  idem: UUID())
+
+            let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
+                .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
+            DSLogger.log("Tranfer from coinbase: transferToWallet - success")
+            return result.data
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 402")
+            throw Coinbase.Error.transactionFailed(.twoFactorRequired)
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
+            throw Coinbase.Error.transactionFailed(.invalidVerificationCode)
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 401")
+            throw Coinbase.Error.userSessionExpired
+        } catch {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
+            throw Coinbase.Error.transactionFailed(.unknown(error))
+        }
     }
 
     func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) async throws -> CoinbasePlaceBuyOrder {
-        let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
-        return result.data
+        do {
+            let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
+            return result.data
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 401")
+            throw Coinbase.Error.userSessionExpired
+        } catch HTTPClientError.statusCode(let r) {
+            if let error = r.error?.errors.first {
+                throw Coinbase.Error.transactionFailed(.message(error.message))
+            }
+
+            throw Coinbase.Error.unknownError
+        } catch {
+            throw error
+        }
     }
 
     func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
         let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
+
         return result.data
     }
 }

@@ -54,6 +54,7 @@ final class ConfirmOrderModel {
                 let order = try await Coinbase.shared.commitCoinbaseBuyOrder(orderID: orderId)
                 self?.order = order
 
+                try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: nil, amount: plainAmount)
                 await MainActor.run { [weak self] in
                     self?.completionHandle?()
                 }

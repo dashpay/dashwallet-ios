@@ -136,5 +136,9 @@ extension BuyDashViewController: BuyDashModelDelegate {
         hideActivityIndicator()
     }
 
-    func buyDashModelFailedToPlaceOrder(with reason: BuyDashFailureReason) { }
+    func buyDashModelFailedToPlaceOrder(with error: Coinbase.Error) {
+        hideActivityIndicator()
+
+        showAlert(with: "Error", message: error.localizedDescription)
+    }
 }

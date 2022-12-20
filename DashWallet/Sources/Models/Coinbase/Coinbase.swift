@@ -28,12 +28,6 @@ var kCoinbaseFeeInfoURL = URL(string: "https://help.coinbase.com/en/coinbase/tra
 // MARK: - Coinbase
 
 class Coinbase {
-    enum Error: Swift.Error {
-        case noActiveUser
-        case failedToStartAuthSession
-        case failedToAuth
-    }
-
     private lazy var coinbaseService = CoinbaseService()
 
     private var auth = CBAuth()
@@ -73,7 +67,7 @@ extension Coinbase {
 
     public func createNewCoinbaseDashAddress() async throws -> String {
         guard let coinbaseUserAccountId = auth.currentUser?.accountId else {
-            throw Coinbase.Error.noActiveUser
+            throw Coinbase.Error.general(.noActiveUser)
         }
 
         return try await coinbaseService.createCoinbaseAccountAddress(accountId: coinbaseUserAccountId)
@@ -84,19 +78,17 @@ extension Coinbase {
     }
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
-                                                 coinAmountInDash: String) async throws -> CoinbaseTransaction {
-        guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
-            fatalError("No wallet")
-        }
-
+                                                 amount: UInt64) async throws -> CoinbaseTransaction {
         DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet")
 
         guard let accountId = auth.currentUser?.accountId else {
-            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
-            throw Coinbase.Error.noActiveUser
+            throw Coinbase.Error.general(.noActiveUser)
         }
 
-        let tx = try await tx.send(from: accountId, amount: coinAmountInDash, to: dashWalletAddress, verificationCode: verificationCode)
+        // NOTE: Make sure we format the amount back into coinbase format (en_US)
+        let amount = amount.formattedDashAmount.coinbaseAmount()
+
+        let tx = try await tx.send(from: accountId, amount: amount, verificationCode: verificationCode)
         try? await auth.currentUser?.refreshAccount()
         return tx
     }
@@ -112,8 +104,7 @@ extension Coinbase {
     ///
     func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
         guard let accountId = auth.currentUser?.accountId else {
-            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
-            throw Coinbase.Error.noActiveUser
+            throw Coinbase.Error.general(.noActiveUser)
         }
 
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
@@ -134,8 +125,7 @@ extension Coinbase {
     ///
     func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
         guard let accountId = auth.currentUser?.accountId else {
-            DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet - no active user")
-            throw Coinbase.Error.noActiveUser
+            throw Coinbase.Error.general(.noActiveUser)
         }
 
         let order = try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
@@ -144,6 +134,10 @@ extension Coinbase {
     }
 
     public func signOut() async throws {
+        guard let _ = auth.currentUser?.accountId else {
+            throw Coinbase.Error.general(.noActiveUser)
+        }
+
         try await auth.signOut()
     }
 

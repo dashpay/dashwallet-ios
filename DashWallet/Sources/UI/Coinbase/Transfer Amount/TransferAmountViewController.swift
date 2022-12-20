@@ -107,7 +107,7 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         converterView.reloadView()
     }
 
-    func transferFromCoinbaseToWalletDidFail(with error: Error) {
+    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error) {
         DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToWalletDidFail")
         showAlert(with: "Error", message: error.localizedDescription)
         hideActivityIndicator()
@@ -131,7 +131,7 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         showSuccessTransactionStatus()
     }
 
-    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason) {
+    func transferFromCoinbaseToWalletDidFail(with reason: Coinbase.Error.TransactionFailureReason) {
         switch reason {
         case .twoFactorRequired:
             initiateTwoFactorAuth()
@@ -140,6 +140,12 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         case .unknown:
             hideActivityIndicator()
             showFailedTransactionStatus(text: NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase"))
+        case .failedToObtainNewAddress:
+            showFailedTransactionStatus(text: NSLocalizedString("Can't create new address. Please, try again later", comment: "Coinbase"))
+        case .message(let msg):
+            showFailedTransactionStatus(text: msg)
+        default:
+            break
         }
     }
 
