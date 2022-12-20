@@ -72,20 +72,16 @@ class ActionButtonViewController: BaseViewController {
             activityIndicator.sizeToFit()
             let barButtonItem = UIBarButtonItem(customView: activityIndicator)
             navigationItem.rightBarButtonItem = barButtonItem
-        }
-        else {
+        } else {
             button.showActivityIndicator()
-            button.isEnabled = false
         }
     }
 
     func hideActivityIndicator() {
         if isActionButtonInNavigationBar {
             navigationItem.rightBarButtonItem = barButton
-        }
-        else {
+        } else {
             button.hideActivityIndicator()
-            button.isEnabled = true
         }
     }
 
