@@ -27,25 +27,6 @@ class CrowdNodeService {
 
 extension CrowdNodeService {
     func getCrowdNodeBalance(address: String) async throws -> CrowdNodeBalance {
-        let result: CrowdNodeBalance = try await httpClient.request(.getBalance(address))
-        return result
-        
-//        httpClient.request(.getBalance(address)) { result in
-//            switch result {
-//            case let .success(moyaResponse):
-//                let data = moyaResponse.data // Data, your JSON response is probably in here!
-//                let statusCode = moyaResponse.statusCode // Int - 200, 401, 500, etc
-//
-//                do {
-//                    let json = try moyaResponse.mapJSON() // type Any
-//                    print("CrowdNode statusCode: \(json)")
-//                } catch {
-//                    print("CrowdNode error1: \(error)")
-//                }
-//
-//            case let .failure(error):
-//                print("CrowdNode error2: \(error)")
-//            }
-//        }
+        return try await httpClient.request(.getBalance(address))
     }
 }

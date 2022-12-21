@@ -44,7 +44,7 @@ final class CrowdNodeTransferController: UIViewController {
 
     @IBAction func deposit() {
         guard let inputText = depositInput.text else { return }
-        let dash = DSPriceManager.sharedInstance().amount(forDashString: inputText)
+        let dash = DSPriceManager.sharedInstance().amount(forDashString: inputText.replacingOccurrences(of: ",", with: "."))
 
         Task {
             do {

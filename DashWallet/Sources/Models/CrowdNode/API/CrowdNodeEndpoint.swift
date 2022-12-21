@@ -17,10 +17,6 @@
 
 import Moya
 
-/// BaseUrl API Endpoints
-private let crowdNodeMainnetBaseURL = URL(string: "https://app.crowdnode.io/")!
-private let crowdNodeTestnetBaseURL = URL(string: "https://test.crowdnode.io/")!
-
 
 // MARK: - CrowdNodeEndpoint
 
@@ -40,8 +36,7 @@ public enum CrowdNodeEndpoint {
 extension CrowdNodeEndpoint: TargetType {
     
     public var baseURL: URL {
-        // TODO: testnet
-        crowdNodeMainnetBaseURL
+        URL(string: CrowdNode.baseUrl)!
     }
 
     public var path: String {

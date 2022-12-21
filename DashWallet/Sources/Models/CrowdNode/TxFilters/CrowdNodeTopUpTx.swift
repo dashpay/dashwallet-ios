@@ -17,7 +17,7 @@
 
 public final class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
     init(address: String) {
-        super.init(coins: CrowdNodeConstants.requiredForSignup, address: address)
+        super.init(coins: CrowdNode.requiredForSignup, address: address)
     }
 
     override func matches(tx: DSTransaction) -> Bool {

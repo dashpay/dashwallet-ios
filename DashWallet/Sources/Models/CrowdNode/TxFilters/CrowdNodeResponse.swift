@@ -21,12 +21,12 @@ public final class CrowdNodeResponse: CoinsToAddressTxFilter {
     init(responseCode: ApiCode, accountAddress: String?) {
         self.responseCode = responseCode
         let accountAddress = accountAddress
-        let responseAmount = CrowdNodeConstants.apiOffset + responseCode.rawValue
+        let responseAmount = CrowdNode.apiOffset + responseCode.rawValue
 
         super.init(coins: responseAmount, address: accountAddress)
     }
 
     override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.first == CrowdNodeConstants.crowdNodeAddress
+        super.matches(tx: tx) && fromAddresses.first == CrowdNode.crowdNodeAddress
     }
 }

@@ -43,11 +43,11 @@ public class CrowdNodeObjcWrapper: NSObject {
     }
 
     @objc public class func crowdNodeWebsiteUrl() -> URL {
-        URL(string: CrowdNodeConstants.websiteUrl)!
+        URL(string: CrowdNode.websiteUrl)!
     }
 
     @objc public class func notificationID() -> String {
-        CrowdNodeConstants.notificationID
+        CrowdNode.notificationID
     }
 }
 
@@ -181,8 +181,8 @@ extension CrowdNode {
         do {
             if signUpState < SignUpState.acceptTermsRequired {
                 signUpState = SignUpState.fundingWallet
-                let topUpTx = try await topUpAccount(accountAddress, CrowdNodeConstants.requiredForSignup)
-                print("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
+                let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForSignup)
+                DSLogger.log("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
 
                 signUpState = SignUpState.signingUp
                 let (signUpTx, acceptTermsResponse) = try await makeSignUpRequest(accountAddress, [topUpTx])
@@ -192,7 +192,7 @@ extension CrowdNode {
             }
             else {
                 signUpState = SignUpState.acceptingTerms
-                let topUpTx = try await topUpAccount(accountAddress, CrowdNodeConstants.requiredForAcceptTerms)
+                let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForAcceptTerms)
                 let _ = try await acceptTerms(accountAddress, [topUpTx])
             }
 
@@ -209,8 +209,8 @@ extension CrowdNode {
 
     private func makeSignUpRequest(_ accountAddress: String,
                                    _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
-        let requestValue = CrowdNodeConstants.apiOffset + ApiCode.signUp.rawValue
-        let signUpTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+        let requestValue = CrowdNode.apiOffset + ApiCode.signUp.rawValue
+        let signUpTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                             amount: requestValue,
                                                             inputSelector: SingleInputAddressSelector(candidates: inputs,
                                                                                                       address: accountAddress))
@@ -233,12 +233,12 @@ extension CrowdNode {
 
     private func acceptTerms(_ accountAddress: String,
                              _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
-        let requestValue = CrowdNodeConstants.apiOffset + ApiCode.acceptTerms.rawValue
-        let termsAcceptedTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+        let requestValue = CrowdNode.apiOffset + ApiCode.acceptTerms.rawValue
+        let termsAcceptedTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                                    amount: requestValue,
                                                                    inputSelector: SingleInputAddressSelector(candidates: inputs,
                                                                                                              address: accountAddress))
-        print("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
+        DSLogger.log("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,
                                                 accountAddress: accountAddress)
@@ -263,7 +263,7 @@ extension CrowdNode {
         let content = UNMutableNotificationContent()
         content.body = NSLocalizedString("Your CrowdNode account is set up and ready to use!", comment: "")
         content.sound = UNNotificationSound.default
-        let request = UNNotificationRequest(identifier: CrowdNodeConstants.notificationID, content: content, trigger: nil)
+        let request = UNNotificationRequest(identifier: CrowdNode.notificationID, content: content, trigger: nil)
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.add(request)
     }
@@ -281,7 +281,7 @@ extension CrowdNode {
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         DSLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
 
-        let depositTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+        let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                              amount: min(account.maxOutputAmount, amount),
                                                              inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
                                                                                                        address: accountAddress))
@@ -304,14 +304,14 @@ extension CrowdNode {
         guard !accountAddress.isEmpty else { return }
 
         let account = DWEnvironment.sharedInstance().currentAccount
-        let requestValue = CrowdNodeConstants.apiOffset + UInt64(permil)
+        let requestValue = CrowdNode.apiOffset + UInt64(permil)
         let requiredTopUp = requestValue + TX_FEE_PER_INPUT
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
 
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         DSLogger.log("CrowdNode withdraw topup tx hash: \(topUpTx.txHashHexString)")
 
-        let withdrawTx = try await sendCoinsService.sendCoins(address: CrowdNodeConstants.crowdNodeAddress,
+        let withdrawTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                               amount: requestValue,
                                                               inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
                                                                                                         address: accountAddress))
@@ -346,7 +346,7 @@ extension CrowdNode {
                 let plainAmount = dashNumber * duffsNumber
                 balance = NSDecimalNumber(decimal: plainAmount).uint64Value
             } catch {
-                print("CrowdNode error: \((error as! HTTPClientError).localizedDescription)")
+                DSLogger.log("CrowdNode error: \((error as! HTTPClientError).localizedDescription)")
             }
         }
     }

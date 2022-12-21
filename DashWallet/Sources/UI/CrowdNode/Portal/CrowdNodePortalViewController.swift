@@ -23,7 +23,7 @@ final class CrowdNodePortalController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     
     @IBOutlet var gradientHeader: UIView!
-    @IBOutlet var contentTable: UITableView!
+    @IBOutlet var tableView: UITableView!
     @IBOutlet var balanceView: BalanceView!
     
     override func viewDidLoad() {
@@ -41,17 +41,18 @@ final class CrowdNodePortalController: UIViewController {
     }
     
     @objc func infoButtonAction() {
-        print("infoButtonAction")
+        UIPasteboard.general.string = viewModel.accountAddress
     }
 }
 
 extension CrowdNodePortalController {
     private func configureHierarchy() {
         balanceView.tint = .white
-        contentTable.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
-        contentTable.clipsToBounds = true
-        contentTable.isScrollEnabled = false
-        contentTable.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: contentTable.frame.size.width, height: 1))
+        tableView.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
+        tableView.clipsToBounds = true
+        tableView.isScrollEnabled = false
+        tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 1))
+        tableView.rowHeight = UITableView.automaticDimension
         
         let colorStart = UIColor(red: 31 / 255.0, green: 134 / 255.0, blue: 201 / 255.0, alpha: 1.0).cgColor
         let colorEnd = UIColor(red: 99 / 255.0, green: 181 / 255.0, blue: 237 / 255.0, alpha: 1.0).cgColor
@@ -81,7 +82,28 @@ extension CrowdNodePortalController {
     private func configureObservers() {
         viewModel.$crowdNodeBalance
             .receive(on: DispatchQueue.main)
-            .assign(to: \.balance, on: balanceView)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] balance in
+                guard let wSelf = self else { return }
+                wSelf.balanceView.balance = balance
+                wSelf.tableView.reloadRows(at: [
+                    IndexPath.init(item: 0, section: 0),
+                    IndexPath.init(item: 1, section: 0)
+                ],
+                with: .none)
+            })
+            .store(in: &cancellableBag)
+        
+        viewModel.$walletBalance
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] balance in
+                guard let wSelf = self else { return }
+                wSelf.tableView.reloadRows(at: [
+                    IndexPath.init(item: 0, section: 0),
+                ],
+                with: .none)
+            })
             .store(in: &cancellableBag)
     }
 }
@@ -91,44 +113,101 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var subtitle : UILabel!
     @IBOutlet var icon : UIImageView!
     @IBOutlet var iconCircle : UIView!
+    @IBOutlet var additionalInfo: UIView!
+    
+    fileprivate func update(
+        with item: CrowdNodePortalItem,
+        _ crowdNodeBalance: UInt64,
+        _ walletBalance: UInt64
+    ) {
+        title.text = item.title
+        subtitle.text = item.subtitle
+        icon.image = UIImage(named: item.icon)
+        
+        if item.isDisabled(crowdNodeBalance, walletBalance) {
+            let grayColor = UIColor(red: 176/255.0, green: 182/255.0, blue: 188/255.0, alpha: 1.0)
+            iconCircle.backgroundColor = grayColor
+            title.textColor = .dw_secondaryText()
+            selectionStyle = .none
+        } else {
+            iconCircle.backgroundColor = item.iconCircleColor
+            title.textColor = .label
+            selectionStyle = .default
+        }
+        
+        if item == .deposit && crowdNodeBalance < CrowdNode.minimumDeposit {
+            let label = UILabel(frame: additionalInfo.frame)
+            label.textColor = .systemGreen
+            label.font = UIFont.systemFont(ofSize: 12)
+            label.textColor = .dw_dashBlue()
+            label.text = item.info(crowdNodeBalance)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            additionalInfo.addSubview(label)
+            label.centerXAnchor.constraint(equalTo: additionalInfo.centerXAnchor).isActive = true
+            label.centerYAnchor.constraint(equalTo: additionalInfo.centerYAnchor).isActive = true
+        } else {
+            additionalInfo.heightAnchor.constraint(equalToConstant: 0).isActive = true
+        }
+    }
 }
 
 extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.portalItems.count
+    func numberOfSections(in tableView: UITableView) -> Int {
+        2
     }
     
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        2
+    }
     
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        78
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNormalMagnitude
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CrowdNodeCell",
                               for: indexPath) as! CrowdNodeCell
              
-        let item = viewModel.portalItems[indexPath.item]
-        cell.title.text = item.title
-        cell.subtitle.text = item.subtitle
-        cell.icon.image = UIImage(named: item.icon)
-        cell.iconCircle.backgroundColor = item.iconCircleColor
-             
+        let item = viewModel.portalItems[(indexPath.section * 2) + indexPath.item]
+        cell.update(with: item, viewModel.crowdNodeBalance, viewModel.walletBalance)
+        
         return cell
+    }
+    
+    // Default corner radius is too small. Set to 16
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let cornerRadius = 16
+        var corners = UIRectCorner()
+
+        if indexPath.item == 0 {
+            corners.insert(.topLeft)
+            corners.insert(.topRight)
+        } else {
+            corners.insert(.bottomLeft)
+            corners.insert(.bottomRight)
+        }
+
+        let shapeLayer = CAShapeLayer()
+        shapeLayer.path = UIBezierPath(roundedRect: cell.bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: cornerRadius, height: cornerRadius)).cgPath
+        cell.layer.mask = shapeLayer
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
-        let item = viewModel.portalItems[indexPath.item]
-        let vc: UIViewController
-
-        switch item {
-        default:
-            vc = CrowdNodeTransferController.controller()
+        let item = viewModel.portalItems[(indexPath.section * 2) + indexPath.item]
+        
+        if item.isDisabled(viewModel.crowdNodeBalance, viewModel.walletBalance) {
+            return
         }
 
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
+        switch item {
+        case .deposit, .withdraw:
+            navigationController?.pushViewController(CrowdNodeTransferController.controller(), animated: true)
+        case .onlineAccount:
+            UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
+            break
+        case .support:
+            UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
+        }
     }
 }

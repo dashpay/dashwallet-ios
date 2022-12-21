@@ -47,8 +47,8 @@ import Combine
 enum CrowdNodePortalItem: CaseIterable {
     case deposit
     case withdraw
-//    case onlineAccount
-//    case support
+    case onlineAccount
+    case support
 }
 
 extension CrowdNodePortalItem {
@@ -58,10 +58,10 @@ extension CrowdNodePortalItem {
             return NSLocalizedString("Deposit", comment: "CrowdNode Portal")
         case .withdraw:
             return NSLocalizedString("Withdraw", comment: "CrowdNode Portal")
-//        case .onlineAccount:
-//            return NSLocalizedString("Create Online Account", comment: "CrowdNode Portal")
-//        case .support:
-//            return NSLocalizedString("CrowdNode Support", comment: "CrowdNode Portal")
+        case .onlineAccount:
+            return NSLocalizedString("Create Online Account", comment: "CrowdNode Portal")
+        case .support:
+            return NSLocalizedString("CrowdNode Support", comment: "CrowdNode Portal")
         }
     }
 
@@ -71,10 +71,10 @@ extension CrowdNodePortalItem {
             return NSLocalizedString("DashWallet ➝ CrowdNode", comment: "CrowdNode Portal")
         case .withdraw:
             return NSLocalizedString("CrowdNode ➝ DashWallet", comment: "CrowdNode Portal")
-//        case .onlineAccount:
-//            return NSLocalizedString("Protect your savings", comment: "CrowdNode Portal")
-//        case .support:
-//            return ""
+        case .onlineAccount:
+            return NSLocalizedString("Protect your savings", comment: "CrowdNode Portal")
+        case .support:
+            return ""
         }
     }
 
@@ -84,10 +84,10 @@ extension CrowdNodePortalItem {
             return "image.crowdnode.deposit"
         case .withdraw:
             return "image.crowdnode.withdraw"
-//        case .onlineAccount:
-//            return "image.crowdnode.online"
-//        case .support:
-//            return "image.crowdnode.support"
+        case .onlineAccount:
+            return "image.crowdnode.online"
+        case .support:
+            return "image.crowdnode.support"
         }
     }
     
@@ -95,8 +95,41 @@ extension CrowdNodePortalItem {
         switch self {
         case .deposit:
             return UIColor.systemGreen
+            
         default:
             return UIColor.dw_dashBlue()
+        }
+    }
+    
+    func isDisabled(_ crowdNodeBalance: UInt64, _ walletBalance: UInt64) -> Bool {
+        switch self {
+        case .deposit:
+            return walletBalance <= 0
+            
+        case .withdraw:
+            return crowdNodeBalance <= 0
+            
+        default:
+            return false
+        }
+    }
+    
+    
+    func info(_ crowdNodeBalance: UInt64) -> String {
+        switch self {
+        case .deposit:
+            let negligibleAmount = CrowdNode.minimumDeposit / 50
+            let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit)) ?? String(CrowdNode.minimumDeposit)
+            
+            if (crowdNodeBalance < negligibleAmount) {
+                return NSLocalizedString("Deposit at least \(minimumDeposit) to start earning", comment: "CrowdNode Portal")
+            } else {
+                return NSLocalizedString("Deposit \(minimumDeposit) to start earning", comment: "CrowdNode Portal")
+            }
+        case .withdraw:
+            return NSLocalizedString("Verification Required", comment: "CrowdNode Portal")
+        default:
+            return ""
         }
     }
 }
@@ -115,8 +148,9 @@ final class CrowdNodeModel {
     @Published var accountAddress = ""
     @Published var signUpEnabled = false
     @Published var signUpState: CrowdNode.SignUpState
-    @Published var hasEnoughBalance = false
     @Published var crowdNodeBalance: UInt64 = 0
+    @Published var walletBalance: UInt64 = 0
+    @Published var hasEnoughWalletBalance = false
 
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
@@ -128,7 +162,7 @@ final class CrowdNodeModel {
     }
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
-    var canSignUp: Bool { !needsBackup && hasEnoughBalance }
+    var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
     
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
 
@@ -139,11 +173,11 @@ final class CrowdNodeModel {
     }
 
     func getAccountAddress() {
-        if isInterrupted {
-            accountAddress = crowdNode.accountAddress
+        if crowdNode.accountAddress.isEmpty {
+            accountAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
         }
         else {
-            accountAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
+            accountAddress = crowdNode.accountAddress
         }
     }
 
@@ -159,7 +193,6 @@ final class CrowdNodeModel {
             }
 
             if !accountAddress.isEmpty {
-                print("CrowdNode account address: \(accountAddress)")
                 self.accountAddress = accountAddress
 
                 if await authenticate(message: promptMessage) {
@@ -242,7 +275,8 @@ extension CrowdNodeModel {
     }
 
     private func checkBalance() {
-        hasEnoughBalance = DWEnvironment.sharedInstance().currentAccount.balance >= CrowdNodeConstants.minimumRequiredDash
+        walletBalance = DWEnvironment.sharedInstance().currentAccount.balance
+        hasEnoughWalletBalance = walletBalance >= CrowdNode.minimumRequiredDash
     }
 }
 
