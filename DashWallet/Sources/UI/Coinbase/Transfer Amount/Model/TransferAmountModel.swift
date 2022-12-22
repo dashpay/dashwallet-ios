@@ -20,34 +20,28 @@ import Foundation
 
 // MARK: - TransferAmountModelDelegate
 
-protocol TransferAmountModelDelegate: AnyObject {
+protocol TransferAmountModelDelegate: CoinbaseTransactionDelegate {
     func coinbaseUserDidChange()
 
     func initiatePayment(with input: DWPaymentInput)
-
-    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error)
-    func transferFromCoinbaseToWalletDidFail(with reason: Coinbase.Error.TransactionFailureReason)
-    func transferFromCoinbaseToWalletDidSucceed()
-    func transferFromCoinbaseToWalletDidCancel()
 }
 
 // MARK: - TransferAmountModel
 
 
-
-final class TransferAmountModel: SendAmountModel {
+final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     enum TransferDirection {
         case toWallet
         case toCoinbase
     }
 
-    public weak var delegate: TransferAmountModelDelegate?
-
-    private var cancellables: Set<AnyCancellable> = []
+    weak var delegate: TransferAmountModelDelegate?
+    weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
 
     public var address: String!
     public var direction: TransferDirection = .toCoinbase
 
+    internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var networkStatus: NetworkStatus!
 
@@ -84,17 +78,11 @@ final class TransferAmountModel: SendAmountModel {
         if direction == .toCoinbase {
             transferToCoinbase()
         } else {
-            transferToWallet()
+            transferFromCoinbase()
         }
     }
 
-    func continueTransferFromCoinbase(with verificationCode: String) {
-        transferToWallet(with: verificationCode)
-    }
 
-    func cancelTransferOperation() {
-        delegate?.transferFromCoinbaseToWalletDidCancel()
-    }
 
     private func transferToCoinbase() {
         // TODO: validate
@@ -111,26 +99,6 @@ final class TransferAmountModel: SendAmountModel {
             }
 
             self?.delegate?.initiatePayment(with: paymentInput)
-        }
-    }
-
-    private func transferToWallet(with verificationCode: String? = nil) {
-        let amount = amount.plainAmount.formattedDashAmount
-        Task {
-            do {
-                let _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, coinAmountInDash: amount)
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidSucceed()
-                }
-            } catch Coinbase.Error.transactionFailed(let r) {
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: r)
-                }
-            } catch {
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error as! Coinbase.Error)
-                }
-            }
         }
     }
 

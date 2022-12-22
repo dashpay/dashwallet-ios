@@ -41,9 +41,16 @@ extension UIBarButtonItem: ActionButtonProtocol {
     }
 }
 
+// MARK: - ActivityIndicatorPreviewing
+
+protocol ActivityIndicatorPreviewing: AnyObject {
+    func showActivityIndicator()
+    func hideActivityIndicator()
+}
+
 // MARK: - ActionButtonViewController
 
-class ActionButtonViewController: BaseViewController {
+class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewing {
     public weak var actionButton: ActionButtonProtocol?
 
     internal var isKeyboardNotificationsEnabled = false
@@ -51,7 +58,6 @@ class ActionButtonViewController: BaseViewController {
     internal var isActionButtonInNavigationBar: Bool { false }
     internal var actionButtonTitle: String? {
         fatalError("Must be overriden in subclass")
-        return nil
     }
 
     internal var actionButtonDisabledTitle: String? { actionButtonTitle }

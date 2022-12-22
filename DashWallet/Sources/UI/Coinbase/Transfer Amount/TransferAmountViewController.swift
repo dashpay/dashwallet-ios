@@ -39,7 +39,7 @@ final class TransferAmountViewController: SendAmountViewController {
 
     override var amountInputStyle: AmountInputControl.Style { .basic }
 
-    private weak var codeConfirmationController: TwoFactorAuthViewController?
+    internal weak var codeConfirmationController: TwoFactorAuthViewController?
 
     override var actionButtonTitle: String? {
         NSLocalizedString("Transfer", comment: "Coinbase")
@@ -107,60 +107,11 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         converterView.reloadView()
     }
 
-    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error) {
-        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToWalletDidFail")
-        showAlert(with: "Error", message: error.localizedDescription)
-        hideActivityIndicator()
-    }
-
-    func transferFromCoinbaseToWalletDidCancel() {
-        hideActivityIndicator()
-    }
-
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
         paymentController.delegate = self
         paymentController.presentationContextProvider = self
         paymentController.performPayment(with: input)
-    }
-
-    func transferFromCoinbaseToWalletDidSucceed() {
-        codeConfirmationController?.dismiss(animated: true)
-        codeConfirmationController = nil
-
-        showSuccessTransactionStatus()
-    }
-
-    func transferFromCoinbaseToWalletDidFail(with reason: Coinbase.Error.TransactionFailureReason) {
-        switch reason {
-        case .twoFactorRequired:
-            initiateTwoFactorAuth()
-        case .invalidVerificationCode:
-            codeConfirmationController?.showInvalidCodeState()
-        case .unknown:
-            hideActivityIndicator()
-            showFailedTransactionStatus(text: NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase"))
-        case .failedToObtainNewAddress:
-            showFailedTransactionStatus(text: NSLocalizedString("Can't create new address. Please, try again later", comment: "Coinbase"))
-        case .message(let msg):
-            showFailedTransactionStatus(text: msg)
-        default:
-            break
-        }
-    }
-
-    private func initiateTwoFactorAuth() {
-        let vc = TwoFactorAuthViewController.controller()
-        vc.verifyHandler = { [weak self] code in
-            self?.transferModel.continueTransferFromCoinbase(with: code)
-        }
-        vc.cancelHandler = { [weak self] in
-            self?.transferModel.cancelTransferOperation()
-        }
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
-
-        codeConfirmationController = vc
     }
 }
 
@@ -216,5 +167,17 @@ extension TransferAmountViewController: PaymentControllerDelegate {
 extension TransferAmountViewController: PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
         self
+    }
+}
+
+// MARK: - TransferAmountViewController + CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
+
+extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
+    func codeConfirmationControllerDidContinue(with code: String) {
+        transferModel.continueTransferFromCoinbase(with: code)
+    }
+
+    func codeConfirmationControllerDidCancel() {
+        hideActivityIndicator()
     }
 }

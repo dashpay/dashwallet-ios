@@ -73,7 +73,7 @@ extension Coinbase {
                 case .limitExceded:
                     return NSLocalizedString("You exceeded the authorization limit on Coinbase.", comment: "Coinbase")
                 case .unknown:
-                    return NSLocalizedString("Failed to start auth session", comment: "Coinbase")
+                    return NSLocalizedString("There was an error, please try again later", comment: "Coinbase")
                 case .message(let msg):
                     return msg
                 }

@@ -99,6 +99,9 @@ final class ConfirmOrderController: BaseViewController {
 
     private var timer: Timer!
     private var timeRemaining = 10
+
+    internal weak var codeConfirmationController: TwoFactorAuthViewController?
+
     let measurementFormatter: MeasurementFormatter = {
         let measurementFormatter = MeasurementFormatter()
         measurementFormatter.locale = Locale.current
@@ -200,17 +203,13 @@ extension ConfirmOrderController {
 // MARK: Life cycle
 extension ConfirmOrderController {
     private func configureModel() {
+        model.transactionDelegate = self
+
         model.orderChangeHandle = { [weak self] in
             self?.tableView.reloadData()
             self?.retryButton.hideActivityIndicator()
             self?.retryButton.isEnabled = true
             self?.startCounting()
-        }
-
-        model.completionHandle = { [weak self] in
-            self?
-                .showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 2-3 minutes for the Dash to be transfered to your Dash Wallet on this device.",
-                                                                      comment: "Coinbase/Buy Dash/Confirm Order"))
         }
 
         model.failureHandle = { [weak self] _ in
@@ -263,7 +262,6 @@ extension ConfirmOrderController {
         retryButton.translatesAutoresizingMaskIntoConstraints = false
         retryButton.addTarget(self, action: #selector(retryAction), for: .touchUpInside)
         retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
-        // retryButton.setImage(nil, for: .disabled)
         retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
         retryButton.isHidden = false
         buttonStackView.addArrangedSubview(retryButton)
@@ -339,5 +337,25 @@ extension ConfirmOrderController: NavigationStackControllable {
         cancelAction()
 
         return false
+    }
+}
+
+// MARK: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
+
+extension ConfirmOrderController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
+    func showActivityIndicator() {
+        actionButton?.showActivityIndicator()
+    }
+
+    func hideActivityIndicator() {
+        actionButton?.hideActivityIndicator()
+    }
+
+    func codeConfirmationControllerDidContinue(with code: String) {
+        model.continueTransferFromCoinbase(with: code)
+    }
+
+    func codeConfirmationControllerDidCancel() {
+        hideActivityIndicator()
     }
 }

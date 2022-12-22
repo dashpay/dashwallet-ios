@@ -21,6 +21,7 @@ final class CBTransactions {
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
 
     func send(from accountId: String, amount: String, verificationCode: String?) async throws -> CoinbaseTransaction {
+        // NOTE: Maybe better to get the address once and use it during the tx flow
         guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
             fatalError("No wallet")
         }
@@ -72,8 +73,20 @@ final class CBTransactions {
     }
 
     func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
-        let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
+        do {
+            let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
+            return result.data
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 401")
+            throw Coinbase.Error.userSessionExpired
+        } catch HTTPClientError.statusCode(let r) {
+            if let error = r.error?.errors.first {
+                throw Coinbase.Error.transactionFailed(.message(error.message))
+            }
 
-        return result.data
+            throw Coinbase.Error.unknownError
+        } catch {
+            throw error
+        }
     }
 }
