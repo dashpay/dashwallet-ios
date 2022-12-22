@@ -49,9 +49,7 @@ final class CrowdNodeTransferController: UIViewController {
         Task {
             do {
                 try await viewModel.deposit(amount: dash)
-                await MainActor.run {
-                    dismiss(animated: true, completion: nil)
-                }
+                navigationController?.popViewController(animated: true)
             } catch {
                 outputLabel.text = error.localizedDescription
             }
@@ -65,9 +63,7 @@ final class CrowdNodeTransferController: UIViewController {
         Task {
             do {
                 try await viewModel.withdraw(permil: permil)
-                await MainActor.run {
-                    dismiss(animated: true, completion: nil)
-                }
+                navigationController?.popViewController(animated: true)
             } catch {
                 outputLabel.text = error.localizedDescription
             }
@@ -109,7 +105,8 @@ extension CrowdNodeTransferController: UITextFieldDelegate {
         }
 
         if textField == depositInput {
-            if newText == "0" || (newText.starts(with: "0,") && newText.filter { $0 == "," }.count == 1) {
+            if newText == "0" || (newText.starts(with: "0,") && newText.filter { $0 == "," }.count == 1) ||
+                (newText.starts(with: "0.") && newText.filter { $0 == "." }.count == 1) {
                 return true
             }
 

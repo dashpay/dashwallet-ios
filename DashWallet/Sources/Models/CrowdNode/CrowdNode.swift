@@ -17,7 +17,6 @@
 
 import BackgroundTasks
 import Combine
-import Moya
 
 // MARK: - CrowdNodeObjcWrapper
 
@@ -75,6 +74,7 @@ public final class CrowdNode {
     
     @Published private(set) var signUpState = SignUpState.notInitiated
     @Published private(set) var balance: UInt64 = 0
+    @Published private(set) var isBalanceLoading: Bool = false
 
     private(set) var accountAddress = ""
     private(set) var apiError: Error?
@@ -143,7 +143,7 @@ extension CrowdNode {
         accountAddress = address
         DSLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
-        refreshBalance()
+        refreshBalance(retries: 1)
         // TODO: tax category
     }
 
@@ -287,16 +287,21 @@ extension CrowdNode {
                                                                                                        address: accountAddress))
         DSLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
 
-        let successResponse = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
-                                                accountAddress: accountAddress)
-        let errorResponse = CrowdNodeErrorResponse(errorValue: amount,
-                                                   accountAddress: accountAddress)
+        Task {
+            let successResponse = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
+                                                    accountAddress: accountAddress)
+            let errorResponse = CrowdNodeErrorResponse(errorValue: amount,
+                                                       accountAddress: accountAddress)
 
-        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-        DSLogger.log("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
+            let responseTx = await txObserver.first(filters: errorResponse, successResponse)
+            DSLogger.log("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
 
-        if errorResponse.matches(tx: responseTx) {
-            throw CrowdNodeError.deposit
+            // TODO: handle errors
+            if errorResponse.matches(tx: responseTx) {
+                throw CrowdNodeError.deposit
+            }
+            
+            refreshBalance()
         }
     }
 
@@ -317,37 +322,69 @@ extension CrowdNode {
                                                                                                         address: accountAddress))
         DSLogger.log("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
 
-        let successResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalQueue,
-                                                accountAddress: accountAddress)
-        let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
-                                                   accountAddress: accountAddress)
-        let withdrawalDeniedResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalDenied,
-                                                         accountAddress: accountAddress)
-
-        let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
-        DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
-
-        if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
-            throw CrowdNodeError.withdraw
+        Task {
+            let successResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalQueue,
+                                                    accountAddress: accountAddress)
+            let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
+                                                       accountAddress: accountAddress)
+            let withdrawalDeniedResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalDenied,
+                                                             accountAddress: accountAddress)
+            
+            let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
+            DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
+            
+            // TODO: handle errors
+            if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
+                throw CrowdNodeError.withdraw
+            }
+            
+            refreshBalance(afterWithdrawal: true)
         }
     }
 }
 
 // Balance
 extension CrowdNode {
-    func refreshBalance(attempts: Int = 3) {
-        guard !accountAddress.isEmpty else { return }
+    func refreshBalance(retries: Int = 3, afterWithdrawal: Bool = false) {
+        guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
         
-        _Concurrency.Task {
+        Task {
+            let lastKnownBalance = DWGlobalOptions.sharedInstance().lastKnownCrowdNodeBalance
+            var currentBalance = UInt64(lastKnownBalance)
+            balance = currentBalance
+            isBalanceLoading = true
+            
             do {
-                let result = try await crowdNodeWebService.getCrowdNodeBalance(address: accountAddress)
-                let dashNumber = Decimal(result.totalBalance)
-                let duffsNumber = Decimal(DUFFS)
-                let plainAmount = dashNumber * duffsNumber
-                balance = NSDecimalNumber(decimal: plainAmount).uint64Value
+                for i in 0...retries {
+                    if (i != 0) {
+                        let secondsToWait = UInt64(pow(5.0, Double(i)))
+                        try await Task.sleep(nanoseconds: secondsToWait * 1_000_000_000)
+                    }
+                
+                    let result = try await crowdNodeWebService.getCrowdNodeBalance(address: accountAddress)
+                    let dashNumber = Decimal(result.totalBalance)
+                    let duffsNumber = Decimal(DUFFS)
+                    let plainAmount = dashNumber * duffsNumber
+                    currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
+                    DWGlobalOptions.sharedInstance().lastKnownCrowdNodeBalance = currentBalance
+                    
+                    var breakDifference: UInt64 = 0
+                    
+                    if afterWithdrawal {
+                        breakDifference = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
+                    }
+                    
+                    if llabs(Int64(lastKnownBalance) - Int64(currentBalance)) > breakDifference {
+                        // Balance changed, no need to retry anymore
+                        break
+                    }
+                }
             } catch {
-                DSLogger.log("CrowdNode error: \((error as! HTTPClientError).localizedDescription)")
+                DSLogger.log("CrowdNode balance error: \((error as! HTTPClientError).localizedDescription)")
             }
+            
+            balance = currentBalance
+            isBalanceLoading = false
         }
     }
 }

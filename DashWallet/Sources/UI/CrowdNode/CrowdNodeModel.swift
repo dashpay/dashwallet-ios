@@ -144,13 +144,14 @@ final class CrowdNodeModel {
 
     public static let shared: CrowdNodeModel = .init()
 
-    @Published var outputMessage = ""
-    @Published var accountAddress = ""
-    @Published var signUpEnabled = false
-    @Published var signUpState: CrowdNode.SignUpState
-    @Published var crowdNodeBalance: UInt64 = 0
-    @Published var walletBalance: UInt64 = 0
-    @Published var hasEnoughWalletBalance = false
+    @Published private(set) var outputMessage = ""
+    @Published private(set) var accountAddress = ""
+    @Published private(set) var signUpEnabled = false
+    @Published private(set) var signUpState: CrowdNode.SignUpState
+    @Published private(set) var crowdNodeBalance: UInt64 = 0
+    @Published private(set) var walletBalance: UInt64 = 0
+    @Published private(set) var hasEnoughWalletBalance = false
+    @Published private(set) var animateBalanceLabel = false
 
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
@@ -263,6 +264,10 @@ final class CrowdNodeModel {
 }
 
 extension CrowdNodeModel {
+    func refreshBalance() {
+        crowdNode.refreshBalance(retries: 1)
+    }
+    
     private func observeBalances() {
         checkBalance()
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
@@ -270,7 +275,11 @@ extension CrowdNodeModel {
             .store(in: &cancellableBag)
         
         crowdNode.$balance
-            .sink(receiveValue: { [weak self] value in self?.crowdNodeBalance = value})
+            .assign(to: \.crowdNodeBalance, on: self)
+            .store(in: &cancellableBag)
+        
+        crowdNode.$isBalanceLoading
+            .assign(to: \.animateBalanceLabel, on: self)
             .store(in: &cancellableBag)
     }
 

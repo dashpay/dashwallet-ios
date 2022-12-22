@@ -24,6 +24,7 @@ final class CrowdNodePortalController: UIViewController {
     
     @IBOutlet var gradientHeader: UIView!
     @IBOutlet var tableView: UITableView!
+    @IBOutlet var balanceLabel: UILabel!
     @IBOutlet var balanceView: BalanceView!
     
     override func viewDidLoad() {
@@ -31,7 +32,17 @@ final class CrowdNodePortalController: UIViewController {
         
         configureNavBar()
         configureHierarchy()
+        viewModel.refreshBalance()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         configureObservers()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancellableBag.removeAll()
     }
     
     @objc static func controller() -> CrowdNodePortalController {
@@ -48,6 +59,8 @@ final class CrowdNodePortalController: UIViewController {
 extension CrowdNodePortalController {
     private func configureHierarchy() {
         balanceView.tint = .white
+        balanceView.balance = viewModel.crowdNodeBalance
+        
         tableView.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         tableView.clipsToBounds = true
         tableView.isScrollEnabled = false
@@ -84,9 +97,8 @@ extension CrowdNodePortalController {
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink(receiveValue: { [weak self] balance in
-                guard let wSelf = self else { return }
-                wSelf.balanceView.balance = balance
-                wSelf.tableView.reloadRows(at: [
+                self?.balanceView.balance = balance
+                self?.tableView.reloadRows(at: [
                     IndexPath.init(item: 0, section: 0),
                     IndexPath.init(item: 1, section: 0)
                 ],
@@ -98,11 +110,30 @@ extension CrowdNodePortalController {
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink(receiveValue: { [weak self] balance in
-                guard let wSelf = self else { return }
-                wSelf.tableView.reloadRows(at: [
+                self?.tableView.reloadRows(at: [
                     IndexPath.init(item: 0, section: 0),
                 ],
                 with: .none)
+            })
+            .store(in: &cancellableBag)
+        
+        viewModel.$animateBalanceLabel
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] animate in
+                if animate {
+                    print("CrowdNode: animate")
+                    UIView.animate(
+                        withDuration: 0.5,
+                        delay:0.0,
+                        options:[.allowUserInteraction, .curveEaseInOut, .autoreverse, .repeat],
+                        animations: { self?.balanceLabel.alpha = 0 },
+                        completion: nil
+                    )
+                } else {
+                    print("CrowdNode: stop animate")
+                    self?.balanceLabel.layer.removeAllAnimations()
+                    self?.balanceLabel.alpha = 1
+                }
             })
             .store(in: &cancellableBag)
     }
@@ -114,6 +145,7 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var icon : UIImageView!
     @IBOutlet var iconCircle : UIView!
     @IBOutlet var additionalInfo: UIView!
+    @IBOutlet var additionalInfoLabel : UILabel!
     
     fileprivate func update(
         with item: CrowdNodePortalItem,
@@ -134,18 +166,13 @@ class CrowdNodeCell: UITableViewCell {
             title.textColor = .label
             selectionStyle = .default
         }
+        print("CrowdNode updating item: \(item)")
         
         if item == .deposit && crowdNodeBalance < CrowdNode.minimumDeposit {
-            let label = UILabel(frame: additionalInfo.frame)
-            label.textColor = .systemGreen
-            label.font = UIFont.systemFont(ofSize: 12)
-            label.textColor = .dw_dashBlue()
-            label.text = item.info(crowdNodeBalance)
-            label.translatesAutoresizingMaskIntoConstraints = false
-            additionalInfo.addSubview(label)
-            label.centerXAnchor.constraint(equalTo: additionalInfo.centerXAnchor).isActive = true
-            label.centerYAnchor.constraint(equalTo: additionalInfo.centerYAnchor).isActive = true
+            additionalInfo.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            additionalInfoLabel.text = item.info(crowdNodeBalance)
         } else {
+            print("CrowdNode collapsing plank")
             additionalInfo.heightAnchor.constraint(equalToConstant: 0).isActive = true
         }
     }
