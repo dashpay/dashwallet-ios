@@ -121,7 +121,6 @@ extension CrowdNodePortalController {
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] animate in
                 if animate {
-                    print("CrowdNode: animate")
                     UIView.animate(
                         withDuration: 0.5,
                         delay:0.0,
@@ -130,7 +129,6 @@ extension CrowdNodePortalController {
                         completion: nil
                     )
                 } else {
-                    print("CrowdNode: stop animate")
                     self?.balanceLabel.layer.removeAllAnimations()
                     self?.balanceLabel.alpha = 1
                 }
@@ -146,6 +144,9 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var iconCircle : UIView!
     @IBOutlet var additionalInfo: UIView!
     @IBOutlet var additionalInfoLabel : UILabel!
+    
+    private lazy var showInfoConstraint = additionalInfo.heightAnchor.constraint(equalToConstant: 30)
+    private lazy var collapseInfoConstraint = additionalInfo.heightAnchor.constraint(equalToConstant: 0)
     
     fileprivate func update(
         with item: CrowdNodePortalItem,
@@ -166,14 +167,14 @@ class CrowdNodeCell: UITableViewCell {
             title.textColor = .label
             selectionStyle = .default
         }
-        print("CrowdNode updating item: \(item)")
         
         if item == .deposit && crowdNodeBalance < CrowdNode.minimumDeposit {
-            additionalInfo.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            showInfoConstraint.isActive = true
+            collapseInfoConstraint.isActive = false
             additionalInfoLabel.text = item.info(crowdNodeBalance)
         } else {
-            print("CrowdNode collapsing plank")
-            additionalInfo.heightAnchor.constraint(equalToConstant: 0).isActive = true
+            showInfoConstraint.isActive = false
+            collapseInfoConstraint.isActive = true
         }
     }
 }
