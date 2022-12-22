@@ -103,7 +103,6 @@ NS_ASSUME_NONNULL_BEGIN
         case DWMainMenuItemType_Explore: {
             DWExploreTestnetViewController *controller = [[DWExploreTestnetViewController alloc] init];
             controller.delegate = self;
-            controller.syncModel = self.syncModel;
             DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
             [self presentViewController:nvc animated:YES completion:nil];
 

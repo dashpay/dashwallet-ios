@@ -21,6 +21,7 @@ import Combine
 
 @objc public class CrowdNodeModelObjcWrapper: NSObject {
     @objc public class func getRootVC() -> UIViewController {
+        CrowdNode.shared.restoreState()
         let state = CrowdNode.shared.signUpState
 
         switch state {
