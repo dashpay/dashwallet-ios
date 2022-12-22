@@ -30,7 +30,11 @@ struct TransferAmountView: UIViewControllerRepresentable {
 
 // MARK: - TransferAmountViewController
 
-final class TransferAmountViewController: SendAmountViewController {
+final class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling {
+    /// Conform to NetworkReachabilityHandling
+    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
     private var converterView: ConverterView!
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
@@ -57,10 +61,6 @@ final class TransferAmountViewController: SendAmountViewController {
 
     override func configureModel() {
         super.configureModel()
-
-        transferModel.networkStatusDidChange = { [weak self] _ in
-            self?.reloadView()
-        }
         transferModel.delegate = self
     }
 
@@ -97,6 +97,15 @@ final class TransferAmountViewController: SendAmountViewController {
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
+    }
+
+    deinit {
+        stopNetworkMonitoring()
     }
 }
 
@@ -137,7 +146,7 @@ extension BaseAmountModel: ConverterViewDataSource {
 
 extension TransferAmountViewController {
     private func reloadView() {
-        let isOnline = transferModel.networkStatus == .online
+        let isOnline = networkStatus == .online
         networkUnavailableView.isHidden = isOnline
         numberKeyboard.isHidden = !isOnline
         actionButton?.isHidden = !isOnline

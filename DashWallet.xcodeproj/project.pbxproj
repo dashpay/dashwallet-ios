@@ -493,6 +493,8 @@
 		4774DCE528F4668B008CF87D /* PortalServiceItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCE428F4668B008CF87D /* PortalServiceItemCell.swift */; };
 		477A963E292CD27D0013605B /* NetworkUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477A963D292CD27D0013605B /* NetworkUnavailableView.swift */; };
 		477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F500F2950A55A003C7508 /* Coinbase+Error.swift */; };
+		477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F501429531C07003C7508 /* ViewModel+Coinbase.swift */; };
+		477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F501629543834003C7508 /* BaseViewController+NetworkReachability.swift */; };
 		47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7428FFD1D10003E8AB /* AmountView.swift */; };
 		47838B7728FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */; };
 		47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B792900196F0003E8AB /* ConverterView.swift */; };
@@ -1657,6 +1659,8 @@
 		477A963C292BA4B90013605B /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = uk; path = uk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		477A963D292CD27D0013605B /* NetworkUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableView.swift; sourceTree = "<group>"; };
 		477F500F2950A55A003C7508 /* Coinbase+Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coinbase+Error.swift"; sourceTree = "<group>"; };
+		477F501429531C07003C7508 /* ViewModel+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModel+Coinbase.swift"; sourceTree = "<group>"; };
+		477F501629543834003C7508 /* BaseViewController+NetworkReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseViewController+NetworkReachability.swift"; sourceTree = "<group>"; };
 		47838B7428FFD1D10003E8AB /* AmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountView.swift; sourceTree = "<group>"; };
 		47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputTypeSwitcher.swift; sourceTree = "<group>"; };
 		47838B792900196F0003E8AB /* ConverterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterView.swift; sourceTree = "<group>"; };
@@ -3984,6 +3988,7 @@
 				2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */,
 				47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */,
 				47C661B528FE75A700028A8D /* BaseViewController.swift */,
+				477F501629543834003C7508 /* BaseViewController+NetworkReachability.swift */,
 			);
 			path = BaseController;
 			sourceTree = "<group>";
@@ -4884,6 +4889,7 @@
 			isa = PBXGroup;
 			children = (
 				47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */,
+				477F501429531C07003C7508 /* ViewModel+Coinbase.swift */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -6134,6 +6140,7 @@
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
+				477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */,
 				47A2A2EC293E618600938DB7 /* CBUser.swift in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				47A2A2EE293E622700938DB7 /* CBSecureTokenService.swift in Sources */,
@@ -6346,6 +6353,7 @@
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
 				2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */,
 				47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */,
+				477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 			);

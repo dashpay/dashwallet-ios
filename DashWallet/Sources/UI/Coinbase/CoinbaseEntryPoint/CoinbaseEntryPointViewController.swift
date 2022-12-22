@@ -19,7 +19,11 @@ import UIKit
 
 // MARK: - CoinbaseEntryPointViewController
 
-final class CoinbaseEntryPointViewController: BaseViewController {
+final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachabilityHandling {
+    /// Conform to NetworkReachabilityHandling
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
+
     public var userSignedOutBlock: ((Bool) -> Void)?
 
     @IBOutlet var connectionStatusView: UIView!
@@ -50,6 +54,15 @@ final class CoinbaseEntryPointViewController: BaseViewController {
 
         configureModel()
         configureHierarchy()
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
+    }
+
+    deinit {
+        stopNetworkMonitoring()
     }
 
     class func controller() -> CoinbaseEntryPointViewController {
@@ -65,13 +78,10 @@ extension CoinbaseEntryPointViewController {
         model.userDidChange = { [weak self] in
             self?.reloadView()
         }
-        model.networkStatusDidChange = { [weak self] _ in
-            self?.reloadView()
-        }
     }
 
     private func reloadView() {
-        let isOnline = model.networkStatus == .online
+        let isOnline = networkStatus == .online
         lastKnownBalanceLabel.isHidden = isOnline
         networkUnavailableView.isHidden = isOnline
         mainContentView.isHidden = !isOnline
@@ -122,9 +132,6 @@ extension CoinbaseEntryPointViewController {
 
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
-
-
-
         present(alert, animated: true)
     }
 

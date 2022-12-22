@@ -42,18 +42,11 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     public var direction: TransferDirection = .toCoinbase
 
     internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
-    var networkStatusDidChange: ((NetworkStatus) -> ())?
-    var networkStatus: NetworkStatus!
-
-    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
-    private var reachabilityObserver: Any!
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
     override init() {
         super.init()
-
-        initializeReachibility()
 
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
             if let user {
@@ -81,8 +74,6 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
             transferFromCoinbase()
         }
     }
-
-
 
     private func transferToCoinbase() {
         // TODO: validate
@@ -123,26 +114,4 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     }
 }
 
-extension TransferAmountModel {
-    private func initializeReachibility() {
-        if !reachability.isMonitoring {
-            reachability.startMonitoring()
-        }
-
-        reachabilityObserver = NotificationCenter.default
-            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                         object: nil,
-                         queue: nil,
-                         using: { [weak self] _ in
-                             self?.updateNetworkStatus()
-                         })
-
-        updateNetworkStatus()
-    }
-
-    private func updateNetworkStatus() {
-        networkStatus = reachability.networkStatus
-        networkStatusDidChange?(networkStatus)
-    }
-}
 
