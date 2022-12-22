@@ -27,10 +27,10 @@ extension CrowdNode {
             return crowdNodeTestNetAddress
         }
     }
-    
+
     private static let mainnetBaseUrl = "https://app.crowdnode.io/"
     private static let testnetBaseUrl = "https://test.crowdnode.io/"
-    
+
     static var baseUrl: String {
         if DWEnvironment.sharedInstance().currentChain.isMainnet() {
             return mainnetBaseUrl
@@ -44,10 +44,10 @@ extension CrowdNode {
     static let requiredForSignup = minimumRequiredDash - 100_000
     static let requiredForAcceptTerms: UInt64 = 100_000
     static let apiOffset: UInt64 = 20000
-    static let minimumDeposit: UInt64 = UInt64(DUFFS / 2)
+    static let minimumDeposit = UInt64(DUFFS / 2)
 
     static let notificationID = "CrowdNode"
-    
+
     static let fundsOpenUrl = baseUrl + "FundsOpen/"
     static let websiteUrl = "https://crowdnode.io/"
     static let termsOfUseUrl = "https://crowdnode.io/terms/"

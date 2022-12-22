@@ -19,7 +19,8 @@ import Combine
 
 // MARK: - CrowdNodeModelObjcWrapper
 
-@objc public class CrowdNodeModelObjcWrapper: NSObject {
+@objc
+public class CrowdNodeModelObjcWrapper: NSObject {
     @objc public class func getRootVC() -> UIViewController {
         CrowdNode.shared.restoreState()
         let state = CrowdNode.shared.signUpState
@@ -44,6 +45,8 @@ import Combine
         }
     }
 }
+
+// MARK: - CrowdNodePortalItem
 
 enum CrowdNodePortalItem: CaseIterable {
     case deposit
@@ -91,38 +94,38 @@ extension CrowdNodePortalItem {
             return "image.crowdnode.support"
         }
     }
-    
+
     var iconCircleColor: UIColor {
         switch self {
         case .deposit:
             return UIColor.systemGreen
-            
+
         default:
             return UIColor.dw_dashBlue()
         }
     }
-    
+
     func isDisabled(_ crowdNodeBalance: UInt64, _ walletBalance: UInt64) -> Bool {
         switch self {
         case .deposit:
             return walletBalance <= 0
-            
+
         case .withdraw:
             return crowdNodeBalance <= 0
-            
+
         default:
             return false
         }
     }
-    
-    
+
+
     func info(_ crowdNodeBalance: UInt64) -> String {
         switch self {
         case .deposit:
             let negligibleAmount = CrowdNode.minimumDeposit / 50
             let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit)) ?? String(CrowdNode.minimumDeposit)
-            
-            if (crowdNodeBalance < negligibleAmount) {
+
+            if crowdNodeBalance < negligibleAmount {
                 return NSLocalizedString("Deposit at least \(minimumDeposit) to start earning", comment: "CrowdNode Portal")
             } else {
                 return NSLocalizedString("Deposit \(minimumDeposit) to start earning", comment: "CrowdNode Portal")
@@ -165,7 +168,7 @@ final class CrowdNodeModel {
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
-    
+
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
 
     init() {
@@ -268,17 +271,17 @@ extension CrowdNodeModel {
     func refreshBalance() {
         crowdNode.refreshBalance(retries: 1)
     }
-    
+
     private func observeBalances() {
         checkBalance()
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.checkBalance() }
             .store(in: &cancellableBag)
-        
+
         crowdNode.$balance
             .assign(to: \.crowdNodeBalance, on: self)
             .store(in: &cancellableBag)
-        
+
         crowdNode.$isBalanceLoading
             .assign(to: \.animateBalanceLabel, on: self)
             .store(in: &cancellableBag)

@@ -17,7 +17,7 @@
 
 import Combine
 
-// MARK: - CrowdNodePortalController
+// MARK: - CrowdNodeTransferController
 
 final class CrowdNodeTransferController: UIViewController {
     private let viewModel = CrowdNodeModel.shared

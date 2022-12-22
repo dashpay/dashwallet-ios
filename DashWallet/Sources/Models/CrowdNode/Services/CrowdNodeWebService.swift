@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -27,6 +27,6 @@ class CrowdNodeService {
 
 extension CrowdNodeService {
     func getCrowdNodeBalance(address: String) async throws -> CrowdNodeBalance {
-        return try await httpClient.request(.getBalance(address))
+        try await httpClient.request(.getBalance(address))
     }
 }

@@ -34,7 +34,7 @@ public class CrowdNodeObjcWrapper: NSObject {
         let crowdNode = CrowdNode.shared
 
         if crowdNode.signUpState == .acceptTermsRequired {
-            _Concurrency.Task {
+            Task {
                 let address = crowdNode.accountAddress
                 await crowdNode.signUp(accountAddress: address)
             }
@@ -71,10 +71,10 @@ public final class CrowdNode {
     private lazy var sendCoinsService = SendCoinsService()
     private lazy var txObserver = TransactionObserver()
     private lazy var crowdNodeWebService = CrowdNodeService()
-    
+
     @Published private(set) var signUpState = SignUpState.notInitiated
     @Published private(set) var balance: UInt64 = 0
-    @Published private(set) var isBalanceLoading: Bool = false
+    @Published private(set) var isBalanceLoading = false
 
     private(set) var accountAddress = ""
     private(set) var apiError: Error?
@@ -300,7 +300,7 @@ extension CrowdNode {
             if errorResponse.matches(tx: responseTx) {
                 throw CrowdNodeError.deposit
             }
-            
+
             refreshBalance()
         }
     }
@@ -329,15 +329,15 @@ extension CrowdNode {
                                                        accountAddress: accountAddress)
             let withdrawalDeniedResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalDenied,
                                                              accountAddress: accountAddress)
-            
+
             let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
             DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
-            
+
             // TODO: handle errors
             if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
                 throw CrowdNodeError.withdraw
             }
-            
+
             refreshBalance(afterWithdrawal: true)
         }
     }
@@ -347,33 +347,33 @@ extension CrowdNode {
 extension CrowdNode {
     func refreshBalance(retries: Int = 3, afterWithdrawal: Bool = false) {
         guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
-        
+
         Task {
             let lastKnownBalance = DWGlobalOptions.sharedInstance().lastKnownCrowdNodeBalance
             var currentBalance = UInt64(lastKnownBalance)
             balance = currentBalance
             isBalanceLoading = true
-            
+
             do {
                 for i in 0...retries {
-                    if (i != 0) {
+                    if i != 0 {
                         let secondsToWait = UInt64(pow(5.0, Double(i)))
                         try await Task.sleep(nanoseconds: secondsToWait * 1_000_000_000)
                     }
-                
+
                     let result = try await crowdNodeWebService.getCrowdNodeBalance(address: accountAddress)
                     let dashNumber = Decimal(result.totalBalance)
                     let duffsNumber = Decimal(DUFFS)
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
                     DWGlobalOptions.sharedInstance().lastKnownCrowdNodeBalance = currentBalance
-                    
+
                     var breakDifference: UInt64 = 0
-                    
+
                     if afterWithdrawal {
                         breakDifference = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
                     }
-                    
+
                     if llabs(Int64(lastKnownBalance) - Int64(currentBalance)) > breakDifference {
                         // Balance changed, no need to retry anymore
                         break
@@ -382,7 +382,7 @@ extension CrowdNode {
             } catch {
                 DSLogger.log("CrowdNode balance error: \((error as! HTTPClientError).localizedDescription)")
             }
-            
+
             balance = currentBalance
             isBalanceLoading = false
         }

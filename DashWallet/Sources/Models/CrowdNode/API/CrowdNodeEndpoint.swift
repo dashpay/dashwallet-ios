@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -34,7 +34,7 @@ public enum CrowdNodeEndpoint {
 // MARK: TargetType
 
 extension CrowdNodeEndpoint: TargetType {
-    
+
     public var baseURL: URL {
         URL(string: CrowdNode.baseUrl)!
     }
@@ -47,20 +47,21 @@ extension CrowdNodeEndpoint: TargetType {
         case .isAddressInUse(let address): return "odata/apiaddresses/IsApiAddressInUse(address='\(address)')"
         case .addressStatus(let address): return "odata/apiaddresses/AddressStatus(address='\(address)')"
         case .hasDefaultEmail(let address): return "odata/apiaddresses/UsingDefaultApiEmail(address='\(address)')"
-        case .sendSignedMessage(let address, let message, let signature): return "odata/apimessages/SendMessage(address='\(address)',message='\(message)',signature='\(signature)',messagetype=1)"
+        case .sendSignedMessage(let address, let message,
+                                let signature): return "odata/apimessages/SendMessage(address='\(address)',message='\(message)',signature='\(signature)',messagetype=1)"
         case .getMessages(let address): return "odata/apimessages/GetMessages(address='\(address)')"
         }
     }
 
     public var method: Moya.Method {
-        return .get
+        .get
     }
 
     public var task: Moya.Task {
-        return .requestPlain
+        .requestPlain
     }
-    
+
     public var headers: [String : String]? {
-        return [:]
+        [:]
     }
 }
