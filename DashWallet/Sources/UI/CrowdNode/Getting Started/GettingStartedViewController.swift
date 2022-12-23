@@ -70,7 +70,7 @@ final class GettingStartedViewController: UIViewController {
     }
 
     @IBAction func buyDashAction() {
-        let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNodeConstants.minimumRequiredDash))!
+        let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
         let alert = UIAlertController(title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
                                       message: NSLocalizedString("You should have at least \(minimumDash) to proceed with the CrowdNode verification.",
                                                                  comment: ""),
@@ -100,14 +100,14 @@ extension GettingStartedViewController {
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
 
-        let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNodeConstants.minimumRequiredDash))!
+        let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
         minimumBalanceLable.text = NSLocalizedString("You need at least \(minimumDash) on your Dash Wallet", comment: "")
 
         refreshCreateAccountButton()
     }
 
     private func configureObservers() {
-        viewModel.$hasEnoughBalance
+        viewModel.$hasEnoughWalletBalance
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] _ in
                 guard let wSelf = self else { return }
@@ -124,8 +124,8 @@ extension GettingStartedViewController {
         let passhraseHintHeight = CGFloat(viewModel.needsBackup ? 45 : 0)
         passphraseHint.heightAnchor.constraint(equalToConstant: passhraseHintHeight).isActive = true
 
-        balanceHint.isHidden = viewModel.hasEnoughBalance
-        let balanceHintHeight = CGFloat(viewModel.hasEnoughBalance ? 0 : 45)
+        balanceHint.isHidden = viewModel.hasEnoughWalletBalance
+        let balanceHintHeight = CGFloat(viewModel.hasEnoughWalletBalance ? 0 : 45)
         balanceHint.heightAnchor.constraint(equalToConstant: balanceHintHeight).isActive = true
     }
 }

@@ -15,18 +15,18 @@
 //  limitations under the License.
 //
 
-public final class CrowdNodeResponse: CoinsToAddressTxFilter {
-    let responseCode: ApiCode
+import Moya
 
-    init(responseCode: ApiCode, accountAddress: String?) {
-        self.responseCode = responseCode
-        let accountAddress = accountAddress
-        let responseAmount = CrowdNode.apiOffset + responseCode.rawValue
+// MARK: - CrowdNodeService
 
-        super.init(coins: responseAmount, address: accountAddress)
+class CrowdNodeService {
+    private var httpClient: CrowdNodeAPI {
+        CrowdNodeAPI.shared
     }
+}
 
-    override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.first == CrowdNode.crowdNodeAddress
+extension CrowdNodeService {
+    func getCrowdNodeBalance(address: String) async throws -> CrowdNodeBalance {
+        try await httpClient.request(.getBalance(address))
     }
 }

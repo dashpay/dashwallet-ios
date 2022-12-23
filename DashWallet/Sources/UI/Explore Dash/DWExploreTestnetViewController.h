@@ -33,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWExploreTestnetViewController : UIViewController <DWNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWExploreTestnetViewControllerDelegate> delegate;
-@property (nonatomic, strong) id<DWSyncProtocol> syncModel;
 
 @end
 

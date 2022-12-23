@@ -31,6 +31,12 @@ final class BalanceView: UIView {
             reloadView()
         }
     }
+    
+    public var tint: UIColor? {
+        didSet {
+            reloadView()
+        }
+    }
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: BalanceView.noIntrinsicMetric, height: 52.0)
@@ -57,11 +63,13 @@ extension BalanceView {
     private func reloadView() {
         let balanceColor = UIColor.label
         let font = UIFont.dw_font(forTextStyle: .title1)
-        let balanceString = NSAttributedString.dw_dashAttributedString(forAmount: balance, tintColor: balanceColor,
-                                                                       dashSymbolColor: dashSymbolColor ?? balanceColor,
+        let balanceString = NSAttributedString.dw_dashAttributedString(forAmount: balance, tintColor: tint ?? balanceColor,
+                                                                       dashSymbolColor: dashSymbolColor ?? tint ?? balanceColor,
                                                                        font: font)
         dashBalanceLabel.attributedText = balanceString
 
+        let fiatColor = UIColor.secondaryLabel
+        fiatBalanceLabel.textColor = tint ?? fiatColor
         fiatBalanceLabel.text = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance))
     }
 
@@ -82,7 +90,6 @@ extension BalanceView {
         fiatBalanceLabel = UILabel()
         fiatBalanceLabel.translatesAutoresizingMaskIntoConstraints = false
         fiatBalanceLabel.font = .dw_font(forTextStyle: .callout)
-        fiatBalanceLabel.textColor = .secondaryLabel
         fiatBalanceLabel.textAlignment = .center
         container.addArrangedSubview(fiatBalanceLabel)
 

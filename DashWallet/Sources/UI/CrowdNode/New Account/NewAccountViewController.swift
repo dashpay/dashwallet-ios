@@ -96,9 +96,9 @@ extension NewAccountViewController {
         let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "")
             .description)
 
-        termsOfUseString.addAttribute(.link, value: CrowdNodeConstants.termsOfUseUrl,
+        termsOfUseString.addAttribute(.link, value: CrowdNode.termsOfUseUrl,
                                       range: NSRange(location: 0, length: termsOfUseString.length))
-        privacyPolicyString.addAttribute(.link, value: CrowdNodeConstants.privacyPolicyUrl,
+        privacyPolicyString.addAttribute(.link, value: CrowdNode.privacyPolicyUrl,
                                          range: NSRange(location: 0, length: privacyPolicyString.length))
 
         baseString.append(termsOfUseString)

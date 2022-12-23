@@ -21,8 +21,8 @@ public final class CrowdNodeRequest: CoinsToAddressTxFilter {
     init(requestCode: ApiCode) {
         self.requestCode = requestCode
 
-        let address = CrowdNodeConstants.crowdNodeAddress
-        let amount = CrowdNodeConstants.apiOffset + requestCode.rawValue
+        let address = CrowdNode.crowdNodeAddress
+        let amount = CrowdNode.apiOffset + requestCode.rawValue
         super.init(coins: amount, address: address)
     }
 

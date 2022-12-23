@@ -23,6 +23,6 @@ public final class CrowdNodeErrorResponse: CoinsToAddressTxFilter {
     }
 
     override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.first == CrowdNodeConstants.crowdNodeAddress
+        super.matches(tx: tx) && fromAddresses.first == CrowdNode.crowdNodeAddress
     }
 }

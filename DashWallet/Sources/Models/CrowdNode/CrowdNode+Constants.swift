@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-enum CrowdNodeConstants {
+extension CrowdNode {
     private static let crowdNodeTestNetAddress = "yMY5bqWcknGy5xYBHSsh2xvHZiJsRucjuy"
     private static let crowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
 
@@ -28,14 +28,29 @@ enum CrowdNodeConstants {
         }
     }
 
-    static var minimumRequiredDash: UInt64 = 1_000_000
-    static var requiredForSignup = minimumRequiredDash - 100_000
-    static var requiredForAcceptTerms: UInt64 = 100_000
-    static var apiOffset: UInt64 = 20000
+    private static let mainnetBaseUrl = "https://app.crowdnode.io/"
+    private static let testnetBaseUrl = "https://test.crowdnode.io/"
 
-    static var notificationID = "CrowdNode"
+    static var baseUrl: String {
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+            return mainnetBaseUrl
+        }
+        else {
+            return testnetBaseUrl
+        }
+    }
 
-    static var websiteUrl = "https://crowdnode.io/"
-    static var termsOfUseUrl = "https://crowdnode.io/terms/"
-    static var privacyPolicyUrl = "https://crowdnode.io/privacy/"
+    static let minimumRequiredDash: UInt64 = 1_000_000
+    static let requiredForSignup = minimumRequiredDash - 100_000
+    static let requiredForAcceptTerms: UInt64 = 100_000
+    static let apiOffset: UInt64 = 20000
+    static let minimumDeposit = UInt64(DUFFS / 2)
+
+    static let notificationID = "CrowdNode"
+
+    static let fundsOpenUrl = baseUrl + "FundsOpen/"
+    static let websiteUrl = "https://crowdnode.io/"
+    static let termsOfUseUrl = "https://crowdnode.io/terms/"
+    static let privacyPolicyUrl = "https://crowdnode.io/privacy/"
+    static let supportUrl = "https://knowledge.crowdnode.io/"
 }

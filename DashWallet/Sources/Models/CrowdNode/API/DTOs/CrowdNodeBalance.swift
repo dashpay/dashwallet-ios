@@ -15,18 +15,16 @@
 //  limitations under the License.
 //
 
-public final class CrowdNodeResponse: CoinsToAddressTxFilter {
-    let responseCode: ApiCode
+struct CrowdNodeBalance: Codable {
+    let dashAddress: String
+    let totalBalance: Double
+    let totalActiveBalance: Double
+    let totalDividend: Double
 
-    init(responseCode: ApiCode, accountAddress: String?) {
-        self.responseCode = responseCode
-        let accountAddress = accountAddress
-        let responseAmount = CrowdNode.apiOffset + responseCode.rawValue
-
-        super.init(coins: responseAmount, address: accountAddress)
-    }
-
-    override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.first == CrowdNode.crowdNodeAddress
+    enum CodingKeys: String, CodingKey {
+        case dashAddress = "DashAddress"
+        case totalBalance = "TotalBalance"
+        case totalActiveBalance = "TotalActiveBalance"
+        case totalDividend = "TotalDividend"
     }
 }

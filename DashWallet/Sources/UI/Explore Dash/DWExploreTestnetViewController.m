@@ -55,7 +55,7 @@
 }
 
 - (void)showStakingIfSynced {
-    if (_syncModel.state == DWSyncModelState_SyncDone) {
+    if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
         UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
         [self.navigationController pushViewController:vc animated:YES];
     } else {

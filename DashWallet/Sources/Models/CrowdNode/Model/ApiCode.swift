@@ -25,7 +25,7 @@ enum ApiCode: UInt64 {
     case signUp = 131_072
     case acceptTerms = 65536
 
-    func maxCode() -> ApiCode {
+    static func maxCode() -> ApiCode {
         ApiCode.signUp
     }
 }
