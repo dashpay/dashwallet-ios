@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef COINBASE
                                           PortalViewController *controller = [PortalViewController controller];
 #else
-                                          UIViewController *controller = [DWUpholdViewController controller];
+                        UIViewController *controller = [DWUpholdViewController controller];
 #endif
 
                                           controller.hidesBottomBarWhenPushed = true;
