@@ -148,8 +148,8 @@ extension TransferAmountViewController {
     private func reloadView() {
         let isOnline = networkStatus == .online
         networkUnavailableView.isHidden = isOnline
-        numberKeyboard.isHidden = !isOnline
-        actionButton?.isHidden = !isOnline
+        keyboardContainer.isHidden = !isOnline
+        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
         converterView.hasNetwork = isOnline
     }
 

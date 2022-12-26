@@ -84,10 +84,15 @@ enum ConfirmOrderSection: Int {
 
 // MARK: - ConfirmOrderController
 
-final class ConfirmOrderController: BaseViewController {
+final class ConfirmOrderController: BaseViewController, NetworkReachabilityHandling {
+    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
     private var tableView: UITableView!
     private var actionButton: DWActionButton!
     private var retryButton: DWTintedButton!
+    private var networkUnavailableView: UIView!
+    private var buttonsStackView: UIStackView!
 
     private let model: ConfirmOrderModel
 
@@ -158,12 +163,23 @@ final class ConfirmOrderController: BaseViewController {
 
         configureHierarchy()
         startCounting()
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
     }
 }
 
 // MARK: Private
 
 extension ConfirmOrderController {
+    private func reloadView() {
+        let isOnline = networkStatus == .online
+        networkUnavailableView.isHidden = isOnline
+        buttonsStackView.isHidden = !isOnline
+    }
+
     private func cancelTransaction() {
         navigationController?.popViewController(animated: true)
     }
@@ -235,12 +251,12 @@ extension ConfirmOrderController {
         tableView.register(ConfirmOrderAmountInDashCell.self, forCellReuseIdentifier: ConfirmOrderAmountInDashCell.dw_reuseIdentifier)
         view.addSubview(tableView)
 
-        let buttonStackView = UIStackView()
-        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
-        buttonStackView.axis = .horizontal
-        buttonStackView.spacing = 10
-        buttonStackView.alignment = .fill
-        view.addSubview(buttonStackView)
+        buttonsStackView = UIStackView()
+        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        buttonsStackView.axis = .horizontal
+        buttonsStackView.spacing = 10
+        buttonsStackView.alignment = .fill
+        view.addSubview(buttonsStackView)
 
         let cancelButton = UIButton(type: .custom)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
@@ -249,14 +265,14 @@ extension ConfirmOrderController {
         cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
         cancelButton.setTitleColor(.dw_label(), for: .normal)
         cancelButton.addTarget(self, action: #selector(cancelAction), for: .touchUpInside)
-        buttonStackView.addArrangedSubview(cancelButton)
+        buttonsStackView.addArrangedSubview(cancelButton)
 
         actionButton = DWActionButton(frame: .zero)
         actionButton.translatesAutoresizingMaskIntoConstraints = false
         actionButton.setTitle(NSLocalizedString("Confirm (%@)", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
         actionButton.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
         actionButton.isHidden = true
-        buttonStackView.addArrangedSubview(actionButton)
+        buttonsStackView.addArrangedSubview(actionButton)
 
         retryButton = DWTintedButton(frame: .zero)
         retryButton.translatesAutoresizingMaskIntoConstraints = false
@@ -264,16 +280,21 @@ extension ConfirmOrderController {
         retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
         retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
         retryButton.isHidden = false
-        buttonStackView.addArrangedSubview(retryButton)
+        buttonsStackView.addArrangedSubview(retryButton)
+
+        networkUnavailableView = NetworkUnavailableView(frame: .init(x: 0, y: 0, width: view.bounds.width, height: 200))
+        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
+        networkUnavailableView.isHidden = true
+        tableView.tableFooterView = networkUnavailableView
 
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: buttonStackView.topAnchor),
-            buttonStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            buttonStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor, constant: 15),
+            tableView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor),
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: buttonsStackView.bottomAnchor, constant: 15),
 
             actionButton.heightAnchor.constraint(equalToConstant: 46),
             actionButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor, multiplier: 1.4),

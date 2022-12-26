@@ -120,7 +120,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
 
 extension ActionButtonViewController {
     private func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
