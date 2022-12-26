@@ -74,11 +74,13 @@ class MerchantInfoViewController: PointOfUseInfoViewController {
         learnMoreButton.addTarget(self, action: #selector(learnMoreAction), for: .touchUpInside)
         giftCardStack.addArrangedSubview(learnMoreButton)
         contentView.addArrangedSubview(UIView())
+
         let continueButton = DWActionButton()
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
         continueButton.addTarget(self, action: #selector(continueButtonAction), for: .touchUpInside)
         view.addSubview(continueButton)
+
         NSLayoutConstraint.activate([
             contentView.topAnchor.constraint(equalTo: view.topAnchor,
                                              constant: 74),

@@ -26,7 +26,8 @@ private let fileName = "explore"
 private let timestampKey = "Data-Timestamp"
 private let checksumKey = "Data-Checksum"
 
-let bundleExploreDatabaseSyncTime: TimeInterval = 1647448290711/1000
+// TODO: Move it to plist and note in release process
+let bundleExploreDatabaseSyncTime: TimeInterval = 1670906986152/1000
 
 // MARK: - ExploreDatabaseSyncManager
 

@@ -26,6 +26,10 @@ enum ExploreDatabaseConnectionError: Error {
 
 // MARK: - ExploreDatabaseConnection
 
+let kExploreDashDatabaseName = "explore.db"
+
+// MARK: - ExploreDatabaseConnection
+
 class ExploreDatabaseConnection {
     private var db: Connection!
 
@@ -49,7 +53,7 @@ class ExploreDatabaseConnection {
     }
 
     private func dbPath() -> String? {
-        let downloadedPath = FileManager.documentsDirectoryURL.appendingPathComponent("explore.db/explore.db").path
+        let downloadedPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName).path
 
         return FileManager.default.fileExists(atPath: downloadedPath) ? downloadedPath : nil
     }

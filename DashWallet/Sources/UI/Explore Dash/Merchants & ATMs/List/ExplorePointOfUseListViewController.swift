@@ -319,6 +319,7 @@ extension ExplorePointOfUseListViewController {
 
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.keyboardDismissMode = .onDrag
         tableView.showsVerticalScrollIndicator = false
         tableView.delegate = self
         tableView.layer.zPosition = -1
@@ -445,6 +446,8 @@ extension ExplorePointOfUseListViewController {
     private func segmentedControlDidChange(index: Int) {
         let segment = model.segments[index]
         model.currentSegment = segment
+
+        searchCell?.stopSearching()
         refreshView()
     }
 }
@@ -468,6 +471,7 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
 extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate {
     private func stopSearching() {
         model.fetch(query: nil)
+        showMapIfNeeded()
     }
 
     func searchCell(_ cell: PointOfUseListSearchCell, shouldStartSearchWith query: String) {
@@ -476,6 +480,10 @@ extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate 
 
     func searchCellDidEndSearching(searchCell: PointOfUseListSearchCell) {
         stopSearching()
+    }
+
+    func searchCellDidBeginEditing() {
+        hideMapIfNeeded()
     }
 }
 
