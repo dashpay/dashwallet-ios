@@ -19,6 +19,7 @@ import Foundation
 
 final class CBTransactions {
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
+    private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
 
     func send(from accountId: String, amount: String, verificationCode: String?) async throws -> CoinbaseTransaction {
         // NOTE: Maybe better to get the address once and use it during the tx flow
@@ -54,7 +55,22 @@ final class CBTransactions {
         }
     }
 
-    func placeCoinbaseBuyOrder(accountId: String, request: CoinbasePlaceBuyOrderRequest) async throws -> CoinbasePlaceBuyOrder {
+    func placeCoinbaseBuyOrder(accountId: String, amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+        let fiatCurrency = Coinbase.sendLimitCurrency
+        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
+            let localDecimal = localNumber.decimalValue
+            if localDecimal < kMinUSDAmountOrder {
+                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow)
+            } else if localDecimal > Coinbase.shared.sendLimit {
+                throw Coinbase.Error.transactionFailed(.limitExceded)
+            }
+        }
+
+        // NOTE: Make sure we format the amount back into coinbase format (en_US)
+        let amount = amount.formattedDashAmount.coinbaseAmount()
+
+        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: false, quote: nil)
+
         do {
             let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
             return result.data

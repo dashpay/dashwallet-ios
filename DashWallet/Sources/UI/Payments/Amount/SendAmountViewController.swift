@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - SendAmountViewController
+
 class SendAmountViewController: BaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Send", comment: "Send Dash") }
 
