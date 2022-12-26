@@ -131,7 +131,6 @@ extension Coinbase {
         }
 
         let order = try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
-
         return order
     }
 
