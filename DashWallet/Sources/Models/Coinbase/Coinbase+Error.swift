@@ -22,11 +22,11 @@ extension Coinbase {
     ///
     /// `Coinbase.Error` is the error type returned/throwned by Coinbase. It encompasses a few different types of errors, each with
     /// their own associated reasons.
-    enum Error: Swift.Error {
-        enum GeneralFailureReason {
+    enum Error: Swift.Error, LocalizedError {
+        enum GeneralFailureReason: LocalizedError {
             case noActiveUser
 
-            var localizedDescription: String {
+            var errorDescription: String? {
                 switch self {
                 case .noActiveUser:
                     return NSLocalizedString("No active user", comment: "Coinbase")
@@ -34,11 +34,11 @@ extension Coinbase {
             }
         }
 
-        enum AuthFailureReason {
+        enum AuthFailureReason: LocalizedError {
             case failedToStartAuthSession
             case failedToRetrieveCode
 
-            var localizedDescription: String {
+            var errorDescription: String? {
                 switch self {
                 case .failedToStartAuthSession:
                     return NSLocalizedString("Failed to start auth session", comment: "Coinbase")
@@ -48,7 +48,32 @@ extension Coinbase {
             }
         }
 
-        enum TransactionFailureReason {
+        enum TransactionFailureReason: LocalizedError, Identifiable, Equatable {
+            static func == (lhs: Coinbase.Error.TransactionFailureReason, rhs: Coinbase.Error.TransactionFailureReason) -> Bool {
+                lhs.id == rhs.id
+            }
+
+            var id: Int {
+                switch self {
+                case .failedToObtainNewAddress:
+                    return 0
+                case .twoFactorRequired:
+                    return 1
+                case .invalidVerificationCode:
+                    return 2
+                case .notEnoughFunds:
+                    return 3
+                case .enteredAmountTooLow:
+                    return 4
+                case .limitExceded:
+                    return 5
+                case .unknown:
+                    return 6
+                case .message:
+                    return 7
+                }
+            }
+
             case failedToObtainNewAddress
             case twoFactorRequired
             case invalidVerificationCode
@@ -58,7 +83,7 @@ extension Coinbase {
             case unknown(any Swift.Error)
             case message(String)
 
-            var localizedDescription: String {
+            var errorDescription: String? {
                 switch self {
                 case .failedToObtainNewAddress:
                     return NSLocalizedString("There was an error while obtaining new address", comment: "Coinbase")
@@ -69,7 +94,11 @@ extension Coinbase {
                 case .notEnoughFunds:
                     return NSLocalizedString("Insufficient funds", comment: "Coinbase")
                 case .enteredAmountTooLow:
-                    return NSLocalizedString("Entered amount is too low. The minimum amount is", comment: "Coinbase")
+                    let max = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+                    let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
+                    localFormatter.currencyCode = Coinbase.sendLimitCurrency
+                    let str = localFormatter.string(from: max) ?? "$1.99"
+                    return String(format: NSLocalizedString("Entered amount is too low. The minimum amount is %@", comment: "Coinbase"), str)
                 case .limitExceded:
                     return NSLocalizedString("You exceeded the authorization limit on Coinbase.", comment: "Coinbase")
                 case .unknown:
@@ -86,7 +115,7 @@ extension Coinbase {
         case transactionFailed(TransactionFailureReason)
         case unknownError
 
-        var localizedDescription: String {
+        var errorDescription: String? {
             switch self {
             case .userSessionExpired:
                 return NSLocalizedString("User session expired", comment: "Coinbase")

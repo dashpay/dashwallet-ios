@@ -39,7 +39,6 @@ final class BuyDashViewController: BaseAmountViewController {
     // MARK: Actions
     override func amountDidChange() {
         super.amountDidChange()
-
         actionButton?.isEnabled = buyDashModel.canContinue
     }
 
@@ -119,7 +118,6 @@ final class BuyDashViewController: BaseAmountViewController {
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             amountView.topAnchor.constraint(equalTo: activePaymentMethodView.bottomAnchor, constant: 30),
-            amountView.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
 }
@@ -142,3 +140,19 @@ extension BuyDashViewController: BuyDashModelDelegate {
         showAlert(with: "Error", message: error.localizedDescription)
     }
 }
+
+extension BuyDashViewController {
+    @objc override func present(error: Error) {
+        if case Coinbase.Error.transactionFailed(let reason) = error, reason == .limitExceded {
+            amountView.showError(error.localizedDescription, textColor: .systemRed) { [weak self] in
+                let vc = CoinbaseInfoViewController.controller()
+                vc.modalPresentationStyle = .overCurrentContext
+                self?.present(vc, animated: true)
+            }
+            return
+        }
+
+        super.present(error: error)
+    }
+}
+

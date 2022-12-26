@@ -29,7 +29,6 @@ final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
 
     private var balanceLabel: UILabel!
-    private var errorLabel: UILabel!
 
     private let address: String
     private var isBalanceHidden = true
@@ -41,16 +40,6 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     @available(*, unavailable) required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        updateError()
-    }
-
-    override func show(error: SendAmountError) {
-        updateError()
     }
 
     override func actionButtonAction(sender: UIView) {
@@ -145,15 +134,6 @@ final class ProvideAmountViewController: SendAmountViewController {
         amountView.removeFromSuperview()
         stackView.addArrangedSubview(amountView)
 
-        errorLabel = UILabel()
-        errorLabel.textColor = .systemRed
-        errorLabel.numberOfLines = 2
-        errorLabel.lineBreakMode = .byWordWrapping
-        errorLabel.font = .dw_font(forTextStyle: .body)
-        errorLabel.isHidden = true
-        errorLabel.textAlignment = .center
-        stackView.addArrangedSubview(errorLabel)
-
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             stackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
@@ -213,7 +193,6 @@ final class ProvideAmountViewController: SendAmountViewController {
                                                name: .balanceChangeNotification, object: nil)
 
         updateBalance()
-        updateError()
     }
 
     deinit {
@@ -239,17 +218,6 @@ extension ProvideAmountViewController {
         else {
             balanceLabel.text = fullStr
         }
-    }
-
-    private func updateError() {
-        guard let error = sendAmountModel.error else {
-            errorLabel.isHidden = true
-            return
-        }
-
-        errorLabel.isHidden = false
-        errorLabel.text = error.localizedString
-        errorLabel.textColor = error.textColor
     }
 }
 

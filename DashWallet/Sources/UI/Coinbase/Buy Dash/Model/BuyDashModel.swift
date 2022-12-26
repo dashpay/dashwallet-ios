@@ -82,14 +82,22 @@ final class BuyDashModel: BaseAmountModel {
                 await MainActor.run { [weak self] in
                     self?.delegate?.buyDashModelDidPlace(order: order)
                 }
-            } catch let error as Coinbase.Error {
-                await MainActor.run { [weak self] in
-                    self?.delegate?.buyDashModelFailedToPlaceOrder(with: error)
-                }
             } catch {
-                // TODO: do smth
+                await MainActor.run { [weak self] in
+                    self?.error = error
+//                    self?.errorHandler?(error)
+                }
             }
         }
+    }
+
+    override func amountDidChange() {
+        error = nil
+        super.amountDidChange()
+    }
+
+    override func checkAmountForErrors() {
+        DSPriceManager.sharedInstance()
     }
 }
 
