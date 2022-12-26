@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - SendAmountError
 
-enum SendAmountError: Error, LocalizedError {
+enum SendAmountError: Error, ColorizedText, LocalizedError {
     case insufficientFunds
     case syncingChain
 

@@ -56,9 +56,3 @@ class SendAmountViewController: BaseAmountViewController {
         actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
 }
-
-extension Error {
-    var textColor: UIColor {
-        .systemRed
-    }
-}

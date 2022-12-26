@@ -206,6 +206,14 @@ extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
 
 extension BaseAmountViewController: ErrorPresentable {
     @objc func present(error: Error) {
-        amountView.showError(error.localizedDescription, textColor: error.textColor)
+        let color: UIColor
+
+        if let error = error as? ColorizedText {
+            color = error.textColor
+        } else {
+            color = .systemRed
+        }
+
+        amountView.showError(error.localizedDescription, textColor: color)
     }
 }

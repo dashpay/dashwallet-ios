@@ -590,6 +590,7 @@
 		47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47EE171729560DC200BA1986 /* ErrorPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE171629560DC200BA1986 /* ErrorPresentable.swift */; };
+		47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE17182959CDC200BA1986 /* ColorizedText.swift */; };
 		47EEE23B293F041E00049E0B /* CBUserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23A293F041E00049E0B /* CBUserManager.swift */; };
 		47EEE23F293F404400049E0B /* CBTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23E293F404400049E0B /* CBTransactions.swift */; };
 		47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */; };
@@ -1765,6 +1766,7 @@
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47EE171629560DC200BA1986 /* ErrorPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorPresentable.swift; sourceTree = "<group>"; };
+		47EE17182959CDC200BA1986 /* ColorizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorizedText.swift; sourceTree = "<group>"; };
 		47EEE23A293F041E00049E0B /* CBUserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBUserManager.swift; sourceTree = "<group>"; };
 		47EEE23E293F404400049E0B /* CBTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBTransactions.swift; sourceTree = "<group>"; };
 		47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseAPIClient.swift; sourceTree = "<group>"; };
@@ -4031,6 +4033,7 @@
 				47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */,
 				47EE171629560DC200BA1986 /* ErrorPresentable.swift */,
 				47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */,
+				47EE17182959CDC200BA1986 /* ColorizedText.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -6324,6 +6327,7 @@
 				2ACCA3B224BE3CDC00DB32DE /* DWUserProfileDataSourceObject.m in Sources */,
 				2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
+				47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */,
 				2A7AF37B2482756D001D74F9 /* DWDPPendingRequestObject.m in Sources */,
 				2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
