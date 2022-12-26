@@ -42,8 +42,8 @@ class FetchingNextPageCell: UITableViewCell {
     func configureLayout() {
         activity = UIActivityIndicatorView()
         activity.translatesAutoresizingMaskIntoConstraints = false
-        activity.tintColor = .secondaryLabel
-        activity.color = .secondaryLabel
+        activity.tintColor = .dw_secondaryText()
+        activity.color = .dw_secondaryText()
         contentView.addSubview(activity)
 
         NSLayoutConstraint.activate([

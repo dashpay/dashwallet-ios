@@ -17,9 +17,10 @@
 
 #import "DWBasePayViewController.h"
 
-#import "DWNavigationFullscreenable.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
 
 typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
     DWLockScreenViewControllerUnlockMode_Instantly,

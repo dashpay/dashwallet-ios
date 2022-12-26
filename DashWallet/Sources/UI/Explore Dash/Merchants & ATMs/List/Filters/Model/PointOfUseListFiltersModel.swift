@@ -52,7 +52,6 @@ extension PointOfUseListFilters.SortDirection {
 
 // MARK: - PointOfUseListFilters
 
-// MARK: PointOfUseListFilters
 struct PointOfUseListFilters: Equatable {
 
     enum SortBy {
@@ -176,7 +175,6 @@ extension PointOfUseListFilters {
 
 // MARK: - PointOfUseListFilterItem
 
-// MARK: PointOfUseListFilterItem
 enum PointOfUseListFilterItem: String {
     case sortAZ
     case sortZA
@@ -310,7 +308,6 @@ enum PointOfUseListFilterItem: String {
 
 // MARK: - PointOfUseListFiltersModel
 
-// MARK: PointOfUseListFiltersModel
 final class PointOfUseListFiltersModel {
     var selected: Set<PointOfUseListFilterItem> = []
     var initialFilters: Set<PointOfUseListFilterItem>!

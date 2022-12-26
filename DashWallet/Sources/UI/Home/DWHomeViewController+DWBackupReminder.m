@@ -18,8 +18,8 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
-#import "DWNavigationController.h"
 #import "DWSecureWalletInfoViewController.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

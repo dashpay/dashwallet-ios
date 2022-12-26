@@ -21,12 +21,10 @@
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
@@ -149,16 +147,24 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 /// helper
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
+    if ([self.currentController.presentedViewController isKindOfClass:[DWNavigationController class]]) {
+        DWNavigationController *nvc = (DWNavigationController *)self.currentController.presentedViewController;
+
+        if (![nvc.topViewController isKindOfClass:[DWPaymentsViewController class]]) {
+            return;
+        }
+    }
+
     tabBarView.userInteractionEnabled = NO;
     [tabBarView setPaymentsButtonOpened:NO];
 
-    [[self.currentController topController] dismissViewControllerAnimated:YES
-                                                               completion:^{
-                                                                   self.tabBarView.userInteractionEnabled = YES;
-                                                                   if (completion) {
-                                                                       completion();
-                                                                   }
-                                                               }];
+    [self.currentController dismissViewControllerAnimated:YES
+                                               completion:^{
+                                                   self.tabBarView.userInteractionEnabled = YES;
+                                                   if (completion) {
+                                                       completion();
+                                                   }
+                                               }];
 }
 
 #pragma mark - DWPaymentsViewControllerDelegate
@@ -315,14 +321,15 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
-
-    UIViewController *presentingController = [self.currentController topController];
-
-    [presentingController presentViewController:navigationController
-                                       animated:YES
-                                     completion:^{
-                                         self.tabBarView.userInteractionEnabled = YES;
-                                     }];
+    [self.currentController presentViewController:navigationController
+                                         animated:YES
+                                       completion:^{
+                                           self.tabBarView.userInteractionEnabled = YES;
+                                       }];
+    //        [self.currentController displayModalViewController:navigationController
+    //                              completion:^{
+    //                                  self.tabBarView.userInteractionEnabled = YES;
+    //                              }];
 }
 
 - (void)setupControllers {

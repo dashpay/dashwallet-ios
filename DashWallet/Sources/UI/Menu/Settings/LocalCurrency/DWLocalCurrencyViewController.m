@@ -60,34 +60,11 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    switch (self.navigationAppearance) {
-        case DWNavigationAppearance_Default:
-            break;
-        case DWNavigationAppearance_White: {
-            [self.navigationController.navigationBar dw_configureForWhiteAppearance];
 
-            if (@available(iOS 13.0, *)) {
-                UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
-                self.navigationItem.rightBarButtonItem = barButton;
-            }
-            else {
-                UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(closeButtonAction)];
-                self.navigationItem.rightBarButtonItem = barButton;
-            }
+    UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
+    self.navigationItem.rightBarButtonItem = barButton;
 
-            UILabel *label = [[UILabel alloc] init];
-            label.textColor = [UIColor dw_darkTitleColor];
-            label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
-            label.text = NSLocalizedString(@"Local Currency", nil);
-            [label sizeToFit];
-
-            UIBarButtonItem *leftTitleItem = [[UIBarButtonItem alloc] initWithCustomView:label];
-            self.navigationItem.leftBarButtonItem = leftTitleItem;
-
-            break;
-        }
-    }
-    [self.navigationController.navigationBar dw_applyStandardAppearance];
+    self.title = NSLocalizedString(@"Local Currency", nil);
 
     [self setupView];
     [self setupSearchController];
@@ -171,10 +148,6 @@ static CGFloat const SECTION_SPACING = 10.0;
     }
 }
 
-- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    return [[UIView alloc] init];
-}
-
 #pragma mark - UISearchResultsUpdating
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
@@ -211,41 +184,20 @@ static CGFloat const SECTION_SPACING = 10.0;
 
     UISearchBar *searchBar = searchController.searchBar;
     searchBar.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    searchBar.searchBarStyle = UISearchBarStyleDefault;
     searchBar.delegate = self;
-    searchBar.tintColor = [UIColor dw_tintColor];
-
-    if (self.navigationAppearance == DWNavigationAppearance_Default) {
-        searchBar.barTintColor = [UIColor dw_dashNavigationBlueColor];
-
-        UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
-        searchTextField.tintColor = [UIColor dw_dashNavigationBlueColor];
-        searchTextField.textColor = [UIColor dw_darkTitleColor];
-        searchTextField.backgroundColor = [UIColor dw_backgroundColor];
-
-        UIView *searchTextFieldBackground = searchTextField.subviews.firstObject;
-        searchTextFieldBackground.backgroundColor = [UIColor dw_backgroundColor];
-        searchTextFieldBackground.layer.cornerRadius = 10.0;
-        searchTextFieldBackground.layer.masksToBounds = YES;
-    }
+    searchBar.tintColor = [UIColor labelColor];
 }
 
 - (void)setupView {
-    switch (self.navigationAppearance) {
-        case DWNavigationAppearance_Default:
-            self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-            self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
-            break;
-        case DWNavigationAppearance_White:
-            self.view.backgroundColor = [UIColor dw_backgroundColor];
-            break;
-    }
+    self.edgesForExtendedLayout = UIRectEdgeTop | UIRectEdgeBottom;
+    self.extendedLayoutIncludesOpaqueBars = YES;
 
+    self.view.backgroundColor = [UIColor dw_backgroundColor];
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 74.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
-    self.tableView.separatorInset = UIEdgeInsetsZero;
-    self.tableView.sectionHeaderHeight = SECTION_SPACING;
+    self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
     self.tableView.tableFooterView = [[UIView alloc] init];
 
     [self.tableView registerClass:DWLocalCurrencyTableViewCell.class
@@ -261,7 +213,6 @@ static CGFloat const SECTION_SPACING = 10.0;
     priceSourceLabel.textAlignment = NSTextAlignmentCenter;
     [self.tableView addSubview:priceSourceLabel];
     self.priceSourceLabel = priceSourceLabel;
-
     [self walletBalanceDidChangeNotification:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(walletBalanceDidChangeNotification:)

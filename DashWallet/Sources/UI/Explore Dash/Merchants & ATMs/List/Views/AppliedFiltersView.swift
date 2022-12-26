@@ -37,7 +37,7 @@ final class AppliedFiltersView: UIView {
     private func configureHierarchy() {
         backgroundColor = .systemBackground
 
-        let hairline = HairlineView()
+        let hairline = HairlineView(frame: .zero)
         hairline.translatesAutoresizingMaskIntoConstraints = false
         addSubview(hairline)
 

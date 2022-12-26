@@ -21,6 +21,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWActionButton ()
+
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
+@property (strong, nonatomic) UIImage *activeImage;
+
+@end
+
 @implementation DWActionButton
 
 @synthesize accentColor = _accentColor;
@@ -78,11 +85,61 @@ NS_ASSUME_NONNULL_BEGIN
     [self resetAppearance];
 }
 
+- (void)showActivityIndicator {
+    [super setEnabled:NO];
+    [super setImage:nil forState:UIControlStateNormal];
+
+    [self.titleLabel setAlpha:0.0];
+    [self.imageView setAlpha:0.0];
+    [_activityIndicator setHidden:NO];
+    [_activityIndicator startAnimating];
+}
+
+- (void)hideActivityIndicator {
+    [super setEnabled:YES];
+    [super setImage:_activeImage forState:UIControlStateNormal];
+
+    [self.titleLabel setAlpha:1.0];
+    [self.imageView setAlpha:1.0];
+    [_activityIndicator stopAnimating];
+}
+
+- (void)setImage:(UIImage *__nullable)image forState:(UIControlState)state {
+    [super setImage:image forState:state];
+
+    if (state == UIControlStateNormal) {
+        self.activeImage = image;
+    }
+}
+
+- (void)setEnabled:(BOOL)enabled {
+    if (_activityIndicator.isAnimating)
+        return;
+
+    [super setEnabled:enabled];
+}
+
 #pragma mark - Private
 
 - (void)setup_ActionButton {
+    self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+    _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+    _activityIndicator.hidesWhenStopped = YES;
+    [self addSubview:_activityIndicator];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [_activityIndicator.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        [_activityIndicator.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    ]];
+
+    self.adjustsImageWhenHighlighted = NO;
+    self.adjustsImageSizeForAccessibilityContentSizeCategory = YES;
+
     self.usedOnDarkBackground = NO;
     self.inverted = NO;
+
+    BOOL dark = self.usedOnDarkBackground;
+    BOOL inverted = self.inverted;
 }
 
 - (void)resetAppearance {
@@ -98,6 +155,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL dark = self.usedOnDarkBackground;
     BOOL inverted = self.inverted;
+
+    _activityIndicator.color = [UIColor labelColor];
+    _activityIndicator.hidden = YES;
 
     UIColor *color = [self _backgroundColorForInverted:inverted usedOnDarkBackground:dark];
     [self setBackgroundColor:color forState:UIControlStateNormal];
@@ -125,6 +185,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     color = [self _disabledBorderColorForInverted:inverted usedOnDarkBackground:dark];
     [self setBorderColor:color forState:UIControlStateDisabled];
+
+    self.tintColor = self.accentColor;
+    self.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, 14.0);
 }
 
 #pragma mark - Styles
@@ -190,4 +253,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@implementation DWTintedButton
+
+- (void)resetAppearance {
+    [super resetAppearance];
+}
+
+- (UIColor *)_backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return [self.accentColor colorWithAlphaComponent:0.1f];
+}
+
+- (UIColor *)_textColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return self.accentColor;
+}
+
+- (UIColor *)_borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return [self.accentColor colorWithAlphaComponent:0.1f];
+}
+
+- (CGFloat)_borderWidthForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
+    return 0.0;
+}
+
+@end
 NS_ASSUME_NONNULL_END

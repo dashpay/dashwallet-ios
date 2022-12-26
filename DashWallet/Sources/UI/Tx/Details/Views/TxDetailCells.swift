@@ -99,7 +99,7 @@ class TxDetailHeaderCell: UITableViewCell {
 class TxDetailActionCell: TxDetailTitleCell {
     override func awakeFromNib() {
         super.awakeFromNib()
-        titleLabel.textColor = .label
+        titleLabel.textColor = .dw_label()
     }
 
     override class var dw_reuseIdentifier: String { "TxDetailActionCell" }
@@ -201,6 +201,6 @@ class TxDetailTitleCell: UITableViewCell {
 
     override func awakeFromNib() {
         titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
-        titleLabel.textColor = UIColor.dw_secondaryText()
+        titleLabel.textColor = .dw_secondaryText()
     }
 }

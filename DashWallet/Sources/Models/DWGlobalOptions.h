@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL exploreDashMerchantsInfoShown;
 
+@property (nonatomic, assign) BOOL coinbaseInfoShown;
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

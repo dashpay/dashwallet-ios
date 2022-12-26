@@ -26,6 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) IBInspectable BOOL small;
 @property (null_resettable, nonatomic, strong) IBInspectable UIColor *accentColor;
 
+- (void)showActivityIndicator;
+- (void)hideActivityIndicator;
+
+@end
+
+@interface DWTintedButton : DWActionButton
+
 @end
 
 NS_ASSUME_NONNULL_END

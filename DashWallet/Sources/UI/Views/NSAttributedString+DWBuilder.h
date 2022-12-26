@@ -31,8 +31,17 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSAttributedString *)dw_dashAttributedStringForAmount:(uint64_t)amount
                                                tintColor:(UIColor *)tintColor
                                                     font:(UIFont *)font;
++ (NSAttributedString *)dw_dashAttributedStringForAmount:(uint64_t)amount
+                                               tintColor:(UIColor *)tintColor
+                                         dashSymbolColor:(UIColor *_Nullable)dashSymbolColor
+                                                    font:(UIFont *)font;
+
 + (NSAttributedString *)dw_dashAttributedStringForFormattedAmount:(NSString *)string
                                                         tintColor:(UIColor *)tintColor
+                                                             font:(UIFont *)font;
++ (NSAttributedString *)dw_dashAttributedStringForFormattedAmount:(NSString *)string
+                                                        tintColor:(UIColor *)tintColor
+                                                  dashSymbolColor:(UIColor *_Nullable)dashSymbolColor
                                                              font:(UIFont *)font;
 
 + (NSAttributedString *)dw_dashAddressAttributedString:(NSString *)address withFont:(UIFont *)font showingLogo:(BOOL)showingLogo;

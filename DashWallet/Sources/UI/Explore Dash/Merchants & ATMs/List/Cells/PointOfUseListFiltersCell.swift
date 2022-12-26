@@ -91,7 +91,7 @@ class PointOfUseListFiltersCell: UITableViewCell {
         filterButton.setTitleColor(.label, for: .normal)
         filterButton.setTitle(NSLocalizedString(" ", comment: ""), for: .normal)
         filterButton.setImage(UIImage(systemName: "slider.horizontal.3"), for: .normal)
-        filterButton.tintColor = .label
+        filterButton.tintColor = .dw_label()
         filterButton.addTarget(self, action: #selector(filterButtonAction), for: .touchUpInside)
         stackView.addArrangedSubview(filterButton)
         self.filterButton = filterButton

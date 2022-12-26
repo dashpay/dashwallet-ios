@@ -103,7 +103,7 @@ static BOOL IsJailbroken(void) {
 
         _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
-        _syncModel = [[DWSyncModel alloc] initWithReachability:_reachability];
+        _syncModel = [[DWSyncModel alloc] init];
 
 #if DASHPAY_ENABLED
         _dashPayModel = [[DWDashPayModel alloc] init];
@@ -352,10 +352,6 @@ static BOOL IsJailbroken(void) {
 
         [self startSyncIfNeeded];
     }
-
-    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
-    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
-    [syncModel reachabilityStatusDidChange];
 }
 
 - (void)walletBalanceDidChangeNotification {

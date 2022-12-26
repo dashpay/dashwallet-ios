@@ -39,7 +39,7 @@ class MerchantInfoViewController: PointOfUseInfoViewController {
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textColor = .label
+        titleLabel.textColor = .dw_label()
         titleLabel.font = UIFont.dw_font(forTextStyle: .title1)
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
@@ -122,7 +122,7 @@ class MerchantInfoViewController: PointOfUseInfoViewController {
         let itemTitleLabel = UILabel()
         itemTitleLabel.text = title
         itemTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        itemTitleLabel.textColor = .label
+        itemTitleLabel.textColor = .dw_label()
         itemTitleLabel.font = UIFont.dw_font(forTextStyle: .body)
         itemTitleLabel.textAlignment = .center
         itemTitleLabel.numberOfLines = 0
@@ -131,7 +131,7 @@ class MerchantInfoViewController: PointOfUseInfoViewController {
         let descLabel = UILabel()
         descLabel.text = subtitle
         descLabel.translatesAutoresizingMaskIntoConstraints = false
-        descLabel.textColor = .secondaryLabel
+        descLabel.textColor = .dw_secondaryText()
         descLabel.font = UIFont.dw_font(forTextStyle: .footnote)
         descLabel.textAlignment = .center
         descLabel.numberOfLines = 0

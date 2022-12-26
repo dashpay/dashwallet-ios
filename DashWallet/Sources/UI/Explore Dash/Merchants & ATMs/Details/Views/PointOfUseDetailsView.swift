@@ -176,7 +176,7 @@ extension PointOfUseDetailsView {
 
         addressLabel = UILabel()
         addressLabel.font = .dw_font(forTextStyle: .body)
-        addressLabel.textColor = .label
+        addressLabel.textColor = .dw_label()
         addressLabel.numberOfLines = 0
         addressLabel.lineBreakMode = .byWordWrapping
         addressLabel.text = merchant.address1

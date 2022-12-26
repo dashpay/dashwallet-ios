@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)emptyPaymentInputWithSource:(DWPaymentInputSource)source;
 
+- (nullable DWPaymentInput *)payToAddress:(NSString *)address
+                                   amount:(uint64_t)amount;
 - (void)payFirstFromArray:(NSArray<NSString *> *)array
                    source:(DWPaymentInputSource)source
                completion:(void (^)(DWPaymentInput *paymentInput))completion;

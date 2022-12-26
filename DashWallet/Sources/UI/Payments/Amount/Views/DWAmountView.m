@@ -23,9 +23,9 @@
 #import "DWDPAmountContactView.h"
 #import "DWGlobalOptions.h"
 #import "DWMaxButton.h"
-#import "DWNumberKeyboard.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,7 +43,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 @property (readonly, nonatomic, strong) UITextField *textField;
 @property (readonly, nonatomic, strong) DWDPAmountContactView *contactView;
 @property (readonly, nonatomic, strong) DWAmountDescriptionView *descriptionView;
-@property (readonly, nonatomic, strong) DWNumberKeyboard *numberKeyboard;
+@property (readonly, nonatomic, strong) NumberKeyboard *numberKeyboard;
 
 @end
 
@@ -132,7 +132,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         separatorLineView.backgroundColor = [UIColor dw_separatorLineColor];
         [self addSubview:separatorLineView];
 
-        DWNumberKeyboard *numberKeyboard = [[DWNumberKeyboard alloc] initWithFrame:CGRectZero];
+        NumberKeyboard *numberKeyboard = [[NumberKeyboard alloc] initWithFrame:CGRectZero];
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = NO;
         numberKeyboard.textInput = textField;
         [self addSubview:numberKeyboard];
