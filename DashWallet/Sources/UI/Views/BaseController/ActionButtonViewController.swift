@@ -41,9 +41,16 @@ extension UIBarButtonItem: ActionButtonProtocol {
     }
 }
 
+// MARK: - ActivityIndicatorPreviewing
+
+protocol ActivityIndicatorPreviewing: AnyObject {
+    func showActivityIndicator()
+    func hideActivityIndicator()
+}
+
 // MARK: - ActionButtonViewController
 
-class ActionButtonViewController: BaseViewController {
+class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewing {
     public weak var actionButton: ActionButtonProtocol?
 
     internal var isKeyboardNotificationsEnabled = false
@@ -51,7 +58,6 @@ class ActionButtonViewController: BaseViewController {
     internal var isActionButtonInNavigationBar: Bool { false }
     internal var actionButtonTitle: String? {
         fatalError("Must be overriden in subclass")
-        return nil
     }
 
     internal var actionButtonDisabledTitle: String? { actionButtonTitle }
@@ -72,20 +78,16 @@ class ActionButtonViewController: BaseViewController {
             activityIndicator.sizeToFit()
             let barButtonItem = UIBarButtonItem(customView: activityIndicator)
             navigationItem.rightBarButtonItem = barButtonItem
-        }
-        else {
+        } else {
             button.showActivityIndicator()
-            button.isEnabled = false
         }
     }
 
     func hideActivityIndicator() {
         if isActionButtonInNavigationBar {
             navigationItem.rightBarButtonItem = barButton
-        }
-        else {
+        } else {
             button.hideActivityIndicator()
-            button.isEnabled = true
         }
     }
 
@@ -118,7 +120,7 @@ class ActionButtonViewController: BaseViewController {
 
 extension ActionButtonViewController {
     private func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false

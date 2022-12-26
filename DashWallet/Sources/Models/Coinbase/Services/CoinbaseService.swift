@@ -20,22 +20,10 @@ class CoinbaseService {
 extension CoinbaseService { }
 
 extension CoinbaseService {
-    // NOTE: not used
-    func getCoinbaseUserAuthInformation() async throws -> CoinbaseUserAuthInformation {
-        try await httpClient.request(.userAuthInformation)
-    }
-
     func getCoinbaseExchangeRates(currency: String) async throws -> CoinbaseExchangeRate {
         let result: BaseDataResponse<CoinbaseExchangeRate> = try await httpClient.request(.exchangeRates(currency))
         return result.data
     }
-
-    func getCoinbaseActivePaymentMethods() async throws -> [CoinbasePaymentMethod] {
-        let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await httpClient.request(.activePaymentMethods)
-        return result.data
-    }
-
-
 
     func getCoinbaseBaseIDForCurrency(baseCurrency: String) async throws -> BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> {
         try await httpClient.request(.getBaseIdForUSDModel(baseCurrency))
@@ -50,7 +38,13 @@ extension CoinbaseService {
     }
 
     func createCoinbaseAccountAddress(accountId: String) async throws -> String {
-        let result: BaseDataResponse<CoinbaseAccountAddress> = try await httpClient.request(.createCoinbaseAccountAddress(accountId))
-        return result.data.address
+        do {
+            let result: BaseDataResponse<CoinbaseAccountAddress> = try await httpClient.request(.createCoinbaseAccountAddress(accountId))
+            return result.data.address
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
+            throw Coinbase.Error.userSessionExpired
+        } catch {
+            throw Coinbase.Error.transactionFailed(.failedToObtainNewAddress)
+        }
     }
 }

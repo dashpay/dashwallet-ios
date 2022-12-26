@@ -25,7 +25,6 @@ struct CoinbasePlaceBuyOrder: Codable {
     let subtotal: Amount
     let unitPrice: UnitPrice?
     let requiresCompletionStep: Bool?
-    let nextStep: String?
     let committed: Bool?
 
     enum CodingKeys: String, CodingKey {
@@ -45,7 +44,6 @@ struct CoinbasePlaceBuyOrder: Codable {
         case amount, total, subtotal
         case unitPrice = "unit_price"
         case requiresCompletionStep = "requires_completion_step"
-        case nextStep = "next_step"
         case committed
     }
 }

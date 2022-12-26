@@ -86,20 +86,22 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showActivityIndicator {
+    [super setEnabled:NO];
+    [super setImage:nil forState:UIControlStateNormal];
+
     [self.titleLabel setAlpha:0.0];
     [self.imageView setAlpha:0.0];
     [_activityIndicator setHidden:NO];
     [_activityIndicator startAnimating];
-
-    [super setImage:nil forState:UIControlStateNormal];
 }
 
 - (void)hideActivityIndicator {
+    [super setEnabled:YES];
+    [super setImage:_activeImage forState:UIControlStateNormal];
+
     [self.titleLabel setAlpha:1.0];
     [self.imageView setAlpha:1.0];
     [_activityIndicator stopAnimating];
-
-    [super setImage:_activeImage forState:UIControlStateNormal];
 }
 
 - (void)setImage:(UIImage *__nullable)image forState:(UIControlState)state {
@@ -108,6 +110,13 @@ NS_ASSUME_NONNULL_BEGIN
     if (state == UIControlStateNormal) {
         self.activeImage = image;
     }
+}
+
+- (void)setEnabled:(BOOL)enabled {
+    if (_activityIndicator.isAnimating)
+        return;
+
+    [super setEnabled:enabled];
 }
 
 #pragma mark - Private

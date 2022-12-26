@@ -26,7 +26,9 @@ enum ConfirmOrderError: Error {
 
 // MARK: - ConfirmOrderModel
 
-final class ConfirmOrderModel {
+final class ConfirmOrderModel: CoinbaseTransactionSendable {
+    var transactionDelegate: CoinbaseTransactionDelegate?
+
     var order: CoinbasePlaceBuyOrder
     let paymentMethod: CoinbasePaymentMethod
 
@@ -49,14 +51,12 @@ final class ConfirmOrderModel {
             return
         }
 
+        let amount = plainAmount
+
         Task { [weak self] in
             do {
                 let order = try await Coinbase.shared.commitCoinbaseBuyOrder(orderID: orderId)
-                self?.order = order
-
-                await MainActor.run { [weak self] in
-                    self?.completionHandle?()
-                }
+                try await self?.transferFromCoinbase(amount: amount, with: nil)
             } catch {
                 await MainActor.run { [weak self] in
                     self?.failureHandle?(.error)

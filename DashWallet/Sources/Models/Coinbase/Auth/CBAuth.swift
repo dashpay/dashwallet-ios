@@ -82,7 +82,7 @@ class CBAuth {
                       let callbackURL,
                       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
                       let code = queryItems.first(where: { $0.name == "code" })?.value else {
-                    continuation.resume(throwing: Coinbase.Error.failedToAuth)
+                    continuation.resume(throwing: Coinbase.Error.authFailed(.failedToRetrieveCode))
                     return
                 }
 
@@ -93,7 +93,7 @@ class CBAuth {
             authenticationSession.prefersEphemeralWebBrowserSession = true
 
             if !authenticationSession.start() {
-                continuation.resume(throwing: Coinbase.Error.failedToStartAuthSession)
+                continuation.resume(throwing: Coinbase.Error.authFailed(.failedToStartAuthSession))
             }
         }
 
@@ -178,9 +178,9 @@ extension CBAuth {
             URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
             URLQueryItem(name: "response_type", value: Coinbase.responseType),
             URLQueryItem(name: "scope", value: Coinbase.scope),
-            URLQueryItem(name: "meta[send_limit_amount]", value: "\(Coinbase.send_limit_amount)"),
-            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.send_limit_currency),
-            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.send_limit_period),
+            URLQueryItem(name: "meta[send_limit_amount]", value: "\((Coinbase.sendLimitAmount as NSDecimalNumber).intValue)"),
+            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.sendLimitCurrency),
+            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.sendLimitPeriod),
             URLQueryItem(name: "account", value: Coinbase.account),
         ]
 
@@ -203,7 +203,7 @@ extension CBAuth {
 
     private func refreshUserToken() async throws {
         guard let currentUser else {
-            throw Coinbase.Error.noActiveUser
+            throw Coinbase.Error.general(.noActiveUser)
         }
 
         try await currentUser.refreshAccessToken()
@@ -211,7 +211,7 @@ extension CBAuth {
 
     private func refreshAccount() async throws {
         guard let currentUser else {
-            throw Coinbase.Error.noActiveUser
+            throw Coinbase.Error.general(.noActiveUser)
         }
 
         try await currentUser.refreshAccount()
@@ -245,9 +245,9 @@ extension CBAuth {
     }
 
     private func tokenRefreshHandler() {
-        tokenRefreshTask?.cancel()
+        guard tokenRefreshTask == nil else { return }
 
-        tokenRefreshTask = Task {
+        tokenRefreshTask = Task { [weak self] in
             do {
                 try await refreshUserToken()
                 try? await refreshAccount()
@@ -255,6 +255,8 @@ extension CBAuth {
             } catch HTTPClientError.statusCode(let response) {
                 try await signOut()
             }
+
+            self?.tokenRefreshTask = nil
         }
     }
 }

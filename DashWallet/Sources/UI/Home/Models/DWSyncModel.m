@@ -98,6 +98,7 @@ static float const MAX_PROGRESS_DELTA = 0.1;            // 10%
     }
 
     DWSyncLog(@"[DW Sync] Sync state: %@ -> %@", SyncStateToString(previousState), SyncStateToString(state));
+    _state = state;
 }
 
 #pragma mark SyncingActivityMonitorObserver

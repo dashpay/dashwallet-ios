@@ -180,6 +180,7 @@ class AmountInputControl: UIControl {
         }
 
         amountType = type
+        delegate?.amountInputControlDidSwapInputs()
         supplementaryAmountHelperLabel.font = wasSwapped ? bigLabel.font : smallLabel.font
 
         if animated {
@@ -193,7 +194,6 @@ class AmountInputControl: UIControl {
                 }) { _ in
                     self.currencySelectorButton.isHidden = self.isCurrencySelectorHidden
                     self.updateCurrencySelectorPossition()
-                    self.delegate?.amountInputControlDidSwapInputs()
                     completion?()
                 }
             }

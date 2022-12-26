@@ -84,10 +84,15 @@ enum ConfirmOrderSection: Int {
 
 // MARK: - ConfirmOrderController
 
-final class ConfirmOrderController: BaseViewController {
+final class ConfirmOrderController: BaseViewController, NetworkReachabilityHandling {
+    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
     private var tableView: UITableView!
     private var actionButton: DWActionButton!
     private var retryButton: DWTintedButton!
+    private var networkUnavailableView: UIView!
+    private var buttonsStackView: UIStackView!
 
     private let model: ConfirmOrderModel
 
@@ -99,6 +104,9 @@ final class ConfirmOrderController: BaseViewController {
 
     private var timer: Timer!
     private var timeRemaining = 10
+
+    internal weak var codeConfirmationController: TwoFactorAuthViewController?
+
     let measurementFormatter: MeasurementFormatter = {
         let measurementFormatter = MeasurementFormatter()
         measurementFormatter.locale = Locale.current
@@ -155,12 +163,23 @@ final class ConfirmOrderController: BaseViewController {
 
         configureHierarchy()
         startCounting()
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
     }
 }
 
 // MARK: Private
 
 extension ConfirmOrderController {
+    private func reloadView() {
+        let isOnline = networkStatus == .online
+        networkUnavailableView.isHidden = isOnline
+        buttonsStackView.isHidden = !isOnline
+    }
+
     private func cancelTransaction() {
         navigationController?.popViewController(animated: true)
     }
@@ -200,17 +219,13 @@ extension ConfirmOrderController {
 // MARK: Life cycle
 extension ConfirmOrderController {
     private func configureModel() {
+        model.transactionDelegate = self
+
         model.orderChangeHandle = { [weak self] in
             self?.tableView.reloadData()
             self?.retryButton.hideActivityIndicator()
             self?.retryButton.isEnabled = true
             self?.startCounting()
-        }
-
-        model.completionHandle = { [weak self] in
-            self?
-                .showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 2-3 minutes for the Dash to be transfered to your Dash Wallet on this device.",
-                                                                      comment: "Coinbase/Buy Dash/Confirm Order"))
         }
 
         model.failureHandle = { [weak self] _ in
@@ -236,12 +251,12 @@ extension ConfirmOrderController {
         tableView.register(ConfirmOrderAmountInDashCell.self, forCellReuseIdentifier: ConfirmOrderAmountInDashCell.dw_reuseIdentifier)
         view.addSubview(tableView)
 
-        let buttonStackView = UIStackView()
-        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
-        buttonStackView.axis = .horizontal
-        buttonStackView.spacing = 10
-        buttonStackView.alignment = .fill
-        view.addSubview(buttonStackView)
+        buttonsStackView = UIStackView()
+        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        buttonsStackView.axis = .horizontal
+        buttonsStackView.spacing = 10
+        buttonsStackView.alignment = .fill
+        view.addSubview(buttonsStackView)
 
         let cancelButton = UIButton(type: .custom)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
@@ -250,32 +265,36 @@ extension ConfirmOrderController {
         cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
         cancelButton.setTitleColor(.dw_label(), for: .normal)
         cancelButton.addTarget(self, action: #selector(cancelAction), for: .touchUpInside)
-        buttonStackView.addArrangedSubview(cancelButton)
+        buttonsStackView.addArrangedSubview(cancelButton)
 
         actionButton = DWActionButton(frame: .zero)
         actionButton.translatesAutoresizingMaskIntoConstraints = false
         actionButton.setTitle(NSLocalizedString("Confirm (%@)", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
         actionButton.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
         actionButton.isHidden = true
-        buttonStackView.addArrangedSubview(actionButton)
+        buttonsStackView.addArrangedSubview(actionButton)
 
         retryButton = DWTintedButton(frame: .zero)
         retryButton.translatesAutoresizingMaskIntoConstraints = false
         retryButton.addTarget(self, action: #selector(retryAction), for: .touchUpInside)
         retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
-        // retryButton.setImage(nil, for: .disabled)
         retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
         retryButton.isHidden = false
-        buttonStackView.addArrangedSubview(retryButton)
+        buttonsStackView.addArrangedSubview(retryButton)
+
+        networkUnavailableView = NetworkUnavailableView(frame: .init(x: 0, y: 0, width: view.bounds.width, height: 200))
+        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
+        networkUnavailableView.isHidden = true
+        tableView.tableFooterView = networkUnavailableView
 
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: buttonStackView.topAnchor),
-            buttonStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            buttonStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: buttonStackView.bottomAnchor, constant: 15),
+            tableView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor),
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: buttonsStackView.bottomAnchor, constant: 15),
 
             actionButton.heightAnchor.constraint(equalToConstant: 46),
             actionButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor, multiplier: 1.4),
@@ -329,5 +348,35 @@ extension ConfirmOrderController: UITableViewDataSource, UITableViewDelegate {
 
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         8
+    }
+}
+
+// MARK: NavigationStackControllable
+
+extension ConfirmOrderController: NavigationStackControllable {
+    func shouldPopViewController() -> Bool {
+        cancelAction()
+
+        return false
+    }
+}
+
+// MARK: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
+
+extension ConfirmOrderController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
+    func showActivityIndicator() {
+        actionButton?.showActivityIndicator()
+    }
+
+    func hideActivityIndicator() {
+        actionButton?.hideActivityIndicator()
+    }
+
+    func codeConfirmationControllerDidContinue(with code: String) {
+        model.continueTransferFromCoinbase(with: code)
+    }
+
+    func codeConfirmationControllerDidCancel() {
+        hideActivityIndicator()
     }
 }

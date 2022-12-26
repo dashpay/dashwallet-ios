@@ -17,6 +17,12 @@
 
 import UIKit
 
+// MARK: - NavigationStackControllable
+
+protocol NavigationStackControllable: UIViewController {
+    func shouldPopViewController() -> Bool
+}
+
 // MARK: - NavigationBarDisplayable
 
 protocol NavigationBarDisplayable: UIViewController {
@@ -50,12 +56,12 @@ class BaseNavigationController: UINavigationController {
         }
     }
 
+    private var isPushAnimationInProgress = false
+
     override init(rootViewController: UIViewController) {
         super.init(rootViewController: rootViewController)
 
-        let arrow = UIImage(systemName: "arrow.backward")
-        navigationBar.backIndicatorImage = arrow
-        navigationBar.backIndicatorTransitionMaskImage = arrow
+        interactivePopGestureRecognizer?.delegate = self
         navigationBar.tintColor = .black
     }
 
@@ -75,6 +81,12 @@ class BaseNavigationController: UINavigationController {
         }
     }
 
+    override func pushViewController(_ viewController: UIViewController, animated: Bool) {
+        isPushAnimationInProgress = true
+
+        super.pushViewController(viewController, animated: animated)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -82,10 +94,27 @@ class BaseNavigationController: UINavigationController {
     }
 }
 
+// MARK: Actions
+
+extension BaseNavigationController {
+    @objc func backButtonAction() {
+        guard let topViewController = topViewController as? NavigationStackControllable else {
+            popViewController(animated: true)
+            return
+        }
+
+        if topViewController.shouldPopViewController() {
+            popViewController(animated: true)
+        }
+    }
+}
+
 // MARK: UINavigationControllerDelegate
 
 extension BaseNavigationController: UINavigationControllerDelegate {
-    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController,
+
+    func navigationController(_ navigationController: UINavigationController,
+                              willShow viewController: UIViewController,
                               animated: Bool) {
         var hideBackButton = viewController == navigationController.viewControllers.first
         var hideNavigationBar = false
@@ -97,13 +126,27 @@ extension BaseNavigationController: UINavigationControllerDelegate {
             hideNavigationBar = vc.requiresNoNavigationBar
         }
 
-        if delegate?.responds(to: #function) ?? false {
-            delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
+        delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
+
+        if !hideBackButton && viewController.navigationItem.leftBarButtonItem == nil {
+            let backButton = UIButton(type: .custom)
+            backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
+            backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
+            backButton.tintColor = .black
+            backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+            backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+            let item = UIBarButtonItem(customView: backButton)
+
+            viewController.navigationItem.leftBarButtonItem = item
+            viewController.navigationItem.leftItemsSupplementBackButton = false
         }
 
+        viewController.navigationItem.hidesBackButton = true
         navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)
-        viewController.navigationItem.setHidesBackButton(hideBackButton, animated: animated)
-        viewController.navigationItem.backButtonDisplayMode = .minimal
+    }
+
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+        isPushAnimationInProgress = false
     }
 }
 
@@ -125,5 +168,17 @@ extension UINavigationController {
 extension UIViewController {
     var previousControllerOnNavigationStack: UIViewController? {
         navigationController?.controller(before: self)
+    }
+}
+
+// MARK: - BaseNavigationController + UIGestureRecognizerDelegate
+
+extension BaseNavigationController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer == interactivePopGestureRecognizer else {
+            return true
+        }
+
+        return viewControllers.count > 1 && isPushAnimationInProgress == false
     }
 }

@@ -20,52 +20,33 @@ import Foundation
 
 // MARK: - TransferAmountModelDelegate
 
-protocol TransferAmountModelDelegate: AnyObject {
+protocol TransferAmountModelDelegate: CoinbaseTransactionDelegate {
     func coinbaseUserDidChange()
 
     func initiatePayment(with input: DWPaymentInput)
-
-    func transferFromCoinbaseToWalletDidFail(with error: Error)
-    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason)
-    func transferFromCoinbaseToWalletDidSucceed()
-    func transferFromCoinbaseToWalletDidCancel()
-}
-
-// MARK: - TransferFromCoinbaseFailureReason
-
-enum TransferFromCoinbaseFailureReason {
-    case twoFactorRequired
-    case invalidVerificationCode
-    case unknown
 }
 
 // MARK: - TransferAmountModel
 
-final class TransferAmountModel: SendAmountModel {
+
+final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     enum TransferDirection {
         case toWallet
         case toCoinbase
     }
 
-    public weak var delegate: TransferAmountModelDelegate?
-
-    private var cancellables: Set<AnyCancellable> = []
+    weak var delegate: TransferAmountModelDelegate?
+    weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
 
     public var address: String!
     public var direction: TransferDirection = .toCoinbase
 
-    var networkStatusDidChange: ((NetworkStatus) -> ())?
-    var networkStatus: NetworkStatus!
-
-    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
-    private var reachabilityObserver: Any!
+    internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
     override init() {
         super.init()
-
-        initializeReachibility()
 
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
             if let user {
@@ -90,16 +71,8 @@ final class TransferAmountModel: SendAmountModel {
         if direction == .toCoinbase {
             transferToCoinbase()
         } else {
-            transferToWallet()
+            transferFromCoinbase()
         }
-    }
-
-    func continueTransferFromCoinbase(with verificationCode: String) {
-        transferToWallet(with: verificationCode)
-    }
-
-    func cancelTransferOperation() {
-        delegate?.transferFromCoinbaseToWalletDidCancel()
     }
 
     private func transferToCoinbase() {
@@ -108,7 +81,7 @@ final class TransferAmountModel: SendAmountModel {
 
         obtainNewAddress { [weak self] address in
             guard let address else {
-                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .unknown)
+                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .transactionFailed(.failedToObtainNewAddress))
                 return
             }
 
@@ -117,39 +90,6 @@ final class TransferAmountModel: SendAmountModel {
             }
 
             self?.delegate?.initiatePayment(with: paymentInput)
-        }
-    }
-
-    private func transferToWallet(with verificationCode: String? = nil) {
-        guard let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress else { return }
-
-        let amount = amount.plainAmount.formattedDashAmount
-        DSLogger.log("Tranfer from coinbase: transferToWallet \(amount) \(address)")
-        Task {
-            do {
-                let _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode,
-                                                                                   coinAmountInDash: amount,
-                                                                                   dashWalletAddress: address)
-                DSLogger.log("Tranfer from coinbase: transferToWallet - success")
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidSucceed()
-                }
-            } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
-                DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 402")
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: .twoFactorRequired)
-                }
-            } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
-                DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: .invalidVerificationCode)
-                }
-            } catch {
-                DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error) - \(error.localizedDescription)")
-                await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error)
-                }
-            }
         }
     }
 
@@ -163,7 +103,7 @@ final class TransferAmountModel: SendAmountModel {
                 }
             } catch let error {
                 await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error)
+                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error as! Coinbase.Error)
                 }
             }
         }
@@ -174,26 +114,4 @@ final class TransferAmountModel: SendAmountModel {
     }
 }
 
-extension TransferAmountModel {
-    private func initializeReachibility() {
-        if !reachability.isMonitoring {
-            reachability.startMonitoring()
-        }
-
-        reachabilityObserver = NotificationCenter.default
-            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                         object: nil,
-                         queue: nil,
-                         using: { [weak self] _ in
-                             self?.updateNetworkStatus()
-                         })
-
-        updateNetworkStatus()
-    }
-
-    private func updateNetworkStatus() {
-        networkStatus = reachability.networkStatus
-        networkStatusDidChange?(networkStatus)
-    }
-}
 

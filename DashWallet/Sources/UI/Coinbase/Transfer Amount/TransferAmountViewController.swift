@@ -30,7 +30,11 @@ struct TransferAmountView: UIViewControllerRepresentable {
 
 // MARK: - TransferAmountViewController
 
-final class TransferAmountViewController: SendAmountViewController {
+final class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling {
+    /// Conform to NetworkReachabilityHandling
+    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
     private var converterView: ConverterView!
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
@@ -39,7 +43,7 @@ final class TransferAmountViewController: SendAmountViewController {
 
     override var amountInputStyle: AmountInputControl.Style { .basic }
 
-    private weak var codeConfirmationController: TwoFactorAuthViewController?
+    internal weak var codeConfirmationController: TwoFactorAuthViewController?
 
     override var actionButtonTitle: String? {
         NSLocalizedString("Transfer", comment: "Coinbase")
@@ -57,10 +61,6 @@ final class TransferAmountViewController: SendAmountViewController {
 
     override func configureModel() {
         super.configureModel()
-
-        transferModel.networkStatusDidChange = { [weak self] _ in
-            self?.reloadView()
-        }
         transferModel.delegate = self
     }
 
@@ -97,6 +97,15 @@ final class TransferAmountViewController: SendAmountViewController {
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
+    }
+
+    deinit {
+        stopNetworkMonitoring()
     }
 }
 
@@ -107,54 +116,11 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         converterView.reloadView()
     }
 
-    func transferFromCoinbaseToWalletDidFail(with error: Error) {
-        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToWalletDidFail")
-        showAlert(with: "Error", message: error.localizedDescription)
-        hideActivityIndicator()
-    }
-
-    func transferFromCoinbaseToWalletDidCancel() {
-        hideActivityIndicator()
-    }
-
     func initiatePayment(with input: DWPaymentInput) {
         paymentController = PaymentController()
         paymentController.delegate = self
         paymentController.presentationContextProvider = self
         paymentController.performPayment(with: input)
-    }
-
-    func transferFromCoinbaseToWalletDidSucceed() {
-        codeConfirmationController?.dismiss(animated: true)
-        codeConfirmationController = nil
-
-        showSuccessTransactionStatus()
-    }
-
-    func transferFromCoinbaseToWalletDidFail(with reason: TransferFromCoinbaseFailureReason) {
-        switch reason {
-        case .twoFactorRequired:
-            initiateTwoFactorAuth()
-        case .invalidVerificationCode:
-            codeConfirmationController?.showInvalidCodeState()
-        case .unknown:
-            hideActivityIndicator()
-            showFailedTransactionStatus(text: NSLocalizedString("There was a problem transferring it to Dash Wallet on this device", comment: "Coinbase"))
-        }
-    }
-
-    private func initiateTwoFactorAuth() {
-        let vc = TwoFactorAuthViewController.controller()
-        vc.verifyHandler = { [weak self] code in
-            self?.transferModel.continueTransferFromCoinbase(with: code)
-        }
-        vc.cancelHandler = { [weak self] in
-            self?.transferModel.cancelTransferOperation()
-        }
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
-
-        codeConfirmationController = vc
     }
 }
 
@@ -180,10 +146,10 @@ extension BaseAmountModel: ConverterViewDataSource {
 
 extension TransferAmountViewController {
     private func reloadView() {
-        let isOnline = transferModel.networkStatus == .online
+        let isOnline = networkStatus == .online
         networkUnavailableView.isHidden = isOnline
-        numberKeyboard.isHidden = !isOnline
-        actionButton?.isHidden = !isOnline
+        keyboardContainer.isHidden = !isOnline
+        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
         converterView.hasNetwork = isOnline
     }
 
@@ -210,5 +176,17 @@ extension TransferAmountViewController: PaymentControllerDelegate {
 extension TransferAmountViewController: PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
         self
+    }
+}
+
+// MARK: - TransferAmountViewController + CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
+
+extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
+    func codeConfirmationControllerDidContinue(with code: String) {
+        transferModel.continueTransferFromCoinbase(with: code)
+    }
+
+    func codeConfirmationControllerDidCancel() {
+        hideActivityIndicator()
     }
 }
