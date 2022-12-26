@@ -21,9 +21,11 @@ import Combine
 import Foundation
 
 let kDashCurrency = "DASH"
-var kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
-var kCoinbaseAddPaymentMethodsURL = URL(string: "https://www.coinbase.com/settings/linked-accounts")!
-var kCoinbaseFeeInfoURL = URL(string: "https://help.coinbase.com/en/coinbase/trading-and-funding/pricing-and-fees/fees")!
+let kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
+let kCoinbaseAddPaymentMethodsURL = URL(string: "https://www.coinbase.com/settings/linked-accounts")!
+let kCoinbaseFeeInfoURL = URL(string: "https://help.coinbase.com/en/coinbase/trading-and-funding/pricing-and-fees/fees")!
+let kMaxDashAmountToTransfer: UInt64 = kOneDash
+let kMinUSDAmountOrder: Decimal = 1.99
 
 // MARK: - Coinbase
 
@@ -57,6 +59,10 @@ extension Coinbase {
         }
 
         return balance
+    }
+
+    var sendLimit: Decimal {
+        auth.currentUser?.sendLimit ?? Coinbase.sendLimitAmount
     }
 }
 
@@ -107,11 +113,7 @@ extension Coinbase {
             throw Coinbase.Error.general(.noActiveUser)
         }
 
-        // NOTE: Make sure we format the amount back into coinbase format (en_US)
-        let amount = amount.formattedDashAmount.coinbaseAmount()
-
-        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: false, quote: nil)
-        return try await tx.placeCoinbaseBuyOrder(accountId: accountId, request: request)
+        return try await tx.placeCoinbaseBuyOrder(accountId: accountId, amount: amount, paymentMethod: paymentMethod)
     }
 
     /// Commit Buy Order
