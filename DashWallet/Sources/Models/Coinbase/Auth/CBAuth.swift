@@ -178,9 +178,9 @@ extension CBAuth {
             URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
             URLQueryItem(name: "response_type", value: Coinbase.responseType),
             URLQueryItem(name: "scope", value: Coinbase.scope),
-            URLQueryItem(name: "meta[send_limit_amount]", value: "\(Coinbase.send_limit_amount)"),
-            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.send_limit_currency),
-            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.send_limit_period),
+            URLQueryItem(name: "meta[send_limit_amount]", value: "\((Coinbase.sendLimitAmount as NSDecimalNumber).intValue)"),
+            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.sendLimitCurrency),
+            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.sendLimitPeriod),
             URLQueryItem(name: "account", value: Coinbase.account),
         ]
 

@@ -36,7 +36,7 @@ class CBSecureTokenService: Codable {
         Date() < accessTokenExpirationDate
     }
 
-    func fetchAccessToken(refreshing: Bool = false) async throws -> String {
+    @discardableResult  func fetchAccessToken(refreshing: Bool = false) async throws -> String {
         if !refreshing && hasValidAccessToken {
             return accessToken
         }

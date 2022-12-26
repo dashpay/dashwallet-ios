@@ -20,22 +20,10 @@ class CoinbaseService {
 extension CoinbaseService { }
 
 extension CoinbaseService {
-    // NOTE: not used
-    func getCoinbaseUserAuthInformation() async throws -> CoinbaseUserAuthInformation {
-        try await httpClient.request(.userAuthInformation)
-    }
-
     func getCoinbaseExchangeRates(currency: String) async throws -> CoinbaseExchangeRate {
         let result: BaseDataResponse<CoinbaseExchangeRate> = try await httpClient.request(.exchangeRates(currency))
         return result.data
     }
-
-    func getCoinbaseActivePaymentMethods() async throws -> [CoinbasePaymentMethod] {
-        let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await httpClient.request(.activePaymentMethods)
-        return result.data
-    }
-
-
 
     func getCoinbaseBaseIDForCurrency(baseCurrency: String) async throws -> BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> {
         try await httpClient.request(.getBaseIdForUSDModel(baseCurrency))

@@ -7,12 +7,6 @@
 
 import Foundation
 
-// MARK: - CoinbaseUserAuthInformation
-
-struct CoinbaseUserAuthInformation: Codable {
-    let data: CoinbaseUserAuthData?
-}
-
 // MARK: - CoinbaseUserAuthData
 
 struct CoinbaseUserAuthData: Codable {
@@ -30,7 +24,9 @@ struct CoinbaseUserAuthData: Codable {
 // MARK: - OauthMeta
 
 struct OauthMeta: Codable {
-    let sendLimitAmount, sendLimitCurrency, sendLimitPeriod: String?
+    let sendLimitAmount: String?
+    let sendLimitCurrency: String?
+    let sendLimitPeriod: String?
 
     enum CodingKeys: String, CodingKey {
         case sendLimitAmount = "send_limit_amount"
