@@ -14,9 +14,21 @@
 			<string>ld</string>
 			<key>one</key>
 			<string>%ld usada</string>
+			<key>many</key>
+			<string>%ld usadas</string>
 			<key>other</key>
 			<string>%ld usadas</string>
 		</dict>
+	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
 	</dict>
 </dict>
 </plist>

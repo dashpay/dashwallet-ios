@@ -23,13 +23,14 @@ private let kSearchDebounceDelay: TimeInterval = 0.4
 // MARK: - PointOfUseListSearchCellDelegate
 
 protocol PointOfUseListSearchCellDelegate: AnyObject {
+    func searchCellDidBeginEditing()
     func searchCell(_ cell: PointOfUseListSearchCell, shouldStartSearchWith query: String)
     func searchCellDidEndSearching(searchCell: PointOfUseListSearchCell)
 }
 
 // MARK: - PointOfUseListSearchCell
 
-class PointOfUseListSearchCell: UITableViewCell {
+final class PointOfUseListSearchCell: UITableViewCell {
     var searchBar: UISearchBar!
     weak var delegate: PointOfUseListSearchCellDelegate?
     private var didTapDeleteButton = false
@@ -44,11 +45,16 @@ class PointOfUseListSearchCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func resetSearchBar() {
+    func stopSearching() {
+        searchBar.resignFirstResponder()
+        resetSearchBar()
+    }
+
+    private func resetSearchBar() {
         searchBar.text = ""
     }
 
-    func configureHierarchy() {
+    private func configureHierarchy() {
         searchBar = UISearchBar()
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.searchBarStyle = .minimal
@@ -96,5 +102,10 @@ extension PointOfUseListSearchCell: UISearchBarDelegate {
 
         didTapDeleteButton = false
         search(with: searchText)
+    }
+
+    func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
+        delegate?.searchCellDidBeginEditing()
+        return true
     }
 }
