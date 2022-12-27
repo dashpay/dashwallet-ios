@@ -18,7 +18,6 @@
 #import <UIKit/UIKit.h>
 
 #import "DWDeviceAdaptableController.h"
-#import "DWNavigationChildViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
