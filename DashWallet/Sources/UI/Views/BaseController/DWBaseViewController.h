@@ -22,9 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseViewController : DWNavigationChildViewController <DWDeviceAdaptableController>
-
-+ (CGFloat)deviceSpecificBottomPadding;
+@interface DWBaseViewController : UIViewController <DWDeviceAdaptableController>
 
 @end
 
