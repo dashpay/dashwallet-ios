@@ -117,6 +117,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self reloadActionButtonTitles];
 }
 
+#pragma mark - Internal
+
+- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^__nullable)(void))completion {
+    [self.delegate confirmPaymentViewControllerDidCancel:self];
+
+    [super dismissViewControllerAnimated:flag completion:completion];
+}
+
 #pragma mark - Private
 
 - (void)setupView {

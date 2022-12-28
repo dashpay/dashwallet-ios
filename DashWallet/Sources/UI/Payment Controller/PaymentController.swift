@@ -99,6 +99,10 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
             paymentProcessor.confirmPaymentOutput(output)
         }
     }
+
+    func confirmPaymentViewControllerDidCancel(_ controller: DWConfirmPaymentViewController) {
+        delegate?.paymentControllerDidCancelTransaction(self)
+    }
 }
 
 // MARK: DWPaymentProcessorDelegate
