@@ -488,9 +488,6 @@
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Inserisci il tuo codice 2FA di seguito";
 
-/* Coinbase */
-"Entered amount is too low. The minimum amount is %@" = "Entered amount is too low. The minimum amount is %@";
-
 /* No comment provided by engineer. */
 "Error" = "Errore";
 
@@ -1361,6 +1358,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
+
+/* Coinbase */
+"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Non ci sono nuove notifiche";
