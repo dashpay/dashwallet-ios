@@ -57,15 +57,6 @@ extension CoinbaseTransactionSendable {
     }
 
     func transferFromCoinbase(amount: UInt64, with verificationCode: String?) async throws {
-        guard amount > DSTransaction.txMinOutputAmount() else {
-            await MainActor.run {
-                let error = Coinbase.Error.transactionFailed(.invalidAmount)
-                self.transactionDelegate?.transferFromCoinbaseToWalletDidFail(with: error)
-            }
-
-            return
-        }
-
         do {
             let tx = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, amount: amount)
             await MainActor.run {

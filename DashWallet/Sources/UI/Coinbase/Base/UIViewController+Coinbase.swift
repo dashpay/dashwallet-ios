@@ -89,16 +89,21 @@ extension CoinbaseTransactionHandling where Self: BaseViewController {
                 showCodeConfirmationController()
             case .invalidVerificationCode:
                 showInvalidCodeState()
+            case .invalidAmount, .enteredAmountTooLow, .limitExceded, .notEnoughFunds:
+                hideActivityIndicator()
+                present(error: error)
+            case .message(let msg):
+                showFailedTransactionStatus(text: msg)
             default:
                 showFailedTransactionStatus(text: r.localizedDescription)
             }
-
-            return
+        } else {
+            hideActivityIndicator()
+            present(error: error)
         }
-
-        present(error: error)
-        hideActivityIndicator()
     }
+
+    private func handleTransferFailure(with reason: Coinbase.Error.TransactionFailureReason) { }
 
     func transferFromCoinbaseToWalletDidCancel() {
         hideActivityIndicator()

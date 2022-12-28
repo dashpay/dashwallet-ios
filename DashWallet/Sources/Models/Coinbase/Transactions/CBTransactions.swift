@@ -21,13 +21,23 @@ final class CBTransactions {
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
     private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
 
-    func send(from accountId: String, amount: String, verificationCode: String?) async throws -> CoinbaseTransaction {
+    func send(from accountId: String, amount: UInt64, verificationCode: String?) async throws -> CoinbaseTransaction {
         // NOTE: Maybe better to get the address once and use it during the tx flow
         guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
             fatalError("No wallet")
         }
 
-        // TODO: validate amount here
+        guard amount >= DSTransaction.txMinOutputAmount() else {
+            throw Coinbase.Error.transactionFailed(.invalidAmount)
+        }
+
+        guard amount >= kMinDashAmountToTransfer else {
+            let amountString = DSPriceManager.sharedInstance().string(forDashAmount: Int64(kMinDashAmountToTransfer))!
+            throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: amountString))
+        }
+
+        // NOTE: Make sure we format the amount back into coinbase format (en_US)
+        let amount = amount.formattedDashAmount.coinbaseAmount()
 
         do {
             let dto = CoinbaseTransactionsRequest(type: .send,
@@ -42,7 +52,15 @@ final class CBTransactions {
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 402")
-            throw Coinbase.Error.transactionFailed(.twoFactorRequired)
+            if let err = r.error?.errors.first {
+                if err.id == .twoFactorRequired {
+                    throw Coinbase.Error.transactionFailed(.twoFactorRequired)
+                } else {
+                    throw Coinbase.Error.transactionFailed(.unknown(err))
+                }
+            }
+
+            throw Coinbase.Error.unknownError
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             throw Coinbase.Error.transactionFailed(.invalidVerificationCode)
@@ -60,7 +78,12 @@ final class CBTransactions {
         if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
             let localDecimal = localNumber.decimalValue
             if localDecimal < kMinUSDAmountOrder {
-                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow)
+                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+                let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
+                localFormatter.currencyCode = Coinbase.sendLimitCurrency
+                let str = localFormatter.string(from: min) ?? "$1.99"
+
+                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
             } else if localDecimal > Coinbase.shared.sendLimit {
                 throw Coinbase.Error.transactionFailed(.limitExceded)
             }

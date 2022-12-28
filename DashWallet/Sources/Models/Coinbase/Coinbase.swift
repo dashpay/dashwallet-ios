@@ -26,6 +26,7 @@ let kCoinbaseAddPaymentMethodsURL = URL(string: "https://www.coinbase.com/settin
 let kCoinbaseFeeInfoURL = URL(string: "https://help.coinbase.com/en/coinbase/trading-and-funding/pricing-and-fees/fees")!
 let kMaxDashAmountToTransfer: UInt64 = kOneDash
 let kMinUSDAmountOrder: Decimal = 1.99
+let kMinDashAmountToTransfer: UInt64 = 10_000
 
 // MARK: - Coinbase
 
@@ -85,14 +86,9 @@ extension Coinbase {
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                  amount: UInt64) async throws -> CoinbaseTransaction {
-        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToDashWallet")
-
         guard let accountId = auth.currentUser?.accountId else {
             throw Coinbase.Error.general(.noActiveUser)
         }
-
-        // NOTE: Make sure we format the amount back into coinbase format (en_US)
-        let amount = amount.formattedDashAmount.coinbaseAmount()
 
         let tx = try await tx.send(from: accountId, amount: amount, verificationCode: verificationCode)
         try? await auth.currentUser?.refreshAccount()

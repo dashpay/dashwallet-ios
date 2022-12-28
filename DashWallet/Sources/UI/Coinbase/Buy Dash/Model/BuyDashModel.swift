@@ -85,7 +85,6 @@ final class BuyDashModel: BaseAmountModel {
             } catch {
                 await MainActor.run { [weak self] in
                     self?.error = error
-//                    self?.errorHandler?(error)
                 }
             }
         }
