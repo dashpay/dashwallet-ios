@@ -192,8 +192,10 @@ extension SyncingActivityMonitor {
             isSyncing = true
 
             if fabs(self.progress - progress) > kMaxProgressDelta {
-                if let date = lastPeakDate, -date.timeIntervalSinceNow > kProgressPeakDelay {
-                    lastPeakDate = nil
+                if let date = lastPeakDate {
+                    if -date.timeIntervalSinceNow > kProgressPeakDelay {
+                        lastPeakDate = nil
+                    }
                 }
                 else {
                     lastPeakDate = Date()
