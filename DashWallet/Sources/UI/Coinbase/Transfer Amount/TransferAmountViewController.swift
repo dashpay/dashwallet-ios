@@ -169,6 +169,10 @@ extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
         hideActivityIndicator()
     }
+
+    func paymentControllerDidFailTransaction(_ controller: PaymentController) {
+        hideActivityIndicator()
+    }
 }
 
 // MARK: - TransferAmountViewController + PaymentControllerPresentationContextProviding
