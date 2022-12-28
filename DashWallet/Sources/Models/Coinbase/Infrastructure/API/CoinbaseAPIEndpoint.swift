@@ -16,7 +16,7 @@ let authBaseURL = URL(string: "https://coinbase.com")
 // MARK: - CoinbaseAPIError
 
 struct CoinbaseAPIError: Decodable {
-    struct Error: Decodable {
+    struct Error: Swift.Error, LocalizedError, Decodable {
         let id: ClientErrorID!
 
         /// Human readable message.
@@ -24,6 +24,10 @@ struct CoinbaseAPIError: Decodable {
 
         /// Link to the documentation.
         let url: URL?
+
+        var errorDescription: String? {
+            message
+        }
 
         /// List of available error codes.
         enum ClientErrorID: String, Decodable {
@@ -112,6 +116,8 @@ struct CoinbaseAPIError: Decodable {
             /// Status Code: `500`.
             case internalServerError = "internal_server_error"
         }
+
+
     }
 
     var errors: [Error]

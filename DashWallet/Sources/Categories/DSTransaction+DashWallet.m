@@ -28,4 +28,7 @@
     return uint256_reverse_data(self.txHash).hexString;
 }
 
++ (uint64_t)txMinOutputAmount {
+    return TX_MIN_OUTPUT_AMOUNT;
+}
 @end

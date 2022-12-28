@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @optional
 - (void)interactiveTransitionDidUpdateProgress:(CGFloat)progress;
-
+- (void)interactiveTransitionWillDismiss;
 @end
 
 NS_ASSUME_NONNULL_END
