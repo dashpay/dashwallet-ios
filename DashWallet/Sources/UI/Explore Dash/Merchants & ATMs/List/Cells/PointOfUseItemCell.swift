@@ -79,7 +79,7 @@ extension PointOfUseItemCell {
         subLabel = UILabel()
         subLabel.translatesAutoresizingMaskIntoConstraints = false
         subLabel.font = UIFont.systemFont(ofSize: 11)
-        subLabel.textColor = .secondaryLabel
+        subLabel.textColor = .dw_secondaryText()
         subLabel.isHidden = true
         textStackView.addArrangedSubview(subLabel)
 

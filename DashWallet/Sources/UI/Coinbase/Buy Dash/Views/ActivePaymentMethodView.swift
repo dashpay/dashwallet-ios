@@ -54,7 +54,7 @@ final class ActivePaymentMethodView: UIView {
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textColor = .label
+        titleLabel.textColor = .dw_label()
         titleLabel.text = NSLocalizedString("Pay with", comment: "Coinbase/Buy Dash")
         addSubview(titleLabel)
 
@@ -71,17 +71,17 @@ final class ActivePaymentMethodView: UIView {
         trailingStackView.addArrangedSubview(paymentMethodStackView)
 
         paymentMethodTitleLabel = UILabel()
-        paymentMethodTitleLabel.textColor = .label
+        paymentMethodTitleLabel.textColor = .dw_label()
         paymentMethodTitleLabel.isHidden = true
         paymentMethodStackView.addArrangedSubview(paymentMethodTitleLabel)
 
         paymentMethodValueLabel = UILabel()
-        paymentMethodValueLabel.textColor = .secondaryLabel
+        paymentMethodValueLabel.textColor = .dw_secondaryText()
         paymentMethodStackView.addArrangedSubview(paymentMethodValueLabel)
 
         chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
         chevronView.translatesAutoresizingMaskIntoConstraints = false
-        chevronView.tintColor = .secondaryLabel
+        chevronView.tintColor = .dw_secondaryText()
         trailingStackView.addArrangedSubview(chevronView)
 
         NSLayoutConstraint.activate([

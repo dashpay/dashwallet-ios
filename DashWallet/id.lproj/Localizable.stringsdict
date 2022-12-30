@@ -16,5 +16,33 @@
 			<string>%ld digunakan</string>
 		</dict>
 	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d pedagang di %@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d pedagang</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

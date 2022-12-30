@@ -151,8 +151,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)buySellDashActionAuthenticated {
+#ifdef COINBASE
     PortalViewController *controller = [PortalViewController controller];
     controller.showCloseButton = true;
+#else
+    UIViewController *controller = [DWUpholdViewController controller];
+#endif
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];

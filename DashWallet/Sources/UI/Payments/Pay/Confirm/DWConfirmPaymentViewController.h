@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWConfirmPaymentViewControllerDelegate <NSObject>
 
 - (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller;
+- (void)confirmPaymentViewControllerDidCancel:(DWConfirmPaymentViewController *)controller;
 
 @end
 

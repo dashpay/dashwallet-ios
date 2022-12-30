@@ -46,12 +46,12 @@ class AtmDetailsView: PointOfUseDetailsView {
             buttonsStackView.addArrangedSubview(sellButton)
         }
 
+        // TODO: Change to hairline view
         let separator = UIView()
         separator.translatesAutoresizingMaskIntoConstraints = false
         separator.backgroundColor = .black.withAlphaComponent(0.3)
         containerView.addArrangedSubview(separator)
 
-        let imageSize: CGFloat = 50
         let buttonHeight: CGFloat = 48
 
         NSLayoutConstraint.activate([
@@ -104,7 +104,7 @@ class AtmDetailsView: PointOfUseDetailsView {
 
         addressLabel = UILabel()
         addressLabel.font = .dw_font(forTextStyle: .body)
-        addressLabel.textColor = .label
+        addressLabel.textColor = .dw_label()
         addressLabel.numberOfLines = 0
         addressLabel.lineBreakMode = .byWordWrapping
         addressLabel.text = merchant.address1

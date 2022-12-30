@@ -36,8 +36,12 @@ class CBSecureTokenService: Codable {
         Date() < accessTokenExpirationDate
     }
 
-    func fetchAccessToken(refreshing: Bool = false) async throws -> String {
+    @discardableResult  func fetchAccessToken(refreshing: Bool = false) async throws -> String {
         if !refreshing && hasValidAccessToken {
+            return accessToken
+        }
+
+        if hasValidAccessToken && accessTokenExpirationDate.timeIntervalSince1970 - Date().timeIntervalSince1970 > 6600 {
             return accessToken
         }
 

@@ -127,6 +127,9 @@
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Zugriff auf Touch ID in den Einstellungen erlauben";
 
+/* Coinbase/Buy Dash */
+"Amount in Dash" = "Amount in Dash";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -150,6 +153,9 @@
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Anwendung %@ möchte ihren öffentlichen Master-Key empfangen. Ihre Gelder können damit nicht versendet werden, lediglich beobachtet.";
+
+/* Coinbase/Buy Dash/Cancel Order     */
+"Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Sind Sie sicher?";
@@ -290,11 +296,20 @@
 /* Coinbase Two Factor Auth */
 "Coinbase 2FA code" = "Coinbase 2FA code";
 
+/* Coinbase/Buy Dash */
+"Coinbase Fee" = "Coinbase Fee";
+
 /* No comment provided by engineer. */
 "Confirm" = "Bestätigen";
 
 /* No comment provided by engineer. */
 "Confirm & Pay" = "Bestätigen & Bezahlen";
+
+/* Coinbase/Buy Dash/Confirm Order */
+"Confirm (%@)" = "Confirm (%@)";
+
+/* Coinbase/Buy Dash/Confirm Order */
+"Confirm (%d%@)" = "Confirm (%1$d%2$@)";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "PIN bestätigen";
@@ -497,6 +512,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Face-ID Limit";
 
+/* Coinbase */
+"Failed to start auth session" = "Failed to start auth session";
+
 /* Buy Sell Portal */
 "Failed to sync" = "Failed to sync";
 
@@ -666,7 +684,7 @@
 "Invalid QR Code" = "Ungültiger QR-Code";
 
 /* Coinbase Two Factor Auth */
-"It could be the code from the SMS on your phone.If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone.If not, enter the code from the authentication app.";
+"It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone. If not, enter the code from the authentication app.";
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
@@ -698,6 +716,9 @@
 
 /* No comment provided by engineer. */
 "Learn More" = "Learn More";
+
+/* Info Screen */
+"Learn More..." = "Learn More...";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Benachrichtige mich, wenn dies abgeschlossen ist";
@@ -843,6 +864,12 @@
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid Dash address" = "NFC-Gerät hat keine gültige Dash-Adresse übermittelt";
 
+/* No comment provided by engineer. */
+"No" = "No";
+
+/* Coinbase */
+"No active user" = "No active user";
+
 /* Coinbase/Buy Dash */
 "No payment methods" = "No payment methods";
 
@@ -879,6 +906,9 @@
 /* No comment provided by engineer. */
 "Notifications" = "Benachrichtigungen";
 
+/* Coinbase */
+"oAuth failed" = "oAuth failed";
+
 /* No comment provided by engineer. */
 "OK" = "OK";
 
@@ -893,6 +923,9 @@
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Betreiber-Schlüssel";
+
+/* Coinbase/Buy Dash/Confirm Order */
+"Order Preview" = "Order Preview";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Besitzer-Adresse";
@@ -932,6 +965,9 @@
 
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Bezahle...";
+
+/* Coinbase/Buy Dash */
+"Payment method" = "Payment method";
 
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Payment Type";
@@ -995,6 +1031,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "öffentlicher Schlüssel";
+
+/* Coinbase/Buy Dash */
+"Purchase" = "Purchase";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Schnell Empfangen";
@@ -1234,13 +1273,13 @@
 "Share" = "Teilen";
 
 /* No comment provided by engineer. */
+"Shop with DASH at over 150k merchants" = "Shop with DASH at over 150k merchants";
+
+/* No comment provided by engineer. */
 "Show Masternode Keys" = "Masternode-Schlüssel anzeigen";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Wiederherstellungsphrase anzeigen";
-
-/* No comment provided by engineer. */
-"Show with DASH at over 150k merchants" = "Show with DASH at over 150k merchants";
 
 /* No comment provided by engineer. */
 "Skip" = "Überspringen";
@@ -1317,6 +1356,12 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
 
+/* Coinbase/Buy Dash/Confirm Order */
+"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
+
+/* Coinbase */
+"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "Es gibt keine neuen Benachrichtigungen";
 
@@ -1330,7 +1375,10 @@
 "There are no users that match with the name %@ in your contacts" = "Es gibt keine Benutzer mit dem Namen %@ in deinen Kontakten";
 
 /* Coinbase */
-"There was a problem transferring it to Dash Wallet on this device" = "There was a problem transferring it to Dash Wallet on this device";
+"There was an error while obtaining new address" = "There was an error while obtaining new address";
+
+/* Coinbase */
+"There was an error, please try again later" = "There was an error, please try again later";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Diese App ist Open-Source:";
@@ -1409,6 +1457,9 @@
 /* Alert title */
 "Turn device passcode on" = "Gerätecode aktivieren";
 
+/* Coinbase */
+"Two factor auth required" = "Two factor auth required";
+
 /* No comment provided by engineer. */
 "Unable to connect" = "Verbindung fehlgeschlagen";
 
@@ -1450,6 +1501,9 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Benutzt von IP-Adresse";
+
+/* Coinbase */
+"User session expired" = "User session expired";
 
 /* No comment provided by engineer. */
 "Username taken" = "Benutzername bereits vergeben";
@@ -1557,6 +1611,9 @@
 "with Dash blockchain" = "mit der Dash-Blockchain";
 
 /* No comment provided by engineer. */
+"Yes" = "Yes";
+
+/* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Du hast die Kontaktanfrage von %@ angenommen";
 
 /* No comment provided by engineer. */
@@ -1570,6 +1627,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Du die Zahlung weiter unten über Touch ID authentifizieren";
+
+/* Coinbase */
+"You exceeded the authorization limit on Coinbase." = "You exceeded the authorization limit on Coinbase.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Du hast \"%@\" als Benutzernamen ausgewählt. Dein Benutzername kann nach der Registrierung nicht mehr geändert werden.";
@@ -1594,6 +1654,12 @@
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Diese Wiederherstellungsphrase wird zum Zugriff auf das Guthaben benötigt, sollte das Gerät verloren oder kaputt gehen, oder falls die App fälschlicherweise deinstalliert wird.";
+
+/* Coinbase/Buy Dash/Confirm Order */
+"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
+
+/* Coinbase/Buy Dash/Confirm Order */
+"You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Dein DashPay-Benutzername kann jetzt verwendet werden";

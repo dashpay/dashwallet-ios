@@ -41,7 +41,10 @@ protocol SyncingActivityMonitorObserver: AnyObject {
 // MARK: - SyncingActivityMonitor
 
 @objc
-class SyncingActivityMonitor: NSObject {
+class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
+
     @objc(SyncingActivityMonitorState)
     enum State: Int {
         case syncing
@@ -82,9 +85,6 @@ class SyncingActivityMonitor: NSObject {
     }
 
     private var lastPeakDate: Date?
-
-    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
-    private var reachabilityObserver: Any!
 
     private lazy var observers: [SyncingActivityMonitorObserver] = []
 
@@ -192,8 +192,10 @@ extension SyncingActivityMonitor {
             isSyncing = true
 
             if fabs(self.progress - progress) > kMaxProgressDelta {
-                if let date = lastPeakDate, -date.timeIntervalSinceNow > kProgressPeakDelay {
-                    lastPeakDate = nil
+                if let date = lastPeakDate {
+                    if -date.timeIntervalSinceNow > kProgressPeakDelay {
+                        lastPeakDate = nil
+                    }
                 }
                 else {
                     lastPeakDate = Date()
@@ -222,22 +224,13 @@ extension SyncingActivityMonitor {
 
 extension SyncingActivityMonitor {
     private func initializeReachibility() {
-        if !reachability.isMonitoring {
-            reachability.startMonitoring()
+        networkStatusDidChange = { [weak self] _ in
+            self?.forceSyncLoop()
         }
-
-        reachabilityObserver = NotificationCenter.default
-            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                         object: nil,
-                         queue: nil,
-                         using: { [weak self] _ in
-                             self?.updateNetworkStatus()
-                         })
-
-        updateNetworkStatus()
+        startNetworkMonitoring()
     }
 
-    private func updateNetworkStatus() {
+    private func forceSyncLoop() {
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(syncLoop), object: nil)
         syncLoop()
     }

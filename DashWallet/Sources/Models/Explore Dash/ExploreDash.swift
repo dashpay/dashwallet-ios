@@ -111,19 +111,21 @@ public class ExploreDash {
 
     private func prepareDatabase() throws {
         let destinationPath = FileManager.documentsDirectoryURL
-            .appendingPathComponent("explore.db", isDirectory: true)
-        let finalDestinationPath = destinationPath.appendingPathComponent("explore.db")
+            .appendingPathComponent(kExploreDashDatabaseName)
 
-        guard !FileManager.default.fileExists(atPath: finalDestinationPath.path) else { return }
+        var isDirectory: ObjCBool = true
+        guard !FileManager.default.fileExists(atPath: destinationPath.path, isDirectory: &isDirectory) || isDirectory.boolValue
+        else { return }
 
-        try? FileManager.default.removeItem(atPath: destinationPath.path)
-        try FileManager.default.createDirectory(at: destinationPath, withIntermediateDirectories: true, attributes: nil)
+        if isDirectory.boolValue {
+            try? FileManager.default.removeItem(at: destinationPath)
+        }
 
         guard let dbURL = Bundle.main.url(forResource: "explore", withExtension: "db") else {
             throw ExploreDatabaseConnectionError.fileNotFound
         }
 
-        try FileManager.default.copyItem(at: dbURL, to: finalDestinationPath)
+        try FileManager.default.copyItem(at: dbURL, to: destinationPath)
     }
 
     public static let shared = ExploreDash()

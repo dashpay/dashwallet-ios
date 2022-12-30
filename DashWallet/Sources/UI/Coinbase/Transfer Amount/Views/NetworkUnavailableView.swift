@@ -35,18 +35,18 @@ final class NetworkUnavailableView: UIView {
         textStackView.axis = .vertical
         textStackView.translatesAutoresizingMaskIntoConstraints = false
         textStackView.alignment = .center
-        textStackView.spacing = 15
+        textStackView.spacing = 7
         mainStackView.addArrangedSubview(textStackView)
 
         let title = UILabel()
-        title.font = .dw_mediumFont(ofSize: 17)
-        title.textColor = .label
+        title.font = .dw_font(forTextStyle: .body).withWeight(500)
+        title.textColor = .dw_label()
         title.text = NSLocalizedString("Network Unavailable", comment: "Network Unavailable")
         textStackView.addArrangedSubview(title)
 
         let subtitle = UILabel()
-        subtitle.font = .dw_mediumFont(ofSize: 17)
-        subtitle.textColor = .label
+        subtitle.font = .dw_font(forTextStyle: .footnote)
+        subtitle.textColor = .dw_secondaryText()
         subtitle.text = NSLocalizedString("Please check your network connection", comment: "Network Unavailable")
         textStackView.addArrangedSubview(subtitle)
 

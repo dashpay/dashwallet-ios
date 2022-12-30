@@ -29,3 +29,18 @@ extension UInt64 {
         }
     }
 }
+
+extension Int64 {
+    var formattedDashAmount: String {
+        let plainNumber = Decimal(self)
+        let duffsNumber = Decimal(DUFFS)
+        let dashNumber = plainNumber/duffsNumber
+        if #available(iOS 15.0, *) {
+            return dashNumber.formatted(.number)
+        } else {
+            return "\(dashNumber)"
+        }
+    }
+}
+
+

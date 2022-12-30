@@ -177,7 +177,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     func styleHintFieldDefaultState() {
         hintLabel
             .text =
-            NSLocalizedString("It could be the code from the SMS on your phone.If not, enter the code from the authentication app.",
+            NSLocalizedString("It could be the code from the SMS on your phone. If not, enter the code from the authentication app.",
                               comment: "Coinbase Two Factor Auth")
         hintLabel.font = UIFont.dw_font(forTextStyle: .caption1)
         hintLabel.numberOfLines = 0

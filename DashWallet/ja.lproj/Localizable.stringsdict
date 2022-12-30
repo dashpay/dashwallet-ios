@@ -16,5 +16,15 @@
 			<string>%ld 使用済み</string>
 		</dict>
 	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+	</dict>
 </dict>
 </plist>

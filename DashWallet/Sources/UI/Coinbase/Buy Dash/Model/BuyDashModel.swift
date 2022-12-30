@@ -17,9 +17,30 @@
 
 import Foundation
 
+// MARK: - BuyDashModelDelegate
+
+protocol BuyDashModelDelegate: AnyObject {
+    func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder)
+    func buyDashModelFailedToPlaceOrder(with error: Coinbase.Error)
+}
+
+// MARK: - BuyDashFailureReason
+
+enum BuyDashFailureReason {
+    case unknown
+}
+
+
 // MARK: - BuyDashModel
 
 final class BuyDashModel: BaseAmountModel {
+
+    weak var delegate: BuyDashModelDelegate?
+
+    var canContinue: Bool {
+        amount.plainAmount > 0
+    }
+
     var paymentMethods: [CoinbasePaymentMethod] {
         Coinbase.shared.paymentMethods
     }
@@ -47,6 +68,35 @@ final class BuyDashModel: BaseAmountModel {
 
     public func select(paymentMethod: CoinbasePaymentMethod) {
         selectedPaymentMethod = paymentMethod
+    }
+
+    public func buy() {
+        guard let paymentMethod = activePaymentMethod else {
+            return
+        }
+
+        let amount = UInt64(amount.plainAmount)
+        Task {
+            do {
+                let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
+                await MainActor.run { [weak self] in
+                    self?.delegate?.buyDashModelDidPlace(order: order)
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.error = error
+                }
+            }
+        }
+    }
+
+    override func amountDidChange() {
+        error = nil
+        super.amountDidChange()
+    }
+
+    override func checkAmountForErrors() {
+        DSPriceManager.sharedInstance()
     }
 }
 

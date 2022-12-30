@@ -298,7 +298,7 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
 
         let label = UILabel()
         label.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
-        label.textColor = .secondaryLabel
+        label.textColor = .dw_secondaryText()
         label.text = title
         label.translatesAutoresizingMaskIntoConstraints = false
 

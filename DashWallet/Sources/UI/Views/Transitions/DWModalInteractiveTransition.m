@@ -91,6 +91,10 @@ NS_ASSUME_NONNULL_BEGIN
             [self pauseInteractiveTransition];
 
             if (self.isPresenting == NO && self.percentComplete == 0.0) {
+                if ([self.presentedController respondsToSelector:@selector(interactiveTransitionWillDismiss)]) {
+                    [self.presentedController interactiveTransitionWillDismiss];
+                }
+
                 [self.presentedController dismissViewControllerAnimated:YES completion:nil];
             }
 
