@@ -81,7 +81,12 @@ class PointOfUseDetailsView: UIView {
     }
 
     @objc func payAction() {
-        payWithDashHandler?()
+        if case .merchant(let m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink),
+           UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        } else {
+            payWithDashHandler?()
+        }
     }
 
     @objc func sellAction() {
@@ -171,7 +176,7 @@ extension PointOfUseDetailsView {
 
         addressLabel = UILabel()
         addressLabel.font = .dw_font(forTextStyle: .body)
-        addressLabel.textColor = .label
+        addressLabel.textColor = .dw_label()
         addressLabel.numberOfLines = 0
         addressLabel.lineBreakMode = .byWordWrapping
         addressLabel.text = merchant.address1
@@ -243,6 +248,13 @@ extension PointOfUseDetailsView {
                 payButton.setTitle(NSLocalizedString("Buy a Gift Card", comment: "Buy a Gift Card"), for: .normal)
                 payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
                 payButton.accentColor = .dw_orange()
+
+                if let deeplink = m.deeplink, let url = URL(string: deeplink) {
+                    payButton.isEnabled = UIApplication.shared.canOpenURL(url)
+                } else {
+                    payButton.isEnabled = false
+                }
+
             } else {
                 payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
                 payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)

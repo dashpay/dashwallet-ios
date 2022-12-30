@@ -72,10 +72,11 @@ protocol PortalModelDelegate: AnyObject {
 
 // MARK: - PortalModel
 
-class PortalModel {
-    weak var delegate: PortalModelDelegate?
-
+class PortalModel: NetworkReachabilityHandling {
     var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
+    weak var delegate: PortalModelDelegate?
 
     var items: [ServiceItem] = [] {
         didSet {
@@ -84,10 +85,6 @@ class PortalModel {
     }
 
     var services: [Service] = Service.allCases
-    var networkStatus: NetworkStatus!
-
-    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
-    private var reachabilityObserver: Any!
     private var upholdDashCard: DWUpholdCardObject?
 
     private var serviceItemDataProvider: ServiceDataProvider
@@ -99,36 +96,18 @@ class PortalModel {
             self?.delegate?.serviceItemsDidChange()
         }
 
-        initializeReachibility()
+        networkStatusDidChange = { [weak self] _ in
+            self?.refreshData()
+        }
+        startNetworkMonitoring()
     }
 
     public func refreshData() {
         serviceItemDataProvider.refresh()
     }
 
-    private func initializeReachibility() {
-        if !reachability.isMonitoring {
-            reachability.startMonitoring()
-        }
-
-        reachabilityObserver = NotificationCenter.default
-            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                         object: nil,
-                         queue: nil,
-                         using: { [weak self] _ in
-                             self?.updateNetworkStatus()
-                         })
-
-        updateNetworkStatus()
-    }
-
-    private func updateNetworkStatus() {
-        networkStatus = reachability.networkStatus
-        networkStatusDidChange?(networkStatus)
-    }
-
     deinit {
-        NotificationCenter.default.removeObserver(reachabilityObserver!)
+        stopNetworkMonitoring()
     }
 }
 

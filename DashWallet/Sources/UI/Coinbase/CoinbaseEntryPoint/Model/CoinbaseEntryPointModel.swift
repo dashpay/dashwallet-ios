@@ -74,8 +74,6 @@ final class CoinbaseEntryPointModel {
 
     var hasPaymentMethods: Bool { !Coinbase.shared.paymentMethods.isEmpty }
 
-    var networkStatusDidChange: ((NetworkStatus) -> ())?
-    var networkStatus: NetworkStatus!
     var userDidSignOut: (() -> ())?
     var userDidChange: (() -> ())?
 
@@ -85,14 +83,9 @@ final class CoinbaseEntryPointModel {
         return amount
     }
 
-    private var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
-    private var reachabilityObserver: Any!
-
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
     init() {
-        initializeReachibility()
-
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
             if user == nil {
                 self?.userDidSignOut?()
@@ -109,30 +102,6 @@ final class CoinbaseEntryPointModel {
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(reachabilityObserver!)
         Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
-    }
-}
-
-extension CoinbaseEntryPointModel {
-    private func initializeReachibility() {
-        if !reachability.isMonitoring {
-            reachability.startMonitoring()
-        }
-
-        reachabilityObserver = NotificationCenter.default
-            .addObserver(forName: NSNotification.Name(rawValue: "org.dash.networking.reachability.change"),
-                         object: nil,
-                         queue: nil,
-                         using: { [weak self] _ in
-                             self?.updateNetworkStatus()
-                         })
-
-        updateNetworkStatus()
-    }
-
-    private func updateNetworkStatus() {
-        networkStatus = reachability.networkStatus
-        networkStatusDidChange?(networkStatus)
     }
 }

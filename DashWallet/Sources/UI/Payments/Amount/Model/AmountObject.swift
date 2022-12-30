@@ -109,8 +109,6 @@ extension AmountObject {
         -> AmountObject {
         if amountType == .main { return self }
 
-        let priceManager = DSPriceManager.sharedInstance()
-
         let number = NumberFormatter.dashFormatter.number(from: mainFormatted)!
         let rawAmount = dashValidator.stringFromNumber(usingInternalFormatter: number)!
 
@@ -123,8 +121,6 @@ extension AmountObject {
                      currencyCode: String)
         -> AmountObject {
         if amountType == .supplementary { return self }
-
-        let priceManager = DSPriceManager.sharedInstance()
 
         let number = localFormatter.number(from: supplementaryFormatted)!
         let rawAmount = localValidator.stringFromNumber(usingInternalFormatter: number)!

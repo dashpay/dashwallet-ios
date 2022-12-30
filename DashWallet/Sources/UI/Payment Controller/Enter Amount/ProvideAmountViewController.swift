@@ -29,7 +29,6 @@ final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
 
     private var balanceLabel: UILabel!
-    private var errorLabel: UILabel!
 
     private let address: String
     private var isBalanceHidden = true
@@ -41,16 +40,6 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     @available(*, unavailable) required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        updateError()
-    }
-
-    override func show(error: SendAmountError) {
-        updateError()
     }
 
     override func actionButtonAction(sender: UIView) {
@@ -91,14 +80,14 @@ final class ProvideAmountViewController: SendAmountViewController {
         let toLabel = UILabel()
         toLabel.translatesAutoresizingMaskIntoConstraints = false
         toLabel.font = .dw_font(forTextStyle: .body)
-        toLabel.textColor = .label
+        toLabel.textColor = .dw_label()
         toLabel.text = NSLocalizedString("to", comment: "Send Screen: to address")
         sendContainer.addSubview(toLabel)
 
         let addressLabel = UILabel()
         addressLabel.translatesAutoresizingMaskIntoConstraints = false
         addressLabel.font = .dw_font(forTextStyle: .body)
-        addressLabel.textColor = .label
+        addressLabel.textColor = .dw_label()
         addressLabel.text = address
         addressLabel.lineBreakMode = .byTruncatingMiddle
         sendContainer.addSubview(addressLabel)
@@ -112,14 +101,14 @@ final class ProvideAmountViewController: SendAmountViewController {
         let balanceTitleLabel = UILabel()
         balanceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         balanceTitleLabel.font = .dw_font(forTextStyle: .body)
-        balanceTitleLabel.textColor = .secondaryLabel
+        balanceTitleLabel.textColor = .dw_secondaryText()
         balanceTitleLabel.text = NSLocalizedString("Balance", comment: "Send Screen: to address") + ":"
         balanceStackView.addArrangedSubview(balanceTitleLabel)
 
         balanceLabel = UILabel()
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
         balanceLabel.font = .dw_font(forTextStyle: .body)
-        balanceLabel.textColor = .secondaryLabel
+        balanceLabel.textColor = .dw_secondaryText()
         balanceLabel.text = "5.50 DASH ~ 320.74€"
         balanceStackView.addArrangedSubview(balanceLabel)
 
@@ -144,15 +133,6 @@ final class ProvideAmountViewController: SendAmountViewController {
 
         amountView.removeFromSuperview()
         stackView.addArrangedSubview(amountView)
-
-        errorLabel = UILabel()
-        errorLabel.textColor = .systemRed
-        errorLabel.numberOfLines = 2
-        errorLabel.lineBreakMode = .byWordWrapping
-        errorLabel.font = .dw_font(forTextStyle: .body)
-        errorLabel.isHidden = true
-        errorLabel.textAlignment = .center
-        stackView.addArrangedSubview(errorLabel)
 
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
@@ -213,7 +193,6 @@ final class ProvideAmountViewController: SendAmountViewController {
                                                name: .balanceChangeNotification, object: nil)
 
         updateBalance()
-        updateError()
     }
 
     deinit {
@@ -239,17 +218,6 @@ extension ProvideAmountViewController {
         else {
             balanceLabel.text = fullStr
         }
-    }
-
-    private func updateError() {
-        guard let error = sendAmountModel.error else {
-            errorLabel.isHidden = true
-            return
-        }
-
-        errorLabel.isHidden = false
-        errorLabel.text = error.localizedString
-        errorLabel.textColor = error.textColor
     }
 }
 

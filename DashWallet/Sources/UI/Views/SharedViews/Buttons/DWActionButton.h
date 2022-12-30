@@ -31,4 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface DWTintedButton : DWActionButton
+
+@end
+
 NS_ASSUME_NONNULL_END

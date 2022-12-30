@@ -19,11 +19,11 @@ import Foundation
 
 // MARK: - SendAmountError
 
-enum SendAmountError {
+enum SendAmountError: Error, ColorizedText, LocalizedError {
     case insufficientFunds
     case syncingChain
 
-    var localizedString: String {
+    var errorDescription: String? {
         switch self {
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
@@ -44,15 +44,6 @@ enum SendAmountError {
 class SendAmountModel: BaseAmountModel {
     override var isMaxButtonHidden: Bool { false }
 
-    var error: SendAmountError? {
-        didSet {
-            if let error {
-                errorHandler?(error)
-            }
-        }
-    }
-
-    var errorHandler: ((SendAmountError) -> Void)?
 
     var isSendAllowed: Bool {
         amount.plainAmount > 0 && !canShowInsufficientFunds && (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
@@ -77,6 +68,7 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
+        checkError()
     }
 
     func selectAllFunds(_ preparationHandler: () -> Void) {
@@ -111,16 +103,16 @@ class SendAmountModel: BaseAmountModel {
         }
     }
 
-    private func checkError() {
+    internal func checkError() {
         guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced
         else {
-            error = .syncingChain
+            error = SendAmountError.syncingChain
             return
         }
 
         guard !canShowInsufficientFunds else {
-            error = .insufficientFunds
+            error = SendAmountError.insufficientFunds
             return
         }
 

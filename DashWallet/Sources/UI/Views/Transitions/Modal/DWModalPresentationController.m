@@ -53,7 +53,7 @@ CGFloat DWModalPresentedHeightPercent(void) {
     const CGFloat width = CGRectGetWidth(bounds);
 
     if (self.delegate && [self.delegate respondsToSelector:@selector(contentViewHeight)]) {
-        CGFloat contentViewHeight = [self.delegate contentViewHeight];
+        CGFloat contentViewHeight = [self.presentedControllerDelegate contentViewHeight];
 
         return CGRectMake(0.0, height - contentViewHeight, width, contentViewHeight);
     }
@@ -170,7 +170,7 @@ CGFloat DWModalPresentedHeightPercent(void) {
 
 - (void)tapGestureRecognizerAction:(id)sender {
     if (self.interactiveTransition.interactiveTransitionAllowed) {
-        [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
     }
 }
 

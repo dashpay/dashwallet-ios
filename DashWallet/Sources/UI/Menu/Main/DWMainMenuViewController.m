@@ -91,10 +91,14 @@ NS_ASSUME_NONNULL_BEGIN
                               alertIfLockout:YES
                                   completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
-                                          PortalViewController *vc = [PortalViewController controller];
+#ifdef COINBASE
+                                          PortalViewController *controller = [PortalViewController controller];
+#else
+                        UIViewController *controller = [DWUpholdViewController controller];
+#endif
 
-                                          vc.hidesBottomBarWhenPushed = true;
-                                          [self.navigationController pushViewController:vc animated:YES];
+                                          controller.hidesBottomBarWhenPushed = true;
+                                          [self.navigationController pushViewController:controller animated:YES];
                                       }
                                   }];
 

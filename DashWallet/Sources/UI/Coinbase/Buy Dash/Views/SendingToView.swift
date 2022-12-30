@@ -44,7 +44,7 @@ final class SendingToView: UIView {
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textColor = .secondaryLabel
+        titleLabel.textColor = .dw_secondaryText()
         titleLabel.font = .dw_font(forTextStyle: .footnote)
         titleLabel.text = NSLocalizedString("Sending to:", comment: "Buy Dash")
         stackView.addArrangedSubview(titleLabel)
@@ -60,7 +60,7 @@ final class SendingToView: UIView {
 
         let destinationLabel = UILabel()
         destinationLabel.translatesAutoresizingMaskIntoConstraints = false
-        destinationLabel.textColor = .label
+        destinationLabel.textColor = .dw_label()
         destinationLabel.font = .dw_font(forTextStyle: .footnote)
         destinationLabel.text = NSLocalizedString("Dash Wallet on this device", comment: "Buy Dash")
         destinationStackView.addArrangedSubview(destinationLabel)

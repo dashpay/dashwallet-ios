@@ -166,7 +166,7 @@ private class ItemButton: UIButton {
         titleLabel?.adjustsFontSizeToFitWidth = true
         titleLabel?.minimumScaleFactor = 0.5
 
-        let color: UIColor = .label
+        let color: UIColor = .dw_label()
         setTitleColor(color.withAlphaComponent(0.8), for: .normal)
         setTitleColor(color, for: .selected)
         setTitleColor(color, for: .highlighted)

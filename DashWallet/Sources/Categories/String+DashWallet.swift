@@ -22,8 +22,7 @@ private var kDashSymbolAssetName = "icon_dash_currency"
 
 // MARK: Formatted Amount
 extension String {
-    func localizedAmount() -> String {
-        let locale = Locale.current
+    func localizedAmount(locale: Locale = .current) -> String {
         let separator = locale.decimalSeparator ?? "."
 
         guard contains(separator) else {
@@ -127,5 +126,27 @@ extension String {
         } else {
             return separatedString.last
         }
+    }
+
+    /// Convert string to plain dash amount
+    ///
+    /// - Parameters:
+    ///   - locale: Locale to use when converting string to decimal
+    ///
+    /// - Returns: Plain dash amount or nil
+    ///
+    /// - Note: This method expects string to be a number otherwise it returns nil
+    func plainDashAmount(locale: Locale? = nil) -> UInt64? {
+        guard let dashNumber = Decimal(string: self, locale: locale) else { return nil }
+
+        let duffsNumber = Decimal(DUFFS)
+        let plainAmount = dashNumber * duffsNumber
+        let dashAmount = NSDecimalNumber(decimal: plainAmount)
+
+        return dashAmount.uint64Value
+    }
+
+    func decimal(locale: Locale? = nil) -> Decimal? {
+        Decimal(string: self, locale: locale)
     }
 }

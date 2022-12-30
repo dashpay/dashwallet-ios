@@ -43,7 +43,12 @@ final class SuccessfulOperationStatusViewController: ActionButtonViewController,
     }
 
     override func actionButtonAction(sender: UIView) {
-        navigationController?.popToRootViewController(animated: true)
+        guard let rootController = navigationController?.controller(by: CoinbaseEntryPointViewController.self) else {
+            navigationController?.popToRootViewController(animated: true)
+            return
+        }
+
+        navigationController?.popToViewController(rootController, animated: true)
     }
 
     override func viewDidLoad() {

@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - SendAmountViewController
+
 class SendAmountViewController: BaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Send", comment: "Send Dash") }
 
@@ -28,18 +30,13 @@ class SendAmountViewController: BaseAmountViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable) required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func initializeModel() {
         model = SendAmountModel()
     }
-
-    override func configureModel() {
-        super.configureModel()
-        sendAmountModel.errorHandler = { [weak self] error in
-            self?.show(error: error)
-        }
-    }
-
-    internal func show(error: SendAmountError) { }
 
     override func maxButtonAction() {
         sendAmountModel.selectAllFunds { [weak self] in
@@ -53,7 +50,9 @@ class SendAmountViewController: BaseAmountViewController {
         actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
 }

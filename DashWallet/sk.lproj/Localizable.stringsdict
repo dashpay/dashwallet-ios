@@ -22,5 +22,45 @@
 			<string>%ld použitých</string>
 		</dict>
 	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d obchodník v %@</string>
+			<key>few</key>
+			<string>%d obchodníci v %@</string>
+			<key>many</key>
+			<string>%d obchodníkov v %@</string>
+			<key>other</key>
+			<string>%d obchodníkov v %@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d obchodník</string>
+			<key>few</key>
+			<string>%d obchodníci</string>
+			<key>many</key>
+			<string>%d obchodníkov</string>
+			<key>other</key>
+			<string>%d obchodníkov</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

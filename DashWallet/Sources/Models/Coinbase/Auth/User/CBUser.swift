@@ -19,7 +19,7 @@ import Foundation
 
 private let kAccountKey = "kAccountKey"
 private let kPaymentMethodsKey = "kPaymentMethodsKey"
-
+private let kAuthLimitsKey = "kAuthLimitsKey"
 private let kTokenServiceKey = "kAccountKey"
 
 // MARK: - CBUser + Equatable
@@ -37,18 +37,23 @@ class CBUser: Codable {
 
     private var account: CoinbaseUserAccountData?
     private var tokenService: CBSecureTokenService
+    private var authInfo: CoinbaseUserAuthData?
 
     init(tokenService: CBSecureTokenService) {
         self.tokenService = tokenService
     }
 
     required init?(coder: NSCoder) {
-        if let accountData = coder.decodeObject(forKey: kAccountKey) as? Data {
-            account = try? JSONDecoder().decode(CoinbaseUserAccountData.self, from: accountData)
+        if let data = coder.decodeObject(forKey: kAccountKey) as? Data {
+            account = try? JSONDecoder().decode(CoinbaseUserAccountData.self, from: data)
         }
 
-        if let paymentMethodsData = coder.decodeObject(forKey: kPaymentMethodsKey) as? Data {
-            paymentMethods = try? JSONDecoder().decode([CoinbasePaymentMethod].self, from: paymentMethodsData)
+        if let data = coder.decodeObject(forKey: kPaymentMethodsKey) as? Data {
+            paymentMethods = try? JSONDecoder().decode([CoinbasePaymentMethod].self, from: data)
+        }
+
+        if let data = coder.decodeObject(forKey: kAuthLimitsKey) as? Data {
+            authInfo = try? JSONDecoder().decode(CoinbaseUserAuthData.self, from: data)
         }
 
         tokenService = coder.decodeObject(forKey: kTokenServiceKey) as! CBSecureTokenService
@@ -64,6 +69,14 @@ extension CBUser {
         account?.balance.plainAmount
     }
 
+    var sendLimitCurrency: String {
+        authInfo?.oauthMeta?.sendLimitCurrency ?? Coinbase.sendLimitCurrency
+    }
+
+    var sendLimit: Decimal {
+        authInfo?.oauthMeta?.sendLimitAmount?.decimal() ?? Coinbase.sendLimitAmount
+    }
+
     var accessToken: String {
         tokenService.accessToken
     }
@@ -74,6 +87,7 @@ extension CBUser {
 
     func refreshAccount() async throws {
         try await fetchAccount()
+        try await fetchAuthInfo()
         try await fetchPaymentMethods()
     }
 
@@ -85,11 +99,18 @@ extension CBUser {
         try await tokenService.revokeAccessToken()
     }
 
-    public func fetchAccount() async throws -> CoinbaseUserAccountData {
+    @discardableResult  public func fetchAccount() async throws -> CoinbaseUserAccountData {
         let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.userAccount)
         let newAccount = result.data
         account = newAccount
         return newAccount
+    }
+
+    @discardableResult  public func fetchAuthInfo() async throws -> CoinbaseUserAuthData {
+        let result: BaseDataResponse<CoinbaseUserAuthData> = try await CoinbaseAPI.shared.request(.userAuthInformation)
+        let newAuthInfo = result.data
+        authInfo = newAuthInfo
+        return newAuthInfo
     }
 
     public func fetchPaymentMethods() async throws {
@@ -97,4 +118,3 @@ extension CBUser {
         paymentMethods = result.data
     }
 }
-
