@@ -138,7 +138,7 @@ extension ConverterView {
 
         let fromLabel = UILabel()
         fromLabel.font = .dw_regularFont(ofSize: 11)
-        fromLabel.textColor = .secondaryLabel
+        fromLabel.textColor = .dw_secondaryText()
         fromLabel.text = NSLocalizedString("FROM", comment: "Coinbase: transfer dash to/from")
         fromLabel.textAlignment = .center
         leftContainer.addArrangedSubview(fromLabel)
@@ -149,7 +149,7 @@ extension ConverterView {
 
         let toLabel = UILabel()
         toLabel.font = .dw_regularFont(ofSize: 11)
-        toLabel.textColor = .secondaryLabel
+        toLabel.textColor = .dw_secondaryText()
         toLabel.text = NSLocalizedString("TO", comment: "Coinbase: transfer dash to/from")
         toLabel.textAlignment = .center
         leftContainer.addArrangedSubview(toLabel)
@@ -238,14 +238,10 @@ private class SourceView: UIView {
         imageView.image = UIImage(named: source.imageName)
         titleLabel.text = source.title
 
-        if let balance, let dashNumber = Decimal(string: balance, locale: .current) {
+        if let balance, let plainDashAmount = balance.plainDashAmount(locale: .current) {
             walletBalanceStackView.isHidden = false
 
-            let duffsNumber = Decimal(DUFFS)
-            let plainAmount = dashNumber * duffsNumber
-
-            let dashAmount = NSDecimalNumber(decimal: plainAmount).int64Value
-            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: dashAmount) ?? "Fetching..."
+            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(plainDashAmount)) ?? "Fetching..."
 
             let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
             let dashStr = "\(balance) DASH"

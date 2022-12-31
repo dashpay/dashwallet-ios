@@ -27,6 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_labelColor {
+    UIColor *color = [UIColor colorNamed:@"Label"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_secondaryBackgroundColor {
     UIColor *color = [UIColor colorNamed:@"SecondaryBackgroundColor"];
     NSParameterAssert(color);

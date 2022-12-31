@@ -170,9 +170,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - Private
+#pragma mark - DWPaymentProcessorDelegate
 
 - (void)paymentControllerDidCancelTransaction:(PaymentController *_Nonnull)controller {
+}
+
+- (void)paymentControllerDidFailTransaction:(PaymentController *)controller {
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {

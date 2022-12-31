@@ -39,6 +39,15 @@ class BaseAmountModel {
         true
     }
 
+    var error: Error? {
+        didSet {
+            if let error {
+                errorHandler?(error)
+            }
+        }
+    }
+
+    public var errorHandler: ((Error) -> Void)?
     public var amountChangeHandler: ((AmountObject) -> Void)?
     public var presentCurrencyPickerHandler: (() -> Void)?
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
@@ -134,8 +143,11 @@ class BaseAmountModel {
     }
 
     internal func amountDidChange() {
+        checkAmountForErrors()
         amountChangeHandler?(amount)
     }
+
+    internal func checkAmountForErrors() { }
 }
 
 extension BaseAmountModel {

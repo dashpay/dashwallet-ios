@@ -35,7 +35,7 @@ class GiftCardInfoViewController: PointOfUseInfoViewController {
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textColor = .label
+        titleLabel.textColor = .dw_label()
         titleLabel.font = .dw_font(forTextStyle: .title1)
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
@@ -44,7 +44,7 @@ class GiftCardInfoViewController: PointOfUseInfoViewController {
 
         let descLabel = UILabel()
         descLabel.translatesAutoresizingMaskIntoConstraints = false
-        descLabel.textColor = .label
+        descLabel.textColor = .dw_label()
         descLabel.font = UIFont.dw_font(forTextStyle: .callout)
         descLabel.textAlignment = .center
         descLabel.numberOfLines = 0
@@ -96,7 +96,7 @@ class GiftCardInfoViewController: PointOfUseInfoViewController {
         let itemTitleLabel = UILabel()
         itemTitleLabel.text = title
         itemTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        itemTitleLabel.textColor = .label
+        itemTitleLabel.textColor = .dw_label()
         itemTitleLabel.font = UIFont.dw_font(forTextStyle: .body)
         itemTitleLabel.textAlignment = .left
         itemTitleLabel.numberOfLines = 0;

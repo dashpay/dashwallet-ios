@@ -17,7 +17,13 @@
 
 import UIKit
 
-final class BuyDashViewController: BaseAmountViewController {
+// MARK: - BuyDashViewController
+
+final class BuyDashViewController: BaseAmountViewController, NetworkReachabilityHandling {
+    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+
+
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
     internal var buyDashModel: BuyDashModel {
@@ -25,6 +31,7 @@ final class BuyDashViewController: BaseAmountViewController {
     }
 
     private var activePaymentMethodView: ActivePaymentMethodView!
+    private var networkUnavailableView: UIView!
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -32,6 +39,17 @@ final class BuyDashViewController: BaseAmountViewController {
 
     @available(*, unavailable) required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: Actions
+    override func amountDidChange() {
+        super.amountDidChange()
+        actionButton?.isEnabled = buyDashModel.canContinue
+    }
+
+    override func actionButtonAction(sender: UIView) {
+        showActivityIndicator()
+        buyDashModel.buy()
     }
 
     @objc func payWithTapGestureRecognizerAction() {
@@ -45,12 +63,15 @@ final class BuyDashViewController: BaseAmountViewController {
         present(vc, animated: true)
     }
 
+    // MARK: Life cycle
     override func initializeModel() {
         model = BuyDashModel()
     }
 
     override func configureModel() {
         super.configureModel()
+
+        buyDashModel.delegate = self
     }
 
     override func configureHierarchy() {
@@ -93,6 +114,11 @@ final class BuyDashViewController: BaseAmountViewController {
 
         topKeyboardView = sendingToView
 
+        networkUnavailableView = NetworkUnavailableView(frame: .zero)
+        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
+        networkUnavailableView.isHidden = true
+        contentView.addSubview(networkUnavailableView)
+
         NSLayoutConstraint.activate([
             activePaymentMethodView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
             activePaymentMethodView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
@@ -102,13 +128,63 @@ final class BuyDashViewController: BaseAmountViewController {
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             amountView.topAnchor.constraint(equalTo: activePaymentMethodView.bottomAnchor, constant: 30),
-            amountView.heightAnchor.constraint(equalToConstant: 60),
+
+            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
         ])
     }
 
-    override func amountDidChange() {
-        super.amountDidChange()
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-        actionButton?.isEnabled = true
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
     }
 }
+
+// MARK: Private
+extension BuyDashViewController {
+    private func reloadView() {
+        let isOnline = networkStatus == .online
+        networkUnavailableView.isHidden = isOnline
+        keyboardContainer.isHidden = !isOnline
+        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
+    }
+}
+
+// MARK: BuyDashModelDelegate
+
+extension BuyDashViewController: BuyDashModelDelegate {
+    func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder) {
+        guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
+
+        let vc = ConfirmOrderController(order: order, paymentMethod: paymentMethod, plainAmount: UInt64(buyDashModel.amount.plainAmount))
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+        hideActivityIndicator()
+    }
+
+    func buyDashModelFailedToPlaceOrder(with error: Coinbase.Error) {
+        hideActivityIndicator()
+
+        showAlert(with: "Error", message: error.localizedDescription)
+    }
+}
+
+extension BuyDashViewController {
+    @objc override func present(error: Error) {
+        if case Coinbase.Error.transactionFailed(let reason) = error, reason == .limitExceded {
+            amountView.showError(error.localizedDescription, textColor: .systemRed) { [weak self] in
+                let vc = CoinbaseInfoViewController.controller()
+                vc.modalPresentationStyle = .overCurrentContext
+                self?.present(vc, animated: true)
+            }
+            return
+        }
+
+        super.present(error: error)
+    }
+}
+

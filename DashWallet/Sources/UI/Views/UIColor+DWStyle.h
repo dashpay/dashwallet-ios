@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIColor (DWStyle)
 
 + (UIColor *)dw_backgroundColor;
++ (UIColor *)dw_labelColor;
 + (UIColor *)dw_secondaryBackgroundColor;
 
 + (UIColor *)dw_tintColor;

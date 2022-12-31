@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSData *txHashData;
 @property (readonly) NSString *txHashHexString;
 
++ (uint64_t)txMinOutputAmount;
+
 @end
 
 NS_ASSUME_NONNULL_END

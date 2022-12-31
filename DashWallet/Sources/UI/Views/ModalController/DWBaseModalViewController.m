@@ -89,6 +89,10 @@ static CGFloat const CORNER_RADIUS = 8.0;
     [self.contentView setChevronViewFlattened:flattened];
 }
 
+- (void)interactiveTransitionWillDismiss {
+    /// NOP
+}
+
 #pragma mark - Private
 
 - (void)setupBaseModalView {

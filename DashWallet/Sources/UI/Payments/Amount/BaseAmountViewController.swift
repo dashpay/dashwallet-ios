@@ -66,10 +66,33 @@ class BaseAmountViewController: ActionButtonViewController {
         model.presentCurrencyPickerHandler = { [weak self] in
             self?.showCurrencyList()
         }
+
+        model.errorHandler = { [weak self] error in
+            self?.show(error: error)
+        }
+    }
+
+    internal func errorInfoButtonDidTap() {
+        // NOP
     }
 
     internal func amountDidChange() {
         amountView.reloadData()
+        showErrorIfNeeded()
+    }
+
+    internal func show(error: Error) {
+        hideActivityIndicator()
+        present(error: error)
+    }
+
+    internal func showErrorIfNeeded() {
+        guard let error = model.error else {
+            amountView.hideError()
+            return
+        }
+
+        show(error: error)
     }
 
     internal func validateInputAmount() -> Bool {
@@ -95,6 +118,7 @@ class BaseAmountViewController: ActionButtonViewController {
         super.viewDidAppear(animated)
 
         amountView.becomeFirstResponder()
+        showErrorIfNeeded()
     }
 
     override func viewDidLoad() {
@@ -121,6 +145,9 @@ extension BaseAmountViewController {
         amountView.dataSource = model
         amountView.delegate = model
         amountView.translatesAutoresizingMaskIntoConstraints = false
+        amountView.infoButtonHandler = { [weak self] in
+            self?.errorInfoButtonDidTap()
+        }
         contentView.addSubview(amountView)
 
         keyboardContainer = UIView()
@@ -148,7 +175,6 @@ extension BaseAmountViewController {
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             amountView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
-            amountView.heightAnchor.constraint(equalToConstant: 60),
 
             keyboardContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -174,6 +200,20 @@ extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
     func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
         controller.dismiss(animated: true)
     }
+}
 
+// MARK: ErrorPresentable
 
+extension BaseAmountViewController: ErrorPresentable {
+    @objc func present(error: Error) {
+        let color: UIColor
+
+        if let error = error as? ColorizedText {
+            color = error.textColor
+        } else {
+            color = .systemRed
+        }
+
+        amountView.showError(error.localizedDescription, textColor: color)
+    }
 }

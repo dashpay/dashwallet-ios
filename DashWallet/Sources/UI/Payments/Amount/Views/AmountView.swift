@@ -67,13 +67,18 @@ class AmountView: UIView {
     }
 
     public var maxButtonAction: (() -> Void)?
+    public var infoButtonHandler: (() -> Void)?
 
     private var maxButton: UIButton!
     private var amountInputControl: AmountInputControl!
     private var inputTypeSwitcher: AmountInputTypeSwitcher!
 
+    private var errorStackView: UIStackView!
+    private var errorLabel: UILabel!
+    private var infoButton: UIButton!
+
     override var intrinsicContentSize: CGSize {
-        .init(width: AmountView.noIntrinsicMetric, height: 60)
+        .init(width: AmountView.noIntrinsicMetric, height: 90)
     }
 
     @discardableResult override func becomeFirstResponder() -> Bool {
@@ -102,6 +107,21 @@ class AmountView: UIView {
         super.init(coder: coder)
     }
 
+    public func showError(_ msg: String, textColor: UIColor, infoButtonAction: (() -> Void)? = nil) {
+        errorStackView.isHidden = false
+        errorLabel.text = msg
+        errorLabel.textColor = textColor
+        infoButton.isHidden = infoButtonAction == nil
+        infoButtonHandler = infoButtonAction
+    }
+
+    public func hideError() {
+        errorStackView.isHidden = true
+        infoButton.isHidden = true
+
+        errorLabel.text = nil
+    }
+
     public func reloadData() {
         amountInputControl.reloadData()
     }
@@ -112,6 +132,10 @@ class AmountView: UIView {
 
     @objc func maxButtonActionHandler() {
         maxButtonAction?()
+    }
+
+    @objc func infoButtonAction() {
+        infoButtonHandler?()
     }
 }
 
@@ -126,10 +150,15 @@ extension AmountView {
     }
 
     private func configureHierarchy() {
+        let contentView = UIView()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.backgroundColor = .clear
+        addSubview(contentView)
+
         maxButton = MaxButton(frame: .zero)
         maxButton.translatesAutoresizingMaskIntoConstraints = false
         maxButton.addTarget(self, action: #selector(maxButtonActionHandler), for: .touchUpInside)
-        addSubview(maxButton)
+        contentView.addSubview(maxButton)
 
         amountInputControl = AmountInputControl(style: amountInputStyle)
         amountInputControl.swapingHandler = { [weak self] _ in
@@ -137,7 +166,7 @@ extension AmountView {
         }
         amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(amountInputControl)
+        contentView.addSubview(amountInputControl)
 
         inputTypeSwitcher = .init(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
@@ -145,24 +174,60 @@ extension AmountView {
             let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
             self?.amountInputControl.setActiveType(type, animated: true, completion: nil)
         }
-        addSubview(inputTypeSwitcher)
+        contentView.addSubview(inputTypeSwitcher)
+
+        errorStackView = UIStackView()
+        errorStackView.isHidden = true
+        errorStackView.translatesAutoresizingMaskIntoConstraints = false
+        errorStackView.axis = .horizontal
+        errorStackView.alignment = .center
+        errorStackView.spacing = 2
+        addSubview(errorStackView)
+
+        errorLabel = UILabel()
+        errorLabel.translatesAutoresizingMaskIntoConstraints = false
+        errorLabel.textColor = .systemRed
+        errorLabel.numberOfLines = 2
+        errorLabel.lineBreakMode = .byWordWrapping
+        errorLabel.font = .dw_font(forTextStyle: .footnote)
+        errorLabel.textAlignment = .center
+        errorStackView.addArrangedSubview(errorLabel)
+
+        let configuration = UIImage.SymbolConfiguration(pointSize: UIFont.dw_font(forTextStyle: .footnote).pointSize, weight: .regular)
+        let image = UIImage(systemName: "info.circle", withConfiguration: configuration)
+
+        infoButton = UIButton(type: .custom)
+        infoButton.tintColor = .systemRed
+        infoButton.setImage(image, for: .normal)
+        infoButton.translatesAutoresizingMaskIntoConstraints = false
+        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
+        infoButton.isHidden = true
+        errorStackView.addArrangedSubview(infoButton)
 
         let kMaxButtonWidth: CGFloat = 42.0
         let kAmountInputControlPadding: CGFloat = 60
 
         NSLayoutConstraint.activate([
-            maxButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            contentView.topAnchor.constraint(equalTo: topAnchor),
+            contentView.heightAnchor.constraint(equalToConstant: 60),
+            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
+
+            maxButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             maxButton.widthAnchor.constraint(equalToConstant: kMaxButtonWidth),
             maxButton.heightAnchor.constraint(equalToConstant: kMaxButtonWidth),
-            maxButton.leadingAnchor.constraint(equalTo: leadingAnchor),
+            maxButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
 
-            amountInputControl.centerXAnchor.constraint(equalTo: centerXAnchor),
-            amountInputControl.centerYAnchor.constraint(equalTo: centerYAnchor),
-            amountInputControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: kAmountInputControlPadding),
-            amountInputControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -kAmountInputControlPadding),
+            amountInputControl.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            amountInputControl.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            amountInputControl.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: kAmountInputControlPadding),
+            amountInputControl.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -kAmountInputControlPadding),
 
-            inputTypeSwitcher.centerYAnchor.constraint(equalTo: centerYAnchor),
-            inputTypeSwitcher.trailingAnchor.constraint(equalTo: trailingAnchor),
+            inputTypeSwitcher.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            inputTypeSwitcher.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+
+            errorLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            errorLabel.topAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 10),
         ])
     }
 }

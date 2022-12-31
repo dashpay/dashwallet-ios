@@ -296,7 +296,11 @@ extension CrowdNodeModel {
 extension CrowdNodeModel {
     func deposit(amount: Int64) async throws {
         guard amount > 0 else { return }
-        try await crowdNode.deposit(amount: UInt64(amount))
+        
+        let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: UInt64(amount))
+        if await authenticate(allowBiometric: usingBiometric) {
+            try await crowdNode.deposit(amount: UInt64(amount))
+        }
     }
 
     func withdraw(permil: UInt) async throws {

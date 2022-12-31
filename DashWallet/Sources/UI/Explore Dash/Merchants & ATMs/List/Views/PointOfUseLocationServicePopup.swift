@@ -87,7 +87,7 @@ class PointOfUseLocationServicePopup: UIView {
         label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
-        label.textColor = .secondaryLabel
+        label.textColor = .dw_secondaryText()
         label.textAlignment = .center
         label.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.footnote)
         label.text = details

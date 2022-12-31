@@ -14,8 +14,46 @@
 			<string>ld</string>
 			<key>one</key>
 			<string>%ld utilizada</string>
+			<key>many</key>
+			<string>%ld utilizadas</string>
 			<key>other</key>
 			<string>%ld utilizadas</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d comércio em %@</string>
+			<key>many</key>
+			<string>%d comércio em %@</string>
+			<key>other</key>
+			<string>%d comércios em %@</string>
+		</dict>
+	</dict>
+	<key>%d merchant(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d comércio</string>
+			<key>many</key>
+			<string>%d comércio</string>
+			<key>other</key>
+			<string>%d comércios</string>
 		</dict>
 	</dict>
 </dict>

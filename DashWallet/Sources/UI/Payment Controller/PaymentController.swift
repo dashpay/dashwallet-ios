@@ -29,6 +29,7 @@ protocol AmountViewController where Self: BaseAmountViewController { }
 protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
+    func paymentControllerDidFailTransaction(_ controller: PaymentController)
 }
 
 // MARK: - PaymentControllerPresentationContextProviding
@@ -97,6 +98,10 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
         if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput {
             paymentProcessor.confirmPaymentOutput(output)
         }
+    }
+
+    func confirmPaymentViewControllerDidCancel(_ controller: DWConfirmPaymentViewController) {
+        delegate?.paymentControllerDidCancelTransaction(self)
     }
 }
 
@@ -172,6 +177,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
             // TODO: Show insufficient amount
         }
 
+        delegate?.paymentControllerDidFailTransaction(self)
         presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
         showAlert(with: title, message: message)
         confirmViewController?.sendingEnabled = true
