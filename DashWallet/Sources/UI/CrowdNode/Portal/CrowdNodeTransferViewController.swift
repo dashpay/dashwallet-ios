@@ -19,6 +19,8 @@ import Foundation
 import Combine
 
 final class CrowdNodeTransferController: SendAmountViewController, NetworkReachabilityHandling {
+    private let viewModel = CrowdNodeModel.shared
+    private var cancellableBag = Set<AnyCancellable>()
     
     internal var mode: TransferDirection = .deposit
     
@@ -31,6 +33,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     
     private var paymentController: PaymentController!
     private var networkUnavailableView: UIView!
+    private var fromLabel: FromLabel!
     
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
     
@@ -55,6 +58,10 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
 
     override func configureModel() {
         super.configureModel()
+        
+        model.inputsSwappedHandler = { [weak self] type in
+            self?.updateBalanceLabel()
+        }
     }
 
     override func viewDidLoad() {
@@ -68,6 +75,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             self?.reloadView()
         }
         startNetworkMonitoring()
+        configureObservers()
     }
 
     deinit {
@@ -80,8 +88,8 @@ extension CrowdNodeTransferController {
         super.configureHierarchy()
         
         configureTitleBar()
-        let fromToLabel = configureToFromLabel()
-        contentView.addSubview(fromToLabel)
+        fromLabel = FromLabel(icon: mode.imageName, text: mode.direction)
+        contentView.addSubview(fromLabel)
         
         let keyboardHeader = KeyboardHeader(icon: mode.keyboardHeaderIcon, text: mode.keyboardHeader)
         keyboardHeader.translatesAutoresizingMaskIntoConstraints = false
@@ -93,8 +101,8 @@ extension CrowdNodeTransferController {
         contentView.addSubview(networkUnavailableView)
 
         NSLayoutConstraint.activate([
-            fromToLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            NSLayoutConstraint(item: fromToLabel, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.35, constant: 0),
+            fromLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            NSLayoutConstraint(item: fromLabel!, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.35, constant: 0),
             
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
@@ -126,39 +134,6 @@ extension CrowdNodeTransferController {
         dashPriceLabel.text = depositWithdrawModel.dashPriceDisplayString
         titleViewStackView.addArrangedSubview(dashPriceLabel)
     }
-    
-    private func configureToFromLabel() -> UIStackView {
-        let horizontal = UIStackView()
-        horizontal.translatesAutoresizingMaskIntoConstraints = false
-        horizontal.spacing = 10
-        horizontal.axis = .horizontal
-        
-        let iconView = UIImageView(image: UIImage(named: mode.imageName))
-        iconView.contentMode = .scaleAspectFit
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.heightAnchor.constraint(equalToConstant: 32).isActive = true
-        iconView.widthAnchor.constraint(equalToConstant: 32).isActive = true
-        horizontal.addArrangedSubview(iconView)
-
-        let vertical = UIStackView()
-        vertical.translatesAutoresizingMaskIntoConstraints = false
-        vertical.axis = .vertical
-        horizontal.addArrangedSubview(vertical)
-
-        let fromLabel = UILabel()
-        fromLabel.textColor = .dw_label()
-        fromLabel.font = .dw_regularFont(ofSize: 14)
-        fromLabel.text = NSLocalizedString(mode.direction, comment: "CrowdNode")
-        vertical.addArrangedSubview(fromLabel)
-
-        let balanceLabel = UILabel()
-        balanceLabel.textColor = .dw_tertiaryText()
-        balanceLabel.font = .systemFont(ofSize: 12)
-        balanceLabel.text = NSLocalizedString("balance: $200", comment: "CrowdNode")
-        vertical.addArrangedSubview(balanceLabel)
-        
-        return horizontal
-    }
 }
 
 extension CrowdNodeTransferController {
@@ -186,6 +161,33 @@ extension CrowdNodeTransferController: PaymentControllerDelegate {
 
     func paymentControllerDidFailTransaction(_ controller: PaymentController) {
         hideActivityIndicator()
+    }
+}
+
+extension CrowdNodeTransferController {
+    func configureObservers() {
+        viewModel.$crowdNodeBalance
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                self?.updateBalanceLabel()
+            })
+            .store(in: &cancellableBag)
+
+        viewModel.$walletBalance
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                self?.updateBalanceLabel()
+            })
+            .store(in: &cancellableBag)
+    }
+    
+    func updateBalanceLabel() {
+        let amount = mode == .deposit ? viewModel.walletBalance : viewModel.crowdNodeBalance
+        let priceManager = DSPriceManager.sharedInstance()
+        let formatted = model.activeAmountType == .main ? priceManager.string(forDashAmount: Int64(amount)) : priceManager.localCurrencyString(forDashAmount: Int64(amount))
+        fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + (formatted ?? NSLocalizedString("Syncing", comment: "CrowdNode"))
     }
 }
 

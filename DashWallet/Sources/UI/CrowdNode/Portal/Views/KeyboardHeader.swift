@@ -22,7 +22,7 @@ final class KeyboardHeader: UIView {
     private var text: String = ""
 
     override var intrinsicContentSize: CGSize {
-        CGSize(width: SendingToView.noIntrinsicMetric, height: 56)
+        CGSize(width: KeyboardHeader.noIntrinsicMetric, height: 56)
     }
     
     init(icon: String, text: String) {

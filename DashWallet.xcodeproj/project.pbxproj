@@ -50,6 +50,7 @@
 		118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118A1392291AA21B002641E4 /* AccountCreatingController.swift */; };
 		1193FF3629602835004EA8D7 /* DepositWithdrawModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3529602835004EA8D7 /* DepositWithdrawModel.swift */; };
 		1193FF3929606151004EA8D7 /* KeyboardHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3829606151004EA8D7 /* KeyboardHeader.swift */; };
+		1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3A2961960B004EA8D7 /* FromLabel.swift */; };
 		119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */; };
 		119E8D062905200300D406C1 /* CoinsToAddressTxFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */; };
 		119E8D082905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */; };
@@ -808,6 +809,7 @@
 		118A1392291AA21B002641E4 /* AccountCreatingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatingController.swift; sourceTree = "<group>"; };
 		1193FF3529602835004EA8D7 /* DepositWithdrawModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositWithdrawModel.swift; sourceTree = "<group>"; };
 		1193FF3829606151004EA8D7 /* KeyboardHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeader.swift; sourceTree = "<group>"; };
+		1193FF3A2961960B004EA8D7 /* FromLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FromLabel.swift; sourceTree = "<group>"; };
 		119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeRequest.swift; sourceTree = "<group>"; };
 		119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsToAddressTxFilter.swift; sourceTree = "<group>"; };
 		119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullCrowdNodeSignUpTxSet.swift; sourceTree = "<group>"; };
@@ -2242,6 +2244,7 @@
 			isa = PBXGroup;
 			children = (
 				1193FF3829606151004EA8D7 /* KeyboardHeader.swift */,
+				1193FF3A2961960B004EA8D7 /* FromLabel.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6528,6 +6531,7 @@
 				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
 				2ACCA3A824BE0C7D00DB32DE /* DWDPTxListCell.m in Sources */,
 				47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */,
+				1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */,
 				2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				11B8449A28F6D5480082770C /* SingleInputAddressSelector.swift in Sources */,
