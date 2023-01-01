@@ -230,8 +230,10 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         }
 
         switch item {
-        case .deposit, .withdraw:
-            navigationController?.pushViewController(CrowdNodeTransferController.controller(), animated: true)
+        case .deposit:
+            navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.deposit), animated: true)
+        case .withdraw:
+            navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
         case .onlineAccount:
             UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
             break
