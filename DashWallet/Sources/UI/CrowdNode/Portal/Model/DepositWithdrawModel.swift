@@ -83,40 +83,6 @@ final class DepositWithdrawModel: SendAmountModel, CoinbaseTransactionSendable {
         let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
         return displayString
     }
-    
-    override func selectAllFunds(_ preparationHandler: () -> Void) {
-        if direction == .deposit {
-            super.selectAllFunds(preparationHandler)
-        } else {
-            // TODO:
-            //            guard let balance = CrowdNode.shared.balance else { return }
-            //
-            //            let maxAmount = AmountObject(plainAmount: Int64(balance), fiatCurrencyCode: localCurrencyCode,
-            //                                         localFormatter: localFormatter)
-            //            updateCurrentAmountObject(with: maxAmount)
-        }
-    }
-    
-    func initializeTransfer() {
-        
-    }
-    
-    private func depositToCrowdNode() {
-        //        // TODO: validate
-                let amount = UInt64(amount.plainAmount)
-        //
-        //        obtainNewAddress { [weak self] address in
-        //            guard let address else {
-        //                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .transactionFailed(.failedToObtainNewAddress))
-        //                return
-        //            }
-        //
-        guard let paymentInput = DWPaymentInputBuilder().pay(toAddress: address, amount: amount) else {
-            return
-        }
-        
-//        self?.delegate?.initiatePayment(with: paymentInput)
-    }
 }
 
 
