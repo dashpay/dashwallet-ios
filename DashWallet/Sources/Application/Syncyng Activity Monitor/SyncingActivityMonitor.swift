@@ -177,6 +177,7 @@ extension SyncingActivityMonitor {
 
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(syncLoop), object: nil)
 
+        isSyncing = false
         state = failed ? .syncFailed : .syncDone
     }
 
@@ -192,8 +193,10 @@ extension SyncingActivityMonitor {
             isSyncing = true
 
             if fabs(self.progress - progress) > kMaxProgressDelta {
-                if let date = lastPeakDate, -date.timeIntervalSinceNow > kProgressPeakDelay {
-                    lastPeakDate = nil
+                if let date = lastPeakDate {
+                    if -date.timeIntervalSinceNow > kProgressPeakDelay {
+                        lastPeakDate = nil
+                    }
                 }
                 else {
                     lastPeakDate = Date()
@@ -214,6 +217,8 @@ extension SyncingActivityMonitor {
         else {
             self.progress = 1.0
             state = .syncDone
+
+            stopSyncingActivity(failed: false)
         }
     }
 }
