@@ -51,33 +51,31 @@ enum HTTPClientError: Error {
     }
 }
 
-// MARK: - SecureTokenProvider
 
-protocol SecureTokenProvider: AnyObject {
-    var accessToken: String? { get }
-}
+
+typealias AccessTokenProvider = () -> String
 
 // MARK: - HTTPClient
 
 public class HTTPClient<Target: TargetType> {
     private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .background, attributes: .concurrent)
     private var provider: MoyaProvider<Target>!
-    weak var secureTokenProvider: SecureTokenProvider?
 
-    var accessToken: String? {
-        secureTokenProvider?.accessToken
-    }
+    var accessTokenProvider: AccessTokenProvider?
 
-    init(tokenProvider: SecureTokenProvider? = nil) {
+    init(accessTokenProvider: AccessTokenProvider? = nil) {
+        self.accessTokenProvider = accessTokenProvider
+
         let config: NetworkLoggerPlugin.Configuration = .init(formatter: .init(responseData: JSONResponseDataFormatter),
                                                               logOptions: .verbose)
-        let logger = NetworkLoggerPlugin(configuration: config)
-        let accessTokenPlugin = AccessTokenPlugin { [weak self] _ in
-            self?.accessToken ?? "" // TODO: Passing empty access token isn't good idea either
+        var plugins: [PluginType] = [NetworkLoggerPlugin(configuration: config)]
+        let accessTokenPlugin = AccessTokenPlugin { [weak self] target in
+            guard let self else { return "" }
+            return self.retrieveAccessToken(for: target as! Target)
         }
+        plugins.append(accessTokenPlugin)
 
-        provider = MoyaProvider<Target>(plugins: [logger, accessTokenPlugin])
-        secureTokenProvider = tokenProvider
+        provider = MoyaProvider<Target>(plugins: plugins)
     }
 
     @discardableResult func request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
@@ -112,6 +110,15 @@ public class HTTPClient<Target: TargetType> {
         }
 
         return r
+    }
+
+    private func retrieveAccessToken(for target: Target) -> String {
+        if let target = target as? AccessTokenAuthorizable, target.authorizationType == .bearer,
+           let provider = accessTokenProvider {
+            return provider()
+        }
+
+        fatalError("Token should be provided")
     }
 }
 

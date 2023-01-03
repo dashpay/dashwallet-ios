@@ -560,6 +560,9 @@
 /* No comment provided by engineer. */
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Esqueceu o PIN?";
 

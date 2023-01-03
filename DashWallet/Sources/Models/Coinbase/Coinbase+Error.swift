@@ -25,11 +25,14 @@ extension Coinbase {
     enum Error: Swift.Error, LocalizedError {
         enum GeneralFailureReason: LocalizedError {
             case noActiveUser
+            case revokedToken
 
             var errorDescription: String? {
                 switch self {
                 case .noActiveUser:
                     return NSLocalizedString("No active user", comment: "Coinbase")
+                case .revokedToken:
+                    return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
                 }
             }
         }

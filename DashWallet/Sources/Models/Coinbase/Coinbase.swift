@@ -33,13 +33,16 @@ let kMinDashAmountToTransfer: UInt64 = 10_000
 class Coinbase {
     private lazy var coinbaseService = CoinbaseService()
 
-    private var auth = CBAuth()
-    private var tx = CBTransactions()
+    private var auth: CBAuth!
+    private var tx: CBTransactions!
 
     public static let shared = Coinbase()
 
     init() {
-        CoinbaseAPI.shared.secureTokenProvider = auth
+        CoinbaseAPI.initialize(with: self)
+
+        auth = CBAuth()
+        tx = CBTransactions(authInterop: auth)
     }
 }
 
@@ -156,5 +159,17 @@ extension String {
         }
 
         return localizedAmount(locale: locale)
+    }
+}
+
+// MARK: - Coinbase + CoinbaseAPIAccessTokenProvider
+
+extension Coinbase: CoinbaseAPIAccessTokenProvider {
+    var accessToken: String? {
+        auth.accessToken
+    }
+
+    func refreshTokenIfNeeded() async throws {
+        try await auth.refreshTokenIfNeeded()
     }
 }

@@ -18,8 +18,13 @@
 import Foundation
 
 final class CBTransactions {
+    private var authInterop: CBAuthInterop
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
     private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
+
+    init(authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+    }
 
     func send(from accountId: String, amount: UInt64, verificationCode: String?) async throws -> CoinbaseTransaction {
         // NOTE: Maybe better to get the address once and use it during the tx flow
@@ -40,6 +45,8 @@ final class CBTransactions {
         let amount = amount.formattedDashAmount.coinbaseAmount()
 
         do {
+            try await authInterop.refreshTokenIfNeeded()
+
             let dto = CoinbaseTransactionsRequest(type: .send,
                                                   to: dashWalletAddress,
                                                   amount: amount,
@@ -48,7 +55,8 @@ final class CBTransactions {
 
             let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
-            DSLogger.log("Tranfer from coinbase: transferToWallet - success")
+            try await authInterop.refreshAccount()
+
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 402")
@@ -65,7 +73,6 @@ final class CBTransactions {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             throw Coinbase.Error.transactionFailed(.invalidVerificationCode)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 401")
             throw Coinbase.Error.userSessionExpired
         } catch {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
@@ -95,11 +102,9 @@ final class CBTransactions {
         let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: false, quote: nil)
 
         do {
+            try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
             return result.data
-        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 401")
-            throw Coinbase.Error.userSessionExpired
         } catch HTTPClientError.statusCode(let r) {
             if let error = r.error?.errors.first {
                 throw Coinbase.Error.transactionFailed(.message(error.message))
@@ -113,10 +118,12 @@ final class CBTransactions {
 
     func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
         do {
+            try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
+            try? await authInterop.refreshAccount()
+
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 401")
             throw Coinbase.Error.userSessionExpired
         } catch HTTPClientError.statusCode(let r) {
             if let error = r.error?.errors.first {

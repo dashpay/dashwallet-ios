@@ -34,29 +34,12 @@ extension CBUser: Equatable {
 
 class CBUser: Codable {
     public var paymentMethods: [CoinbasePaymentMethod]?
-
     private var account: CoinbaseUserAccountData?
     private var tokenService: CBSecureTokenService
     private var authInfo: CoinbaseUserAuthData?
 
     init(tokenService: CBSecureTokenService) {
         self.tokenService = tokenService
-    }
-
-    required init?(coder: NSCoder) {
-        if let data = coder.decodeObject(forKey: kAccountKey) as? Data {
-            account = try? JSONDecoder().decode(CoinbaseUserAccountData.self, from: data)
-        }
-
-        if let data = coder.decodeObject(forKey: kPaymentMethodsKey) as? Data {
-            paymentMethods = try? JSONDecoder().decode([CoinbasePaymentMethod].self, from: data)
-        }
-
-        if let data = coder.decodeObject(forKey: kAuthLimitsKey) as? Data {
-            authInfo = try? JSONDecoder().decode(CoinbaseUserAuthData.self, from: data)
-        }
-
-        tokenService = coder.decodeObject(forKey: kTokenServiceKey) as! CBSecureTokenService
     }
 }
 
@@ -88,11 +71,10 @@ extension CBUser {
     func refreshAccount() async throws {
         try await fetchAccount()
         try await fetchAuthInfo()
-        try await fetchPaymentMethods()
     }
 
     func refreshAccessToken() async throws {
-        try await tokenService.fetchAccessToken(refreshing: true)
+        try await tokenService.fetchAccessToken()
     }
 
     func revokeAccessToken() async throws {
@@ -100,6 +82,8 @@ extension CBUser {
     }
 
     @discardableResult  public func fetchAccount() async throws -> CoinbaseUserAccountData {
+        try await refreshAccessToken()
+
         let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.userAccount)
         let newAccount = result.data
         account = newAccount
@@ -107,6 +91,8 @@ extension CBUser {
     }
 
     @discardableResult  public func fetchAuthInfo() async throws -> CoinbaseUserAuthData {
+        try await refreshAccessToken()
+
         let result: BaseDataResponse<CoinbaseUserAuthData> = try await CoinbaseAPI.shared.request(.userAuthInformation)
         let newAuthInfo = result.data
         authInfo = newAuthInfo
@@ -114,6 +100,8 @@ extension CBUser {
     }
 
     public func fetchPaymentMethods() async throws {
+        try await refreshAccessToken()
+
         let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await CoinbaseAPI.shared.request(.activePaymentMethods)
         paymentMethods = result.data
     }
