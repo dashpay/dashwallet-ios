@@ -306,7 +306,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
     
     if ([notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound);
+        completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
     }
 }
 
