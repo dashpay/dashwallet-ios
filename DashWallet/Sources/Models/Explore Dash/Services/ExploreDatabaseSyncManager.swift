@@ -19,6 +19,7 @@ import Firebase
 import Foundation
 import SSZipArchive
 
+// TODO: Move it to plist and note in release process
 let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore.db"
 
 private let fileName = "explore"
