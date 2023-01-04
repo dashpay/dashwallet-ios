@@ -1505,9 +1505,6 @@
 /* No comment provided by engineer. */
 "Used at IP address" = "Được sử dụng tại địa chỉ IP";
 
-/* Coinbase */
-"User session expired" = "User session expired";
-
 /* No comment provided by engineer. */
 "Username taken" = "Tên người dùng đã được chọn";
 
@@ -1645,9 +1642,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Bạn đã gửi yêu cầu liên hệ với %@";
-
-/* Sign out from coinbase due to error */
-"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Bạn sẽ cần phải đăng xuất khỏi tài khoản từ trang web Uphold với trình duyệt của mình";

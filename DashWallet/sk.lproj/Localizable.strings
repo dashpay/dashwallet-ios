@@ -1505,9 +1505,6 @@
 /* No comment provided by engineer. */
 "Used at IP address" = "Použité na IP adrese";
 
-/* Coinbase */
-"User session expired" = "User session expired";
-
 /* No comment provided by engineer. */
 "Username taken" = "Používateľské meno sa už používa";
 
@@ -1645,9 +1642,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Žiadosť o kontakt ste odoslali pre %@";
-
-/* Sign out from coinbase due to error */
-"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Budete sa tiež musieť odhlásiť z webovej stránky Upholdu pomocou svojho prehliadača";

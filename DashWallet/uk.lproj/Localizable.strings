@@ -1505,9 +1505,6 @@
 /* No comment provided by engineer. */
 "Used at IP address" = "Використано за IP-адресою";
 
-/* Coinbase */
-"User session expired" = "User session expired";
-
 /* No comment provided by engineer. */
 "Username taken" = "Ім'я користувача зайняте";
 
@@ -1645,9 +1642,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Ви надіслали запит на контакт %@";
-
-/* Sign out from coinbase due to error */
-"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Вам також потрібно буде вийти з веб-сайту Uphold за допомогою браузера";
