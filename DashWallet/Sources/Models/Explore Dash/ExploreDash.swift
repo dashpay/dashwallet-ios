@@ -48,7 +48,8 @@ public class ExploreDashObjcWrapper: NSObject {
         case error
     }
 
-    @objc public class func configure() {
+    @objc
+    public class func configure() {
         do {
             try ExploreDash.configure()
         } catch {

@@ -101,6 +101,11 @@ struct CoinbaseAPIError: Decodable {
             /// Status Code: `403`.
             case invalidScope = "invalid_scope"
 
+            /// The provided authorization grant is invalid, expired, revoked
+            ///
+            /// Status Code: `401`.
+            case invalidGrant = "invalid_grant"
+
             /// Resource not found.
             ///
             /// Status Code: `404`.
@@ -126,7 +131,7 @@ struct CoinbaseAPIError: Decodable {
 // MARK: - CoinbaseEndpoint
 
 public enum CoinbaseEndpoint {
-    case userAccount
+    case account(String)
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
@@ -162,14 +167,14 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
 
     public var path: String {
         switch self {
-        case .userAccount: return "/v2/accounts/DASH"
+        case .account(let name): return "/v2/accounts/\(name)"
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
         case .activePaymentMethods: return "/v2/payment-methods"
         case .placeBuyOrder(let accountId, _): return "/v2/accounts/\(accountId)/buys"
         case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
-        case .getBaseIdForUSDModel(let baseCurrency): return "/v2//assets/prices?base=\(baseCurrency)&filter=holdable&resolution=latest"
+        case .getBaseIdForUSDModel(let baseCurrency): return "/v2/assets/prices?base=\(baseCurrency)&filter=holdable&resolution=latest"
         case .swapTrade: return "/v2/trades"
         case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"

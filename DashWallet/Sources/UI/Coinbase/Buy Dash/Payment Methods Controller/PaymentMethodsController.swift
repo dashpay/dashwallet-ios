@@ -39,7 +39,8 @@ final class PaymentMethodsController: BaseViewController {
         configurePresentation()
     }
 
-    @IBAction func closeAction() {
+    @IBAction
+    func closeAction() {
         dismiss(animated: true)
     }
 

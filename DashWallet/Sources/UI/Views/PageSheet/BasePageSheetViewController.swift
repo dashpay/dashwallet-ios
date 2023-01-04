@@ -21,7 +21,8 @@ class BasePageSheetViewController: UIViewController {
 
     private var closeButton: UIButton!
 
-    @IBAction @objc func closeButtonAction() {
+    @IBAction @objc
+    func closeButtonAction() {
         dismiss(animated: true, completion: nil)
     }
 

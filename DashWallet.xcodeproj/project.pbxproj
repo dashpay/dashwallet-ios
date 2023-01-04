@@ -505,6 +505,7 @@
 		47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8B29068F110003E8AB /* BaseResponse.swift */; };
 		47838B8F2906D7340003E8AB /* BalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8E2906D7340003E8AB /* BalanceView.swift */; };
 		47838B92290701470003E8AB /* CoinbaseEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */; };
+		478483E829629C0700E05A5A /* CBAuthInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478483E729629C0700E05A5A /* CBAuthInterop.swift */; };
 		478A2C7128DC554200AD1420 /* PortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C7028DC554200AD1420 /* PortalModel.swift */; };
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */; };
@@ -587,12 +588,15 @@
 		47CDEEC72949DC38008AE06D /* CoinbaseFeeInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEEC62949DC38008AE06D /* CoinbaseFeeInfoController.swift */; };
 		47CDEECC294A2BAD008AE06D /* UIViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */; };
 		47CDEECE294A3CF2008AE06D /* UIViewController+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */; };
+		47CF469F296540E40067B6EE /* AccountRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF469E296540E40067B6EE /* AccountRepository.swift */; };
+		47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A0296540EF0067B6EE /* AccountService.swift */; };
+		47CF46A529654E190067B6EE /* CBAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A429654E190067B6EE /* CBAccount.swift */; };
+		47CF46A829655E8E0067B6EE /* PaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A729655E8E0067B6EE /* PaymentMethods.swift */; };
 		47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47EE171729560DC200BA1986 /* ErrorPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE171629560DC200BA1986 /* ErrorPresentable.swift */; };
 		47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE17182959CDC200BA1986 /* ColorizedText.swift */; };
 		47EEE23B293F041E00049E0B /* CBUserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23A293F041E00049E0B /* CBUserManager.swift */; };
-		47EEE23F293F404400049E0B /* CBTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23E293F404400049E0B /* CBTransactions.swift */; };
 		47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */; };
 		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
@@ -1674,6 +1678,7 @@
 		47838B8B29068F110003E8AB /* BaseResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseResponse.swift; sourceTree = "<group>"; };
 		47838B8E2906D7340003E8AB /* BalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceView.swift; sourceTree = "<group>"; };
 		47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseEntryPointModel.swift; sourceTree = "<group>"; };
+		478483E729629C0700E05A5A /* CBAuthInterop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAuthInterop.swift; sourceTree = "<group>"; };
 		478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyDashViewController.swift; sourceTree = "<group>"; };
@@ -1762,13 +1767,16 @@
 		47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Coinbase.swift"; sourceTree = "<group>"; };
 		47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+DashWallet.swift"; sourceTree = "<group>"; };
 		47CDEED0294B8230008AE06D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		47CF469E296540E40067B6EE /* AccountRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRepository.swift; sourceTree = "<group>"; };
+		47CF46A0296540EF0067B6EE /* AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountService.swift; sourceTree = "<group>"; };
+		47CF46A429654E190067B6EE /* CBAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAccount.swift; sourceTree = "<group>"; };
+		47CF46A729655E8E0067B6EE /* PaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethods.swift; sourceTree = "<group>"; };
 		47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Numbers+Dash.swift"; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
 		47EE171629560DC200BA1986 /* ErrorPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorPresentable.swift; sourceTree = "<group>"; };
 		47EE17182959CDC200BA1986 /* ColorizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorizedText.swift; sourceTree = "<group>"; };
 		47EEE23A293F041E00049E0B /* CBUserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBUserManager.swift; sourceTree = "<group>"; };
-		47EEE23E293F404400049E0B /* CBTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBTransactions.swift; sourceTree = "<group>"; };
 		47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseAPIClient.swift; sourceTree = "<group>"; };
 		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
 		47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsInfoViewController.swift; sourceTree = "<group>"; };
@@ -2013,7 +2021,8 @@
 		0F6EDF9328C894B9000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
-				47EEE23C293F402E00049E0B /* Transactions */,
+				47CF46A629655E7C0067B6EE /* Payment Methods */,
+				47CF469D296540D30067B6EE /* Accounts */,
 				47A2A2E5293E5C4700938DB7 /* Auth */,
 				47A2A2E4293DF71600938DB7 /* Services */,
 				47838B83290665EC0003E8AB /* Infrastructure */,
@@ -4597,8 +4606,6 @@
 			isa = PBXGroup;
 			children = (
 				0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */,
-				47A2A2ED293E622700938DB7 /* CBSecureTokenService.swift */,
-				47EEE23A293F041E00049E0B /* CBUserManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -4606,8 +4613,10 @@
 		47A2A2E5293E5C4700938DB7 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
+				47CF46A9296584A40067B6EE /* Services */,
 				47A2A2EA293E616600938DB7 /* User */,
 				47A2A2E8293E612900938DB7 /* CBAuth.swift */,
+				478483E729629C0700E05A5A /* CBAuthInterop.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -4904,6 +4913,41 @@
 			path = Base;
 			sourceTree = "<group>";
 		};
+		47CF469D296540D30067B6EE /* Accounts */ = {
+			isa = PBXGroup;
+			children = (
+				47CF46A2296541120067B6EE /* Account */,
+				47CF469E296540E40067B6EE /* AccountRepository.swift */,
+				47CF46A0296540EF0067B6EE /* AccountService.swift */,
+			);
+			path = Accounts;
+			sourceTree = "<group>";
+		};
+		47CF46A2296541120067B6EE /* Account */ = {
+			isa = PBXGroup;
+			children = (
+				47CF46A429654E190067B6EE /* CBAccount.swift */,
+			);
+			path = Account;
+			sourceTree = "<group>";
+		};
+		47CF46A629655E7C0067B6EE /* Payment Methods */ = {
+			isa = PBXGroup;
+			children = (
+				47CF46A729655E8E0067B6EE /* PaymentMethods.swift */,
+			);
+			path = "Payment Methods";
+			sourceTree = "<group>";
+		};
+		47CF46A9296584A40067B6EE /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				47A2A2ED293E622700938DB7 /* CBSecureTokenService.swift */,
+				47EEE23A293F041E00049E0B /* CBUserManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		47E71F73286AED0E00CDF2BD /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -4911,14 +4955,6 @@
 				47E71F74286AED1900CDF2BD /* DWCSVExporter.m */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		47EEE23C293F402E00049E0B /* Transactions */ = {
-			isa = PBXGroup;
-			children = (
-				47EEE23E293F404400049E0B /* CBTransactions.swift */,
-			);
-			path = Transactions;
 			sourceTree = "<group>";
 		};
 		47F2C67B28602D3800C2B774 /* PageSheet */ = {
@@ -5945,6 +5981,7 @@
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
 				2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
+				47CF46A529654E190067B6EE /* CBAccount.swift in Sources */,
 				47AF180529070B720025803E /* Types.swift in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
@@ -5986,6 +6023,7 @@
 				2AFF01DF243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m in Sources */,
 				47B30D7E29102F6E0080C326 /* SendAmountModel.swift in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
+				47CF46A829655E8E0067B6EE /* PaymentMethods.swift in Sources */,
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,
 				478C98292942DDB800FAA0F0 /* BuyDashModel.swift in Sources */,
 				47AE8BF728C1306000490F5E /* MerchantListViewController.swift in Sources */,
@@ -6092,12 +6130,12 @@
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
+				47CF469F296540E40067B6EE /* AccountRepository.swift in Sources */,
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
 				47A50F3E29192F8D00C70123 /* TerritoriesListViewController.swift in Sources */,
 				47C6E6E02919578C003FEDF2 /* TerritoryListModel.swift in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
-				47EEE23F293F404400049E0B /* CBTransactions.swift in Sources */,
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
 				47AE8C0E28C540C100490F5E /* GiftCardInfoViewController.swift in Sources */,
 				471DD1B8290A92CD00E030C8 /* Tools.swift in Sources */,
@@ -6314,6 +6352,7 @@
 				0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
 				2AB2373824488DB80081B62C /* DWUserSearchViewController.m in Sources */,
+				478483E829629C0700E05A5A /* CBAuthInterop.swift in Sources */,
 				47B30D822911259D0080C326 /* UIViewController+Payments.swift in Sources */,
 				2A7AF38F2482BDF1001D74F9 /* UIFont+DWDPItem.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
@@ -6343,6 +6382,7 @@
 				47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */,
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
+				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
 				2A4E1D5325056297008AC53F /* DWPaymentsButton.m in Sources */,
@@ -6792,7 +6832,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -6842,7 +6882,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -6959,7 +6999,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -6981,7 +7021,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -7001,7 +7041,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
@@ -7024,7 +7064,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
@@ -7048,7 +7088,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7073,7 +7113,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7165,7 +7205,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -7219,7 +7259,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7276,7 +7316,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -7296,7 +7336,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
@@ -7393,7 +7433,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -7436,7 +7476,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7492,7 +7532,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -7512,7 +7552,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 34;
+				CURRENT_PROJECT_VERSION = 35;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";

@@ -42,7 +42,8 @@ class DatabaseConnection: NSObject {
         super.init()
     }
 
-    @objc func migrateIfNeeded() throws {
+    @objc
+    func migrateIfNeeded() throws {
         if !migrationManager.hasMigrationsTable() {
             try migrationManager.createMigrationsTable()
         }

@@ -40,7 +40,8 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
 
     private var isNeedToShowSignOutError = true
 
-    @IBAction func signOutAction() {
+    @IBAction
+    func signOutAction() {
         isNeedToShowSignOutError = false
         model.signOut()
     }

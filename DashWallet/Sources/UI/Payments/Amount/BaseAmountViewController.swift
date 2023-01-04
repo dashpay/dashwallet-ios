@@ -131,7 +131,8 @@ class BaseAmountViewController: ActionButtonViewController {
 }
 
 extension BaseAmountViewController {
-    @objc internal func configureHierarchy() {
+    @objc
+    internal func configureHierarchy() {
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
@@ -205,7 +206,8 @@ extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
 // MARK: ErrorPresentable
 
 extension BaseAmountViewController: ErrorPresentable {
-    @objc func present(error: Error) {
+    @objc
+    func present(error: Error) {
         let color: UIColor
 
         if let error = error as? ColorizedText {

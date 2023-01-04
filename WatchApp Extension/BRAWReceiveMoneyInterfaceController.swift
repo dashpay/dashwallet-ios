@@ -55,7 +55,8 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, BRAWKeyp
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc func updateReceiveUI() {
+    @objc
+    func updateReceiveUI() {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.updateReceiveUI()
@@ -80,7 +81,8 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, BRAWKeyp
         }
     }
 
-    @IBAction private func qrCodeTap(_ sender: AnyObject?) {
+    @IBAction
+    private func qrCodeTap(_ sender: AnyObject?) {
         let ctx = BRAWKeypadModel(delegate: self)
         presentController(withName: "Keypad", context: ctx)
     }

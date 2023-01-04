@@ -44,7 +44,8 @@ class ConfirmOrderGeneralInfoCell: UITableViewCell {
     }
 
     // MARK: Actions
-    @objc func infoButtonAction() {
+    @objc
+    func infoButtonAction() {
         infoHandle?()
     }
 

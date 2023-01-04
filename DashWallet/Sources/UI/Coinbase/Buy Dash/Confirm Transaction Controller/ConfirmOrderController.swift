@@ -128,14 +128,16 @@ final class ConfirmOrderController: BaseViewController, NetworkReachabilityHandl
     }
 
     // MARK: Actions
-    @objc func confirmAction() {
+    @objc
+    func confirmAction() {
         actionButton.showActivityIndicator()
         actionButton.isEnabled = false
 
         model.placeOrder()
     }
 
-    @objc func cancelAction() {
+    @objc
+    func cancelAction() {
         let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order    "),
                                       preferredStyle: .alert)
         let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
@@ -147,12 +149,14 @@ final class ConfirmOrderController: BaseViewController, NetworkReachabilityHandl
         present(alert, animated: true)
     }
 
-    @objc func feeInfoAction() {
+    @objc
+    func feeInfoAction() {
         let nvc = BaseNavigationController(rootViewController: CoinbaseFeeInfoController())
         present(nvc, animated: true)
     }
 
-    @objc func retryAction() {
+    @objc
+    func retryAction() {
         retryButton.showActivityIndicator()
         retryButton.isEnabled = false
         model.retry()

@@ -150,11 +150,13 @@ class PointOfUseListFiltersViewController: UIViewController {
         super.init(coder: coder)
     }
 
-    @IBAction func cancelAction() {
+    @IBAction
+    func cancelAction() {
         dismiss(animated: true)
     }
 
-    @IBAction func applyAction() {
+    @IBAction
+    func applyAction() {
         delegate?.apply(filters: model.appliedFilters)
         dismiss(animated: true)
     }

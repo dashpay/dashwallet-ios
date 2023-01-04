@@ -50,7 +50,8 @@ class PointOfUseItemCell: UITableViewCell {
 }
 
 extension PointOfUseItemCell {
-    @objc func configureHierarchy() {
+    @objc
+    func configureHierarchy() {
         mainStackView = UIStackView()
         mainStackView.axis = .horizontal
         mainStackView.spacing = 15

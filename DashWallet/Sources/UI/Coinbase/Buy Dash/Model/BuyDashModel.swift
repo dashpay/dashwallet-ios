@@ -41,9 +41,7 @@ final class BuyDashModel: BaseAmountModel {
         amount.plainAmount > 0
     }
 
-    var paymentMethods: [CoinbasePaymentMethod] {
-        Coinbase.shared.paymentMethods
-    }
+    @Published var paymentMethods: [CoinbasePaymentMethod] = []
 
     var activePaymentMethod: CoinbasePaymentMethod? {
         selectedPaymentMethod ?? paymentMethods.first
@@ -64,6 +62,10 @@ final class BuyDashModel: BaseAmountModel {
 
     override init() {
         super.init()
+
+        Task {
+            paymentMethods = try await Coinbase.shared.paymentMethods
+        }
     }
 
     public func select(paymentMethod: CoinbasePaymentMethod) {

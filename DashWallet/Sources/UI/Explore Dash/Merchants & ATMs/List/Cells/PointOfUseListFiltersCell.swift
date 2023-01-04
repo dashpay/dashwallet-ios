@@ -46,7 +46,8 @@ class PointOfUseListFiltersCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func filterButtonAction() {
+    @objc
+    func filterButtonAction() {
         filterAction?()
     }
 

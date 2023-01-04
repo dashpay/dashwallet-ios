@@ -36,7 +36,8 @@ final class ActivePaymentMethodView: UIView {
 
     public func update(with paymentMethod: CoinbasePaymentMethod?) {
         guard let paymentMethod else {
-            paymentMethodValueLabel.text = NSLocalizedString("No payment methods", comment: "Coinbase/Buy Dash")
+            paymentMethodTitleLabel.text = NSLocalizedString("No payment methods", comment: "Coinbase/Buy Dash")
+            paymentMethodValueLabel.text = nil
             return
         }
 

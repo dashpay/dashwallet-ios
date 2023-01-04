@@ -1,6 +1,6 @@
 //
-//  Created by hadia
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Created by tkhp
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,11 +16,17 @@
 //
 
 import Foundation
-import SwiftUI
 
-class SwiftUIViewFactory: NSObject {
-    @objc
-    static func makeSwiftUIView(dismissHandler: @escaping (() -> Void)) -> UIViewController {
-        UIHostingController(rootView: BuyAndSellDashServiceList(dismiss: dismissHandler))
+class AccountRepository {
+    private weak var authInterop: CBAuthInterop!
+
+    init(authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+    }
+
+    func account(by name: String) async throws -> CBAccount {
+        let account = CBAccount(accountName: name, authInterop: authInterop)
+        try await account.refreshAccount()
+        return account
     }
 }

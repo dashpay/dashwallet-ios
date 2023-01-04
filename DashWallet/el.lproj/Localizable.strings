@@ -560,6 +560,9 @@
 /* No comment provided by engineer. */
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Ξεχάσατε το PIN;";
 
@@ -1502,9 +1505,6 @@
 /* No comment provided by engineer. */
 "Used at IP address" = "Χρησιμοποιήθηκε στη διεύθυνση IP";
 
-/* Coinbase */
-"User session expired" = "User session expired";
-
 /* No comment provided by engineer. */
 "Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";
 
@@ -1642,9 +1642,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Στείλατε το αίτημα επαφής στο %@";
-
-/* Sign out from coinbase due to error */
-"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Θα πρέπει επίσης να αποσυνδεθείτε από την ιστοσελίδα Uphold χρησιμοποιώντας το πρόγραμμα περιήγησης σας";

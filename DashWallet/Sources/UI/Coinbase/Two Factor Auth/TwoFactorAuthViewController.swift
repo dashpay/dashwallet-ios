@@ -209,7 +209,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         hintLabel.attributedText = attributedText
     }
 
-    @objc func tappedOnLabel(_ gesture: UITapGestureRecognizer) {
+    @objc
+    func tappedOnLabel(_ gesture: UITapGestureRecognizer) {
         guard let text = contactCoinbase.text else { return }
         let contactCoinbaseRange = (text as NSString).range(of: contactCoinbaseString)
 
@@ -218,7 +219,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         }
     }
 
-    @IBAction func textFieldEditingDidChange(_ sender: Any) {
+    @IBAction
+    func textFieldEditingDidChange(_ sender: Any) {
         guard let text = twoFactorAuthField.text else { return }
 
         if text.isEmpty {
@@ -228,7 +230,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         }
     }
 
-    @objc class func controller() -> TwoFactorAuthViewController {
+    @objc
+    class func controller() -> TwoFactorAuthViewController {
         vc(TwoFactorAuthViewController.self, from: sb("Coinbase"))
     }
 }
