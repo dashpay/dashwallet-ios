@@ -592,6 +592,7 @@
 		47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A0296540EF0067B6EE /* AccountService.swift */; };
 		47CF46A529654E190067B6EE /* CBAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A429654E190067B6EE /* CBAccount.swift */; };
 		47CF46A829655E8E0067B6EE /* PaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A729655E8E0067B6EE /* PaymentMethods.swift */; };
+		47CF46AC2965B65B0067B6EE /* CBAccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46AB2965B65B0067B6EE /* CBAccountManager.swift */; };
 		47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
 		47EE171729560DC200BA1986 /* ErrorPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE171629560DC200BA1986 /* ErrorPresentable.swift */; };
@@ -1771,6 +1772,7 @@
 		47CF46A0296540EF0067B6EE /* AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountService.swift; sourceTree = "<group>"; };
 		47CF46A429654E190067B6EE /* CBAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAccount.swift; sourceTree = "<group>"; };
 		47CF46A729655E8E0067B6EE /* PaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethods.swift; sourceTree = "<group>"; };
+		47CF46AB2965B65B0067B6EE /* CBAccountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAccountManager.swift; sourceTree = "<group>"; };
 		47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Numbers+Dash.swift"; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
@@ -4916,6 +4918,7 @@
 		47CF469D296540D30067B6EE /* Accounts */ = {
 			isa = PBXGroup;
 			children = (
+				47CF46AA2965B6440067B6EE /* Service */,
 				47CF46A2296541120067B6EE /* Account */,
 				47CF469E296540E40067B6EE /* AccountRepository.swift */,
 				47CF46A0296540EF0067B6EE /* AccountService.swift */,
@@ -4946,6 +4949,14 @@
 				47EEE23A293F041E00049E0B /* CBUserManager.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		47CF46AA2965B6440067B6EE /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				47CF46AB2965B65B0067B6EE /* CBAccountManager.swift */,
+			);
+			path = Service;
 			sourceTree = "<group>";
 		};
 		47E71F73286AED0E00CDF2BD /* Utils */ = {
@@ -6033,6 +6044,7 @@
 				2A7AF3662482666C001D74F9 /* DWDPIncomingRequestObject.m in Sources */,
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
+				47CF46AC2965B65B0067B6EE /* CBAccountManager.swift in Sources */,
 				47522F522927CBEE00EE143E /* FailedOperationStatusViewController.swift in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */,

@@ -29,12 +29,18 @@ class CBAccount {
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
     private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
 
-    private var info: CoinbaseUserAccountData!
+    var info: CoinbaseUserAccountData!
 
     private let accountName: String
 
     init(accountName: String, authInterop: CBAuthInterop) {
         self.authInterop = authInterop
+        self.accountName = accountName
+    }
+
+    init(accountName: String, info: CoinbaseUserAccountData, authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+        self.info = info
         self.accountName = accountName
     }
 }

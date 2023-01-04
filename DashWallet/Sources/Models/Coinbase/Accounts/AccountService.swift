@@ -21,8 +21,6 @@ import Foundation
 
 class AccountService {
     private let accountRepository: AccountRepository
-    private var cachedAccounts: [String: CBAccount] = [:]
-
     private weak var authInterop: CBAuthInterop?
 
     init(authInterop: CBAuthInterop) {
@@ -36,13 +34,7 @@ class AccountService {
     }
 
     public func account(by name: String) async throws -> CBAccount {
-        guard let acc = cachedAccounts[name] else {
-            let acc = try await accountRepository.account(by: name)
-            cachedAccounts[name] = acc
-            return acc
-        }
-
-        return acc
+        try await accountRepository.account(by: name)
     }
 
     public func retrieveAddress(for accountName: String) async throws -> String {
@@ -75,6 +67,6 @@ class AccountService {
 
 extension AccountService {
     var dashAccount: CBAccount? {
-        cachedAccounts[kDashAccount]
+        accountRepository.dashAccount
     }
 }

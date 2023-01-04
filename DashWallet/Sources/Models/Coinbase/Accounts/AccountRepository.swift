@@ -19,14 +19,31 @@ import Foundation
 
 class AccountRepository {
     private weak var authInterop: CBAuthInterop!
+    private var accountManager = CBAccountManager()
+
+    private var cachedAccounts: [String: CBAccount] = [:]
+
+    var dashAccount: CBAccount? {
+        cachedAccounts[kDashAccount]
+    }
 
     init(authInterop: CBAuthInterop) {
         self.authInterop = authInterop
+
+        if let dashUser = accountManager.storedAccount(with: authInterop) {
+            cachedAccounts[kDashAccount] = dashUser
+        }
     }
 
     func account(by name: String) async throws -> CBAccount {
-        let account = CBAccount(accountName: name, authInterop: authInterop)
-        try await account.refreshAccount()
-        return account
+        guard let acc = cachedAccounts[name] else {
+            let account = CBAccount(accountName: name, authInterop: authInterop)
+            try await account.refreshAccount()
+            accountManager.store(account: account)
+            cachedAccounts[name] = account
+            return account
+        }
+
+        return acc
     }
 }
