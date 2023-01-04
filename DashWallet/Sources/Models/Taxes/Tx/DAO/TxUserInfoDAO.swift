@@ -35,7 +35,8 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [Data: TxUserInfo] = [:]
 
-    @objc func create(dto: TxUserInfo) {
+    @objc
+    func create(dto: TxUserInfo) {
         do {
             let txUserInfo = TxUserInfo.table.insert(or: .replace, TxUserInfo.txHashColumn <- dto.txHash,
                                                      TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
@@ -48,7 +49,8 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         cache[dto.txHash] = dto
     }
 
-    @objc func all() -> [TxUserInfo] {
+    @objc
+    func all() -> [TxUserInfo] {
         let txUserInfos = TxUserInfo.table
 
         var userInfos: [TxUserInfo] = []
@@ -66,7 +68,8 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return userInfos
     }
 
-    @objc func get(by hash: Data) -> TxUserInfo? {
+    @objc
+    func get(by hash: Data) -> TxUserInfo? {
         if let cached = cache[hash] {
             return cached
         }
@@ -86,11 +89,13 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return nil
     }
 
-    @objc func update(dto: TxUserInfo) {
+    @objc
+    func update(dto: TxUserInfo) {
         create(dto: dto)
     }
 
-    @objc func delete(dto: TxUserInfo) {
+    @objc
+    func delete(dto: TxUserInfo) {
         cache[dto.txHash] = nil
     }
 
@@ -98,7 +103,8 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
 }
 
 extension TxUserInfoDAOImpl {
-    @objc func dictionaryOfAllItems() -> [Data: TxUserInfo] {
+    @objc
+    func dictionaryOfAllItems() -> [Data: TxUserInfo] {
         all()
         return cache
     }

@@ -41,15 +41,18 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
         }
     }
 
-    @IBAction func retryAction() {
+    @IBAction
+    func retryAction() {
         retryHandler?()
     }
 
-    @IBAction func supportAction() {
+    @IBAction
+    func supportAction() {
         UIApplication.shared.open(kCoinbaseContactURL)
     }
 
-    @IBAction func cancelAction() {
+    @IBAction
+    func cancelAction() {
         cancelHandler?()
     }
 

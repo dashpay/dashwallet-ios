@@ -62,12 +62,14 @@ final class PaymentController: NSObject {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc public func performPayment(with input: DWPaymentInput) {
+    @objc
+    public func performPayment(with input: DWPaymentInput) {
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
 
-    @objc(performPaymentWithFile:) public func performPayment(with file: Data) {
+    @objc(performPaymentWithFile:)
+    public func performPayment(with file: Data) {
         paymentProcessor.reset()
         paymentProcessor.processFile(file)
     }

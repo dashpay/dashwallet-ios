@@ -36,7 +36,8 @@ class PointOfUseLocationServicePopup: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func continueButtonAction() {
+    @objc
+    func continueButtonAction() {
         continueBlock?()
         removeFromSuperview()
     }

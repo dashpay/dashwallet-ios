@@ -67,7 +67,8 @@ class AmountInputTypeSwitcher: UIView {
         reloadData()
     }
 
-    @objc func itemAction(sender: UIButton) {
+    @objc
+    func itemAction(sender: UIButton) {
         var currentSelectedItemButton = containerView.arrangedSubviews[currentSelectedIndex] as! UIButton
         currentSelectedItemButton.isSelected = false
         currentSelectedItemButton.isUserInteractionEnabled = true

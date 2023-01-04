@@ -277,7 +277,8 @@ extension MerchantListViewController {
         present(vc, animated: true, completion: nil)
     }
 
-    @objc private func infoButtonAction() {
+    @objc
+    private func infoButtonAction() {
         showInfoViewController()
     }
 }

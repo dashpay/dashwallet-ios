@@ -91,7 +91,8 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
         }
     }
 
-    @objc func actionButtonAction(sender: UIView) { }
+    @objc
+    func actionButtonAction(sender: UIView) { }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

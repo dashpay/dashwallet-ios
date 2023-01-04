@@ -207,20 +207,23 @@ class AmountInputControl: UIControl {
         }
     }
 
-    @discardableResult override func becomeFirstResponder() -> Bool {
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
         let val = textField.becomeFirstResponder()
         let endOfDocumentPosition = textField.endOfDocument
         textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
         return val
     }
 
-    @discardableResult override func resignFirstResponder() -> Bool {
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
         textField.resignFirstResponder()
     }
 
     // MARK: Actions
 
-    @objc func switchAmountCurrencyAction() {
+    @objc
+    func switchAmountCurrencyAction() {
         guard style == .oppositeAmount else { return }
 
         let nextType = amountType.toggle()
@@ -237,7 +240,8 @@ class AmountInputControl: UIControl {
         becomeFirstResponder()
     }
 
-    @objc func currencySelectorButtonAction() {
+    @objc
+    func currencySelectorButtonAction() {
         delegate?.amountInputControlChangeCurrencyDidTap()
     }
 }
@@ -438,11 +442,13 @@ final class CopyPasteableContol: UIControl {
         configureMenuControl()
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func longPressGestureRecognizerAction(gesture: UILongPressGestureRecognizer) {
+    @objc
+    func longPressGestureRecognizerAction(gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .recognized else { return }
 
         if let recognizerView = gesture.view {

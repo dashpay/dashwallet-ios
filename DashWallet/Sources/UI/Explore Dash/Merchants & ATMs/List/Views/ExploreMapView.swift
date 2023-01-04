@@ -195,7 +195,8 @@ class ExploreMapView: UIView {
         }
     }
 
-    @objc func myLocationButtonAction() {
+    @objc
+    func myLocationButtonAction() {
         showUserLocationInCenter(animated: true)
     }
 
@@ -263,7 +264,8 @@ extension ExploreMapView: MKMapViewDelegate {
         perform(#selector(_mapViewDidChangeVisibleRegion), with: nil, afterDelay: 1)
     }
 
-    @objc func _mapViewDidChangeVisibleRegion() {
+    @objc
+    func _mapViewDidChangeVisibleRegion() {
         delegate?.exploreMapView(self, didChangeVisibleBounds: mapBounds)
     }
 

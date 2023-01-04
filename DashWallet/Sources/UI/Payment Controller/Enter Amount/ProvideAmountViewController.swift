@@ -38,7 +38,8 @@ final class ProvideAmountViewController: SendAmountViewController {
         super.init()
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -157,11 +158,13 @@ final class ProvideAmountViewController: SendAmountViewController {
         ])
     }
 
-    @objc func walletBalanceDidChangeNotification(notification: Notification) {
+    @objc
+    func walletBalanceDidChangeNotification(notification: Notification) {
         updateBalance()
     }
 
-    @objc func toggleBalanceVisibilityAction() {
+    @objc
+    func toggleBalanceVisibilityAction() {
         isBalanceHidden.toggle()
         updateBalance()
     }

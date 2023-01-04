@@ -78,7 +78,8 @@ public class HTTPClient<Target: TargetType> {
         provider = MoyaProvider<Target>(plugins: plugins)
     }
 
-    @discardableResult func request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
+    @discardableResult
+    func request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
         let cancellableToken = CancellableWrapper()
         cancellableToken.innerCancellable = _request(target, completion: completion)
         return cancellableToken
@@ -123,7 +124,8 @@ public class HTTPClient<Target: TargetType> {
 }
 
 extension HTTPClient {
-    @discardableResult private func _request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
+    @discardableResult
+    private func _request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
         provider.request(target) { result in
             switch result {
             case .success(let response):

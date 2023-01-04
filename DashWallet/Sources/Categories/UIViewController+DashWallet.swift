@@ -19,7 +19,8 @@ import UIKit
 
 @objc
 extension UIViewController {
-    @objc func topController() -> UIViewController {
+    @objc
+    func topController() -> UIViewController {
         if let vc = self as? UITabBarController {
             if let vc = vc.selectedViewController {
                 return vc.topController()

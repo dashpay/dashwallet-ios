@@ -57,7 +57,8 @@ extension TxUserInfoTaxCategory {
     @objc var txHash: Data
     @objc var taxCategory: TxUserInfoTaxCategory = .unknown
 
-    @objc init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
+    @objc
+    init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
         txHash = hash
         self.taxCategory = taxCategory
     }
@@ -72,7 +73,8 @@ extension TxUserInfoTaxCategory {
 
 @objc
 extension TxUserInfo {
-    @objc func taxCategoryString() -> String {
+    @objc
+    func taxCategoryString() -> String {
         taxCategory.stringValue
     }
 }
@@ -85,7 +87,8 @@ extension TxUserInfo {
 
 @objc
 extension DSTransaction {
-    @objc func defaultTaxCategory() -> TxUserInfoTaxCategory {
+    @objc
+    func defaultTaxCategory() -> TxUserInfoTaxCategory {
         switch direction() {
         case .moved:
             return .expense
@@ -100,7 +103,8 @@ extension DSTransaction {
         }
     }
 
-    @objc func defaultTaxCategoryString() -> String {
+    @objc
+    func defaultTaxCategoryString() -> String {
         let category = defaultTaxCategory()
         return category.stringValue
     }

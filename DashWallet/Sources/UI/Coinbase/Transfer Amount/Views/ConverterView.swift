@@ -92,7 +92,8 @@ class ConverterView: UIView {
         updateView()
     }
 
-    @objc func swapAction() {
+    @objc
+    func swapAction() {
         direction = direction.next
         updateView()
         delegate?.didChangeDirection(direction)

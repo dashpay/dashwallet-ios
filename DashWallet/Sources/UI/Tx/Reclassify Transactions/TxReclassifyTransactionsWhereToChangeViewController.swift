@@ -78,7 +78,8 @@ class TxReclassifyTransactionsWhereToChangeViewController: BasePageSheetViewCont
         configureHierarchy()
     }
 
-    @objc static func controller() -> TxReclassifyTransactionsWhereToChangeViewController {
+    @objc
+    static func controller() -> TxReclassifyTransactionsWhereToChangeViewController {
         let storyboard = UIStoryboard(name: "Tx", bundle: nil)
         let vc = storyboard
             .instantiateViewController(identifier: "TxReclassifyTransactionsWhereToChangeViewController") as! TxReclassifyTransactionsWhereToChangeViewController

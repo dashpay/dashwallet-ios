@@ -81,7 +81,8 @@ class AmountView: UIView {
         .init(width: AmountView.noIntrinsicMetric, height: 90)
     }
 
-    @discardableResult override func becomeFirstResponder() -> Bool {
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
         amountInputControl.becomeFirstResponder()
     }
 
@@ -130,11 +131,13 @@ class AmountView: UIView {
         updateView()
     }
 
-    @objc func maxButtonActionHandler() {
+    @objc
+    func maxButtonActionHandler() {
         maxButtonAction?()
     }
 
-    @objc func infoButtonAction() {
+    @objc
+    func infoButtonAction() {
         infoButtonHandler?()
     }
 }

@@ -96,15 +96,18 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         startSyncingIfNeeded()
     }
 
-    @objc public func forceStartSyncingActivity() {
+    @objc
+    public func forceStartSyncingActivity() {
         startSyncingActivity()
     }
 
-    @objc(addObserver:) public func add(observer: SyncingActivityMonitorObserver) {
+    @objc(addObserver:)
+    public func add(observer: SyncingActivityMonitorObserver) {
         observers.append(observer)
     }
 
-    @objc(removeObserver:) public func remove(observer: SyncingActivityMonitorObserver) {
+    @objc(removeObserver:)
+    public func remove(observer: SyncingActivityMonitorObserver) {
         if let idx = observers.firstIndex(where: { $0 === observer }) {
             observers.remove(at: idx)
         }
@@ -112,32 +115,37 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
     // MARK: Notifications
 
-    @objc func chainManagerSyncStartedNotification(notification: Notification) {
+    @objc
+    func chainManagerSyncStartedNotification(notification: Notification) {
         guard shouldAcceptSyncNotification(notification) else { return }
 
         startSyncingActivity()
     }
 
-    @objc func chainManagerParametersUpdatedNotification(notification: Notification) {
+    @objc
+    func chainManagerParametersUpdatedNotification(notification: Notification) {
         guard shouldAcceptSyncNotification(notification) else { return }
 
         startSyncingActivity()
     }
 
-    @objc func chainManagerSyncFinishedNotification(notification: Notification) {
+    @objc
+    func chainManagerSyncFinishedNotification(notification: Notification) {
         guard shouldAcceptSyncNotification(notification) else { return }
         guard shouldStopSyncing else { return }
 
         stopSyncingActivity(failed: false)
     }
 
-    @objc func chainManagerSyncFailedNotification(notification: Notification) {
+    @objc
+    func chainManagerSyncFailedNotification(notification: Notification) {
         guard shouldAcceptSyncNotification(notification) else { return }
 
         stopSyncingActivity(failed: true)
     }
 
-    @objc func chainManagerChainBlocksDidChangeNotification(notification: Notification) {
+    @objc
+    func chainManagerChainBlocksDidChangeNotification(notification: Notification) {
         guard !isSyncing, chainSyncProgress < kSyncingCompleteProgress else { return }
 
         startSyncingActivity()
@@ -180,7 +188,8 @@ extension SyncingActivityMonitor {
         state = failed ? .syncFailed : .syncDone
     }
 
-    @objc private func syncLoop() {
+    @objc
+    private func syncLoop() {
         guard reachability.networkReachabilityStatus != .notReachable else {
             state = .noConnection
             return
