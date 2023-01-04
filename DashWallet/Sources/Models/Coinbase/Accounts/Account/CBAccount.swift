@@ -90,6 +90,21 @@ extension CBAccount {
             fatalError("No wallet")
         }
 
+        let fiatCurrency = Coinbase.sendLimitCurrency
+        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
+            let localDecimal = localNumber.decimalValue
+            if localDecimal < kMinUSDAmountOrder {
+                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+                let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
+                localFormatter.currencyCode = Coinbase.sendLimitCurrency
+                let str = localFormatter.string(from: min) ?? "$1.99"
+
+                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
+            } else if localDecimal > Coinbase.shared.sendLimit {
+                throw Coinbase.Error.transactionFailed(.limitExceded)
+            }
+        }
+
         guard amount >= DSTransaction.txMinOutputAmount() else {
             throw Coinbase.Error.transactionFailed(.invalidAmount)
         }
@@ -127,9 +142,15 @@ extension CBAccount {
             }
 
             throw Coinbase.Error.unknownError
-        } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 && verificationCode != nil {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             throw Coinbase.Error.transactionFailed(.invalidVerificationCode)
+        } catch HTTPClientError.statusCode(let r) where r.error?.errors.first != nil {
+            if let error = r.error?.errors.first {
+                throw Coinbase.Error.transactionFailed(.unknown(error))
+            } else {
+                throw HTTPClientError.statusCode(r)
+            }
         } catch {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
             throw Coinbase.Error.transactionFailed(.unknown(error))

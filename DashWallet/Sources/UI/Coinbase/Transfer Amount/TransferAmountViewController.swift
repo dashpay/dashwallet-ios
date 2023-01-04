@@ -194,3 +194,19 @@ extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, Coin
         hideActivityIndicator()
     }
 }
+
+extension TransferAmountViewController {
+    @objc
+    override func present(error: Error) {
+        if case Coinbase.Error.transactionFailed(let reason) = error, reason == .limitExceded {
+            amountView.showError(error.localizedDescription, textColor: .systemRed) { [weak self] in
+                let vc = CoinbaseInfoViewController.controller()
+                vc.modalPresentationStyle = .overCurrentContext
+                self?.present(vc, animated: true)
+            }
+            return
+        }
+
+        super.present(error: error)
+    }
+}
