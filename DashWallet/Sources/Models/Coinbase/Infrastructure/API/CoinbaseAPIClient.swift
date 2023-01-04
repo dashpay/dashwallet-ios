@@ -36,8 +36,12 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
             try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
             if let error = r.error?.errors.first,
-               error.id == .invalidToken || error.id == .revokedToken {
-                throw Coinbase.Error.general(.revokedToken)
+               error.id == .invalidToken || error.id == .revokedToken || error.id == .invalidGrant {
+                throw Coinbase.Error.userSessionRevoked
+            }
+
+            if let url = r.request?.url?.absoluteString, url == "https://api.coinbase.com/oauth/token" {
+                throw Coinbase.Error.userSessionRevoked
             }
 
             throw HTTPClientError.statusCode(r)
@@ -50,8 +54,12 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
             return try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
             if let error = r.error?.errors.first,
-               error.id == .invalidToken || error.id == .revokedToken {
-                throw Coinbase.Error.general(.revokedToken)
+               error.id == .invalidToken || error.id == .revokedToken || error.id == .invalidGrant {
+                throw Coinbase.Error.userSessionRevoked
+            }
+
+            if let url = r.request?.url?.absoluteString, url == "https://api.coinbase.com/oauth/token" {
+                throw Coinbase.Error.userSessionRevoked
             }
 
             throw HTTPClientError.statusCode(r)
@@ -66,13 +74,15 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
         try await coinbaseAPIAccessTokenProvider.refreshTokenIfNeeded()
     }
 
-    static let shared = CoinbaseAPI()
+    static var shared = CoinbaseAPI()
 
     static func initialize(with coinbaseAPIAccessTokenProvider: CoinbaseAPIAccessTokenProvider) {
         shared.initialize(with: coinbaseAPIAccessTokenProvider)
     }
 
     private func initialize(with coinbaseAPIAccessTokenProvider: CoinbaseAPIAccessTokenProvider) {
+        accessTokenProvider = { [weak coinbaseAPIAccessTokenProvider] in coinbaseAPIAccessTokenProvider!.accessToken!
+        }
         self.coinbaseAPIAccessTokenProvider = coinbaseAPIAccessTokenProvider
     }
 }

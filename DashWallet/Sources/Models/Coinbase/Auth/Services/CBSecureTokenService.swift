@@ -24,8 +24,8 @@ class CBSecureTokenService: Codable {
     private(set) var refreshToken: String
     private(set) var accessTokenExpirationDate: Date
 
-    private lazy var httpClient = HTTPClient<CoinbaseEndpoint>()
-    private var tokenRefreshTask: Task<String, any Error>?
+    private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
+    private var tokenRefreshTask: Task<Void, any Error>?
 
     init(accessToken: String, refreshToken: String, accessTokenExpirationDate: Date) {
         self.accessToken = accessToken
@@ -37,29 +37,29 @@ class CBSecureTokenService: Codable {
         Date() < accessTokenExpirationDate
     }
 
-    @discardableResult  func fetchAccessToken() async throws -> String {
+    func refreshAccessToken() async throws {
         if let task = tokenRefreshTask {
-            return try await task.value
+            try await task.value
+            return
         }
 
         if hasValidAccessToken &&
             accessTokenExpirationDate.timeIntervalSince1970 - Date().timeIntervalSince1970 > 300 {
-            return accessToken
+            return
         }
 
-        tokenRefreshTask = Task { [weak self] in
+        tokenRefreshTask = Task {
             defer {
-                self?.tokenRefreshTask = nil
+                tokenRefreshTask = nil
             }
 
             let result: CoinbaseTokenResponse = try await httpClient.request(.refreshToken(refreshToken: refreshToken))
             accessToken = result.accessToken
             refreshToken = result.refreshToken
             accessTokenExpirationDate = result.expirationDate
-            return result.accessToken
         }
 
-        return try await tokenRefreshTask!.value
+        try await tokenRefreshTask!.value
     }
 
     func revokeAccessToken() async throws {
@@ -74,8 +74,9 @@ class CBSecureTokenService: Codable {
 }
 
 extension Task where Failure == Error {
-    @discardableResult  static func retrying(priority: TaskPriority? = nil, maxRetryCount: Int = 3, retryDelay: TimeInterval = 1,
-                                             operation: @Sendable @escaping () async throws -> Success) -> Task {
+    @discardableResult
+    static func retrying(priority: TaskPriority? = nil, maxRetryCount: Int = 3, retryDelay: TimeInterval = 1,
+                         operation: @Sendable @escaping () async throws -> Success) -> Task {
         Task(priority: priority) {
             for _ in 0..<maxRetryCount {
                 do {

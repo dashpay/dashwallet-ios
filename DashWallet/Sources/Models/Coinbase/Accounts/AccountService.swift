@@ -1,0 +1,80 @@
+//
+//  Created by tkhp
+//  Copyright © 2023 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+
+// MARK: - AccountService
+
+class AccountService {
+    private let accountRepository: AccountRepository
+    private var cachedAccounts: [String: CBAccount] = [:]
+
+    private weak var authInterop: CBAuthInterop?
+
+    init(authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+        accountRepository = AccountRepository(authInterop: authInterop)
+    }
+
+    public func refreshAccount(_ accountName: String) async throws {
+        let account = try await account(by: accountName)
+        try await account.refreshAccount()
+    }
+
+    public func account(by name: String) async throws -> CBAccount {
+        guard let acc = cachedAccounts[name] else {
+            let acc = try await accountRepository.account(by: name)
+            cachedAccounts[name] = acc
+            return acc
+        }
+
+        return acc
+    }
+
+    public func retrieveAddress(for accountName: String) async throws -> String {
+        let account = try await account(by: accountName)
+        return try await account.retrieveAddress()
+    }
+
+    public func send(from accountName: String, amount: UInt64, verificationCode: String?) async throws -> CoinbaseTransaction {
+        let account = try await account(by: accountName)
+
+        let tx = try await account.send(amount: amount, verificationCode: verificationCode)
+        try await account.refreshAccount()
+        return tx
+    }
+
+    public func placeBuyOrder(for accountName: String, amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+        let account = try await account(by: accountName)
+
+        return try await account.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
+    }
+
+    public func commitBuyOrder(accountName: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
+        let account = try await account(by: accountName)
+
+        let order = try await account.commitCoinbaseBuyOrder(orderID: orderID)
+        try await account.refreshAccount()
+        return order
+    }
+}
+
+extension AccountService {
+    var dashAccount: CBAccount? {
+        cachedAccounts[kDashAccount]
+    }
+}

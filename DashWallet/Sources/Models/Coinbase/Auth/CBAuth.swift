@@ -32,8 +32,7 @@ typealias UserDidChangeListenerBlock = (CBUser?) -> Void
 class CBAuth {
     public var currentUser: CBUser? {
         didSet {
-            let user = currentUser
-            if user != oldValue {
+            if currentUser != oldValue {
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .userDidChangeNotification, object: self)
                 }
@@ -55,12 +54,11 @@ class CBAuth {
 
         Task {
             try await refreshUserToken()
-            try? await refreshAccount()
-            try? await currentUser?.fetchPaymentMethods()
         }
     }
 
-    @MainActor  public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
+    @MainActor
+    public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
         let signInURL: URL = oAuth2URL
         let callbackURLScheme = Coinbase.callbackURLScheme
 
@@ -74,7 +72,6 @@ class CBAuth {
                     continuation.resume(throwing: Coinbase.Error.authFailed(.failedToRetrieveCode))
                     return
                 }
-
                 continuation.resume(returning: code)
             }
 
@@ -87,36 +84,29 @@ class CBAuth {
         }
 
         let token = try await authorize(with: code)
-
         let tokenService = CBSecureTokenService(accessToken: token.accessToken,
                                                 refreshToken: token.refreshToken,
                                                 accessTokenExpirationDate: token.expirationDate)
 
         let user = CBUser(tokenService: tokenService)
         currentUser = user
-
-        // Ignore if fails and try later
-        try? await refreshAccount()
-        try? await user.fetchPaymentMethods()
-
         save(user: user)
     }
 
-    public func authorize(with code: String) async throws -> CoinbaseTokenResponse {
+    func authorize(with code: String) async throws -> CoinbaseTokenResponse {
         try await httpClient.request(.getToken(code))
     }
 
     public func signOut() async throws {
-        userManager.removeUser()
+        guard let user = currentUser else { return }
 
-        // Detach task to avoid waiting for response
-        Task {
-            // Ignore if fails
-            try? await currentUser?.revokeAccessToken()
+        // Detach task to avoid waiting for a response
+        Task.detached(priority: .background) {
+            try? await user.revokeAccessToken()
         }
 
-        save(user: nil)
         currentUser = nil
+        save(user: nil)
     }
 
     public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
@@ -146,6 +136,7 @@ extension CBAuth {
 }
 
 extension CBAuth {
+    nonisolated
     private var oAuth2URL: URL {
         let path = CoinbaseEndpoint.signIn.path
 
@@ -183,7 +174,7 @@ extension CBAuth {
 
         do {
             try await currentUser.refreshAccessToken()
-        } catch Coinbase.Error.general(let r) where r == .revokedToken {
+        } catch Coinbase.Error.userSessionRevoked {
             try await signOut()
         }
     }
@@ -193,15 +184,12 @@ extension CBAuth {
             throw Coinbase.Error.general(.noActiveUser)
         }
 
-        try await currentUser.refreshAccount()
+        try await currentUser.refreshUser()
         save(user: currentUser)
-
-        await MainActor.run {
-            NotificationCenter.default.post(name: .userDidChangeNotification, object: self)
-        }
     }
 
-    @discardableResult  private func save(user: CBUser?) -> Bool {
+    @discardableResult
+    private func save(user: CBUser?) -> Bool {
         if let user {
             return userManager.store(user: user)
         } else {

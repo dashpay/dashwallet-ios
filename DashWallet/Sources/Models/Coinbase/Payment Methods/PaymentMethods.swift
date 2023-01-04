@@ -17,16 +17,22 @@
 
 import Foundation
 
-// MARK: - CBAuthInterop
+actor PaymentMethods {
+    var methods: [CoinbasePaymentMethod]!
 
-protocol CBAuthInterop: AnyObject {
-    func refreshTokenIfNeeded() async throws
-}
+    private weak var authInterop: CBAuthInterop?
 
-// MARK: - CBAuth + CBAuthInterop
+    init(authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+    }
 
-extension CBAuth: CBAuthInterop {
-    func refreshTokenIfNeeded() async throws {
-        try await refreshUserToken()
+    public func fetchPaymentMethods() async throws -> [CoinbasePaymentMethod] {
+        guard let methods, !methods.isEmpty else {
+            let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await CoinbaseAPI.shared.request(.activePaymentMethods)
+            methods = result.data
+            return methods!
+        }
+
+        return methods
     }
 }

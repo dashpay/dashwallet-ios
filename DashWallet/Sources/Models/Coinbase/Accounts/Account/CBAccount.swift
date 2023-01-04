@@ -1,6 +1,6 @@
 //
 //  Created by tkhp
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,16 +17,68 @@
 
 import Foundation
 
-final class CBTransactions {
-    private var authInterop: CBAuthInterop
+extension Notification.Name {
+    static let accountDidChangeNotification: Notification.Name = .init(rawValue: "accountDidChangeNotification")
+}
+
+// MARK: - CBAccount
+
+class CBAccount {
+    private weak var authInterop: CBAuthInterop!
+
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
     private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
 
-    init(authInterop: CBAuthInterop) {
+    private var info: CoinbaseUserAccountData!
+
+    private let accountName: String
+
+    init(accountName: String, authInterop: CBAuthInterop) {
         self.authInterop = authInterop
+        self.accountName = accountName
+    }
+}
+
+extension CBAccount {
+    var accountId: String {
+        info.id
     }
 
-    func send(from accountId: String, amount: UInt64, verificationCode: String?) async throws -> CoinbaseTransaction {
+    var balance: UInt64 {
+        info.balance.plainAmount
+    }
+}
+
+// MARK: Account
+extension CBAccount {
+    @discardableResult
+    public func refreshAccount() async throws -> CoinbaseUserAccountData {
+        try await authInterop.refreshTokenIfNeeded()
+
+        let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.account(accountName))
+        let newAccount = result.data
+        info = newAccount
+
+        await MainActor.run {
+            NotificationCenter.default.post(name: .accountDidChangeNotification, object: self)
+        }
+
+        return newAccount
+    }
+
+    func retrieveAddress() async throws -> String {
+        do {
+            let result: BaseDataResponse<CoinbaseAccountAddress> = try await httpClient.request(.createCoinbaseAccountAddress(accountId))
+            return result.data.address
+        } catch {
+            throw Coinbase.Error.transactionFailed(.failedToObtainNewAddress)
+        }
+    }
+}
+
+// MARK: Transfer
+extension CBAccount {
+    public func send(amount: UInt64, verificationCode: String?) async throws -> CoinbaseTransaction {
         // NOTE: Maybe better to get the address once and use it during the tx flow
         guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
             fatalError("No wallet")
@@ -55,7 +107,7 @@ final class CBTransactions {
 
             let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
-            try await authInterop.refreshAccount()
+            try await refreshAccount()
 
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
@@ -72,15 +124,16 @@ final class CBTransactions {
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             throw Coinbase.Error.transactionFailed(.invalidVerificationCode)
-        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            throw Coinbase.Error.userSessionExpired
         } catch {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
             throw Coinbase.Error.transactionFailed(.unknown(error))
         }
     }
+}
 
-    func placeCoinbaseBuyOrder(accountId: String, amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+// MARK: Buy
+extension CBAccount {
+    public func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
         let fiatCurrency = Coinbase.sendLimitCurrency
         if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
             let localDecimal = localNumber.decimalValue
@@ -116,15 +169,13 @@ final class CBTransactions {
         }
     }
 
-    func commitCoinbaseBuyOrder(accountId: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
+    public func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
         do {
             try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
-            try? await authInterop.refreshAccount()
+            try await refreshAccount()
 
             return result.data
-        } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            throw Coinbase.Error.userSessionExpired
         } catch HTTPClientError.statusCode(let r) {
             if let error = r.error?.errors.first {
                 throw Coinbase.Error.transactionFailed(.message(error.message))

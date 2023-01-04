@@ -17,16 +17,16 @@
 
 import Foundation
 
-// MARK: - CBAuthInterop
+class AccountRepository {
+    private weak var authInterop: CBAuthInterop!
 
-protocol CBAuthInterop: AnyObject {
-    func refreshTokenIfNeeded() async throws
-}
+    init(authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+    }
 
-// MARK: - CBAuth + CBAuthInterop
-
-extension CBAuth: CBAuthInterop {
-    func refreshTokenIfNeeded() async throws {
-        try await refreshUserToken()
+    func account(by name: String) async throws -> CBAccount {
+        let account = CBAccount(accountName: name, authInterop: authInterop)
+        try await account.refreshAccount()
+        return account
     }
 }

@@ -101,6 +101,11 @@ struct CoinbaseAPIError: Decodable {
             /// Status Code: `403`.
             case invalidScope = "invalid_scope"
 
+            /// The provided authorization grant is invalid, expired, revoked
+            ///
+            /// Status Code: `401`.
+            case invalidGrant = "invalid_grant"
+
             /// Resource not found.
             ///
             /// Status Code: `404`.
@@ -126,7 +131,7 @@ struct CoinbaseAPIError: Decodable {
 // MARK: - CoinbaseEndpoint
 
 public enum CoinbaseEndpoint {
-    case userAccount
+    case account(String)
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
@@ -162,7 +167,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
 
     public var path: String {
         switch self {
-        case .userAccount: return "/v2/accounts/DASH"
+        case .account(let name): return "/v2/accounts/\(name)"
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
         case .activePaymentMethods: return "/v2/payment-methods"

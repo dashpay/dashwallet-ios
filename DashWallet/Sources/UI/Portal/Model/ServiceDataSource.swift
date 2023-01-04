@@ -82,6 +82,8 @@ class CoinbaseDataSource: ServiceDataSource {
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
+    private var accountDidChangeHandle: AnyObject?
+
     override init() {
         super.init()
 
@@ -90,6 +92,10 @@ class CoinbaseDataSource: ServiceDataSource {
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] _ in
             self?.refresh()
         }
+
+        accountDidChangeHandle = NotificationCenter.default.addObserver(forName: .accountDidChangeNotification, object: nil, queue: .main, using: { [weak self] _ in
+            self?.refresh()
+        })
     }
 
     override func refresh() {
@@ -105,6 +111,7 @@ class CoinbaseDataSource: ServiceDataSource {
     }
 
     deinit {
+        NotificationCenter.default.removeObserver(accountDidChangeHandle!)
         Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
     }
 }
