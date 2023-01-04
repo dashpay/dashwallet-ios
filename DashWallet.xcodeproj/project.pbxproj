@@ -40,6 +40,8 @@
 		1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */; };
 		114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */; };
 		1147687E294B789800FB1EEE /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */; };
+		114CFED0296469D9005F421B /* CrowdNodeDepositTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */; };
+		114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFED1296489CD005F421B /* MinimumDepositBanner.swift */; };
 		11517C832949E6A3004FC7BF /* CrowdNodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */; };
 		11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */; };
 		11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
@@ -48,9 +50,10 @@
 		117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */; };
 		117ED4AA28ED6766006E3EE4 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */; };
 		118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118A1392291AA21B002641E4 /* AccountCreatingController.swift */; };
-		1193FF3629602835004EA8D7 /* DepositWithdrawModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3529602835004EA8D7 /* DepositWithdrawModel.swift */; };
+		1193FF3629602835004EA8D7 /* CrowdNodeTransferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */; };
 		1193FF3929606151004EA8D7 /* KeyboardHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3829606151004EA8D7 /* KeyboardHeader.swift */; };
 		1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3A2961960B004EA8D7 /* FromLabel.swift */; };
+		1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */; };
 		119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */; };
 		119E8D062905200300D406C1 /* CoinsToAddressTxFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */; };
 		119E8D082905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */; };
@@ -799,6 +802,8 @@
 		1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToCrowdNodeViewController.swift; sourceTree = "<group>"; };
 		114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiedSuccessfullyViewController.swift; sourceTree = "<group>"; };
 		1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
+		114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeDepositTx.swift; sourceTree = "<group>"; };
+		114CFED1296489CD005F421B /* MinimumDepositBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimumDepositBanner.swift; sourceTree = "<group>"; };
 		11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPI.swift; sourceTree = "<group>"; };
 		11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeEndpoint.swift; sourceTree = "<group>"; };
 		11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebService.swift; sourceTree = "<group>"; };
@@ -807,9 +812,10 @@
 		117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFilter.swift; sourceTree = "<group>"; };
 		117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
 		118A1392291AA21B002641E4 /* AccountCreatingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatingController.swift; sourceTree = "<group>"; };
-		1193FF3529602835004EA8D7 /* DepositWithdrawModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositWithdrawModel.swift; sourceTree = "<group>"; };
+		1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeTransferModel.swift; sourceTree = "<group>"; };
 		1193FF3829606151004EA8D7 /* KeyboardHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeader.swift; sourceTree = "<group>"; };
 		1193FF3A2961960B004EA8D7 /* FromLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FromLabel.swift; sourceTree = "<group>"; };
+		1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = OperationStatus.storyboard; sourceTree = "<group>"; };
 		119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeRequest.swift; sourceTree = "<group>"; };
 		119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsToAddressTxFilter.swift; sourceTree = "<group>"; };
 		119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullCrowdNodeSignUpTxSet.swift; sourceTree = "<group>"; };
@@ -2223,6 +2229,7 @@
 				119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */,
 				11B8449528F5B9F80082770C /* CrowdNodeResponse.swift */,
 				119E8D0B2907C61400D406C1 /* CrowdNodeTopUpTx.swift */,
+				114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */,
 				119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */,
 				11B8449928F6D5480082770C /* SingleInputAddressSelector.swift */,
 				117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */,
@@ -2235,7 +2242,7 @@
 		1193FF3429602815004EA8D7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				1193FF3529602835004EA8D7 /* DepositWithdrawModel.swift */,
+				1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -2245,8 +2252,19 @@
 			children = (
 				1193FF3829606151004EA8D7 /* KeyboardHeader.swift */,
 				1193FF3A2961960B004EA8D7 /* FromLabel.swift */,
+				114CFED1296489CD005F421B /* MinimumDepositBanner.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		1193FF3C2962F147004EA8D7 /* Operation Status */ = {
+			isa = PBXGroup;
+			children = (
+				47522F4F2927CB9000EE143E /* SuccessfulOperationStatusViewController.swift */,
+				47522F512927CBEE00EE143E /* FailedOperationStatusViewController.swift */,
+				1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */,
+			);
+			path = "Operation Status";
 			sourceTree = "<group>";
 		};
 		11B8449228F27C370082770C /* Model */ = {
@@ -2792,6 +2810,7 @@
 				2A1B7D7E232151B800BA8C6A /* Tx */,
 				2A9FFE462230FF4600956D5F /* Uphold */,
 				2A8B9E3822FC7F3B00FF8653 /* Payments */,
+				1193FF3C2962F147004EA8D7 /* Operation Status */,
 				2A9CEBB622E1FA0000A50237 /* Home */,
 				2A9CEBA522E1D58B00A50237 /* Main */,
 				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
@@ -4616,8 +4635,6 @@
 		47522F4E2927CAE900EE143E /* Operation Status Controller */ = {
 			isa = PBXGroup;
 			children = (
-				47522F4F2927CB9000EE143E /* SuccessfulOperationStatusViewController.swift */,
-				47522F512927CBEE00EE143E /* FailedOperationStatusViewController.swift */,
 			);
 			path = "Operation Status Controller";
 			sourceTree = "<group>";
@@ -5707,6 +5724,7 @@
 				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
+				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
@@ -6165,7 +6183,7 @@
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
 				4759D512292FD6F3002F20DC /* DWBasePayViewController.m in Sources */,
 				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
-				1193FF3629602835004EA8D7 /* DepositWithdrawModel.swift in Sources */,
+				1193FF3629602835004EA8D7 /* CrowdNodeTransferModel.swift in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				47F4B6C7294842DF00AED4C9 /* ConfirmOrderController.swift in Sources */,
 				2A1AE78E23F4668B00179A6E /* DWUsernameHeaderView.m in Sources */,
@@ -6304,6 +6322,7 @@
 				2A7A7BE42348E85400451078 /* DWBaseActionButton.m in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
+				114CFED0296469D9005F421B /* CrowdNodeDepositTx.swift in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
 				2A7AF31C2480E6AD001D74F9 /* DWNotificationsModel.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
@@ -6356,6 +6375,7 @@
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
+				114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */,
 				47838B8F2906D7340003E8AB /* BalanceView.swift in Sources */,
 				2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */,
 				2A741DC62363A06000840ADF /* DWURLParser.m in Sources */,

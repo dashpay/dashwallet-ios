@@ -19,10 +19,15 @@ import UIKit
 
 extension BaseViewController {
     public func showSuccessTransactionStatus(text: String) {
-        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("Coinbase"))
+        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.closeHandler = { [weak self] in
             guard let wSelf = self else { return }
-            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
+            guard let rootController = wSelf.navigationController?.controller(by: CoinbaseEntryPointViewController.self) else {
+                wSelf.navigationController?.popToRootViewController(animated: true)
+                return
+            }
+
+            wSelf.navigationController?.popToViewController(rootController, animated: true)
         }
         vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
         vc.descriptionText = text
@@ -32,9 +37,10 @@ extension BaseViewController {
     }
 
     public func showFailedTransactionStatus(text: String) {
-        let vc = FailedOperationStatusViewController.initiate(from: sb("Coinbase"))
+        let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
         vc.descriptionText = text
+        vc.supportButtonText = NSLocalizedString("Contact Coinbase Support", comment: "Coinbase")
         vc.retryHandler = { [weak self] in
             guard let wSelf = self else { return }
             wSelf.navigationController?.popToViewController(wSelf, animated: true)
@@ -43,6 +49,7 @@ extension BaseViewController {
             guard let wSelf = self else { return }
             wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
         }
+        vc.supportHandler = { UIApplication.shared.open(kCoinbaseContactURL) }
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }

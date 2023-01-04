@@ -28,7 +28,8 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
 
     var cancelHandler: (() -> ())?
     var retryHandler: (() -> ())?
-
+    var supportHandler: (() -> ())?
+    
     var headerText: String! {
         didSet {
             titleLabel?.text = headerText
@@ -40,13 +41,19 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
             descriptionLabel?.text = descriptionText
         }
     }
+    
+    var supportButtonText: String! {
+        didSet {
+            contactSupportButton?.setTitle(supportButtonText, for: .normal)
+        }
+    }
 
     @IBAction func retryAction() {
         retryHandler?()
     }
 
     @IBAction func supportAction() {
-        UIApplication.shared.open(kCoinbaseContactURL)
+        supportHandler?()
     }
 
     @IBAction func cancelAction() {
@@ -60,7 +67,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
         descriptionLabel.text = descriptionText
 
         contactSupportButton.layer.cornerRadius = 6
-        contactSupportButton.setTitle(NSLocalizedString("Contact Coinbase Support", comment: "Coinbase"), for: .normal)
+        contactSupportButton.setTitle(supportButtonText, for: .normal)
         cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
         retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
     }

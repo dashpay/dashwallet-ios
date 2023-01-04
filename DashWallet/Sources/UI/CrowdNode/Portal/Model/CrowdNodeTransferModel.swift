@@ -62,16 +62,39 @@ enum TransferDirection {
         case .withdraw: return "image.explore.dash.wts.dash"
         }
     }
+    
+    var successfulTransfer: String {
+        switch self {
+        case .deposit: return "Deposit sent"
+        case .withdraw: return "Withdrawal requested"
+        }
+    }
+    
+    var successfulTransferDetails: String {
+        switch self {
+        case .deposit: return "It can take a minute for your balance to be updated."
+        case .withdraw: return "It can take a minute for your funds to arrive."
+        }
+    }
+    
+    var failedTransfer: String {
+        switch self {
+        case .deposit: return "We couldn’t make a deposit to your CrowdNode account."
+        case .withdraw: return "We couldn’t withdraw from your CrowdNode account."
+        }
+    }
 }
 
-final class DepositWithdrawModel: SendAmountModel, CoinbaseTransactionSendable {
+final class CrowdNodeTransferModel: SendAmountModel {
     weak var delegate: TransferAmountModelDelegate?
     weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
-    
-    public var address: String!
     public var direction: TransferDirection = .deposit
     
-    internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
+    override var isSendAllowed: Bool {
+        let minValue = direction == .deposit ? CrowdNode.apiOffset + ApiCode.maxCode().rawValue : CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
+        
+        return super.isSendAllowed && amount.plainAmount > minValue
+    }
     
     var dashPriceDisplayString: String {
         let dashAmount = kOneDash

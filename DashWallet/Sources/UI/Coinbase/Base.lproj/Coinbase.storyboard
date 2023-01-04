@@ -823,170 +823,6 @@
             </objects>
             <point key="canvasLocation" x="1243" y="73"/>
         </scene>
-        <!--Successful Operation Status View Controller-->
-        <scene sceneID="mkO-tz-JWx">
-            <objects>
-                <viewController storyboardIdentifier="SuccessfulOperationStatusViewController" id="ojI-BN-ldX" customClass="SuccessfulOperationStatusViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="F0b-4w-4ld">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <viewLayoutGuide key="safeArea" id="Nqd-EW-e9C"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    </view>
-                    <connections>
-                        <outlet property="contentView" destination="gYJ-Me-ixc" id="1LL-SX-Eoa"/>
-                        <outlet property="descriptionLabel" destination="wAM-5k-vZk" id="hTf-7Z-X1a"/>
-                        <outlet property="titleLabel" destination="msD-Es-Ibf" id="WH0-5d-BRm"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="rH2-ik-Sks" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="gYJ-Me-ixc">
-                    <rect key="frame" x="0.0" y="0.0" width="414" height="400"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <subviews>
-                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="kjR-2y-Kyn">
-                            <rect key="frame" x="30" y="100" width="354" height="300"/>
-                            <subviews>
-                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="coinbase.success.operation.status" translatesAutoresizingMaskIntoConstraints="NO" id="GzU-ti-zyh">
-                                    <rect key="frame" x="127" y="0.0" width="100" height="100"/>
-                                </imageView>
-                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="GFq-zX-aDe">
-                                    <rect key="frame" x="144" y="120" width="66.5" height="62"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="msD-Es-Ibf">
-                                            <rect key="frame" x="0.0" y="0.0" width="66.5" height="33.5"/>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                            <color key="textColor" red="0.23529411759999999" green="0.72156862749999995" blue="0.47058823529999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wAM-5k-vZk">
-                                            <rect key="frame" x="12.5" y="41.5" width="41.5" height="20.5"/>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                </stackView>
-                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FEH-KA-znh">
-                                    <rect key="frame" x="57" y="202" width="240" height="98"/>
-                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </view>
-                            </subviews>
-                        </stackView>
-                    </subviews>
-                    <viewLayoutGuide key="safeArea" id="cK5-9R-Bhn"/>
-                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    <constraints>
-                        <constraint firstItem="kjR-2y-Kyn" firstAttribute="top" secondItem="gYJ-Me-ixc" secondAttribute="top" constant="100" id="29d-aN-qoC"/>
-                        <constraint firstAttribute="bottom" secondItem="kjR-2y-Kyn" secondAttribute="bottom" id="PDm-vQ-BKR"/>
-                        <constraint firstItem="kjR-2y-Kyn" firstAttribute="leading" secondItem="gYJ-Me-ixc" secondAttribute="leading" constant="30" id="Qru-wv-LRJ"/>
-                        <constraint firstAttribute="trailing" secondItem="kjR-2y-Kyn" secondAttribute="trailing" constant="30" id="WpR-pa-IRa"/>
-                    </constraints>
-                </view>
-            </objects>
-            <point key="canvasLocation" x="1963.7681159420292" y="72.991071428571431"/>
-        </scene>
-        <!--Failed Operation Status View Controller-->
-        <scene sceneID="QMO-9I-tMQ">
-            <objects>
-                <viewController storyboardIdentifier="FailedOperationStatusViewController" id="C7j-bp-eti" customClass="FailedOperationStatusViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="sc5-MF-NC6">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="vid-YJ-7Gk">
-                                <rect key="frame" x="30" y="148" width="354" height="232"/>
-                                <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="coinbase.failure.operation.status" translatesAutoresizingMaskIntoConstraints="NO" id="dqm-B7-AgZ">
-                                        <rect key="frame" x="127" y="0.0" width="100" height="100"/>
-                                    </imageView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="NXw-wb-Xgv">
-                                        <rect key="frame" x="144" y="120" width="66.5" height="62"/>
-                                        <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zjf-65-8Vu">
-                                                <rect key="frame" x="0.0" y="0.0" width="66.5" height="33.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                                <color key="textColor" red="0.67532879109999999" green="0.31916391849999998" blue="0.25879368190000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TNp-mb-0hA">
-                                                <rect key="frame" x="12.5" y="41.5" width="41.5" height="20.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                <nil key="textColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IB9-VN-qB6">
-                                        <rect key="frame" x="59.5" y="202" width="235" height="30"/>
-                                        <color key="backgroundColor" red="0.24137887359999999" green="0.54293322560000001" blue="0.86670547720000002" alpha="0.099948042996953965" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="yyM-RV-fdw"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
-                                        <inset key="contentEdgeInsets" minX="17" minY="0.0" maxX="12" maxY="0.0"/>
-                                        <inset key="imageEdgeInsets" minX="-7" minY="1" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                        <state key="normal" title="Contact Coinbase Support" image="coinbase.contact.support">
-                                            <color key="titleColor" red="0.24137887359999999" green="0.54293322560000001" blue="0.86670547720000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="supportAction" destination="C7j-bp-eti" eventType="touchUpInside" id="NT7-wS-fgl"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="kj1-us-zeL">
-                                <rect key="frame" x="15" y="801" width="384" height="46"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jRn-c9-XqM">
-                                        <rect key="frame" x="0.0" y="0.0" width="189" height="46"/>
-                                        <color key="tintColor" name="DashBlueColor"/>
-                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                        <state key="normal" title="Cancel">
-                                            <color key="titleColor" name="DashBlueColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="cancelAction" destination="C7j-bp-eti" eventType="touchUpInside" id="3d5-Ub-8xl"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="etk-dA-pT8" customClass="DWActionButton">
-                                        <rect key="frame" x="195" y="0.0" width="189" height="46"/>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Button"/>
-                                        <connections>
-                                            <action selector="retryAction" destination="C7j-bp-eti" eventType="touchUpInside" id="SlF-hM-Vu8"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="46" id="bJ9-cf-AwE"/>
-                                </constraints>
-                            </stackView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="iE0-JQ-zE5"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <constraints>
-                            <constraint firstItem="iE0-JQ-zE5" firstAttribute="trailing" secondItem="kj1-us-zeL" secondAttribute="trailing" constant="15" id="MPc-w9-9Ee"/>
-                            <constraint firstItem="vid-YJ-7Gk" firstAttribute="leading" secondItem="iE0-JQ-zE5" secondAttribute="leading" constant="30" id="dQs-7F-qw7"/>
-                            <constraint firstItem="iE0-JQ-zE5" firstAttribute="trailing" secondItem="vid-YJ-7Gk" secondAttribute="trailing" constant="30" id="fbz-mJ-hGA"/>
-                            <constraint firstItem="iE0-JQ-zE5" firstAttribute="bottom" secondItem="kj1-us-zeL" secondAttribute="bottom" constant="15" id="qQh-UJ-B8V"/>
-                            <constraint firstItem="vid-YJ-7Gk" firstAttribute="top" secondItem="iE0-JQ-zE5" secondAttribute="top" constant="100" id="xMJ-0S-qTY"/>
-                            <constraint firstItem="kj1-us-zeL" firstAttribute="leading" secondItem="iE0-JQ-zE5" secondAttribute="leading" constant="15" id="yVW-0v-GXu"/>
-                        </constraints>
-                        <edgeInsets key="layoutMargins" top="0.0" left="15" bottom="0.0" right="15"/>
-                    </view>
-                    <connections>
-                        <outlet property="cancelButton" destination="jRn-c9-XqM" id="O5t-90-pnS"/>
-                        <outlet property="contactSupportButton" destination="IB9-VN-qB6" id="90f-Bo-6Aj"/>
-                        <outlet property="descriptionLabel" destination="TNp-mb-0hA" id="AIV-Ze-jos"/>
-                        <outlet property="retryButton" destination="etk-dA-pT8" id="0ge-vV-jOU"/>
-                        <outlet property="titleLabel" destination="Zjf-65-8Vu" id="CRY-Cq-37q"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="mIX-JE-RFC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="2682.608695652174" y="72.991071428571431"/>
-        </scene>
         <!--Payment Methods Controller-->
         <scene sceneID="WD4-DX-909">
             <objects>
@@ -1106,10 +942,7 @@
     </scenes>
     <resources>
         <image name="chevron.right" catalog="system" width="97" height="128"/>
-        <image name="coinbase.contact.support" width="16" height="16"/>
-        <image name="coinbase.failure.operation.status" width="100" height="100"/>
         <image name="coinbase.info" width="330" height="300"/>
-        <image name="coinbase.success.operation.status" width="100" height="100"/>
         <image name="dashCircleFilled" width="14" height="14"/>
         <image name="exploredash.checkbox.checked" width="24" height="24"/>
         <image name="exploredash.checkbox.unchecked" width="24" height="24"/>
@@ -1119,9 +952,6 @@
         <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="ChevronColor">
             <color red="0.85098039215686272" green="0.85098039215686272" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="DashBlueColor">
-            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="RedColor">
             <color red="0.81599998474121094" green="0.0080000003799796104" blue="0.10599999874830246" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

@@ -75,9 +75,9 @@ public final class CrowdNode {
     @Published private(set) var signUpState = SignUpState.notInitiated
     @Published private(set) var balance: UInt64 = 0
     @Published private(set) var isBalanceLoading = false
+    @Published private(set) var apiError: Error? = nil
 
     private(set) var accountAddress = ""
-    private(set) var apiError: Error?
     var showNotificationOnResult = false
 
     public static let shared: CrowdNode = .init()
@@ -296,12 +296,11 @@ extension CrowdNode {
             let responseTx = await txObserver.first(filters: errorResponse, successResponse)
             DSLogger.log("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
 
-            // TODO: handle errors
             if errorResponse.matches(tx: responseTx) {
-                throw CrowdNodeError.deposit
+                apiError = CrowdNodeError.deposit
+            } else {
+                refreshBalance()
             }
-
-            refreshBalance()
         }
     }
 
@@ -333,12 +332,22 @@ extension CrowdNode {
             let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
             DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
 
-            // TODO: handle errors
             if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
-                throw CrowdNodeError.withdraw
+                apiError = CrowdNodeError.withdraw
+            } else {
+                refreshBalance(afterWithdrawal: true)
             }
-
-            refreshBalance(afterWithdrawal: true)
+        }
+    }
+    
+    func hasAnyDeposits() -> Bool {
+        guard !accountAddress.isEmpty else { return false }
+        
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let filter = CrowdNodeDepositTx(accountAddress: accountAddress)
+        
+        return wallet.allTransactions.contains {
+            tx in filter.matches(tx: tx)
         }
     }
 }

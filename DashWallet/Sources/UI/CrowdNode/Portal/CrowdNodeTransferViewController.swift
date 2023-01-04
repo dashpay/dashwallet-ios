@@ -27,12 +27,13 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     /// Conform to NetworkReachabilityHandling
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
-    internal var depositWithdrawModel: DepositWithdrawModel {
-        model as! DepositWithdrawModel
+    internal var transferModel: CrowdNodeTransferModel {
+        model as! CrowdNodeTransferModel
     }
     
     private var networkUnavailableView: UIView!
     private var fromLabel: FromLabel!
+    private var minimumDepositBanner: MinimumDepositBanner?
     
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
     
@@ -42,43 +43,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         
         return vc
     }
-
-    override var actionButtonTitle: String? {
-        NSLocalizedString(mode.title, comment: "CrowdNode")
-    }
-
-    override func actionButtonAction(sender: UIView) {
-        Task {
-            showActivityIndicator()
-            
-            do {
-                if mode == .deposit {
-                    try await viewModel.deposit(amount: depositWithdrawModel.amount.plainAmount)
-                } else {
-                    // TODO: temporary action, does full withdrawal
-                    try await viewModel.withdraw(permil: 1000)
-                }
-                
-                hideActivityIndicator()
-            } catch {
-                // TODO: errors
-                hideActivityIndicator()
-            }
-        }
-    }
-
-    override func initializeModel() {
-        model = DepositWithdrawModel()
-    }
-
-    override func configureModel() {
-        super.configureModel()
-        
-        model.inputsSwappedHandler = { [weak self] type in
-            self?.updateBalanceLabel()
-        }
-    }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -93,9 +58,55 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         configureObservers()
     }
 
+    override var actionButtonTitle: String? {
+        NSLocalizedString(mode.title, comment: "CrowdNode")
+    }
+
+    override func actionButtonAction(sender: UIView) {
+        let amount = transferModel.amount.plainAmount
+        
+        if viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
+            minimumDepositBanner?.backgroundColor = .systemRed
+            minimumDepositBanner?.dw_shakeView()
+            return
+        }
+        
+        Task {
+            showActivityIndicator()
+            
+            do {
+                if mode == .deposit {
+                    try await viewModel.deposit(amount: amount)
+                } else {
+                    // TODO: temporary action, does full withdrawal
+                    try await viewModel.withdraw(permil: 1000)
+                }
+                
+                hideActivityIndicator()
+                showSuccessfulStatus()
+            } catch {
+                hideActivityIndicator()
+                showErrorStatus(err: error)
+            }
+        }
+    }
+
+    override func initializeModel() {
+        let depositWithdrawlModel = CrowdNodeTransferModel()
+        depositWithdrawlModel.direction = mode
+        model = depositWithdrawlModel
+    }
+
+    override func configureModel() {
+        super.configureModel()
+        
+        model.inputsSwappedHandler = { [weak self] type in
+            self?.updateBalanceLabel()
+        }
+    }
+
     deinit {
         stopNetworkMonitoring()
-        
     }
 }
 
@@ -104,6 +115,7 @@ extension CrowdNodeTransferController {
         super.configureHierarchy()
         
         configureTitleBar()
+        
         fromLabel = FromLabel(icon: mode.imageName, text: mode.direction)
         contentView.addSubview(fromLabel)
         
@@ -118,15 +130,29 @@ extension CrowdNodeTransferController {
 
         NSLayoutConstraint.activate([
             fromLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            NSLayoutConstraint(item: fromLabel!, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.35, constant: 0),
+            NSLayoutConstraint(item: fromLabel!, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.38, constant: 0),
             
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            NSLayoutConstraint(item: amountView!, attribute: .top, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.47, constant: 0),
+            NSLayoutConstraint(item: amountView!, attribute: .top, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.5, constant: 0),
             
             networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
         ])
+        
+        if mode == .deposit && viewModel.shouldShowFirstDepositBanner {
+            let minimumDepositBanner = MinimumDepositBanner(frame: .zero)
+            contentView.addSubview(minimumDepositBanner)
+            
+            NSLayoutConstraint.activate([
+                minimumDepositBanner.heightAnchor.constraint(equalToConstant: 32),
+                minimumDepositBanner.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                minimumDepositBanner.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
+                minimumDepositBanner.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0)
+            ])
+            
+            self.minimumDepositBanner = minimumDepositBanner
+        }
     }
     
     private func configureTitleBar() {
@@ -147,7 +173,7 @@ extension CrowdNodeTransferController {
         dashPriceLabel.font = .dw_font(forTextStyle: .footnote)
         dashPriceLabel.textColor = .dw_secondaryText()
         dashPriceLabel.minimumScaleFactor = 0.5
-        dashPriceLabel.text = depositWithdrawModel.dashPriceDisplayString
+        dashPriceLabel.text = transferModel.dashPriceDisplayString
         titleViewStackView.addArrangedSubview(dashPriceLabel)
     }
 }
@@ -160,8 +186,36 @@ extension CrowdNodeTransferController {
         if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
     }
 
-    private func showSuccessTransactionStatus() {
-        showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device", comment: "Coinbase"))
+    private func showSuccessfulStatus() {
+        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        vc.closeHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
+        }
+        vc.headerText = NSLocalizedString(mode.successfulTransfer, comment: "CrowdNode")
+        vc.descriptionText = NSLocalizedString(mode.successfulTransferDetails, comment: "CrowdNode")
+
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func showErrorStatus(err: Error) {
+        let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        vc.headerText = NSLocalizedString(mode.failedTransfer, comment: "CrowdNode")
+        vc.descriptionText = err.localizedDescription
+        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
+        vc.retryHandler = { [weak self] in self?.navigationController?.popViewController(animated: true) }
+        vc.cancelHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
+        }
+        vc.supportHandler = {
+            let url = DWAboutModel.supportURL()
+            let safariViewController = SFSafariViewController.dw_controller(with: url)
+            self.present(safariViewController, animated: true)
+        }
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

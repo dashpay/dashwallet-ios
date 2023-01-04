@@ -156,6 +156,7 @@ final class CrowdNodeModel {
     @Published private(set) var walletBalance: UInt64 = 0
     @Published private(set) var hasEnoughWalletBalance = false
     @Published private(set) var animateBalanceLabel = false
+    @Published var error: Error? = nil
 
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
@@ -168,6 +169,9 @@ final class CrowdNodeModel {
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
+    var shouldShowFirstDepositBanner: Bool {
+        return !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
+    }
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
 
@@ -260,6 +264,10 @@ final class CrowdNodeModel {
                 self?.signUpEnabled = signUpEnabled
                 self?.outputMessage = outputMessage
             }
+            .store(in: &cancellableBag)
+        
+        crowdNode.$apiError
+            .sink { [weak self] error in self?.error = error }
             .store(in: &cancellableBag)
 
         crowdNode.restoreState()

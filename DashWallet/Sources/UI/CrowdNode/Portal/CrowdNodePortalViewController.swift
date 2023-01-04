@@ -133,6 +133,37 @@ extension CrowdNodePortalController {
                 }
             })
             .store(in: &cancellableBag)
+        
+        viewModel.$error
+            .receive(on: DispatchQueue.main)
+            .filter { error in error != nil }
+            .sink(receiveValue: { [weak self] error in
+                if (error is CrowdNodeError) {
+                    self?.navigateToErrorScreen(error as! CrowdNodeError)
+                }
+            })
+            .store(in: &cancellableBag)
+    }
+    
+    private func navigateToErrorScreen(_ error: CrowdNodeError) {
+        viewModel.error = nil
+        
+        let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        vc.headerText = NSLocalizedString("Transfer Error", comment: "CrowdNode")
+        vc.descriptionText = error.description
+        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
+        let backHandler: (() -> ()) = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+        vc.retryHandler = backHandler
+        vc.cancelHandler = backHandler
+        vc.supportHandler = {
+            let url = DWAboutModel.supportURL()
+            let safariViewController = SFSafariViewController.dw_controller(with: url)
+            self.present(safariViewController, animated: true)
+        }
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
