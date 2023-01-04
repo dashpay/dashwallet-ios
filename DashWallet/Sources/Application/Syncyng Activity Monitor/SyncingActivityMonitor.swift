@@ -185,6 +185,7 @@ extension SyncingActivityMonitor {
 
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(syncLoop), object: nil)
 
+        isSyncing = false
         state = failed ? .syncFailed : .syncDone
     }
 
@@ -225,6 +226,8 @@ extension SyncingActivityMonitor {
         else {
             self.progress = 1.0
             state = .syncDone
+
+            stopSyncingActivity(failed: false)
         }
     }
 }

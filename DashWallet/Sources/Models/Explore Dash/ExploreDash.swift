@@ -114,19 +114,32 @@ public class ExploreDash {
         let destinationPath = FileManager.documentsDirectoryURL
             .appendingPathComponent(kExploreDashDatabaseName)
 
-        var isDirectory: ObjCBool = true
-        guard !FileManager.default.fileExists(atPath: destinationPath.path, isDirectory: &isDirectory) || isDirectory.boolValue
-        else { return }
+        removeCurrentDatabaseIfNeeded()
 
-        if isDirectory.boolValue {
-            try? FileManager.default.removeItem(at: destinationPath)
-        }
+        let isFileExists = FileManager.default.fileExists(atPath: destinationPath.path)
+        guard !isFileExists else { return }
 
         guard let dbURL = Bundle.main.url(forResource: "explore", withExtension: "db") else {
             throw ExploreDatabaseConnectionError.fileNotFound
         }
 
         try FileManager.default.copyItem(at: dbURL, to: destinationPath)
+    }
+
+    private func removeCurrentDatabaseIfNeeded() {
+        let destinationPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName)
+        var isDirectory: ObjCBool = true
+        guard FileManager.default.fileExists(atPath: destinationPath.path, isDirectory: &isDirectory) else { return }
+
+        /// Remove if it's a dirrectory
+        if isDirectory.boolValue {
+            try? FileManager.default.removeItem(at: destinationPath)
+        }
+
+        /// Remove if bundled version is newer than last downloaded
+        if ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion < bundleExploreDatabaseSyncTime {
+            try? FileManager.default.removeItem(at: destinationPath)
+        }
     }
 
     public static let shared = ExploreDash()

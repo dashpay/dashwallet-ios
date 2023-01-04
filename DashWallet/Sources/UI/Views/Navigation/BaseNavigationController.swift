@@ -143,11 +143,20 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         }
 
         viewController.navigationItem.hidesBackButton = true
+
+        if let vc = viewController as? NavigationBarAppearanceCustomizable {
+            animated ? vc.animateNavigationBarAppearance() : vc.setNavigationBarAppearance()
+        }
+
         navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)
     }
 
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
         isPushAnimationInProgress = false
+
+        if let vc = viewController as? NavigationBarAppearanceCustomizable {
+            vc.setNavigationBarAppearance()
+        }
     }
 }
 
