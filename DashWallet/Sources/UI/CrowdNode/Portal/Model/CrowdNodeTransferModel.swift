@@ -91,7 +91,9 @@ final class CrowdNodeTransferModel: SendAmountModel {
     public var direction: TransferDirection = .deposit
     
     override var isSendAllowed: Bool {
-        let minValue = direction == .deposit ? CrowdNode.apiOffset + ApiCode.maxCode().rawValue : CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
+        let minDepositAmount = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
+        let minWithdrawAmount = CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
+        let minValue = direction == .deposit ? minDepositAmount : minWithdrawAmount
         
         return super.isSendAllowed && amount.plainAmount > minValue
     }
