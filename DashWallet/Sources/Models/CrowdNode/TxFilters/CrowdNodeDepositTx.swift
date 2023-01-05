@@ -37,7 +37,6 @@ final class CrowdNodeDepositTx: TransactionFilter {
     }
     
     private func isApiRequest(coin: UInt64) -> Bool {
-        let toCheck = coin - CrowdNode.apiOffset
-        return toCheck <= ApiCode.maxCode().rawValue
+        return coin <= CrowdNode.apiOffset + ApiCode.maxCode().rawValue
     }
 }
