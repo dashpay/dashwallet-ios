@@ -109,5 +109,3 @@ final class CrowdNodeTransferModel: SendAmountModel {
         return displayString
     }
 }
-
-

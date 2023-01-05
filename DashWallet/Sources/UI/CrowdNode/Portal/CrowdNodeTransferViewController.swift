@@ -75,15 +75,11 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             showActivityIndicator()
             
             do {
-                if mode == .deposit {
-                    try await viewModel.deposit(amount: amount)
-                } else {
-                    // TODO: temporary action, does full withdrawal
-                    try await viewModel.withdraw(permil: 1000)
+                if try await handleTransfer(amount: amount) {
+                    showSuccessfulStatus()
                 }
                 
                 hideActivityIndicator()
-                showSuccessfulStatus()
             } catch {
                 hideActivityIndicator()
                 showErrorStatus(err: error)
@@ -102,6 +98,16 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         
         model.inputsSwappedHandler = { [weak self] type in
             self?.updateBalanceLabel()
+        }
+    }
+    
+    private func handleTransfer(amount: Int64) async throws -> Bool {
+        if mode == .deposit {
+            return try await viewModel.deposit(amount: amount)
+        } else {
+            // TODO: temporary action, does full withdrawal
+            try await viewModel.withdraw(permil: 1000)
+            return true
         }
     }
 
