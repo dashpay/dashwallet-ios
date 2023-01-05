@@ -311,8 +311,8 @@ extension CrowdNodeModel {
         }
     }
 
-    func withdraw(permil: UInt) async throws {
-        guard permil > 0 else { return }
-        try await crowdNode.withdraw(permil: permil)
+    func withdraw(amount: Int64) async throws {
+        guard amount > 0 else { return }
+        try await crowdNode.withdraw(amount: UInt64(amount))
     }
 }

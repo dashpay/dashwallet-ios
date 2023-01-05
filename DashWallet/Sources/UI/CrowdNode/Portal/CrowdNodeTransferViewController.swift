@@ -78,8 +78,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
                 if mode == .deposit {
                     try await viewModel.deposit(amount: amount)
                 } else {
-                    // TODO: temporary action, does full withdrawal
-                    try await viewModel.withdraw(permil: 1000)
+                    try await viewModel.withdraw(amount: amount)
                 }
                 
                 hideActivityIndicator()
