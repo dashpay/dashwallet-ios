@@ -106,8 +106,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         if mode == .deposit {
             return try await viewModel.deposit(amount: amount)
         } else {
-            try await viewModel.withdraw(amount: amount)
-            return true
+            return try await viewModel.withdraw(amount: amount)
         }
     }
 
