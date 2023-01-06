@@ -50,6 +50,7 @@ class BaseAmountModel {
     public var errorHandler: ((Error) -> Void)?
     public var amountChangeHandler: ((AmountObject) -> Void)?
     public var presentCurrencyPickerHandler: (() -> Void)?
+    public var inputsSwappedHandler: ((AmountType) -> Void)?
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
         let chain = DWEnvironment.sharedInstance().currentChain
         let amount = amount.plainAmount
@@ -225,6 +226,7 @@ extension BaseAmountModel: AmountViewDelegate {
             activeAmountType = .main
         }
 
+        inputsSwappedHandler?(activeAmountType)
         amountDidChange()
     }
 

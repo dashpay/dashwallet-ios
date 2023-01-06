@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+@objc
 enum ApiCode: UInt64 {
     case pleaseAcceptTerms = 2
     case welcomeToApi = 4

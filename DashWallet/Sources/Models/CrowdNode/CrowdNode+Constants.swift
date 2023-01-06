@@ -44,7 +44,7 @@ extension CrowdNode {
     static let requiredForSignup = minimumRequiredDash - 100_000
     static let requiredForAcceptTerms: UInt64 = 100_000
     static let apiOffset: UInt64 = 20000
-    static let minimumDeposit = UInt64(DUFFS / 2)
+    static let minimumDeposit = UInt64(kOneDash / 2)
 
     static let notificationID = "CrowdNode"
 

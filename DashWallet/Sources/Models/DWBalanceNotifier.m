@@ -25,6 +25,7 @@
 #import "DWPhoneWCSessionManager.h"
 #import <DashSync/DSLogger.h>
 #import <DashSync/DSPermissionNotification.h>
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -92,28 +93,43 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (self.balance < wallet.balance) {
         const BOOL notificationsEnabled = [DWGlobalOptions sharedInstance].localNotificationsEnabled;
-        NSString *noteText = [NSString stringWithFormat:
-                                           NSLocalizedString(@"Received %@ (%@)", nil),
-                                           [priceManager stringForDashAmount:wallet.balance - self.balance],
-                                           [priceManager localCurrencyStringForDashAmount:wallet.balance - self.balance]];
+        UInt64 received = wallet.balance - self.balance;
+        NSString *noteText;
+        NSString *identifier;
+        UNNotificationSound *sound;
+        Boolean isCrowdNode = received == ApiCodeDepositReceived + CrowdNodeObjcWrapper.apiOffset;
+        
+        if (isCrowdNode) {
+            identifier = CrowdNodeObjcWrapper.notificationID;
+            sound = UNNotificationSound.defaultSound;
+            noteText = NSLocalizedString(@"Your deposit to CrowdNode is received.", @"CrowdNode");
+        } else {
+            identifier = @"Now";
+            sound = [UNNotificationSound soundNamed:@"coinflip"];
+            noteText = [NSString stringWithFormat:
+                          NSLocalizedString(@"Received %@ (%@)", nil),
+                          [priceManager stringForDashAmount:received],
+                          [priceManager localCurrencyStringForDashAmount:received]];
+        }
 
         DSLog(@"DWBalanceNotifier: local notifications enabled = %d", notificationsEnabled);
 
-        // send a local notification if in the background
+        // send a local notification if in the background or it's a CrowdNode notification
         if (application.applicationState == UIApplicationStateBackground ||
-            application.applicationState == UIApplicationStateInactive) {
+            application.applicationState == UIApplicationStateInactive ||
+            isCrowdNode) {
 
             if (notificationsEnabled) {
                 UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
                 content.body = noteText;
-                content.sound = [UNNotificationSound soundNamed:@"coinflip"];
+                content.sound = sound;
                 content.badge = @(application.applicationIconBadgeNumber + 1);
 
                 // Deliver the notification in five seconds.
                 UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger
                     triggerWithTimeInterval:1.0
                                     repeats:NO];
-                UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"Now"
+                UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier
                                                                                       content:content
                                                                                       trigger:trigger];
                 // schedule localNotification

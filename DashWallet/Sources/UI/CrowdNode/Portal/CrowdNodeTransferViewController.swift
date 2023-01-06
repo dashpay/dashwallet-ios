@@ -15,106 +15,245 @@
 //  limitations under the License.
 //
 
+import Foundation
 import Combine
 
-// MARK: - CrowdNodeTransferController
-
-final class CrowdNodeTransferController: UIViewController {
+final class CrowdNodeTransferController: SendAmountViewController, NetworkReachabilityHandling {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
-
-    @IBOutlet var depositInput: UITextField!
-    @IBOutlet var withdrawInput: UITextField!
-    @IBOutlet var outputLabel: UILabel!
-    @IBOutlet var addressLabel: UILabel!
-
+    
+    internal var mode: TransferDirection = .deposit
+    
+    /// Conform to NetworkReachabilityHandling
+    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
+    internal var reachabilityObserver: Any!
+    internal var transferModel: CrowdNodeTransferModel {
+        model as! CrowdNodeTransferModel
+    }
+    
+    private var networkUnavailableView: UIView!
+    private var fromLabel: FromLabel!
+    private var minimumDepositBanner: MinimumDepositBanner?
+    
+    override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
+    
+    static func controller(mode: TransferDirection) -> CrowdNodeTransferController {
+        let vc = CrowdNodeTransferController()
+        vc.mode = mode
+        
+        return vc
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureLayout()
+
+        view.backgroundColor = .dw_background()
+        navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.largeTitleDisplayMode = .never
+
+        networkStatusDidChange = { [weak self] _ in
+            self?.reloadView()
+        }
+        startNetworkMonitoring()
+        configureObservers()
     }
 
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        cancellableBag.removeAll()
+    override var actionButtonTitle: String? {
+        NSLocalizedString(mode.title, comment: "CrowdNode")
     }
 
-    @objc func copyAddress() {
-        UIPasteboard.general.string = addressLabel.text
-    }
-
-    @IBAction func deposit() {
-        guard let inputText = depositInput.text else { return }
-        let dash = DSPriceManager.sharedInstance().amount(forDashString: inputText.replacingOccurrences(of: ",", with: "."))
-
+    override func actionButtonAction(sender: UIView) {
+        let amount = transferModel.amount.plainAmount
+        
+        if viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
+            minimumDepositBanner?.backgroundColor = .systemRed
+            minimumDepositBanner?.dw_shakeView()
+            return
+        }
+        
         Task {
+            showActivityIndicator()
+            
             do {
-                try await viewModel.deposit(amount: dash)
-                navigationController?.popViewController(animated: true)
+                if try await handleTransfer(amount: amount) {
+                    showSuccessfulStatus()
+                }
+                
+                hideActivityIndicator()
             } catch {
-                outputLabel.text = error.localizedDescription
+                hideActivityIndicator()
+                showErrorStatus(err: error)
             }
         }
     }
 
-    @IBAction func withdraw() {
-        guard let inputText = withdrawInput.text else { return }
-        let permil = UInt(inputText) ?? 0
+    override func initializeModel() {
+        let depositWithdrawlModel = CrowdNodeTransferModel()
+        depositWithdrawlModel.direction = mode
+        model = depositWithdrawlModel
+    }
 
-        Task {
-            do {
-                try await viewModel.withdraw(permil: permil)
-                navigationController?.popViewController(animated: true)
-            } catch {
-                outputLabel.text = error.localizedDescription
-            }
+    override func configureModel() {
+        super.configureModel()
+        
+        model.inputsSwappedHandler = { [weak self] type in
+            self?.updateBalanceLabel()
+        }
+    }
+    
+    private func handleTransfer(amount: Int64) async throws -> Bool {
+        if mode == .deposit {
+            return try await viewModel.deposit(amount: amount)
+        } else {
+            // TODO: temporary action, does full withdrawal
+            try await viewModel.withdraw(permil: 1000)
+            return true
         }
     }
 
-    @objc static func controller() -> CrowdNodeTransferController {
-        let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "CrowdNodeTransferController") as! CrowdNodeTransferController
-        return vc
+    deinit {
+        stopNetworkMonitoring()
     }
 }
 
 extension CrowdNodeTransferController {
-    func configureLayout() {
-        depositInput.delegate = self
-        depositInput.keyboardType = .decimalPad
+    override func configureHierarchy() {
+        super.configureHierarchy()
+        
+        configureTitleBar()
+        
+        fromLabel = FromLabel(icon: mode.imageName, text: mode.direction)
+        contentView.addSubview(fromLabel)
+        
+        let keyboardHeader = KeyboardHeader(icon: mode.keyboardHeaderIcon, text: mode.keyboardHeader)
+        keyboardHeader.translatesAutoresizingMaskIntoConstraints = false
+        topKeyboardView = keyboardHeader
 
-        withdrawInput.delegate = self
-        withdrawInput.keyboardType = .numberPad
+        networkUnavailableView = NetworkUnavailableView(frame: .zero)
+        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
+        networkUnavailableView.isHidden = true
+        contentView.addSubview(networkUnavailableView)
 
-        addressLabel.text = viewModel.accountAddress
-        let tap = UITapGestureRecognizer(target: self, action: #selector(copyAddress))
-        addressLabel.addGestureRecognizer(tap)
+        NSLayoutConstraint.activate([
+            fromLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            NSLayoutConstraint(item: fromLabel!, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.38, constant: 0),
+            
+            amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            NSLayoutConstraint(item: amountView!, attribute: .top, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.5, constant: 0),
+            
+            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
+        ])
+        
+        if mode == .deposit && viewModel.shouldShowFirstDepositBanner {
+            let minimumDepositBanner = MinimumDepositBanner(frame: .zero)
+            contentView.addSubview(minimumDepositBanner)
+            
+            NSLayoutConstraint.activate([
+                minimumDepositBanner.heightAnchor.constraint(equalToConstant: 32),
+                minimumDepositBanner.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                minimumDepositBanner.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
+                minimumDepositBanner.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0)
+            ])
+            
+            self.minimumDepositBanner = minimumDepositBanner
+        }
+    }
+    
+    private func configureTitleBar() {
+        let titleViewStackView = UIStackView()
+        titleViewStackView.alignment = .center
+        titleViewStackView.translatesAutoresizingMaskIntoConstraints = false
+        titleViewStackView.axis = .vertical
+        titleViewStackView.spacing = 1
+        navigationItem.titleView = titleViewStackView
+
+        let titleLabel = UILabel()
+        titleLabel.font = .dw_mediumFont(ofSize: 16)
+        titleLabel.minimumScaleFactor = 0.5
+        titleLabel.text = NSLocalizedString(mode.title, comment: "CrowdNode")
+        titleViewStackView.addArrangedSubview(titleLabel)
+
+        let dashPriceLabel = UILabel()
+        dashPriceLabel.font = .dw_font(forTextStyle: .footnote)
+        dashPriceLabel.textColor = .dw_secondaryText()
+        dashPriceLabel.minimumScaleFactor = 0.5
+        dashPriceLabel.text = transferModel.dashPriceDisplayString
+        titleViewStackView.addArrangedSubview(dashPriceLabel)
     }
 }
 
-// MARK: UITextFieldDelegate
+extension CrowdNodeTransferController {
+    private func reloadView() {
+        let isOnline = networkStatus == .online
+        networkUnavailableView.isHidden = isOnline
+        keyboardContainer.isHidden = !isOnline
+        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
+    }
 
-// TODO: this is a primitive sanitizing of the input. Probably won't be needed and can be removed when UI is done.
-extension CrowdNodeTransferController: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let text = textField.text ?? ""
-        guard let range = Range(range, in: text) else { return false }
-        let newText = text.replacingCharacters(in: range, with: string)
-
-        if newText.isEmpty {
-            return true
+    private func showSuccessfulStatus() {
+        let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        vc.closeHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
         }
+        vc.headerText = NSLocalizedString(mode.successfulTransfer, comment: "CrowdNode")
+        vc.descriptionText = NSLocalizedString(mode.successfulTransferDetails, comment: "CrowdNode")
 
-        if textField == depositInput {
-            if newText == "0" || (newText.starts(with: "0,") && newText.filter { $0 == "," }.count == 1) ||
-                (newText.starts(with: "0.") && newText.filter { $0 == "." }.count == 1) {
-                return true
-            }
-
-            let priceManager = DSPriceManager.sharedInstance()
-            return priceManager.amount(forDashString: newText) > 0
-        } else {
-            let int = (Int(newText) ?? -1)
-            return int >= 0 && int <= 1000
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func showErrorStatus(err: Error) {
+        let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
+        vc.headerText = NSLocalizedString(mode.failedTransfer, comment: "CrowdNode")
+        vc.descriptionText = err.localizedDescription
+        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
+        vc.retryHandler = { [weak self] in self?.navigationController?.popViewController(animated: true) }
+        vc.cancelHandler = { [weak self] in
+            guard let wSelf = self else { return }
+            wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
         }
+        vc.supportHandler = {
+            let url = DWAboutModel.supportURL()
+            let safariViewController = SFSafariViewController.dw_controller(with: url)
+            self.present(safariViewController, animated: true)
+        }
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
+extension CrowdNodeTransferController {
+    func configureObservers() {
+        viewModel.$crowdNodeBalance
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                self?.updateBalanceLabel()
+            })
+            .store(in: &cancellableBag)
+
+        viewModel.$walletBalance
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                self?.updateBalanceLabel()
+            })
+            .store(in: &cancellableBag)
+    }
+    
+    func updateBalanceLabel() {
+        let amount = mode == .deposit ? viewModel.walletBalance : viewModel.crowdNodeBalance
+        let priceManager = DSPriceManager.sharedInstance()
+        let formatted = model.activeAmountType == .main ? priceManager.string(forDashAmount: Int64(amount)) : priceManager.localCurrencyString(forDashAmount: Int64(amount))
+        fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + (formatted ?? NSLocalizedString("Syncing", comment: "CrowdNode"))
+    }
+}
+
+extension CrowdNodeTransferController: PaymentControllerPresentationContextProviding {
+    func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
+        self
     }
 }

@@ -156,6 +156,7 @@ final class CrowdNodeModel {
     @Published private(set) var walletBalance: UInt64 = 0
     @Published private(set) var hasEnoughWalletBalance = false
     @Published private(set) var animateBalanceLabel = false
+    @Published var error: Error? = nil
 
     var isInterrupted: Bool {
         crowdNode.signUpState == .acceptTermsRequired
@@ -168,6 +169,9 @@ final class CrowdNodeModel {
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
+    var shouldShowFirstDepositBanner: Bool {
+        return !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
+    }
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
 
@@ -261,6 +265,10 @@ final class CrowdNodeModel {
                 self?.outputMessage = outputMessage
             }
             .store(in: &cancellableBag)
+        
+        crowdNode.$apiError
+            .sink { [weak self] error in self?.error = error }
+            .store(in: &cancellableBag)
 
         crowdNode.restoreState()
         getAccountAddress()
@@ -294,13 +302,16 @@ extension CrowdNodeModel {
 }
 
 extension CrowdNodeModel {
-    func deposit(amount: Int64) async throws {
-        guard amount > 0 else { return }
+    func deposit(amount: Int64) async throws -> Bool {
+        guard amount > 0 else { return false }
         
         let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: UInt64(amount))
         if await authenticate(allowBiometric: usingBiometric) {
             try await crowdNode.deposit(amount: UInt64(amount))
+            return true
         }
+        
+        return false
     }
 
     func withdraw(permil: UInt) async throws {
