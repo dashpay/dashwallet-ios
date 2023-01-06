@@ -95,7 +95,7 @@ final class CrowdNodeTransferModel: SendAmountModel {
         let dashAmountFormatted = dashAmount.formattedDashAmount
 
         let priceManger = DSPriceManager.sharedInstance()
-        let fiatBalanceFormatted = priceManger.localCurrencyString(forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
+        let fiatBalanceFormatted = priceManger.fiatCurrencyString(localCurrencyCode, forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
 
         let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
         return displayString

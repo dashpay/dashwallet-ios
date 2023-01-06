@@ -2146,7 +2146,6 @@
 			children = (
 				47CDEECA294A2B9F008AE06D /* Base */,
 				478C98242942DBF200FAA0F0 /* Buy Dash */,
-				47522F4E2927CAE900EE143E /* Operation Status Controller */,
 				0F36937C2919A597007F4E91 /* Two Factor Auth */,
 				47C661B028FDC70F00028A8D /* Transfer Amount */,
 				0F71317328F436160072F454 /* ServiceOverview */,
@@ -4630,13 +4629,6 @@
 				4751137428DAF28800223B77 /* UIAssembly.swift */,
 			);
 			path = Assembly;
-			sourceTree = "<group>";
-		};
-		47522F4E2927CAE900EE143E /* Operation Status Controller */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "Operation Status Controller";
 			sourceTree = "<group>";
 		};
 		4759D51529300091002F20DC /* Enter Amount */ = {
