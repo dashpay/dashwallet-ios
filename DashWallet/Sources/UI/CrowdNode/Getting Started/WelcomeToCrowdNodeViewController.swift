@@ -39,9 +39,6 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
     }
 
     @objc static func controller() -> WelcomeToCrowdNodeViewController {
-        let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard
-            .instantiateViewController(withIdentifier: "WelcomeToCrowdNodeViewController") as! WelcomeToCrowdNodeViewController
-        return vc
+        return vc(WelcomeToCrowdNodeViewController.self, from: sb("CrowdNode"))
     }
 }

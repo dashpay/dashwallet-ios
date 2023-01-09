@@ -37,9 +37,7 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     }
 
     @objc static func controller() -> NewAccountViewController {
-        let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "NewAccountViewController") as! NewAccountViewController
-        return vc
+        return vc(NewAccountViewController.self, from: sb("CrowdNode"))
     }
 
     @IBAction func continueAction() {
@@ -72,10 +70,10 @@ extension NewAccountViewController {
 
     private func configureActionButton() {
         if viewModel.isInterrupted {
-            actionButton.setTitle(NSLocalizedString("Accept Terms Of Use", comment: ""), for: .normal)
+            actionButton.setTitle(NSLocalizedString("Accept Terms Of Use", comment: "CrowdNode"), for: .normal)
         }
         else {
-            actionButton.setTitle(NSLocalizedString("Create Account", comment: ""), for: .normal)
+            actionButton.setTitle(NSLocalizedString("Create Account", comment: "CrowdNode"), for: .normal)
         }
     }
 
@@ -90,10 +88,10 @@ extension NewAccountViewController {
     }
 
     private func configureTermsCheckBox() {
-        let baseString = NSMutableAttributedString(string: NSLocalizedString("I agree to CrowdNode", comment: "").description)
-        let termsOfUseString = NSMutableAttributedString(string: NSLocalizedString(" Terms of Use ", comment: "").description)
-        let andString = NSMutableAttributedString(string: NSLocalizedString("and", comment: "").description)
-        let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "")
+        let baseString = NSMutableAttributedString(string: NSLocalizedString("I agree to CrowdNode", comment: "CrowdNode").description)
+        let termsOfUseString = NSMutableAttributedString(string: NSLocalizedString(" Terms of Use ", comment: "CrowdNode").description)
+        let andString = NSMutableAttributedString(string: NSLocalizedString("and", comment: "CrowdNode").description)
+        let privacyPolicyString = NSMutableAttributedString(string: NSLocalizedString(" Privacy Policy ", comment: "CrowdNode")
             .description)
 
         termsOfUseString.addAttribute(.link, value: CrowdNode.termsOfUseUrl,

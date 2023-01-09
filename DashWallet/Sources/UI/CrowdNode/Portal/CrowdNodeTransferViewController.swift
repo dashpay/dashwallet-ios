@@ -157,6 +157,8 @@ extension CrowdNodeTransferController {
                 minimumDepositBanner.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0)
             ])
             
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(minimumDepositBannerTapAction))
+            minimumDepositBanner.addGestureRecognizer(tapGestureRecognizer)
             self.minimumDepositBanner = minimumDepositBanner
         }
     }
@@ -181,6 +183,11 @@ extension CrowdNodeTransferController {
         dashPriceLabel.minimumScaleFactor = 0.5
         dashPriceLabel.text = transferModel.dashPriceDisplayString
         titleViewStackView.addArrangedSubview(dashPriceLabel)
+    }
+    
+    @objc func minimumDepositBannerTapAction() {
+        let vc = StakingInfoDialogController.controller()
+        present(vc, animated: true, completion: nil)
     }
 }
 
@@ -209,7 +216,7 @@ extension CrowdNodeTransferController {
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.headerText = NSLocalizedString(mode.failedTransfer, comment: "CrowdNode")
         vc.descriptionText = err.localizedDescription
-        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
+        vc.supportButtonText = NSLocalizedString("Send Report", comment: "CrowdNode")
         vc.retryHandler = { [weak self] in self?.navigationController?.popViewController(animated: true) }
         vc.cancelHandler = { [weak self] in
             guard let wSelf = self else { return }

@@ -123,12 +123,12 @@ extension CrowdNodePortalItem {
         switch self {
         case .deposit:
             let negligibleAmount = CrowdNode.minimumDeposit / 50
-            let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit)) ?? String(CrowdNode.minimumDeposit)
+            let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
 
             if crowdNodeBalance < negligibleAmount {
-                return NSLocalizedString("Deposit at least \(minimumDeposit) to start earning", comment: "CrowdNode Portal")
+                return String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ to start earning", comment: "CrowdNode Portal"), minimumDeposit)
             } else {
-                return NSLocalizedString("Deposit \(minimumDeposit) to start earning", comment: "CrowdNode Portal")
+                return String.localizedStringWithFormat(NSLocalizedString("Deposit %@ to start earning", comment: "CrowdNode Portal"), minimumDeposit)
             }
         case .withdraw:
             return NSLocalizedString("Verification Required", comment: "CrowdNode Portal")
@@ -195,10 +195,10 @@ final class CrowdNodeModel {
             let promptMessage: String
 
             if isInterrupted {
-                promptMessage = NSLocalizedString("Accept Terms Of Use", comment: "")
+                promptMessage = NSLocalizedString("Accept Terms Of Use", comment: "CrowdNode")
             }
             else {
-                promptMessage = NSLocalizedString("Sign up to CrowdNode", comment: "")
+                promptMessage = NSLocalizedString("Sign up to CrowdNode", comment: "CrowdNode")
             }
 
             if !accountAddress.isEmpty {
@@ -251,10 +251,10 @@ final class CrowdNodeModel {
                     signUpEnabled = true
 
                 case .fundingWallet, .signingUp:
-                    outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "")
+                    outputMessage = NSLocalizedString("Your CrowdNode account is creating…", comment: "CrowdNode")
 
                 case .acceptingTerms:
-                    outputMessage = NSLocalizedString("Accepting terms of use…", comment: "")
+                    outputMessage = NSLocalizedString("Accepting terms of use…", comment: "CrowdNode")
 
                 default:
                     break

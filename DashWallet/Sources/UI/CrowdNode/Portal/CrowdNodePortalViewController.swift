@@ -47,13 +47,12 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc static func controller() -> CrowdNodePortalController {
-        let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "CrowdNodePortalController") as! CrowdNodePortalController
-        return vc
+        return vc(CrowdNodePortalController.self, from: sb("CrowdNode"))
     }
 
     @objc func infoButtonAction() {
-        UIPasteboard.general.string = viewModel.accountAddress
+        let vc = StakingInfoDialogController.controller()
+        present(vc, animated: true, completion: nil)
     }
 }
 
@@ -138,19 +137,19 @@ extension CrowdNodePortalController {
             .receive(on: DispatchQueue.main)
             .filter { error in error != nil }
             .sink(receiveValue: { [weak self] error in
-                if (error is CrowdNodeError) {
-                    self?.navigateToErrorScreen(error as! CrowdNodeError)
+                if (error is CrowdNode.Error) {
+                    self?.navigateToErrorScreen(error as! CrowdNode.Error)
                 }
             })
             .store(in: &cancellableBag)
     }
     
-    private func navigateToErrorScreen(_ error: CrowdNodeError) {
+    private func navigateToErrorScreen(_ error: CrowdNode.Error) {
         viewModel.error = nil
         
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.headerText = NSLocalizedString("Transfer Error", comment: "CrowdNode")
-        vc.descriptionText = error.description
+        vc.descriptionText = error.errorDescription
         vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
         let backHandler: (() -> ()) = { [weak self] in
             self?.navigationController?.popViewController(animated: true)

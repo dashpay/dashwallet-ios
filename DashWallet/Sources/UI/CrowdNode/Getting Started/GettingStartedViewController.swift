@@ -72,8 +72,8 @@ final class GettingStartedViewController: UIViewController {
     @IBAction func buyDashAction() {
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
         let alert = UIAlertController(title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
-                                      message: NSLocalizedString("You should have at least \(minimumDash) to proceed with the CrowdNode verification.",
-                                                                 comment: ""),
+                                      message: String.localizedStringWithFormat(NSLocalizedString("You should have at least %@ to proceed with the CrowdNode verification.",
+                                                                 comment: ""), minimumDash),
                                       preferredStyle: UIAlertController.Style.alert)
         alert
             .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
@@ -87,10 +87,7 @@ final class GettingStartedViewController: UIViewController {
     }
 
     @objc static func controller() -> GettingStartedViewController {
-        let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard
-            .instantiateViewController(withIdentifier: "GettingStartedViewController") as! GettingStartedViewController
-        return vc
+        return vc(GettingStartedViewController.self, from: sb("CrowdNode"))
     }
 }
 
@@ -101,7 +98,7 @@ extension GettingStartedViewController {
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
 
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
-        minimumBalanceLable.text = NSLocalizedString("You need at least \(minimumDash) on your Dash Wallet", comment: "")
+        minimumBalanceLable.text = String.localizedStringWithFormat(NSLocalizedString("You need at least %@ on your Dash Wallet", comment: "CrowdNode"), minimumDash)
 
         refreshCreateAccountButton()
     }

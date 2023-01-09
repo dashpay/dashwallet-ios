@@ -40,9 +40,7 @@ final class AccountCreatingController: UIViewController {
     }
 
     @objc static func controller() -> AccountCreatingController {
-        let storyboard = UIStoryboard(name: "CrowdNode", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "AccountCreatingController") as! AccountCreatingController
-        return vc
+        return vc(AccountCreatingController.self, from: sb("CrowdNode"))
     }
 
     @IBAction func closeAndNotify() {
