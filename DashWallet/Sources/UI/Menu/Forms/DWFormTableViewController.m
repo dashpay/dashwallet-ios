@@ -42,13 +42,13 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+
     self.customCellModels = [NSMutableDictionary dictionary];
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.tableFooterView = [[UIView alloc] init];
-    self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
     if (@available(iOS 15.0, *)) {
         self.tableView.sectionHeaderHeight = 1;
     }

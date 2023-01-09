@@ -234,8 +234,6 @@ class ExploreMapView: UIView {
 
 // MARK: MKMapViewDelegate
 
-// MARK: MKMapViewDelegate
-
 extension ExploreMapView: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         guard let view = views.first(where: { $0.annotation is MKUserLocation }) else { return }

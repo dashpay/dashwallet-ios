@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
-#import "DWNavigationFullscreenable.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWSetupViewController : DWBaseViewController <DWNavigationFullscreenable>
+@interface DWSetupViewController : UIViewController <DWNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWSetupViewControllerDelegate> delegate;
 

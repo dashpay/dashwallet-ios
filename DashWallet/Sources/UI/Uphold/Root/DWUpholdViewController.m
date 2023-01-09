@@ -51,11 +51,6 @@ static NSString *const DWUpholdLogoutURLString = @"https://wallet.uphold.com/das
 
     self.title = NSLocalizedString(@"Uphold", nil);
 
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                             target:self
-                             action:@selector(cancelButtonAction)];
-
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(upholdClientUserDidLogoutNotification:)
                                                  name:DWUpholdClientUserDidLogoutNotification

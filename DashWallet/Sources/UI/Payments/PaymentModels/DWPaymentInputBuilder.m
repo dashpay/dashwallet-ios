@@ -28,6 +28,32 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWPaymentInput alloc] initWithSource:source];
 }
 
+- (nullable DWPaymentInput *)payToAddress:(NSString *)address
+                                   amount:(uint64_t)amount {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+
+    DSPaymentRequest *request = [DSPaymentRequest requestWithString:address onChain:chain];
+    request.amount = amount;
+
+    NSData *data = address.hexToData.reverse;
+
+    if (data.length == sizeof(UInt256) && [account transactionForHash:*(UInt256 *)data.bytes]) {
+        return nil;
+    }
+
+    if ([request.paymentAddress isValidDashAddressOnChain:chain] || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key] ||
+        (request.r.length > 0 && ([request.scheme isEqual:@"dash:"]))) {
+        DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_PlainAddress];
+        paymentInput.request = request;
+
+
+        return paymentInput;
+    }
+
+    return nil;
+}
+
 - (void)payFirstFromArray:(NSArray<NSString *> *)array
                    source:(DWPaymentInputSource)source
                completion:(void (^)(DWPaymentInput *paymentInput))completion {

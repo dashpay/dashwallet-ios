@@ -17,9 +17,9 @@
 
 #import "DWLockPinInputView.h"
 
-#import "DWNumberKeyboard.h"
 #import "DWPinField.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,7 +32,7 @@ static CGFloat const SPACING = 8.0;
 @property (readonly, nonatomic, strong) UILabel *attemptsLabel;
 @property (readonly, nonatomic, strong) UILabel *errorLabel;
 @property (readonly, nonatomic, strong) DWPinField *pinField;
-@property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
+@property (nullable, nonatomic, weak) NumberKeyboard *keyboard;
 @property (nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
 
 @end
@@ -125,7 +125,7 @@ static CGFloat const SPACING = 8.0;
     [_feedbackGenerator prepare];
 }
 
-- (void)configureWithKeyboard:(DWNumberKeyboard *)keyboard {
+- (void)configureWithKeyboard:(NumberKeyboard *)keyboard {
     NSParameterAssert(keyboard);
 
     self.keyboard = keyboard;

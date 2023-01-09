@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWNavigationFullscreenable.h"
+#import "dashwallet-Swift.h"
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN

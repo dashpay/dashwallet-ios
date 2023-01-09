@@ -17,10 +17,10 @@
 
 #import "DWQuickReceiveViewController.h"
 
-#import "DWModalNavigationController.h"
 #import "DWReceiveViewController.h"
 #import "DWUIKit.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

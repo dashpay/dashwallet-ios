@@ -24,12 +24,12 @@
 #import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
-#import "DWNavigationController.h"
 #import "DWSecurityMenuViewController.h"
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
 #import "DWUpholdViewController.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -72,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewWillAppear:animated];
 
     self.view.model = [[DWMainMenuModel alloc] init];
+    self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
+    //    self.navigationController.navigationBar.prefersLargeTitles = NO;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -89,10 +91,14 @@ NS_ASSUME_NONNULL_BEGIN
                               alertIfLockout:YES
                                   completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
-                                          UIViewController *controller = [DWUpholdViewController controller];
-                                          DWNavigationController *navigationController =
-                                              [[DWNavigationController alloc] initWithRootViewController:controller];
-                                          [self presentViewController:navigationController animated:YES completion:nil];
+#ifdef COINBASE
+                                          PortalViewController *controller = [PortalViewController controller];
+#else
+                        UIViewController *controller = [DWUpholdViewController controller];
+#endif
+
+                                          controller.hidesBottomBarWhenPushed = true;
+                                          [self.navigationController pushViewController:controller animated:YES];
                                       }
                                   }];
 

@@ -18,6 +18,7 @@
 #import "DWBaseViewController.h"
 
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,23 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSLayoutConstraint *)contentBottomConstraint {
     return nil;
-}
-
-#pragma mark - Configuration
-
-+ (CGFloat)deviceSpecificBottomPadding {
-    if (IS_IPAD) { // All iPads including ones with home indicator
-        return 24.0;
-    }
-    else if (DEVICE_HAS_HOME_INDICATOR) { // iPhone X-like, XS Max, X
-        return 4.0;
-    }
-    else if (IS_IPHONE_6_PLUS) { // iPhone 6 Plus-like
-        return 20.0;
-    }
-    else { // iPhone 5-like, 6-like
-        return 16.0;
-    }
 }
 
 @end

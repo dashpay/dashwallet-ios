@@ -20,7 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWLockPinInputView;
-@class DWNumberKeyboard;
+@class NumberKeyboard;
 
 @protocol DWLockPinInputViewDelegate <NSObject>
 
@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWLockPinInputViewDelegate> delegate;
 
-- (void)configureWithKeyboard:(DWNumberKeyboard *)keyboard;
+- (void)configureWithKeyboard:(NumberKeyboard *)keyboard;
 - (void)activatePinField;
 - (void)clearAndShakePinField;
 - (void)setTitleText:(nullable NSString *)title;

@@ -27,16 +27,11 @@ extern NSString *const DWSyncStateChangedNotification;
 // `NSNumber` of previous state in notification `userInfo` dictionary
 extern NSString *const DWSyncStateChangedFromStateKey;
 
-extern float const DW_SYNCING_COMPLETED_PROGRESS;
-
 @interface DWSyncModel : NSObject <DWSyncProtocol>
 
-- (void)reachabilityStatusDidChange;
 - (void)forceStartSyncingActivity;
 
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init;
 
 @end
 

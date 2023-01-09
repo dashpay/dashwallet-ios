@@ -66,6 +66,12 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^__nullable)(void))completion {
+    [self.delegate confirmPaymentViewControllerDidCancel:self];
+
+    [super dismissViewControllerAnimated:flag completion:completion];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 

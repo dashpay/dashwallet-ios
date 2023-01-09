@@ -20,7 +20,6 @@
 #import "DWModalDismissalAnimation.h"
 #import "DWModalInteractiveTransition.h"
 #import "DWModalPresentationAnimation.h"
-#import "DWModalPresentationController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -72,8 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
     DWModalPresentationController *presentationController =
         [[DWModalPresentationController alloc] initWithPresentedViewController:presented
                                                       presentingViewController:presenting];
+    presentationController.delegate = self.modalPresentationControllerDelegate;
     presentationController.interactiveTransition = self.interactiveTransition;
-
     return presentationController;
 }
 

@@ -191,7 +191,6 @@ extension ExplorePointOfUseListViewController {
 
 // MARK: DWLocationObserver
 
-// MARK: DWLocationObserver
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
         mapView.setCenter(location, animated: false)
@@ -320,6 +319,7 @@ extension ExplorePointOfUseListViewController {
 
         tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.keyboardDismissMode = .onDrag
         tableView.showsVerticalScrollIndicator = false
         tableView.delegate = self
         tableView.layer.zPosition = -1
@@ -446,11 +446,11 @@ extension ExplorePointOfUseListViewController {
     private func segmentedControlDidChange(index: Int) {
         let segment = model.segments[index]
         model.currentSegment = segment
+
+        searchCell?.stopSearching()
         refreshView()
     }
 }
-
-// MARK: ExploreMapViewDelegate
 
 // MARK: ExploreMapViewDelegate
 
@@ -468,11 +468,10 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
 
 // MARK: PointOfUseListSearchCellDelegate
 
-// MARK: DWExploreWhereToSpendSearchCellDelegate
-
 extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate {
     private func stopSearching() {
         model.fetch(query: nil)
+        showMapIfNeeded()
     }
 
     func searchCell(_ cell: PointOfUseListSearchCell, shouldStartSearchWith query: String) {
@@ -482,9 +481,11 @@ extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate 
     func searchCellDidEndSearching(searchCell: PointOfUseListSearchCell) {
         stopSearching()
     }
-}
 
-// MARK: UITableViewDelegate, UITableViewDataSource
+    func searchCellDidBeginEditing() {
+        hideMapIfNeeded()
+    }
+}
 
 // MARK: UITableViewDelegate, UITableViewDataSource
 
@@ -607,8 +608,8 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         if model.hasNextPage && indexPath.section == lastSectionIndex && indexPath.row == lastRowIndex {
             let activity = UIActivityIndicatorView()
             activity.translatesAutoresizingMaskIntoConstraints = false
-            activity.tintColor = .secondaryLabel
-            activity.color = .secondaryLabel
+            activity.tintColor = .dw_secondaryText()
+            activity.color = .dw_secondaryText()
             activity.startAnimating()
             activity.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 44.0)
             contentView.addSubview(activity)
