@@ -29,6 +29,7 @@
 #import "DWTextField.h"
 #import "DWUIKit.h"
 #import "DWUsernameValidationView.h"
+#import "dashwallet-Swift.h"
 
 static CGFloat const SPACING = 16.0;
 static CGFloat const CORNER_RADIUS = 10.0;

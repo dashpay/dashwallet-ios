@@ -22,7 +22,7 @@
 #import "DWActionButton.h"
 #import "DWUIKit.h"
 #import "DevicesCompatibility.h"
-
+#import "dashwallet-Swift.h"
 NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};

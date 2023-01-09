@@ -39,6 +39,10 @@ protocol PaymentControllerPresentationContextProviding: AnyObject {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor
 }
 
+// MARK: - AmountProviding
+
+protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable { }
+
 // MARK: - PaymentController
 
 final class PaymentController: NSObject {
@@ -49,6 +53,7 @@ final class PaymentController: NSObject {
 
     private var paymentProcessor: DWPaymentProcessor
     private weak var confirmViewController: DWConfirmSendPaymentViewController?
+    private weak var provideAmountViewController: AmountProviding?
 
     override init() {
         paymentProcessor = DWPaymentProcessor()
@@ -87,7 +92,7 @@ extension PaymentController {
 
     private func show(modalController: UIViewController) {
         precondition(presentationAnchor != nil)
-        presentationAnchor!.present(modalController, animated: true)
+        presentationAnchor!.topController().present(modalController, animated: true)
     }
 }
 
@@ -101,6 +106,7 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
     }
 
     func confirmPaymentViewControllerDidCancel(_ controller: DWConfirmPaymentViewController) {
+        provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
     }
 }
@@ -110,7 +116,7 @@ extension PaymentController: DWConfirmPaymentViewControllerDelegate {
 extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest,
                           transaction: DSTransaction) {
-        presentationAnchor?.view.dw_showInfoHUD(withText: NSLocalizedString("Swept!", comment: ""))
+        presentationAnchor?.topController().view.dw_showInfoHUD(withText: NSLocalizedString("Swept!", comment: ""))
 
         if let vc = presentationContextProvider as? UIViewController,
            vc.navigationController?.topViewController is ProvideAmountViewController {
@@ -126,6 +132,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // vc.contactItem = nil //TODO: pass contactItem
         // vc.demoMode = self.demoMode; //TODO: demoMode
         presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
+        provideAmountViewController = vc
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?,
@@ -164,6 +171,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
+        provideAmountViewController?.hideActivityIndicator()
         confirmViewController?.sendingEnabled = true
     }
 
@@ -172,20 +180,24 @@ extension PaymentController: DWPaymentProcessorDelegate {
             return
         }
 
-        if error.domain == DSErrorDomain &&
-            (error.code == DSErrorInsufficientFunds || error.code == DSErrorInsufficientFundsForNetworkFee) {
-            // TODO: Show insufficient amount
-        }
-
-        delegate?.paymentControllerDidFailTransaction(self)
-        presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
-        showAlert(with: title, message: message)
+        presentationAnchor?.topController().view.dw_hideProgressHUD()
+        provideAmountViewController?.hideActivityIndicator()
         confirmViewController?.sendingEnabled = true
+
+        if error.domain == DSErrorDomain,
+           error.code == DSErrorInsufficientFunds
+           || error.code == DSErrorInsufficientFundsForNetworkFee
+           || error.code == DSErrorPaymentAmountLessThenMinOutputAmount
+           || error.code == DSErrorPaymentTransactionOutputTooSmall {
+            provideAmountViewController?.present(error: error)
+        } else {
+            showAlert(with: title, message: message)
+        }
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest,
                           transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
-        presentationContextProvider?.presentationAnchorForPaymentController(self).view.dw_hideProgressHUD()
+        presentationAnchor?.topController().view.dw_hideProgressHUD()
 
         if let vc = confirmViewController {
             vc.dismiss(animated: true) {
@@ -208,7 +220,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) { }
 
     func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {
-        presentationAnchor?.view.dw_hideProgressHUD()
+        presentationAnchor?.topController().view.dw_hideProgressHUD()
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult message: String) {
@@ -216,7 +228,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {
-        presentationAnchor?.view.dw_showProgressHUD(withMessage: message)
+        presentationAnchor?.topController().view.dw_showProgressHUD(withMessage: message)
     }
 }
 

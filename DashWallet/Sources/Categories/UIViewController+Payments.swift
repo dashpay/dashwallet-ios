@@ -65,7 +65,7 @@ extension PaymentViewController {
         }
     }
 
-    fileprivate func showAlert(with title: String?, message: String?) {
+    private func showAlert(with title: String?, message: String?) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
         alert.addAction(okAction)
@@ -178,13 +178,4 @@ extension PaymentViewController {
     }
 }
 
-extension UIViewController {
-    func showAlert(with title: String?, message: String?, presentingViewController: UIViewController? = nil) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
-        alert.addAction(okAction)
 
-        let presentingViewController = presentingViewController ?? self
-        presentingViewController.present(alert, animated: true)
-    }
-}

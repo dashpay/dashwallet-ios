@@ -22,7 +22,7 @@ private let kDescKeyboardPadding: CGFloat = 8.0
 
 // MARK: - BaseAmountViewController
 
-class BaseAmountViewController: ActionButtonViewController {
+class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     public var topKeyboardView: UIView? {
         didSet {
             if let view = oldValue {
@@ -98,7 +98,7 @@ class BaseAmountViewController: ActionButtonViewController {
     internal func validateInputAmount() -> Bool {
         if model.isEnteredAmountLessThenMinimumOutputAmount {
             let msg = String(format: "Dash payments can't be less than %@", model.minimumOutputAmountFormattedString)
-            showAlert(with: NSLocalizedString("Amount too small", comment: ""), message: msg)
+            present(message: msg, level: .error)
             return false
         }
 
@@ -215,5 +215,9 @@ extension BaseAmountViewController: ErrorPresentable {
         }
 
         amountView.showError(error.localizedDescription, textColor: color)
+    }
+
+    func present(message: String, level: MessageLevel) {
+        amountView.showError(message, textColor: level.textColor)
     }
 }
