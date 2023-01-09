@@ -33,6 +33,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     
     private var networkUnavailableView: UIView!
     private var fromLabel: FromLabel!
+    private var dashPriceLabel: UILabel!
     private var minimumDepositBanner: MinimumDepositBanner?
     
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
@@ -61,7 +62,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override var actionButtonTitle: String? {
         NSLocalizedString(mode.title, comment: "CrowdNode")
     }
-
+    
     override func actionButtonAction(sender: UIView) {
         let amount = transferModel.amount.plainAmount
         
@@ -105,9 +106,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         if mode == .deposit {
             return try await viewModel.deposit(amount: amount)
         } else {
-            // TODO: temporary action, does full withdrawal
-            try await viewModel.withdraw(permil: 1000)
-            return true
+            return try await viewModel.withdraw(amount: amount)
         }
     }
 
@@ -175,7 +174,7 @@ extension CrowdNodeTransferController {
         titleLabel.text = NSLocalizedString(mode.title, comment: "CrowdNode")
         titleViewStackView.addArrangedSubview(titleLabel)
 
-        let dashPriceLabel = UILabel()
+        dashPriceLabel = UILabel()
         dashPriceLabel.font = .dw_font(forTextStyle: .footnote)
         dashPriceLabel.textColor = .dw_secondaryText()
         dashPriceLabel.minimumScaleFactor = 0.5
@@ -244,10 +243,17 @@ extension CrowdNodeTransferController {
             .store(in: &cancellableBag)
     }
     
-    func updateBalanceLabel() {
+    override func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
+        super.localCurrencyViewController(controller, didSelectCurrency: currencyCode)
+        
+        self.updateBalanceLabel()
+        dashPriceLabel.text = transferModel.dashPriceDisplayString
+    }
+    
+    private func updateBalanceLabel() {
         let amount = mode == .deposit ? viewModel.walletBalance : viewModel.crowdNodeBalance
         let priceManager = DSPriceManager.sharedInstance()
-        let formatted = model.activeAmountType == .main ? priceManager.string(forDashAmount: Int64(amount)) : priceManager.localCurrencyString(forDashAmount: Int64(amount))
+        let formatted = model.activeAmountType == .main ? priceManager.string(forDashAmount: Int64(amount)) : priceManager.fiatCurrencyString(model.localCurrencyCode, forDashAmount: Int64(amount))
         fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + (formatted ?? NSLocalizedString("Syncing", comment: "CrowdNode"))
     }
 }

@@ -90,6 +90,17 @@ final class CrowdNodeTransferModel: SendAmountModel {
     weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
     public var direction: TransferDirection = .deposit
     
+    var dashPriceDisplayString: String {
+        let dashAmount = kOneDash
+        let dashAmountFormatted = dashAmount.formattedDashAmount
+
+        let priceManger = DSPriceManager.sharedInstance()
+        let fiatBalanceFormatted = priceManger.fiatCurrencyString(localCurrencyCode, forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
+
+        let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
+        return displayString
+    }
+    
     override var isSendAllowed: Bool {
         let minDepositAmount = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
         let minWithdrawAmount = CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
@@ -98,14 +109,19 @@ final class CrowdNodeTransferModel: SendAmountModel {
         return super.isSendAllowed && amount.plainAmount > minValue
     }
     
-    var dashPriceDisplayString: String {
-        let dashAmount = kOneDash
-        let dashAmountFormatted = dashAmount.formattedDashAmount
-
-        let priceManger = DSPriceManager.sharedInstance()
-        let fiatBalanceFormatted = priceManger.localCurrencyString(forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
-
-        let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
-        return displayString
+    override var canShowInsufficientFunds: Bool {
+        if direction == .deposit {
+            return super.canShowInsufficientFunds
+        } else {
+            return amount.plainAmount > CrowdNode.shared.balance
+        }
+    }
+    
+    override func selectAllFunds(_ preparationHandler: () -> Void) {
+        if direction == .deposit {
+            super.selectAllFunds(preparationHandler)
+        } else {
+            super.updateCurrentAmountObject(with: Int64(CrowdNode.shared.balance))
+        }
     }
 }

@@ -295,11 +295,14 @@ extension CrowdNode {
         }
     }
 
-    func withdraw(permil: UInt) async throws {
+    func withdraw(amount: UInt64) async throws {
         guard !accountAddress.isEmpty else { return }
-
         let account = DWEnvironment.sharedInstance().currentAccount
-        let requestValue = CrowdNode.apiOffset + UInt64(permil)
+
+        let maxPermil = ApiCode.withdrawAll.rawValue
+        let permil = UInt64(round(Double(amount * maxPermil) / Double(balance)))
+        let requestPermil = min(permil, maxPermil)
+        let requestValue = CrowdNode.apiOffset + UInt64(requestPermil)
         let requiredTopUp = requestValue + TX_FEE_PER_INPUT
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
 

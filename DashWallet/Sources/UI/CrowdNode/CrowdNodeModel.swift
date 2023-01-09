@@ -111,7 +111,7 @@ extension CrowdNodePortalItem {
             return walletBalance <= 0
 
         case .withdraw:
-            return crowdNodeBalance <= 0
+            return crowdNodeBalance <= 0 || walletBalance < CrowdNode.minimumLeftoverBalance
 
         default:
             return false
@@ -314,8 +314,19 @@ extension CrowdNodeModel {
         return false
     }
 
-    func withdraw(permil: UInt) async throws {
-        guard permil > 0 else { return }
-        try await crowdNode.withdraw(permil: permil)
+    func withdraw(amount: Int64) async throws -> Bool {
+        guard amount > 0 && walletBalance >= CrowdNode.minimumLeftoverBalance else { return false }
+        
+        if !DSAuthenticationManager.sharedInstance().didAuthenticate {
+            let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: UInt64(amount))
+            let authenticated = await authenticate(allowBiometric: usingBiometric)
+            
+            if !authenticated {
+                return false
+            }
+        }
+        
+        try await crowdNode.withdraw(amount: UInt64(amount))
+        return true
     }
 }
