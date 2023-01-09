@@ -18,13 +18,10 @@
 #import <UIKit/UIKit.h>
 
 #import "DWDeviceAdaptableController.h"
-#import "DWNavigationChildViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseViewController : DWNavigationChildViewController <DWDeviceAdaptableController>
-
-+ (CGFloat)deviceSpecificBottomPadding;
+@interface DWBaseViewController : UIViewController <DWDeviceAdaptableController>
 
 @end
 

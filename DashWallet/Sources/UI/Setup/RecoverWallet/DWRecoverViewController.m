@@ -23,6 +23,7 @@
 #import "DWRecoverContentView.h"
 #import "DWRecoverModel.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

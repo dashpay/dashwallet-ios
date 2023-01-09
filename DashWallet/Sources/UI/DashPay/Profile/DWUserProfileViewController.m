@@ -87,10 +87,6 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (DWNavigationBarAppearance)navigationBarAppearance {
-    return DWNavigationBarAppearanceWhite;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
 

@@ -147,24 +147,23 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 /// helper
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
-    if ([self.currentController.presentedViewController isKindOfClass:[DWNavigationController class]]) {
-        DWNavigationController *nvc = (DWNavigationController *)self.currentController.presentedViewController;
-
-        if (![nvc.topViewController isKindOfClass:[DWPaymentsViewController class]]) {
-            return;
-        }
+    if (![self.currentController.topController isKindOfClass:[DWPaymentsViewController class]]) {
+        if (completion)
+            completion();
+        return;
     }
+
 
     tabBarView.userInteractionEnabled = NO;
     [tabBarView setPaymentsButtonOpened:NO];
 
-    [self.currentController dismissViewControllerAnimated:YES
-                                               completion:^{
-                                                   self.tabBarView.userInteractionEnabled = YES;
-                                                   if (completion) {
-                                                       completion();
-                                                   }
-                                               }];
+    [self.currentController.topController dismissViewControllerAnimated:YES
+                                                             completion:^{
+                                                                 self.tabBarView.userInteractionEnabled = YES;
+                                                                 if (completion) {
+                                                                     completion();
+                                                                 }
+                                                             }];
 }
 
 #pragma mark - DWPaymentsViewControllerDelegate
@@ -298,10 +297,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex {
-    if (self.modalController) {
-        return;
-    }
-
     self.tabBarView.userInteractionEnabled = NO;
     [self.tabBarView setPaymentsButtonOpened:YES];
 
@@ -321,15 +316,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self.currentController presentViewController:navigationController
-                                         animated:YES
-                                       completion:^{
-                                           self.tabBarView.userInteractionEnabled = YES;
-                                       }];
-    //        [self.currentController displayModalViewController:navigationController
-    //                              completion:^{
-    //                                  self.tabBarView.userInteractionEnabled = YES;
-    //                              }];
+
+    if (self.demoMode) {
+        [self.demoDelegate presentModalController:navigationController sender:self];
+    }
+    else {
+        [self.currentController.topController presentViewController:navigationController
+                                                           animated:YES
+                                                         completion:^{
+                                                             self.tabBarView.userInteractionEnabled = YES;
+                                                         }];
+    }
 }
 
 - (void)setupControllers {

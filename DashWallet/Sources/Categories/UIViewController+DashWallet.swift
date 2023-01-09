@@ -38,4 +38,16 @@ extension UIViewController {
 
         return self
     }
+
+    @objc class func deviceSpecificBottomPadding() -> CGFloat {
+        if UIDevice.isIpad { // All iPads including ones with home indicator
+            return 24.0;
+        } else if UIDevice.hasHomeIndicator { // iPhone X-like, XS Max, X
+            return 4.0;
+        } else if UIDevice.isIphone6Plus { // iPhone 6 Plus-like
+            return 20.0;
+        } else { // iPhone 5-like, 6-like
+            return 16.0;
+        }
+    }
 }

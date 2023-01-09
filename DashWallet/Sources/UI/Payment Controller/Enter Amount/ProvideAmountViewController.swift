@@ -45,12 +45,11 @@ final class ProvideAmountViewController: SendAmountViewController {
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
 
-        if !sendAmountModel.isSendAllowed {
-            showAlert(with: NSLocalizedString("Please wait for the sync to complete", comment: "Send Screen"), message: nil)
-            return
-        }
+        showActivityIndicator()
 
-        DWGlobalOptions.sharedInstance().selectedPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
+        let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
+        DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
+
         delegate?.provideAmountViewControllerDidInput(amount: UInt64(model.amount.plainAmount))
     }
 

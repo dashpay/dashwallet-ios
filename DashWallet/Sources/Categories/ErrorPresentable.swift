@@ -19,11 +19,19 @@ import Foundation
 
 // MARK: - MessageLevel
 
-enum MessageLevel {
+enum MessageLevel: ColorizedText {
     case success
     case info
     case warning
     case error
+
+    var textColor: UIColor {
+        if self == .error {
+            return .systemRed
+        } else {
+            return .systemOrange
+        }
+    }
 }
 
 // MARK: - MessageDataProvider

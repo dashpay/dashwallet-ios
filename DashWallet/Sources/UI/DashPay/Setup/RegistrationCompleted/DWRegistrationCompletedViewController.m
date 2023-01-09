@@ -20,6 +20,7 @@
 #import "DWActionButton.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 @interface DWRegistrationCompletedViewController ()
 
