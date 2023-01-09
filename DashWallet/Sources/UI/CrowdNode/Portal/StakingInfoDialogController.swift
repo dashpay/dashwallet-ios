@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -19,43 +19,43 @@ import Foundation
 
 final class StakingInfoDialogController: UIViewController {
     private let viewModel = CrowdNode.shared
-    
+
     @IBOutlet var masternodeApyLabel: UILabel!
     @IBOutlet var crowdnodeApyLabel: UILabel!
     @IBOutlet var minimumDepositLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
-    
+
     static func controller() -> StakingInfoDialogController {
-        return vc(StakingInfoDialogController.self, from: sb("CrowdNode"))
+        vc(StakingInfoDialogController.self, from: sb("CrowdNode"))
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
     }
-    
+
     @IBAction func closeAction() {
         dismiss(animated: true)
     }
-    
+
     @IBAction func copyAddressAction() {
         UIPasteboard.general.string = CrowdNode.shared.accountAddress
-        self.view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+        view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
-    
+
     private func configureHierarchy() {
         addressLabel.text = CrowdNode.shared.accountAddress
         let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
-        minimumDepositLabel.text = String.localizedStringWithFormat(
-            NSLocalizedString("You only need %@ to join the pool.", comment: "CrowdNode"), minimumDeposit)
-        
+        minimumDepositLabel.text = String.localizedStringWithFormat(NSLocalizedString("You only need %@ to join the pool.", comment: "CrowdNode"), minimumDeposit)
+
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
-        masternodeApyLabel.text = String.localizedStringWithFormat(
-            NSLocalizedString("A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.", comment: "CrowdNode"), formatter.string(for: viewModel.masternodeAPY)!)
-        crowdnodeApyLabel.text = String.localizedStringWithFormat(
-            NSLocalizedString("Current APY is %@", comment: "CrowdNode"), formatter.string(for: viewModel.crowdnodeAPY)!)
+        masternodeApyLabel.text = String
+            .localizedStringWithFormat(NSLocalizedString("A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.",
+                                                         comment: "CrowdNode"),
+                                       formatter.string(for: viewModel.masternodeAPY)!)
+        crowdnodeApyLabel.text = String.localizedStringWithFormat(NSLocalizedString("Current APY is %@", comment: "CrowdNode"), formatter.string(for: viewModel.crowdnodeAPY)!)
     }
 }

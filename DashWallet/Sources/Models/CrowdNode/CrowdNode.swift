@@ -48,7 +48,7 @@ public class CrowdNodeObjcWrapper: NSObject {
     @objc public class func notificationID() -> String {
         CrowdNode.notificationID
     }
-    
+
     @objc public class func apiOffset() -> UInt64 {
         CrowdNode.apiOffset
     }
@@ -335,13 +335,13 @@ extension CrowdNode {
             }
         }
     }
-    
+
     func hasAnyDeposits() -> Bool {
         guard !accountAddress.isEmpty else { return false }
-        
+
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeDepositTx(accountAddress: accountAddress)
-        
+
         return wallet.allTransactions.contains {
             tx in filter.matches(tx: tx)
         }
@@ -401,10 +401,10 @@ extension CrowdNode {
         notifyIfNeeded(message: error.errorDescription)
         DSLogger.log("CrowdNode error: \(error.errorDescription)")
     }
-    
+
     private func notifyIfNeeded(message: String) {
         guard showNotificationOnResult &&
-                DWGlobalOptions.sharedInstance().localNotificationsEnabled else { return }
+            DWGlobalOptions.sharedInstance().localNotificationsEnabled else { return }
 
         let content = UNMutableNotificationContent()
         content.body = message

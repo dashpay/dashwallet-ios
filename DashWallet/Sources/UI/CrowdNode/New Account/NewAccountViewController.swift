@@ -37,7 +37,7 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     }
 
     @objc static func controller() -> NewAccountViewController {
-        return vc(NewAccountViewController.self, from: sb("CrowdNode"))
+        vc(NewAccountViewController.self, from: sb("CrowdNode"))
     }
 
     @IBAction func continueAction() {

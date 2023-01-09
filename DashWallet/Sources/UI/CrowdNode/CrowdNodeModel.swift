@@ -170,7 +170,7 @@ final class CrowdNodeModel {
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
     var shouldShowFirstDepositBanner: Bool {
-        return !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
+        !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
     }
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
@@ -265,7 +265,7 @@ final class CrowdNodeModel {
                 self?.outputMessage = outputMessage
             }
             .store(in: &cancellableBag)
-        
+
         crowdNode.$apiError
             .sink { [weak self] error in self?.error = error }
             .store(in: &cancellableBag)
@@ -304,13 +304,13 @@ extension CrowdNodeModel {
 extension CrowdNodeModel {
     func deposit(amount: Int64) async throws -> Bool {
         guard amount > 0 else { return false }
-        
+
         let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: UInt64(amount))
         if await authenticate(allowBiometric: usingBiometric) {
             try await crowdNode.deposit(amount: UInt64(amount))
             return true
         }
-        
+
         return false
     }
 

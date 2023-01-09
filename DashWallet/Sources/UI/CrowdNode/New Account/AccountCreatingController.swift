@@ -40,7 +40,7 @@ final class AccountCreatingController: UIViewController {
     }
 
     @objc static func controller() -> AccountCreatingController {
-        return vc(AccountCreatingController.self, from: sb("CrowdNode"))
+        vc(AccountCreatingController.self, from: sb("CrowdNode"))
     }
 
     @IBAction func closeAndNotify() {

@@ -39,6 +39,6 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
     }
 
     @objc static func controller() -> WelcomeToCrowdNodeViewController {
-        return vc(WelcomeToCrowdNodeViewController.self, from: sb("CrowdNode"))
+        vc(WelcomeToCrowdNodeViewController.self, from: sb("CrowdNode"))
     }
 }

@@ -47,7 +47,7 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc static func controller() -> CrowdNodePortalController {
-        return vc(CrowdNodePortalController.self, from: sb("CrowdNode"))
+        vc(CrowdNodePortalController.self, from: sb("CrowdNode"))
     }
 
     @objc func infoButtonAction() {
@@ -132,21 +132,21 @@ extension CrowdNodePortalController {
                 }
             })
             .store(in: &cancellableBag)
-        
+
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .filter { error in error != nil }
             .sink(receiveValue: { [weak self] error in
-                if (error is CrowdNode.Error) {
+                if error is CrowdNode.Error {
                     self?.navigateToErrorScreen(error as! CrowdNode.Error)
                 }
             })
             .store(in: &cancellableBag)
     }
-    
+
     private func navigateToErrorScreen(_ error: CrowdNode.Error) {
         viewModel.error = nil
-        
+
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.headerText = NSLocalizedString("Transfer Error", comment: "CrowdNode")
         vc.descriptionText = error.errorDescription

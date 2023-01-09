@@ -73,7 +73,7 @@ final class GettingStartedViewController: UIViewController {
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
         let alert = UIAlertController(title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
                                       message: String.localizedStringWithFormat(NSLocalizedString("You should have at least %@ to proceed with the CrowdNode verification.",
-                                                                 comment: ""), minimumDash),
+                                                                                                  comment: ""), minimumDash),
                                       preferredStyle: UIAlertController.Style.alert)
         alert
             .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
@@ -87,7 +87,7 @@ final class GettingStartedViewController: UIViewController {
     }
 
     @objc static func controller() -> GettingStartedViewController {
-        return vc(GettingStartedViewController.self, from: sb("CrowdNode"))
+        vc(GettingStartedViewController.self, from: sb("CrowdNode"))
     }
 }
 
