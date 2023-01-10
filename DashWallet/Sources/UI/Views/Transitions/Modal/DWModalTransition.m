@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
     DWModalPresentationController *presentationController =
         [[DWModalPresentationController alloc] initWithPresentedViewController:presented
                                                       presentingViewController:presenting];
-    presentationController.delegate = self.modalPresentationControllerDelegate;
+    presentationController.controllerDelegate = self.modalPresentationControllerDelegate;
     presentationController.interactiveTransition = self.interactiveTransition;
     return presentationController;
 }
