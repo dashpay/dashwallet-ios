@@ -78,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)payToAddressFromPasteboardAvailable:(nonnull void (^)(BOOL))completion {
+    completion(true);
 }
 
 - (nonnull DWPaymentInput *)paymentInputWithURL:(nonnull NSURL *)url {

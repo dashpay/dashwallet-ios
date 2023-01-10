@@ -2,7 +2,7 @@ devices([
   "iPhone 8 Plus",
   "iPhone 14 Plus",
 
-  "iPad Pro (12.9-inch) (4th generation)",
+  "iPad Pro (12.9-inch) (6th generation)",
 ])
 
 languages([

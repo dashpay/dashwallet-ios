@@ -167,6 +167,11 @@ extension ActionButtonViewController {
             button.setTitle(actionButtonTitle, for: .normal)
             button.setTitle(actionButtonDisabledTitle, for: .disabled)
             button.addTarget(self, action: #selector(actionButtonAction(sender:)), for: .touchUpInside)
+
+            if _SNAPSHOT {
+                button?.accessibilityIdentifier = "action_button"
+            }
+
             buttonContainer.addSubview(button)
             actionButton = button
 

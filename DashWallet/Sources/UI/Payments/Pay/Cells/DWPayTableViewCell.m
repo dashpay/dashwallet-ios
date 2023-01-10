@@ -70,6 +70,8 @@ static CGFloat const MAX_ALLOWED_BUTTON_WIDTH = 108.0;
     self.actionButton.enabled = YES;
 
 #if SNAPSHOT
+    DWPayOptionModelType type = _model.type;
+
     if (type == DWPayOptionModelType_Pasteboard) {
         self.actionButton.accessibilityIdentifier = @"send_pasteboard_button";
     }
