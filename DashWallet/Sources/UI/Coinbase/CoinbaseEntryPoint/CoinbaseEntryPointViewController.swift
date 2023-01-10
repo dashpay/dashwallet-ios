@@ -177,8 +177,7 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         case .sellDash:
             vc = BuyDashViewController()
         case .convertCrypto:
-            showSuccessTransactionStatus(text: "Test text")
-            return
+            vc = CustodialSwapsViewController()
         case .transferDash:
             vc = TransferAmountViewController()
         }

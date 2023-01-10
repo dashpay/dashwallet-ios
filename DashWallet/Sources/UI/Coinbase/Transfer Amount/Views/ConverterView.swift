@@ -21,18 +21,18 @@ import UIKit
 
 enum ConverterViewDirection {
     case toWallet
-    case toCoinbase
+    case fromWallet
 
     fileprivate var fromSource: Source {
-        self == .toCoinbase ? .dash : .coinbase
+        self == .fromWallet ? .dash : .coinbase
     }
 
     fileprivate var toSource: Source {
-        self == .toCoinbase ? .coinbase : .dash
+        self == .fromWallet ? .coinbase : .dash
     }
 
     var next: Self {
-        self == .toCoinbase ? .toWallet : .toCoinbase
+        self == .fromWallet ? .toWallet : .fromWallet
     }
 }
 
@@ -69,7 +69,7 @@ class ConverterView: UIView {
     private var toView: SourceView!
     private var swapImageView: UIImageView!
 
-    private var direction: ConverterViewDirection = .toCoinbase
+    private var direction: ConverterViewDirection = .fromWallet
 
     init(direction: ConverterViewDirection) {
         self.direction = direction
@@ -108,7 +108,7 @@ class ConverterView: UIView {
 
 extension ConverterView {
     private var balance: String {
-        let balance = direction == .toCoinbase ? dataSource?.walletBalanceFormatted : dataSource?.coinbaseBalanceFormatted
+        let balance = direction == .fromWallet ? dataSource?.walletBalanceFormatted : dataSource?.coinbaseBalanceFormatted
         return balance ?? "0"
     }
 

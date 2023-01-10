@@ -597,6 +597,8 @@
 		47CF46AC2965B65B0067B6EE /* CBAccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46AB2965B65B0067B6EE /* CBAccountManager.swift */; };
 		47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */; };
 		47E71F76286AEDE300CDF2BD /* DWCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 47E71F74286AED1900CDF2BD /* DWCSVExporter.m */; };
+		47E94B97296D7D5B000FE68E /* CustodialSwapsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E94B96296D7D5B000FE68E /* CustodialSwapsViewController.swift */; };
+		47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E94B99296D7F99000FE68E /* CustodialSwapsModel.swift */; };
 		47EE171729560DC200BA1986 /* ErrorPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE171629560DC200BA1986 /* ErrorPresentable.swift */; };
 		47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE17182959CDC200BA1986 /* ColorizedText.swift */; };
 		47EEE23B293F041E00049E0B /* CBUserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE23A293F041E00049E0B /* CBUserManager.swift */; };
@@ -1779,6 +1781,8 @@
 		47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Numbers+Dash.swift"; sourceTree = "<group>"; };
 		47E71F74286AED1900CDF2BD /* DWCSVExporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCSVExporter.m; sourceTree = "<group>"; };
 		47E71F75286AED1900CDF2BD /* DWCSVExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCSVExporter.h; sourceTree = "<group>"; };
+		47E94B96296D7D5B000FE68E /* CustodialSwapsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustodialSwapsViewController.swift; sourceTree = "<group>"; };
+		47E94B99296D7F99000FE68E /* CustodialSwapsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustodialSwapsModel.swift; sourceTree = "<group>"; };
 		47EE171629560DC200BA1986 /* ErrorPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorPresentable.swift; sourceTree = "<group>"; };
 		47EE17182959CDC200BA1986 /* ColorizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorizedText.swift; sourceTree = "<group>"; };
 		47EEE23A293F041E00049E0B /* CBUserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBUserManager.swift; sourceTree = "<group>"; };
@@ -2090,6 +2094,7 @@
 			isa = PBXGroup;
 			children = (
 				47CDEECA294A2B9F008AE06D /* Base */,
+				47E94B95296D7CF9000FE68E /* Custodial Swaps */,
 				478C98242942DBF200FAA0F0 /* Buy Dash */,
 				47522F4E2927CAE900EE143E /* Operation Status Controller */,
 				0F36937C2919A597007F4E91 /* Two Factor Auth */,
@@ -4972,6 +4977,23 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		47E94B95296D7CF9000FE68E /* Custodial Swaps */ = {
+			isa = PBXGroup;
+			children = (
+				47E94B98296D7F92000FE68E /* Model */,
+				47E94B96296D7D5B000FE68E /* CustodialSwapsViewController.swift */,
+			);
+			path = "Custodial Swaps";
+			sourceTree = "<group>";
+		};
+		47E94B98296D7F92000FE68E /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				47E94B99296D7F99000FE68E /* CustodialSwapsModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		47F2C67B28602D3800C2B774 /* PageSheet */ = {
 			isa = PBXGroup;
 			children = (
@@ -6022,6 +6044,7 @@
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				47522F502927CB9000EE143E /* SuccessfulOperationStatusViewController.swift in Sources */,
+				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
@@ -6118,6 +6141,7 @@
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
+				47E94B97296D7D5B000FE68E /* CustodialSwapsViewController.swift in Sources */,
 				2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */,
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,

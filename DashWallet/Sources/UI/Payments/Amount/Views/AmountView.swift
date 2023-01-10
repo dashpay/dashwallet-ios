@@ -21,6 +21,16 @@ import UIKit
 
 protocol AmountViewDataSource: AmountInputControlDataSource {
     var localCurrency: String { get }
+    var switcherItems: [AmountInputTypeItem] { get }
+}
+
+extension AmountViewDataSource {
+    var switcherItems: [AmountInputTypeItem] {
+        [
+            .init(currencySymbol: kDashCurrency, currencyCode: kDashCurrency),
+            .init(currencySymbol: localCurrency, currencyCode: "FIAT"),
+        ]
+    }
 }
 
 // MARK: - AmountViewDelegate
@@ -144,10 +154,7 @@ class AmountView: UIView {
 
 extension AmountView {
     private func updateView() {
-        inputTypeSwitcher.items = [
-            .init(currencySymbol: "DASH", currencyCode: "DASH"),
-            .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT"),
-        ]
+        inputTypeSwitcher.items = dataSource?.switcherItems ?? []
 
         maxButton.isHidden = isMaxButtonHidden
     }

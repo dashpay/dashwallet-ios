@@ -27,6 +27,8 @@ enum CoinbaseEntryPointItem: CaseIterable {
 }
 
 extension CoinbaseEntryPointItem {
+    static let supportedCases: [CoinbaseEntryPointItem] = [.buyDash, .convertCrypto, .transferDash]
+
     var title: String {
         switch self {
         case .buyDash:
@@ -65,12 +67,14 @@ extension CoinbaseEntryPointItem {
             return "transferCoinbase"
         }
     }
+
+
 }
 
 // MARK: - CoinbaseEntryPointModel
 
 final class CoinbaseEntryPointModel {
-    let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.allCases
+    let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.supportedCases
 
     var hasPaymentMethods = false
 

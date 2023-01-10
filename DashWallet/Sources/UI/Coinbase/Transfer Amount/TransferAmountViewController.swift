@@ -30,7 +30,7 @@ struct TransferAmountView: UIViewControllerRepresentable {
 
 // MARK: - TransferAmountViewController
 
-final class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling {
+class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling, ConverterViewDelegate {
     /// Conform to NetworkReachabilityHandling
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
@@ -55,6 +55,14 @@ final class TransferAmountViewController: SendAmountViewController, NetworkReach
         transferModel.initializeTransfer()
     }
 
+    // MARK: ConverterViewDelegate
+
+    func didChangeDirection(_ direction: ConverterViewDirection) {
+        transferModel.direction = direction == .fromWallet ? .toCoinbase : .toWallet
+    }
+
+    // MARK: Life Cycle
+
     override func initializeModel() {
         model = TransferAmountModel()
     }
@@ -67,7 +75,7 @@ final class TransferAmountViewController: SendAmountViewController, NetworkReach
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        converterView = ConverterView(direction: .toCoinbase)
+        converterView = ConverterView(direction: .fromWallet)
         converterView.delegate = self
         converterView.dataSource = model
         converterView.translatesAutoresizingMaskIntoConstraints = false
@@ -121,14 +129,6 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
         paymentController.delegate = self
         paymentController.presentationContextProvider = self
         paymentController.performPayment(with: input)
-    }
-}
-
-// MARK: ConverterViewDelegate
-
-extension TransferAmountViewController: ConverterViewDelegate {
-    func didChangeDirection(_ direction: ConverterViewDirection) {
-        transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
     }
 }
 

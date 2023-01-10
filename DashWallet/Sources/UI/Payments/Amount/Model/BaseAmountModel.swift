@@ -47,6 +47,13 @@ class BaseAmountModel {
         }
     }
 
+    var switcherItems: [AmountInputTypeItem] {
+        [
+            .init(currencySymbol: kDashCurrency, currencyCode: kDashCurrency),
+            .init(currencySymbol: localCurrency, currencyCode: "FIAT"),
+        ]
+    }
+
     public var errorHandler: ((Error) -> Void)?
     public var amountChangeHandler: ((AmountObject) -> Void)?
     public var presentCurrencyPickerHandler: (() -> Void)?
