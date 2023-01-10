@@ -886,6 +886,468 @@
             </objects>
             <point key="canvasLocation" x="1513.8461538461538" y="3.5545023696682461"/>
         </scene>
+        <!--Staking Info Dialog Controller-->
+        <scene sceneID="tLH-A6-0Cl">
+            <objects>
+                <viewController storyboardIdentifier="StakingInfoDialogController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="LKe-aK-9qL" customClass="StakingInfoDialogController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="pzv-8w-q33">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mVa-jz-nDF" userLabel="Close Button">
+                                <rect key="frame" x="330" y="52" width="60" height="45"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="60" id="QFy-kN-Fi7"/>
+                                    <constraint firstAttribute="height" constant="45" id="h4O-ul-qFf"/>
+                                </constraints>
+                                <color key="tintColor" name="Label"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal">
+                                    <color key="titleColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <imageReference key="image" image="xmark" catalog="system" symbolScale="medium"/>
+                                </state>
+                                <connections>
+                                    <action selector="closeAction" destination="LKe-aK-9qL" eventType="touchUpInside" id="UaW-3d-DCd"/>
+                                </connections>
+                            </button>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HPd-OG-OZR">
+                                <rect key="frame" x="0.0" y="92" width="390" height="718"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jA3-H3-Rzo" userLabel="ScrollView Content">
+                                        <rect key="frame" x="0.0" y="0.0" width="390" height="1500"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.staking" translatesAutoresizingMaskIntoConstraints="NO" id="o5W-M5-wwn" userLabel="Staking Image">
+                                                <rect key="frame" x="75" y="0.0" width="240" height="180"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="240" id="F5B-zg-FpQ"/>
+                                                    <constraint firstAttribute="height" constant="180" id="SIU-7a-12s"/>
+                                                </constraints>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hWf-mu-AOq" userLabel="Title Label">
+                                                <rect key="frame" x="20" y="200" width="320" height="73.666666666666686"/>
+                                                <attributedString key="attributedText">
+                                                    <fragment content="How CrowdNode staking works">
+                                                        <attributes>
+                                                            <color key="NSColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                            <font key="NSFont" metaFont="systemBold" size="28"/>
+                                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineHeightMultiple="1.1000000000000001" tighteningFactorForTruncation="0.0"/>
+                                                        </attributes>
+                                                    </fragment>
+                                                </attributedString>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wQO-R7-BpZ">
+                                                <rect key="frame" x="20" y="278.66666666666669" width="350" height="54.333333333333314"/>
+                                                <attributedString key="attributedText">
+                                                    <fragment content="The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments.">
+                                                        <attributes>
+                                                            <color key="NSColor" name="SecondaryTextColor"/>
+                                                            <font key="NSFont" metaFont="system" size="14"/>
+                                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="2" lineHeightMultiple="1" tighteningFactorForTruncation="0.0"/>
+                                                        </attributes>
+                                                    </fragment>
+                                                </attributedString>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GNw-9x-IA6">
+                                                <rect key="frame" x="20" y="343" width="350" height="56.333333333333314"/>
+                                                <attributedString key="attributedText">
+                                                    <fragment content="A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately 6.9% per year.">
+                                                        <attributes>
+                                                            <color key="NSColor" name="SecondaryTextColor"/>
+                                                            <font key="NSFont" metaFont="system" size="14"/>
+                                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                        </attributes>
+                                                    </fragment>
+                                                </attributedString>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Eet-hr-JNf" userLabel="Benefits">
+                                                <rect key="frame" x="15" y="419.33333333333331" width="360" height="652.33333333333348"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cb1-td-uoa" userLabel="CrowdNode benefits">
+                                                        <rect key="frame" x="10" y="20.000000000000057" width="330" height="15.666666666666664"/>
+                                                        <attributedString key="attributedText">
+                                                            <fragment content="CrowdNode benefits">
+                                                                <attributes>
+                                                                    <color key="NSColor" name="TertiaryTextColor"/>
+                                                                    <font key="NSFont" metaFont="system"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" firstLineHeadIndent="10" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Ju-4G-VHa">
+                                                        <rect key="frame" x="10" y="55.666666666666686" width="330" height="140"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bIp-ae-N8Y">
+                                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                                <color key="tintColor" name="DashBlueColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="50" id="eDN-Ki-R6N"/>
+                                                                    <constraint firstAttribute="width" constant="50" id="fqZ-n3-KyR"/>
+                                                                </constraints>
+                                                                <imageReference key="image" image="image.crowdnode.joining.pool" symbolScale="large"/>
+                                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
+                                                            </imageView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="55U-aZ-6x1">
+                                                                <rect key="frame" x="60" y="16" width="270" height="124"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Joining the pool" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gre-qi-lTd">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="107.66666666666667" height="17"/>
+                                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Oe7-NZ-W4z">
+                                                                        <rect key="frame" x="0.0" y="21" width="270" height="103"/>
+                                                                        <attributedString key="attributedText">
+                                                                            <fragment>
+                                                                                <string key="content">As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode.</string>
+                                                                                <attributes>
+                                                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                                                    <font key="NSFont" metaFont="system"/>
+                                                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                                                </attributes>
+                                                                            </fragment>
+                                                                        </attributedString>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstItem="55U-aZ-6x1" firstAttribute="leading" secondItem="bIp-ae-N8Y" secondAttribute="trailing" constant="10" id="2Bn-ez-WWF"/>
+                                                            <constraint firstItem="55U-aZ-6x1" firstAttribute="top" secondItem="6Ju-4G-VHa" secondAttribute="top" constant="16" id="Cdg-yj-tOD"/>
+                                                            <constraint firstAttribute="bottom" secondItem="55U-aZ-6x1" secondAttribute="bottom" id="M46-XX-6Xo"/>
+                                                            <constraint firstItem="bIp-ae-N8Y" firstAttribute="top" secondItem="6Ju-4G-VHa" secondAttribute="top" id="O0Q-MR-YPU"/>
+                                                            <constraint firstAttribute="trailing" secondItem="55U-aZ-6x1" secondAttribute="trailing" id="SDC-Yf-bh7"/>
+                                                            <constraint firstItem="bIp-ae-N8Y" firstAttribute="leading" secondItem="6Ju-4G-VHa" secondAttribute="leading" id="uiq-tW-7xf"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3q2-ad-psO">
+                                                        <rect key="frame" x="10" y="215.66666666666666" width="330" height="92.666666666666657"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="FjF-4b-sNh">
+                                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                                <color key="tintColor" systemColor="systemGrayColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="50" id="4Ms-dZ-sSa"/>
+                                                                    <constraint firstAttribute="width" constant="50" id="yns-ac-9qu"/>
+                                                                </constraints>
+                                                                <imageReference key="image" image="image.crowdnode.first.deposit" symbolScale="large"/>
+                                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
+                                                            </imageView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="QTy-d0-lp5">
+                                                                <rect key="frame" x="60" y="16" width="270" height="76.666666666666671"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="First minimum deposit" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ctX-pF-BtX">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="150" height="55"/>
+                                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L9H-Wm-Kbc">
+                                                                        <rect key="frame" x="0.0" y="60.999999999999993" width="268.33333333333331" height="15.666666666666664"/>
+                                                                        <attributedString key="attributedText">
+                                                                            <fragment content="You only need only 0,5 Dash to join the pool.">
+                                                                                <attributes>
+                                                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                                                    <font key="NSFont" metaFont="system"/>
+                                                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                                                </attributes>
+                                                                            </fragment>
+                                                                        </attributedString>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" secondItem="QTy-d0-lp5" secondAttribute="bottom" id="VdL-E8-thq"/>
+                                                            <constraint firstAttribute="trailing" secondItem="QTy-d0-lp5" secondAttribute="trailing" id="W5j-DV-IaF"/>
+                                                            <constraint firstItem="QTy-d0-lp5" firstAttribute="leading" secondItem="FjF-4b-sNh" secondAttribute="trailing" constant="10" id="WM7-sb-Crj"/>
+                                                            <constraint firstItem="QTy-d0-lp5" firstAttribute="top" secondItem="3q2-ad-psO" secondAttribute="top" constant="16" id="lJK-MH-zQA"/>
+                                                            <constraint firstItem="FjF-4b-sNh" firstAttribute="top" secondItem="3q2-ad-psO" secondAttribute="top" id="qaZ-gy-k4b"/>
+                                                            <constraint firstItem="FjF-4b-sNh" firstAttribute="leading" secondItem="3q2-ad-psO" secondAttribute="leading" id="sgD-uA-mts"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sfz-Y5-PWX">
+                                                        <rect key="frame" x="10" y="328.33333333333331" width="330" height="128.66666666666669"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="PDg-yO-BbB">
+                                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                                <color key="tintColor" systemColor="systemGrayColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="50" id="ImG-Gy-69f"/>
+                                                                    <constraint firstAttribute="width" constant="50" id="Nzr-0o-Dut"/>
+                                                                </constraints>
+                                                                <imageReference key="image" image="image.crowdnode.receiving.rewards" symbolScale="large"/>
+                                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
+                                                            </imageView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="gpc-37-SJt">
+                                                                <rect key="frame" x="60" y="16.000000000000007" width="270" height="112.66666666666669"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Receiving rewards" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mFQ-0P-0bY">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="123.66666666666667" height="17"/>
+                                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dOx-EI-xlS">
+                                                                        <rect key="frame" x="0.0" y="23.000000000000007" width="269.33333333333331" height="89.666666666666686"/>
+                                                                        <attributedString key="attributedText">
+                                                                            <fragment>
+                                                                                <string key="content">You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts.</string>
+                                                                                <attributes>
+                                                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                                                    <font key="NSFont" metaFont="system"/>
+                                                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                                                </attributes>
+                                                                            </fragment>
+                                                                        </attributedString>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstItem="gpc-37-SJt" firstAttribute="top" secondItem="sfz-Y5-PWX" secondAttribute="top" constant="16" id="1ZY-yv-RKU"/>
+                                                            <constraint firstItem="gpc-37-SJt" firstAttribute="leading" secondItem="PDg-yO-BbB" secondAttribute="trailing" constant="10" id="5lp-ES-0al"/>
+                                                            <constraint firstAttribute="trailing" secondItem="gpc-37-SJt" secondAttribute="trailing" id="OjF-NL-jGN"/>
+                                                            <constraint firstAttribute="bottom" secondItem="gpc-37-SJt" secondAttribute="bottom" id="PGC-79-e9t"/>
+                                                            <constraint firstItem="PDg-yO-BbB" firstAttribute="top" secondItem="sfz-Y5-PWX" secondAttribute="top" id="PVE-4N-E5p"/>
+                                                            <constraint firstItem="PDg-yO-BbB" firstAttribute="leading" secondItem="sfz-Y5-PWX" secondAttribute="leading" id="kL0-xB-agL"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IFO-qJ-PAQ">
+                                                        <rect key="frame" x="10" y="477.00000000000006" width="330" height="155.33333333333331"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RyZ-s1-Po1">
+                                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                                <color key="tintColor" systemColor="systemGrayColor"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" constant="50" id="EvB-Ex-LqG"/>
+                                                                    <constraint firstAttribute="height" constant="50" id="H9S-Xa-Acv"/>
+                                                                </constraints>
+                                                                <imageReference key="image" image="image.crowdnode.leaning.pool" symbolScale="large"/>
+                                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
+                                                            </imageView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="HGr-6h-fOk">
+                                                                <rect key="frame" x="60" y="16" width="270" height="139.33333333333334"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Leaving the pool" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z7b-xS-axf">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="110.66666666666667" height="17"/>
+                                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9EG-fn-Xy0">
+                                                                        <rect key="frame" x="0.0" y="22.99999999999989" width="266" height="34.333333333333343"/>
+                                                                        <attributedString key="attributedText">
+                                                                            <fragment content="Members are free to leave the pool and can most often leave immediately.">
+                                                                                <attributes>
+                                                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                                                    <font key="NSFont" metaFont="system"/>
+                                                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                                                </attributes>
+                                                                            </fragment>
+                                                                        </attributedString>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I0y-j0-Qc5">
+                                                                        <rect key="frame" x="0.0" y="63.333333333333371" width="270" height="76"/>
+                                                                        <attributedString key="attributedText">
+                                                                            <fragment>
+                                                                                <string key="content">In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.</string>
+                                                                                <attributes>
+                                                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                                                    <font key="NSFont" metaFont="system" size="14"/>
+                                                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                                                </attributes>
+                                                                            </fragment>
+                                                                        </attributedString>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" secondItem="HGr-6h-fOk" secondAttribute="bottom" id="NUo-gO-C70"/>
+                                                            <constraint firstItem="RyZ-s1-Po1" firstAttribute="leading" secondItem="IFO-qJ-PAQ" secondAttribute="leading" id="QTC-hD-CXZ"/>
+                                                            <constraint firstItem="RyZ-s1-Po1" firstAttribute="top" secondItem="IFO-qJ-PAQ" secondAttribute="top" id="kWp-hy-CxZ"/>
+                                                            <constraint firstItem="HGr-6h-fOk" firstAttribute="top" secondItem="IFO-qJ-PAQ" secondAttribute="top" constant="16" id="l22-Jn-bbZ"/>
+                                                            <constraint firstAttribute="trailing" secondItem="HGr-6h-fOk" secondAttribute="trailing" id="oOY-71-7Rz"/>
+                                                            <constraint firstItem="HGr-6h-fOk" firstAttribute="leading" secondItem="RyZ-s1-Po1" secondAttribute="trailing" constant="10" id="vME-Q7-chS"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <edgeInsets key="layoutMargins" top="20" left="10" bottom="20" right="20"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <integer key="value" value="12"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </stackView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Current APY is 6,9%" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xt1-ez-god" userLabel="APY Label">
+                                                <rect key="frame" x="20" y="1091.6666666666667" width="350" height="24"/>
+                                                <fontDescription key="fontDescription" name=".AppleSystemUIFontBold" family=".AppleSystemUIFont" pointSize="20"/>
+                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RuC-FM-0Jy" userLabel="APY description">
+                                                <rect key="frame" x="20" y="1123.6666666666667" width="350" height="95.666666666666742"/>
+                                                <attributedString key="attributedText">
+                                                    <fragment>
+                                                        <string key="content">This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price.</string>
+                                                        <attributes>
+                                                            <color key="NSColor" name="SecondaryTextColor"/>
+                                                            <font key="NSFont" metaFont="system" size="14"/>
+                                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" lineHeightMultiple="1" tighteningFactorForTruncation="0.0"/>
+                                                        </attributes>
+                                                    </fragment>
+                                                </attributedString>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Connected Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LSv-O0-DKY" userLabel="Address label">
+                                                <rect key="frame" x="20" y="1239.3333333333333" width="236" height="24"/>
+                                                <fontDescription key="fontDescription" name=".AppleSystemUIFontBold" family=".AppleSystemUIFont" pointSize="20"/>
+                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C1C-q3-3v1" userLabel="Address description">
+                                                <rect key="frame" x="20" y="1271.3333333333333" width="350" height="36.666666666666742"/>
+                                                <attributedString key="attributedText">
+                                                    <fragment content="Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device">
+                                                        <attributes>
+                                                            <color key="NSColor" name="SecondaryTextColor"/>
+                                                            <font key="NSFont" metaFont="system" size="14"/>
+                                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" lineHeightMultiple="1" tighteningFactorForTruncation="0.0"/>
+                                                        </attributes>
+                                                    </fragment>
+                                                </attributedString>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fCN-iz-6Qh" userLabel="Address Container">
+                                                <rect key="frame" x="15" y="1323" width="360" height="73.666666666666742"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nVx-b6-kCA" userLabel="Account Label">
+                                                        <rect key="frame" x="15" y="9" width="88.333333333333329" height="17"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                        <color key="textColor" name="SecondaryTextColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sVZ-aB-1rg" userLabel="Account Address">
+                                                        <rect key="frame" x="15" y="30.999999999999996" width="290" height="33.666666666666657"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gwb-vI-XkJ" userLabel="Copy Button">
+                                                        <rect key="frame" x="320" y="17" width="30" height="40"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="40" id="bhm-an-BVQ"/>
+                                                            <constraint firstAttribute="width" constant="30" id="hYP-fG-nq9"/>
+                                                        </constraints>
+                                                        <color key="tintColor" name="IconTintColor"/>
+                                                        <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
+                                                        <connections>
+                                                            <action selector="copyAddressAction" destination="LKe-aK-9qL" eventType="touchUpInside" id="435-jv-wgH"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="nVx-b6-kCA" firstAttribute="top" secondItem="fCN-iz-6Qh" secondAttribute="top" constant="9" id="2pZ-Nm-pgz"/>
+                                                    <constraint firstAttribute="trailing" secondItem="sVZ-aB-1rg" secondAttribute="trailing" constant="55" id="7CO-cF-Dxj"/>
+                                                    <constraint firstAttribute="trailing" secondItem="gwb-vI-XkJ" secondAttribute="trailing" constant="10" id="N0P-nA-Iyi"/>
+                                                    <constraint firstItem="sVZ-aB-1rg" firstAttribute="leading" secondItem="fCN-iz-6Qh" secondAttribute="leading" constant="15" id="Rto-d8-cDl"/>
+                                                    <constraint firstItem="nVx-b6-kCA" firstAttribute="leading" secondItem="fCN-iz-6Qh" secondAttribute="leading" constant="15" id="YPI-4k-3bi"/>
+                                                    <constraint firstItem="sVZ-aB-1rg" firstAttribute="top" secondItem="nVx-b6-kCA" secondAttribute="bottom" constant="5" id="aw9-Bs-Q0F"/>
+                                                    <constraint firstAttribute="bottom" secondItem="sVZ-aB-1rg" secondAttribute="bottom" constant="9" id="eli-Ye-MAO"/>
+                                                    <constraint firstItem="gwb-vI-XkJ" firstAttribute="centerY" secondItem="fCN-iz-6Qh" secondAttribute="centerY" id="q3V-nB-c5L"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <integer key="value" value="12"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="GNw-9x-IA6" firstAttribute="top" secondItem="wQO-R7-BpZ" secondAttribute="bottom" constant="10" id="04G-Wu-M3A"/>
+                                            <constraint firstItem="hWf-mu-AOq" firstAttribute="top" secondItem="o5W-M5-wwn" secondAttribute="bottom" constant="20" id="2Jy-7U-lVR"/>
+                                            <constraint firstItem="Eet-hr-JNf" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="15" id="2QB-WN-yUb"/>
+                                            <constraint firstAttribute="trailing" secondItem="RuC-FM-0Jy" secondAttribute="trailing" constant="20" id="D9X-vN-8A9"/>
+                                            <constraint firstItem="fCN-iz-6Qh" firstAttribute="top" secondItem="C1C-q3-3v1" secondAttribute="bottom" constant="15" id="Icr-hQ-qGW"/>
+                                            <constraint firstItem="Eet-hr-JNf" firstAttribute="top" secondItem="GNw-9x-IA6" secondAttribute="bottom" constant="20" id="Ilt-jf-iBr"/>
+                                            <constraint firstItem="C1C-q3-3v1" firstAttribute="top" secondItem="LSv-O0-DKY" secondAttribute="bottom" constant="8" id="JJo-zz-pKd"/>
+                                            <constraint firstAttribute="trailing" secondItem="Xt1-ez-god" secondAttribute="trailing" constant="20" id="Jbb-1l-Okq"/>
+                                            <constraint firstItem="RuC-FM-0Jy" firstAttribute="top" secondItem="Xt1-ez-god" secondAttribute="bottom" constant="8" id="N11-Xe-he8"/>
+                                            <constraint firstItem="wQO-R7-BpZ" firstAttribute="top" secondItem="hWf-mu-AOq" secondAttribute="bottom" constant="5" id="RWa-pS-ivj"/>
+                                            <constraint firstAttribute="height" constant="1500" id="S9J-f9-Lqu"/>
+                                            <constraint firstItem="LSv-O0-DKY" firstAttribute="top" secondItem="RuC-FM-0Jy" secondAttribute="bottom" constant="20" id="WXH-Tc-Kav"/>
+                                            <constraint firstItem="RuC-FM-0Jy" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" id="Zta-pf-BOO"/>
+                                            <constraint firstItem="LSv-O0-DKY" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" id="bNp-NK-Gdq"/>
+                                            <constraint firstItem="C1C-q3-3v1" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" id="cfC-9T-94q"/>
+                                            <constraint firstItem="GNw-9x-IA6" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" symbolic="YES" id="dJj-Dg-7Ox"/>
+                                            <constraint firstItem="wQO-R7-BpZ" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" symbolic="YES" id="eEh-UU-Po7"/>
+                                            <constraint firstItem="Xt1-ez-god" firstAttribute="top" secondItem="Eet-hr-JNf" secondAttribute="bottom" constant="20" id="iSQ-7t-9Tc"/>
+                                            <constraint firstAttribute="trailing" secondItem="hWf-mu-AOq" secondAttribute="trailing" constant="50" id="jzq-bM-H1f"/>
+                                            <constraint firstAttribute="trailing" secondItem="GNw-9x-IA6" secondAttribute="trailing" constant="20" symbolic="YES" id="mOn-bN-hWc"/>
+                                            <constraint firstAttribute="trailing" secondItem="wQO-R7-BpZ" secondAttribute="trailing" constant="20" symbolic="YES" id="mcP-dc-pzy"/>
+                                            <constraint firstItem="hWf-mu-AOq" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" symbolic="YES" id="n9t-eB-6hx"/>
+                                            <constraint firstItem="o5W-M5-wwn" firstAttribute="centerX" secondItem="jA3-H3-Rzo" secondAttribute="centerX" id="oU2-PQ-HLA"/>
+                                            <constraint firstAttribute="trailing" secondItem="Eet-hr-JNf" secondAttribute="trailing" constant="15" id="uav-jl-klM"/>
+                                            <constraint firstAttribute="trailing" secondItem="C1C-q3-3v1" secondAttribute="trailing" constant="20" id="vhH-VI-6qP"/>
+                                            <constraint firstItem="o5W-M5-wwn" firstAttribute="top" secondItem="jA3-H3-Rzo" secondAttribute="top" id="yyc-Xl-rj2"/>
+                                            <constraint firstItem="Xt1-ez-god" firstAttribute="leading" secondItem="jA3-H3-Rzo" secondAttribute="leading" constant="20" id="zth-VS-PdA"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="fCN-iz-6Qh" secondAttribute="trailing" constant="15" id="C6O-oK-l1C"/>
+                                    <constraint firstItem="jA3-H3-Rzo" firstAttribute="leading" secondItem="3Vo-mO-ABf" secondAttribute="leading" id="DJC-cm-BBo"/>
+                                    <constraint firstItem="jA3-H3-Rzo" firstAttribute="centerX" secondItem="HPd-OG-OZR" secondAttribute="centerX" id="Shj-f1-CVu"/>
+                                    <constraint firstAttribute="bottom" secondItem="jA3-H3-Rzo" secondAttribute="bottom" id="bzf-1x-XQJ"/>
+                                    <constraint firstItem="fCN-iz-6Qh" firstAttribute="leading" secondItem="HPd-OG-OZR" secondAttribute="leading" constant="15" id="km6-9I-TMF"/>
+                                    <constraint firstAttribute="trailing" secondItem="jA3-H3-Rzo" secondAttribute="trailing" id="sGT-MY-ZVg"/>
+                                    <constraint firstItem="jA3-H3-Rzo" firstAttribute="top" secondItem="FEy-1y-Nim" secondAttribute="top" id="x1I-9U-kC9"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="FEy-1y-Nim"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="3Vo-mO-ABf"/>
+                            </scrollView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Vdr-cQ-gJ6"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="HPd-OG-OZR" firstAttribute="top" secondItem="mVa-jz-nDF" secondAttribute="bottom" constant="-5" id="HZM-CK-WZo"/>
+                            <constraint firstItem="HPd-OG-OZR" firstAttribute="width" secondItem="Vdr-cQ-gJ6" secondAttribute="width" id="RKE-27-uXp"/>
+                            <constraint firstItem="mVa-jz-nDF" firstAttribute="trailing" secondItem="Vdr-cQ-gJ6" secondAttribute="trailing" id="W7Q-7H-Ien"/>
+                            <constraint firstItem="mVa-jz-nDF" firstAttribute="top" secondItem="Vdr-cQ-gJ6" secondAttribute="top" constant="5" id="ggk-yT-9oP"/>
+                            <constraint firstItem="HPd-OG-OZR" firstAttribute="leading" secondItem="Vdr-cQ-gJ6" secondAttribute="leading" id="i0n-iL-KmG"/>
+                            <constraint firstItem="Vdr-cQ-gJ6" firstAttribute="bottom" secondItem="HPd-OG-OZR" secondAttribute="bottom" id="qHs-Ji-MQr"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="addressLabel" destination="sVZ-aB-1rg" id="XA6-3M-wgl"/>
+                        <outlet property="crowdnodeApyLabel" destination="Xt1-ez-god" id="XGF-X2-9qd"/>
+                        <outlet property="masternodeApyLabel" destination="GNw-9x-IA6" id="7GU-nY-Zfg"/>
+                        <outlet property="minimumDepositLabel" destination="L9H-Wm-Kbc" id="znl-lc-IV1"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hpH-Q5-8DC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2243" y="4"/>
+        </scene>
     </scenes>
     <resources>
         <image name="bell.circle.fill" catalog="system" width="128" height="123"/>
@@ -895,10 +1357,16 @@
         <image name="image.crowdnode.account.new" width="34" height="29.333333969116211"/>
         <image name="image.crowdnode.bullet.point" width="18" height="18"/>
         <image name="image.crowdnode.deposit" width="11.333333015441895" height="14.666666984558105"/>
+        <image name="image.crowdnode.first.deposit" width="16" height="19.333333969116211"/>
+        <image name="image.crowdnode.joining.pool" width="37.333332061767578" height="42"/>
+        <image name="image.crowdnode.leaning.pool" width="37.333332061767578" height="42.666667938232422"/>
         <image name="image.crowdnode.lightning" width="28" height="34"/>
         <image name="image.crowdnode.logo" width="56.666667938232422" height="65"/>
+        <image name="image.crowdnode.receiving.rewards" width="35.333332061767578" height="35.333332061767578"/>
+        <image name="image.crowdnode.staking" width="240" height="180"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="wand.and.stars" catalog="system" width="128" height="115"/>
+        <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="BackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
@@ -913,6 +1381,9 @@
         </namedColor>
         <namedColor name="IconTintColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="Label">
+            <color red="0.097999997437000275" green="0.10999999940395355" blue="0.12200000137090683" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

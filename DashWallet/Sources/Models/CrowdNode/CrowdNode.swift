@@ -48,7 +48,7 @@ public class CrowdNodeObjcWrapper: NSObject {
     @objc public class func notificationID() -> String {
         CrowdNode.notificationID
     }
-    
+
     @objc public class func apiOffset() -> UInt64 {
         CrowdNode.apiOffset
     }
@@ -79,10 +79,12 @@ public final class CrowdNode {
     @Published private(set) var signUpState = SignUpState.notInitiated
     @Published private(set) var balance: UInt64 = 0
     @Published private(set) var isBalanceLoading = false
-    @Published private(set) var apiError: Error? = nil
+    @Published private(set) var apiError: Swift.Error? = nil
 
     private(set) var accountAddress = ""
     var showNotificationOnResult = false
+    let masternodeAPY = 0.069 // TODO: NMI-832
+    lazy var crowdnodeAPY = masternodeAPY * 0.8
 
     public static let shared: CrowdNode = .init()
 
@@ -229,7 +231,7 @@ extension CrowdNode {
         DSLogger.log("CrowdNode AcceptTerms response tx hash: \(responseTx.txHashHexString)")
 
         if errorResponse.matches(tx: responseTx) {
-            throw CrowdNodeError.signUp
+            throw CrowdNode.Error.signUp
         }
 
         return (req: signUpTx, resp: responseTx)
@@ -253,7 +255,7 @@ extension CrowdNode {
         DSLogger.log("CrowdNode Welcome response tx hash: \(responseTx.txHashHexString)")
 
         if errorResponse.matches(tx: responseTx) {
-            throw CrowdNodeError.signUp
+            throw CrowdNode.Error.signUp
         }
 
         return (req: termsAcceptedTx, resp: responseTx)
@@ -288,7 +290,7 @@ extension CrowdNode {
             DSLogger.log("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
 
             if errorResponse.matches(tx: responseTx) {
-                handleError(error: CrowdNodeError.deposit)
+                handleError(error: CrowdNode.Error.deposit)
             } else {
                 refreshBalance()
             }
@@ -327,19 +329,19 @@ extension CrowdNode {
             DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
 
             if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
-                handleError(error: CrowdNodeError.withdraw)
+                handleError(error: CrowdNode.Error.withdraw)
             } else {
                 refreshBalance(afterWithdrawal: true)
             }
         }
     }
-    
+
     func hasAnyDeposits() -> Bool {
         guard !accountAddress.isEmpty else { return false }
-        
+
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeDepositTx(accountAddress: accountAddress)
-        
+
         return wallet.allTransactions.contains {
             tx in filter.matches(tx: tx)
         }
@@ -394,15 +396,15 @@ extension CrowdNode {
 
 // Errors / Notifications
 extension CrowdNode {
-    private func handleError(error: CrowdNodeError) {
+    private func handleError(error: CrowdNode.Error) {
         apiError = error
-        notifyIfNeeded(message: error.description)
-        DSLogger.log("CrowdNode error: \(error.description)")
+        notifyIfNeeded(message: error.errorDescription)
+        DSLogger.log("CrowdNode error: \(error.errorDescription)")
     }
-    
+
     private func notifyIfNeeded(message: String) {
         guard showNotificationOnResult &&
-                DWGlobalOptions.sharedInstance().localNotificationsEnabled else { return }
+            DWGlobalOptions.sharedInstance().localNotificationsEnabled else { return }
 
         let content = UNMutableNotificationContent()
         content.body = message

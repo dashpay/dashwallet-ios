@@ -15,36 +15,38 @@
 //  limitations under the License.
 //
 
-import Foundation
 import Combine
+import Foundation
+
+// MARK: - CrowdNodeTransferController
 
 final class CrowdNodeTransferController: SendAmountViewController, NetworkReachabilityHandling {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
-    
+
     internal var mode: TransferDirection = .deposit
-    
+
     /// Conform to NetworkReachabilityHandling
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
     internal var transferModel: CrowdNodeTransferModel {
         model as! CrowdNodeTransferModel
     }
-    
+
     private var networkUnavailableView: UIView!
     private var fromLabel: FromLabel!
     private var dashPriceLabel: UILabel!
     private var minimumDepositBanner: MinimumDepositBanner?
-    
+
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
-    
+
     static func controller(mode: TransferDirection) -> CrowdNodeTransferController {
         let vc = CrowdNodeTransferController()
         vc.mode = mode
-        
+
         return vc
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -62,24 +64,24 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override var actionButtonTitle: String? {
         NSLocalizedString(mode.title, comment: "CrowdNode")
     }
-    
+
     override func actionButtonAction(sender: UIView) {
         let amount = transferModel.amount.plainAmount
-        
+
         if viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
             minimumDepositBanner?.backgroundColor = .systemRed
             minimumDepositBanner?.dw_shakeView()
             return
         }
-        
+
         Task {
             showActivityIndicator()
-            
+
             do {
                 if try await handleTransfer(amount: amount) {
                     showSuccessfulStatus()
                 }
-                
+
                 hideActivityIndicator()
             } catch {
                 hideActivityIndicator()
@@ -96,12 +98,12 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
 
     override func configureModel() {
         super.configureModel()
-        
-        model.inputsSwappedHandler = { [weak self] type in
+
+        model.inputsSwappedHandler = { [weak self] _ in
             self?.updateBalanceLabel()
         }
     }
-    
+
     private func handleTransfer(amount: Int64) async throws -> Bool {
         if mode == .deposit {
             return try await viewModel.deposit(amount: amount)
@@ -118,12 +120,12 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
 extension CrowdNodeTransferController {
     override func configureHierarchy() {
         super.configureHierarchy()
-        
+
         configureTitleBar()
-        
+
         fromLabel = FromLabel(icon: mode.imageName, text: mode.direction)
         contentView.addSubview(fromLabel)
-        
+
         let keyboardHeader = KeyboardHeader(icon: mode.keyboardHeaderIcon, text: mode.keyboardHeader)
         keyboardHeader.translatesAutoresizingMaskIntoConstraints = false
         topKeyboardView = keyboardHeader
@@ -136,30 +138,32 @@ extension CrowdNodeTransferController {
         NSLayoutConstraint.activate([
             fromLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             NSLayoutConstraint(item: fromLabel!, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.38, constant: 0),
-            
+
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             NSLayoutConstraint(item: amountView!, attribute: .top, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.5, constant: 0),
-            
+
             networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
         ])
-        
+
         if mode == .deposit && viewModel.shouldShowFirstDepositBanner {
             let minimumDepositBanner = MinimumDepositBanner(frame: .zero)
             contentView.addSubview(minimumDepositBanner)
-            
+
             NSLayoutConstraint.activate([
                 minimumDepositBanner.heightAnchor.constraint(equalToConstant: 32),
                 minimumDepositBanner.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
                 minimumDepositBanner.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
-                minimumDepositBanner.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0)
+                minimumDepositBanner.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
             ])
-            
+
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(minimumDepositBannerTapAction))
+            minimumDepositBanner.addGestureRecognizer(tapGestureRecognizer)
             self.minimumDepositBanner = minimumDepositBanner
         }
     }
-    
+
     private func configureTitleBar() {
         let titleViewStackView = UIStackView()
         titleViewStackView.alignment = .center
@@ -180,6 +184,11 @@ extension CrowdNodeTransferController {
         dashPriceLabel.minimumScaleFactor = 0.5
         dashPriceLabel.text = transferModel.dashPriceDisplayString
         titleViewStackView.addArrangedSubview(dashPriceLabel)
+    }
+
+    @objc func minimumDepositBannerTapAction() {
+        let vc = StakingInfoDialogController.controller()
+        present(vc, animated: true, completion: nil)
     }
 }
 
@@ -203,12 +212,12 @@ extension CrowdNodeTransferController {
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     private func showErrorStatus(err: Error) {
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.headerText = NSLocalizedString(mode.failedTransfer, comment: "CrowdNode")
         vc.descriptionText = err.localizedDescription
-        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
+        vc.supportButtonText = NSLocalizedString("Send Report", comment: "CrowdNode")
         vc.retryHandler = { [weak self] in self?.navigationController?.popViewController(animated: true) }
         vc.cancelHandler = { [weak self] in
             guard let wSelf = self else { return }
@@ -242,21 +251,25 @@ extension CrowdNodeTransferController {
             })
             .store(in: &cancellableBag)
     }
-    
+
     override func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
         super.localCurrencyViewController(controller, didSelectCurrency: currencyCode)
-        
-        self.updateBalanceLabel()
+
+        updateBalanceLabel()
         dashPriceLabel.text = transferModel.dashPriceDisplayString
     }
-    
+
     private func updateBalanceLabel() {
         let amount = mode == .deposit ? viewModel.walletBalance : viewModel.crowdNodeBalance
         let priceManager = DSPriceManager.sharedInstance()
-        let formatted = model.activeAmountType == .main ? priceManager.string(forDashAmount: Int64(amount)) : priceManager.fiatCurrencyString(model.localCurrencyCode, forDashAmount: Int64(amount))
+        let formatted = model.activeAmountType == .main
+            ? priceManager.string(forDashAmount: Int64(amount))
+            : priceManager.fiatCurrencyString(model.localCurrencyCode, forDashAmount: Int64(amount))
         fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + (formatted ?? NSLocalizedString("Syncing", comment: "CrowdNode"))
     }
 }
+
+// MARK: PaymentControllerPresentationContextProviding
 
 extension CrowdNodeTransferController: PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {

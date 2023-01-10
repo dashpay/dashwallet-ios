@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,26 +17,26 @@
 
 final class CrowdNodeDepositTx: TransactionFilter {
     private(set) final var accountAddress: String
-    
+
     init(accountAddress: String) {
         self.accountAddress = accountAddress
     }
-    
+
     func matches(tx: DSTransaction) -> Bool {
         let allFromAccount = tx.inputAddresses.allSatisfy { $0 as! String == accountAddress }
         guard allFromAccount else { return false }
         let crowdNodeAddress = CrowdNode.crowdNodeAddress
-        
+
         for output in tx.outputs {
             if output.address == crowdNodeAddress {
                 return !isApiRequest(coin: output.amount)
             }
         }
-        
+
         return false
     }
-    
+
     private func isApiRequest(coin: UInt64) -> Bool {
-        return coin <= CrowdNode.apiOffset + ApiCode.maxCode().rawValue
+        coin <= CrowdNode.apiOffset + ApiCode.maxCode().rawValue
     }
 }
