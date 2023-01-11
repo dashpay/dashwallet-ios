@@ -61,9 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL exploreDashMerchantsInfoShown;
 
-@property (nonatomic, assign) BOOL crowdNodeInfoShown;
-@property (nonatomic, assign) UInt64 lastKnownCrowdNodeBalance;
-
 @property (nonatomic, assign) BOOL coinbaseInfoShown;
 // Non-dynamic
 

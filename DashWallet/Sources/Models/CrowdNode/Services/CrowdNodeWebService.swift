@@ -26,7 +26,27 @@ class CrowdNodeService {
 }
 
 extension CrowdNodeService {
-    func getCrowdNodeBalance(address: String) async throws -> CrowdNodeBalance {
-        try await httpClient.request(.getBalance(address))
+    func getBalance(address: String) async throws -> CrowdNodeBalance {
+       try await httpClient.request(.getBalance(address))
+    }
+    
+    func getWithdrawalLimits(address: String) async throws -> [WithdrawalLimitPeriod: UInt64?] {
+        let limits: [WithdrawalLimit] = try await httpClient.request(.getWithdrawalLimits(address))
+        var map: [WithdrawalLimitPeriod: UInt64?] = [:]
+        
+        limits.forEach { limit in
+            switch limit.key.lowercased() {
+            case WithdrawalLimit.maxPerTxKey.lowercased():
+                map[WithdrawalLimitPeriod.perTransaction] = limit.value.plainDashAmount()
+            case WithdrawalLimit.maxPer1hKey.lowercased():
+                map[WithdrawalLimitPeriod.perHour] = limit.value.plainDashAmount()
+            case WithdrawalLimit.maxPer24hKey.lowercased():
+                map[WithdrawalLimitPeriod.perDay] = limit.value.plainDashAmount()
+            default:
+                break
+            }
+        }
+        
+        return map
     }
 }

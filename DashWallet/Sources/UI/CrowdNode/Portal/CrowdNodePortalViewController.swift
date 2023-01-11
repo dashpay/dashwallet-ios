@@ -53,7 +53,8 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc func infoButtonAction() {
-        UIPasteboard.general.string = viewModel.accountAddress
+        let nvc = BaseNavigationController(rootViewController: WithdrawalLimitsController())
+        present(nvc, animated: true)
     }
 }
 

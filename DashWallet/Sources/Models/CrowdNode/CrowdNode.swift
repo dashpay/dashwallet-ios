@@ -74,7 +74,7 @@ public final class CrowdNode {
     private var cancellableBag = Set<AnyCancellable>()
     private lazy var sendCoinsService = SendCoinsService()
     private lazy var txObserver = TransactionObserver()
-    private lazy var crowdNodeWebService = CrowdNodeService()
+    private lazy var webService = CrowdNodeService()
 
     @Published private(set) var signUpState = SignUpState.notInitiated
     @Published private(set) var balance: UInt64 = 0
@@ -113,6 +113,13 @@ extension CrowdNode {
 
         DSLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
+        
+        if tryRestoreSignUp() {
+            refreshWithdrawalLimits()
+        }
+    }
+    
+    private func tryRestoreSignUp() -> Bool {
         let fullSet = FullCrowdNodeSignUpTxSet()
         let wallet = DWEnvironment.sharedInstance().currentWallet
         wallet.allTransactions.forEach { transaction in
@@ -122,7 +129,7 @@ extension CrowdNode {
         if let welcomeResponse = fullSet.welcomeToApiResponse {
             precondition(welcomeResponse.toAddress != nil)
             setFinished(address: welcomeResponse.toAddress!)
-            return
+            return true
         }
 
         if let acceptTermsResponse = fullSet.acceptTermsResponse {
@@ -134,13 +141,16 @@ extension CrowdNode {
             else {
                 setAcceptingTerms(address: acceptTermsResponse.toAddress!)
             }
-            return
+            return true
         }
 
         if let signUpRequest = fullSet.signUpRequest {
             precondition(signUpRequest.fromAddresses.first != nil)
             setSigningUp(address: signUpRequest.fromAddresses.first!)
+            return true
         }
+        
+        return false
     }
 
     private func setFinished(address: String) {
@@ -316,14 +326,13 @@ extension CrowdNode {
         DSLogger.log("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
 
         Task {
-            let successResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalQueue,
-                                                    accountAddress: accountAddress)
+            let receivedWithdrawalTx = CrowdNodeWithdrawalReceivedTx()
             let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
                                                        accountAddress: accountAddress)
             let withdrawalDeniedResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalDenied,
                                                              accountAddress: accountAddress)
 
-            let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, successResponse)
+            let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, receivedWithdrawalTx)
             DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
 
             if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
@@ -352,8 +361,8 @@ extension CrowdNode {
         guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
 
         Task {
-            let lastKnownBalance = DWGlobalOptions.sharedInstance().lastKnownCrowdNodeBalance
-            var currentBalance = UInt64(lastKnownBalance)
+            let lastBalance = lastKnownBalance
+            var currentBalance = lastBalance
             balance = currentBalance
             isBalanceLoading = true
 
@@ -364,12 +373,12 @@ extension CrowdNode {
                         try await Task.sleep(nanoseconds: secondsToWait * 1_000_000_000)
                     }
 
-                    let result = try await crowdNodeWebService.getCrowdNodeBalance(address: accountAddress)
+                    let result = try await webService.getBalance(address: accountAddress)
                     let dashNumber = Decimal(result.totalBalance)
                     let duffsNumber = Decimal(DUFFS)
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
-                    DWGlobalOptions.sharedInstance().lastKnownCrowdNodeBalance = currentBalance
+                    lastKnownBalance = currentBalance
 
                     var breakDifference: UInt64 = 0
 
@@ -377,7 +386,7 @@ extension CrowdNode {
                         breakDifference = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
                     }
 
-                    if llabs(Int64(lastKnownBalance) - Int64(currentBalance)) > breakDifference {
+                    if llabs(Int64(lastBalance) - Int64(currentBalance)) > breakDifference {
                         // Balance changed, no need to retry anymore
                         break
                     }
@@ -410,5 +419,41 @@ extension CrowdNode {
         let request = UNNotificationRequest(identifier: CrowdNode.notificationID, content: content, trigger: nil)
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.add(request)
+    }
+}
+
+// Withdrawal limits
+extension CrowdNode {
+    private func refreshWithdrawalLimits() {
+        Task {
+            do {
+                let limits = try await webService.getWithdrawalLimits(address: accountAddress)
+            
+                if let value = limits[WithdrawalLimitPeriod.perTransaction], let perTx = value {
+                    crowdNodeWithdrawalLimitPerTx = perTx
+                }
+                
+                if let value = limits[WithdrawalLimitPeriod.perHour], let perHour = value {
+                    crowdNodeWithdrawalLimitPerHour = perHour
+                }
+                
+                if let value = limits[WithdrawalLimitPeriod.perDay], let perDay = value {
+                    crowdNodeWithdrawalLimitPerDay = perDay
+                }
+            } catch {
+                DSLogger.log("CrowdNode refreshWithdrawalLimits error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func getWithdrawalLimit(period: WithdrawalLimitPeriod) -> UInt64 {
+        switch period {
+        case .perTransaction:
+            return crowdNodeWithdrawalLimitPerTx
+        case .perHour:
+            return crowdNodeWithdrawalLimitPerHour
+        case .perDay:
+            return crowdNodeWithdrawalLimitPerDay
+        }
     }
 }

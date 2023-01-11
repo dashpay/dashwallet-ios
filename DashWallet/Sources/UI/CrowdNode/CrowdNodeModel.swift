@@ -36,7 +36,7 @@ public class CrowdNodeModelObjcWrapper: NSObject {
             return NewAccountViewController.controller()
 
         default:
-            if DWGlobalOptions.sharedInstance().crowdNodeInfoShown {
+            if CrowdNode.shared.infoShown {
                 return GettingStartedViewController.controller()
             }
             else {
@@ -221,7 +221,7 @@ final class CrowdNodeModel {
     }
 
     func didShowInfoScreen() {
-        DWGlobalOptions.sharedInstance().crowdNodeInfoShown = true
+        crowdNode.infoShown = true
     }
 
     private func persistentSignUp(accountAddress: String) async {

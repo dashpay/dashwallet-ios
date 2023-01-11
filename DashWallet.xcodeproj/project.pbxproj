@@ -35,6 +35,11 @@
 		0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FC75A8E28F03E22000E4858 /* libDashSync.a */; };
 		110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
 		110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* NavigationControllerExtensions.swift */; };
+		111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */; };
+		111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */; };
+		111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */; };
+		111C3C52296D620D00788E18 /* CrowdNode+UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */; };
+		111C3C54296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */; };
 		1121A8B728E5DB6E00464C31 /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */; };
 		1141E4C2291BB12200ACDA9E /* CrowdNodeTransferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C1291BB12200ACDA9E /* CrowdNodeTransferViewController.swift */; };
 		1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */; };
@@ -799,6 +804,11 @@
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
 		110C679929227948006B580C /* NavigationControllerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationControllerExtensions.swift; sourceTree = "<group>"; };
+		111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimitsController.swift; sourceTree = "<group>"; };
+		111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimit.swift; sourceTree = "<group>"; };
+		111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxWithinTimePeriod.swift; sourceTree = "<group>"; };
+		111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CrowdNode+UserDefaults.swift"; sourceTree = "<group>"; };
+		111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWithdrawalReceivedTx.swift; sourceTree = "<group>"; };
 		1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		1141E4C1291BB12200ACDA9E /* CrowdNodeTransferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeTransferViewController.swift; sourceTree = "<group>"; };
 		1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToCrowdNodeViewController.swift; sourceTree = "<group>"; };
@@ -2192,6 +2202,7 @@
 				1193FF3429602815004EA8D7 /* Model */,
 				1141E4C1291BB12200ACDA9E /* CrowdNodeTransferViewController.swift */,
 				1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */,
+				111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */,
 			);
 			path = Portal;
 			sourceTree = "<group>";
@@ -2219,6 +2230,7 @@
 			isa = PBXGroup;
 			children = (
 				11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */,
+				111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */,
 			);
 			path = DTOs;
 			sourceTree = "<group>";
@@ -2226,6 +2238,8 @@
 		117ED4A628ED66A2006E3EE4 /* TxFilters */ = {
 			isa = PBXGroup;
 			children = (
+				117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */,
+				119E8D092905413F00D406C1 /* TransactionWrapper.swift */,
 				119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */,
 				119E8D0F290949B900D406C1 /* CrowdNodeErrorResponse.swift */,
 				119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */,
@@ -2235,8 +2249,8 @@
 				119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */,
 				11B8449928F6D5480082770C /* SingleInputAddressSelector.swift */,
 				117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */,
-				117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */,
-				119E8D092905413F00D406C1 /* TransactionWrapper.swift */,
+				111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */,
+				111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */,
 			);
 			path = TxFilters;
 			sourceTree = "<group>";
@@ -2296,6 +2310,7 @@
 				11E47BA928EB383E0097CFA0 /* Services */,
 				11BD738028E7356100A34022 /* CrowdNode.swift */,
 				11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */,
+				111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */,
 			);
 			path = CrowdNode;
 			sourceTree = "<group>";
@@ -6146,6 +6161,7 @@
 				2A8DBA7A2630A6D6009094BD /* DWExtendedPublicKeysModel.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
+				111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */,
 				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */,
 				2A7AF3152480DA51001D74F9 /* DWIncomingFetchedDataSource.m in Sources */,
@@ -6200,6 +6216,7 @@
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */,
+				111C3C52296D620D00788E18 /* CrowdNode+UserDefaults.swift in Sources */,
 				2A7AF37224826CDF001D74F9 /* DWDPAcceptedRequestNotificationObject.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2A9E7DCE23F6C01A00CDA1EE /* DWUsernameValidationRule.m in Sources */,
@@ -6293,6 +6310,7 @@
 				47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
+				111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */,
 				0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2ADC9D13245FFC5B001D7C0D /* UINavigationBar+DWAppearance.m in Sources */,
@@ -6360,6 +6378,7 @@
 				2ACCA3AD24BE117300DB32DE /* DWProfileTxsFetchedDataSource.m in Sources */,
 				117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */,
 				C3DAD2C024747F580001624F /* DWSearchViewController.m in Sources */,
+				111C3C54296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
 				47AE8C0328C1F0C600490F5E /* PointOfUseListSegmentedCell.swift in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,
@@ -6544,6 +6563,7 @@
 				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				119E8D122909513F00D406C1 /* CrowdNodeError.swift in Sources */,
+				111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
 				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
