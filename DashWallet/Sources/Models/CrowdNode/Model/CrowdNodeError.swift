@@ -15,19 +15,22 @@
 //  limitations under the License.
 //
 
-enum CrowdNodeError: Error {
-    case signUp
-    case deposit
-    case withdraw
+extension CrowdNode {
+    enum Error: Swift.Error, LocalizedError {
+        case signUp
+        case deposit
+        case withdraw
 
-    public var description: String {
-        switch self {
-        case .signUp:
-            return NSLocalizedString("We couldn’t create your CrowdNode account.", comment: "")
-        case .deposit:
-            return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "")
-        case .withdraw:
-            return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "")
+        var errorDescription: String {
+            switch self {
+            case .signUp:
+                return NSLocalizedString("We couldn’t create your CrowdNode account.", comment: "CrowdNode")
+            case .deposit:
+                return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "CrowdNode")
+            case .withdraw:
+                return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "CrowdNode")
+            }
         }
     }
+
 }

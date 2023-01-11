@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,23 +18,27 @@
 import Combine
 import Foundation
 
+// MARK: - DepositWithdrawModelDelegate
+
 protocol DepositWithdrawModelDelegate: CoinbaseTransactionDelegate {
     func coinbaseUserDidChange()
 
     func initiatePayment(with input: DWPaymentInput)
 }
 
+// MARK: - TransferDirection
+
 enum TransferDirection {
     case deposit
     case withdraw
-    
+
     var imageName: String {
         switch self {
         case .deposit: return "image.explore.dash.wts.dash"
         case .withdraw: return "image.crowdnode.logo"
         }
     }
-    
+
     var title: String {
         switch self {
         case .deposit: return "Deposit"
@@ -48,35 +52,35 @@ enum TransferDirection {
         case .withdraw: return "from CrowdNode"
         }
     }
-    
+
     var keyboardHeader: String {
         switch self {
         case .deposit: return "Sending to CrowdNode account"
         case .withdraw: return "Sending to Dash Wallet on this device"
         }
     }
-    
+
     var keyboardHeaderIcon: String {
         switch self {
         case .deposit: return "image.crowdnode.logo"
         case .withdraw: return "image.explore.dash.wts.dash"
         }
     }
-    
+
     var successfulTransfer: String {
         switch self {
         case .deposit: return "Deposit sent"
         case .withdraw: return "Withdrawal requested"
         }
     }
-    
+
     var successfulTransferDetails: String {
         switch self {
         case .deposit: return "It can take a minute for your balance to be updated."
         case .withdraw: return "It can take a minute for your funds to arrive."
         }
     }
-    
+
     var failedTransfer: String {
         switch self {
         case .deposit: return "We couldn’t make a deposit to your CrowdNode account."
@@ -85,11 +89,13 @@ enum TransferDirection {
     }
 }
 
+// MARK: - CrowdNodeTransferModel
+
 final class CrowdNodeTransferModel: SendAmountModel {
     weak var delegate: TransferAmountModelDelegate?
     weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
     public var direction: TransferDirection = .deposit
-    
+
     var dashPriceDisplayString: String {
         let dashAmount = kOneDash
         let dashAmountFormatted = dashAmount.formattedDashAmount
@@ -100,15 +106,15 @@ final class CrowdNodeTransferModel: SendAmountModel {
         let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
         return displayString
     }
-    
+
     override var isSendAllowed: Bool {
         let minDepositAmount = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
         let minWithdrawAmount = CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
         let minValue = direction == .deposit ? minDepositAmount : minWithdrawAmount
-        
+
         return super.isSendAllowed && amount.plainAmount > minValue
     }
-    
+
     override var canShowInsufficientFunds: Bool {
         if direction == .deposit {
             return super.canShowInsufficientFunds
@@ -116,7 +122,7 @@ final class CrowdNodeTransferModel: SendAmountModel {
             return amount.plainAmount > CrowdNode.shared.balance
         }
     }
-    
+
     override func selectAllFunds(_ preparationHandler: () -> Void) {
         if direction == .deposit {
             super.selectAllFunds(preparationHandler)

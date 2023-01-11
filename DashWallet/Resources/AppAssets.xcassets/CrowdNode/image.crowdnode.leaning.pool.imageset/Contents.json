@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icon wrapper.png",
+      "filename" : "icon.leaving.the.pool.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icon wrapper@2x.png",
+      "filename" : "icon.leaving.the.pool@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icon wrapper@3x.png",
+      "filename" : "icon.leaving.the.pool@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

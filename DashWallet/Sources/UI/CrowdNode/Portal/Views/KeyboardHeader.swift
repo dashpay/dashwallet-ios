@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -18,19 +18,19 @@
 import UIKit
 
 final class KeyboardHeader: UIView {
-    private var icon: String = ""
-    private var text: String = ""
+    private var icon = ""
+    private var text = ""
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: KeyboardHeader.noIntrinsicMetric, height: 56)
     }
-    
+
     init(icon: String, text: String) {
         super.init(frame: .zero)
-        
+
         self.icon = icon
         self.text = text
-        
+
         configureHierarchy()
     }
 

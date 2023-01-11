@@ -42,3 +42,4 @@ Pods/
 # Production Constants
 DWUpholdMainnetConstants__Release.m
 TODO.md
+*/GoogleService-Info.plist

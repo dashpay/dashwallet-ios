@@ -18,11 +18,11 @@
 import UIKit
 
 final class FromLabel: UIStackView {
-    private var icon: String = ""
-    private var text: String = ""
+    private var icon = ""
+    private var text = ""
     private var balanceLabel: UILabel!
-    
-    public var balanceText: String = "" {
+
+    public var balanceText = "" {
         didSet {
             balanceLabel.text = balanceText
         }
@@ -31,13 +31,13 @@ final class FromLabel: UIStackView {
     override var intrinsicContentSize: CGSize {
         CGSize(width: FromLabel.noIntrinsicMetric, height: 40)
     }
-    
+
     init(icon: String, text: String) {
         super.init(frame: .zero)
-        
+
         self.icon = icon
         self.text = text
-        
+
         configureHierarchy()
     }
 
@@ -46,18 +46,18 @@ final class FromLabel: UIStackView {
 
         configureHierarchy()
     }
-    
+
     required init(coder: NSCoder) {
         super.init(coder: coder)
-        
+
         configureHierarchy()
     }
-    
+
     private func configureHierarchy() {
         translatesAutoresizingMaskIntoConstraints = false
         spacing = 10
         axis = .horizontal
-        
+
         let iconView = UIImageView(image: UIImage(named: icon))
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
