@@ -10,6 +10,7 @@
 # update_fastlane
 
 fastlane_version "2.80.0"
+opt_out_usage
 
 default_platform(:ios)
 
