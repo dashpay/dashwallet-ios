@@ -132,6 +132,7 @@ struct CoinbaseAPIError: Decodable {
 
 public enum CoinbaseEndpoint {
     case account(String)
+    case accounts
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
@@ -147,6 +148,7 @@ public enum CoinbaseEndpoint {
     case revokeToken(token: String)
     case refreshToken(refreshToken: String)
     case signIn
+    case path(String)
 }
 
 // MARK: TargetType, AccessTokenAuthorizable
@@ -162,12 +164,19 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     }
 
     public var baseURL: URL {
-        kBaseURL
+        guard case .path(let string) = self else {
+            return kBaseURL
+        }
+
+        let path = string.removingPercentEncoding ?? string
+        let url = URL(string: "https://api.coinbase.com" + path)!
+        return url
     }
 
     public var path: String {
         switch self {
         case .account(let name): return "/v2/accounts/\(name)"
+        case .accounts: return "/v2/accounts"
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
         case .activePaymentMethods: return "/v2/payment-methods"
@@ -182,6 +191,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .getToken, .refreshToken: return "/oauth/token"
         case .revokeToken: return "/oauth/revoke"
         case .signIn: return "/oauth/authorize"
+        default:
+            return ""
         }
     }
 
@@ -234,6 +245,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(dto)
         case .placeBuyOrder(_, let dto):
             return .requestJSONEncodable(dto)
+        case .accounts:
+            return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)
         default:
             return .requestPlain
         }

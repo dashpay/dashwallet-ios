@@ -15,20 +15,19 @@
 //  limitations under the License.
 //
 
-import UIKit
+import Foundation
 
-class CustodialSwapsViewController: TransferAmountViewController {
+final class AccountListModel {
+    @Published var items: [CoinbaseUserAccountData] = []
 
-
-    override func didChangeDirection(_ direction: ConverterViewDirection) { }
-
-    override func didTapOnFromView() {
-        let vc = AccountListController.controller()
-        let nvc = BaseNavigationController(rootViewController: vc)
-        present(nvc, animated: true)
+    init() {
+        fetchItems()
     }
 
-    override func configureModel() {
-        model = CustodialSwapsModel()
+    private func fetchItems() {
+        Task {
+            let items = try await Coinbase.shared.accounts()
+            self.items = items.map { $0.info }
+        }
     }
 }

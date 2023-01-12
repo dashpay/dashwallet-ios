@@ -37,6 +37,10 @@ class AccountService {
         try await accountRepository.account(by: name)
     }
 
+    public func allAccounts() async throws -> [CBAccount] {
+        try await accountRepository.all()
+    }
+
     public func retrieveAddress(for accountName: String) async throws -> String {
         let account = try await account(by: accountName)
         return try await account.retrieveAddress()

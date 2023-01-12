@@ -47,6 +47,7 @@ protocol ConverterViewDataSource: AnyObject {
 
 protocol ConverterViewDelegate: AnyObject {
     func didChangeDirection(_ direction: ConverterViewDirection)
+    func didTapOnFromView()
 }
 
 // MARK: - ConverterView
@@ -90,6 +91,11 @@ class ConverterView: UIView {
 
     public func reloadView() {
         updateView()
+    }
+
+    @objc
+    func fromViewTapAction() {
+        delegate?.didTapOnFromView()
     }
 
     @objc
@@ -174,7 +180,9 @@ extension ConverterView {
         rightContainer.backgroundColor = .clear
         addSubview(rightContainer)
 
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(fromViewTapAction))
         fromView = .init(frame: .zero)
+        fromView.addGestureRecognizer(tapGesture)
         fromView.translatesAutoresizingMaskIntoConstraints = false
         rightContainer.addArrangedSubview(fromView)
 

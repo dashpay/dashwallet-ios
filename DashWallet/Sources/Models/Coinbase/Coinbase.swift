@@ -164,6 +164,10 @@ extension Coinbase {
         try await auth.signOut()
     }
 
+    public func accounts() async throws -> [CBAccount] {
+        try await accountService.allAccounts()
+    }
+
     public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
         auth.addUserDidChangeListener(listener)
     }

@@ -46,4 +46,33 @@ class AccountRepository {
 
         return acc
     }
+
+    /// Fetch all accounts with positive balance
+    ///
+    /// - Returns: Array of `CBAccount`
+    ///
+    /// - Throws: `Coinbase.Error`
+    ///
+    /// - Note: Only crypto accounts
+    ///
+    func all() async throws -> [CBAccount] {
+        var items: [CBAccount] = []
+        items.reserveCapacity(300)
+
+        var endpoint: CoinbaseEndpoint? = .accounts
+        while endpoint != nil {
+            let response: BasePaginationResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(endpoint!)
+            items += response.data
+                .filter { $0.currency.type == .crypto && $0.balance.decimal! > 0 }
+                .map { .init(info: $0, authInterop: authInterop) }
+
+            if let nextUri = response.pagination.nextURI {
+                endpoint = .path(nextUri)
+            } else {
+                endpoint = nil
+            }
+        }
+
+        return items
+    }
 }

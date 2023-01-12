@@ -34,6 +34,12 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     let rewards: Rewards?
     let rewardsApy: String?
 
+    var iconURL: URL {
+        let code = currency.code.lowercased()
+        let urlString = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/\(code).png"
+        return URL(string: urlString)!
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case name
@@ -58,8 +64,12 @@ struct Balance: Codable {
     let amount: String
     let currency: String
 
+    var decimal: Decimal? {
+        Decimal(string: amount)
+    }
+
     var plainAmount: UInt64 {
-        guard let dashNumber = Decimal(string: amount) else {
+        guard let dashNumber = decimal else {
             return 0
         }
 
