@@ -38,6 +38,12 @@ class CBAccount {
         self.accountName = accountName
     }
 
+    init(info: CoinbaseUserAccountData, authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+        accountName = info.name
+        self.info = info
+    }
+
     init(accountName: String, info: CoinbaseUserAccountData, authInterop: CBAuthInterop) {
         self.authInterop = authInterop
         self.info = info
