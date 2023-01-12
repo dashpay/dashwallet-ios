@@ -28,6 +28,29 @@ class BaseViewController: UIViewController {
     }
 }
 
+// MARK: NavigationBarAppearanceCustomizable
+
+extension BaseViewController: NavigationBarAppearanceCustomizable {
+    func setNavigationBarAppearance() {
+        let standardAppearance = UINavigationBarAppearance()
+        standardAppearance.configureWithOpaqueBackground()
+        standardAppearance.backgroundColor = UIColor.dw_secondaryBackground()
+        standardAppearance.shadowColor = nil
+        standardAppearance.shadowImage = nil
+
+        let compactAppearance = standardAppearance.copy()
+
+        let navBar = navigationController!.navigationBar
+        navBar.isTranslucent = true
+        navBar.standardAppearance = standardAppearance
+        navBar.scrollEdgeAppearance = standardAppearance
+        navBar.compactAppearance = compactAppearance
+        if #available(iOS 15.0, *) {
+            navBar.compactScrollEdgeAppearance = compactAppearance
+        }
+    }
+}
+
 extension UIViewController {
     class func initiate(from storyboard: UIStoryboard) -> Self {
         vc(Self.self, from: storyboard)

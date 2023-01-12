@@ -24,7 +24,6 @@
 		0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */; };
 		0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */; };
 		0F6EDFD328C896BD000427E7 /* CoinbaseAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */; };
-		0F6EDFD528C896BD000427E7 /* AddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB328C896BC000427E7 /* AddressInfo.swift */; };
 		0F6EDFD628C896BD000427E7 /* CoinbaseAPIEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB528C896BC000427E7 /* CoinbaseAPIEndpoint.swift */; };
 		0F6EDFD728C896BD000427E7 /* CoinbaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */; };
 		0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */; };
@@ -761,7 +760,6 @@
 		0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseCreateAddressesRequest.swift; sourceTree = "<group>"; };
 		0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseExchangeRateResponse.swift; sourceTree = "<group>"; };
 		0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseAmount.swift; sourceTree = "<group>"; };
-		0F6EDFB328C896BC000427E7 /* AddressInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressInfo.swift; sourceTree = "<group>"; };
 		0F6EDFB528C896BC000427E7 /* CoinbaseAPIEndpoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseAPIEndpoint.swift; sourceTree = "<group>"; };
 		0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseService.swift; sourceTree = "<group>"; };
 		0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceEntryPointModel.swift; sourceTree = "<group>"; };
@@ -2087,7 +2085,6 @@
 			isa = PBXGroup;
 			children = (
 				0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */,
-				0F6EDFB328C896BC000427E7 /* AddressInfo.swift */,
 				47838B8B29068F110003E8AB /* BaseResponse.swift */,
 			);
 			path = Base;
@@ -4472,6 +4469,39 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		4751CAC82970000700F63AC4 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EDFA328C896BC000427E7 /* CoinbaseTokenResponse.swift */,
+				0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		4751CAC92970002F00F63AC4 /* Payment Methods */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EDFA228C896BC000427E7 /* CoinbasePaymentMethodsResponse.swift */,
+			);
+			path = "Payment Methods";
+			sourceTree = "<group>";
+		};
+		4751CACA2970003D00F63AC4 /* Exchange Rates */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */,
+			);
+			path = "Exchange Rates";
+			sourceTree = "<group>";
+		};
+		4751CACB2970004500F63AC4 /* Account */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EDFAA28C896BC000427E7 /* CoinbaseUserAccountData.swift */,
+			);
+			path = Account;
+			sourceTree = "<group>";
+		};
 		47522F4E2927CAE900EE143E /* Operation Status Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -4636,16 +4666,15 @@
 		47A2A2E3293DF63F00938DB7 /* DTOs */ = {
 			isa = PBXGroup;
 			children = (
-				0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */,
-				0F6EDFA228C896BC000427E7 /* CoinbasePaymentMethodsResponse.swift */,
-				0F6EDFA328C896BC000427E7 /* CoinbaseTokenResponse.swift */,
-				0F6EDFAA28C896BC000427E7 /* CoinbaseUserAccountData.swift */,
-				0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */,
+				0F6EDFB028C896BC000427E7 /* Base */,
+				4751CACB2970004500F63AC4 /* Account */,
+				4751CACA2970003D00F63AC4 /* Exchange Rates */,
+				4751CAC92970002F00F63AC4 /* Payment Methods */,
+				4751CAC82970000700F63AC4 /* Auth */,
 				0F6EDF9E28C896BC000427E7 /* Trade */,
 				0F6EDFA428C896BC000427E7 /* Place Buy Order */,
 				0F6EDFA728C896BC000427E7 /* Transactions */,
 				0F6EDFAB28C896BC000427E7 /* Address */,
-				0F6EDFB028C896BC000427E7 /* Base */,
 			);
 			path = DTOs;
 			sourceTree = "<group>";
@@ -6332,7 +6361,6 @@
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
 				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
-				0F6EDFD528C896BD000427E7 /* AddressInfo.swift in Sources */,
 				0F6EDFC728C896BD000427E7 /* CoinbaseSwapeTradeResponse.swift in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				4774DCDF28F43AB4008CF87D /* ServiceItem.swift in Sources */,
