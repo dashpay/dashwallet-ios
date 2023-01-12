@@ -37,6 +37,8 @@ func snapshot(_ name: String, timeWaitingForIdle timeout: TimeInterval = 20) {
     Snapshot.snapshot(name, timeWaitingForIdle: timeout)
 }
 
+// MARK: - SnapshotError
+
 enum SnapshotError: Error, CustomDebugStringConvertible {
     case cannotFindSimulatorHomeDirectory
     case cannotRunOnPhysicalDevice
@@ -51,17 +53,18 @@ enum SnapshotError: Error, CustomDebugStringConvertible {
     }
 }
 
+// MARK: - Snapshot
+
 @objcMembers
 open class Snapshot: NSObject {
     static var app: XCUIApplication?
     static var waitForAnimations = true
     static var cacheDirectory: URL?
     static var screenshotsDirectory: URL? {
-        return cacheDirectory?.appendingPathComponent("screenshots", isDirectory: true)
+        cacheDirectory?.appendingPathComponent("screenshots", isDirectory: true)
     }
 
     open class func setupSnapshot(_ app: XCUIApplication, waitForAnimations: Bool = true) {
-
         Snapshot.app = app
         Snapshot.waitForAnimations = waitForAnimations
 
@@ -77,7 +80,7 @@ open class Snapshot: NSObject {
     }
 
     class func setLanguage(_ app: XCUIApplication) {
-        guard let cacheDirectory = self.cacheDirectory else {
+        guard let cacheDirectory else {
             NSLog("CacheDirectory is not set - probably running on a physical device?")
             return
         }
@@ -94,7 +97,7 @@ open class Snapshot: NSObject {
     }
 
     class func setLocale(_ app: XCUIApplication) {
-        guard let cacheDirectory = self.cacheDirectory else {
+        guard let cacheDirectory else {
             NSLog("CacheDirectory is not set - probably running on a physical device?")
             return
         }
@@ -118,7 +121,7 @@ open class Snapshot: NSObject {
     }
 
     class func setLaunchArguments(_ app: XCUIApplication) {
-        guard let cacheDirectory = self.cacheDirectory else {
+        guard let cacheDirectory else {
             NSLog("CacheDirectory is not set - probably running on a physical device?")
             return
         }
@@ -151,58 +154,70 @@ open class Snapshot: NSObject {
         }
 
         #if os(OSX)
-            guard let app = self.app else {
-                NSLog("XCUIApplication is not set. Please call setupSnapshot(app) before snapshot().")
-                return
-            }
+        guard let app else {
+            NSLog("XCUIApplication is not set. Please call setupSnapshot(app) before snapshot().")
+            return
+        }
 
-            app.typeKey(XCUIKeyboardKeySecondaryFn, modifierFlags: [])
+        app.typeKey(XCUIKeyboardKeySecondaryFn, modifierFlags: [])
         #else
 
-            guard self.app != nil else {
-                NSLog("XCUIApplication is not set. Please call setupSnapshot(app) before snapshot().")
-                return
-            }
+        guard self.app != nil else {
+            NSLog("XCUIApplication is not set. Please call setupSnapshot(app) before snapshot().")
+            return
+        }
 
-            let screenshot = XCUIScreen.main.screenshot()
-            let image = XCUIDevice.shared.orientation.isLandscape ?  fixLandscapeOrientation(image: screenshot.image) : screenshot.image
+        let screenshot = XCUIScreen.main.screenshot()
+        #if os(iOS) && !targetEnvironment(macCatalyst)
+        let image = XCUIDevice.shared.orientation.isLandscape ? fixLandscapeOrientation(image: screenshot.image) : screenshot.image
+        #else
+        let image = screenshot.image
+        #endif
 
-            guard var simulator = ProcessInfo().environment["SIMULATOR_DEVICE_NAME"], let screenshotsDir = screenshotsDirectory else { return }
+        guard var simulator = ProcessInfo().environment["SIMULATOR_DEVICE_NAME"], let screenshotsDir = screenshotsDirectory else { return }
 
-            do {
-                // The simulator name contains "Clone X of " inside the screenshot file when running parallelized UI Tests on concurrent devices
-                let regex = try NSRegularExpression(pattern: "Clone [0-9]+ of ")
-                let range = NSRange(location: 0, length: simulator.count)
-                simulator = regex.stringByReplacingMatches(in: simulator, range: range, withTemplate: "")
+        do {
+            // The simulator name contains "Clone X of " inside the screenshot file when running parallelized UI Tests on concurrent devices
+            let regex = try NSRegularExpression(pattern: "Clone [0-9]+ of ")
+            let range = NSRange(location: 0, length: simulator.count)
+            simulator = regex.stringByReplacingMatches(in: simulator, range: range, withTemplate: "")
 
-                let path = screenshotsDir.appendingPathComponent("\(simulator)-\(name).png")
-                try image.pngData()?.write(to: path, options: .atomic)
-            } catch let error {
-                NSLog("Problem writing screenshot: \(name) to \(screenshotsDir)/\(simulator)-\(name).png")
-                NSLog(error.localizedDescription)
-            }
+            let path = screenshotsDir.appendingPathComponent("\(simulator)-\(name).png")
+            #if swift(<5.0)
+            try UIImagePNGRepresentation(image)?.write(to: path, options: .atomic)
+            #else
+            try image.pngData()?.write(to: path, options: .atomic)
+            #endif
+        } catch let error {
+            NSLog("Problem writing screenshot: \(name) to \(screenshotsDir)/\(simulator)-\(name).png")
+            NSLog(error.localizedDescription)
+        }
         #endif
     }
 
     class func fixLandscapeOrientation(image: UIImage) -> UIImage {
+        #if os(watchOS)
+        return image
+        #else
         if #available(iOS 10.0, *) {
             let format = UIGraphicsImageRendererFormat()
             format.scale = image.scale
             let renderer = UIGraphicsImageRenderer(size: image.size, format: format)
-            return renderer.image { context in
+            return renderer.image { _ in
                 image.draw(in: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
             }
         } else {
             return image
         }
+        #endif
     }
 
     class func waitForLoadingIndicatorToDisappear(within timeout: TimeInterval) {
         #if os(tvOS)
-            return
+        return
         #endif
 
-        guard let app = self.app else {
+        guard let app else {
             NSLog("XCUIApplication is not set. Please call setupSnapshot(app) before snapshot().")
             return
         }
@@ -217,22 +232,22 @@ open class Snapshot: NSObject {
         // on OSX config is stored in /Users/<username>/Library
         // and on iOS/tvOS/WatchOS it's in simulator's home dir
         #if os(OSX)
-            let homeDir = URL(fileURLWithPath: NSHomeDirectory())
-            return homeDir.appendingPathComponent(cachePath)
-        #elseif arch(i386) || arch(x86_64)
-            guard let simulatorHostHome = ProcessInfo().environment["SIMULATOR_HOST_HOME"] else {
-                throw SnapshotError.cannotFindSimulatorHomeDirectory
-            }
-            let homeDir = URL(fileURLWithPath: simulatorHostHome)
-            return homeDir.appendingPathComponent(cachePath)
+        let homeDir = URL(fileURLWithPath: NSHomeDirectory())
+        return homeDir.appendingPathComponent(cachePath)
+        #elseif arch(i386) || arch(x86_64) || arch(arm64)
+        guard let simulatorHostHome = ProcessInfo().environment["SIMULATOR_HOST_HOME"] else {
+            throw SnapshotError.cannotFindSimulatorHomeDirectory
+        }
+        let homeDir = URL(fileURLWithPath: simulatorHostHome)
+        return homeDir.appendingPathComponent(cachePath)
         #else
-            throw SnapshotError.cannotRunOnPhysicalDevice
+        throw SnapshotError.cannotRunOnPhysicalDevice
         #endif
     }
 }
 
-private extension XCUIElementAttributes {
-    var isNetworkLoadingIndicator: Bool {
+extension XCUIElementAttributes {
+    fileprivate var isNetworkLoadingIndicator: Bool {
         if hasAllowListedIdentifier { return false }
 
         let hasOldLoadingIndicatorSize = frame.size == CGSize(width: 10, height: 20)
@@ -241,13 +256,13 @@ private extension XCUIElementAttributes {
         return hasOldLoadingIndicatorSize || hasNewLoadingIndicatorSize
     }
 
-    var hasAllowListedIdentifier: Bool {
+    private var hasAllowListedIdentifier: Bool {
         let allowListedIdentifiers = ["GeofenceLocationTrackingOn", "StandardLocationTrackingOn"]
 
         return allowListedIdentifiers.contains(identifier)
     }
 
-    func isStatusBar(_ deviceWidth: CGFloat) -> Bool {
+    fileprivate func isStatusBar(_ deviceWidth: CGFloat) -> Bool {
         if elementType == .statusBar { return true }
         guard frame.origin == .zero else { return false }
 
@@ -258,40 +273,40 @@ private extension XCUIElementAttributes {
     }
 }
 
-private extension XCUIElementQuery {
-    var networkLoadingIndicators: XCUIElementQuery {
-        let isNetworkLoadingIndicator = NSPredicate { (evaluatedObject, _) in
+extension XCUIElementQuery {
+    fileprivate var networkLoadingIndicators: XCUIElementQuery {
+        let isNetworkLoadingIndicator = NSPredicate { evaluatedObject, _ in
             guard let element = evaluatedObject as? XCUIElementAttributes else { return false }
 
             return element.isNetworkLoadingIndicator
         }
 
-        return self.containing(isNetworkLoadingIndicator)
+        return containing(isNetworkLoadingIndicator)
     }
 
-    var deviceStatusBars: XCUIElementQuery {
+    fileprivate var deviceStatusBars: XCUIElementQuery {
         guard let app = Snapshot.app else {
             fatalError("XCUIApplication is not set. Please call setupSnapshot(app) before snapshot().")
         }
 
         let deviceWidth = app.windows.firstMatch.frame.width
 
-        let isStatusBar = NSPredicate { (evaluatedObject, _) in
+        let isStatusBar = NSPredicate { evaluatedObject, _ in
             guard let element = evaluatedObject as? XCUIElementAttributes else { return false }
 
             return element.isStatusBar(deviceWidth)
         }
 
-        return self.containing(isStatusBar)
+        return containing(isStatusBar)
     }
 }
 
-private extension CGFloat {
-    func isBetween(_ numberA: CGFloat, and numberB: CGFloat) -> Bool {
-        return numberA...numberB ~= self
+extension CGFloat {
+    fileprivate func isBetween(_ numberA: CGFloat, and numberB: CGFloat) -> Bool {
+        numberA...numberB ~= self
     }
 }
 
 // Please don't remove the lines below
 // They are used to detect outdated configuration files
-// SnapshotHelperVersion [1.24]
+// SnapshotHelperVersion [1.29]

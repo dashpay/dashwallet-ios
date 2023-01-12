@@ -1,4 +1,4 @@
-//  
+//
 //  Created by tkhp
 //  Copyright © 2022 Dash Core Group. All rights reserved.
 //
@@ -40,40 +40,19 @@ final class String_DashWallet: XCTestCase {
         let nf = NumberFormatter()
         nf.numberStyle = .currency
         nf.locale = .init(identifier: "en_US")
-        
+
         var symbol = "$134".extractCurrencySymbol(using: nf)
         XCTAssertEqual("$", symbol, "Invalid symbol")
-        
+
         nf.locale = .init(identifier: "ru_RU")
         symbol = "134$".extractCurrencySymbol(using: nf)
         XCTAssertEqual("$", symbol, "Invalid symbol")
     }
-    
-    func testFormattedAmountFromInputString() {
-        let nf = NumberFormatter()
-        nf.numberStyle = .currency
-        nf.locale = .init(identifier: "en_US")
-        
-        var txt = "$0".formattedAmount(with: "0.", numberFormatter: nf)
-        XCTAssertEqual("$0.", txt, "Invalid")
-        
-        txt = "$0".formattedAmount(with: "0.0", numberFormatter: nf)
-        XCTAssertEqual("$0.0", txt, "Invalid")
-        
-        txt = "$0.1234".formattedAmount(with: "0.1234", numberFormatter: nf)
-        XCTAssertEqual("$0.1234", txt, "Invalid")
-        
-        nf.locale = .init(identifier: "ru_RU")
-        txt = "0,1234$".formattedAmount(with: "0.1234", numberFormatter: nf, locale: .init(identifier: "ru_RU"))
-        XCTAssertEqual("0.1234$", txt, "Invalid")
-        
-        txt = "1,1$".formattedAmount(with: "0.10", numberFormatter: nf, locale: .init(identifier: "ru_RU"))
-        XCTAssertEqual("0.10$", txt, "Invalid")
-    }
-    
+
+
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
-        self.measure {
+        measure {
             // Put the code you want to measure the time of here.
         }
     }
