@@ -75,7 +75,10 @@ extension AccountListController {
 
         searchResultsController = storyboard?
             .instantiateViewController(withIdentifier: "ResultsViewController") as? ResultsViewController
-        searchResultsController.tableView.delegate = self
+        searchResultsController.tableView.rowHeight = tableView.rowHeight
+        searchResultsController.selectHandler = { [weak self] item in
+            self?.select(item: item)
+        }
 
         searchController = UISearchController(searchResultsController: searchResultsController)
         searchController.automaticallyShowsCancelButton = true
@@ -114,11 +117,14 @@ extension AccountListController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = model.items[indexPath.row]
+        select(item: item)
+    }
+
+    private func select(item: CoinbaseUserAccountData) {
         selectedItem = item
         selectHandler?(item)
         tableView.reloadData()
     }
-
 }
 
 // MARK: UISearchControllerDelegate
@@ -148,7 +154,10 @@ extension AccountListController: UISearchResultsUpdating {
         let whitespaceCharacterSet = CharacterSet.whitespaces
         let strippedString = searchController.searchBar.text!.trimmingCharacters(in: whitespaceCharacterSet).lowercased()
 
-        filtered = filtered.filter { $0.name.lowercased().hasPrefix(strippedString) }
+        filtered = filtered.filter {
+            $0.currency.name.lowercased().hasPrefix(strippedString.lowercased()) ||
+                $0.currency.code.lowercased().hasPrefix(strippedString.lowercased())
+        }
 
         if let resultsController = searchController.searchResultsController as? ResultsViewController {
             resultsController.result = filtered
@@ -161,6 +170,7 @@ extension AccountListController: UISearchResultsUpdating {
 
 final class ResultsViewController: UITableViewController {
     var result: [CoinbaseUserAccountData] = []
+    var selectHandler: ((CoinbaseUserAccountData) -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -175,7 +185,13 @@ final class ResultsViewController: UITableViewController {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: AccountCell.dw_reuseIdentifier, for: indexPath) as! AccountCell
         cell.update(with: item)
+        cell.selectionStyle = .none
         return cell
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let item = result[indexPath.row]
+        selectHandler?(item)
     }
 }
 

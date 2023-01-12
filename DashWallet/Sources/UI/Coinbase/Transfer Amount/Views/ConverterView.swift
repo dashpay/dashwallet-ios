@@ -23,11 +23,11 @@ enum ConverterViewDirection {
     case toWallet
     case fromWallet
 
-    fileprivate var fromSource: Source {
+    private var fromSource: Source {
         self == .fromWallet ? .dash : .coinbase
     }
 
-    fileprivate var toSource: Source {
+    private var toSource: Source {
         self == .fromWallet ? .coinbase : .dash
     }
 
@@ -36,17 +36,35 @@ enum ConverterViewDirection {
     }
 }
 
+// MARK: - ConverterViewSourceItem
+
+struct ConverterViewSourceItem {
+    enum Image {
+        case remote(URL)
+        case asset(String)
+    }
+
+    var image: Image
+    var title: String
+    var currencyCode: String
+    var plainAmount: UInt64
+
+//    init(image: Image, title: String, plainAmount: UInt64, currencyCode: String) {
+//
+//    }
+}
+
 // MARK: - ConverterViewDataSource
 
 protocol ConverterViewDataSource: AnyObject {
-    var coinbaseBalanceFormatted: String { get }
-    var walletBalanceFormatted: String { get }
+    var fromItem: ConverterViewSourceItem { get }
+    var toItem: ConverterViewSourceItem { get }
 }
 
 // MARK: - ConverterViewDelegate
 
 protocol ConverterViewDelegate: AnyObject {
-    func didChangeDirection(_ direction: ConverterViewDirection)
+    func didChangeDirection()
     func didTapOnFromView()
 }
 
@@ -70,15 +88,6 @@ class ConverterView: UIView {
     private var toView: SourceView!
     private var swapImageView: UIImageView!
 
-    private var direction: ConverterViewDirection = .fromWallet
-
-    init(direction: ConverterViewDirection) {
-        self.direction = direction
-
-        super.init(frame: .zero)
-        configureHierarchy()
-    }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -100,9 +109,8 @@ class ConverterView: UIView {
 
     @objc
     func swapAction() {
-        direction = direction.next
+        delegate?.didChangeDirection()
         updateView()
-        delegate?.didChangeDirection(direction)
 
         UIView.animate(withDuration: 0.2) {
             self.swapImageView.transform = .init(rotationAngle: 0.9999 * CGFloat.pi)
@@ -113,14 +121,11 @@ class ConverterView: UIView {
 }
 
 extension ConverterView {
-    private var balance: String {
-        let balance = direction == .fromWallet ? dataSource?.walletBalanceFormatted : dataSource?.coinbaseBalanceFormatted
-        return balance ?? "0"
-    }
-
     private func updateView() {
-        fromView.update(with: direction.fromSource, balance: balance, hasNetwork: hasNetwork)
-        toView.update(with: direction.toSource, balance: nil, hasNetwork: hasNetwork)
+        guard let dataSource else { return }
+
+        fromView.update(with: dataSource.fromItem, isBalanceHidden: false, hasNetwork: hasNetwork)
+        toView.update(with: dataSource.toItem, isBalanceHidden: true, hasNetwork: hasNetwork)
     }
 
     private func configureHierarchy() {
@@ -243,17 +248,23 @@ private class SourceView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func update(with source: Source, balance: String?, hasNetwork: Bool) {
-        imageView.image = UIImage(named: source.imageName)
-        titleLabel.text = source.title
+    public func update(with item: ConverterViewSourceItem, isBalanceHidden: Bool, hasNetwork: Bool) {
+        switch item.image {
+        case .asset(let name):
+            imageView.image = UIImage(named: name)
+        case .remote(let url):
+            imageView.sd_setImage(with: url)
+        }
 
-        if let balance, let plainDashAmount = balance.plainDashAmount(locale: .current) {
+        titleLabel.text = item.title
+
+        if !isBalanceHidden {
             walletBalanceStackView.isHidden = false
 
-            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(plainDashAmount)) ?? "Fetching..."
+            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(item.plainAmount)) ?? "Fetching..."
 
             let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
-            let dashStr = "\(balance) DASH"
+            let dashStr = "\(item.plainAmount.formattedDashAmount) DASH"
             let fiatStr = " ≈ \(fiatAmount)"
             let fullStr = "\(lastKnownBalance)\(dashStr)\(fiatStr)"
             let string = NSMutableAttributedString(string: fullStr)

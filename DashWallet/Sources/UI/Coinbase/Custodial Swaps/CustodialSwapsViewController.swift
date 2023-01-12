@@ -20,7 +20,7 @@ import UIKit
 class CustodialSwapsViewController: TransferAmountViewController {
 
 
-    override func didChangeDirection(_ direction: ConverterViewDirection) { }
+    override func didChangeDirection() { }
 
     override func didTapOnFromView() {
         let vc = AccountListController.controller()

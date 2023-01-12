@@ -31,8 +31,6 @@ struct TransferAmountView: UIViewControllerRepresentable {
 // MARK: - TransferAmountViewController
 
 class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling, ConverterViewDelegate {
-
-
     /// Conform to NetworkReachabilityHandling
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
@@ -52,15 +50,14 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
     }
 
     override func actionButtonAction(sender: UIView) {
-        DSLogger.log("Tranfer from coinbase: actionButtonAction")
         showActivityIndicator()
         transferModel.initializeTransfer()
     }
 
     // MARK: ConverterViewDelegate
 
-    func didChangeDirection(_ direction: ConverterViewDirection) {
-        transferModel.direction = direction == .fromWallet ? .toCoinbase : .toWallet
+    func didChangeDirection() {
+        transferModel.direction = transferModel.direction == .toWallet ? .toCoinbase : .toWallet
     }
 
     func didTapOnFromView() { }
@@ -73,15 +70,17 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
 
     override func configureModel() {
         super.configureModel()
+
+
         transferModel.delegate = self
     }
 
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        converterView = ConverterView(direction: .toWallet)
+        converterView = ConverterView(frame: .zero)
         converterView.delegate = self
-        converterView.dataSource = model
+        converterView.dataSource = model as? ConverterViewDataSource
         converterView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(converterView)
 
@@ -136,9 +135,21 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
     }
 }
 
-// MARK: - BaseAmountModel + ConverterViewDataSource
+// MARK: - TransferAmountModel + ConverterViewDataSource
 
-extension BaseAmountModel: ConverterViewDataSource {
+extension TransferAmountModel: ConverterViewDataSource {
+    var fromItem: ConverterViewSourceItem {
+        direction == .toCoinbase
+            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
+            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
+    }
+
+    var toItem: ConverterViewSourceItem {
+        direction == .toWallet
+            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
+            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
+    }
+
     var coinbaseBalanceFormatted: String {
         guard let balance = Coinbase.shared.lastKnownBalance else {
             return NSLocalizedString("Unknown Balance", comment: "Coinbase")

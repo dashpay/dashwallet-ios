@@ -57,7 +57,7 @@ extension CBAccount {
     }
 
     var balance: UInt64 {
-        info.balance.plainAmount
+        info.plainAmount
     }
 }
 

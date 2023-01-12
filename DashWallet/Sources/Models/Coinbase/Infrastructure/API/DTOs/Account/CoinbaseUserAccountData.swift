@@ -40,6 +40,23 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
         return URL(string: urlString)!
     }
 
+    var balanceString: String {
+        balance.amount
+    }
+
+    var currencyCode: String {
+        currency.code
+    }
+
+    var plainAmount: UInt64 {
+        guard let dashNumber = Decimal(string: balance.amount) else {
+            return 0
+        }
+
+        let plainAmount = dashNumber * pow(10, currency.exponent)
+        return NSDecimalNumber(decimal: plainAmount).uint64Value
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case name
@@ -63,20 +80,6 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
 struct Balance: Codable {
     let amount: String
     let currency: String
-
-    var decimal: Decimal? {
-        Decimal(string: amount)
-    }
-
-    var plainAmount: UInt64 {
-        guard let dashNumber = decimal else {
-            return 0
-        }
-
-        let duffsNumber = Decimal(DUFFS)
-        let plainAmount = dashNumber * duffsNumber
-        return NSDecimalNumber(decimal: plainAmount).uint64Value
-    }
 }
 
 // MARK: - Currency

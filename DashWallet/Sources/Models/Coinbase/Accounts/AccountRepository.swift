@@ -63,7 +63,7 @@ class AccountRepository {
         while endpoint != nil {
             let response: BasePaginationResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(endpoint!)
             items += response.data
-                .filter { $0.currency.type == .crypto && $0.balance.decimal! > 0 }
+                .filter { $0.currency.type == .crypto && $0.balance.amount.decimal()! > 0 }
                 .map { .init(info: $0, authInterop: authInterop) }
 
             if let nextUri = response.pagination.nextURI {

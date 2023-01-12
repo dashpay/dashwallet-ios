@@ -35,7 +35,6 @@ final class AccountCell: UITableViewCell {
             }
         }
 
-        let plainDashAmount = item.balance.plainAmount
         let dashStr = "\(item.balance.amount) \(item.balance.currency)"
         let fiatStr = " ≈ \("$1.23")"
         let fullStr = "\(dashStr)\(fiatStr)"

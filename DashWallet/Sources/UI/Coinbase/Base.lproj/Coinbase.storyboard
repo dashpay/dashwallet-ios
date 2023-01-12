@@ -1111,6 +1111,73 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="checkmark" indentationWidth="10" reuseIdentifier="dashwallet.AccountCell" rowHeight="56" id="K7d-nx-ctL" customClass="AccountCell" customModule="dashwallet" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="50" width="414" height="56"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="K7d-nx-ctL" id="hAn-7s-xb6">
+                                    <rect key="frame" x="0.0" y="0.0" width="370" height="56"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="QAN-LE-ShG">
+                                            <rect key="frame" x="15" y="9.5" width="132" height="37.5"/>
+                                            <subviews>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="8eq-dO-ljN">
+                                                    <rect key="frame" x="0.0" y="0.5" width="36" height="36"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="36" id="qcT-xl-N9F"/>
+                                                        <constraint firstAttribute="width" constant="36" id="rY0-RX-Sk9"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="f83-NI-6qB">
+                                                    <rect key="frame" x="44" y="0.0" width="88" height="37.5"/>
+                                                    <subviews>
+                                                        <stackView opaque="NO" contentMode="scaleToFill" alignment="lastBaseline" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="8qJ-yQ-v7k">
+                                                            <rect key="frame" x="0.0" y="0.0" width="88" height="20.5"/>
+                                                            <subviews>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Sz6-Pa-8rT">
+                                                                    <rect key="frame" x="0.0" y="0.0" width="42.5" height="20.5"/>
+                                                                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                                    <color key="textColor" name="Label"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gWF-Wb-eyk">
+                                                                    <rect key="frame" x="46.5" y="0.0" width="41.5" height="20.5"/>
+                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                                    <color key="textColor" name="SecondaryTextColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                        </stackView>
+                                                        <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="XEQ-sl-Vcq">
+                                                            <rect key="frame" x="0.0" y="21.5" width="33" height="16"/>
+                                                            <subviews>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b2W-9a-Jf9">
+                                                                    <rect key="frame" x="0.0" y="0.0" width="33" height="16"/>
+                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                                    <color key="textColor" name="SecondaryTextColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                        </stackView>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="QAN-LE-ShG" firstAttribute="leading" secondItem="hAn-7s-xb6" secondAttribute="leading" constant="15" id="3en-FV-6ih"/>
+                                        <constraint firstItem="QAN-LE-ShG" firstAttribute="centerY" secondItem="hAn-7s-xb6" secondAttribute="centerY" id="KC2-6o-Rqq"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="accountNameLabel" destination="gWF-Wb-eyk" id="RGb-nn-9cv"/>
+                                    <outlet property="accountShortNameLabel" destination="Sz6-Pa-8rT" id="5Tf-Ta-faW"/>
+                                    <outlet property="balanceLabel" destination="b2W-9a-Jf9" id="Ll8-ba-jmk"/>
+                                    <outlet property="iconView" destination="8eq-dO-ljN" id="fA1-cG-oJO"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="29B-Z1-qYe" id="vJa-gv-0r8"/>
                             <outlet property="delegate" destination="29B-Z1-qYe" id="KfS-33-p1L"/>

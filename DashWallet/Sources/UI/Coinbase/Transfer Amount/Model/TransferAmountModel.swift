@@ -39,7 +39,7 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
 
     public var address: String!
-    public var direction: TransferDirection = .toCoinbase
+    public var direction: TransferDirection = .toWallet
 
     internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
 
