@@ -51,14 +51,15 @@ enum HTTPClientError: Error {
     }
 }
 
-
-
 typealias AccessTokenProvider = () -> String
 
 // MARK: - HTTPClient
 
 public class HTTPClient<Target: TargetType> {
-    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .background, attributes: .concurrent)
+    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api",
+                                             qos: .background,
+                                             attributes: .concurrent)
+
     private var provider: MoyaProvider<Target>!
     private var etags: [String: String] = [:]
 
@@ -80,7 +81,7 @@ public class HTTPClient<Target: TargetType> {
 
         let etagPlugin = EtagPlugin { [weak self] _, url in
             guard let self else { return "" }
-            return self.etags[url.absoluteString]
+            return self.eTag(for: url)
         }
         plugins.append(etagPlugin)
 
@@ -95,7 +96,11 @@ public class HTTPClient<Target: TargetType> {
     @discardableResult
     func request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
         let cancellableToken = CancellableWrapper()
-        cancellableToken.innerCancellable = _request(target, completion: completion)
+
+        apiWorkQueue.async {
+            cancellableToken.innerCancellable = self._request(target, completion: completion)
+        }
+
         return cancellableToken
     }
 
@@ -137,7 +142,7 @@ public class HTTPClient<Target: TargetType> {
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(receiveMemoryWarningHandler)
+        NotificationCenter.default.removeObserver(receiveMemoryWarningHandler!)
     }
 }
 
@@ -154,12 +159,13 @@ extension HTTPClient {
                 if acceptableCodes.contains(response.statusCode) {
                     if let etag = response.response?.value(forHTTPHeaderField: "Etag"),
                        let key = response.request?.url?.absoluteString {
-                        self?.etags[key] = etag
+                        self?.apiWorkQueue.sync {
+                            self?.etags[key] = etag
+                        }
                     }
 
                     completion(.success(response))
                 } else {
-                    let responseString = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
@@ -251,3 +257,10 @@ public struct EtagPlugin: PluginType {
     }
 }
 
+extension HTTPClient {
+    func eTag(for url: URL) -> String? {
+        apiWorkQueue.sync {
+            self.etags[url.absoluteString]
+        }
+    }
+}
