@@ -20,26 +20,31 @@ import Foundation
 private var _dashFormatter: NumberFormatter = {
     let maximumFractionDigits = 8
 
-    var dashFormat = NumberFormatter()
-    dashFormat.isLenient = true
-    dashFormat.numberStyle = .currency
-    dashFormat.generatesDecimalNumbers = true
-    if let range = dashFormat.positiveFormat.range(of: "#") {
-        dashFormat.negativeFormat = dashFormat.positiveFormat.replacingCharacters(in: range, with: "-#")
-    }
-
-    dashFormat.currencyCode = "DASH"
-    dashFormat.currencySymbol = DASH
-    dashFormat.maximumFractionDigits = maximumFractionDigits
-    dashFormat.minimumFractionDigits = 0
+    var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: DASH, exponent: maximumFractionDigits)
     dashFormat.maximum = (Decimal(MAX_MONEY)/pow(10, maximumFractionDigits)) as NSNumber
-
     return dashFormat
 }()
 
 extension NumberFormatter {
     static var dashFormatter: NumberFormatter {
         _dashFormatter
+    }
+
+    static func cryptoFormatter(currencyCode: String, exponent: Int) -> NumberFormatter {
+        var formatter = NumberFormatter()
+        formatter.isLenient = true
+        formatter.numberStyle = .currency
+        formatter.generatesDecimalNumbers = true
+        if let range = formatter.positiveFormat.range(of: "#") {
+            formatter.negativeFormat = formatter.positiveFormat.replacingCharacters(in: range, with: "-#")
+        }
+
+        formatter.currencyCode = currencyCode
+        formatter.currencySymbol = currencyCode
+        formatter.maximumFractionDigits = exponent
+        formatter.minimumFractionDigits = 0
+
+        return formatter
     }
 }
 
