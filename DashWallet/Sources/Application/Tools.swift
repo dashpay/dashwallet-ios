@@ -22,6 +22,7 @@ private var _dashFormatter: NumberFormatter = {
 
     var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: DASH, exponent: maximumFractionDigits)
     dashFormat.maximum = (Decimal(MAX_MONEY)/pow(10, maximumFractionDigits)) as NSNumber
+
     return dashFormat
 }()
 
@@ -31,7 +32,7 @@ extension NumberFormatter {
     }
 
     static func cryptoFormatter(currencyCode: String, exponent: Int) -> NumberFormatter {
-        var formatter = NumberFormatter()
+        let formatter = NumberFormatter()
         formatter.isLenient = true
         formatter.numberStyle = .currency
         formatter.generatesDecimalNumbers = true

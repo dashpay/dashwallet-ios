@@ -35,13 +35,18 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
         case toCoinbase
     }
 
-    weak var delegate: TransferAmountModelDelegate?
-    weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
+    weak var delegate: TransferAmountModelDelegate? {
+        didSet {
+            transactionDelegate = delegate
+        }
+    }
+
+    weak var transactionDelegate: CoinbaseTransactionDelegate?
 
     public var address: String!
     public var direction: TransferDirection = .toWallet
 
-    internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
+    internal var amountToTransfer: UInt64 { UInt64(amount.plainAmount) }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
@@ -114,4 +119,26 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     }
 }
 
+// MARK: ConverterViewDataSource
 
+extension TransferAmountModel: ConverterViewDataSource {
+    var fromItem: ConverterViewSourceItem? {
+        direction == .toCoinbase
+            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
+            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
+    }
+
+    var toItem: ConverterViewSourceItem? {
+        direction == .toWallet
+            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
+            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
+    }
+
+    var coinbaseBalanceFormatted: String {
+        guard let balance = Coinbase.shared.lastKnownBalance else {
+            return NSLocalizedString("Unknown Balance", comment: "Coinbase")
+        }
+
+        return balance.formattedDashAmount
+    }
+}

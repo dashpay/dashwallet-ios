@@ -50,5 +50,7 @@ class CBAccountManager {
         UserDefaults.standard.set(data, forKey: kUserDefaultAccountAccessKey)
         return true
     }
+
+    static let shared = CBAccountManager()
 }
 

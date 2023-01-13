@@ -19,13 +19,16 @@ import Foundation
 
 extension UInt64 {
     var formattedDashAmount: String {
+        formattedCryptoAmount(exponent: 8)
+    }
+
+    func formattedCryptoAmount(exponent: Int = 8) -> String {
         let plainNumber = Decimal(self)
-        let duffsNumber = Decimal(DUFFS)
-        let dashNumber = plainNumber/duffsNumber
+        let number = plainNumber/pow(10, exponent)
         if #available(iOS 15.0, *) {
-            return dashNumber.formatted(.number)
+            return number.formatted(.number)
         } else {
-            return "\(dashNumber)"
+            return "\(number)"
         }
     }
 }

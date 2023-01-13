@@ -26,32 +26,32 @@ enum ConfirmOrderError: Error {
 
 // MARK: - ConfirmOrderModel
 
-final class ConfirmOrderModel: CoinbaseTransactionSendable {
+final class ConfirmOrderModel: OrderPreviewModel {
     var transactionDelegate: CoinbaseTransactionDelegate?
-
-    var order: CoinbasePlaceBuyOrder
-    let paymentMethod: CoinbasePaymentMethod
-
-    /// Plain amount in Dash
-    let plainAmount: UInt64
 
     var completionHandle: (() -> Void)?
     var failureHandle: ((ConfirmOrderError) -> Void)?
     var orderChangeHandle: (() -> Void)?
 
+    var order: CoinbasePlaceBuyOrder
+    let paymentMethod: CoinbasePaymentMethod
+
+    /// Plain amount in Dash
+    let amountToTransfer: UInt64
+
     init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
         self.order = order
         self.paymentMethod = paymentMethod
-        self.plainAmount = plainAmount
+        amountToTransfer = plainAmount
     }
 
-    public func placeOrder() {
+    func placeOrder() {
         guard let orderId = order.id else {
             failureHandle?(.error)
             return
         }
 
-        let amount = plainAmount
+        let amount = amountToTransfer
 
         Task { [weak self] in
             do {
@@ -65,9 +65,9 @@ final class ConfirmOrderModel: CoinbaseTransactionSendable {
         }
     }
 
-    public func retry() {
+    func retry() {
         Task { [weak self] in
-            let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: plainAmount, paymentMethod: paymentMethod)
+            let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amountToTransfer, paymentMethod: paymentMethod)
             self?.order = order
 
             await MainActor.run { [weak self] in

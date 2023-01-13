@@ -15,19 +15,10 @@
 //  limitations under the License.
 //
 
-import Foundation
+import UIKit
 
-final class AccountListModel {
-    @Published var items: [CBAccount] = []
-
-    init() {
-        fetchItems()
-    }
-
-    private func fetchItems() {
-        Task {
-            let items = try await Coinbase.shared.accounts()
-            self.items = items
-        }
+extension UITableView {
+    func dequeueReusableCell<T: UITableViewCell>(type: T.Type, for indexPath: IndexPath) -> T {
+        dequeueReusableCell(withIdentifier: T.dw_reuseIdentifier, for: indexPath) as! T
     }
 }

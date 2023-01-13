@@ -24,18 +24,18 @@ final class AccountCell: UITableViewCell {
     @IBOutlet var fiatBalanceLabel: UILabel!
     @IBOutlet var balanceLabel: UILabel!
 
-    func update(with item: CoinbaseUserAccountData) {
-        accountNameLabel.text = "· " + item.currency.name
-        accountShortNameLabel.text = item.currency.code
+    func update(with item: CBAccount) {
+        accountNameLabel.text = "· " + item.info.currency.name
+        accountShortNameLabel.text = item.info.currency.code
 
         iconView.isHidden = false
-        iconView.sd_setImage(with: item.iconURL, placeholderImage: nil) { [weak iconView] image, _,_,_ in
+        iconView.sd_setImage(with: item.info.iconURL, placeholderImage: nil) { [weak iconView] image, _,_,_ in
             if image == nil {
                 iconView?.isHidden = true
             }
         }
 
-        let dashStr = "\(item.balance.amount) \(item.balance.currency)"
+        let dashStr = "\(item.info.balance.amount) \(item.info.balance.currency)"
         let fiatStr = " ≈ \("$1.23")"
         let fullStr = "\(dashStr)\(fiatStr)"
         let string = NSMutableAttributedString(string: fullStr)

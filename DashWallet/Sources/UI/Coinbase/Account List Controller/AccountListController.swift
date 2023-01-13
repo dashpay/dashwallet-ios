@@ -21,12 +21,12 @@ import UIKit
 // MARK: - AccountListController
 
 final class AccountListController: BaseViewController {
-    public var selectHandler: ((CoinbaseUserAccountData) -> Void)?
+    public var selectHandler: ((CBAccount) -> Void)?
 
     @IBOutlet var tableView: UITableView!
 
     private var model: AccountListModel!
-    private var selectedItem: CoinbaseUserAccountData!
+    private var selectedItem: CBAccount!
 
     private var searchController: UISearchController!
     private var searchResultsController: ResultsViewController!
@@ -112,7 +112,7 @@ extension AccountListController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         let item = model.items[indexPath.row]
-        cell.isSelected = item == selectedItem
+        cell.isSelected = item.info == selectedItem?.info
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -120,7 +120,7 @@ extension AccountListController: UITableViewDelegate, UITableViewDataSource {
         select(item: item)
     }
 
-    private func select(item: CoinbaseUserAccountData) {
+    private func select(item: CBAccount) {
         selectedItem = item
         selectHandler?(item)
         tableView.reloadData()
@@ -155,8 +155,8 @@ extension AccountListController: UISearchResultsUpdating {
         let strippedString = searchController.searchBar.text!.trimmingCharacters(in: whitespaceCharacterSet).lowercased()
 
         filtered = filtered.filter {
-            $0.currency.name.lowercased().hasPrefix(strippedString.lowercased()) ||
-                $0.currency.code.lowercased().hasPrefix(strippedString.lowercased())
+            $0.info.currency.name.lowercased().hasPrefix(strippedString.lowercased()) ||
+                $0.info.currency.code.lowercased().hasPrefix(strippedString.lowercased())
         }
 
         if let resultsController = searchController.searchResultsController as? ResultsViewController {
@@ -169,8 +169,8 @@ extension AccountListController: UISearchResultsUpdating {
 // MARK: - ResultsViewController
 
 final class ResultsViewController: UITableViewController {
-    var result: [CoinbaseUserAccountData] = []
-    var selectHandler: ((CoinbaseUserAccountData) -> Void)?
+    var result: [CBAccount] = []
+    var selectHandler: ((CBAccount) -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()

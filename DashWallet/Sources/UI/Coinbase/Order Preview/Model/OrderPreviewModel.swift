@@ -1,6 +1,6 @@
 //
 //  Created by tkhp
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  Copyright © 2022 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,17 @@
 //  limitations under the License.
 //
 
-import Foundation
+import UIKit
 
-final class AccountListModel {
-    @Published var items: [CBAccount] = []
 
-    init() {
-        fetchItems()
-    }
+// MARK: - OrderPreviewModel
 
-    private func fetchItems() {
-        Task {
-            let items = try await Coinbase.shared.accounts()
-            self.items = items
-        }
-    }
+protocol OrderPreviewModel: CoinbaseTransactionSendable {
+    var completionHandle: (() -> Void)? { set get }
+    var failureHandle: ((ConfirmOrderError) -> Void)? { set get }
+    var orderChangeHandle: (() -> Void)? { set get }
+
+    func placeOrder()
+    func retry()
 }
+

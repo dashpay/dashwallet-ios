@@ -96,10 +96,6 @@ final class BuyDashModel: BaseAmountModel {
         error = nil
         super.amountDidChange()
     }
-
-    override func checkAmountForErrors() {
-        DSPriceManager.sharedInstance()
-    }
 }
 
 extension BuyDashModel {

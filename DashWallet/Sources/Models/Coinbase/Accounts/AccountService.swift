@@ -65,7 +65,24 @@ class AccountService {
 
         let order = try await account.commitCoinbaseBuyOrder(orderID: orderID)
         try await account.refreshAccount()
+        CBAccountManager.shared.store(account: account)
         return order
+    }
+
+    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: UInt64) async throws -> CoinbaseSwapeTrade {
+        try await origin.convert(amount: amount, to: destination)
+    }
+
+    public func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
+        let account = try await account(by: kDashAccount)
+        let order = try await origin.commitTradeOrder(orderID: orderID)
+        try await account.refreshAccount()
+        CBAccountManager.shared.store(account: account)
+        return order
+    }
+
+    func removeStoredAccount() {
+        CBAccountManager.shared.removeAccount()
     }
 }
 

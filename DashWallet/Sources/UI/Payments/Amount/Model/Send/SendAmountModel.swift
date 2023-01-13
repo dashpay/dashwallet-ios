@@ -67,7 +67,7 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
-        checkError()
+        checkAmountForErrors()
     }
 
     func selectAllFunds(_ preparationHandler: () -> Void) {
@@ -87,12 +87,6 @@ class SendAmountModel: BaseAmountModel {
         }
     }
 
-    override func amountDidChange() {
-        checkError()
-
-        super.amountDidChange()
-    }
-
     private func selectAllFunds() {
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
@@ -102,7 +96,7 @@ class SendAmountModel: BaseAmountModel {
         }
     }
 
-    internal func checkError() {
+    override func checkAmountForErrors() {
         guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced
         else {
@@ -133,6 +127,6 @@ extension SendAmountModel: SyncingActivityMonitorObserver {
     func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        checkError()
+        checkAmountForErrors()
     }
 }

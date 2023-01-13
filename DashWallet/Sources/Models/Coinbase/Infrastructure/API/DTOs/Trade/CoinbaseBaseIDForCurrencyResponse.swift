@@ -7,25 +7,19 @@
 
 import Foundation
 
-// MARK: - CoinbaseBaseIDForCurrencyResponse
-
-struct CoinbaseBaseIDForCurrencyResponse: Codable {
-    let data: [CoinbaseBaseIDForCurrency]?
-}
-
 // MARK: - CoinbaseBaseIDForCurrency
 
 struct CoinbaseBaseIDForCurrency: Codable {
-    let base, baseID: String?
-    let unitPriceScale: Int?
-    let currency: CoinbaseBaseIdCurrency?
-    let prices: Prices?
+    let base: String
+    let baseID: String
+    let unitPriceScale: Int
+    let currency: String
 
     enum CodingKeys: String, CodingKey {
         case base
         case baseID = "base_id"
         case unitPriceScale = "unit_price_scale"
-        case currency, prices
+        case currency
     }
 }
 
@@ -38,7 +32,7 @@ enum CoinbaseBaseIdCurrency: String, Codable {
 // MARK: - Prices
 
 struct Prices: Codable {
-    let latest: String?
+    let latest: Double
     let latestPrice: LatestPrice?
 
     enum CodingKeys: String, CodingKey {
@@ -64,6 +58,10 @@ struct LatestPrice: Codable {
 // MARK: - PercentChange
 
 struct PercentChange: Codable {
-    let hour, day, week, month: Double?
-    let year, all: Double?
+    let hour: Double
+    let day: Double
+    let week: Double
+    let month: Double
+    let year: Double
+    let all: Double
 }

@@ -59,6 +59,15 @@ extension CBAccount {
     var balance: UInt64 {
         info.plainAmount
     }
+
+    var isDashAccount: Bool {
+        info.currency.name == kDashAccount
+    }
+
+    private var accountNameForApiRequest: String {
+        guard let info else { return accountName }
+        return info.id
+    }
 }
 
 // MARK: Account
@@ -67,7 +76,7 @@ extension CBAccount {
     public func refreshAccount() async throws -> CoinbaseUserAccountData {
         try await authInterop.refreshTokenIfNeeded()
 
-        let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.account(accountName))
+        let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.account(accountNameForApiRequest))
         let newAccount = result.data
         info = newAccount
 
@@ -99,14 +108,7 @@ extension CBAccount {
         let fiatCurrency = Coinbase.sendLimitCurrency
         if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
             let localDecimal = localNumber.decimalValue
-            if localDecimal < kMinUSDAmountOrder {
-                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
-                let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
-                localFormatter.currencyCode = Coinbase.sendLimitCurrency
-                let str = localFormatter.string(from: min) ?? "$1.99"
-
-                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-            } else if localDecimal > Coinbase.shared.sendLimit {
+            if localDecimal > Coinbase.shared.sendLimit {
                 throw Coinbase.Error.transactionFailed(.limitExceded)
             }
         }
@@ -206,6 +208,55 @@ extension CBAccount {
         do {
             try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
+            try await refreshAccount()
+
+            return result.data
+        } catch HTTPClientError.statusCode(let r) {
+            if let error = r.error?.errors.first {
+                throw Coinbase.Error.transactionFailed(.message(error.message))
+            }
+
+            throw Coinbase.Error.unknownError
+        } catch {
+            throw error
+        }
+    }
+}
+
+// MARK: Trade
+extension CBAccount {
+    func convert(amount: UInt64, to destination: CBAccount) async throws -> CoinbaseSwapeTrade {
+        let baseIds: BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> = try await CoinbaseAPI.shared.request(.getBaseIdForUSDModel("USD"))
+
+        var targetAsset: String!
+        var sourceAsset: String!
+
+        for item in baseIds.data {
+            if item.base == info.currencyCode {
+                sourceAsset = item.baseID
+            }
+
+            if item.base == destination.info.currencyCode {
+                targetAsset = item.baseID
+            }
+        }
+
+        guard let sourceAsset, let targetAsset else {
+            throw Coinbase.Error.transactionFailed(.message("Can't find source or target asset"))
+        }
+
+        let dto = CoinbaseSwapeTradeRequest(amount: amount.formattedCryptoAmount(exponent: info.currency.exponent), amountAsset: info.currencyCode, targetAsset: targetAsset,
+                                            sourceAsset: sourceAsset)
+
+        let response: BaseDataResponse<CoinbaseSwapeTrade> = try await CoinbaseAPI.shared.request(.swapTrade(dto))
+
+        return response.data
+    }
+
+    public func commitTradeOrder(orderID: String) async throws -> CoinbaseSwapeTrade {
+        do {
+            try await authInterop.refreshTokenIfNeeded()
+            let result: BaseDataResponse<CoinbaseSwapeTrade> = try await httpClient.request(.swapTradeCommit(orderID))
             try await refreshAccount()
 
             return result.data

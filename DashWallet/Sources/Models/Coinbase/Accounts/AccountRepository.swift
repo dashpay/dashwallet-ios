@@ -19,7 +19,7 @@ import Foundation
 
 class AccountRepository {
     private weak var authInterop: CBAuthInterop!
-    private var accountManager = CBAccountManager()
+    private var accountManager: CBAccountManager { CBAccountManager.shared }
 
     private var cachedAccounts: [String: CBAccount] = [:]
 
@@ -39,12 +39,18 @@ class AccountRepository {
         guard let acc = cachedAccounts[name] else {
             let account = CBAccount(accountName: name, authInterop: authInterop)
             try await account.refreshAccount()
-            accountManager.store(account: account)
+            if kDashAccount == name {
+                accountManager.store(account: account)
+            }
             cachedAccounts[name] = account
             return account
         }
 
         return acc
+    }
+
+    func store(account: CBAccount) {
+        accountManager.store(account: account)
     }
 
     /// Fetch all accounts with positive balance

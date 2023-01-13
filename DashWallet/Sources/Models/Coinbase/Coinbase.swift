@@ -66,11 +66,15 @@ extension Coinbase {
     }
 
     var lastKnownBalance: UInt64? {
-        accountService.dashAccount?.balance
+        dashAccount?.balance
     }
 
     var sendLimit: Decimal {
         auth.currentUser?.sendLimit ?? Coinbase.sendLimitAmount
+    }
+
+    var dashAccount: CBAccount? {
+        accountService.dashAccount
     }
 }
 
@@ -156,12 +160,59 @@ extension Coinbase {
         }
     }
 
+    /// Place trade order
+    ///
+    /// This method creates an on order to trade between accounts
+    ///
+    /// - Parameters:
+    ///   - origin: Account we use to covert from
+    ///   - destination: Account we use to convert to
+    ///   - amount: Plain amount in crypto. The amount should be in the same currency as origin's account currency
+    ///
+    /// - Returns: Order `CoinbaseSwapeTrade`
+    ///
+    /// - Throws: `Coinbase.Error`
+    ///
+    ///
+    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: UInt64) async throws -> CoinbaseSwapeTrade {
+        do {
+            return try await accountService.placeTradeOrder(from: origin, to: destination, amount: amount)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
+        }
+    }
+
+    /// Commit Trade Order
+    ///
+    /// - Parameters:
+    ///   - origin: Instance of `CBAccount` you used in `placeTradeOrder` method to convert from
+    ///   - orderID: Order id from `CoinbaseSwapeTrade` you receive by calling `placeTradeOrder`
+    ///
+    /// - Returns: CoinbasePlaceBuyOrder
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
+        do {
+            return try await accountService.commitTradeOrder(origin: origin, orderID: orderID)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
+        }
+    }
+
     public func signOut() async throws {
         guard isAuthorized else {
             return
         }
 
         try await auth.signOut()
+        accountService.removeStoredAccount()
     }
 
     public func accounts() async throws -> [CBAccount] {

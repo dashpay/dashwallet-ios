@@ -57,8 +57,8 @@ struct ConverterViewSourceItem {
 // MARK: - ConverterViewDataSource
 
 protocol ConverterViewDataSource: AnyObject {
-    var fromItem: ConverterViewSourceItem { get }
-    var toItem: ConverterViewSourceItem { get }
+    var fromItem: ConverterViewSourceItem? { get }
+    var toItem: ConverterViewSourceItem? { get }
 }
 
 // MARK: - ConverterViewDelegate
@@ -248,7 +248,12 @@ private class SourceView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func update(with item: ConverterViewSourceItem, isBalanceHidden: Bool, hasNetwork: Bool) {
+    public func update(with item: ConverterViewSourceItem?, isBalanceHidden: Bool, hasNetwork: Bool) {
+        guard let item else {
+            titleLabel.text = NSLocalizedString("Select Account", comment: "Coinbase")
+            return
+        }
+
         switch item.image {
         case .asset(let name):
             imageView.image = UIImage(named: name)

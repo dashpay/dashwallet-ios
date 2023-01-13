@@ -18,15 +18,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - TransferAmountView
-
-struct TransferAmountView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> TransferAmountViewController {
-        TransferAmountViewController()
-    }
-
-    func updateUIViewController(_ viewController: TransferAmountViewController, context: Context) { }
-}
 
 // MARK: - TransferAmountViewController
 
@@ -35,7 +26,7 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
 
-    private var converterView: ConverterView!
+    internal var converterView: ConverterView!
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
 
@@ -66,12 +57,6 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
 
     override func initializeModel() {
         model = TransferAmountModel()
-    }
-
-    override func configureModel() {
-        super.configureModel()
-
-
         transferModel.delegate = self
     }
 
@@ -135,29 +120,7 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
     }
 }
 
-// MARK: - TransferAmountModel + ConverterViewDataSource
 
-extension TransferAmountModel: ConverterViewDataSource {
-    var fromItem: ConverterViewSourceItem {
-        direction == .toCoinbase
-            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
-            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
-    }
-
-    var toItem: ConverterViewSourceItem {
-        direction == .toWallet
-            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
-            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
-    }
-
-    var coinbaseBalanceFormatted: String {
-        guard let balance = Coinbase.shared.lastKnownBalance else {
-            return NSLocalizedString("Unknown Balance", comment: "Coinbase")
-        }
-
-        return balance.formattedDashAmount
-    }
-}
 
 extension TransferAmountViewController {
     private func reloadView() {
@@ -173,7 +136,7 @@ extension TransferAmountViewController {
     }
 }
 
-// MARK: - TransferAmountViewController + PaymentControllerDelegate
+// MARK: PaymentControllerDelegate
 
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
@@ -190,7 +153,7 @@ extension TransferAmountViewController: PaymentControllerDelegate {
     }
 }
 
-// MARK: - TransferAmountViewController + PaymentControllerPresentationContextProviding
+// MARK: PaymentControllerPresentationContextProviding
 
 extension TransferAmountViewController: PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
@@ -198,7 +161,7 @@ extension TransferAmountViewController: PaymentControllerPresentationContextProv
     }
 }
 
-// MARK: - TransferAmountViewController + CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
+// MARK: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
 
 extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
     func codeConfirmationControllerDidContinue(with code: String) {
