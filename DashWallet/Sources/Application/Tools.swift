@@ -47,5 +47,16 @@ extension NumberFormatter {
 
         return formatter
     }
+
+    static func currencyFormatter(currencyCode: String) -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.isLenient = true
+        formatter.numberStyle = .currency
+        formatter.generatesDecimalNumbers = true
+        formatter.currencyCode = currencyCode
+        formatter.currencySymbol = currencyCode
+        formatter.maximumFractionDigits = 8
+        return formatter
+    }
 }
 

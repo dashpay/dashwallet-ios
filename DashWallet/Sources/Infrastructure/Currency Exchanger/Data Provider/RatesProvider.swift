@@ -39,8 +39,7 @@ final class BaseRatesProvider: NSObject, RatesProvider {
     var updateHandler: (([DSCurrencyPriceObject]) -> Void)?
 
     private var lastPriceSourceInfo: String!
-    private var pricesByCode: [String: DSCurrencyPriceObject]!
-    private var plainPricesByCode: [String: NSNumber]!
+
 
     private let operationQueue: DSOperationQueue
 
@@ -63,32 +62,17 @@ final class BaseRatesProvider: NSObject, RatesProvider {
         let priceOperation = DSPriceOperationProvider.fetchPrices { [weak self] prices, priceSource in
             guard let self, let prices else { return }
 
-            var pricesByCode: [String: DSCurrencyPriceObject] = [:]
+            // TODO: save prices in different way
             var plainPricesByCode: [String: NSNumber] = [:]
 
             for rate in prices {
-                pricesByCode[rate.code] = rate
                 plainPricesByCode[rate.code] = rate.price
             }
 
-            self.lastPriceSourceInfo = priceSource
-            self.pricesByCode = pricesByCode
-            self.plainPricesByCode = plainPricesByCode
-
             UserDefaults.standard.set(plainPricesByCode, forKey: self.kPriceByCodeKey)
 
-            var array = pricesByCode
-                .map { $0.value }
-                .sorted(by: { $0.code < $1.code })
-
-            let euroObj = pricesByCode["EUR"]!
-            let usdObj = pricesByCode["USD"]!
-
-            array.removeAll(where: { $0 == euroObj || $0 == usdObj })
-            array.insert(euroObj, at: 0)
-            array.insert(usdObj, at: 0)
-
-            self.updateHandler?(array)
+            self.lastPriceSourceInfo = priceSource
+            self.updateHandler?(prices)
         }
 
         operationQueue.addOperation(priceOperation)

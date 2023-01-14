@@ -41,26 +41,38 @@ public final class CurrencyExchanger {
     var currencies: [DSCurrencyPriceObject] = []
 
     private let dataProvider: RatesProvider
+    private var pricesByCode: [String: DSCurrencyPriceObject]!
+    private var plainPricesByCode: [String: NSNumber]!
 
     init(dataProvider: RatesProvider) {
         self.dataProvider = dataProvider
         configure(dataProvider: dataProvider)
     }
 
-    public func rate(baseCurrency: String, to currency: String) -> Decimal {
-        0
+    public func rate(for currency: String) throws -> Decimal {
+        guard !currencies.isEmpty else { throw CurrencyExchanger.Error.ratesAreFetching }
+        guard let rate = plainPricesByCode[currency] else { throw CurrencyExchanger.Error.ratesNotAvailable }
+
+        return rate.decimalValue
     }
 
-    public func amount(in currency: String, for input: UInt64, inputCurrency: String) -> Decimal {
-        0
+    public func convertDash(amount: Decimal, to currency: String) throws -> Decimal {
+        let rate = try rate(for: currency)
+        let result = rate*amount
+
+        let formatter = NumberFormatter.currencyFormatter(currencyCode: currency)
+        let min: Decimal = 1/pow(10, formatter.maximumFractionDigits)
+
+        guard result > min else {
+            return min
+        }
+
+        return result
     }
 
-    public func amount(in currency: String, for input: Decimal, inputCurrency: String) -> Decimal {
-        0
-    }
-
-    public func convert(amount: Decimal, inputCurrency: String, outputCurrency: String) -> Decimal {
-        0
+    public func convertToDash(amount: Decimal, currency: String) throws -> Decimal {
+        let rate = try rate(for: currency)
+        return amount/rate
     }
 
     static let shared = CurrencyExchanger(dataProvider: RatesProviderFactory.base)
@@ -75,7 +87,26 @@ extension CurrencyExchanger {
         dataProvider.updateHandler = { [weak self] prices in
             guard let self else { return }
 
-            self.currencies = prices
+            var pricesByCode: [String: DSCurrencyPriceObject] = [:]
+            var plainPricesByCode: [String: NSNumber] = [:]
+
+            for rate in prices {
+                pricesByCode[rate.code] = rate
+                plainPricesByCode[rate.code] = rate.price
+            }
+
+            var array = prices.sorted(by: { $0.code < $1.code })
+
+            let euroObj = pricesByCode["EUR"]!
+            let usdObj = pricesByCode["USD"]!
+
+            array.removeAll(where: { $0 == euroObj || $0 == usdObj })
+            array.insert(euroObj, at: 0)
+            array.insert(usdObj, at: 0)
+
+            self.pricesByCode = pricesByCode
+            self.plainPricesByCode = plainPricesByCode
+            self.currencies = array
         }
     }
 }
@@ -83,8 +114,9 @@ extension CurrencyExchanger {
 // MARK: CurrencyExchanger.Error
 
 extension CurrencyExchanger {
-    enum Error {
+    enum Error: Swift.Error {
         case ratesNotAvailable
+        case ratesAreFetching
         case invalidAmount
     }
 }

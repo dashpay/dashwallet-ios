@@ -52,10 +52,8 @@ struct AmountObject {
             .inputString(from: dashNumber as NSNumber, and: dashAmountString) ??
             NSLocalizedString("Invalid Input", comment: "Invalid Amount Input")
 
-        let priceManager = DSPriceManager.sharedInstance()
-
-        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrencyCode, forDashAmount: self.plainAmount),
-           let str = localFormatter.string(from: localNumber) {
+        if let localAmount = try? CurrencyExchanger.shared.convertDash(amount: dashNumber, to: fiatCurrencyCode),
+           let str = localFormatter.string(from: localAmount as NSNumber) {
             supplementaryFormatted = str
         } else {
             supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
@@ -76,21 +74,16 @@ struct AmountObject {
 
         let localNumber = Decimal(string: localAmountString, locale: .current)!
         let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString)!
-
-        // TODO: Refactor the way we calculate price for dash
-        let priceManager = DSPriceManager.sharedInstance()
-        let localPrice = priceManager.price(forCurrencyCode: fiatCurrencyCode)!.price
-
-        let plainAmount = priceManager.amount(forLocalCurrencyString: localCurrencyFormatted, localFormatter: localFormatter,
-                                              localPrice: localPrice)
-
-        if plainAmount == 0 && localNumber != .zero {
-            return nil
-        }
-
-        self.plainAmount = Int64(plainAmount)
-        mainFormatted = priceManager.string(forDashAmount: self.plainAmount)!
         supplementaryFormatted = localCurrencyFormatted
+
+        if let dashAmount = try? CurrencyExchanger.shared.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
+           let str = NumberFormatter.dashFormatter.string(from: dashAmount as NSNumber) {
+            plainAmount = Int64(dashAmount.plainDashAmount)
+            mainFormatted = str
+        } else {
+            plainAmount = 0
+            mainFormatted = "Error"
+        }
     }
 
     init(plainAmount: Int64, fiatCurrencyCode: String, localFormatter: NumberFormatter) {

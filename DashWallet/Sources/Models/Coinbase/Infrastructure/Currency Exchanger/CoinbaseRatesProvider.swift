@@ -49,32 +49,14 @@ extension CoinbaseRatesProvider {
             let response: BaseDataResponse<CoinbaseExchangeRate> = try await httpClient.request(.exchangeRates(kDashCurrency))
             guard let rates = response.data.rates else { return }
 
-            var pricesByCode: [String: DSCurrencyPriceObject] = [:]
-            var plainPricesByCode: [String: NSNumber] = [:]
+            var array: [DSCurrencyPriceObject] = []
+            array.reserveCapacity(rates.count)
 
             for rate in rates {
                 let key = rate.key
                 let price = Decimal(string: rate.value)! as NSNumber
-                pricesByCode[key] = .init(code: key, price: price)
-                plainPricesByCode[key] = price
+                array.append(DSCurrencyPriceObject(code: key, price: price)!)
             }
-
-            self.lastPriceSourceInfo = "Coinbase"
-            self.pricesByCode = pricesByCode
-            self.plainPricesByCode = plainPricesByCode
-
-//            UserDefaults.standard.set(plainPricesByCode, forKey: self.kPriceByCodeKey)
-
-            var array = pricesByCode
-                .map { $0.value }
-                .sorted(by: { $0.code < $1.code })
-
-            let euroObj = pricesByCode["EUR"]!
-            let usdObj = pricesByCode["USD"]!
-
-            array.removeAll(where: { $0 == euroObj || $0 == usdObj })
-            array.insert(euroObj, at: 0)
-            array.insert(usdObj, at: 0)
 
             self.updateHandler?(array)
         }

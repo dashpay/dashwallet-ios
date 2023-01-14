@@ -46,4 +46,11 @@ extension Int64 {
     }
 }
 
+extension Decimal {
+    static var duffs: Decimal { Decimal(DUFFS) }
 
+    var plainDashAmount: UInt64 {
+        let plainAmount = self * .duffs
+        return NSDecimalNumber(decimal: plainAmount).uint64Value
+    }
+}
