@@ -33,13 +33,13 @@ let kMinDashAmountToTransfer: UInt64 = 10_000
 // MARK: - Coinbase
 
 class Coinbase {
+    public var currencyExchanger: CurrencyExchanger = .init(dataProvider: CoinbaseRatesProvider())
+
     private lazy var coinbaseService = CoinbaseService()
 
     private var auth: CBAuth!
     private var accountService: AccountService!
     private var paymentMethodsService: PaymentMethods!
-
-    public static let shared = Coinbase()
 
     init() {
         CoinbaseAPI.initialize(with: self)
@@ -54,6 +54,8 @@ class Coinbase {
             try await paymentMethodsService.fetchPaymentMethods()
         }
     }
+
+    public static let shared = Coinbase()
 }
 
 extension Coinbase {
