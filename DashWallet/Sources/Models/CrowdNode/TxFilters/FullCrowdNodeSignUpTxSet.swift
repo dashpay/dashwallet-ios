@@ -16,13 +16,6 @@
 //
 
 final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
-    private let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
-    private let pleaseAcceptTermsFilter = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil)
-    private let crowdNodeTxFilters = [
-        CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
-        CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
-        CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
-    ]
     private var matchedFilters: [CoinsToAddressTxFilter] = []
 
     var transactions: [Data: DSTransaction] = [:]
@@ -56,6 +49,13 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             // Already included
             return
         }
+        
+        let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
+        let crowdNodeTxFilters = [
+            CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
+            CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
+            CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
+        ]
 
         if signUpRequestFilter.matches(tx: tx) {
             let chain = DWEnvironment.sharedInstance().currentChain
