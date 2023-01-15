@@ -30,7 +30,12 @@ class AccountService {
 
     public func refreshAccount(_ accountName: String) async throws {
         let account = try await account(by: accountName)
+        try await refresh(account: account)
+    }
+
+    public func refresh(account: CBAccount) async throws {
         try await account.refreshAccount()
+        CBAccountManager.shared.store(account: account)
     }
 
     public func account(by name: String) async throws -> CBAccount {
@@ -50,13 +55,12 @@ class AccountService {
         let account = try await account(by: accountName)
 
         let tx = try await account.send(amount: amount, verificationCode: verificationCode)
-        try await account.refreshAccount()
+        try await refresh(account: account)
         return tx
     }
 
     public func placeBuyOrder(for accountName: String, amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
         let account = try await account(by: accountName)
-
         return try await account.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
     }
 
@@ -64,8 +68,7 @@ class AccountService {
         let account = try await account(by: accountName)
 
         let order = try await account.commitCoinbaseBuyOrder(orderID: orderID)
-        try await account.refreshAccount()
-        CBAccountManager.shared.store(account: account)
+        try await refresh(account: account)
         return order
     }
 
@@ -76,8 +79,7 @@ class AccountService {
     public func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
         let account = try await account(by: kDashAccount)
         let order = try await origin.commitTradeOrder(orderID: orderID)
-        try await account.refreshAccount()
-        CBAccountManager.shared.store(account: account)
+        try await refresh(account: account)
         return order
     }
 
