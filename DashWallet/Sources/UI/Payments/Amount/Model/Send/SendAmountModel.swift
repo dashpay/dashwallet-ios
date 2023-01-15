@@ -42,8 +42,6 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
-    override var isMaxButtonHidden: Bool { false }
-
     var isSendAllowed: Bool {
         amount.plainAmount > 0 && !canShowInsufficientFunds && (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced)

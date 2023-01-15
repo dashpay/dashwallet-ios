@@ -52,8 +52,10 @@ struct AmountObject {
             .inputString(from: dashNumber as NSNumber, and: dashAmountString) ??
             NSLocalizedString("Invalid Input", comment: "Invalid Amount Input")
 
-        if let localAmount = try? CurrencyExchanger.shared.convertDash(amount: dashNumber, to: fiatCurrencyCode),
-           let str = localFormatter.string(from: localAmount as NSNumber) {
+        if plainAmount == 0 {
+            supplementaryFormatted = localFormatter.string(from: 0.0)!
+        } else if let localAmount = try? CurrencyExchanger.shared.convertDash(amount: dashNumber, to: fiatCurrencyCode),
+                  let str = localFormatter.string(from: localAmount as NSNumber) {
             supplementaryFormatted = str
         } else {
             supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
@@ -76,8 +78,11 @@ struct AmountObject {
         let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString)!
         supplementaryFormatted = localCurrencyFormatted
 
-        if let dashAmount = try? CurrencyExchanger.shared.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
-           let str = NumberFormatter.dashFormatter.string(from: dashAmount as NSNumber) {
+        if localNumber.isZero {
+            plainAmount = 0
+            mainFormatted = NumberFormatter.dashFormatter.string(from: 0)!
+        } else if let dashAmount = try? CurrencyExchanger.shared.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
+                  let str = NumberFormatter.dashFormatter.string(from: dashAmount as NSNumber) {
             plainAmount = Int64(dashAmount.plainDashAmount)
             mainFormatted = str
         } else {

@@ -31,12 +31,8 @@ class CustodialSwapsModel: SendAmountModel {
 
     override var isSendAllowed: Bool { true }
 
-    override var switcherItems: [AmountInputTypeItem] {
-        [
-            .init(currencySymbol: kDashCurrency, currencyCode: kDashCurrency),
-            .init(currencySymbol: "BTC", currencyCode: "BTC"),
-            .init(currencySymbol: localCurrency, currencyCode: "FIAT"),
-        ]
+    override init() {
+        super.init()
     }
 
     func convert() {
