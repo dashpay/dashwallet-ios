@@ -54,4 +54,5 @@ extension CrowdNode {
     static let termsOfUseUrl = "https://crowdnode.io/terms/"
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"
     static let supportUrl = "https://knowledge.crowdnode.io/"
+    static let withdrawalLimitsUrl = "https://knowledge.crowdnode.io/en/articles/6387601-api-withdrawal-limits"
 }

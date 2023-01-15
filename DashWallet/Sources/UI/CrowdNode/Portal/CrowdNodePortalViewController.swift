@@ -51,10 +51,8 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc func infoButtonAction() {
-        let nvc = BaseNavigationController(rootViewController: WithdrawalLimitsController())
-        present(nvc, animated: true)
-        // let vc = StakingInfoDialogController.controller()
-        // present(vc, animated: true, completion: nil)
+        let vc = StakingInfoDialogController.controller()
+        present(vc, animated: true, completion: nil)
     }
 }
 

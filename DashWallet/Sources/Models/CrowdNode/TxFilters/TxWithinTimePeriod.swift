@@ -18,15 +18,15 @@
 import Foundation
 
 public final class TxWithinTimePeriod: TransactionFilter {
-    private let from: TimeInterval
-    private let to: TimeInterval
+    private let from: Date
+    private let to: Date
     
-    init(from: TimeInterval, to: TimeInterval) {
+    init(from: Date, to: Date) {
         self.from = from
         self.to = to
     }
 
     func matches(tx: DSTransaction) -> Bool {
-        return tx.timestamp >= from && tx.timestamp <= to
+        return tx.timestamp >= from.timeIntervalSince1970 && tx.timestamp <= to.timeIntervalSince1970
     }
 }

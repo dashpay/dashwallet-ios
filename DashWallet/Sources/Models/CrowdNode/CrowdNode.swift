@@ -105,7 +105,7 @@ public final class CrowdNode {
     }
 }
 
-// Restoring state
+// MARK: Restoring state
 extension CrowdNode {
     func restoreState() {
         if signUpState > SignUpState.notStarted {
@@ -189,7 +189,7 @@ extension CrowdNode {
     }
 }
 
-// Signup
+// MARK: Signup
 extension CrowdNode {
     func signUp(accountAddress: String) async {
         self.accountAddress = accountAddress
@@ -272,7 +272,7 @@ extension CrowdNode {
     }
 }
 
-// Deposits / withdrawals
+// MARK: Deposits / withdrawals
 extension CrowdNode {
     func deposit(amount: UInt64) async throws {
         guard !accountAddress.isEmpty else { return }
@@ -309,8 +309,11 @@ extension CrowdNode {
 
     func withdraw(amount: UInt64) async throws {
         guard !accountAddress.isEmpty else { return }
+        guard amount <= balance else { return }
+        
+        try checkWithdrawalLimits(amount)
+        
         let account = DWEnvironment.sharedInstance().currentAccount
-
         let maxPermil = ApiCode.withdrawAll.rawValue
         let permil = UInt64(round(Double(amount * maxPermil) / Double(balance)))
         let requestPermil = min(permil, maxPermil)
@@ -355,9 +358,46 @@ extension CrowdNode {
             tx in filter.matches(tx: tx)
         }
     }
+    
+    private func checkWithdrawalLimits(_ amount: UInt64) throws {
+        let perTransactionLimit = getWithdrawalLimit(.perTransaction)
+        
+        if amount > perTransactionLimit {
+            throw CrowdNode.Error.withdrawLimit(amount: perTransactionLimit, period: .perTransaction)
+        }
+        
+        let withdrawalsLastHour = getWithdrawalsForTheLast(hours: 1)
+        print("CrowdNode: withdrawalsLastHour: \(withdrawalsLastHour)")
+        let perHourLimit = getWithdrawalLimit(.perHour)
+
+        if withdrawalsLastHour + amount > perHourLimit {
+            throw CrowdNode.Error.withdrawLimit(amount: perHourLimit, period: .perHour)
+        }
+        
+        let withdrawalsLast24h = getWithdrawalsForTheLast(hours: 24)
+        print("CrowdNode: withdrawalsLast24h: \(withdrawalsLast24h)")
+        let perDayLimit = getWithdrawalLimit(.perDay)
+
+        if withdrawalsLast24h + amount > perDayLimit {
+            throw CrowdNode.Error.withdrawLimit(amount: perDayLimit, period: .perDay)
+        }
+    }
+    
+    func getWithdrawalsForTheLast(hours: Int) -> UInt64 {
+        let now = Date()
+        let from = Calendar.current.date(byAdding: .hour, value: -hours, to: now)!
+
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let filter = CrowdNodeWithdrawalReceivedTx()
+            .and(txFilter: TxWithinTimePeriod(from: from, to: now))
+        let withdrawals = wallet.allTransactions.filter { tx in filter.matches(tx: tx) }
+        let chain = DWEnvironment.sharedInstance().currentChain
+        
+        return withdrawals.compactMap { tx in chain.amountReceived(from: tx) }.reduce(0, +)
+    }
 }
 
-// Balance
+// MARK: Balance
 extension CrowdNode {
     func refreshBalance(retries: Int = 3, afterWithdrawal: Bool = false) {
         guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
@@ -403,7 +443,7 @@ extension CrowdNode {
     }
 }
 
-// Errors / Notifications
+// MARK: Errors / Notifications
 extension CrowdNode {
     private func handleError(error: CrowdNode.Error) {
         apiError = error
@@ -424,7 +464,7 @@ extension CrowdNode {
     }
 }
 
-// Withdrawal limits
+// MARK: Withdrawal limits
 extension CrowdNode {
     private func refreshWithdrawalLimits() {
         Task {
@@ -448,7 +488,7 @@ extension CrowdNode {
         }
     }
     
-    private func getWithdrawalLimit(period: WithdrawalLimitPeriod) -> UInt64 {
+    private func getWithdrawalLimit(_ period: WithdrawalLimitPeriod) -> UInt64 {
         switch period {
         case .perTransaction:
             return crowdNodeWithdrawalLimitPerTx

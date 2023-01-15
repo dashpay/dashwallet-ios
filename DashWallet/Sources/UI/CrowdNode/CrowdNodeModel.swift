@@ -166,6 +166,11 @@ final class CrowdNodeModel {
         get { crowdNode.showNotificationOnResult }
         set(value) { crowdNode.showNotificationOnResult = value }
     }
+    
+    var shouldShowWithdrawalLimitsDialog: Bool {
+        get { !crowdNode.withdrawalLimitsInfoShown }
+        set(value) { crowdNode.withdrawalLimitsInfoShown = !value }
+    }
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
@@ -174,6 +179,11 @@ final class CrowdNodeModel {
     }
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
+    var withdrawalLimits: [Int] {[
+        Int(crowdNode.crowdNodeWithdrawalLimitPerTx / kOneDash),
+        Int(crowdNode.crowdNodeWithdrawalLimitPerHour / kOneDash),
+        Int(crowdNode.crowdNodeWithdrawalLimitPerDay / kOneDash)
+    ]}
 
     init() {
         signUpState = crowdNode.signUpState

@@ -29,8 +29,8 @@ struct WithdrawalLimit: Codable {
     }
 }
 
-enum WithdrawalLimitPeriod {
-    case perTransaction
-    case perHour
-    case perDay
+enum WithdrawalLimitPeriod: Int {
+    case perTransaction = 0
+    case perHour = 1
+    case perDay = 2
 }

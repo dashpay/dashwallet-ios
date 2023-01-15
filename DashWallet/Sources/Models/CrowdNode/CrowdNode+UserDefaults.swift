@@ -22,6 +22,7 @@ private let kLastKnownCrowdNodeBalance = "lastKnownCrowdNodeBalanceKey"
 private let kCrowdNodeWithdrawalLimitPerTx = "crowdNodeWithdrawalLimitPerTxKey"
 private let kCrowdNodeWithdrawalLimitPerHour = "crowdNodeWithdrawalLimitPerHourKey"
 private let kCrowdNodeWithdrawalLimitPerDay = "crowdNodeWithdrawalLimitPerDayKey"
+private let kCrowdNodeWithdrawalLimitsInfoShown = "crowdNodeWithdrawalLimitsInfoShownKey"
 
 extension CrowdNode {
     var infoShown: Bool {
@@ -49,38 +50,8 @@ extension CrowdNode {
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeWithdrawalLimitPerDay) }
     }
     
-//    @property (nonatomic, assign) BOOL crowdNodeInfoShown;
-//    @property (nonatomic, assign) UInt64 lastKnownCrowdNodeBalance;
-//    @property (nonatomic, assign) UInt64 crowdNodeWithdrawalLimitPerTx;
-//    @property (nonatomic, assign) UInt64 crowdNodeWithdrawalLimitPerHour;
-//    @property (nonatomic, assign) UInt64 crowdNodeWithdrawalLimitPerDay;
-    
-//
-//    func storedAccount(with authInterop: CBAuthInterop) -> CBAccount? {
-//        guard let data = UserDefaults.standard.data(forKey: kUserDefaultAccountAccessKey) else {
-//            return nil
-//        }
-//
-//        let decoder = JSONDecoder()
-//        guard let accountInfo = try? decoder.decode(CoinbaseUserAccountData.self, from: data) else {
-//            return nil
-//        }
-//
-//        return CBAccount(accountName: kDashAccount, info: accountInfo, authInterop: authInterop)
-//    }
-//
-//    func removeAccount() {
-//        UserDefaults.standard.removeObject(forKey: kUserDefaultAccountAccessKey)
-//    }
-//
-//    @discardableResult
-//    func store(account: CBAccount) -> Bool {
-//        let encoder = JSONEncoder()
-//        guard let data = try? encoder.encode(account.info) else {
-//            return false
-//        }
-//
-//        UserDefaults.standard.set(data, forKey: kUserDefaultAccountAccessKey)
-//        return true
-//    }
+    var withdrawalLimitsInfoShown: Bool {
+        get { UserDefaults.standard.bool(forKey: kCrowdNodeWithdrawalLimitsInfoShown) }
+        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeWithdrawalLimitsInfoShown) }
+    }
 }
