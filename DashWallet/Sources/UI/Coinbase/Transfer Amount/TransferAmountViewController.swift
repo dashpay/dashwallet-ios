@@ -63,6 +63,12 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
     override func configureHierarchy() {
         super.configureHierarchy()
 
+        view.backgroundColor = .dw_background()
+
+        navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
+        navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.largeTitleDisplayMode = .never
+
         converterView = ConverterView(frame: .zero)
         converterView.delegate = self
         converterView.dataSource = model as? ConverterViewDataSource
@@ -87,12 +93,6 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        view.backgroundColor = .dw_background()
-
-        navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
-        navigationItem.backButtonDisplayMode = .minimal
-        navigationItem.largeTitleDisplayMode = .never
 
         networkStatusDidChange = { [weak self] _ in
             self?.reloadView()

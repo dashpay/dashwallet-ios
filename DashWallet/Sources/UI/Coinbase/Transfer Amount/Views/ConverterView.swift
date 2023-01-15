@@ -269,7 +269,7 @@ private class SourceView: UIView {
             let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(item.plainAmount)) ?? "Fetching..."
 
             let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
-            let dashStr = "\(item.plainAmount.formattedDashAmount) DASH"
+            let dashStr = "\(item.plainAmount.formattedDashAmount)"
             let fiatStr = " ≈ \(fiatAmount)"
             let fullStr = "\(lastKnownBalance)\(dashStr)\(fiatStr)"
             let string = NSMutableAttributedString(string: fullStr)

@@ -54,7 +54,7 @@ final class BuyDashModel: BaseAmountModel {
         let priceManger = DSPriceManager.sharedInstance()
         let fiatBalanceFormatted = priceManger.localCurrencyString(forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
 
-        let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
+        let displayString = "\(dashAmountFormatted) ≈ \(fiatBalanceFormatted)"
         return displayString
     }
 

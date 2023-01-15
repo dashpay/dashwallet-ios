@@ -34,7 +34,7 @@ final class AccountCell: UITableViewCell {
                 iconView?.isHidden = true
             }
         }
-
+        // TODO: fix it
         let dashStr = "\(item.info.balance.amount) \(item.info.balance.currency)"
         let fiatStr = " ≈ \("$1.23")"
         let fullStr = "\(dashStr)\(fiatStr)"

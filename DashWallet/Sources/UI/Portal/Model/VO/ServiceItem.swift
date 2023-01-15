@@ -24,12 +24,11 @@ extension ServiceItem {
         }
 
         if let balance = dashBalanceFormatted, let fiat = fiatBalanceFormatted {
-            let dashStr = "\(balance) DASH"
             let fiatStr = " ≈ \(fiat)"
-            let fullStr = "\(dashStr)\(fiatStr)"
+            let fullStr = "\(balance)\(fiatStr)"
             let string = NSMutableAttributedString(string: fullStr)
             string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel],
-                                 range: NSMakeRange(dashStr.count, fiatStr.count))
+                                 range: NSMakeRange(balance.count, fiatStr.count))
             string.addAttribute(.font, value: UIFont.dw_font(forTextStyle: .footnote), range: NSMakeRange(0, fullStr.count - 1))
             return string
         }

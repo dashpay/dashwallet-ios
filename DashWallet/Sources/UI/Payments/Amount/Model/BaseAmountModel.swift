@@ -28,14 +28,13 @@ enum AmountType {
 
 struct AmountInputItem: Equatable {
     let currencyName: String
-    let currencySymbol: String
     let currencyCode: String
 
-    var isMain: Bool { currencySymbol == "DASH" }
+    var isMain: Bool { currencyCode == kDashCurrency }
 
-    static let dash = AmountInputItem(currencyName: "Dash", currencySymbol: kDashCurrency, currencyCode: kDashCurrency)
+    static let dash = AmountInputItem(currencyName: kDashCurrency, currencyCode: kDashCurrency)
+    static var app: AmountInputItem { .init(currencyName: App.fiatCurrency, currencyCode: App.fiatCurrency) }
 }
-
 
 // MARK: - BaseAmountModel
 
@@ -62,10 +61,16 @@ class BaseAmountModel {
     }
 
     var currentInputItem: AmountInputItem
-    var inputItems: [AmountInputItem] = []
+    var inputItems: [AmountInputItem] = [] {
+        didSet {
+            amountInputItemsChangeHandler?()
+        }
+    }
 
     public var errorHandler: ((Error) -> Void)?
     public var amountChangeHandler: ((AmountObject) -> Void)?
+    public var amountInputItemsChangeHandler: (() -> Void)?
+
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
         let chain = DWEnvironment.sharedInstance().currentChain
         let amount = amount.plainAmount
@@ -84,17 +89,22 @@ class BaseAmountModel {
     internal var localFormatter: NumberFormatter
     var localCurrencyCode: String
 
+    internal var supplementaryCurrencyCode: String {
+        localCurrencyCode
+    }
+
+    internal var supplementaryNumberFormatter: NumberFormatter {
+        localFormatter
+    }
+
     init() {
         localCurrencyCode = App.fiatCurrency
         localFormatter = NumberFormatter.fiatFormatter(currencyCode: localCurrencyCode)
 
-        let nsLocale = Locale.current as NSLocale
-        let localCurrencySymbol = nsLocale.displayName(forKey: .currencySymbol, value: localCurrencyCode) ?? localCurrencyCode
-
         currentInputItem = .dash
         inputItems = [
-            .init(currencyName: localCurrencyCode, currencySymbol: localCurrencySymbol, currencyCode: localCurrencyCode),
-            currentInputItem,
+            .app,
+            .dash,
         ]
 
         mainAmountValidator = DWAmountInputValidator(type: .dash)
@@ -104,11 +114,30 @@ class BaseAmountModel {
     }
 
     func select(inputItem: AmountInputItem) {
+        let currentAmount = amount
+
         currentInputItem = inputItem
+
+        if activeAmountType == .supplementary {
+            if supplementaryAmount == nil && mainAmount.fiatCurrencyCode == supplementaryCurrencyCode {
+                supplementaryAmount = mainAmount.localAmount
+            } else {
+                let mainAmount = AmountObject(plainAmount: currentAmount.plainAmount,
+                                              fiatCurrencyCode: supplementaryCurrencyCode,
+                                              localFormatter: supplementaryNumberFormatter)
+                supplementaryAmount = mainAmount.localAmount
+            }
+        } else {
+            if mainAmount == nil {
+                mainAmount = supplementaryAmount.dashAmount
+            }
+        }
+
+        amountDidChange()
     }
 
     func selectInputItem(at index: Int) {
-        currentInputItem = inputItems[index]
+        select(inputItem: inputItems[index])
     }
 
     func setupCurrencyCode(_ code: String) {
@@ -116,6 +145,12 @@ class BaseAmountModel {
 
         localFormatter.currencyCode = code
         localCurrencyCode = code
+
+        currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : .app
+        inputItems = [
+            .app,
+            .dash,
+        ]
 
         let max = NSDecimalNumber(value: MAX_MONEY/DUFFS)
         localFormatter.maximum = NSDecimalNumber(decimal: price).multiplying(by: max)
@@ -125,11 +160,13 @@ class BaseAmountModel {
 
     func updateAmountObjects(with inputString: String) {
         if activeAmountType == .main {
-            mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode,
-                                      localFormatter: localFormatter)
+            mainAmount = AmountObject(dashAmountString: inputString,
+                                      fiatCurrencyCode: supplementaryCurrencyCode,
+                                      localFormatter: supplementaryNumberFormatter)
             supplementaryAmount = nil
-        } else if let amount = AmountObject(localAmountString: inputString, fiatCurrencyCode: localCurrencyCode,
-                                            localFormatter: localFormatter) {
+        } else if let amount = AmountObject(localAmountString: inputString,
+                                            fiatCurrencyCode: supplementaryCurrencyCode,
+                                            localFormatter: supplementaryNumberFormatter) {
             supplementaryAmount = amount
             mainAmount = nil
         }
@@ -138,8 +175,9 @@ class BaseAmountModel {
     }
 
     internal func updateCurrentAmountObject(with amount: Int64) {
-        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode,
-                                        localFormatter: localFormatter)
+        let amountObject = AmountObject(plainAmount: Int64(amount),
+                                        fiatCurrencyCode: supplementaryCurrencyCode,
+                                        localFormatter: supplementaryNumberFormatter)
         updateCurrentAmountObject(with: amountObject)
     }
 
@@ -149,17 +187,14 @@ class BaseAmountModel {
             supplementaryAmount = nil
         } else {
             mainAmount = nil
-            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator,
-                                                        localFormatter: localFormatter, currencyCode: localCurrencyCode)
+            supplementaryAmount = newObject.localAmount
         }
 
         amountDidChange()
     }
 
     internal func rebuildAmounts() {
-        let amount = activeAmountType == .main
-            ? mainAmount.amountInternalRepresentation
-            : supplementaryAmount.amountInternalRepresentation
+        let amount = amount.amountInternalRepresentation
         updateAmountObjects(with: amount)
     }
 
@@ -231,20 +266,10 @@ extension BaseAmountModel {
 
     func amountInputControlDidSwapInputs() {
         assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
+        assert(inputItems.count == 2, "Swap only if we have two input types")
 
-        if activeAmountType == .main {
-            if supplementaryAmount == nil {
-                supplementaryAmount = mainAmount.localAmount(localValidator: supplementaryAmountValidator,
-                                                             localFormatter: localFormatter, currencyCode: localCurrencyCode)
-            }
-        } else {
-            if mainAmount == nil {
-                mainAmount = supplementaryAmount.dashAmount(dashValidator: mainAmountValidator, localFormatter: localFormatter,
-                                                            currencyCode: localCurrencyCode)
-            }
-        }
-
-        amountDidChange()
+        let inputItem = inputItems[0] == currentInputItem ? inputItems[1] : inputItems[0]
+        select(inputItem: inputItem)
     }
 
     func pasteFromClipboard() {

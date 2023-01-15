@@ -26,7 +26,38 @@ protocol CustodialSwapsModelDelegate: AnyObject {
 // MARK: - CustodialSwapsModel
 
 class CustodialSwapsModel: SendAmountModel {
-    var selectedAccount: CBAccount?
+    var selectedAccount: CBAccount? {
+        didSet {
+            if let value = selectedAccount {
+                let item = AmountInputItem(currencyName: value.info.currency.name, currencyCode: value.info.currency.code)
+                inputItems = [
+                    .init(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
+                    .dash,
+                    item,
+                ]
+            }
+        }
+    }
+
+    override var supplementaryCurrencyCode: String {
+        currentInputItem.currencyCode == kDashCurrency ? localCurrencyCode : currentInputItem.currencyCode
+    }
+
+    private var numberFormatters: [String: NumberFormatter] = [:]
+
+    override var supplementaryNumberFormatter: NumberFormatter {
+        guard supplementaryCurrencyCode != localCurrencyCode else { return localFormatter }
+        guard let selectedAccount else { return localFormatter }
+
+        guard let nf = numberFormatters[supplementaryCurrencyCode] else {
+            let formatter = NumberFormatter.cryptoFormatter(currencyCode: supplementaryCurrencyCode, exponent: selectedAccount.info.currency.exponent)
+            numberFormatters[supplementaryCurrencyCode] = formatter
+            return formatter
+        }
+
+        return nf
+    }
+
     weak var delegate: CustodialSwapsModelDelegate?
 
     override var isSendAllowed: Bool { true }

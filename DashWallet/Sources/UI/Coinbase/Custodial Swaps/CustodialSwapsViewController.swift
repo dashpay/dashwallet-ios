@@ -21,6 +21,10 @@ import UIKit
 
 class CustodialSwapsViewController: TransferAmountViewController {
 
+    override var actionButtonTitle: String? {
+        NSLocalizedString("Get Quote", comment: "Coinbase/Convert Crypto")
+    }
+
     private var custodialSwapsModel: CustodialSwapsModel { model as! CustodialSwapsModel }
 
     override func actionButtonAction(sender: UIView) {
@@ -35,6 +39,8 @@ class CustodialSwapsViewController: TransferAmountViewController {
         vc.selectHandler = { [weak self] account in
             self?.custodialSwapsModel.selectedAccount = account
             self?.converterView.reloadView()
+            self?.amountView.inputTypeSwitcher.reloadData()
+            self?.amountView.amountInputControl.reloadData()
         }
 
         let nvc = BaseNavigationController(rootViewController: vc)
@@ -54,7 +60,7 @@ class CustodialSwapsViewController: TransferAmountViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        title = NSLocalizedString("Convert Crypto", comment: "Coinbase")
+        navigationItem.title = NSLocalizedString("Convert Crypto", comment: "Coinbase")
     }
 }
 

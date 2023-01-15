@@ -67,6 +67,10 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
         model.errorHandler = { [weak self] error in
             self?.show(error: error)
         }
+
+        model.amountInputItemsChangeHandler = { [weak self] in
+            self?.amountView.inputTypeSwitcher.reloadData()
+        }
     }
 
     internal func errorInfoButtonDidTap() {
@@ -240,6 +244,7 @@ extension BaseAmountViewController: AmountInputControlDelegate {
 
     func amountInputControlDidSwapInputs() {
         model.amountInputControlDidSwapInputs()
+        amountView.inputTypeSwitcher.reloadData()
     }
 
     func amountInputControlChangeCurrencyDidTap() {
