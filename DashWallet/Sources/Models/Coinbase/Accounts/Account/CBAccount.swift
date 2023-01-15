@@ -27,7 +27,6 @@ class CBAccount {
     private weak var authInterop: CBAuthInterop!
 
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
-    private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
 
     var info: CoinbaseUserAccountData!
 
@@ -106,11 +105,9 @@ extension CBAccount {
         }
 
         let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
-            let localDecimal = localNumber.decimalValue
-            if localDecimal > Coinbase.shared.sendLimit {
-                throw Coinbase.Error.transactionFailed(.limitExceded)
-            }
+        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: Decimal(amount), to: fiatCurrency),
+           localNumber > Coinbase.shared.sendLimit {
+            throw Coinbase.Error.transactionFailed(.limitExceded)
         }
 
         guard amount >= DSTransaction.txMinOutputAmount() else {
@@ -118,8 +115,7 @@ extension CBAccount {
         }
 
         guard amount >= kMinDashAmountToTransfer else {
-            let amountString = DSPriceManager.sharedInstance().string(forDashAmount: Int64(kMinDashAmountToTransfer))!
-            throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: amountString))
+            throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: kMinDashAmountToTransfer.formattedDashAmount))
         }
 
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
@@ -170,16 +166,13 @@ extension CBAccount {
 extension CBAccount {
     public func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
         let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
-            let localDecimal = localNumber.decimalValue
-            if localDecimal < kMinUSDAmountOrder {
+        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: Decimal(amount), to: fiatCurrency) {
+            if localNumber < kMinUSDAmountOrder {
                 let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
-                let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
-                localFormatter.currencyCode = Coinbase.sendLimitCurrency
+                let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
                 let str = localFormatter.string(from: min) ?? "$1.99"
-
                 throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-            } else if localDecimal > Coinbase.shared.sendLimit {
+            } else if localNumber > Coinbase.shared.sendLimit {
                 throw Coinbase.Error.transactionFailed(.limitExceded)
             }
         }

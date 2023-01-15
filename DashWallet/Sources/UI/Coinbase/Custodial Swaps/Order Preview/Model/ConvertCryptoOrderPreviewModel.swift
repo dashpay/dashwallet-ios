@@ -97,12 +97,7 @@ extension ConvertCryptoOrderPreviewModel {
             value = order.fee.formattedFiatAmount
         case .totalAmount:
             let total = Decimal(string: order.fee.amount)! + Decimal(string: order.displayInputAmount.amount)!
-
-            guard let numberFormatter = DSPriceManager.sharedInstance().localFormat.copy() as? NumberFormatter else {
-                fatalError("NOP")
-            }
-
-            numberFormatter.currencyCode = order.unitPrice.targetToFiat.currency
+            let numberFormatter = NumberFormatter.fiatFormatter(currencyCode: order.unitPrice.targetToFiat.currency)
 
             guard let string = numberFormatter.string(from: total as NSNumber) else {
                 fatalError("Trying to convert non number string")

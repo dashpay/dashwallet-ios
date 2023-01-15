@@ -49,6 +49,13 @@ public final class CurrencyExchanger {
         configure(dataProvider: dataProvider)
     }
 
+    public func hasRate(for currency: String) -> Bool {
+        guard !currencies.isEmpty else { return false }
+        guard plainPricesByCode[currency] != nil else { return false }
+
+        return true
+    }
+
     public func rate(for currency: String) throws -> Decimal {
         guard !currencies.isEmpty else { throw CurrencyExchanger.Error.ratesAreFetching }
         guard let rate = plainPricesByCode[currency] else { throw CurrencyExchanger.Error.ratesNotAvailable }
@@ -60,7 +67,7 @@ public final class CurrencyExchanger {
         let rate = try rate(for: currency)
         let result = rate*amount
 
-        let formatter = NumberFormatter.currencyFormatter(currencyCode: currency)
+        let formatter = NumberFormatter.fiatFormatter(currencyCode: currency)
         let min: Decimal = 1/pow(10, formatter.maximumFractionDigits)
 
         guard result > min else {

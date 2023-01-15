@@ -24,7 +24,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
 
-
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
     internal var buyDashModel: BuyDashModel {

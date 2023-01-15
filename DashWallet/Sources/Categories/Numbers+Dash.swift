@@ -18,8 +18,12 @@
 import Foundation
 
 extension UInt64 {
+    var dashAmount: Decimal {
+        Decimal(self)/Decimal(DUFFS)
+    }
+
     var formattedDashAmount: String {
-        formattedCryptoAmount(exponent: 8)
+        dashAmount.formattedDashAmount
     }
 
     func formattedCryptoAmount(exponent: Int = 8) -> String {
@@ -34,15 +38,12 @@ extension UInt64 {
 }
 
 extension Int64 {
+    var dashAmount: Decimal {
+        Decimal(self)/Decimal(DUFFS)
+    }
+
     var formattedDashAmount: String {
-        let plainNumber = Decimal(self)
-        let duffsNumber = Decimal(DUFFS)
-        let dashNumber = plainNumber/duffsNumber
-        if #available(iOS 15.0, *) {
-            return dashNumber.formatted(.number)
-        } else {
-            return "\(dashNumber)"
-        }
+        dashAmount.formattedDashAmount
     }
 }
 
@@ -52,5 +53,9 @@ extension Decimal {
     var plainDashAmount: UInt64 {
         let plainAmount = self * .duffs
         return NSDecimalNumber(decimal: plainAmount).uint64Value
+    }
+
+    var formattedDashAmount: String {
+        NumberFormatter.dashFormatter.string(from: self as NSNumber)!
     }
 }
