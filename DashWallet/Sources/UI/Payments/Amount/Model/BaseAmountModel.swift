@@ -119,9 +119,9 @@ class BaseAmountModel {
         currentInputItem = inputItem
 
         if activeAmountType == .supplementary {
-            if supplementaryAmount == nil && mainAmount.fiatCurrencyCode == supplementaryCurrencyCode {
+            if supplementaryAmount == nil && currentAmount.fiatCurrencyCode == supplementaryCurrencyCode {
                 supplementaryAmount = mainAmount.localAmount
-            } else {
+            } else if currentAmount.fiatCurrencyCode != supplementaryCurrencyCode {
                 let mainAmount = AmountObject(plainAmount: currentAmount.plainAmount,
                                               fiatCurrencyCode: supplementaryCurrencyCode,
                                               localFormatter: supplementaryNumberFormatter)

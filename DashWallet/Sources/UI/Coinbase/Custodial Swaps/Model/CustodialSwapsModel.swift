@@ -26,15 +26,14 @@ protocol CustodialSwapsModelDelegate: AnyObject {
 // MARK: - CustodialSwapsModel
 
 class CustodialSwapsModel: SendAmountModel {
-    var selectedAccount: CBAccount? {
+    public var selectedAccount: CBAccount? {
         didSet {
             if let value = selectedAccount {
                 let item = AmountInputItem(currencyName: value.info.currency.name, currencyCode: value.info.currency.code)
-                inputItems = [
-                    .init(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
-                    .dash,
-                    item,
-                ]
+                if currentInputItem != .app && currentInputItem != .dash {
+                    currentInputItem = item
+                }
+                inputItems = [.app, .dash, item]
             }
         }
     }
@@ -44,7 +43,6 @@ class CustodialSwapsModel: SendAmountModel {
     }
 
     private var numberFormatters: [String: NumberFormatter] = [:]
-
     override var supplementaryNumberFormatter: NumberFormatter {
         guard supplementaryCurrencyCode != localCurrencyCode else { return localFormatter }
         guard let selectedAccount else { return localFormatter }
