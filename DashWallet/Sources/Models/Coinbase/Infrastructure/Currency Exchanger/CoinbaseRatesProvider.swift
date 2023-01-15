@@ -55,7 +55,7 @@ extension CoinbaseRatesProvider {
             for rate in rates {
                 let key = rate.key
                 let price = Decimal(string: rate.value)! as NSNumber
-                array.append(DSCurrencyPriceObject(code: key, price: price)!)
+                array.append(DSCurrencyPriceObject(code: key, name: key, price: price)!)
             }
 
             self.updateHandler?(array)

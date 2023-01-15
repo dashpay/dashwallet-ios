@@ -178,7 +178,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .account(let name): return "/v2/accounts/\(name)"
         case .accounts: return "/v2/accounts"
         case .userAuthInformation: return "/v2/user/auth"
-        case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
+        case .exchangeRates: return "/v2/exchange-rates"
         case .activePaymentMethods: return "/v2/payment-methods"
         case .placeBuyOrder(let accountId, _): return "/v2/accounts/\(accountId)/buys"
         case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
@@ -249,6 +249,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)
         case .getBaseIdForUSDModel(let base):
             return .requestParameters(parameters: [base: base, "filter": "holdable", "resolution": "latest"], encoding: URLEncoding.default)
+        case .exchangeRates(let currency):
+            return .requestParameters(parameters: ["currency": currency], encoding: URLEncoding.default)
         default:
             return .requestPlain
         }

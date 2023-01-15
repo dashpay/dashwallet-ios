@@ -47,6 +47,7 @@ class Coinbase {
         auth = CBAuth()
         accountService = AccountService(authInterop: auth)
         paymentMethodsService = PaymentMethods(authInterop: auth)
+        currencyExchanger.startExchangeRateFetching()
 
         // Pre-fetch data
         Task {
