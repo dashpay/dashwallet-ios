@@ -60,7 +60,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         startNetworkMonitoring()
         configureObservers()
         
-        if viewModel.shouldShowWithdrawalLimitsDialog {
+        if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
             showWithdrawalLimitsInfo()
             viewModel.shouldShowWithdrawalLimitsDialog = false
         }
