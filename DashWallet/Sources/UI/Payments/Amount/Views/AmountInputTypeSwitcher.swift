@@ -17,33 +17,33 @@
 
 import UIKit
 
-// MARK: - AmountInputTypeItem
-
-struct AmountInputTypeItem {
-    let currencySymbol: String
-    let currencyCode: String
-
-    var isMain: Bool { currencySymbol == "DASH" }
-}
 
 private let kItemHeight: CGFloat = 24.0
+
+// MARK: - AmountInputTypeSwitcherDelegate
+
+protocol AmountInputTypeSwitcherDelegate: AnyObject {
+    var numberOfInputTypes: Int { get }
+
+    func amountInputTypeSwitcher(_ switcher: AmountInputTypeSwitcher, didSelectItemAt index: Int)
+    func amountInputTypeSwitcher(_ switcher: AmountInputTypeSwitcher, valueForItemAt index: Int) -> String
+    func amountInputTypeSwitcher(_ switcher: AmountInputTypeSwitcher, isValueSelectedForItemAt index: Int) -> Bool
+}
 
 // MARK: - AmountInputTypeSwitcher
 
 class AmountInputTypeSwitcher: UIView {
-    public var items: [AmountInputTypeItem] = [] {
+    public weak var delegate: AmountInputTypeSwitcherDelegate? {
         didSet {
             reloadData()
         }
     }
 
-    public var selectItemHandler: ((AmountInputTypeItem) -> Void)?
-
-    private var containerView: UIStackView!
     private var currentSelectedIndex = 0
+    private var containerView: UIStackView!
 
     override var intrinsicContentSize: CGSize {
-        .init(width: AmountInputTypeSwitcher.noIntrinsicMetric, height: CGFloat(items.count)*kItemHeight)
+        .init(width: AmountInputTypeSwitcher.noIntrinsicMetric, height: CGFloat(delegate?.numberOfInputTypes ?? 0)*kItemHeight)
     }
 
     override init(frame: CGRect) {
@@ -56,15 +56,23 @@ class AmountInputTypeSwitcher: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func selectedNextItem() {
-        var nextTag = currentSelectedIndex + 1
+    public func reloadData() {
+        guard let delegate else { return }
 
-        if nextTag == items.count {
-            nextTag = 0
+        if containerView.arrangedSubviews.count == delegate.numberOfInputTypes {
+            updateItems()
+        } else {
+            presentItems()
         }
 
-        currentSelectedIndex = nextTag
-        reloadData()
+        for view in containerView.arrangedSubviews {
+            let button = view as! UIButton
+
+            if button.isSelected {
+                currentSelectedIndex = button.tag
+                return
+            }
+        }
     }
 
     @objc
@@ -78,33 +86,39 @@ class AmountInputTypeSwitcher: UIView {
         currentSelectedItemButton.isUserInteractionEnabled = false
 
         currentSelectedIndex = currentSelectedItemButton.tag
-        selectItemHandler?(items[sender.tag])
+        delegate?.amountInputTypeSwitcher(self, didSelectItemAt: sender.tag)
     }
 }
 
 extension AmountInputTypeSwitcher {
-    private func reloadData() {
-        guard !containerView.arrangedSubviews.isEmpty else {
-            presentItems()
-            return
-        }
+    private func updateItems() {
+        guard let delegate else { return }
 
-        for (i, item) in items.enumerated() {
+        for i in 0..<delegate.numberOfInputTypes {
             let button = containerView.arrangedSubviews[i] as! UIButton
-            button.isSelected = currentSelectedIndex == i
-            button.isUserInteractionEnabled = !button.isSelected
-            button.setTitle(item.currencySymbol, for: .normal)
+            update(button: button, at: i)
         }
     }
 
     private func presentItems() {
-        for (i, item) in items.enumerated() {
-            let button = itemButton(title: item.currencySymbol)
-            button.tag = i
-            button.isSelected = currentSelectedIndex == i
-            button.isUserInteractionEnabled = !button.isSelected
+        guard let delegate else { return }
+
+        containerView.removeAllArrangedSubviews()
+
+        for i in 0..<delegate.numberOfInputTypes {
+            let button = itemButton()
+            update(button: button, at: i)
             containerView.addArrangedSubview(button)
         }
+    }
+
+    private func update(button: UIButton, at index: Int) {
+        guard let delegate else { return }
+
+        button.tag = index
+        button.isSelected = delegate.amountInputTypeSwitcher(self, isValueSelectedForItemAt: index)
+        button.setTitle(delegate.amountInputTypeSwitcher(self, valueForItemAt: index), for: .normal)
+        button.isUserInteractionEnabled = !button.isSelected
     }
 
     private func configureHierarchy() {
@@ -123,9 +137,8 @@ extension AmountInputTypeSwitcher {
         ])
     }
 
-    private func itemButton(title: String) -> UIButton {
+    private func itemButton() -> UIButton {
         let button = ItemButton(frame: .zero)
-        button.setTitle(title, for: .normal)
         button.addTarget(self, action: #selector(itemAction(sender:)), for: .touchUpInside)
         return button
     }

@@ -22,6 +22,7 @@ private let kUserDefaultAccountAccessKey = "coinbaseAccountKey"
 // MARK: - CBAccountManager
 
 class CBAccountManager {
+
     func storedAccount(with authInterop: CBAuthInterop) -> CBAccount? {
         guard let data = UserDefaults.standard.data(forKey: kUserDefaultAccountAccessKey) else {
             return nil
@@ -49,5 +50,7 @@ class CBAccountManager {
         UserDefaults.standard.set(data, forKey: kUserDefaultAccountAccessKey)
         return true
     }
+
+    static let shared = CBAccountManager()
 }
 

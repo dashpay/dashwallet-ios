@@ -22,11 +22,7 @@ extension Amount {
             fatalError("Trying to convert non number string")
         }
 
-        guard let numberFormatter = DSPriceManager.sharedInstance().localFormat.copy() as? NumberFormatter else {
-            fatalError("NOP")
-        }
-
-        numberFormatter.currencyCode = currency
+        let numberFormatter = NumberFormatter.fiatFormatter(currencyCode: currency)
 
         guard let string = numberFormatter.string(from: decimal as NSNumber) else {
             fatalError("Trying to convert non number string")

@@ -174,6 +174,7 @@ extension CBAuth {
 
         do {
             try await currentUser.refreshAccessToken()
+            save(user: currentUser)
         } catch Coinbase.Error.userSessionRevoked {
             try await signOut()
         }

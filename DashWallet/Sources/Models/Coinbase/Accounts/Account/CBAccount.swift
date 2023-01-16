@@ -27,7 +27,6 @@ class CBAccount {
     private weak var authInterop: CBAuthInterop!
 
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
-    private var priceManager: DSPriceManager { DSPriceManager.sharedInstance() }
 
     var info: CoinbaseUserAccountData!
 
@@ -36,6 +35,12 @@ class CBAccount {
     init(accountName: String, authInterop: CBAuthInterop) {
         self.authInterop = authInterop
         self.accountName = accountName
+    }
+
+    init(info: CoinbaseUserAccountData, authInterop: CBAuthInterop) {
+        self.authInterop = authInterop
+        accountName = info.name
+        self.info = info
     }
 
     init(accountName: String, info: CoinbaseUserAccountData, authInterop: CBAuthInterop) {
@@ -51,7 +56,16 @@ extension CBAccount {
     }
 
     var balance: UInt64 {
-        info.balance.plainAmount
+        info.plainAmount
+    }
+
+    var isDashAccount: Bool {
+        info.currency.code == kDashAccount
+    }
+
+    private var accountNameForApiRequest: String {
+        guard let info else { return accountName }
+        return info.id
     }
 }
 
@@ -61,7 +75,7 @@ extension CBAccount {
     public func refreshAccount() async throws -> CoinbaseUserAccountData {
         try await authInterop.refreshTokenIfNeeded()
 
-        let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.account(accountName))
+        let result: BaseDataResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(.account(accountNameForApiRequest))
         let newAccount = result.data
         info = newAccount
 
@@ -91,18 +105,9 @@ extension CBAccount {
         }
 
         let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
-            let localDecimal = localNumber.decimalValue
-            if localDecimal < kMinUSDAmountOrder {
-                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
-                let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
-                localFormatter.currencyCode = Coinbase.sendLimitCurrency
-                let str = localFormatter.string(from: min) ?? "$1.99"
-
-                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-            } else if localDecimal > Coinbase.shared.sendLimit {
-                throw Coinbase.Error.transactionFailed(.limitExceded)
-            }
+        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: Decimal(amount), to: fiatCurrency),
+           localNumber > Coinbase.shared.sendLimit {
+            throw Coinbase.Error.transactionFailed(.limitExceded)
         }
 
         guard amount >= DSTransaction.txMinOutputAmount() else {
@@ -110,8 +115,7 @@ extension CBAccount {
         }
 
         guard amount >= kMinDashAmountToTransfer else {
-            let amountString = DSPriceManager.sharedInstance().string(forDashAmount: Int64(kMinDashAmountToTransfer))!
-            throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: amountString))
+            throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: kMinDashAmountToTransfer.formattedDashAmount))
         }
 
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
@@ -162,16 +166,13 @@ extension CBAccount {
 extension CBAccount {
     public func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
         let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = priceManager.fiatCurrencyNumber(fiatCurrency, forDashAmount: Int64(amount)) {
-            let localDecimal = localNumber.decimalValue
-            if localDecimal < kMinUSDAmountOrder {
+        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: Decimal(amount), to: fiatCurrency) {
+            if localNumber < kMinUSDAmountOrder {
                 let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
-                let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
-                localFormatter.currencyCode = Coinbase.sendLimitCurrency
+                let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
                 let str = localFormatter.string(from: min) ?? "$1.99"
-
                 throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-            } else if localDecimal > Coinbase.shared.sendLimit {
+            } else if localNumber > Coinbase.shared.sendLimit {
                 throw Coinbase.Error.transactionFailed(.limitExceded)
             }
         }
@@ -212,5 +213,79 @@ extension CBAccount {
         } catch {
             throw error
         }
+    }
+}
+
+// MARK: Trade
+extension CBAccount {
+    func convert(amount: String, to destination: CBAccount) async throws -> CoinbaseSwapeTrade {
+        let baseIds: BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> = try await CoinbaseAPI.shared.request(.getBaseIdForUSDModel("USD"))
+
+        var targetAsset: String!
+        var sourceAsset: String!
+
+        for item in baseIds.data {
+            if item.base == info.currencyCode {
+                sourceAsset = item.baseID
+            }
+
+            if item.base == destination.info.currencyCode {
+                targetAsset = item.baseID
+            }
+        }
+
+        guard let sourceAsset, let targetAsset else {
+            throw Coinbase.Error.transactionFailed(.message("Can't find source or target asset"))
+        }
+
+        let dto = CoinbaseSwapeTradeRequest(amount: amount,
+                                            amountAsset: info.currencyCode,
+                                            targetAsset: targetAsset,
+                                            sourceAsset: sourceAsset)
+
+        let response: BaseDataResponse<CoinbaseSwapeTrade> = try await CoinbaseAPI.shared.request(.swapTrade(dto))
+        return response.data
+    }
+
+    public func commitTradeOrder(orderID: String) async throws -> CoinbaseSwapeTrade {
+        do {
+            try await authInterop.refreshTokenIfNeeded()
+            let result: BaseDataResponse<CoinbaseSwapeTrade> = try await httpClient.request(.swapTradeCommit(orderID))
+            try await refreshAccount()
+
+            return result.data
+        } catch HTTPClientError.statusCode(let r) {
+            if let error = r.error?.errors.first {
+                throw Coinbase.Error.transactionFailed(.message(error.message))
+            }
+
+            throw Coinbase.Error.unknownError
+        } catch {
+            throw error
+        }
+    }
+}
+
+// MARK: SourceViewDataProvider
+
+extension CBAccount: SourceViewDataProvider {
+    var image: SourceItemImage {
+        .remote(info.iconURL)
+    }
+
+    var title: String {
+        info.currency.code
+    }
+
+    var subtitle: String? {
+        accountName
+    }
+
+    var balanceFormatted: String {
+        info.balanceFormatted
+    }
+
+    var fiatBalanceFormatted: String {
+        info.fiatBalanceFormatted
     }
 }

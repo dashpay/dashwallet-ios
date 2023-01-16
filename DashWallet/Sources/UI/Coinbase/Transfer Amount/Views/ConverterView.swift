@@ -21,32 +21,43 @@ import UIKit
 
 enum ConverterViewDirection {
     case toWallet
-    case toCoinbase
+    case fromWallet
 
-    fileprivate var fromSource: Source {
-        self == .toCoinbase ? .dash : .coinbase
+    private var fromSource: Source {
+        self == .fromWallet ? .dash : .coinbase
     }
 
-    fileprivate var toSource: Source {
-        self == .toCoinbase ? .coinbase : .dash
+    private var toSource: Source {
+        self == .fromWallet ? .coinbase : .dash
     }
 
     var next: Self {
-        self == .toCoinbase ? .toWallet : .toCoinbase
+        self == .fromWallet ? .toWallet : .fromWallet
     }
+}
+
+// MARK: - ConverterViewSourceItem
+
+struct ConverterViewSourceItem: SourceViewDataProvider {
+    var image: SourceItemImage
+    var title: String
+    var subtitle: String?
+    var balanceFormatted: String
+    var fiatBalanceFormatted: String
 }
 
 // MARK: - ConverterViewDataSource
 
 protocol ConverterViewDataSource: AnyObject {
-    var coinbaseBalanceFormatted: String { get }
-    var walletBalanceFormatted: String { get }
+    var fromItem: SourceViewDataProvider? { get }
+    var toItem: SourceViewDataProvider? { get }
 }
 
 // MARK: - ConverterViewDelegate
 
 protocol ConverterViewDelegate: AnyObject {
-    func didChangeDirection(_ direction: ConverterViewDirection)
+    func didChangeDirection()
+    func didTapOnFromView()
 }
 
 // MARK: - ConverterView
@@ -58,6 +69,18 @@ class ConverterView: UIView {
         }
     }
 
+    public var isChevronHidden = true {
+        didSet {
+            fromView.isChevronHidden = isChevronHidden
+        }
+    }
+
+    public var isSwappingAllowed = true {
+        didSet {
+            swapGesture.isEnabled = isSwappingAllowed
+        }
+    }
+
     public weak var delegate: ConverterViewDelegate?
     public weak var dataSource: ConverterViewDataSource? {
         didSet {
@@ -65,18 +88,10 @@ class ConverterView: UIView {
         }
     }
 
-    private var fromView: SourceView!
-    private var toView: SourceView!
+    private var fromView: SourceItemView!
+    private var toView: SourceItemView!
     private var swapImageView: UIImageView!
-
-    private var direction: ConverterViewDirection = .toCoinbase
-
-    init(direction: ConverterViewDirection) {
-        self.direction = direction
-
-        super.init(frame: .zero)
-        configureHierarchy()
-    }
+    private var swapGesture: UIGestureRecognizer!
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -93,10 +108,14 @@ class ConverterView: UIView {
     }
 
     @objc
+    func fromViewTapAction() {
+        delegate?.didTapOnFromView()
+    }
+
+    @objc
     func swapAction() {
-        direction = direction.next
+        delegate?.didChangeDirection()
         updateView()
-        delegate?.didChangeDirection(direction)
 
         UIView.animate(withDuration: 0.2) {
             self.swapImageView.transform = .init(rotationAngle: 0.9999 * CGFloat.pi)
@@ -107,92 +126,75 @@ class ConverterView: UIView {
 }
 
 extension ConverterView {
-    private var balance: String {
-        let balance = direction == .toCoinbase ? dataSource?.walletBalanceFormatted : dataSource?.coinbaseBalanceFormatted
-        return balance ?? "0"
-    }
-
     private func updateView() {
-        fromView.update(with: direction.fromSource, balance: balance, hasNetwork: hasNetwork)
-        toView.update(with: direction.toSource, balance: nil, hasNetwork: hasNetwork)
+        guard let dataSource else { return }
+
+        fromView.update(with: dataSource.fromItem, isBalanceHidden: false)
+        toView.update(with: dataSource.toItem, isBalanceHidden: true)
     }
 
     private func configureHierarchy() {
         backgroundColor = .dw_background()
         layer.cornerRadius = 10
 
-        configureLeftSide()
-        configureRightSide()
-        updateView()
-    }
-
-    private func configureLeftSide() {
-        let leftContainer = UIStackView()
-        leftContainer.axis = .vertical
-        leftContainer.distribution = .equalSpacing
-        leftContainer.translatesAutoresizingMaskIntoConstraints = false
-        leftContainer.alignment = .center
-        leftContainer.spacing = 22
-        leftContainer.isUserInteractionEnabled = true
-        leftContainer.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapAction)))
-        addSubview(leftContainer)
-
-        let fromLabel = UILabel()
-        fromLabel.font = .dw_regularFont(ofSize: 11)
-        fromLabel.textColor = .dw_secondaryText()
-        fromLabel.text = NSLocalizedString("FROM", comment: "Coinbase: transfer dash to/from")
-        fromLabel.textAlignment = .center
-        leftContainer.addArrangedSubview(fromLabel)
-
-        swapImageView = UIImageView(image: UIImage(named: "coinbase.converter.switch"))
-        swapImageView.isUserInteractionEnabled = true
-        leftContainer.addArrangedSubview(swapImageView)
-
-        let toLabel = UILabel()
-        toLabel.font = .dw_regularFont(ofSize: 11)
-        toLabel.textColor = .dw_secondaryText()
-        toLabel.text = NSLocalizedString("TO", comment: "Coinbase: transfer dash to/from")
-        toLabel.textAlignment = .center
-        leftContainer.addArrangedSubview(toLabel)
-
-        NSLayoutConstraint.activate([
-            leftContainer.topAnchor.constraint(equalTo: topAnchor, constant: 19),
-            leftContainer.leadingAnchor.constraint(equalTo: leadingAnchor),
-            leftContainer.widthAnchor.constraint(equalToConstant: 60),
-            leftContainer.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -19),
-
-            fromLabel.heightAnchor.constraint(equalToConstant: 16),
-            toLabel.heightAnchor.constraint(equalToConstant: 16),
-        ])
-    }
-
-    private func configureRightSide() {
         let rightContainer = UIStackView()
         rightContainer.axis = .vertical
-        rightContainer.spacing = 8
+        rightContainer.spacing = 12
         rightContainer.translatesAutoresizingMaskIntoConstraints = false
         rightContainer.backgroundColor = .clear
         addSubview(rightContainer)
 
-        fromView = .init(frame: .zero)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(fromViewTapAction))
+        fromView = SourceItemView(frame: .zero)
+        fromView.isChevronHidden = isChevronHidden
+        fromView.addGestureRecognizer(tapGesture)
         fromView.translatesAutoresizingMaskIntoConstraints = false
         rightContainer.addArrangedSubview(fromView)
 
         let hairlineView = HairlineView(frame: .zero)
         hairlineView.translatesAutoresizingMaskIntoConstraints = false
-        hairlineView.alpha = 0.2
         rightContainer.addArrangedSubview(hairlineView)
 
-        toView = .init(frame: .zero)
+        toView = SourceItemView(frame: .zero)
         toView.translatesAutoresizingMaskIntoConstraints = false
         rightContainer.addArrangedSubview(toView)
 
+        swapGesture = UITapGestureRecognizer(target: self, action: #selector(swapAction))
+        swapGesture.isEnabled = isSwappingAllowed
+
+        let swapImageContainer = UIView()
+        swapImageContainer.translatesAutoresizingMaskIntoConstraints = false
+        swapImageContainer.backgroundColor = .dw_background()
+        swapImageContainer.layer.cornerRadius = 6
+        swapImageContainer.layer.borderWidth = 1
+        swapImageContainer.layer.borderColor = UIColor.separator.cgColor
+        swapImageContainer.isUserInteractionEnabled = true
+        swapImageContainer.addGestureRecognizer(swapGesture)
+        addSubview(swapImageContainer)
+
+        swapImageView = UIImageView(image: UIImage(named: "coinbase.converter.switch"))
+        swapImageView.translatesAutoresizingMaskIntoConstraints = false
+        swapImageView.contentMode = .scaleAspectFit
+        swapImageContainer.addSubview(swapImageView)
+
         NSLayoutConstraint.activate([
-            rightContainer.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-            rightContainer.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 62),
-            rightContainer.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 0),
-            rightContainer.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+            rightContainer.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            rightContainer.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
+            rightContainer.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
+            rightContainer.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+
+            swapImageContainer.centerXAnchor.constraint(equalTo: centerXAnchor),
+            swapImageContainer.centerYAnchor.constraint(equalTo: centerYAnchor),
+            swapImageContainer.widthAnchor.constraint(equalToConstant: 27),
+            swapImageContainer.heightAnchor.constraint(equalToConstant: 30),
+
+            swapImageView.centerXAnchor.constraint(equalTo: swapImageContainer.centerXAnchor),
+            swapImageView.centerYAnchor.constraint(equalTo: swapImageContainer.centerYAnchor),
+            swapImageView.widthAnchor.constraint(equalToConstant: 13),
+            swapImageView.heightAnchor.constraint(equalToConstant: 13),
         ])
+
+        updateView()
     }
 }
 
@@ -217,13 +219,19 @@ private enum Source {
     }
 }
 
-// MARK: - SourceView
+// MARK: - SourceItemView
 
-private class SourceView: UIView {
-    private var imageView: UIImageView!
-    private var titleLabel: UILabel!
-    private var walletBallanceLabel: UILabel!
-    private var walletBalanceStackView: UIStackView!
+private final class SourceItemView: UIView {
+    var isChevronHidden = true {
+        didSet {
+            chevronView?.isHidden = isChevronHidden
+        }
+    }
+
+    private var sourceView: SourceView!
+    private var chevronView: UIImageView!
+
+    override var intrinsicContentSize: CGSize { .init(width: SourceItemView.noIntrinsicMetric, height: 54.0) }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -235,84 +243,157 @@ private class SourceView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func update(with source: Source, balance: String?, hasNetwork: Bool) {
-        imageView.image = UIImage(named: source.imageName)
-        titleLabel.text = source.title
-
-        if let balance, let plainDashAmount = balance.plainDashAmount(locale: .current) {
-            walletBalanceStackView.isHidden = false
-
-            let fiatAmount = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(plainDashAmount)) ?? "Fetching..."
-
-            let lastKnownBalance = hasNetwork ? "" : NSLocalizedString("Last known balance", comment: "Buy Sell Portal") + ": "
-            let dashStr = "\(balance) DASH"
-            let fiatStr = " ≈ \(fiatAmount)"
-            let fullStr = "\(lastKnownBalance)\(dashStr)\(fiatStr)"
-            let string = NSMutableAttributedString(string: fullStr)
-            string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel],
-                                 range: NSMakeRange(dashStr.count, fiatStr.count))
-            string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.systemRed],
-                                 range: NSMakeRange(0, lastKnownBalance.count))
-            string.addAttribute(.font, value: UIFont.dw_font(forTextStyle: .footnote), range: NSMakeRange(0, fullStr.count - 1))
-
-
-            walletBallanceLabel.attributedText = string
-        } else {
-            walletBalanceStackView.isHidden = true
-        }
+    public func update(with item: SourceViewDataProvider?, isBalanceHidden: Bool) {
+        sourceView.update(with: item, isBalanceHidden: isBalanceHidden)
     }
 
     private func configureHierarchy() {
         let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 8
-        stackView.alignment = .top
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 15
         addSubview(stackView)
 
-        imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.addArrangedSubview(imageView)
+        sourceView = SourceView(frame: .zero)
+        sourceView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(sourceView)
 
-        let rightStackView = UIStackView()
-        rightStackView.axis = .vertical
-        rightStackView.spacing = 6
-        rightStackView.alignment = .leading
-        rightStackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.addArrangedSubview(rightStackView)
-
-        titleLabel = UILabel()
-        titleLabel.font = .dw_font(forTextStyle: .body)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        rightStackView.addArrangedSubview(titleLabel)
-
-        walletBalanceStackView = UIStackView()
-        walletBalanceStackView.axis = .horizontal
-        walletBalanceStackView.spacing = 8
-        walletBalanceStackView.alignment = .center
-        walletBalanceStackView.translatesAutoresizingMaskIntoConstraints = false
-        rightStackView.addArrangedSubview(walletBalanceStackView)
-
-        let walletImageView = UIImageView()
-        walletImageView.translatesAutoresizingMaskIntoConstraints = false
-        walletImageView.image = UIImage(named: "icon.wallet")
-        walletBalanceStackView.addArrangedSubview(walletImageView)
-
-        walletBallanceLabel = UILabel()
-        walletBallanceLabel.font = .dw_font(forTextStyle: .footnote)
-        walletBallanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        walletBalanceStackView.addArrangedSubview(walletBallanceLabel)
+        chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+        chevronView.tintColor = .dw_secondaryText()
+        chevronView.isHidden = isChevronHidden
+        stackView.addArrangedSubview(chevronView)
 
         NSLayoutConstraint.activate([
-            imageView.widthAnchor.constraint(equalToConstant: 30),
-            imageView.heightAnchor.constraint(equalToConstant: 30),
-
-            titleLabel.heightAnchor.constraint(equalToConstant: 30),
-
             stackView.topAnchor.constraint(equalTo: topAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
+    }
+}
+
+// MARK: - SourceItemImage
+
+enum SourceItemImage {
+    case remote(URL)
+    case asset(String)
+}
+
+// MARK: - SourceViewDataProvider
+
+protocol SourceViewDataProvider {
+    var image: SourceItemImage { get }
+    var title: String { get }
+    var subtitle: String? { get }
+    var balanceFormatted: String { get }
+    var fiatBalanceFormatted: String { get }
+}
+
+// MARK: - SourceView
+
+final class SourceView: UIView {
+    private(set) var imageView: UIImageView!
+    private(set) var titleLabel: UILabel!
+    private(set) var subtitleLabel: UILabel!
+    private(set) var balanceLabel: UILabel!
+    private(set) var fiatBalanceLabel: UILabel!
+
+    override var intrinsicContentSize: CGSize { .init(width: ConverterView.noIntrinsicMetric, height: 54.0) }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        configureHierarchy()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    public func update(with item: SourceViewDataProvider?, isBalanceHidden: Bool) {
+        guard let item else {
+            titleLabel.text = NSLocalizedString("Select Account", comment: "Coinbase")
+            return
+        }
+
+        switch item.image {
+        case .asset(let name):
+            imageView.image = UIImage(named: name)
+        case .remote(let url):
+            imageView.sd_setImage(with: url)
+        }
+
+        titleLabel.text = item.title
+        subtitleLabel.text = item.subtitle
+        balanceLabel.text = item.balanceFormatted
+        fiatBalanceLabel.text = item.fiatBalanceFormatted
+    }
+
+    private func configureHierarchy() {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.backgroundColor = .clear
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        stackView.spacing = 10
+        addSubview(stackView)
+
+        imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.cornerRadius = 17
+        imageView.backgroundColor = .dw_secondaryBackground()
+        stackView.addArrangedSubview(imageView)
+
+        let labelStackView = UIStackView()
+        labelStackView.translatesAutoresizingMaskIntoConstraints = false
+        labelStackView.spacing = 2
+        labelStackView.axis = .vertical
+        stackView.addArrangedSubview(labelStackView)
+
+        titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.font = .dw_font(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
+        titleLabel.textColor = .dw_label()
+        labelStackView.addArrangedSubview(titleLabel)
+
+        subtitleLabel = UILabel()
+        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        subtitleLabel.font = .dw_font(forTextStyle: .footnote)
+        subtitleLabel.textColor = .dw_secondaryText()
+        labelStackView.addArrangedSubview(subtitleLabel)
+
+        let valueStackView = UIStackView()
+        valueStackView.translatesAutoresizingMaskIntoConstraints = false
+        valueStackView.spacing = 2
+        valueStackView.axis = .vertical
+        valueStackView.alignment = .trailing
+        stackView.addArrangedSubview(valueStackView)
+
+        balanceLabel = UILabel()
+        balanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        balanceLabel.font = .dw_font(forTextStyle: .footnote)
+        balanceLabel.textColor = .dw_label()
+        balanceLabel.textAlignment = .right
+        valueStackView.addArrangedSubview(balanceLabel)
+
+        fiatBalanceLabel = UILabel()
+        fiatBalanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        fiatBalanceLabel.font = .dw_font(forTextStyle: .footnote)
+        fiatBalanceLabel.textColor = .dw_secondaryText()
+        fiatBalanceLabel.textAlignment = .right
+        valueStackView.addArrangedSubview(fiatBalanceLabel)
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            imageView.widthAnchor.constraint(equalToConstant: 34),
+            imageView.heightAnchor.constraint(equalToConstant: 34),
         ])
     }
 }

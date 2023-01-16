@@ -132,6 +132,7 @@ struct CoinbaseAPIError: Decodable {
 
 public enum CoinbaseEndpoint {
     case account(String)
+    case accounts
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
@@ -147,6 +148,7 @@ public enum CoinbaseEndpoint {
     case revokeToken(token: String)
     case refreshToken(refreshToken: String)
     case signIn
+    case path(String)
 }
 
 // MARK: TargetType, AccessTokenAuthorizable
@@ -162,19 +164,26 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     }
 
     public var baseURL: URL {
-        kBaseURL
+        guard case .path(let string) = self else {
+            return kBaseURL
+        }
+
+        let path = string.removingPercentEncoding ?? string
+        let url = URL(string: "https://api.coinbase.com" + path)!
+        return url
     }
 
     public var path: String {
         switch self {
         case .account(let name): return "/v2/accounts/\(name)"
+        case .accounts: return "/v2/accounts"
         case .userAuthInformation: return "/v2/user/auth"
-        case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
+        case .exchangeRates: return "/v2/exchange-rates"
         case .activePaymentMethods: return "/v2/payment-methods"
         case .placeBuyOrder(let accountId, _): return "/v2/accounts/\(accountId)/buys"
         case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
-        case .getBaseIdForUSDModel(let baseCurrency): return "/v2/assets/prices?base=\(baseCurrency)&filter=holdable&resolution=latest"
+        case .getBaseIdForUSDModel: return "/v2/assets/prices"
         case .swapTrade: return "/v2/trades"
         case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
@@ -182,6 +191,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .getToken, .refreshToken: return "/oauth/token"
         case .revokeToken: return "/oauth/revoke"
         case .signIn: return "/oauth/authorize"
+        default:
+            return ""
         }
     }
 
@@ -234,6 +245,12 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(dto)
         case .placeBuyOrder(_, let dto):
             return .requestJSONEncodable(dto)
+        case .accounts:
+            return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)
+        case .getBaseIdForUSDModel(let base):
+            return .requestParameters(parameters: [base: base, "filter": "holdable", "resolution": "latest"], encoding: URLEncoding.default)
+        case .exchangeRates(let currency):
+            return .requestParameters(parameters: ["currency": currency], encoding: URLEncoding.default)
         default:
             return .requestPlain
         }

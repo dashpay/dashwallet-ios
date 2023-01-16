@@ -29,6 +29,7 @@ typedef NS_ENUM(NSUInteger, DWAmountInputValidatorType) {
 @interface DWAmountInputValidator : NSObject <DWInputValidator>
 
 @property (readonly, assign, nonatomic) DWAmountInputValidatorType type;
+@property (nonatomic, copy) NSNumberFormatter *numberFormatter;
 
 - (nullable NSString *)stringFromNumberUsingInternalFormatter:(NSNumber *)number;
 

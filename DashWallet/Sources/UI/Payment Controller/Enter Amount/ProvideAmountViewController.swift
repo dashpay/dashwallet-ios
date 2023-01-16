@@ -51,7 +51,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
         DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-        delegate?.provideAmountViewControllerDidInput(amount: UInt64(model.amount.plainAmount))
+        delegate?.provideAmountViewControllerDidInput(amount: model.amount.plainAmount)
     }
 
     override func configureHierarchy() {
@@ -206,18 +206,21 @@ extension ProvideAmountViewController {
     private func updateBalance() {
         let balance = model.walletBalance
 
-        let dashNumber = Decimal(balance) / Decimal(DUFFS)
+        let fiat: String
 
-        let fiat: String = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance)) ?? "Syncing..."
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
+            fiat = fiatAmount.formattedDashAmount
+        } else {
+            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+        }
 
-        let dashStr = "\(dashNumber) DASH"
+        let dashStr = balance.formattedDashAmount
         let fiatStr = " ≈ \(fiat)"
         let fullStr = "\(dashStr)\(fiatStr)"
 
         if isBalanceHidden {
             balanceLabel.text = String(repeating: "*", count: fullStr.count + 4)
-        }
-        else {
+        } else {
             balanceLabel.text = fullStr
         }
     }

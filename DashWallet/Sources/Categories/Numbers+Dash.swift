@@ -18,29 +18,83 @@
 import Foundation
 
 extension UInt64 {
+    var dashAmount: Decimal {
+        Decimal(self)/Decimal(DUFFS)
+    }
+
+    /// Converts `UInt64` to formatted dash string. 123456780 -> "DASH 1"
+    ///
+    /// - Returns: Formatted dash amount
+    ///
     var formattedDashAmount: String {
-        let plainNumber = Decimal(self)
-        let duffsNumber = Decimal(DUFFS)
-        let dashNumber = plainNumber/duffsNumber
+        dashAmount.formattedDashAmount
+    }
+
+    /// Converts `UInt64` to formatted dash string. 123456780 ->  "1"
+    ///
+    /// - Returns: Formatted dash amount without dash symbol
+    ///
+    var formattedDashAmountWithoutCurrencySymbol: String {
         if #available(iOS 15.0, *) {
-            return dashNumber.formatted(.number)
+            return dashAmount.formatted(.number)
         } else {
-            return "\(dashNumber)"
+            return "\(dashAmount)"
         }
+    }
+
+    func formattedCryptoAmount(exponent: Int = 8) -> String {
+        let plainNumber = Decimal(self)
+        let number = plainNumber/pow(10, exponent)
+        return number.string
     }
 }
 
 extension Int64 {
+    var dashAmount: Decimal {
+        Decimal(self)/Decimal(DUFFS)
+    }
+
     var formattedDashAmount: String {
-        let plainNumber = Decimal(self)
-        let duffsNumber = Decimal(DUFFS)
-        let dashNumber = plainNumber/duffsNumber
-        if #available(iOS 15.0, *) {
-            return dashNumber.formatted(.number)
-        } else {
-            return "\(dashNumber)"
-        }
+        dashAmount.formattedDashAmount
     }
 }
 
+extension Decimal {
+    static var duffs: Decimal { Decimal(DUFFS) }
 
+    var whole: Decimal {
+        rounded(sign == .minus ? .up : .down)
+    }
+
+    /// Converts `Decimal` to plain dash amount in duffs
+    ///
+    /// - Returns: Plain dash amount in duffs
+    ///
+    var plainDashAmount: UInt64 {
+        let plainAmount = self * .duffs
+        return NSDecimalNumber(decimal: plainAmount.whole).uint64Value
+    }
+
+    /// Converts `Decimal` to formatted dash string. 123456780 -> "DASH 1"
+    ///
+    /// - Returns: Formatted dash amount
+    ///
+    var formattedDashAmount: String {
+        NumberFormatter.dashFormatter.string(from: self as NSNumber)!
+    }
+
+    func rounded(_ mode: NSDecimalNumber.RoundingMode = .plain) -> Decimal {
+        var result = Decimal()
+        var number = self
+        NSDecimalRound(&result, &number, 0, mode)
+        return result
+    }
+
+    var string: String {
+        if #available(iOS 15.0, *) {
+            return formatted(.number)
+        } else {
+            return "\(self)"
+        }
+    }
+}

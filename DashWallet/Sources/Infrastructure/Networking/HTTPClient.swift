@@ -51,17 +51,21 @@ enum HTTPClientError: Error {
     }
 }
 
-
-
 typealias AccessTokenProvider = () -> String
 
 // MARK: - HTTPClient
 
 public class HTTPClient<Target: TargetType> {
-    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api", qos: .background, attributes: .concurrent)
+    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api",
+                                             qos: .background,
+                                             attributes: .concurrent)
+
     private var provider: MoyaProvider<Target>!
+    private var etags: [String: String] = [:]
 
     var accessTokenProvider: AccessTokenProvider?
+
+    private var receiveMemoryWarningHandler: Any!
 
     init(accessTokenProvider: AccessTokenProvider? = nil) {
         self.accessTokenProvider = accessTokenProvider
@@ -75,13 +79,28 @@ public class HTTPClient<Target: TargetType> {
         }
         plugins.append(accessTokenPlugin)
 
+        let etagPlugin = EtagPlugin { [weak self] _, url in
+            guard let self else { return "" }
+            return self.eTag(for: url)
+        }
+        plugins.append(etagPlugin)
+
         provider = MoyaProvider<Target>(plugins: plugins)
+
+        receiveMemoryWarningHandler = NotificationCenter.default
+            .addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
+                self?.etags = [:]
+            }
     }
 
     @discardableResult
     func request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
         let cancellableToken = CancellableWrapper()
-        cancellableToken.innerCancellable = _request(target, completion: completion)
+
+        apiWorkQueue.async {
+            cancellableToken.innerCancellable = self._request(target, completion: completion)
+        }
+
         return cancellableToken
     }
 
@@ -121,12 +140,16 @@ public class HTTPClient<Target: TargetType> {
 
         fatalError("Token should be provided")
     }
+
+    deinit {
+        NotificationCenter.default.removeObserver(receiveMemoryWarningHandler!)
+    }
 }
 
 extension HTTPClient {
     @discardableResult
     private func _request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
-        provider.request(target) { result in
+        provider.request(target) { [weak self] result in
             switch result {
             case .success(let response):
                 #if DEBUG
@@ -134,14 +157,15 @@ extension HTTPClient {
                 #endif
 
                 if acceptableCodes.contains(response.statusCode) {
+                    if let etag = response.response?.value(forHTTPHeaderField: "Etag"),
+                       let key = response.request?.url?.absoluteString {
+                        self?.apiWorkQueue.sync {
+                            self?.etags[key] = etag
+                        }
+                    }
+
                     completion(.success(response))
                 } else {
-                    let responseString = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
-                    DSLogger.log("HTTPClient failure begin")
-                    DSLogger.log("HTTPClient request: \(String(describing: response.request))")
-                    DSLogger.log("HTTPClient request params: \(String(describing: response.request))")
-                    DSLogger.log("HTTPClient response: \(String(describing: responseString))")
-                    DSLogger.log("HTTPClient failure end")
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
@@ -194,6 +218,49 @@ extension Swift.Result where Success: Moya.Response, Failure: Error {
             }
         case .failure(let error):
             throw error
+        }
+    }
+}
+
+// MARK: - EtagPlugin
+
+public struct EtagPlugin: PluginType {
+
+    public typealias EtagClosure = (_ target: TargetType, _ url: URL) -> String?
+
+    /// A closure returning the etag to be applied in the header.
+    public let etagClosure: EtagClosure
+
+    /// Initialize a new `EtagPlugin`.
+    ///
+    /// - parameters:
+    /// - etagClosure: A closure returning the etag to be applied in the pattern `Etag: tag`
+    public init(etagClosure: @escaping EtagClosure) {
+        self.etagClosure = etagClosure
+    }
+
+    /// Prepare a request by adding an authorization header if necessary.
+    ///
+    /// - parameters:
+    /// - request: The request to modify.
+    /// - target: The target of the request.
+    /// - returns: The modified `URLRequest`.
+    public func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
+        var request = request
+        let realTarget = (target as? MultiTarget)?.target ?? target
+
+        if let value = etagClosure(realTarget, request.url!) {
+            request.addValue(value, forHTTPHeaderField: "Etag")
+        }
+
+        return request
+    }
+}
+
+extension HTTPClient {
+    func eTag(for url: URL) -> String? {
+        apiWorkQueue.sync {
+            self.etags[url.absoluteString]
         }
     }
 }
