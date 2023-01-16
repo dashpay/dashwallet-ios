@@ -38,6 +38,10 @@ class CustodialSwapsModel: SendAmountModel {
         }
     }
 
+    override var isCurrencySelectorHidden: Bool {
+        true
+    }
+
     override var supplementaryCurrencyCode: String {
         currentInputItem.currencyCode == kDashCurrency ? localCurrencyCode : currentInputItem.currencyCode
     }
