@@ -48,6 +48,20 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
         currency.code
     }
 
+    var balanceFormatted: String {
+        let nf = NumberFormatter.cryptoFormatter(currencyCode: currencyCode, exponent: currency.exponent)
+        return nf.string(from: balance.amount.decimal()! as NSNumber)!
+    }
+
+    var fiatBalanceFormatted: String {
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convert(to: App.fiatCurrency, amount: balance.amount.decimal()!, amountCurrency: balance.currency) else {
+            return "Invalid"
+        }
+
+        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        return nf.string(from: fiatAmount as NSNumber)!
+    }
+
     var plainAmount: UInt64 {
         guard let dashNumber = Decimal(string: balance.amount) else {
             return 0

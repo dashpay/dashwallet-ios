@@ -41,7 +41,11 @@ extension NumberFormatter {
         }
 
         formatter.currencyCode = currencyCode
-        formatter.currencySymbol = currencyCode
+
+        if currencyCode == "DASH" {
+            formatter.currencySymbol = currencyCode
+        }
+
         formatter.maximumFractionDigits = exponent
         formatter.minimumFractionDigits = 0
 

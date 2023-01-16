@@ -61,6 +61,9 @@ class CustodialSwapsViewController: TransferAmountViewController {
         super.configureHierarchy()
 
         navigationItem.title = NSLocalizedString("Convert Crypto", comment: "Coinbase")
+
+        converterView.isChevronHidden = false
+        converterView.isSwappingAllowed = false
     }
 }
 

@@ -86,6 +86,19 @@ public final class CurrencyExchanger {
         return amount/rate
     }
 
+    public func convert(to currency: String, amount: Decimal, amountCurrency: String) throws -> Decimal {
+        if amount.isZero { return 0 }
+
+        if amountCurrency == kDashCurrency {
+            let rate = try rate(for: currency)
+            return amount/rate
+        }
+
+        let dashAmount = try convertToDash(amount: amount, currency: amountCurrency)
+        let result = try convertDash(amount: dashAmount, to: currency)
+        return result
+    }
+
     static let shared = CurrencyExchanger(dataProvider: RatesProviderFactory.base)
 }
 

@@ -35,21 +35,6 @@ extension ServiceItem {
 
         return nil
     }
-
-    var dashBalanceFormatted: String? {
-        guard let dashBalance else {
-            return nil
-        }
-
-        return dashBalance.formattedDashAmount
-    }
-
-    var fiatBalanceFormatted: String? {
-        guard let balance = dashBalance else { return nil }
-
-        let priceManger = DSPriceManager.sharedInstance()
-        return priceManger.localCurrencyString(forDashAmount: Int64(balance))
-    }
 }
 
 // MARK: - ServiceItem
@@ -75,6 +60,9 @@ class ServiceItem: Hashable {
     var service: Service
 
     var dashBalance: UInt64?
+    var dashBalanceFormatted: String?
+    var fiatBalanceFormatted: String?
+
     var usageCount = 0
 
     var isInUse: Bool { status == .syncing || status == .authorized }

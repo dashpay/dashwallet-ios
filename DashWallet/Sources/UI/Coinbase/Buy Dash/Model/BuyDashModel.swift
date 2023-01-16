@@ -48,11 +48,13 @@ final class BuyDashModel: BaseAmountModel {
     }
 
     var dashPriceDisplayString: String {
+        guard let rate = try? Coinbase.shared.currencyExchanger.rate(for: App.fiatCurrency),
+              let fiatBalanceFormatted = localFormatter.string(from: rate as NSNumber) else {
+            return NSLocalizedString("Syncing...", comment: "Price")
+        }
+
         let dashAmount = kOneDash
         let dashAmountFormatted = dashAmount.formattedDashAmount
-
-        let priceManger = DSPriceManager.sharedInstance()
-        let fiatBalanceFormatted = priceManger.localCurrencyString(forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
 
         let displayString = "\(dashAmountFormatted) ≈ \(fiatBalanceFormatted)"
         return displayString

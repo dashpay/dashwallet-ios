@@ -103,11 +103,18 @@ extension CustodialSwapsModel: ConverterViewDataSource {
             return nil
         }
 
-        return .init(image: .remote(selectedAccount.info.iconURL), title: selectedAccount.info.name, currencyCode: selectedAccount.info.currencyCode,
-                     plainAmount: selectedAccount.info.plainAmount)
+        return ConverterViewSourceItem(image: .remote(selectedAccount.info.iconURL),
+                                       title: selectedAccount.info.name,
+                                       subtitle: "Coinbase",
+                                       balanceFormatted: selectedAccount.info.balanceFormatted,
+                                       fiatBalanceFormatted: selectedAccount.info.fiatBalanceFormatted)
     }
 
     var toItem: ConverterViewSourceItem? {
-        .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
+        .init(image: .asset("image.explore.dash.wts.dash"),
+              title: "Dash",
+              subtitle: "Dash Wallet",
+              balanceFormatted: "", // We no need to show balance
+              fiatBalanceFormatted: "") // We no need to show balance
     }
 }

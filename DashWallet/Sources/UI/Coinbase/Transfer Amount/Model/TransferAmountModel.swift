@@ -125,14 +125,26 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 extension TransferAmountModel: ConverterViewDataSource {
     var fromItem: ConverterViewSourceItem? {
         direction == .toCoinbase
-            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
-            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
+            ? .init(image: .asset("image.explore.dash.wts.dash"),
+                    title: "Dash Wallet",
+                    balanceFormatted: walletBalanceFormatted,
+                    fiatBalanceFormatted: fiatWalletBalanceFormatted)
+            : .init(image: .asset("Coinbase"),
+                    title: "Coinbase",
+                    balanceFormatted: Coinbase.shared.dashAccount?.info.balanceFormatted ?? "",
+                    fiatBalanceFormatted: Coinbase.shared.dashAccount?.info.fiatBalanceFormatted ?? "")
     }
 
     var toItem: ConverterViewSourceItem? {
         direction == .toWallet
-            ? .init(image: .asset("image.explore.dash.wts.dash"), title: "Dash", currencyCode: kDashCurrency, plainAmount: walletBalance)
-            : .init(image: .asset("Coinbase"), title: "Coinbase", currencyCode: localCurrencyCode, plainAmount: Coinbase.shared.lastKnownBalance ?? 0)
+            ? .init(image: .asset("image.explore.dash.wts.dash"),
+                    title: "Dash Wallet",
+                    balanceFormatted: "", // We no need to show balance
+                    fiatBalanceFormatted: "") // We no need to show balance
+            : .init(image: .asset("Coinbase"),
+                    title: "Coinbase",
+                    balanceFormatted: "",
+                    fiatBalanceFormatted: "")
     }
 
     var coinbaseBalanceFormatted: String {

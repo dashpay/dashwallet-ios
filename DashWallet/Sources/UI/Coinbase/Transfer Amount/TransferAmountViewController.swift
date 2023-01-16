@@ -84,7 +84,6 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
             converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
             converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            converterView.heightAnchor.constraint(equalToConstant: 128),
 
             networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),

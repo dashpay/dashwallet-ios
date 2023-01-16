@@ -223,6 +223,15 @@ extension BaseAmountModel {
         DWEnvironment.sharedInstance().currentWallet.balance
     }
 
+    var fiatWalletBalanceFormatted: String {
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: walletBalance.dashAmount, to: App.fiatCurrency) else {
+            return "Invalid"
+        }
+
+        let nf = supplementaryNumberFormatter
+        return nf.string(from: fiatAmount as NSNumber)!
+    }
+
     var walletBalanceFormatted: String {
         walletBalance.formattedDashAmount
     }
