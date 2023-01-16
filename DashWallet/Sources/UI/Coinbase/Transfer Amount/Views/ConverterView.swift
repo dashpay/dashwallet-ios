@@ -49,8 +49,8 @@ struct ConverterViewSourceItem: SourceViewDataProvider {
 // MARK: - ConverterViewDataSource
 
 protocol ConverterViewDataSource: AnyObject {
-    var fromItem: ConverterViewSourceItem? { get }
-    var toItem: ConverterViewSourceItem? { get }
+    var fromItem: SourceViewDataProvider? { get }
+    var toItem: SourceViewDataProvider? { get }
 }
 
 // MARK: - ConverterViewDelegate

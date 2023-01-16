@@ -123,28 +123,28 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 // MARK: ConverterViewDataSource
 
 extension TransferAmountModel: ConverterViewDataSource {
-    var fromItem: ConverterViewSourceItem? {
+    var fromItem: SourceViewDataProvider? {
         direction == .toCoinbase
-            ? .init(image: .asset("image.explore.dash.wts.dash"),
-                    title: "Dash Wallet",
-                    balanceFormatted: walletBalanceFormatted,
-                    fiatBalanceFormatted: fiatWalletBalanceFormatted)
-            : .init(image: .asset("Coinbase"),
-                    title: "Coinbase",
-                    balanceFormatted: Coinbase.shared.dashAccount?.info.balanceFormatted ?? "",
-                    fiatBalanceFormatted: Coinbase.shared.dashAccount?.info.fiatBalanceFormatted ?? "")
+            ? ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
+                                      title: "Dash Wallet",
+                                      balanceFormatted: walletBalanceFormatted,
+                                      fiatBalanceFormatted: fiatWalletBalanceFormatted)
+            : ConverterViewSourceItem(image: .asset("Coinbase"),
+                                      title: "Coinbase",
+                                      balanceFormatted: Coinbase.shared.dashAccount?.info.balanceFormatted ?? "",
+                                      fiatBalanceFormatted: Coinbase.shared.dashAccount?.info.fiatBalanceFormatted ?? "")
     }
 
-    var toItem: ConverterViewSourceItem? {
+    var toItem: SourceViewDataProvider? {
         direction == .toWallet
-            ? .init(image: .asset("image.explore.dash.wts.dash"),
-                    title: "Dash Wallet",
-                    balanceFormatted: "", // We no need to show balance
-                    fiatBalanceFormatted: "") // We no need to show balance
-            : .init(image: .asset("Coinbase"),
-                    title: "Coinbase",
-                    balanceFormatted: "",
-                    fiatBalanceFormatted: "")
+            ? ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
+                                      title: "Dash Wallet",
+                                      balanceFormatted: "", // We no need to show balance
+                                      fiatBalanceFormatted: "") // We no need to show balance
+            : ConverterViewSourceItem(image: .asset("Coinbase"),
+                                      title: "Coinbase",
+                                      balanceFormatted: "",
+                                      fiatBalanceFormatted: "")
     }
 
     var coinbaseBalanceFormatted: String {

@@ -26,6 +26,14 @@ extension UInt64 {
         dashAmount.formattedDashAmount
     }
 
+    var formattedDashAmountWithoutCurrencySymbol: String {
+        if #available(iOS 15.0, *) {
+            return dashAmount.formatted(.number)
+        } else {
+            return "\(dashAmount)"
+        }
+    }
+
     func formattedCryptoAmount(exponent: Int = 8) -> String {
         let plainNumber = Decimal(self)
         let number = plainNumber/pow(10, exponent)

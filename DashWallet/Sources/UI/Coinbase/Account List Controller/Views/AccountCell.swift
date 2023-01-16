@@ -18,39 +18,24 @@
 import UIKit
 
 final class AccountCell: UITableViewCell {
-    @IBOutlet var iconView: UIImageView!
-    @IBOutlet var accountNameLabel: UILabel!
-    @IBOutlet var accountShortNameLabel: UILabel!
-    @IBOutlet var fiatBalanceLabel: UILabel!
-    @IBOutlet var balanceLabel: UILabel!
+    @IBOutlet var containerStackView: UIStackView!
+    @IBOutlet var checkboxButton: UIButton!
 
-    func update(with item: CBAccount) {
-        accountNameLabel.text = "· " + item.info.currency.name
-        accountShortNameLabel.text = item.info.currency.code
+    private var sourceView: SourceView!
 
-        iconView.isHidden = false
-        iconView.sd_setImage(with: item.info.iconURL, placeholderImage: nil) { [weak iconView] image, _,_,_ in
-            if image == nil {
-                iconView?.isHidden = true
-            }
-        }
-        // TODO: fix it
-        let dashStr = "\(item.info.balance.amount) \(item.info.balance.currency)"
-        let fiatStr = " ≈ \("$1.23")"
-        let fullStr = "\(dashStr)\(fiatStr)"
-        let string = NSMutableAttributedString(string: fullStr)
-        string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel],
-                             range: NSMakeRange(dashStr.count, fiatStr.count))
-        string.addAttribute(.font, value: UIFont.dw_font(forTextStyle: .footnote), range: NSMakeRange(0, fullStr.count - 1))
+    public func update(with item: SourceViewDataProvider?) {
+        sourceView.update(with: item, isBalanceHidden: false)
+    }
 
-        balanceLabel.attributedText = string
+    private func configureHierarchy() {
+        sourceView = SourceView(frame: .zero)
+        sourceView.translatesAutoresizingMaskIntoConstraints = false
+        containerStackView.insertArrangedSubview(sourceView, at: 0)
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-
-        accessoryType = selected ? .checkmark : .none
-        tintColor = selected ? .dw_dashBlue() : .label
+        checkboxButton.isSelected = selected
     }
 
     override func awakeFromNib() {
@@ -59,7 +44,6 @@ final class AccountCell: UITableViewCell {
         backgroundColor = .dw_secondaryBackground()
         contentView.backgroundColor = .dw_secondaryBackground()
 
-        iconView.backgroundColor = .secondaryLabel
-        iconView.layer.cornerRadius = 18
+        configureHierarchy()
     }
 }

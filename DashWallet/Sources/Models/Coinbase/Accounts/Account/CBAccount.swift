@@ -60,7 +60,7 @@ extension CBAccount {
     }
 
     var isDashAccount: Bool {
-        info.currency.name == kDashAccount
+        info.currency.code == kDashAccount
     }
 
     private var accountNameForApiRequest: String {
@@ -262,5 +262,29 @@ extension CBAccount {
         } catch {
             throw error
         }
+    }
+}
+
+// MARK: SourceViewDataProvider
+
+extension CBAccount: SourceViewDataProvider {
+    var image: SourceItemImage {
+        .remote(info.iconURL)
+    }
+
+    var title: String {
+        info.currency.code
+    }
+
+    var subtitle: String? {
+        accountName
+    }
+
+    var balanceFormatted: String {
+        info.balanceFormatted
+    }
+
+    var fiatBalanceFormatted: String {
+        info.fiatBalanceFormatted
     }
 }

@@ -98,7 +98,7 @@ class CustodialSwapsModel: SendAmountModel {
 // MARK: ConverterViewDataSource
 
 extension CustodialSwapsModel: ConverterViewDataSource {
-    var fromItem: ConverterViewSourceItem? {
+    var fromItem: SourceViewDataProvider? {
         guard let selectedAccount else {
             return nil
         }
@@ -110,11 +110,11 @@ extension CustodialSwapsModel: ConverterViewDataSource {
                                        fiatBalanceFormatted: selectedAccount.info.fiatBalanceFormatted)
     }
 
-    var toItem: ConverterViewSourceItem? {
-        .init(image: .asset("image.explore.dash.wts.dash"),
-              title: "Dash",
-              subtitle: "Dash Wallet",
-              balanceFormatted: "", // We no need to show balance
-              fiatBalanceFormatted: "") // We no need to show balance
+    var toItem: SourceViewDataProvider? {
+        ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
+                                title: "Dash",
+                                subtitle: "Dash Wallet",
+                                balanceFormatted: "", // We no need to show balance
+                                fiatBalanceFormatted: "") // We no need to show balance
     }
 }

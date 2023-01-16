@@ -30,6 +30,7 @@ final class AccountListController: BaseViewController {
 
     private var searchController: UISearchController!
     private var searchResultsController: ResultsViewController!
+    private var activityIndicatorView: UIActivityIndicatorView!
 
     internal var cancellables = Set<AnyCancellable>()
 
@@ -55,7 +56,9 @@ extension AccountListController {
         model = AccountListModel()
         model.$items
             .receive(on: DispatchQueue.main)
+            .filter { !$0.isEmpty }
             .sink { [weak self] _ in
+                self?.activityIndicatorView.removeFromSuperview()
                 self?.tableView.reloadData()
             }
             .store(in: &cancellables)
@@ -87,10 +90,21 @@ extension AccountListController {
         searchController.searchBar.autocapitalizationType = .none
         searchController.searchBar.delegate = self
 
+        activityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityIndicatorView.color = .dw_darkBlue()
+        activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicatorView.startAnimating()
+        view.addSubview(activityIndicatorView)
+
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
 
         definesPresentationContext = true
+
+        NSLayoutConstraint.activate([
+            activityIndicatorView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicatorView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+        ])
     }
 }
 

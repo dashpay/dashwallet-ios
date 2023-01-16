@@ -27,7 +27,7 @@ final class AccountListModel {
     private func fetchItems() {
         Task {
             let items = try await Coinbase.shared.accounts()
-            self.items = items
+            self.items = items.filter { !$0.isDashAccount }
         }
     }
 }

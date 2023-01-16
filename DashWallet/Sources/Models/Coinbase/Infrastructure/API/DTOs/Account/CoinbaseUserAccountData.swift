@@ -71,6 +71,16 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
         return NSDecimalNumber(decimal: plainAmount).uint64Value
     }
 
+    var plainAmountInDash: UInt64 {
+        if currencyCode == kDashCurrency { return plainAmount }
+
+        guard let dashAmount = try? Coinbase.shared.currencyExchanger.convertToDash(amount: balance.amount.decimal()!, currency: currencyCode) else {
+            return 0
+        }
+
+        return dashAmount.plainDashAmount
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case name

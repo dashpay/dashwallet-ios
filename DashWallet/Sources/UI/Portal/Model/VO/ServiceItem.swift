@@ -72,6 +72,17 @@ class ServiceItem: Hashable {
         self.service = service
         self.dashBalance = dashBalance
         usageCount = service.usageCount
+
+        guard let dashBalance else { return }
+
+        dashBalanceFormatted = dashBalance.formattedDashAmountWithoutCurrencySymbol
+
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: dashBalance.dashAmount, to: App.fiatCurrency) else {
+            return
+        }
+
+        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        fiatBalanceFormatted = nf.string(from: fiatAmount as NSNumber)
     }
 
     func hash(into hasher: inout Hasher) {
