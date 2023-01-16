@@ -316,11 +316,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self.currentController.topController presentViewController:navigationController
-                                                       animated:YES
-                                                     completion:^{
-                                                         self.tabBarView.userInteractionEnabled = YES;
-                                                     }];
+
+    if (self.demoMode) {
+        [self.demoDelegate presentModalController:navigationController sender:self];
+    }
+    else {
+        [self.currentController.topController presentViewController:navigationController
+                                                           animated:YES
+                                                         completion:^{
+                                                             self.tabBarView.userInteractionEnabled = YES;
+                                                         }];
+    }
 }
 
 - (void)setupControllers {

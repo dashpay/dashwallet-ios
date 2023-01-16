@@ -31,9 +31,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
-static CGFloat const MINIVIEW_MARGIN = 10.0;
+static CGFloat const MINIVIEW_MARGIN = 16.0;
 
 static CGFloat const SCALE_FACTOR = 0.5;
+
+@implementation NSLayoutConstraint (Multiplier)
+- (instancetype)updateMultiplier:(CGFloat)multiplier {
+    [NSLayoutConstraint deactivateConstraints:[NSArray arrayWithObjects:self, nil]];
+
+    NSLayoutConstraint *newConstraint = [NSLayoutConstraint constraintWithItem:self.firstItem attribute:self.firstAttribute relatedBy:self.relation toItem:self.secondItem attribute:self.secondAttribute multiplier:multiplier constant:self.constant];
+    [newConstraint setPriority:self.priority];
+    newConstraint.shouldBeArchived = self.shouldBeArchived;
+    newConstraint.identifier = self.identifier;
+    newConstraint.active = true;
+
+    [NSLayoutConstraint activateConstraints:[NSArray arrayWithObjects:newConstraint, nil]];
+    return newConstraint;
+}
+@end
 
 @interface DWOnboardingViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, DWDemoDelegate>
 
@@ -43,6 +58,7 @@ static CGFloat const SCALE_FACTOR = 0.5;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 @property (strong, nonatomic) IBOutlet UIButton *skipButton;
 @property (strong, nonatomic) IBOutlet UIButton *finishButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *miniWalletViewRatioConstraint;
 @property (nonatomic, strong) UIImageView *bezelImageView;
 
 @property (null_resettable, nonatomic, strong) DWOnboardingModel *model;
@@ -101,22 +117,14 @@ static CGFloat const SCALE_FACTOR = 0.5;
 
     const CGFloat scale = SCALE_FACTOR;
     const CGFloat miniWalletHeight = height * scale;
+    const CGFloat miniWalletWidth = miniWalletHeight * (self.bezelImageView.image.size.width / self.bezelImageView.image.size.height);
+    const CGFloat scaleX = miniWalletWidth / width;
     const CGFloat offset = (height - miniWalletHeight) / 2.0;
     const CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
     const CGAffineTransform resultTransform = CGAffineTransformTranslate(scaleTransform, 0.0, -offset);
     self.miniWalletView.transform = resultTransform;
 
-    const CGFloat bezelScale = [self bezelScaleFactor];
-    const CGSize bezelSize = self.bezelImageView.image.size;
-    const CGSize scaledBezelSize = CGSizeMake(bezelSize.width * bezelScale, bezelSize.height * bezelScale);
-    const CGFloat bezelY = ((height - scaledBezelSize.height) / 2.0) - offset / 2.0;
-
-    self.bezelImageView.transform = CGAffineTransformIdentity;
-    self.bezelImageView.frame = CGRectMake((width - scaledBezelSize.width) / 2.0,
-                                           bezelY,
-                                           scaledBezelSize.width,
-                                           scaledBezelSize.height);
-
+    self.bezelImageView.frame = CGRectInset(self.miniWalletView.frame, -14, -10);
     const UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
     const CGAffineTransform bezelsTransform = [self transformForDeviceOrientation:deviceOrientation];
     self.bezelImageView.transform = bezelsTransform;
@@ -125,9 +133,15 @@ static CGFloat const SCALE_FACTOR = 0.5;
     // When the scale transformation is applied to the hosted view safe area is ignored and layout margins of
     // children views within root controller becomes invalid.
     // Restore safe area insets and hack horizontal insets a bit so it's fine for both root and their children.
+
     UIEdgeInsets insets = self.view.safeAreaInsets;
-    insets.left = MINIVIEW_MARGIN;
-    insets.right = MINIVIEW_MARGIN;
+
+    if (self.view.safeAreaInsets.bottom > 0) {
+        insets.top += 10;
+    }
+    else {
+        insets.top += 30;
+    }
     UINavigationController *navigationController = self.rootController.navigationController;
     NSParameterAssert(navigationController);
     navigationController.additionalSafeAreaInsets = insets;
@@ -274,29 +288,23 @@ static CGFloat const SCALE_FACTOR = 0.5;
     [parentView addSubview:containerView];
     self.modalContainerView = containerView;
 
-    const CGFloat heightPercent = DWModalPresentedHeightPercent();
-
     [NSLayoutConstraint activateConstraints:@[
         [containerView.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor],
         [parentView.trailingAnchor constraintEqualToAnchor:containerView.trailingAnchor],
 
         [parentView.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
         [containerView.heightAnchor constraintEqualToAnchor:parentView.heightAnchor
-                                                 multiplier:heightPercent],
+                                                 multiplier:1.0],
     ]];
 
     [self dw_embedChild:controller inContainer:containerView];
 
-    const UIEdgeInsets insets = UIEdgeInsetsMake(0.0,
-                                                 MINIVIEW_MARGIN,
-                                                 MINIVIEW_MARGIN * 2.0,
-                                                 MINIVIEW_MARGIN);
-    controller.additionalSafeAreaInsets = insets;
+    controller.additionalSafeAreaInsets = self.rootController.view.safeAreaInsets;
 
     self.modalPresentingController = controller;
 
     const CGSize size = self.view.bounds.size;
-    const CGFloat containerHeight = size.height * heightPercent;
+    const CGFloat containerHeight = size.height;
     containerView.frame = CGRectMake(0.0, size.height, size.width, containerHeight);
 
     [UIView animateWithDuration:ANIMATION_DURATION
@@ -325,8 +333,13 @@ static CGFloat const SCALE_FACTOR = 0.5;
     UIImage *bezelImage = [self bezelImageForCurrentDevice];
     UIImageView *bezelImageView = [[UIImageView alloc] initWithImage:bezelImage];
     bezelImageView.contentMode = UIViewContentModeScaleAspectFit;
+
     [self.view insertSubview:bezelImageView aboveSubview:self.miniWalletView];
     self.bezelImageView = bezelImageView;
+
+    [self.miniWalletViewRatioConstraint updateMultiplier:bezelImage.size.width / bezelImage.size.height];
+    self.miniWalletView.layer.cornerRadius = 32;
+    self.miniWalletView.layer.masksToBounds = YES;
 
     self.pageControl.numberOfPages = self.model.items.count;
     self.pageControl.pageIndicatorTintColor = [UIColor dw_disabledButtonColor];
@@ -383,15 +396,7 @@ static CGFloat const SCALE_FACTOR = 0.5;
 
 - (UIImage *)bezelImageForCurrentDevice {
     if (IS_IPHONE) {
-        if (IS_IPHONE_X_FAMILY) {
-            return [UIImage imageNamed:@"iphone_x_bezel"];
-        }
-        else if (IS_IPHONE_5_OR_LESS) {
-            return [UIImage imageNamed:@"iphone_5_bezel"];
-        }
-        else {
-            return [UIImage imageNamed:@"iphone_8_bezel"];
-        }
+        return [UIImage imageNamed:@"iphone_bezel"];
     }
     else {
         if (IS_IPAD_PRO_11) {
@@ -409,12 +414,7 @@ static CGFloat const SCALE_FACTOR = 0.5;
 - (CGFloat)bezelScaleFactor {
     const CGFloat defaultScale = SCALE_FACTOR;
     if (IS_IPHONE) {
-        if (IS_IPHONE_6_PLUS || IS_IPHONE_XSMAX_OR_XR) {
-            return defaultScale * 1.104; // = 414 / 375
-        }
-        else {
-            return defaultScale;
-        }
+        return defaultScale * 1.104;
     }
     else {
         if (IS_IPAD_7TH_GEN) {

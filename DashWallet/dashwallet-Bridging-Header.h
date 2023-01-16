@@ -2,6 +2,14 @@
 //  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
+#include "DashWallet-Prefix.pch"
+
+#if SNAPSHOT
+static const bool _SNAPSHOT = 1;
+#else
+static const bool _SNAPSHOT = 0;
+#endif /* SNAPSHOT */
+
 //MARK: DashSync
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
