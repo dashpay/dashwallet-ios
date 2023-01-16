@@ -22,10 +22,18 @@ extension UInt64 {
         Decimal(self)/Decimal(DUFFS)
     }
 
+    /// Converts `UInt64` to formatted dash string. 123456780 -> "DASH 1"
+    ///
+    /// - Returns: Formatted dash amount
+    ///
     var formattedDashAmount: String {
         dashAmount.formattedDashAmount
     }
 
+    /// Converts `UInt64` to formatted dash string. 123456780 ->  "1"
+    ///
+    /// - Returns: Formatted dash amount without dash symbol
+    ///
     var formattedDashAmountWithoutCurrencySymbol: String {
         if #available(iOS 15.0, *) {
             return dashAmount.formatted(.number)
@@ -62,11 +70,19 @@ extension Decimal {
         rounded(sign == .minus ? .up : .down)
     }
 
+    /// Converts `Decimal` to plain dash amount in duffs
+    ///
+    /// - Returns: Plain dash amount in duffs
+    ///
     var plainDashAmount: UInt64 {
         let plainAmount = self * .duffs
         return NSDecimalNumber(decimal: plainAmount.whole).uint64Value
     }
 
+    /// Converts `Decimal` to formatted dash string. 123456780 -> "DASH 1"
+    ///
+    /// - Returns: Formatted dash amount
+    ///
     var formattedDashAmount: String {
         NumberFormatter.dashFormatter.string(from: self as NSNumber)!
     }
