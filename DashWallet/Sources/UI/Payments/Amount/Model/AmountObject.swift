@@ -22,7 +22,7 @@ import Foundation
 struct AmountObject {
     let amountType: AmountType
     let amountInternalRepresentation: String
-    let plainAmount: Int64
+    let plainAmount: UInt64
 
     let mainFormatted: String
     let supplementaryFormatted: String
@@ -46,7 +46,7 @@ struct AmountObject {
         let duffsNumber = Decimal(DUFFS)
         let plainAmount = dashNumber * duffsNumber
 
-        self.plainAmount = NSDecimalNumber(decimal: plainAmount).int64Value
+        self.plainAmount = NSDecimalNumber(decimal: plainAmount.whole).uint64Value
 
         mainFormatted = NumberFormatter.dashFormatter
             .inputString(from: dashNumber as NSNumber, and: dashAmountString) ??
@@ -83,7 +83,7 @@ struct AmountObject {
             mainFormatted = NumberFormatter.dashFormatter.string(from: 0)!
         } else if let dashAmount = try? Coinbase.shared.currencyExchanger.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
                   let str = NumberFormatter.dashFormatter.string(from: dashAmount as NSNumber) {
-            plainAmount = Int64(dashAmount.plainDashAmount)
+            plainAmount = dashAmount.plainDashAmount
             mainFormatted = str
         } else {
             plainAmount = 0
@@ -91,7 +91,7 @@ struct AmountObject {
         }
     }
 
-    init(plainAmount: Int64, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
+    init(plainAmount: UInt64, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
         let plainNumber = Decimal(plainAmount)
         let duffsNumber = Decimal(DUFFS)
         let dashNumber = plainNumber/duffsNumber
@@ -126,7 +126,7 @@ extension AmountObject {
                      fiatCurrencyCode: fiatCurrencyCode)
     }
 
-    init(amountInternalRepresentation: String, plainAmount: Int64, amountType: AmountType, mainFormatted: String,
+    init(amountInternalRepresentation: String, plainAmount: UInt64, amountType: AmountType, mainFormatted: String,
          supplementaryFormatted: String, localFormatter: NumberFormatter, fiatCurrencyCode: String) {
         self.amountInternalRepresentation = amountInternalRepresentation
         self.plainAmount = plainAmount

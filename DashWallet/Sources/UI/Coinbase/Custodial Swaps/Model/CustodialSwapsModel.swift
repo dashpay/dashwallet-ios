@@ -69,7 +69,7 @@ class CustodialSwapsModel: SendAmountModel {
 
         Task {
             do {
-                let result = try await Coinbase.shared.placeTradeOrder(from: selectedAccount, to: dashAccount, amount: UInt64(amount.plainAmount))
+                let result = try await Coinbase.shared.placeTradeOrder(from: selectedAccount, to: dashAccount, amount: amount.plainAmount)
 
                 await MainActor.run { [weak self] in
                     self?.delegate?.custodialSwapsModelDidPlace(order: result)

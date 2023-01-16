@@ -77,7 +77,7 @@ final class BuyDashModel: BaseAmountModel {
             return
         }
 
-        let amount = UInt64(amount.plainAmount)
+        let amount = amount.plainAmount
         Task {
             do {
                 let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)

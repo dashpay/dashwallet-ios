@@ -46,7 +46,7 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     public var address: String!
     public var direction: TransferDirection = .toWallet
 
-    internal var amountToTransfer: UInt64 { UInt64(amount.plainAmount) }
+    internal var amountToTransfer: UInt64 { amount.plainAmount }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
@@ -66,7 +66,8 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
         } else {
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
 
-            let maxAmount = AmountObject(plainAmount: Int64(balance), fiatCurrencyCode: localCurrencyCode,
+            let maxAmount = AmountObject(plainAmount: balance,
+                                         fiatCurrencyCode: localCurrencyCode,
                                          localFormatter: localFormatter)
             updateCurrentAmountObject(with: maxAmount)
         }
@@ -82,7 +83,7 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 
     private func transferToCoinbase() {
         // TODO: validate
-        let amount = UInt64(amount.plainAmount)
+        let amount = amount.plainAmount
 
         obtainNewAddress { [weak self] address in
             guard let address else {

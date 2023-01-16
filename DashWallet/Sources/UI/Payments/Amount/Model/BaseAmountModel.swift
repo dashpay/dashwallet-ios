@@ -174,8 +174,8 @@ class BaseAmountModel {
         amountDidChange()
     }
 
-    internal func updateCurrentAmountObject(with amount: Int64) {
-        let amountObject = AmountObject(plainAmount: Int64(amount),
+    internal func updateCurrentAmountObject(with amount: UInt64) {
+        let amountObject = AmountObject(plainAmount: amount,
                                         fiatCurrencyCode: supplementaryCurrencyCode,
                                         localFormatter: supplementaryNumberFormatter)
         updateCurrentAmountObject(with: amountObject)

@@ -90,7 +90,7 @@ class SendAmountModel: BaseAmountModel {
         let allAvailableFunds = account.maxOutputAmount
 
         if allAvailableFunds > 0 {
-            updateCurrentAmountObject(with: Int64(allAvailableFunds))
+            updateCurrentAmountObject(with: allAvailableFunds)
         }
     }
 

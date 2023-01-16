@@ -51,7 +51,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
         DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-        delegate?.provideAmountViewControllerDidInput(amount: UInt64(model.amount.plainAmount))
+        delegate?.provideAmountViewControllerDidInput(amount: model.amount.plainAmount)
     }
 
     override func configureHierarchy() {
