@@ -58,7 +58,23 @@ class CustodialSwapsModel: SendAmountModel {
 
     weak var delegate: CustodialSwapsModelDelegate?
 
-    override var isSendAllowed: Bool { true }
+    override var isSendAllowed: Bool {
+        selectedAccount != nil && amount.plainAmount > 0 && !canShowInsufficientFunds
+    }
+
+    override var canShowInsufficientFunds: Bool {
+        guard let selectedAccount else { return false }
+
+        let plainAmount = amount.plainAmount
+
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let allAvailableFunds = account.maxOutputAmount
+
+        let authenticationManager = DSAuthenticationManager.sharedInstance()
+        let canShowInsufficientFunds = authenticationManager.didAuthenticate
+
+        return plainAmount > selectedAccount.info.plainAmountInDash
+    }
 
     override init() {
         super.init()
