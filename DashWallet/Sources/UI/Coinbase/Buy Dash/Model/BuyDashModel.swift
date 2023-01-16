@@ -93,11 +93,6 @@ final class BuyDashModel: BaseAmountModel {
             }
         }
     }
-
-    override func amountDidChange() {
-        error = nil
-        super.amountDidChange()
-    }
 }
 
 extension BuyDashModel {

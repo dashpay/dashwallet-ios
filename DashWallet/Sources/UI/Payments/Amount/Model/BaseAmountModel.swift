@@ -199,6 +199,7 @@ class BaseAmountModel {
     }
 
     internal func amountDidChange() {
+        error = nil
         checkAmountForErrors()
         amountChangeHandler?(amount)
     }
