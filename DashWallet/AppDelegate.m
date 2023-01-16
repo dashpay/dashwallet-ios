@@ -95,7 +95,8 @@ NS_ASSUME_NONNULL_BEGIN
     [FIRApp configure];
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
-    
+    [CoinbaseObjcWrapper start];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification

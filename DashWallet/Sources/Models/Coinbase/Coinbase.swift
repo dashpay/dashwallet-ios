@@ -30,6 +30,18 @@ let kMaxDashAmountToTransfer: UInt64 = kOneDash
 let kMinUSDAmountOrder: Decimal = 1.99
 let kMinDashAmountToTransfer: UInt64 = 10_000
 
+// MARK: - CoinbaseObjcWrapper
+
+@objc
+class CoinbaseObjcWrapper: NSObject {
+    private static var wrapped = Coinbase.shared
+
+    @objc
+    static func start() {
+        wrapped.initialize()
+    }
+}
+
 // MARK: - Coinbase
 
 class Coinbase {
@@ -41,7 +53,7 @@ class Coinbase {
     private var accountService: AccountService!
     private var paymentMethodsService: PaymentMethods!
 
-    init() {
+    func initialize() {
         CoinbaseAPI.initialize(with: self)
 
         auth = CBAuth()
@@ -54,6 +66,10 @@ class Coinbase {
             try await accountService.refreshAccount(kDashAccount)
             try await paymentMethodsService.fetchPaymentMethods()
         }
+    }
+
+    static func initialize() {
+        shared.initialize()
     }
 
     public static let shared = Coinbase()
