@@ -63,7 +63,7 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
