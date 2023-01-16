@@ -60,9 +60,9 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
         }
     }
 
-    override func selectAllFunds(_ preparationHandler: () -> Void) {
+    override func selectAllFundsWithoutAuth() {
         if direction == .toCoinbase {
-            super.selectAllFunds(preparationHandler)
+            super.selectAllFundsWithoutAuth()
         } else {
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
 

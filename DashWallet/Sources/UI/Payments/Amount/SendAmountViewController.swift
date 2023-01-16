@@ -42,9 +42,7 @@ class SendAmountViewController: BaseAmountViewController {
     }
 
     override func maxButtonAction() {
-        sendAmountModel.selectAllFunds { [weak self] in
-            self?.amountView.amountType = .main
-        }
+        sendAmountModel.selectAllFunds()
     }
 
     override func amountDidChange() {

@@ -64,6 +64,8 @@ public final class CurrencyExchanger {
     }
 
     public func convertDash(amount: Decimal, to currency: String) throws -> Decimal {
+        if amount.isZero { return 0 }
+
         let rate = try rate(for: currency)
         let result = rate*amount
 
@@ -78,6 +80,8 @@ public final class CurrencyExchanger {
     }
 
     public func convertToDash(amount: Decimal, currency: String) throws -> Decimal {
+        if amount.isZero { return 0 }
+
         let rate = try rate(for: currency)
         return amount/rate
     }

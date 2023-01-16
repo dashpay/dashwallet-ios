@@ -68,24 +68,15 @@ class SendAmountModel: BaseAmountModel {
         checkAmountForErrors()
     }
 
-    func selectAllFunds(_ preparationHandler: () -> Void) {
-        let authManager = DSAuthenticationManager.sharedInstance()
-
-        if authManager.didAuthenticate {
-            selectAllFunds()
-        }
-        else {
-            authManager
-                .authenticate(withPrompt: nil, usingBiometricAuthentication: true,
-                              alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
-                    if authenticatedOrSuccess {
-                        self?.selectAllFunds()
-                    }
-                }
+    func selectAllFunds() {
+        auth { [weak self] isAuthenticated in
+            if isAuthenticated {
+                self?.selectAllFundsWithoutAuth()
+            }
         }
     }
 
-    private func selectAllFunds() {
+    internal func selectAllFundsWithoutAuth() {
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
 
@@ -108,6 +99,21 @@ class SendAmountModel: BaseAmountModel {
         }
 
         error = nil
+    }
+
+    internal func auth(completionBlock: @escaping ((Bool) -> Void)) {
+        let authManager = DSAuthenticationManager.sharedInstance()
+
+        if authManager.didAuthenticate {
+            completionBlock(true)
+        }
+        else {
+            authManager.authenticate(withPrompt: nil,
+                                     usingBiometricAuthentication: true,
+                                     alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
+                completionBlock(authenticatedOrSuccess)
+            }
+        }
     }
 
     deinit {

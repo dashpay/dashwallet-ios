@@ -128,7 +128,7 @@ class BaseAmountModel {
                 supplementaryAmount = mainAmount.localAmount
             }
         } else {
-            if mainAmount == nil {
+            if mainAmount == nil || mainAmount.fiatCurrencyCode != currentAmount.fiatCurrencyCode {
                 mainAmount = supplementaryAmount.dashAmount
             }
         }

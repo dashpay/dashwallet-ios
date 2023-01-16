@@ -82,6 +82,16 @@ class CustodialSwapsModel: SendAmountModel {
         }
     }
 
+    override func selectAllFundsWithoutAuth() {
+        guard let selectedAccount else { return }
+
+        let max = AmountObject(localAmountString: selectedAccount.info.balance.amount, fiatCurrencyCode: selectedAccount.info.balance.currency,
+                               localFormatter: supplementaryNumberFormatter)
+        supplementaryAmount = max
+        mainAmount = supplementaryAmount.dashAmount
+        amountDidChange()
+    }
+
     override func checkAmountForErrors() { }
 }
 
