@@ -193,7 +193,7 @@ extension Coinbase {
     /// - Throws: `Coinbase.Error`
     ///
     ///
-    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: UInt64) async throws -> CoinbaseSwapeTrade {
+    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: String) async throws -> CoinbaseSwapeTrade {
         do {
             return try await accountService.placeTradeOrder(from: origin, to: destination, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {

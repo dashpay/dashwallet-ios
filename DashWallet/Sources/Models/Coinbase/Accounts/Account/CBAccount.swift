@@ -218,7 +218,7 @@ extension CBAccount {
 
 // MARK: Trade
 extension CBAccount {
-    func convert(amount: UInt64, to destination: CBAccount) async throws -> CoinbaseSwapeTrade {
+    func convert(amount: String, to destination: CBAccount) async throws -> CoinbaseSwapeTrade {
         let baseIds: BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> = try await CoinbaseAPI.shared.request(.getBaseIdForUSDModel("USD"))
 
         var targetAsset: String!
@@ -238,11 +238,12 @@ extension CBAccount {
             throw Coinbase.Error.transactionFailed(.message("Can't find source or target asset"))
         }
 
-        let dto = CoinbaseSwapeTradeRequest(amount: amount.formattedCryptoAmount(exponent: info.currency.exponent), amountAsset: info.currencyCode, targetAsset: targetAsset,
+        let dto = CoinbaseSwapeTradeRequest(amount: amount,
+                                            amountAsset: info.currencyCode,
+                                            targetAsset: targetAsset,
                                             sourceAsset: sourceAsset)
 
         let response: BaseDataResponse<CoinbaseSwapeTrade> = try await CoinbaseAPI.shared.request(.swapTrade(dto))
-
         return response.data
     }
 

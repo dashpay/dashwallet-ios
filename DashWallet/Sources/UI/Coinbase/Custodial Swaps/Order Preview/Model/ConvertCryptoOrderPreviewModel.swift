@@ -20,6 +20,8 @@ import Foundation
 // MARK: - ConvertCryptoOrderPreviewModel
 
 final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
+    var amountToTransfer: UInt64
+
     var transactionDelegate: CoinbaseTransactionDelegate?
 
     var completionHandle: (() -> Void)?
@@ -33,7 +35,6 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
     /// Plain amount in Crypto
     let plainAmount: UInt64
 
-    var amountToTransfer: UInt64 { order.outputAmount.amount.plainDashAmount()! }
 
     /// Created order
     var order: CoinbaseSwapeTrade
@@ -42,11 +43,11 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
         self.selectedAccount = selectedAccount
         self.plainAmount = plainAmount
         self.order = order
+        amountToTransfer = order.outputAmount.amount.plainDashAmount()!
     }
 
     func placeOrder() {
-        guard let orderId = order.id,
-              let dashAmountToTransfer = order.outputAmount.amount.plainDashAmount() else {
+        guard let orderId = order.id else {
             failureHandle?(.error)
             return
         }
@@ -56,7 +57,7 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
         Task { [weak self] in
             do {
                 let order = try await Coinbase.shared.commitTradeOrder(origin: selectedAccount, orderID: orderId)
-                try await self?.transferFromCoinbase(amount: dashAmountToTransfer, with: nil)
+                try await self?.transferFromCoinbase(amount: amountToTransfer, with: nil)
             } catch {
                 await MainActor.run { [weak self] in
                     self?.failureHandle?(.error)
@@ -69,7 +70,7 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
         guard let dashAccount = Coinbase.shared.dashAccount else { return }
 
         let selectedAccount = selectedAccount
-        let plainAmount = amountToTransfer
+        let plainAmount = order.inputAmount.amount
 
         Task { [weak self] in
             self?.order = try await Coinbase.shared.placeTradeOrder(from: selectedAccount, to: dashAccount, amount: plainAmount)

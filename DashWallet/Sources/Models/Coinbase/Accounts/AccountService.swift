@@ -72,7 +72,7 @@ class AccountService {
         return order
     }
 
-    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: UInt64) async throws -> CoinbaseSwapeTrade {
+    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: String) async throws -> CoinbaseSwapeTrade {
         try await origin.convert(amount: amount, to: destination)
     }
 

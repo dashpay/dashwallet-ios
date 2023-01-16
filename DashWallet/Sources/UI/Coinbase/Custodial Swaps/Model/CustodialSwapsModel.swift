@@ -66,13 +66,6 @@ class CustodialSwapsModel: SendAmountModel {
         guard let selectedAccount else { return false }
 
         let plainAmount = amount.plainAmount
-
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
-
-        let authenticationManager = DSAuthenticationManager.sharedInstance()
-        let canShowInsufficientFunds = authenticationManager.didAuthenticate
-
         return plainAmount > selectedAccount.info.plainAmountInDash
     }
 
@@ -83,9 +76,25 @@ class CustodialSwapsModel: SendAmountModel {
     func convert() {
         guard let selectedAccount, let dashAccount = Coinbase.shared.dashAccount else { return }
 
+        guard let usdAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.plainAmount.dashAmount, to: "USD"),
+              usdAmount > 2 else {
+            let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+            let localFormatter = NumberFormatter.fiatFormatter(currencyCode: "USD")
+            let str = localFormatter.string(from: min) ?? "$1.99"
+
+            error = Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
+            return
+        }
+
         Task {
             do {
-                let result = try await Coinbase.shared.placeTradeOrder(from: selectedAccount, to: dashAccount, amount: amount.plainAmount)
+                guard let originAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.plainAmount.dashAmount, to: selectedAccount.info.currencyCode) else {
+                    return
+                }
+
+                let result = try await Coinbase.shared.placeTradeOrder(from: selectedAccount,
+                                                                       to: dashAccount,
+                                                                       amount: originAmount.string)
 
                 await MainActor.run { [weak self] in
                     self?.delegate?.custodialSwapsModelDidPlace(order: result)
@@ -108,7 +117,17 @@ class CustodialSwapsModel: SendAmountModel {
         amountDidChange()
     }
 
-    override func checkAmountForErrors() { }
+    override func checkAmountForErrors() {
+//        guard let usdAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.plainAmount.dashAmount, to: "USD"),
+//                usdAmount > 2 else {
+//            let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+//            let localFormatter = NumberFormatter.fiatFormatter(currencyCode: "USD")
+//            let str = localFormatter.string(from: min) ?? "$1.99"
+//
+//            error = Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
+//            return
+//        }
+    }
 }
 
 // MARK: ConverterViewDataSource

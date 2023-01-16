@@ -45,11 +45,7 @@ extension UInt64 {
     func formattedCryptoAmount(exponent: Int = 8) -> String {
         let plainNumber = Decimal(self)
         let number = plainNumber/pow(10, exponent)
-        if #available(iOS 15.0, *) {
-            return number.formatted(.number)
-        } else {
-            return "\(number)"
-        }
+        return number.string
     }
 }
 
@@ -92,5 +88,13 @@ extension Decimal {
         var number = self
         NSDecimalRound(&result, &number, 0, mode)
         return result
+    }
+
+    var string: String {
+        if #available(iOS 15.0, *) {
+            return formatted(.number)
+        } else {
+            return "\(self)"
+        }
     }
 }
