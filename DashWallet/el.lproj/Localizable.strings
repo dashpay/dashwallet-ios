@@ -1,6 +1,12 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* CrowdNode */
+" Privacy Policy " = " Privacy Policy ";
+
+/* CrowdNode */
+" Terms of Use " = " Terms of Use ";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ έχει αποδεχτεί το αίτημα επαφής σας";
 
@@ -82,11 +88,20 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Ένας κωδικός φράσης για την συσκευή είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
 
+/* CrowdNode */
+"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
+
 /* No comment provided by engineer. */
 "About" = "Σχετικά";
 
 /* No comment provided by engineer. */
 "Accept" = "Αποδοχή";
+
+/* CrowdNode */
+"Accept Terms Of Use" = "Accept Terms Of Use";
+
+/* CrowdNode */
+"Accepting terms of use…" = "Accepting terms of use…";
 
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Accepts DASH directly";
@@ -142,6 +157,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Μια διαισθητική και οικεία εμπειρία σε όλες τις συσκευές σας";
 
+/* CrowdNode */
+"and" = "and";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -184,8 +202,14 @@
 /* No comment provided by engineer. */
 "Available balance" = "Διαθέσιμο υπόλοιπο";
 
+/* No comment provided by engineer. */
+"Backup Passphrase" = "Backup Passphrase";
+
 /* A noun. Used as a title. */
 "Backup Wallet" = "Backup πορτοφολιού";
+
+/* No comment provided by engineer. */
+"Backup your passphrase to create a CrowdNode account" = "Backup your passphrase to create a CrowdNode account";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Λάθος φράση ανάκτησης";
@@ -195,6 +219,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Το υπόλοιπο αποκρύφτηκε";
+
+/* CrowdNode */
+"Balance: " = "Balance: ";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bank Account";
@@ -382,11 +409,32 @@
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Δημιουργία Νέου Πορτοφολιού";
 
+/* CrowdNode */
+"Create Account" = "Create Account";
+
+/* CrowdNode Portal */
+"Create Online Account" = "Create Online Account";
+
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
 
 /* No comment provided by engineer. */
+"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
+
+/* CrowdNode Portal */
+"CrowdNode Support" = "CrowdNode Support";
+
+/* CrowdNode Portal */
+"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
+
+/* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
+"Current APY = a lot of %" = "Current APY = a lot of %";
+
+/* CrowdNode */
+"Current APY is %@" = "Current APY is %@";
 
 /* Explore Dash: Filters */
 "Current location" = "Current location";
@@ -415,6 +463,9 @@
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Προμήθεια αναβάθμισης σε DashPay";
 
+/* CrowdNode Portal */
+"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
+
 /* No comment provided by engineer. */
 "Date" = "Ημερομηνία";
 
@@ -423,6 +474,18 @@
 
 /* Location Service Status */
 "Denied" = "Denied";
+
+/* CrowdNode Portal */
+"Deposit" = "Deposit";
+
+/* CrowdNode Portal */
+"Deposit %@ to start earning" = "Deposit %@ to start earning";
+
+/* CrowdNode Portal */
+"Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
+
+/* CrowdNode */
+"Deposit sent" = "Deposit sent";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας).";
@@ -457,6 +520,9 @@
 
 /* No comment provided by engineer. */
 "Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+
+/* No comment provided by engineer. */
+"Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "πχ: johndoe";
@@ -560,6 +626,9 @@
 /* No comment provided by engineer. */
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
+/* CrowdNode */
+"First deposit should be more than %@" = "First deposit should be more than %@";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Ξεχάσατε το PIN;";
 
@@ -589,6 +658,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
+
+/* No comment provided by engineer. */
+"Go to CrowdNode website" = "Go to CrowdNode website";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
@@ -629,11 +701,17 @@
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Αποδέχομαι ότι θα χάσω τα νομίσματά μου εάν δεν διαθέτω πλέον τη φράση ανάκτησης";
 
+/* CrowdNode */
+"I agree to CrowdNode" = "I agree to CrowdNode";
+
 /* No comment provided by engineer. */
 "I wrote it down" = "Το έγραψα";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Αν χάσετε αυτή τη συσκευή, θα χάσετε και τα χρήματά σας. Πάρτε τη φράση ανάκτησης σας για να μπορέσετε να επαναφέρετε το πορτοφόλι σας σε άλλη συσκευή.";
+
+/* No comment provided by engineer. */
+"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Εάν εξακολουθείτε να θέλετε να κάνετε εκκαθάριση παρακαλώ εισάγετε: \"%@\"";
@@ -682,6 +760,12 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Μη έγκυρος κωδικός QR";
+
+/* CrowdNode */
+"It can take a minute for your balance to be updated." = "It can take a minute for your balance to be updated.";
+
+/* CrowdNode */
+"It can take a minute for your funds to arrive." = "It can take a minute for your funds to arrive.";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone. If not, enter the code from the authentication app.";
@@ -1023,6 +1107,9 @@
 /* No comment provided by engineer. */
 "Processing" = "Επεξεργασία";
 
+/* CrowdNode Portal */
+"Protect your savings" = "Protect your savings";
+
 /* No comment provided by engineer. */
 "Provider Address" = "Διεύθυνση Παρόχου";
 
@@ -1218,6 +1305,10 @@
 /* No comment provided by engineer. */
 "Send Contact Request" = "Αποστολή Αιτήματος Επαφής";
 
+/* Coinbase
+   CrowdNode */
+"Send Report" = "Send Report";
+
 /* No comment provided by engineer. */
 "Send to" = "Εστάλη στο";
 
@@ -1232,6 +1323,12 @@
 
 /* No comment provided by engineer. */
 "Sending to" = "Αποστολή στο";
+
+/* CrowdNode */
+"Sending to CrowdNode account" = "Sending to CrowdNode account";
+
+/* CrowdNode */
+"Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
 
 /* Buy Dash */
 "Sending to:" = "Sending to:";
@@ -1278,6 +1375,9 @@
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";
 
+/* CrowdNode */
+"Sign up to CrowdNode" = "Sign up to CrowdNode";
+
 /* No comment provided by engineer. */
 "Skip" = "Παράλειψη";
 
@@ -1310,6 +1410,9 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Επιβεβαίωση Ξοδέματος";
+
+/* No comment provided by engineer. */
+"Staking" = "Staking";
 
 /* No comment provided by engineer. */
 "Support" = "Υποστήριξη";
@@ -1349,6 +1452,9 @@
 
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
+"The chain is syncing…" = "The chain is syncing…";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
@@ -1432,6 +1538,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Μεταφέρετε Dash από τον Uphold λογαριασμό σας σε αυτό το πορτοφόλι";
+
+/* CrowdNode */
+"Transfer Error" = "Transfer Error";
 
 /* Coinbase */
 "Transfer Failed" = "Transfer Failed";
@@ -1517,6 +1626,9 @@
 /* Coinbase */
 "Verfiy" = "Verfiy";
 
+/* CrowdNode Portal */
+"Verification Required" = "Verification Required";
+
 /* No comment provided by engineer. */
 "Verified Successfully" = "Επιβεβαιώθηκε με επιτυχία";
 
@@ -1547,6 +1659,9 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "Κλειδιά ψήφου";
 
+/* No comment provided by engineer. */
+"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
+
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
@@ -1564,6 +1679,15 @@
 
 /* No comment provided by engineer. */
 "We are about to show you the secret key to your wallet." = "Θα σας αποκαλύψουμε το μυστικό κλειδί του πορτοφολιού σας.";
+
+/* CrowdNode */
+"We couldn’t create your CrowdNode account." = "We couldn’t create your CrowdNode account.";
+
+/* CrowdNode */
+"We couldn’t make a deposit to your CrowdNode account." = "We couldn’t make a deposit to your CrowdNode account.";
+
+/* CrowdNode */
+"We couldn’t withdraw from your CrowdNode account." = "We couldn’t withdraw from your CrowdNode account.";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "Δεν αποθηκεύουμε αυτήν την φράση ανάκτησης";
@@ -1607,6 +1731,12 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "Μεσώ του Dash blockchain";
 
+/* CrowdNode Portal */
+"Withdraw" = "Withdraw";
+
+/* CrowdNode */
+"Withdrawal requested" = "Withdrawal requested";
+
 /* No comment provided by engineer. */
 "Yes" = "Yes";
 
@@ -1632,13 +1762,25 @@
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Έχετε επιλέξει το \"%@\" ως το όνομα χρήστη σας. Το όνομα χρήστη σας δεν μπορεί να αλλάξει μόλις εγγραφεί.";
 
 /* No comment provided by engineer. */
+"You have insufficient funds to proceed" = "You have insufficient funds to proceed";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Πρέπει να εισάγετε το PIN σας για να μπείτε στο Dash Πορτοφόλι";
+
+/* CrowdNode */
+"You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
+
+/* CrowdNode */
+"You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Λάβατε Dash! Αν χάσετε αυτή τη συσκευή, θα χάσετε τα χρήματά σας. Πάρτε τη φράση ανάκτησης για να μπορέσετε να επαναφέρετε το πορτοφόλι σας σε άλλη συσκευή.";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Στείλατε το αίτημα επαφής στο %@";
+
+/* No comment provided by engineer. */
+"You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
 
 /* Sign out from coinbase due to error */
 "You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
@@ -1658,8 +1800,17 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
+/* CrowdNode */
+"Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";
+
+/* CrowdNode */
+"Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
+
+/* CrowdNode */
+"Your deposit to CrowdNode is received." = "Your deposit to CrowdNode is received.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
