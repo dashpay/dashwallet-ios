@@ -73,10 +73,11 @@ extension String {
                 let beforeFractionRange = NSMakeRange(0, range.location)
                 attributedString.setAttributes(defaultAttributes, range: beforeFractionRange)
             }
-            let fractionAttributes = [NSAttributedString.Key.foregroundColor: textColor.withAlphaComponent(0.5)]
 
-            attributedString.setAttributes(fractionAttributes, range: range)
-
+            if range.length + range.location >= count {
+                let fractionAttributes = [NSAttributedString.Key.foregroundColor: textColor.withAlphaComponent(0.5)]
+                attributedString.setAttributes(fractionAttributes, range: range)
+            }
 
             let afterFractionIndex = range.location + range.length
             if afterFractionIndex < count {

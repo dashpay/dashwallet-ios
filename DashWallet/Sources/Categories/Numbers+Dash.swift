@@ -50,12 +50,23 @@ extension Int64 {
 extension Decimal {
     static var duffs: Decimal { Decimal(DUFFS) }
 
+    var whole: Decimal { rounded(sign == .minus ? .up : .down) }
+
     var plainDashAmount: UInt64 {
         let plainAmount = self * .duffs
-        return NSDecimalNumber(decimal: plainAmount).uint64Value
+        return NSDecimalNumber(decimal: plainAmount.whole).uint64Value
     }
 
     var formattedDashAmount: String {
         NumberFormatter.dashFormatter.string(from: self as NSNumber)!
     }
+
+    func rounded(_ mode: NSDecimalNumber.RoundingMode = .plain) -> Decimal {
+        var result = Decimal()
+        var number = self
+        NSDecimalRound(&result, &number, 0, mode)
+        return result
+    }
+
+
 }

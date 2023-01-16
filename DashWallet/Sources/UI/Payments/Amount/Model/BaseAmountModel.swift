@@ -207,10 +207,6 @@ class BaseAmountModel {
 }
 
 extension BaseAmountModel {
-    var validator: DWInputValidator? {
-        activeAmountType == .supplementary ? supplementaryAmountValidator : mainAmountValidator
-    }
-
     var isAmountValidForProceeding: Bool {
         amount.plainAmount > 0
     }
@@ -256,8 +252,22 @@ extension BaseAmountModel {
     func updateInputField(with replacementText: String, in range: NSRange) {
         let lastInputString = amount.amountInternalRepresentation
 
-        guard let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range,
-                                                               replacementString: replacementText) else {
+        let validator: DWInputValidator
+        let numberFormatter: NumberFormatter
+
+        if activeAmountType == .main {
+            validator = mainAmountValidator
+            numberFormatter = NumberFormatter.dashFormatter
+        } else {
+            validator = supplementaryAmountValidator
+            numberFormatter = supplementaryNumberFormatter
+        }
+
+        let validatedString = validator.validatedString(fromLastInputString: lastInputString,
+                                                        range: range,
+                                                        replacementString: replacementText,
+                                                        numberFormatter: numberFormatter)
+        guard let validatedString else {
             return
         }
 
