@@ -575,17 +575,20 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "잠재적 입력되지 않은 단어가 발견되었습니다:\n%@";
 
-/* Coinbase: transfer dash to/from */
-"FROM" = "FROM";
-
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+
+/* Coinbase */
+"from your Coinbase account" = "from your Coinbase account";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "확장된 공개 키를 생성합니까?";
 
 /* No comment provided by engineer. */
 "Generating CSV Report" = "Generating CSV Report";
+
+/* Coinbase/Convert Crypto */
+"Get Quote" = "Get Quote";
 
 /* No comment provided by engineer. */
 "Get Started" = "시작하기";
@@ -1200,8 +1203,14 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "업홀드에서 확인";
 
+/* Coinbase */
+"Select a coin" = "Select a coin";
+
 /* Buy Sell Dash */
 "Select a service" = "Select a service";
+
+/* Coinbase */
+"Select Account" = "Select Account";
 
 /* Sell */
 "Sell" = "Sell";
@@ -1410,8 +1419,8 @@
 /* Send Screen: to address */
 "to" = "to";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
+/* Coinbase */
+"to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "Tools" = "도구";
@@ -1634,8 +1643,14 @@
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "대시 지갑에 접근하시려면 PIN을 입력해야 합니다";
 
+/* Coinbase */
+"You receive" = "You receive";
+
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "당신은 대시를 수령하셨습니다! 이 기기를 분실하시게 되면 당신의 자금 역시 잃게 됩니다. 다른 기기에서 당신의 지갑을 복원할 수 있도록 복구 문구를 설정하세요.";
+
+/* Coinbase */
+"You send" = "You send";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "%@ 님에게 연락처 요청을 전송하였습니다";
@@ -1651,9 +1666,6 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
-
-/* Coinbase/Buy Dash/Confirm Order */
-"You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
