@@ -42,6 +42,7 @@ class CustodialSwapsViewController: TransferAmountViewController {
             self?.converterView.reloadView()
             self?.amountView.inputTypeSwitcher.reloadData()
             self?.amountView.amountInputControl.reloadData()
+            self?.dismiss(animated: true)
         }
 
         let nvc = BaseNavigationController(rootViewController: vc)
