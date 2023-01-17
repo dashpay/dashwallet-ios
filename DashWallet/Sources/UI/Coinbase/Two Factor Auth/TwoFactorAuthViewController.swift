@@ -275,7 +275,6 @@ extension TwoFactorAuthViewController: NavigationStackControllable {
             let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
             alert.addAction(noAction)
             let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
-                self?.isCancelingToFail = false
                 self?.cancelHandler?()
             }
             alert.addAction(yesAction)
