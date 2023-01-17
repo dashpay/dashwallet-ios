@@ -108,7 +108,7 @@ extension OrderPreviewViewController {
     }
 
     internal func stopCounting() {
-        timer.invalidate()
+        timer?.invalidate()
         timer = nil
     }
 
