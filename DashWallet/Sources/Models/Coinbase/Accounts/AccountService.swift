@@ -55,7 +55,6 @@ class AccountService {
         let account = try await account(by: accountName)
 
         let tx = try await account.send(amount: amount, verificationCode: verificationCode)
-        try await refresh(account: account)
         return tx
     }
 
@@ -68,7 +67,6 @@ class AccountService {
         let account = try await account(by: accountName)
 
         let order = try await account.commitCoinbaseBuyOrder(orderID: orderID)
-        try await refresh(account: account)
         return order
     }
 
@@ -79,7 +77,6 @@ class AccountService {
     public func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
         let account = try await account(by: kDashAccount)
         let order = try await origin.commitTradeOrder(orderID: orderID)
-        try await refresh(account: account)
         return order
     }
 
