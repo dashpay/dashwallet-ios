@@ -109,18 +109,19 @@
 
     if (indexPath.row == 2) {
         cell = (DWExploreCrowdNodeContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreCrowdNodeContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
-    } else {
+    }
+    else {
         cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
     }
-    
+
     [cell setImage:[UIImage imageNamed:icon]];
     [cell setTitle:title];
     [cell setSubtitle:subtitle];
-    
+
     if (indexPath.row == 1) {
         cell.separatorInset = UIEdgeInsetsMake(0, 2000, 0, 0);
     }
-    
+
     return cell;
 }
 
@@ -216,7 +217,7 @@
     descLabel.numberOfLines = 0;
     [labelsStackView addArrangedSubview:descLabel];
     _descLabel = descLabel;
-    
+
     [labelsStackView addArrangedSubview:[UIView new]];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -287,7 +288,7 @@
 
 - (void)addCrowdNodeAPYLabel {
     UIColor *systemGreen = [UIColor colorWithRed:98.0 / 255.0 green:182.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
-    
+
     UIStackView *apyStackView = [UIStackView new];
     apyStackView.axis = UILayoutConstraintAxisHorizontal;
     apyStackView.spacing = 4;

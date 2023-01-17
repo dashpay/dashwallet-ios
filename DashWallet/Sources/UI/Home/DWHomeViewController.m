@@ -22,13 +22,13 @@
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
 #import "DWHomeView.h"
-#import "DWSyncModel.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
+#import "DWSyncModel.h"
 #import "DWSyncingAlertViewController.h"
 #import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dealloc {
     DSLog(@"☠️ %@", NSStringFromClass(self.class));
-    
+
     if (self.syncStateObserver) {
         [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
     }
@@ -220,7 +220,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)checkCrowdNodeState {
     if (self.model.syncModel.state == DWSyncModelState_SyncDone) {
         [CrowdNodeObjcWrapper restoreState];
-        
+
         if ([CrowdNodeObjcWrapper isInterrupted]) {
             // Re-authenticate to continue signup
             DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
@@ -228,29 +228,30 @@ NS_ASSUME_NONNULL_BEGIN
                    usingBiometricAuthentication:YES
                                  alertIfLockout:NO
                                      completion:^(BOOL success, BOOL usedBiometrics, BOOL cancelled) {
-                if (success) {
-                    [CrowdNodeObjcWrapper continueInterrupted];
-                }
-            }];
+                                         if (success) {
+                                             [CrowdNodeObjcWrapper continueInterrupted];
+                                         }
+                                     }];
         }
-    } else {
+    }
+    else {
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         self.syncStateObserver = [notificationCenter addObserverForName:DWSyncStateChangedNotification
                                                                  object:nil
                                                                   queue:nil
                                                              usingBlock:^(NSNotification *note) {
-            BOOL isSynced = self.model.syncModel.state == DWSyncModelState_SyncDone;
-            
-            if (isSynced) {
-                if (self.syncStateObserver) {
-                    // Only need to observe once
-                    [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
-                    self.syncStateObserver = nil;
-                }
-                
-                [self checkCrowdNodeState];
-            }
-        }];
+                                                                 BOOL isSynced = self.model.syncModel.state == DWSyncModelState_SyncDone;
+
+                                                                 if (isSynced) {
+                                                                     if (self.syncStateObserver) {
+                                                                         // Only need to observe once
+                                                                         [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
+                                                                         self.syncStateObserver = nil;
+                                                                     }
+
+                                                                     [self checkCrowdNodeState];
+                                                                 }
+                                                             }];
     }
 }
 

@@ -424,14 +424,17 @@
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode Support";
 
+/* CrowdNode */
+"CrowdNode withdrawal limits" = "CrowdNode withdrawal limits";
+
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
 
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
-/* No comment provided by engineer. */
-"Current APY = a lot of %" = "Current APY = a lot of %";
+/* Crowdnode */
+"Current APY = %@" = "Current APY = %@";
 
 /* CrowdNode */
 "Current APY is %@" = "Current APY is %@";
@@ -514,6 +517,9 @@
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "피어 다운로드: %@";
+
+/* CrowdNode */
+"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
@@ -1071,6 +1077,15 @@
 /* No comment provided by engineer. */
 "Pending" = "대기 중";
 
+/* CrowdNode */
+"per 24 hours" = "per 24 hours";
+
+/* CrowdNode */
+"per hour" = "per hour";
+
+/* CrowdNode */
+"per transaction" = "per transaction";
+
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
 
@@ -1136,6 +1151,9 @@
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "요율: %1$@ = %2$@ ";
+
+/* CrowdNode */
+"Read Withdrawal Policy" = "Read Withdrawal Policy";
 
 /* No comment provided by engineer. */
 "Receive" = "받기";
@@ -1739,6 +1757,9 @@
 
 /* CrowdNode Portal */
 "Withdraw" = "Withdraw";
+
+/* CrowdNode */
+"Withdraw without limits with an online account on CrowdNode website." = "Withdraw without limits with an online account on CrowdNode website.";
 
 /* CrowdNode */
 "Withdrawal requested" = "Withdrawal requested";

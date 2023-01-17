@@ -23,9 +23,9 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPhoneWCSessionManager.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DSLogger.h>
 #import <DashSync/DSPermissionNotification.h>
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -98,18 +98,19 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *identifier;
         UNNotificationSound *sound;
         Boolean isCrowdNode = received == ApiCodeDepositReceived + CrowdNodeObjcWrapper.apiOffset;
-        
+
         if (isCrowdNode) {
             identifier = CrowdNodeObjcWrapper.notificationID;
             sound = UNNotificationSound.defaultSound;
             noteText = NSLocalizedString(@"Your deposit to CrowdNode is received.", @"CrowdNode");
-        } else {
+        }
+        else {
             identifier = @"Now";
             sound = [UNNotificationSound soundNamed:@"coinflip"];
             noteText = [NSString stringWithFormat:
-                          NSLocalizedString(@"Received %@ (%@)", nil),
-                          [priceManager stringForDashAmount:received],
-                          [priceManager localCurrencyStringForDashAmount:received]];
+                                     NSLocalizedString(@"Received %@ (%@)", nil),
+                                     [priceManager stringForDashAmount:received],
+                                     [priceManager localCurrencyStringForDashAmount:received]];
         }
 
         DSLog(@"DWBalanceNotifier: local notifications enabled = %d", notificationsEnabled);
