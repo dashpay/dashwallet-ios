@@ -105,14 +105,18 @@ extension AmountObject {
     var dashAmount: AmountObject {
         if amountType == .main { return self }
 
-        let amountInternalRepresentation = NumberFormatter.dashFormatter.number(from: mainFormatted)!.stringValue
+        let dashAmount = NumberFormatter.dashFormatter.number(from: mainFormatted)!
+        let amountInternalRepresentation = NumberFormatter.decimalFormatter.string(from: dashAmount)!
+
         return object(with: amountInternalRepresentation)
     }
 
     var localAmount: AmountObject {
         if amountType == .supplementary { return self }
 
-        let amountInternalRepresentation = localFormatter.number(from: supplementaryFormatted)!.stringValue
+        let localAmount = localFormatter.number(from: supplementaryFormatted)!
+        let amountInternalRepresentation = NumberFormatter.decimalFormatter.string(from: localAmount)!
+
         return object(with: amountInternalRepresentation)
     }
 
