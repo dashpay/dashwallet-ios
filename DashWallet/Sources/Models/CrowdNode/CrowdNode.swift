@@ -367,7 +367,6 @@ extension CrowdNode {
         }
         
         let withdrawalsLastHour = getWithdrawalsForTheLast(hours: 1)
-        print("CrowdNode: withdrawalsLastHour: \(withdrawalsLastHour)")
         let perHourLimit = getWithdrawalLimit(.perHour)
 
         if withdrawalsLastHour + amount > perHourLimit {
@@ -375,7 +374,6 @@ extension CrowdNode {
         }
         
         let withdrawalsLast24h = getWithdrawalsForTheLast(hours: 24)
-        print("CrowdNode: withdrawalsLast24h: \(withdrawalsLast24h)")
         let perDayLimit = getWithdrawalLimit(.perDay)
 
         if withdrawalsLast24h + amount > perDayLimit {
@@ -383,7 +381,7 @@ extension CrowdNode {
         }
     }
     
-    func getWithdrawalsForTheLast(hours: Int) -> UInt64 {
+    private func getWithdrawalsForTheLast(hours: Int) -> UInt64 {
         let now = Date()
         let from = Calendar.current.date(byAdding: .hour, value: -hours, to: now)!
 
