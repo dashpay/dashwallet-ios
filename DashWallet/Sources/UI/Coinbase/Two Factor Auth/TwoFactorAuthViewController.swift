@@ -76,7 +76,6 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         numberKeyboard.textInput = twoFactorAuthField
         contentView.addSubview(numberKeyboard)
 
-
         NSLayoutConstraint.activate([
             keyboardContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -243,23 +242,6 @@ extension TwoFactorAuthViewController: UITextFieldDelegate {
         }
 
         return true
-    }
-}
-
-// MARK: TwoFactorAuthModelDelegate
-
-extension TwoFactorAuthViewController: TwoFactorAuthModelDelegate {
-    func transferFromCoinbaseSuccess() {
-        // TODO: naigate to success screen
-    }
-
-    func transferFromCoinbaseForTwoFactorAuthError(error: Error) {
-        styleTwoFactorAuthFieldErrorState()
-        styleHintFieldErrorState()
-    }
-
-    func transferFromCoinbaseForUnkownError(error: Error) {
-        // TODO: naigate to error screen
     }
 }
 
