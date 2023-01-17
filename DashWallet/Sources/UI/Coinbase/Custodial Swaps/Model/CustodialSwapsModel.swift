@@ -38,6 +38,7 @@ class CustodialSwapsModel: SendAmountModel {
                     currentInputItem = item
                 }
                 inputItems = [.app, .dash, item]
+                checkAmountForErrors()
             }
         }
     }
