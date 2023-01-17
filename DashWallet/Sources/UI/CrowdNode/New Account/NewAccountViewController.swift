@@ -24,10 +24,15 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var explainerLabel1: UILabel!
+    @IBOutlet var explainerLabel2: UILabel!
     @IBOutlet var actionButton: DWActionButton!
     @IBOutlet var addressLabel: UILabel!
     @IBOutlet var acceptTermsCheckBox: DWCheckbox!
     @IBOutlet var acceptTermsText: UITextView!
+    
+    var isLinkingOnlineAccount: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,16 +41,26 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
         configureObservers()
     }
 
-    @objc static func controller() -> NewAccountViewController {
-        vc(NewAccountViewController.self, from: sb("CrowdNode"))
+    @objc static func controller(online: Bool) -> NewAccountViewController {
+        let vc = vc(NewAccountViewController.self, from: sb("CrowdNode"))
+        vc.isLinkingOnlineAccount = online
+        
+        return vc
     }
 
     @IBAction func continueAction() {
-        viewModel.signUp()
+        if isLinkingOnlineAccount {
+            let linkingUrl = viewModel.linkOnlineAccount()
+            navigationController?.pushViewController(CrowdNodeWebViewController.controller(url: linkingUrl), animated: true)
+        }
+        else {
+            viewModel.signUp()
+        }
     }
 
     @IBAction func copyAddress() {
         UIPasteboard.general.string = addressLabel.text
+        view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
 
     @IBAction func onTermsChecked() {
@@ -63,9 +78,13 @@ extension NewAccountViewController {
         definesPresentationContext = true
         view.backgroundColor = UIColor.dw_background()
 
-        configureActionButton()
-        configureAccountAddress()
         configureTermsCheckBox()
+        
+        if isLinkingOnlineAccount {
+            configureForLinkingOnlineAccount()
+        } else {
+            configureActionButton()
+        }
     }
 
     private func configureActionButton() {
@@ -75,16 +94,6 @@ extension NewAccountViewController {
         else {
             actionButton.setTitle(NSLocalizedString("Create Account", comment: "CrowdNode"), for: .normal)
         }
-    }
-
-    private func configureAccountAddress() {
-        let gradientMaskLayer = CAGradientLayer()
-        gradientMaskLayer.frame = addressLabel.bounds
-        gradientMaskLayer.colors = [UIColor.white.cgColor, UIColor.white.cgColor, UIColor.clear.cgColor, UIColor.clear.cgColor]
-        gradientMaskLayer.locations = [0, 0.7, 0.85, 1]
-        gradientMaskLayer.startPoint = CGPoint(x: 0, y: 0.5)
-        gradientMaskLayer.endPoint = CGPoint(x: 1, y: 0.5)
-        addressLabel.layer.mask = gradientMaskLayer
     }
 
     private func configureTermsCheckBox() {
@@ -114,6 +123,14 @@ extension NewAccountViewController {
         -> Bool {
         UIApplication.shared.open(URL)
         return false
+    }
+    
+    private func configureForLinkingOnlineAccount() {
+        titleLabel.text = NSLocalizedString("Link Existing CrowdNode Account", comment: "CrowdNode")
+        actionButton.setTitle("Log in to CrowdNode", for: .normal)
+        explainerLabel1.text = NSLocalizedString("All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.", comment: "CrowdNode")
+        explainerLabel2.isHidden = true
+        explainerLabel2.heightAnchor.constraint(equalToConstant: 0).isActive = true
     }
 
     private func configureObservers() {

@@ -33,7 +33,7 @@ public class CrowdNodeModelObjcWrapper: NSObject {
             return AccountCreatingController.controller()
 
         case .acceptTermsRequired:
-            return NewAccountViewController.controller()
+            return NewAccountViewController.controller(online: false)
 
         default:
             if CrowdNode.shared.infoShown {
@@ -338,5 +338,15 @@ extension CrowdNodeModel {
         
         try await crowdNode.withdraw(amount: UInt64(amount))
         return true
+    }
+}
+
+// MARK: online account
+extension CrowdNodeModel {
+    func linkOnlineAccount() -> URL {
+        precondition(!accountAddress.isEmpty)
+        crowdNode.trackLinkingAccount(address :accountAddress)
+        
+        return URL(string: CrowdNode.apiLinkUrl + crowdNode.accountAddress)!
     }
 }

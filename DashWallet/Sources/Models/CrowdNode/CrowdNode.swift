@@ -54,6 +54,9 @@ public class CrowdNodeObjcWrapper: NSObject {
     }
 }
 
+private let kConfirmedStatus = "confirmed"
+private let kValidStatus = "valid"
+
 // MARK: - CrowdNode
 
 public final class CrowdNode {
@@ -70,18 +73,37 @@ public final class CrowdNode {
         // Link Existing Account
         case linkedOnline
     }
+    
+    enum OnlineAccountState: Int, Comparable {
+        case none = 0
+        case linking = 1
+        case validating = 2
+        case confirming = 3
+        case creating = 4
+        case signingUp = 5
+        case done = 6
+        
+        static func < (lhs: CrowdNode.OnlineAccountState, rhs: CrowdNode.OnlineAccountState) -> Bool {
+            return lhs.rawValue < rhs.rawValue
+        }
+    }
 
     private var cancellableBag = Set<AnyCancellable>()
     private lazy var sendCoinsService = SendCoinsService()
     private lazy var txObserver = TransactionObserver()
     private lazy var webService = CrowdNodeService()
+    private var timer: Timer? = nil
 
     @Published private(set) var signUpState = SignUpState.notInitiated
+    @Published private(set) var onlineAccountState = OnlineAccountState.none
     @Published private(set) var balance: UInt64 = 0
     @Published private(set) var isBalanceLoading = false
     @Published private(set) var apiError: Swift.Error? = nil
 
     private(set) var accountAddress = ""
+    private(set) var primaryAddress: String? = nil
+    private(set) var linkingApiAddress: String? = nil
+    private(set) var isOnlineStateRestored: Bool = false
     var showNotificationOnResult = false
     let masternodeAPY = 0.069 // TODO: NMI-832
     lazy var crowdnodeAPY = masternodeAPY * 0.8
@@ -96,6 +118,37 @@ public final class CrowdNode {
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
+        
+        $onlineAccountState.sink { [weak self] state in
+            guard let wSelf = self else { return }
+
+            wSelf.timer?.invalidate()
+            let initialDelay = wSelf.isOnlineStateRestored ? 0 : 10
+            
+            switch state {
+            case .linking:
+                wSelf.startTrackingLinked(address: wSelf.linkingApiAddress!)
+            case .validating:
+                wSelf.startTrackingValidated(address: wSelf.accountAddress, initialDelay: initialDelay)
+            case .confirming:
+                wSelf.startTrackingConfirmed(address: wSelf.accountAddress, initialDelay: initialDelay)
+                break
+            case .creating:
+//                startTrackingCreating(accountAddress!!, initialDelay)
+                break
+                default:
+                    break
+            }
+//            when(status) {
+//                                OnlineAccountStatus.Linking -> startTrackingLinked(linkingApiAddress!!)
+//                                OnlineAccountStatus.Validating -> startTrackingValidated(accountAddress!!, initialDelay)
+//                                OnlineAccountStatus.Confirming -> startTrackingConfirmed(accountAddress!!, initialDelay)
+//                                OnlineAccountStatus.Creating -> startTrackingCreating(accountAddress!!, initialDelay)
+//                                else -> { }
+//                            }
+            
+        }
+        .store(in: &cancellableBag)
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
@@ -118,6 +171,23 @@ extension CrowdNode {
         
         if tryRestoreSignUp() {
             refreshWithdrawalLimits()
+            return
+        }
+        
+        if let address = onlineAccountAddress {
+            accountAddress = address
+            var onlineState = savedOnlineAccountState
+            
+            if onlineState == .none {
+                onlineState = .linking
+            }
+            
+            do {
+                try tryRestoreLinkedOnlineAccount(state: onlineState, address: address)
+                refreshWithdrawalLimits()
+            } catch {
+                DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
+            }
         }
     }
     
@@ -497,5 +567,155 @@ extension CrowdNode {
         case .perDay:
             return crowdNodeWithdrawalLimitPerDay
         }
+    }
+}
+
+// MARK: Online account
+extension CrowdNode {
+    func trackLinkingAccount(address: String) {
+        linkingApiAddress = address
+        onlineAccountAddress = address
+        changeOnlineState(to: .linking)
+    }
+    
+    private func changeOnlineState(to: OnlineAccountState, save: Bool = true) {
+        if signUpState != .finished {
+            if to < .validating {
+                signUpState = .notStarted
+            } else {
+                signUpState = .linkedOnline
+            }
+        }
+        
+        if onlineAccountState == .none {
+            isOnlineStateRestored = true
+        }
+        
+        onlineAccountState = to
+        
+        if save {
+            savedOnlineAccountState = to
+        }
+    }
+    
+    
+    private func tryRestoreLinkedOnlineAccount(state: OnlineAccountState, address: String) throws {
+        if let address = crowdNodePrimaryAddress {
+            primaryAddress = address
+        }
+        
+        switch state {
+        case .none:
+            break
+        case .linking:
+            DSLogger.log("CrowdNode: found linking online account in progress, account: \(address), primary: \(String(describing: primaryAddress))")
+//            checkIfAddressIsInUse(address) TODO:
+        case .creating, .signingUp:
+            // This should not happen - this method is reachable only for a linked account case
+            throw CrowdNode.Error.restoreLinked(state: state)
+        default:
+            changeOnlineState(to: state, save: false)
+            DSLogger.log("CrowdNode: found online account, state: \(state), account: \(address), primary: \(String(describing: primaryAddress))")
+            break
+        }
+    }
+    
+    private func startTrackingLinked(address: String) {
+        DSLogger.log("CrowdNode: startTrackingLinked, account: \(address)")
+        let context = ["address": address]
+        let timer = Timer(fireAt: Date().addingTimeInterval(5), interval: 2, target: self, selector: #selector(checkIfAddressIsInUse), userInfo: context, repeats: true)
+        timer.tolerance = 0.5
+        RunLoop.current.add(timer, forMode: .common)
+        self.timer = timer
+    }
+    
+    private func startTrackingValidated(address: String, initialDelay: Int) {
+        DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
+        let context = ["address": address]
+        let timer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(initialDelay)), interval: 30, target: self, selector: #selector(checkAddressStatus), userInfo: context, repeats: true)
+        timer.tolerance = 0.5
+        RunLoop.current.add(timer, forMode: .common)
+        self.timer = timer
+    }
+    
+    private func startTrackingConfirmed(address: String, initialDelay: Int) {
+        Task {
+            DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
+            // First check or wait for the confirmation tx.
+            // No need to make web requests if it isn't found.
+            
+            let confirmationTx = await waitForApiAddressConfirmation(accountAddress: accountAddress)
+            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashData)")
+            
+            if hasDepositConfirmations() {
+                // If a deposit confirmation was received, the address has been confirmed already
+                changeOnlineState(to: .done)
+                notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+                return
+            }
+            
+            let context = ["address": address]
+            let timer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(initialDelay)), interval: 30, target: self, selector: #selector(checkAddressStatus), userInfo: context, repeats: true)
+            timer.tolerance = 0.5
+            RunLoop.current.add(timer, forMode: .common)
+            self.timer = timer
+        }
+    }
+    
+    @objc private func checkIfAddressIsInUse(timer: Timer) async {
+        guard let context = timer.userInfo as? [String: String] else { return }
+        
+        let address = context["address", default: ""]
+        let result = await webService.isAddressInUse(address: address)
+        primaryAddress = result.primaryAddress
+            
+        if result.isInUse && onlineAccountState <= .linking {
+            if primaryAddress == nil {
+                apiError = CrowdNode.Error.missingPrimary
+                changeOnlineState(to: .none)
+            } else {
+                accountAddress = address
+                onlineAccountAddress = address
+                crowdNodePrimaryAddress = address
+                // TODO: tax category
+                changeOnlineState(to: .validating)
+            }
+        }
+    }
+    
+    @objc private func checkAddressStatus(timer: Timer) async {
+        guard let context = timer.userInfo as? [String: String] else { return }
+        
+        let address = context["address", default: ""]
+        let status = await webService.addressStatus(address: address)
+        
+        if status.lowercased() == kValidStatus && onlineAccountState != .confirming {
+            changeOnlineState(to: .confirming)
+            notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been validated, but verification is required.", comment: "CrowdNode"))
+        } else if status.lowercased() == kConfirmedStatus {
+            changeOnlineState(to: .done)
+            notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+            refreshBalance()
+        }
+    }
+    
+    private func waitForApiAddressConfirmation(accountAddress: String) async -> DSTransaction {
+        let filter = CrowdNodeAPIConfirmationTx(address: accountAddress)
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        
+        if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
+            return tx
+        }
+        else {
+            return await txObserver.first(filters: filter)
+        }
+    }
+    
+    private func hasDepositConfirmations() -> Bool {
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let filter = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
+                                       accountAddress: accountAddress)
+        
+        return wallet.allTransactions.contains { filter.matches(tx: $0) }
     }
 }

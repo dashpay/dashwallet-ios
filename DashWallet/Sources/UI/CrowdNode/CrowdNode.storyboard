@@ -50,25 +50,25 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nxj-pM-Pl9" userLabel="Address Container">
-                                <rect key="frame" x="20" y="258" width="350" height="58"/>
+                                <rect key="frame" x="20" y="258" width="350" height="76"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C7C-3J-thP" userLabel="Account Label">
-                                        <rect key="frame" x="15" y="9" width="77.333333333333329" height="14.333333333333336"/>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                        <rect key="frame" x="15" y="9" width="88.333333333333329" height="17"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" name="TertiaryTextColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lPE-iA-urR" userLabel="Account Address">
-                                        <rect key="frame" x="15" y="28.333333333333314" width="320" height="18"/>
+                                        <rect key="frame" x="15" y="31" width="280" height="36"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="de8-l5-sCC" userLabel="Copy Button">
-                                        <rect key="frame" x="310" y="14" width="30" height="30"/>
+                                        <rect key="frame" x="300" y="18" width="40" height="40"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="7uL-7t-igU"/>
-                                            <constraint firstAttribute="width" secondItem="de8-l5-sCC" secondAttribute="height" multiplier="1:1" id="dqP-HR-pDv"/>
+                                            <constraint firstAttribute="height" constant="40" id="7uL-7t-igU"/>
+                                            <constraint firstAttribute="width" constant="40" id="LFq-iT-jpe"/>
                                         </constraints>
                                         <color key="tintColor" name="IconTintColor"/>
                                         <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
@@ -80,9 +80,9 @@
                                 <color key="backgroundColor" red="0.92156862745098034" green="0.92941176470588238" blue="0.93333333333333335" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstItem="C7C-3J-thP" firstAttribute="top" secondItem="Nxj-pM-Pl9" secondAttribute="top" constant="9" id="4aB-8e-POb"/>
+                                    <constraint firstAttribute="bottom" secondItem="lPE-iA-urR" secondAttribute="bottom" constant="9" id="65c-Fy-qwM"/>
                                     <constraint firstAttribute="trailing" secondItem="de8-l5-sCC" secondAttribute="trailing" constant="10" id="CK6-68-hJB"/>
-                                    <constraint firstAttribute="trailing" secondItem="lPE-iA-urR" secondAttribute="trailing" constant="15" id="HhJ-0i-L9m"/>
-                                    <constraint firstAttribute="height" constant="58" id="PoE-am-RAI"/>
+                                    <constraint firstItem="de8-l5-sCC" firstAttribute="leading" secondItem="lPE-iA-urR" secondAttribute="trailing" constant="5" id="HhJ-0i-L9m"/>
                                     <constraint firstItem="de8-l5-sCC" firstAttribute="centerY" secondItem="Nxj-pM-Pl9" secondAttribute="centerY" id="Q6Q-2H-4rx"/>
                                     <constraint firstItem="lPE-iA-urR" firstAttribute="leading" secondItem="Nxj-pM-Pl9" secondAttribute="leading" constant="15" id="aua-GK-Se2"/>
                                     <constraint firstItem="lPE-iA-urR" firstAttribute="top" secondItem="C7C-3J-thP" secondAttribute="bottom" constant="5" id="fgz-sO-LWt"/>
@@ -146,6 +146,9 @@
                         <outlet property="acceptTermsText" destination="HH4-Qf-Qjr" id="kcs-4n-iid"/>
                         <outlet property="actionButton" destination="4DJ-bK-bvd" id="IDa-uT-0D5"/>
                         <outlet property="addressLabel" destination="lPE-iA-urR" id="u8P-2J-yE7"/>
+                        <outlet property="explainerLabel1" destination="UxQ-U0-ggd" id="ZKS-Ye-DQm"/>
+                        <outlet property="explainerLabel2" destination="1dX-4E-qVf" id="FCT-UF-HAr"/>
+                        <outlet property="titleLabel" destination="JGO-bv-xnp" id="rEL-iZ-XYc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1147,7 +1150,7 @@
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9EG-fn-Xy0">
-                                                                        <rect key="frame" x="0.0" y="22.99999999999989" width="266" height="34.333333333333343"/>
+                                                                        <rect key="frame" x="0.0" y="22.999999999999893" width="266" height="34.333333333333336"/>
                                                                         <attributedString key="attributedText">
                                                                             <fragment content="Members are free to leave the pool and can most often leave immediately.">
                                                                                 <attributes>
