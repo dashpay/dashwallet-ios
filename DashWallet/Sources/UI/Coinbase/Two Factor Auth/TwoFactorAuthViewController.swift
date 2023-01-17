@@ -55,11 +55,13 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         setupContentView(contentView)
 
         twoFactorAuthField.delegate = self
+        twoFactorAuthField.inputView = UIView()
 
         styleTitle()
         styleSubTitle()
@@ -80,6 +82,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         numberKeyboard.backgroundColor = .clear
         numberKeyboard.textInput = twoFactorAuthField
         contentView.addSubview(numberKeyboard)
+
 
         NSLayoutConstraint.activate([
             keyboardContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
