@@ -32,6 +32,7 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
 
     override func request(_ target: CoinbaseEndpoint) async throws {
         do {
+            try checkAccessTokenIfNeeded(for: target)
             try await refreshTokenIfNeeded(for: target)
             try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
@@ -50,6 +51,7 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
 
     override func request<R>(_ target: CoinbaseEndpoint) async throws -> R where R : Decodable {
         do {
+            try checkAccessTokenIfNeeded(for: target)
             try await refreshTokenIfNeeded(for: target)
             return try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
@@ -72,6 +74,16 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
         }
 
         try await coinbaseAPIAccessTokenProvider.refreshTokenIfNeeded()
+    }
+
+    private func checkAccessTokenIfNeeded(for target: CoinbaseEndpoint) throws {
+        guard target.authorizationType == .bearer else {
+            return
+        }
+
+        guard let _ = accessTokenProvider?() else {
+            throw Coinbase.Error.userSessionRevoked
+        }
     }
 
     static var shared = CoinbaseAPI()
