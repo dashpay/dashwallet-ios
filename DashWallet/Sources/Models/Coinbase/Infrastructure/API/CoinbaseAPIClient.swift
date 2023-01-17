@@ -93,7 +93,8 @@ final class CoinbaseAPI: HTTPClient<CoinbaseEndpoint> {
     }
 
     private func initialize(with coinbaseAPIAccessTokenProvider: CoinbaseAPIAccessTokenProvider) {
-        accessTokenProvider = { [weak coinbaseAPIAccessTokenProvider] in coinbaseAPIAccessTokenProvider!.accessToken!
+        accessTokenProvider = { [weak coinbaseAPIAccessTokenProvider] in
+            coinbaseAPIAccessTokenProvider!.accessToken
         }
         self.coinbaseAPIAccessTokenProvider = coinbaseAPIAccessTokenProvider
     }
