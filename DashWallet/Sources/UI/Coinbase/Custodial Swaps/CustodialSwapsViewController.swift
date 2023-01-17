@@ -38,6 +38,7 @@ class CustodialSwapsViewController: TransferAmountViewController {
         let vc = AccountListController.controller()
         vc.selectHandler = { [weak self] account in
             self?.custodialSwapsModel.selectedAccount = account
+            self?.reloadView()
             self?.converterView.reloadView()
             self?.amountView.inputTypeSwitcher.reloadData()
             self?.amountView.amountInputControl.reloadData()
@@ -64,6 +65,18 @@ class CustodialSwapsViewController: TransferAmountViewController {
 
         converterView.isChevronHidden = false
         converterView.isSwappingAllowed = false
+
+        // Hide all by default, except converter view
+        amountView.isHidden = true
+        keyboardContainer.isHidden = true
+    }
+
+    override func reloadView() {
+        super.reloadView()
+
+        amountView.isHidden = !custodialSwapsModel.hasAccount
+        keyboardContainer.isHidden = !custodialSwapsModel.hasAccount
+        buttonContainer.isHidden = !custodialSwapsModel.hasAccount
     }
 }
 

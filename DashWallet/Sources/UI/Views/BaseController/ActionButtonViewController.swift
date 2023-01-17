@@ -63,6 +63,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
     internal var actionButtonDisabledTitle: String? { actionButtonTitle }
 
     internal var stackView: UIStackView!
+    internal var buttonContainer: UIView!
     private var button: DWActionButton!
     private var barButton: UIBarButtonItem!
     private var contentBottomConstraint: NSLayoutConstraint!
@@ -161,7 +162,7 @@ extension ActionButtonViewController {
             actionButton = barButton
         }
         else {
-            let buttonContainer = UIView()
+            buttonContainer = UIView()
             buttonContainer.backgroundColor = .dw_background()
             buttonContainer.translatesAutoresizingMaskIntoConstraints = false
             stackView.addArrangedSubview(buttonContainer)

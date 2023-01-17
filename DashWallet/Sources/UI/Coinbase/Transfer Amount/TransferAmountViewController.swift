@@ -69,11 +69,21 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 20
+        stackView.alignment = .fill
+        contentView.addSubview(stackView)
+
+        // Move amount view into stack view
+        stackView.addArrangedSubview(amountView)
+
         converterView = ConverterView(frame: .zero)
         converterView.delegate = self
         converterView.dataSource = model as? ConverterViewDataSource
         converterView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(converterView)
+        stackView.addArrangedSubview(converterView)
 
         networkUnavailableView = NetworkUnavailableView(frame: .zero)
         networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
@@ -81,9 +91,13 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
         contentView.addSubview(networkUnavailableView)
 
         NSLayoutConstraint.activate([
-            converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
-            converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            stackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
+
+//            converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
+//            converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+//            converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
 
             networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
@@ -122,7 +136,8 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
 
 
 extension TransferAmountViewController {
-    private func reloadView() {
+    @objc
+    internal func reloadView() {
         let isOnline = networkStatus == .online
         networkUnavailableView.isHidden = isOnline
         keyboardContainer.isHidden = !isOnline

@@ -314,7 +314,7 @@ final class SourceView: UIView {
 
     public func update(with item: SourceViewDataProvider?, isBalanceHidden: Bool) {
         guard let item else {
-            titleLabel.text = NSLocalizedString("Select Account", comment: "Coinbase")
+            titleLabel.text = NSLocalizedString("Select the coin", comment: "Coinbase")
             return
         }
 

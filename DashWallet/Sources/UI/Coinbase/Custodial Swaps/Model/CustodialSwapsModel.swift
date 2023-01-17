@@ -26,6 +26,10 @@ protocol CustodialSwapsModelDelegate: AnyObject {
 // MARK: - CustodialSwapsModel
 
 class CustodialSwapsModel: SendAmountModel {
+    public var hasAccount: Bool {
+        selectedAccount != nil
+    }
+
     public var selectedAccount: CBAccount? {
         didSet {
             if let value = selectedAccount {
