@@ -219,6 +219,20 @@ extension CBAccount {
 // MARK: Trade
 extension CBAccount {
     func convert(amount: String, to destination: CBAccount) async throws -> CoinbaseSwapeTrade {
+        let fiatCurrency = Coinbase.sendLimitCurrency
+
+        if let decimalAmount = Decimal(string: amount),
+           let amountInUSD = try? Coinbase.shared.currencyExchanger.convert(to: "USD", amount: decimalAmount, amountCurrency: info.currencyCode) {
+            if amountInUSD < kMinUSDAmountOrder {
+                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+                let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
+                let str = localFormatter.string(from: min) ?? "$1.99"
+                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
+            } else if amountInUSD > Coinbase.shared.sendLimit {
+                throw Coinbase.Error.transactionFailed(.limitExceded)
+            }
+        }
+
         let baseIds: BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> = try await CoinbaseAPI.shared.request(.getBaseIdForUSDModel("USD"))
 
         var targetAsset: String!
