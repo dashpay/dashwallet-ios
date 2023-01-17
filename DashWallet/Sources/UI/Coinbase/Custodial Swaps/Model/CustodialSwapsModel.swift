@@ -85,7 +85,7 @@ class CustodialSwapsModel: SendAmountModel {
         guard let selectedAccount, let dashAccount = Coinbase.shared.dashAccount else { return }
 
         guard let usdAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.plainAmount.dashAmount, to: "USD"),
-              usdAmount > 2 else {
+              usdAmount >= 1.99 else {
             let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
             let localFormatter = NumberFormatter.fiatFormatter(currencyCode: "USD")
             let str = localFormatter.string(from: min) ?? "$1.99"
