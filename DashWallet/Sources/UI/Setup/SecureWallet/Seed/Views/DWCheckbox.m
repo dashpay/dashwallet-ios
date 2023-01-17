@@ -143,15 +143,16 @@ static CGFloat const ICON_TEXT_PADDING = 7.0;
 - (void)setStyle:(DWCheckBoxStyle)style {
     UIImage *image;
     UIImage *highlightedImage;
-    
+
     if (style == DWCheckBoxStyle_Square) {
         image = [UIImage imageNamed:@"icon_checkbox_square"];
         highlightedImage = [UIImage imageNamed:@"icon_checkbox_square_checked"];
-    } else {
+    }
+    else {
         image = [UIImage imageNamed:@"icon_checkbox"];
         highlightedImage = [UIImage imageNamed:@"icon_checkbox_checked"];
     }
-    
+
     NSParameterAssert(image);
     NSParameterAssert(highlightedImage);
     self.iconImageView.image = image;

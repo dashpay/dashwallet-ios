@@ -204,7 +204,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)secureWalletRoutineDidVerify:(UIViewController *)controller { }
+- (void)secureWalletRoutineDidVerify:(UIViewController *)controller {
+}
 
 - (void)secureWalletRoutineDidFinish:(DWVerifiedSuccessfullyViewController *)controller {
     NSAssert(NO, @"This delegate method shouldn't be called from a preview seed phrase VC");
