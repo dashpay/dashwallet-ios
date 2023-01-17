@@ -30,6 +30,9 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     public var isVerifying = false
     public var verifyHandler: ((String) -> Void)?
     public var cancelHandler: (() -> Void)?
+
+    public var isCancelingToFail = false
+
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
@@ -43,14 +46,6 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         styleHintFieldErrorState()
         styleTwoFactorAuthFieldErrorState()
         hideActivityIndicator()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        if !isVerifying {
-            cancelHandler?()
-        }
-
-        super.viewWillDisappear(animated)
     }
 
     override func viewDidLoad() {
@@ -268,6 +263,31 @@ extension TwoFactorAuthViewController: TwoFactorAuthModelDelegate {
 
     func transferFromCoinbaseForUnkownError(error: Error) {
         // TODO: naigate to error screen
+    }
+}
+
+// MARK: NavigationStackControllable
+
+extension TwoFactorAuthViewController: NavigationStackControllable {
+    func shouldPopViewController() -> Bool {
+        if isCancelingToFail {
+            let title = NSLocalizedString("Are you sure you want to cancel this transaction?", comment: "Coinbase/Buy Dash/Cancel Order")
+            let message = NSLocalizedString("Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.",
+                                            comment: "Coinbase/Buy Dash/Cancel Order")
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
+            alert.addAction(noAction)
+            let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
+                self?.isCancelingToFail = false
+                self?.cancelHandler?()
+            }
+            alert.addAction(yesAction)
+            present(alert, animated: true)
+            return false
+        }
+
+        cancelHandler?()
+        return true
     }
 }
 
