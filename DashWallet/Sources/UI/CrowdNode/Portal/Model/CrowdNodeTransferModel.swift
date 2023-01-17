@@ -41,22 +41,22 @@ enum TransferDirection {
 
     var title: String {
         switch self {
-        case .deposit: return "Deposit"
-        case .withdraw: return "Withdraw"
+        case .deposit: return NSLocalizedString("Deposit", comment: "CrowdNode")
+        case .withdraw: return NSLocalizedString("Withdraw", comment: "CrowdNode")
         }
     }
 
     var direction: String {
         switch self {
-        case .deposit: return "from Dash Wallet"
-        case .withdraw: return "from CrowdNode"
+        case .deposit: return NSLocalizedString("from Dash Wallet", comment: "from Dash Wallet")
+        case .withdraw: return NSLocalizedString("from CrowdNode", comment: "from CrowdNode")
         }
     }
 
     var keyboardHeader: String {
         switch self {
-        case .deposit: return "Sending to CrowdNode account"
-        case .withdraw: return "Sending to Dash Wallet on this device"
+        case .deposit: return NSLocalizedString("Sending to CrowdNode account", comment: "CrowdNode")
+        case .withdraw: return NSLocalizedString("Sending to Dash Wallet on this device", comment: "CrowdNode")
         }
     }
 
@@ -69,22 +69,22 @@ enum TransferDirection {
 
     var successfulTransfer: String {
         switch self {
-        case .deposit: return "Deposit sent"
-        case .withdraw: return "Withdrawal requested"
+        case .deposit: return NSLocalizedString("Deposit sent", comment: "CrowdNode")
+        case .withdraw: return NSLocalizedString("Withdrawal requested", comment: "CrowdNode")
         }
     }
 
     var successfulTransferDetails: String {
         switch self {
-        case .deposit: return "It can take a minute for your balance to be updated."
-        case .withdraw: return "It can take a minute for your funds to arrive."
+        case .deposit: return NSLocalizedString("It can take a minute for your balance to be updated.", comment: "CrowdNode")
+        case .withdraw: return NSLocalizedString("It can take a minute for your funds to arrive.", comment: "CrowdNode")
         }
     }
 
     var failedTransfer: String {
         switch self {
-        case .deposit: return "We couldn’t make a deposit to your CrowdNode account."
-        case .withdraw: return "We couldn’t withdraw from your CrowdNode account."
+        case .deposit: return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "CrowdNode")
+        case .withdraw: return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "CrowdNode")
         }
     }
 }

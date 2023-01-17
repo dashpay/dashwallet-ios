@@ -61,7 +61,7 @@ final class KeyboardHeader: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .dw_label()
         label.font = .dw_regularFont(ofSize: 14)
-        label.text = NSLocalizedString(text, comment: "CrowdNode")
+        label.text = text
         stackView.addArrangedSubview(label)
 
         let hairline = HairlineView(frame: .zero)

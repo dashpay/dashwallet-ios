@@ -1,6 +1,12 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* CrowdNode */
+" Privacy Policy " = " Privacy Policy ";
+
+/* CrowdNode */
+" Terms of Use " = " Terms of Use ";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ 님이 당신의 연락처 요청을 수락하였습니다";
 
@@ -82,11 +88,20 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "지갑을 보호하기 위해 비밀번호가 필요합니다. 설정에서 비밀번호를 활성화해주세요.";
 
+/* CrowdNode */
+"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
+
 /* No comment provided by engineer. */
 "About" = "정보";
 
 /* No comment provided by engineer. */
 "Accept" = "수락";
+
+/* CrowdNode */
+"Accept Terms Of Use" = "Accept Terms Of Use";
+
+/* CrowdNode */
+"Accepting terms of use…" = "Accepting terms of use…";
 
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Accepts DASH directly";
@@ -142,6 +157,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "당신의 모든 기기에 걸친 직관적이고 친근한 경험";
 
+/* CrowdNode */
+"and" = "and";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -184,8 +202,14 @@
 /* No comment provided by engineer. */
 "Available balance" = "이용 가능한 잔고";
 
+/* No comment provided by engineer. */
+"Backup Passphrase" = "Backup Passphrase";
+
 /* A noun. Used as a title. */
 "Backup Wallet" = "지갑 백업";
+
+/* No comment provided by engineer. */
+"Backup your passphrase to create a CrowdNode account" = "Backup your passphrase to create a CrowdNode account";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "잘못된 복원 문구";
@@ -195,6 +219,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "숨긴 잔고";
+
+/* CrowdNode */
+"Balance: " = "Balance: ";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bank Account";
@@ -382,11 +409,32 @@
 /* No comment provided by engineer. */
 "Create a New Wallet" = "새로운 지갑 생성";
 
+/* CrowdNode */
+"Create Account" = "Create Account";
+
+/* CrowdNode Portal */
+"Create Online Account" = "Create Online Account";
+
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
 
 /* No comment provided by engineer. */
+"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
+
+/* CrowdNode Portal */
+"CrowdNode Support" = "CrowdNode Support";
+
+/* CrowdNode Portal */
+"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
+
+/* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
+
+/* No comment provided by engineer. */
+"Current APY = a lot of %" = "Current APY = a lot of %";
+
+/* CrowdNode */
+"Current APY is %@" = "Current APY is %@";
 
 /* Explore Dash: Filters */
 "Current location" = "Current location";
@@ -415,6 +463,9 @@
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "대시페이 업그레이드 수수료";
 
+/* CrowdNode Portal */
+"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
+
 /* No comment provided by engineer. */
 "Date" = "날짜";
 
@@ -423,6 +474,18 @@
 
 /* Location Service Status */
 "Denied" = "Denied";
+
+/* CrowdNode Portal */
+"Deposit" = "Deposit";
+
+/* CrowdNode Portal */
+"Deposit %@ to start earning" = "Deposit %@ to start earning";
+
+/* CrowdNode Portal */
+"Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
+
+/* CrowdNode */
+"Deposit sent" = "Deposit sent";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
@@ -457,6 +520,9 @@
 
 /* No comment provided by engineer. */
 "Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+
+/* No comment provided by engineer. */
+"Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "예시: 홍길동";
@@ -560,6 +626,9 @@
 /* No comment provided by engineer. */
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
+/* CrowdNode */
+"First deposit should be more than %@" = "First deposit should be more than %@";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PIN을 잊어버리셨나요?";
 
@@ -575,6 +644,12 @@
 /* Coinbase: transfer dash to/from */
 "FROM" = "FROM";
 
+/* from CrowdNode */
+"from CrowdNode" = "from CrowdNode";
+
+/* from Dash Wallet */
+"from Dash Wallet" = "from Dash Wallet";
+
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
 
@@ -589,6 +664,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
+
+/* No comment provided by engineer. */
+"Go to CrowdNode website" = "Go to CrowdNode website";
 
 /* No comment provided by engineer. */
 "Go to Website" = "웹사이트로 가기";
@@ -629,11 +707,17 @@
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
 
+/* CrowdNode */
+"I agree to CrowdNode" = "I agree to CrowdNode";
+
 /* No comment provided by engineer. */
 "I wrote it down" = "옮겨 적었습니다";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "이 기기를 분실하시게 되면 당신의 자금 역시 잃게 됩니다. 다른 기기에서 당신의 지갑을 복원할 수 있도록 복구 문구를 설정하세요.";
+
+/* No comment provided by engineer. */
+"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "그래도 삭제하려면 다음과 같이 입력하십시오: \"%@\"";
@@ -682,6 +766,12 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "유효하지 않은 QR 코드";
+
+/* CrowdNode */
+"It can take a minute for your balance to be updated." = "It can take a minute for your balance to be updated.";
+
+/* CrowdNode */
+"It can take a minute for your funds to arrive." = "It can take a minute for your funds to arrive.";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone. If not, enter the code from the authentication app.";
@@ -1023,6 +1113,9 @@
 /* No comment provided by engineer. */
 "Processing" = "처리 중";
 
+/* CrowdNode Portal */
+"Protect your savings" = "Protect your savings";
+
 /* No comment provided by engineer. */
 "Provider Address" = "공급자 주소";
 
@@ -1218,6 +1311,10 @@
 /* No comment provided by engineer. */
 "Send Contact Request" = "연락처 요청 전송";
 
+/* Coinbase
+   CrowdNode */
+"Send Report" = "Send Report";
+
 /* No comment provided by engineer. */
 "Send to" = "다음에 전송합니다";
 
@@ -1232,6 +1329,12 @@
 
 /* No comment provided by engineer. */
 "Sending to" = "다음에 전송합니다";
+
+/* CrowdNode */
+"Sending to CrowdNode account" = "Sending to CrowdNode account";
+
+/* CrowdNode */
+"Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
 
 /* Buy Dash */
 "Sending to:" = "Sending to:";
@@ -1278,6 +1381,9 @@
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "복원 문구 확인하기";
 
+/* CrowdNode */
+"Sign up to CrowdNode" = "Sign up to CrowdNode";
+
 /* No comment provided by engineer. */
 "Skip" = "건너뛰기";
 
@@ -1310,6 +1416,9 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "승인 보내는 중";
+
+/* No comment provided by engineer. */
+"Staking" = "Staking";
 
 /* No comment provided by engineer. */
 "Support" = "지원";
@@ -1349,6 +1458,9 @@
 
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
+
+/* No comment provided by engineer. */
+"The chain is syncing…" = "The chain is syncing…";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
@@ -1432,6 +1544,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "당신의 대시를 업홀드 계정에서 이 지갑으로 전송합니다";
+
+/* CrowdNode */
+"Transfer Error" = "Transfer Error";
 
 /* Coinbase */
 "Transfer Failed" = "Transfer Failed";
@@ -1517,6 +1632,9 @@
 /* Coinbase */
 "Verfiy" = "Verfiy";
 
+/* CrowdNode Portal */
+"Verification Required" = "Verification Required";
+
 /* No comment provided by engineer. */
 "Verified Successfully" = "성공적으로 인증되었습니다";
 
@@ -1547,6 +1665,9 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "투표 키";
 
+/* No comment provided by engineer. */
+"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
+
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
@@ -1564,6 +1685,15 @@
 
 /* No comment provided by engineer. */
 "We are about to show you the secret key to your wallet." = "곧 당신의 지갑에 따른 비밀 키를 표시할 예정입니다.";
+
+/* CrowdNode */
+"We couldn’t create your CrowdNode account." = "We couldn’t create your CrowdNode account.";
+
+/* CrowdNode */
+"We couldn’t make a deposit to your CrowdNode account." = "We couldn’t make a deposit to your CrowdNode account.";
+
+/* CrowdNode */
+"We couldn’t withdraw from your CrowdNode account." = "We couldn’t withdraw from your CrowdNode account.";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "이 복원 문구를 저장하지 마십시오.";
@@ -1607,6 +1737,12 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "대시 블록체인을 통해";
 
+/* CrowdNode Portal */
+"Withdraw" = "Withdraw";
+
+/* CrowdNode */
+"Withdrawal requested" = "Withdrawal requested";
+
 /* No comment provided by engineer. */
 "Yes" = "Yes";
 
@@ -1632,13 +1768,25 @@
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
 
 /* No comment provided by engineer. */
+"You have insufficient funds to proceed" = "You have insufficient funds to proceed";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "대시 지갑에 접근하시려면 PIN을 입력해야 합니다";
+
+/* CrowdNode */
+"You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
+
+/* CrowdNode */
+"You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "당신은 대시를 수령하셨습니다! 이 기기를 분실하시게 되면 당신의 자금 역시 잃게 됩니다. 다른 기기에서 당신의 지갑을 복원할 수 있도록 복구 문구를 설정하세요.";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "%@ 님에게 연락처 요청을 전송하였습니다";
+
+/* No comment provided by engineer. */
+"You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
 
 /* Sign out from coinbase due to error */
 "You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
@@ -1658,8 +1806,17 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
+/* CrowdNode */
+"Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";
+
+/* CrowdNode */
+"Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
+
+/* CrowdNode */
+"Your deposit to CrowdNode is received." = "Your deposit to CrowdNode is received.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
