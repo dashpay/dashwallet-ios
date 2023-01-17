@@ -157,6 +157,9 @@
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
+/* Coinbase/Buy Dash/Cancel Order */
+"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "확실합니까?";
 
@@ -259,6 +262,9 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "취소";
+
+/* Coinbase/Buy Dash/Cancel Order */
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "변경";
@@ -1210,7 +1216,7 @@
 "Select a service" = "Select a service";
 
 /* Coinbase */
-"Select Account" = "Select Account";
+"Select the coin" = "Select the coin";
 
 /* Sell */
 "Sell" = "Sell";
