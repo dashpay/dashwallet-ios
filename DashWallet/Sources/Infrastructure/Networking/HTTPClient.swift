@@ -51,7 +51,7 @@ enum HTTPClientError: Error {
     }
 }
 
-typealias AccessTokenProvider = () -> String
+typealias AccessTokenProvider = () -> String?
 
 // MARK: - HTTPClient
 
@@ -135,7 +135,7 @@ public class HTTPClient<Target: TargetType> {
     private func retrieveAccessToken(for target: Target) -> String {
         if let target = target as? AccessTokenAuthorizable, target.authorizationType == .bearer,
            let provider = accessTokenProvider {
-            return provider()
+            return provider()! // Assume that we have token when we need it
         }
 
         fatalError("Token should be provided")

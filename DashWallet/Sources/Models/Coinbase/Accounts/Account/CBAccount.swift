@@ -105,7 +105,7 @@ extension CBAccount {
         }
 
         let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: Decimal(amount), to: fiatCurrency),
+        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: fiatCurrency),
            localNumber > Coinbase.shared.sendLimit {
             throw Coinbase.Error.transactionFailed(.limitExceded)
         }
@@ -119,14 +119,14 @@ extension CBAccount {
         }
 
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
-        let amount = amount.formattedDashAmount.coinbaseAmount()
+        let coinbaseAmount = amount.formattedDashAmountWithoutCurrencySymbol.coinbaseAmount()
 
         do {
             try await authInterop.refreshTokenIfNeeded()
 
             let dto = CoinbaseTransactionsRequest(type: .send,
                                                   to: dashWalletAddress,
-                                                  amount: amount,
+                                                  amount: coinbaseAmount,
                                                   currency: kDashCurrency,
                                                   idem: UUID())
 
@@ -166,7 +166,7 @@ extension CBAccount {
 extension CBAccount {
     public func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
         let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: Decimal(amount), to: fiatCurrency) {
+        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: fiatCurrency) {
             if localNumber < kMinUSDAmountOrder {
                 let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
                 let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
@@ -178,7 +178,7 @@ extension CBAccount {
         }
 
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
-        let amount = amount.formattedDashAmount.coinbaseAmount()
+        let amount = amount.formattedDashAmountWithoutCurrencySymbol.coinbaseAmount()
 
         let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: false, quote: nil)
 
@@ -219,6 +219,20 @@ extension CBAccount {
 // MARK: Trade
 extension CBAccount {
     func convert(amount: String, to destination: CBAccount) async throws -> CoinbaseSwapeTrade {
+        let fiatCurrency = Coinbase.sendLimitCurrency
+
+        if let decimalAmount = Decimal(string: amount),
+           let amountInUSD = try? Coinbase.shared.currencyExchanger.convert(to: "USD", amount: decimalAmount, amountCurrency: info.currencyCode) {
+            if amountInUSD < kMinUSDAmountOrder {
+                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+                let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
+                let str = localFormatter.string(from: min) ?? "$1.99"
+                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
+            } else if amountInUSD > Coinbase.shared.sendLimit {
+                throw Coinbase.Error.transactionFailed(.limitExceded)
+            }
+        }
+
         let baseIds: BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> = try await CoinbaseAPI.shared.request(.getBaseIdForUSDModel("USD"))
 
         var targetAsset: String!

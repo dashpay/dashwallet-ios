@@ -108,7 +108,7 @@ extension OrderPreviewViewController {
     }
 
     internal func stopCounting() {
-        timer.invalidate()
+        timer?.invalidate()
         timer = nil
     }
 
@@ -275,6 +275,8 @@ extension OrderPreviewViewController: NavigationStackControllable {
 // MARK: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
 
 extension OrderPreviewViewController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
+    var isCancelingToFail: Bool { true }
+
     func showActivityIndicator() {
         actionButton?.showActivityIndicator()
     }
@@ -289,5 +291,7 @@ extension OrderPreviewViewController: CoinbaseCodeConfirmationPreviewing, Coinba
 
     func codeConfirmationControllerDidCancel() {
         hideActivityIndicator()
+        showFailedTransactionStatus(text: NSLocalizedString("The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.",
+                                                            comment: "Coinbase/Buy Dash/Confirm Order"))
     }
 }

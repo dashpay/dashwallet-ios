@@ -156,7 +156,7 @@ public enum CoinbaseEndpoint {
 extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     public var authorizationType: Moya.AuthorizationType? {
         switch self {
-        case .signIn, .getToken, .refreshToken:
+        case .signIn, .getToken, .refreshToken, .exchangeRates:
             return nil
         default:
             return .bearer
