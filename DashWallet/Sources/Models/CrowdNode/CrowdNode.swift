@@ -83,12 +83,16 @@ public final class CrowdNode {
 
     private(set) var accountAddress = ""
     var showNotificationOnResult = false
-    let masternodeAPY = 0.069 // TODO: NMI-832
-    lazy var crowdnodeAPY = masternodeAPY * 0.8
+
+    let masternodeAPY: Double
+    let crowdnodeAPY: Double
 
     public static let shared: CrowdNode = .init()
 
     init() {
+        masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
+        crowdnodeAPY = masternodeAPY * 0.85
+
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)

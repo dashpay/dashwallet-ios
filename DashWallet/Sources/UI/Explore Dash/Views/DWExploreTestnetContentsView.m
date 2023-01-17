@@ -17,6 +17,7 @@
 
 #import "DWExploreTestnetContentsView.h"
 
+#import "DWEnvironment.h"
 #import "DWUIKit.h"
 
 @interface DWExploreTestnetContentsView () <UITableViewDataSource, UITableViewDelegate>
@@ -300,18 +301,29 @@
     iconImageView.contentMode = UIViewContentModeCenter;
     [iconImageView setImage:[UIImage imageNamed:@"image.crowdnode.apy"]];
     [apyStackView addArrangedSubview:iconImageView];
-    
+
     UILabel *apiLabel = [[UILabel alloc] init];
     apiLabel.textColor = systemGreen;
     apiLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightSemibold];
-    apiLabel.text = NSLocalizedString(@"Current APY = a lot of %", nil);
+    apiLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Current APY = %@", @"Crowdnode"), [self apy]];
     [apyStackView addArrangedSubview:apiLabel];
-    
+
     [super addContent:apyStackView];
-    
+
     [NSLayoutConstraint activateConstraints:@[
         [apyStackView.heightAnchor constraintEqualToConstant:24]
     ]];
+}
+
+- (NSString *)apy {
+    double apyValue = [DWEnvironment sharedInstance].apy.doubleValue * 0.85;
+
+    NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+    numberFormatter.numberStyle = NSNumberFormatterPercentStyle;
+    numberFormatter.minimumFractionDigits = 0;
+    numberFormatter.maximumFractionDigits = 2;
+    numberFormatter.multiplier = @(1);
+    return [numberFormatter stringFromNumber:@(apyValue)];
 }
 
 @end
