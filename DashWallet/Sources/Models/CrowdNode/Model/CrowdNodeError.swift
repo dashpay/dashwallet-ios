@@ -20,6 +20,7 @@ extension CrowdNode {
         case signUp
         case deposit
         case withdraw
+        case withdrawLimit(amount: UInt64, period: WithdrawalLimitPeriod)
 
         var errorDescription: String {
             switch self {
@@ -29,6 +30,8 @@ extension CrowdNode {
                 return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "CrowdNode")
             case .withdraw:
                 return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "CrowdNode")
+            case .withdrawLimit:
+                return ""
             }
         }
     }

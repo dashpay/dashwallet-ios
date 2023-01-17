@@ -59,6 +59,11 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
         startNetworkMonitoring()
         configureObservers()
+        
+        if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
+            showWithdrawalLimitsInfo()
+            viewModel.shouldShowWithdrawalLimitsDialog = false
+        }
     }
 
     override var actionButtonTitle: String? {
@@ -108,7 +113,16 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         if mode == .deposit {
             return try await viewModel.deposit(amount: amount)
         } else {
+            return try await handleWithdraw(amount: amount)
+        }
+    }
+    
+    private func handleWithdraw(amount: Int64) async throws -> Bool {
+        do {
             return try await viewModel.withdraw(amount: amount)
+        } catch CrowdNode.Error.withdrawLimit(_, let period) {
+            showWithdrawalLimitsError(period: period)
+            return false
         }
     }
 
@@ -230,6 +244,39 @@ extension CrowdNodeTransferController {
         }
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func showWithdrawalLimitsError(period: WithdrawalLimitPeriod) {
+        let vc = WithdrawalLimitsController()
+        var buttonText: String? = nil
+        let isOnlineAccountDone = true // TODO: online account
+        
+        if period == .perTransaction {
+            if isOnlineAccountDone {
+                buttonText = NSLocalizedString("Read Withdrawal Policy", comment: "CrowdNode")
+            } else {
+                buttonText = NSLocalizedString("Create Online Account", comment: "CrowdNode")
+            }
+        }
+        
+        vc.model = WithdrawalLimitDialogModel(icon: "image.crowdnode.error", buttonText: buttonText, limits: viewModel.withdrawalLimits, highlightedLimit: period.rawValue)
+        vc.actionHandler = {
+            if isOnlineAccountDone {
+                UIApplication.shared.open(URL(string: CrowdNode.withdrawalLimitsUrl)!)
+            } else {
+                // TODO create online account
+            }
+        }
+        
+        let nvc = BaseNavigationController(rootViewController: vc)
+        present(nvc, animated: true)
+    }
+    
+    private func showWithdrawalLimitsInfo() {
+        let vc = WithdrawalLimitsController()
+        vc.model = WithdrawalLimitDialogModel(icon: "image.crowdnode.info", buttonText: nil, limits: viewModel.withdrawalLimits, highlightedLimit: -1)
+        let nvc = BaseNavigationController(rootViewController: vc)
+        present(nvc, animated: true)
     }
 }
 

@@ -45,8 +45,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
 @dynamic dateReclassifyYourTransactionsFlowActivated;
 @dynamic exploreDashMerchantsInfoShown;
-@dynamic crowdNodeInfoShown;
-@dynamic lastKnownCrowdNodeBalance;
 @dynamic coinbaseInfoShown;
 
 #pragma mark - Init
@@ -60,8 +58,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
         DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
-        DW_KEYPATH(self, crowdNodeInfoShown) : @NO,
-        DW_KEYPATH(self, lastKnownCrowdNodeBalance) : @0,
         DW_KEYPATH(self, coinbaseInfoShown) : @NO,
     };
 
@@ -142,8 +138,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
     self.dateReclassifyYourTransactionsFlowActivated = nil;
     self.exploreDashMerchantsInfoShown = NO;
-    self.crowdNodeInfoShown = NO;
-    self.lastKnownCrowdNodeBalance = 0;
     self.coinbaseInfoShown = NO;
 }
 
