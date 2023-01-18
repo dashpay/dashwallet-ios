@@ -345,7 +345,6 @@
 		2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */; };
 		2AA08534237D6CF500797F95 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AA08533237D6CF500797F95 /* CloudKit.framework */; };
 		2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
-		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
 		2AB2373824488DB80081B62C /* DWUserSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB2373724488DB80081B62C /* DWUserSearchViewController.m */; };
@@ -444,9 +443,7 @@
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
 		2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */; };
-		2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */; };
 		2AFCB9AC23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */; };
-		2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */; };
 		2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */; };
 		2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */; };
 		2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9BD23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m */; };
@@ -782,8 +779,6 @@
 		2A0C69A2231048DA001B8C90 /* DWPaymentProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentProcessor.m; sourceTree = "<group>"; };
 		2A0C69AA23125074001B8C90 /* UIView+DWHUD.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWHUD.h"; sourceTree = "<group>"; };
 		2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWHUD.m"; sourceTree = "<group>"; };
-		2A0C69AE2312DD67001B8C90 /* DWSpecifyAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSpecifyAmountViewController.h; sourceTree = "<group>"; };
-		2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSpecifyAmountViewController.m; sourceTree = "<group>"; };
 		2A0C69B12312E8A0001B8C90 /* DWWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWindow.h; sourceTree = "<group>"; };
 		2A0C69B22312E8A0001B8C90 /* DWWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWindow.m; sourceTree = "<group>"; };
 		2A0C69BB23140779001B8C90 /* DWModalInteractiveTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalInteractiveTransition.h; sourceTree = "<group>"; };
@@ -1394,8 +1389,6 @@
 		2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyObject.h; sourceTree = "<group>"; };
 		2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCurrencyObject.m; sourceTree = "<group>"; };
 		2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyItemPriceProvider.h; sourceTree = "<group>"; };
-		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
-		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
 		2AB231D02196E25D00A6E7E6 /* DWStartViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartViewController.h; sourceTree = "<group>"; };
 		2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartViewController.m; sourceTree = "<group>"; };
@@ -1596,13 +1589,9 @@
 		2AF26F40230C1F9D007F9228 /* DWAmountView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountView.m; sourceTree = "<group>"; };
 		2AF26F42230C2232007F9228 /* DWAmountDescriptionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountDescriptionView.h; sourceTree = "<group>"; };
 		2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountDescriptionView.m; sourceTree = "<group>"; };
-		2AFCB9A723BDEA1D00FF59A6 /* DWSendAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSendAmountModel.h; sourceTree = "<group>"; };
-		2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendAmountModel.m; sourceTree = "<group>"; };
 		2AFCB9AA23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountDescriptionViewModel.h; sourceTree = "<group>"; };
 		2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountDescriptionViewModel.m; sourceTree = "<group>"; };
 		2AFCB9AD23BDEC6300FF59A6 /* DWAmountModel+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWAmountModel+DWProtected.h"; sourceTree = "<group>"; };
-		2AFCB9B223BDEEFE00FF59A6 /* DWReceiveAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveAmountModel.h; sourceTree = "<group>"; };
-		2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveAmountModel.m; sourceTree = "<group>"; };
 		2AFCB9B523BDFF3600FF59A6 /* DWUpholdTransferViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdTransferViewController.h; sourceTree = "<group>"; };
 		2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdTransferViewController.m; sourceTree = "<group>"; };
 		2AFCB9B823BDFF5E00FF59A6 /* DWUpholdAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAmountModel.h; sourceTree = "<group>"; };
@@ -3862,8 +3851,6 @@
 				2AB8CDDC220D87E300A3D1DB /* Views */,
 				2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */,
 				2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */,
-				2A0C69AE2312DD67001B8C90 /* DWSpecifyAmountViewController.h */,
-				2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */,
 				47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */,
 				47B30D7F291123D30080C326 /* SendAmountViewController.swift */,
 				47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */,
@@ -3956,7 +3943,6 @@
 		2ACED2A2230E6905003CB498 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				2AFCB9B123BDEEDE00FF59A6 /* Receive */,
 				2AFCB9B023BDEED900FF59A6 /* Send */,
 				2AFCB9AA23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.h */,
 				2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */,
@@ -4315,22 +4301,9 @@
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
 			isa = PBXGroup;
 			children = (
-				2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */,
-				2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */,
-				2AFCB9A723BDEA1D00FF59A6 /* DWSendAmountModel.h */,
-				2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */,
 				47B30D7D29102F6E0080C326 /* SendAmountModel.swift */,
 			);
 			path = Send;
-			sourceTree = "<group>";
-		};
-		2AFCB9B123BDEEDE00FF59A6 /* Receive */ = {
-			isa = PBXGroup;
-			children = (
-				2AFCB9B223BDEEFE00FF59A6 /* DWReceiveAmountModel.h */,
-				2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */,
-			);
-			path = Receive;
 			sourceTree = "<group>";
 		};
 		4709C310287E78BD00B4BD48 /* Migrations */ = {
@@ -5859,7 +5832,6 @@
 				2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				47838B92290701470003E8AB /* CoinbaseEntryPointModel.swift in Sources */,
 				2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */,
-				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
 				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
@@ -6053,7 +6025,6 @@
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
-				2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */,
 				2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */,
 				2A7AF34924823167001D74F9 /* DWDPGenericImageItemView.m in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
@@ -6318,7 +6289,6 @@
 				47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */,
 				2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
-				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
 				2AB2373824488DB80081B62C /* DWUserSearchViewController.m in Sources */,
