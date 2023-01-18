@@ -35,3 +35,28 @@ extension NavigationBarAppearanceCustomizable {
         /// NOP
     }
 }
+
+@objc
+extension UINavigationBar {
+    @objc func applyOpaqueAppearance(with color: UIColor, shadowColor: UIColor? = nil) {
+        let standardAppearance = UINavigationBarAppearance()
+        standardAppearance.configureWithOpaqueBackground()
+        standardAppearance.backgroundColor = color
+        standardAppearance.shadowColor = .clear
+
+        let compactAppearance = standardAppearance.copy()
+        let scrollAppearance = standardAppearance.copy()
+        standardAppearance.shadowColor = shadowColor
+
+        isTranslucent = true
+        self.standardAppearance = standardAppearance
+        scrollEdgeAppearance = scrollAppearance
+        self.compactAppearance = compactAppearance
+
+        if #available(iOS 15.0, *) {
+            self.compactScrollEdgeAppearance = scrollAppearance
+        }
+    }
+
+}
+
