@@ -132,7 +132,7 @@ extension CBAccount {
 
             let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
-            try await refreshAccount()
+            try? await refreshAccount() // Ignore if fails
 
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
@@ -201,7 +201,7 @@ extension CBAccount {
         do {
             try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
-            try await refreshAccount()
+            try? await refreshAccount() // Ignore if fails
 
             return result.data
         } catch HTTPClientError.statusCode(let r) {
@@ -265,7 +265,7 @@ extension CBAccount {
         do {
             try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbaseSwapeTrade> = try await httpClient.request(.swapTradeCommit(orderID))
-            try await refreshAccount()
+            try? await refreshAccount() // Ignore if fails
 
             return result.data
         } catch HTTPClientError.statusCode(let r) {
