@@ -90,7 +90,7 @@ extension CoinbaseEntryPointViewController {
         connectionStatusLabel.text = isOnline
             ? NSLocalizedString("Connected", comment: "Coinbase Entry Point")
             : NSLocalizedString("Disconnected", comment: "Coinbase Entry Point")
-        balanceView.balance = model.balance
+        balanceView.dataSource = model
     }
 
     private func configureHierarchy() {

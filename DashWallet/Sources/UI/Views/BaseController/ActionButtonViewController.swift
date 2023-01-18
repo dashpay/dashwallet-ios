@@ -134,7 +134,6 @@ extension ActionButtonViewController {
         stackView.spacing = 0
         stackView.preservesSuperviewLayoutMargins = true
         stackView.backgroundColor = .dw_secondaryBackground()
-        // stackView.safeAreaInsets = .init(top: 0, left: 0, bottom: view.safeAreaInsets.bottom + bottomPadding, right: 0)
         view.addSubview(stackView)
 
         if showsActionButton {
@@ -142,9 +141,6 @@ extension ActionButtonViewController {
         }
 
         let safeAreaGuide = view.safeAreaLayoutGuide
-
-
-        contentBottomConstraint = safeAreaGuide.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: bottomPadding)
 
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: safeAreaGuide.topAnchor),
@@ -232,7 +228,16 @@ extension ActionButtonViewController {
 // MARK: - ActionButtonStackView
 
 private final class ActionButtonStackView: UIStackView {
+
+    /// We need this in order to always have safeAreaInsets.bottom > 0.
+    /// When we are on device with home button, we use it as a bottom padding for the content
     override var safeAreaInsets: UIEdgeInsets {
-        superview?.safeAreaInsets ?? .zero
+        let defaultnsets = UIEdgeInsets(top: 0, left: 0, bottom: 15, right: 0)
+
+        guard let superview, superview.safeAreaInsets.bottom > 0 else {
+            return defaultnsets
+        }
+
+        return superview.safeAreaInsets
     }
 }

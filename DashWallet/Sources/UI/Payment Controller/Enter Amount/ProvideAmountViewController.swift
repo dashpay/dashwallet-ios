@@ -95,21 +95,20 @@ final class ProvideAmountViewController: SendAmountViewController {
         let balanceStackView = UIStackView()
         balanceStackView.axis = .horizontal
         balanceStackView.spacing = 2
-        balanceStackView.alignment = .center
+        balanceStackView.alignment = .lastBaseline
         textContainer.addArrangedSubview(balanceStackView)
 
         let balanceTitleLabel = UILabel()
         balanceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceTitleLabel.font = .dw_font(forTextStyle: .body)
+        balanceTitleLabel.font = .dw_font(forTextStyle: .subheadline)
         balanceTitleLabel.textColor = .dw_secondaryText()
         balanceTitleLabel.text = NSLocalizedString("Balance", comment: "Send Screen: to address") + ":"
         balanceStackView.addArrangedSubview(balanceTitleLabel)
 
         balanceLabel = UILabel()
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceLabel.font = .dw_font(forTextStyle: .body)
+        balanceLabel.font = .dw_font(forTextStyle: .subheadline)
         balanceLabel.textColor = .dw_secondaryText()
-        balanceLabel.text = "5.50 DASH ~ 320.74€"
         balanceStackView.addArrangedSubview(balanceLabel)
 
         let spacer = UIView()
@@ -209,7 +208,7 @@ extension ProvideAmountViewController {
         let fiat: String
 
         if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
-            fiat = fiatAmount.formattedDashAmount
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
         } else {
             fiat = NSLocalizedString("Syncing...", comment: "Balance")
         }
