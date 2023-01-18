@@ -59,7 +59,7 @@ final class CrowdNodePortalController: UIViewController {
 extension CrowdNodePortalController {
     private func configureHierarchy() {
         balanceView.tint = .white
-        balanceView.balance = viewModel.crowdNodeBalance
+        balanceView.dataSource = self
 
         tableView.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         tableView.clipsToBounds = true
@@ -97,7 +97,7 @@ extension CrowdNodePortalController {
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
             .sink(receiveValue: { [weak self] balance in
-                self?.balanceView.balance = balance
+                self?.balanceView.dataSource = self
                 self?.tableView.reloadRows(at: [
                     IndexPath(item: 0, section: 0),
                     IndexPath(item: 1, section: 0),
@@ -270,5 +270,25 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .support:
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
+    }
+}
+
+// MARK: BalanceViewDataSource
+
+extension CrowdNodePortalController: BalanceViewDataSource {
+    var mainAmountString: String {
+        viewModel.crowdNodeBalance.formattedDashAmount
+    }
+
+    var supplementaryAmountString: String {
+        let fiat: String
+
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: viewModel.crowdNodeBalance.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+        }
+
+        return fiat
     }
 }
