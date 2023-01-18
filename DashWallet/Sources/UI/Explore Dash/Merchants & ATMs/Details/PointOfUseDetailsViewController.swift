@@ -97,7 +97,7 @@ extension PointOfUseDetailsViewController {
     private func prepareContentView() {
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.backgroundColor = UIColor.dw_background()
+        contentView.backgroundColor = .dw_secondaryBackground()
         view.addSubview(contentView)
 
         let constraint: [NSLayoutConstraint]

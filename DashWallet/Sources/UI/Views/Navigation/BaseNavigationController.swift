@@ -89,8 +89,10 @@ class BaseNavigationController: UINavigationController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         super.delegate = self
+
+        view.backgroundColor = .dw_secondaryBackground()
+        navigationBar.applyOpaqueAppearance(with: .dw_secondaryBackground(), shadowColor: .dw_separatorLine())
     }
 }
 
