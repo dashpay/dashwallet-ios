@@ -42,6 +42,8 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal var contentView: UIView!
     internal var amountView: AmountView!
+    internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
+    internal var isMaxButtonHidden: Bool { true }
 
     internal var keyboardContainer: UIView!
     internal var keyboardStackView: UIStackView!
@@ -50,7 +52,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     internal var numberKeyboard: NumberKeyboard!
 
     internal var model: BaseAmountModel!
-    internal var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
     func maxButtonAction() { }
 
@@ -63,12 +64,12 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
             self?.amountDidChange()
         }
 
-        model.presentCurrencyPickerHandler = { [weak self] in
-            self?.showCurrencyList()
-        }
-
         model.errorHandler = { [weak self] error in
             self?.show(error: error)
+        }
+
+        model.amountInputItemsChangeHandler = { [weak self] in
+            self?.amountView.inputTypeSwitcher.reloadData()
         }
     }
 
@@ -77,7 +78,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func amountDidChange() {
-        amountView.reloadData()
+        amountView.amountInputControl.reloadData()
         showErrorIfNeeded()
     }
 
@@ -131,7 +132,8 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 }
 
 extension BaseAmountViewController {
-    @objc internal func configureHierarchy() {
+    @objc
+    internal func configureHierarchy() {
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
@@ -142,13 +144,17 @@ extension BaseAmountViewController {
         amountView.maxButtonAction = { [weak self] in
             self?.maxButtonAction()
         }
-        amountView.dataSource = model
-        amountView.delegate = model
+        amountView.maxButton.isHidden = isMaxButtonHidden
         amountView.translatesAutoresizingMaskIntoConstraints = false
         amountView.infoButtonHandler = { [weak self] in
             self?.errorInfoButtonDidTap()
         }
         contentView.addSubview(amountView)
+
+        amountView.amountInputControl.delegate = self
+        amountView.amountInputControl.dataSource = model
+
+        amountView.inputTypeSwitcher.delegate = self
 
         keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
@@ -193,7 +199,9 @@ extension BaseAmountViewController {
 extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
     func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
         model.setupCurrencyCode(currencyCode)
-        amountView.reloadInputTypeSwitcher()
+        amountView.amountInputControl.reloadData()
+        amountView.inputTypeSwitcher.reloadData()
+
         controller.dismiss(animated: true)
     }
 
@@ -205,7 +213,8 @@ extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
 // MARK: ErrorPresentable
 
 extension BaseAmountViewController: ErrorPresentable {
-    @objc func present(error: Error) {
+    @objc
+    func present(error: Error) {
         let color: UIColor
 
         if let error = error as? ColorizedText {
@@ -221,3 +230,53 @@ extension BaseAmountViewController: ErrorPresentable {
         amountView.showError(message, textColor: level.textColor)
     }
 }
+
+// MARK: AmountInputControlDelegate
+
+extension BaseAmountViewController: AmountInputControlDelegate {
+    var isCurrencySelectorHidden: Bool {
+        model.isCurrencySelectorHidden
+    }
+
+    func updateInputField(with replacementText: String, in range: NSRange) {
+        model.updateInputField(with: replacementText, in: range)
+    }
+
+    func amountInputControlDidSwapInputs() {
+        model.amountInputControlDidSwapInputs()
+        amountView.inputTypeSwitcher.reloadData()
+    }
+
+    func amountInputControlChangeCurrencyDidTap() {
+        showCurrencyList()
+    }
+
+    func amountInputWantToPasteFromClipboard() {
+        model.pasteFromClipboard()
+    }
+}
+
+// MARK: AmountInputTypeSwitcherDelegate
+
+extension BaseAmountViewController: AmountInputTypeSwitcherDelegate {
+    var numberOfInputTypes: Int {
+        model.inputItems.count
+    }
+
+    func amountInputTypeSwitcher(_ switcher: AmountInputTypeSwitcher, didSelectItemAt index: Int) {
+        model.selectInputItem(at: index)
+
+        let type: AmountInputControl.AmountType = model.currentInputItem.isMain ? .main : .supplementary
+        amountView.amountInputControl.setActiveType(type, animated: true, completion: nil)
+    }
+
+    func amountInputTypeSwitcher(_ switcher: AmountInputTypeSwitcher, valueForItemAt index: Int) -> String {
+        model.inputItems[index].currencyCode
+    }
+
+    func amountInputTypeSwitcher(_ switcher: AmountInputTypeSwitcher, isValueSelectedForItemAt index: Int) -> Bool {
+        let item = model.inputItems[index]
+        return item == model.currentInputItem
+    }
+}
+

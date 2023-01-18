@@ -35,7 +35,8 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [String: AddressUserInfo] = [:]
 
-    @objc func create(dto: AddressUserInfo) {
+    @objc
+    func create(dto: AddressUserInfo) {
         do {
             let userInfo = AddressUserInfo.table.insert(or: .replace, AddressUserInfo.addressColumn <- dto.address,
                                                         AddressUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
@@ -48,7 +49,8 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
         cache[dto.address] = dto
     }
 
-    @objc func all() -> [AddressUserInfo] {
+    @objc
+    func all() -> [AddressUserInfo] {
         let txUserInfos = AddressUserInfo.table
 
         var userInfos: [AddressUserInfo] = []
@@ -66,7 +68,8 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
         return userInfos
     }
 
-    @objc func get(by address: String) -> AddressUserInfo? {
+    @objc
+    func get(by address: String) -> AddressUserInfo? {
         if let cached = cache[address] {
             return cached
         }
@@ -86,11 +89,13 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
         return nil
     }
 
-    @objc func update(dto: AddressUserInfo) {
+    @objc
+    func update(dto: AddressUserInfo) {
         create(dto: dto)
     }
 
-    @objc func delete(dto: AddressUserInfo) {
+    @objc
+    func delete(dto: AddressUserInfo) {
         cache[dto.address] = nil
     }
 
@@ -98,7 +103,8 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
 }
 
 extension AddressUserInfoDAOImpl {
-    @objc func dictionaryOfAllItems() -> [String: AddressUserInfo] {
+    @objc
+    func dictionaryOfAllItems() -> [String: AddressUserInfo] {
         all()
         return cache
     }

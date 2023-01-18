@@ -19,7 +19,8 @@ import Foundation
 import SwiftUI
 
 class SwiftUIViewFactory: NSObject {
-    @objc static func makeSwiftUIView(dismissHandler: @escaping (() -> Void)) -> UIViewController {
+    @objc
+    static func makeSwiftUIView(dismissHandler: @escaping (() -> Void)) -> UIViewController {
         UIHostingController(rootView: BuyAndSellDashServiceList(dismiss: dismissHandler))
     }
 }

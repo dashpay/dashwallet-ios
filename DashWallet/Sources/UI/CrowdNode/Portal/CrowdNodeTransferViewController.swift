@@ -67,7 +67,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     override var actionButtonTitle: String? {
-        NSLocalizedString(mode.title, comment: "CrowdNode")
+        mode.title
     }
 
     override func actionButtonAction(sender: UIView) {
@@ -109,7 +109,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
 
-    private func handleTransfer(amount: Int64) async throws -> Bool {
+    private func handleTransfer(amount: UInt64) async throws -> Bool {
         if mode == .deposit {
             return try await viewModel.deposit(amount: amount)
         } else {
@@ -117,7 +117,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
     
-    private func handleWithdraw(amount: Int64) async throws -> Bool {
+    private func handleWithdraw(amount: UInt64) async throws -> Bool {
         do {
             return try await viewModel.withdraw(amount: amount)
         } catch CrowdNode.Error.withdrawLimit(_, let period) {
@@ -189,7 +189,7 @@ extension CrowdNodeTransferController {
         let titleLabel = UILabel()
         titleLabel.font = .dw_mediumFont(ofSize: 16)
         titleLabel.minimumScaleFactor = 0.5
-        titleLabel.text = NSLocalizedString(mode.title, comment: "CrowdNode")
+        titleLabel.text = mode.title
         titleViewStackView.addArrangedSubview(titleLabel)
 
         dashPriceLabel = UILabel()
@@ -220,8 +220,8 @@ extension CrowdNodeTransferController {
             guard let wSelf = self else { return }
             wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
         }
-        vc.headerText = NSLocalizedString(mode.successfulTransfer, comment: "CrowdNode")
-        vc.descriptionText = NSLocalizedString(mode.successfulTransferDetails, comment: "CrowdNode")
+        vc.headerText = mode.successfulTransfer
+        vc.descriptionText = mode.successfulTransferDetails
 
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
@@ -229,7 +229,7 @@ extension CrowdNodeTransferController {
 
     private func showErrorStatus(err: Error) {
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
-        vc.headerText = NSLocalizedString(mode.failedTransfer, comment: "CrowdNode")
+        vc.headerText = mode.failedTransfer
         vc.descriptionText = err.localizedDescription
         vc.supportButtonText = NSLocalizedString("Send Report", comment: "CrowdNode")
         vc.retryHandler = { [weak self] in self?.navigationController?.popViewController(animated: true) }

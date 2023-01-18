@@ -22,9 +22,12 @@ import Foundation
 
 @objc
 protocol DWLocationObserver: AnyObject {
-    @objc func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation)
-    @objc func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager)
-    @objc func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager)
+    @objc
+    func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation)
+    @objc
+    func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager)
+    @objc
+    func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager)
 }
 
 // MARK: - DWLocationManager
@@ -84,17 +87,20 @@ class DWLocationManager: NSObject {
         locationManager.delegate = self
     }
 
-    @objc func requestAuthorization() {
+    @objc
+    func requestAuthorization() {
         locationManager.requestWhenInUseAuthorization()
     }
 
-    @objc func add(observer: DWLocationObserver) {
+    @objc
+    func add(observer: DWLocationObserver) {
         guard observers.filter({ $0 === observer }).isEmpty else { return }
 
         observers.append(observer)
     }
 
-    @objc func remove(observer: DWLocationObserver) {
+    @objc
+    func remove(observer: DWLocationObserver) {
         observers = observers.filter { $0 !== observer }
     }
 
@@ -132,8 +138,9 @@ extension DWLocationManager: CLLocationManagerDelegate {
     }
 
     @available(iOS, deprecated: 14.0,
-               message: "Use locationManagerDidChangeAuthorization") func locationManager(_ manager: CLLocationManager,
-                                                                                          didChangeAuthorization status: CLAuthorizationStatus) {
+               message: "Use locationManagerDidChangeAuthorization")
+    func locationManager(_ manager: CLLocationManager,
+                         didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedAlways || status == .authorizedWhenInUse {
             startMonitoring(manager)
         } else {
@@ -143,7 +150,8 @@ extension DWLocationManager: CLLocationManagerDelegate {
         observers.forEach { $0.locationManagerDidChangeServiceAvailability(self) }
     }
 
-    @available(iOS 14.0, *) func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    @available(iOS 14.0, *)
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse {
             startMonitoring(manager)
         } else {

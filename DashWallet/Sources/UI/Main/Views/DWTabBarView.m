@@ -65,6 +65,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 47.0;
             [self addSubview:button];
             [buttons addObject:button];
             _homeButton = button;
+
+#if SNAPSHOT
+            button.accessibilityIdentifier = @"tabbar_home_button";
+#endif /* SNAPSHOT */
         }
 
         //        {

@@ -40,7 +40,8 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
 
     private var isNeedToShowSignOutError = true
 
-    @IBAction func signOutAction() {
+    @IBAction
+    func signOutAction() {
         isNeedToShowSignOutError = false
         model.signOut()
     }
@@ -176,8 +177,7 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         case .sellDash:
             vc = BuyDashViewController()
         case .convertCrypto:
-            showSuccessTransactionStatus(text: "Test text")
-            return
+            vc = CustodialSwapsViewController()
         case .transferDash:
             vc = TransferAmountViewController()
         }

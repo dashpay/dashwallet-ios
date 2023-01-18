@@ -73,7 +73,7 @@ final class FromLabel: UIStackView {
         let fromLabel = UILabel()
         fromLabel.textColor = .dw_label()
         fromLabel.font = .dw_regularFont(ofSize: 14)
-        fromLabel.text = NSLocalizedString(text, comment: "CrowdNode")
+        fromLabel.text = text
         vertical.addArrangedSubview(fromLabel)
 
         balanceLabel = UILabel()

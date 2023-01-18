@@ -142,7 +142,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self completeSetup];
 }
 
-- (void)secureWalletRoutineDidVerify:(UIViewController *)controller { }
+- (void)secureWalletRoutineDidVerify:(UIViewController *)controller {
+}
 
 - (void)secureWalletRoutineDidFinish:(DWVerifiedSuccessfullyViewController *)controller {
     [self completeSetup];

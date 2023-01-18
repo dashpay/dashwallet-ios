@@ -10,14 +10,14 @@ import Foundation
 // MARK: - CoinbaseSwapeTrade
 
 struct CoinbaseSwapeTrade: Codable {
-    let createdAt: Date?
-    let displayInputAmount: DisplayInputAmount?
+    let createdAt: String?
+    let displayInputAmount: Amount
     let id: String?
-    let inputAmount, outputAmount, exchangeRate: DisplayInputAmount?
-    let unitPrice: CoinbaseSwapeTradeUnitPrice?
-    let fee: DisplayInputAmount?
+    let inputAmount, outputAmount, exchangeRate: Amount
+    let unitPrice: CoinbaseSwapeTradeUnitPrice
+    let fee: Amount
     let status: String?
-    let updatedAt: Date?
+    let updatedAt: String?
     let appliedSubscriptionBenefit: Bool?
     let feeWithoutSubscriptionBenefit, subscriptionInfo: JSONNull?
 
@@ -37,16 +37,12 @@ struct CoinbaseSwapeTrade: Codable {
     }
 }
 
-// MARK: - DisplayInputAmount
-
-struct DisplayInputAmount: Codable {
-    let amount, currency: String?
-}
 
 // MARK: - CoinbaseSwapeTradeUnitPrice
 
 struct CoinbaseSwapeTradeUnitPrice: Codable {
-    let targetToFiat, targetToSource: DisplayInputAmount?
+    let targetToFiat: Amount
+    let targetToSource: Amount
 
     enum CodingKeys: String, CodingKey {
         case targetToFiat = "target_to_fiat"

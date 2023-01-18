@@ -17,6 +17,7 @@
 
 #import "DWExploreTestnetContentsView.h"
 
+#import "DWEnvironment.h"
 #import "DWUIKit.h"
 
 @interface DWExploreTestnetContentsView () <UITableViewDataSource, UITableViewDelegate>
@@ -108,18 +109,19 @@
 
     if (indexPath.row == 2) {
         cell = (DWExploreCrowdNodeContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreCrowdNodeContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
-    } else {
+    }
+    else {
         cell = (DWExploreTestnetContentsViewCell *)[tableView dequeueReusableCellWithIdentifier:DWExploreTestnetContentsViewCell.dw_reuseIdentifier forIndexPath:indexPath];
     }
-    
+
     [cell setImage:[UIImage imageNamed:icon]];
     [cell setTitle:title];
     [cell setSubtitle:subtitle];
-    
+
     if (indexPath.row == 1) {
         cell.separatorInset = UIEdgeInsetsMake(0, 2000, 0, 0);
     }
-    
+
     return cell;
 }
 
@@ -215,7 +217,7 @@
     descLabel.numberOfLines = 0;
     [labelsStackView addArrangedSubview:descLabel];
     _descLabel = descLabel;
-    
+
     [labelsStackView addArrangedSubview:[UIView new]];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -286,7 +288,7 @@
 
 - (void)addCrowdNodeAPYLabel {
     UIColor *systemGreen = [UIColor colorWithRed:98.0 / 255.0 green:182.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
-    
+
     UIStackView *apyStackView = [UIStackView new];
     apyStackView.axis = UILayoutConstraintAxisHorizontal;
     apyStackView.spacing = 4;
@@ -300,18 +302,29 @@
     iconImageView.contentMode = UIViewContentModeCenter;
     [iconImageView setImage:[UIImage imageNamed:@"image.crowdnode.apy"]];
     [apyStackView addArrangedSubview:iconImageView];
-    
+
     UILabel *apiLabel = [[UILabel alloc] init];
     apiLabel.textColor = systemGreen;
     apiLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightSemibold];
-    apiLabel.text = NSLocalizedString(@"Current APY = a lot of %", nil);
+    apiLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Current APY = %@", @"Crowdnode"), [self apy]];
     [apyStackView addArrangedSubview:apiLabel];
-    
+
     [super addContent:apyStackView];
-    
+
     [NSLayoutConstraint activateConstraints:@[
         [apyStackView.heightAnchor constraintEqualToConstant:24]
     ]];
+}
+
+- (NSString *)apy {
+    double apyValue = [DWEnvironment sharedInstance].apy.doubleValue * 0.85;
+
+    NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+    numberFormatter.numberStyle = NSNumberFormatterPercentStyle;
+    numberFormatter.minimumFractionDigits = 0;
+    numberFormatter.maximumFractionDigits = 2;
+    numberFormatter.multiplier = @(1);
+    return [numberFormatter stringFromNumber:@(apyValue)];
 }
 
 @end

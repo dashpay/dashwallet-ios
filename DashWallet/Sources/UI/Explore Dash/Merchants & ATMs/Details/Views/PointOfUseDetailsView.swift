@@ -52,7 +52,8 @@ class PointOfUseDetailsView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func callAction() {
+    @objc
+    func callAction() {
         guard let phone = merchant.phone else { return }
 
         let fixedPhone = phone.replacingOccurrences(of: " ", with: "")
@@ -62,7 +63,8 @@ class PointOfUseDetailsView: UIView {
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 
-    @objc func directionAction() {
+    @objc
+    func directionAction() {
         guard let longitude = merchant.longitude, let latitude = merchant.latitude else { return }
 
         let coordinate = CLLocationCoordinate2DMake(latitude, longitude)
@@ -71,16 +73,19 @@ class PointOfUseDetailsView: UIView {
         mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving])
     }
 
-    @objc func showAllLocationsAction() {
+    @objc
+    func showAllLocationsAction() {
         showAllLocationsActionBlock?()
     }
 
-    @objc func websiteAction() {
+    @objc
+    func websiteAction() {
         guard let website = merchant.website, let url = URL(string: website) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 
-    @objc func payAction() {
+    @objc
+    func payAction() {
         if case .merchant(let m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
@@ -89,7 +94,8 @@ class PointOfUseDetailsView: UIView {
         }
     }
 
-    @objc func sellAction() {
+    @objc
+    func sellAction() {
         sellDashHandler?()
     }
 
@@ -116,7 +122,8 @@ class PointOfUseDetailsView: UIView {
 }
 
 extension PointOfUseDetailsView {
-    @objc internal func configureHeaderView() {
+    @objc
+    internal func configureHeaderView() {
         headerContainerView = UIStackView()
         headerContainerView.translatesAutoresizingMaskIntoConstraints = false
         headerContainerView.spacing = 15
@@ -167,7 +174,8 @@ extension PointOfUseDetailsView {
         ])
     }
 
-    @objc func configureLocationBlock() {
+    @objc
+    func configureLocationBlock() {
         locationContainerView = UIStackView()
         locationContainerView.translatesAutoresizingMaskIntoConstraints = false
         locationContainerView.spacing = 5
@@ -194,7 +202,8 @@ extension PointOfUseDetailsView {
         }
     }
 
-    @objc func configureActionBlock() {
+    @objc
+    func configureActionBlock() {
         let buttonsStackView = UIStackView()
         buttonsStackView.distribution = .fillEqually
         buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -236,7 +245,8 @@ extension PointOfUseDetailsView {
         return button
     }
 
-    @objc internal func configureBottomButton() {
+    @objc
+    internal func configureBottomButton() {
         let payButton = DWActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)

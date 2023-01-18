@@ -1,6 +1,12 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* CrowdNode */
+" Privacy Policy " = " Privacy Policy ";
+
+/* CrowdNode */
+" Terms of Use " = " Terms of Use ";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ прийняв ваш запит на додавання в контакти";
 
@@ -82,11 +88,20 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Пароль пристрою потрібен для захисту вашого гаманця. Щоб продовжити, перейдіть до налаштувань і ввімкніть пароль.";
 
+/* CrowdNode */
+"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
+
 /* No comment provided by engineer. */
 "About" = "Про програму";
 
 /* No comment provided by engineer. */
 "Accept" = "Прийняти";
+
+/* CrowdNode */
+"Accept Terms Of Use" = "Accept Terms Of Use";
+
+/* CrowdNode */
+"Accepting terms of use…" = "Accepting terms of use…";
 
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Приймає DASH безпосередньо";
@@ -142,6 +157,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Інтуїтивний та звичний інтерфейс на всіх ваших пристроях";
 
+/* CrowdNode */
+"and" = "and";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -184,8 +202,14 @@
 /* No comment provided by engineer. */
 "Available balance" = "Доступний баланс";
 
+/* No comment provided by engineer. */
+"Backup Passphrase" = "Backup Passphrase";
+
 /* A noun. Used as a title. */
 "Backup Wallet" = "Резервна копія гаманця";
+
+/* No comment provided by engineer. */
+"Backup your passphrase to create a CrowdNode account" = "Backup your passphrase to create a CrowdNode account";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Некоректна фраза відновлення";
@@ -195,6 +219,9 @@
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Баланс приховано";
+
+/* CrowdNode */
+"Balance: " = "Balance: ";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bank Account";
@@ -382,11 +409,35 @@
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Створитит нови";
 
+/* CrowdNode */
+"Create Account" = "Create Account";
+
+/* CrowdNode Portal */
+"Create Online Account" = "Create Online Account";
+
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
 
 /* No comment provided by engineer. */
+"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
+
+/* CrowdNode Portal */
+"CrowdNode Support" = "CrowdNode Support";
+
+/* CrowdNode */
+"CrowdNode withdrawal limits" = "CrowdNode withdrawal limits";
+
+/* CrowdNode Portal */
+"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
+
+/* No comment provided by engineer. */
 "CSV Export" = "Експорт CSV";
+
+/* Crowdnode */
+"Current APY = %@" = "Current APY = %@";
+
+/* CrowdNode */
+"Current APY is %@" = "Current APY is %@";
 
 /* Explore Dash: Filters */
 "Current location" = "Current location";
@@ -415,6 +466,9 @@
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Комісія за оновлення DashPay";
 
+/* CrowdNode Portal */
+"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
+
 /* No comment provided by engineer. */
 "Date" = "Дата";
 
@@ -423,6 +477,18 @@
 
 /* Location Service Status */
 "Denied" = "Заборонено";
+
+/* CrowdNode Portal */
+"Deposit" = "Deposit";
+
+/* CrowdNode Portal */
+"Deposit %@ to start earning" = "Deposit %@ to start earning";
+
+/* CrowdNode Portal */
+"Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
+
+/* CrowdNode */
+"Deposit sent" = "Deposit sent";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "БЕЗПЕКА ПРИСТРОЮ ПІД ЗАГРОЗОЮ\nБудь-який «jailbreak» додаток може отримати доступ до ваших приватних ключів (і вкрасти ваші Dash).";
@@ -452,11 +518,17 @@
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Вузол завантаження: %@";
 
+/* CrowdNode */
+"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
+
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Раніше";
 
 /* No comment provided by engineer. */
 "Easily shop with your DASH at over 155,000 locations and online merchants" = "Здійснюйте покупки використовуючи DASH у більш ніж 155 000 магазинах та онлайн";
+
+/* No comment provided by engineer. */
+"Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "наприклад: johndoe";
@@ -560,6 +632,12 @@
 /* No comment provided by engineer. */
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Знайдіть, де купити або продати DASH та інші криптовалюти за готівку.";
 
+/* CrowdNode */
+"First deposit should be more than %@" = "First deposit should be more than %@";
+
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Забули PIN-код?";
 
@@ -575,8 +653,17 @@
 /* Coinbase: transfer dash to/from */
 "FROM" = "FROM";
 
+/* from CrowdNode */
+"from CrowdNode" = "from CrowdNode";
+
+/* from Dash Wallet */
+"from Dash Wallet" = "from Dash Wallet";
+
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+
+/* Coinbase */
+"from your Coinbase account" = "from your Coinbase account";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Згенерувати розширені відкриті ключі?";
@@ -584,11 +671,17 @@
 /* No comment provided by engineer. */
 "Generating CSV Report" = "Створення звіту CSV";
 
+/* Coinbase/Convert Crypto */
+"Get Quote" = "Get Quote";
+
 /* No comment provided by engineer. */
 "Get Started" = "Почати";
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
+
+/* No comment provided by engineer. */
+"Go to CrowdNode website" = "Go to CrowdNode website";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Перейти на сайт";
@@ -629,11 +722,17 @@
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я погоджуюся з тим, що втрачу свої монети, якщо більше не матиму фрази відновлення";
 
+/* CrowdNode */
+"I agree to CrowdNode" = "I agree to CrowdNode";
+
 /* No comment provided by engineer. */
 "I wrote it down" = "Я записав її";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Якщо ви втратите цей пристрій, ви втратите свої кошти. Отримайте свою фразу відновлення, щоб ви могли відновити свій гаманець на іншому пристрої.";
+
+/* No comment provided by engineer. */
+"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Якщо ви все ще бажаєте видалити гаманець, будь ласка, введіть: \"%@\"";
@@ -682,6 +781,12 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Неправильний QR код";
+
+/* CrowdNode */
+"It can take a minute for your balance to be updated." = "It can take a minute for your balance to be updated.";
+
+/* CrowdNode */
+"It can take a minute for your funds to arrive." = "It can take a minute for your funds to arrive.";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone. If not, enter the code from the authentication app.";
@@ -981,6 +1086,15 @@
 /* No comment provided by engineer. */
 "Pending" = "Очікує";
 
+/* CrowdNode */
+"per 24 hours" = "per 24 hours";
+
+/* CrowdNode */
+"per hour" = "per hour";
+
+/* CrowdNode */
+"per transaction" = "per transaction";
+
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Для здійснення платежу завжди потрібен PIN-код";
 
@@ -1023,6 +1137,9 @@
 /* No comment provided by engineer. */
 "Processing" = "Обробка";
 
+/* CrowdNode Portal */
+"Protect your savings" = "Protect your savings";
+
 /* No comment provided by engineer. */
 "Provider Address" = "Адреса провайдера";
 
@@ -1043,6 +1160,9 @@
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Курс: %1$@ = %2$@";
+
+/* CrowdNode */
+"Read Withdrawal Policy" = "Read Withdrawal Policy";
 
 /* No comment provided by engineer. */
 "Receive" = "Отримати";
@@ -1197,8 +1317,14 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Переглянути на Uphold";
 
+/* Coinbase */
+"Select a coin" = "Select a coin";
+
 /* Buy Sell Dash */
 "Select a service" = "Select a service";
+
+/* Coinbase */
+"Select Account" = "Select Account";
 
 /* Sell */
 "Sell" = "Продати";
@@ -1218,6 +1344,10 @@
 /* No comment provided by engineer. */
 "Send Contact Request" = "Надіслати запит на додавання до контактів";
 
+/* Coinbase
+   CrowdNode */
+"Send Report" = "Send Report";
+
 /* No comment provided by engineer. */
 "Send to" = "Відправити";
 
@@ -1232,6 +1362,12 @@
 
 /* No comment provided by engineer. */
 "Sending to" = "Відправка";
+
+/* CrowdNode */
+"Sending to CrowdNode account" = "Sending to CrowdNode account";
+
+/* CrowdNode */
+"Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
 
 /* Buy Dash */
 "Sending to:" = "Sending to:";
@@ -1278,6 +1414,9 @@
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Показати фразу відновлення";
 
+/* CrowdNode */
+"Sign up to CrowdNode" = "Sign up to CrowdNode";
+
 /* No comment provided by engineer. */
 "Skip" = "Пропустити";
 
@@ -1310,6 +1449,9 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Підтвердження витрат";
+
+/* No comment provided by engineer. */
+"Staking" = "Staking";
 
 /* No comment provided by engineer. */
 "Support" = "Підтримка";
@@ -1349,6 +1491,9 @@
 
 /* No comment provided by engineer. */
 "Tax Category" = "Податкова категорія";
+
+/* No comment provided by engineer. */
+"The chain is syncing…" = "The chain is syncing…";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
@@ -1407,8 +1552,8 @@
 /* Send Screen: to address */
 "to" = "to";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
+/* Coinbase */
+"to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "Tools" = "Інструменти";
@@ -1432,6 +1577,9 @@
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Переказати Dash з Uphold облікового запису на цей гаманець";
+
+/* CrowdNode */
+"Transfer Error" = "Transfer Error";
 
 /* Coinbase */
 "Transfer Failed" = "Transfer Failed";
@@ -1499,9 +1647,6 @@
 /* No comment provided by engineer. */
 "Used at IP address" = "Використано за IP-адресою";
 
-/* Coinbase */
-"User session expired" = "User session expired";
-
 /* No comment provided by engineer. */
 "Username taken" = "Ім'я користувача зайняте";
 
@@ -1516,6 +1661,9 @@
 
 /* Coinbase */
 "Verfiy" = "Verfiy";
+
+/* CrowdNode Portal */
+"Verification Required" = "Verification Required";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Успішно верифіковано";
@@ -1547,6 +1695,9 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "Ключі голосування";
 
+/* No comment provided by engineer. */
+"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
+
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
@@ -1564,6 +1715,15 @@
 
 /* No comment provided by engineer. */
 "We are about to show you the secret key to your wallet." = "Зараз ми покажемо секретний ключ до вашого гаманця.";
+
+/* CrowdNode */
+"We couldn’t create your CrowdNode account." = "We couldn’t create your CrowdNode account.";
+
+/* CrowdNode */
+"We couldn’t make a deposit to your CrowdNode account." = "We couldn’t make a deposit to your CrowdNode account.";
+
+/* CrowdNode */
+"We couldn’t withdraw from your CrowdNode account." = "We couldn’t withdraw from your CrowdNode account.";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "Ми не зберігаємо цю фразу відновлення.";
@@ -1607,6 +1767,15 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "З блокчейном Dash";
 
+/* CrowdNode Portal */
+"Withdraw" = "Withdraw";
+
+/* CrowdNode */
+"Withdraw without limits with an online account on CrowdNode website." = "Withdraw without limits with an online account on CrowdNode website.";
+
+/* CrowdNode */
+"Withdrawal requested" = "Withdrawal requested";
+
 /* No comment provided by engineer. */
 "Yes" = "Yes";
 
@@ -1632,13 +1801,31 @@
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Ви вибрали \"%@\" як своє ім'я користувача. Ваше ім'я користувача не можна буде змінити після реєстрації.";
 
 /* No comment provided by engineer. */
+"You have insufficient funds to proceed" = "You have insufficient funds to proceed";
+
+/* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Ви повинні ввести свій PIN-код, щоб увійти в Dash Wallet";
+
+/* CrowdNode */
+"You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
+
+/* CrowdNode */
+"You only need %@ to join the pool." = "You only need %@ to join the pool.";
+
+/* Coinbase */
+"You receive" = "You receive";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Ви отримали Dash! Якщо ви втратите цей пристрій, ви втратите свої кошти. Отримайте свою фразу відновлення, щоб ви могли відновити свій гаманець на іншому пристрої.";
 
+/* Coinbase */
+"You send" = "You send";
+
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Ви надіслали запит на контакт %@";
+
+/* No comment provided by engineer. */
+"You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
 
 /* Sign out from coinbase due to error */
 "You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
@@ -1658,8 +1845,17 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
+/* CrowdNode */
+"Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";
+
+/* CrowdNode */
+"Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Ваше ім’я користувача DashPay готове до використання";
+
+/* CrowdNode */
+"Your deposit to CrowdNode is received." = "Your deposit to CrowdNode is received.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";

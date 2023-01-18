@@ -34,6 +34,59 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     let rewards: Rewards?
     let rewardsApy: String?
 
+    var iconURL: URL {
+        let code = currency.code.lowercased()
+        let urlString = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/\(code).png"
+        return URL(string: urlString)!
+    }
+
+    var balanceString: String {
+        balance.amount
+    }
+
+    var currencyCode: String {
+        currency.code
+    }
+
+    var balanceFormatted: String {
+        let nf = NumberFormatter.cryptoFormatter(currencyCode: currencyCode, exponent: currency.exponent)
+        return nf.string(from: balance.amount.decimal()! as NSNumber)!
+    }
+
+    var fiatBalanceFormatted: String {
+        guard let amount = balance.amount.decimal() else {
+            return "Failed to format"
+        }
+
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convert(to: App.fiatCurrency,
+                                                                              amount: amount,
+                                                                              amountCurrency: balance.currency) else {
+            return NSLocalizedString("Updating Price", comment: "Exchange")
+        }
+
+        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        return nf.string(from: fiatAmount as NSNumber)!
+    }
+
+    var plainAmount: UInt64 {
+        guard let dashNumber = Decimal(string: balance.amount) else {
+            return 0
+        }
+
+        let plainAmount = dashNumber * pow(10, currency.exponent)
+        return NSDecimalNumber(decimal: plainAmount).uint64Value
+    }
+
+    var plainAmountInDash: UInt64 {
+        if currencyCode == kDashCurrency { return plainAmount }
+
+        guard let dashAmount = try? Coinbase.shared.currencyExchanger.convertToDash(amount: balance.amount.decimal()!, currency: currencyCode) else {
+            return 0
+        }
+
+        return dashAmount.plainDashAmount
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case name
@@ -57,16 +110,6 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
 struct Balance: Codable {
     let amount: String
     let currency: String
-
-    var plainAmount: UInt64 {
-        guard let dashNumber = Decimal(string: amount) else {
-            return 0
-        }
-
-        let duffsNumber = Decimal(DUFFS)
-        let plainAmount = dashNumber * duffsNumber
-        return NSDecimalNumber(decimal: plainAmount).uint64Value
-    }
 }
 
 // MARK: - Currency

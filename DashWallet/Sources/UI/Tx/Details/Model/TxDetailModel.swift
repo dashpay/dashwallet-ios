@@ -40,7 +40,8 @@ class TxDetailModel: NSObject {
     }
 
 
-    @objc init(transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
+    @objc
+    init(transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
         transactionId = transaction.txHashHexString
         self.transaction = transaction
         self.dataProvider = dataProvider

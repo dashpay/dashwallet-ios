@@ -20,6 +20,8 @@ import UIKit
 // MARK: - SendAmountViewController
 
 class SendAmountViewController: BaseAmountViewController {
+    override var isMaxButtonHidden: Bool { false }
+
     override var actionButtonTitle: String? { NSLocalizedString("Send", comment: "Send Dash") }
 
     internal var sendAmountModel: SendAmountModel {
@@ -30,7 +32,8 @@ class SendAmountViewController: BaseAmountViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -39,9 +42,7 @@ class SendAmountViewController: BaseAmountViewController {
     }
 
     override func maxButtonAction() {
-        sendAmountModel.selectAllFunds { [weak self] in
-            self?.amountView.amountType = .main
-        }
+        sendAmountModel.selectAllFunds()
     }
 
     override func amountDidChange() {

@@ -17,6 +17,16 @@
 
 import UIKit
 
+// MARK: - PreviewOrderItem
+
+protocol PreviewOrderItem {
+    var isInfoButtonHidden: Bool { get }
+    var localizedTitle: String { get }
+    var valueFont: UIFont { get }
+    var localizedDescription: String? { get }
+
+}
+
 // MARK: - ConfirmOrderGeneralInfoCell
 
 class ConfirmOrderGeneralInfoCell: UITableViewCell {
@@ -44,19 +54,14 @@ class ConfirmOrderGeneralInfoCell: UITableViewCell {
     }
 
     // MARK: Actions
-    @objc func infoButtonAction() {
+    @objc
+    func infoButtonAction() {
         infoHandle?()
     }
 
-    func update(with item: ConfirmOrderItem, value: String) {
+    func update(with item: PreviewOrderItem, value: String) {
         infoButton.isHidden = item.isInfoButtonHidden
-
-        if item == .totalAmount {
-            valueLabel.font = valueLabel.font.withWeight(UIFont.Weight.medium.rawValue)
-        } else {
-            valueLabel.font = .dw_font(forTextStyle: .subheadline)
-        }
-
+        valueLabel.font = item.valueFont
         nameLabel.text = item.localizedTitle.uppercased()
         valueLabel.text = value
     }
@@ -125,19 +130,13 @@ class ConfirmOrderGeneralInfoCell: UITableViewCell {
 final class ConfirmOrderAmountInDashCell: ConfirmOrderGeneralInfoCell {
     var descriptionLabel: UILabel!
 
-    func update(with item: ConfirmOrderItem, value: String, amountString: String) {
-        update(with: item, value: value)
-    }
-
-    override func update(with item: ConfirmOrderItem, value: String) {
+    override func update(with item: PreviewOrderItem, value: String) {
         super.update(with: item, value: value)
-
-        let descriptionString =
-            String(format: NSLocalizedString("You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.",
-                                             comment: "Coinbase/Buy Dash/Confirm Order"),
-                   value)
-
         valueLabel.attributedText = value.attributedAmountStringWithDashSymbol(tintColor: .dw_dashBlue())
+
+        guard let description = item.localizedDescription else { return }
+
+        let descriptionString = String(format: description, value)
         descriptionLabel.attributedText = descriptionString.attributedAmountStringWithDashSymbol(tintColor: .dw_label())
     }
 

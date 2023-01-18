@@ -18,7 +18,8 @@
 import UIKit
 
 class PointOfUseInfoViewController: UIViewController {
-    @objc func closeButtonAction() {
+    @objc
+    func closeButtonAction() {
         dismiss(animated: true)
     }
 

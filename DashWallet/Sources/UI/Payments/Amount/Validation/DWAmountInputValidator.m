@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWDecimalInputValidator *decimalValidator;
 @property (copy, nonatomic) NSString *decimalSeparator;
-@property (strong, nonatomic) NSNumberFormatter *numberFormatter;
+
 
 @end
 
@@ -81,6 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWInputValidator
 
 - (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string {
+    return [self validatedStringFromLastInputString:lastInputString range:range replacementString:string numberFormatter:self.numberFormatter];
+}
+
+- (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string numberFormatter:(NSNumberFormatter *)numberFormatter {
     NSString *validNumberString = [self.decimalValidator validatedStringFromLastInputString:lastInputString
                                                                                       range:range
                                                                           replacementString:string];
@@ -92,23 +96,24 @@ NS_ASSUME_NONNULL_BEGIN
         return validNumberString;
     }
 
-    NSString *validAmountString = [self validatedAmountStringFromNumberString:validNumberString];
+    NSString *validAmountString = [self validatedAmountStringFromNumberString:validNumberString numberFormatter:numberFormatter];
     return validAmountString;
 }
 
 #pragma mark - Private
 
-- (nullable NSString *)validatedAmountStringFromNumberString:(NSString *)validNumberString {
+- (nullable NSString *)validatedAmountStringFromNumberString:(NSString *)validNumberString numberFormatter:(NSNumberFormatter *)numberFormatter {
     NSParameterAssert(validNumberString);
 
-    NSNumberFormatter *numberFormatter = self.numberFormatter;
+    NSNumberFormatter *nf = [numberFormatter copy];
+    nf.numberStyle = NSNumberFormatterNoStyle;
 
-    NSNumber *number = [numberFormatter numberFromString:validNumberString];
+    NSNumber *number = [nf numberFromString:validNumberString];
     if (number == nil) {
         return nil;
     }
 
-    NSString *amountString = [numberFormatter stringFromNumber:number];
+    NSString *amountString = [nf stringFromNumber:number];
     if ([amountString isEqualToString:validNumberString]) {
         return amountString;
     }

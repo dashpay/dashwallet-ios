@@ -58,7 +58,8 @@
     if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
         UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
         [self.navigationController pushViewController:vc animated:YES];
-    } else {
+    }
+    else {
         [self notifyChainSyncing];
     }
 }
@@ -75,11 +76,11 @@
             actionWithTitle:NSLocalizedString(@"Go to CrowdNode website", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *_Nonnull action) {
-
-            [[UIApplication sharedApplication] openURL:[CrowdNodeObjcWrapper crowdNodeWebsiteUrl]
-                                               options:@{}
-                                     completionHandler:^(BOOL success){}];
-        }];
+                        [[UIApplication sharedApplication] openURL:[CrowdNodeObjcWrapper crowdNodeWebsiteUrl]
+                                                           options:@{}
+                                                 completionHandler:^(BOOL success){
+                                                 }];
+                    }];
         [alert addAction:action];
     }
 

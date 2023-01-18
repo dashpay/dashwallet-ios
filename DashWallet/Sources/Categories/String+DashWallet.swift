@@ -41,17 +41,25 @@ extension String {
         return NSAttributedString(attachment: attachment)
     }
 
-    func attributedAmountStringWithDashSymbol(tintColor: UIColor) -> NSAttributedString {
+    func attributedAmountStringWithDashSymbol(tintColor: UIColor, dashSymbolColor: UIColor? = nil, font: UIFont? = nil) -> NSAttributedString {
         let attributedString = NSMutableAttributedString(string: trimmingCharacters(in: .whitespacesAndNewlines))
 
-        let dashSymbolAttributedString = dashSymbolAttributedString(with: tintColor)
-        if let range = attributedString.string.range(of: DASH) {
-            attributedString.replaceCharacters(in: NSRange(range, in: attributedString.string), with: dashSymbolAttributedString)
+        let dashSymbolAttributedString = dashSymbolAttributedString(with: dashSymbolColor ?? tintColor)
+        let dashSymbolRange = attributedString.string.nsRange(of: DASH)
+        if dashSymbolRange.isValid {
+            attributedString.replaceCharacters(in: dashSymbolRange, with: dashSymbolAttributedString)
         } else {
             attributedString.insert(.init(string: " "), at: 0)
             attributedString.insert(dashSymbolAttributedString, at: 0)
-            attributedString.addAttribute(.foregroundColor, value: tintColor,
-                                          range: .init(location: 0, length: attributedString.length))
+        }
+
+        let amountRange = NSRange(location: 2,
+                                  length: attributedString.string.count - 2)
+
+        attributedString.addAttribute(.foregroundColor, value: tintColor, range: amountRange)
+
+        if let font {
+            attributedString.addAttribute(.font, value: font, range: amountRange)
         }
 
         return attributedString
@@ -73,10 +81,11 @@ extension String {
                 let beforeFractionRange = NSMakeRange(0, range.location)
                 attributedString.setAttributes(defaultAttributes, range: beforeFractionRange)
             }
-            let fractionAttributes = [NSAttributedString.Key.foregroundColor: textColor.withAlphaComponent(0.5)]
 
-            attributedString.setAttributes(fractionAttributes, range: range)
-
+            if range.length + range.location >= count {
+                let fractionAttributes = [NSAttributedString.Key.foregroundColor: textColor.withAlphaComponent(0.5)]
+                attributedString.setAttributes(fractionAttributes, range: range)
+            }
 
             let afterFractionIndex = range.location + range.length
             if afterFractionIndex < count {
@@ -148,5 +157,19 @@ extension String {
 
     func decimal(locale: Locale? = nil) -> Decimal? {
         Decimal(string: self, locale: locale)
+    }
+
+    func nsRange(of aString: String) -> NSRange {
+        guard let range = range(of: aString) else {
+            return NSMakeRange(NSNotFound, 0)
+        }
+
+        return NSRange(range, in: self)
+    }
+}
+
+extension NSRange {
+    var isValid: Bool {
+        location != NSNotFound
     }
 }

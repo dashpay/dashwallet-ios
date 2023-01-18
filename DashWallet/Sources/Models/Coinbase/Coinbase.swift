@@ -21,6 +21,8 @@ import Combine
 import Foundation
 
 let kDashCurrency = "DASH"
+let kDashAccount = "DASH"
+
 let kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!
 let kCoinbaseAddPaymentMethodsURL = URL(string: "https://www.coinbase.com/settings/linked-accounts")!
 let kCoinbaseFeeInfoURL = URL(string: "https://help.coinbase.com/en/coinbase/trading-and-funding/pricing-and-fees/fees")!
@@ -28,71 +30,112 @@ let kMaxDashAmountToTransfer: UInt64 = kOneDash
 let kMinUSDAmountOrder: Decimal = 1.99
 let kMinDashAmountToTransfer: UInt64 = 10_000
 
+// MARK: - CoinbaseObjcWrapper
+
+@objc
+class CoinbaseObjcWrapper: NSObject {
+    private static var wrapped = Coinbase.shared
+
+    @objc
+    static func start() {
+        wrapped.initialize()
+    }
+}
+
 // MARK: - Coinbase
 
 class Coinbase {
+    public var currencyExchanger: CurrencyExchanger = .init(dataProvider: CoinbaseRatesProvider())
+
     private lazy var coinbaseService = CoinbaseService()
 
-    private var auth = CBAuth()
-    private var tx = CBTransactions()
+    private var auth: CBAuth!
+    private var accountService: AccountService!
+    private var paymentMethodsService: PaymentMethods!
+
+    func initialize() {
+        CoinbaseAPI.initialize(with: self)
+
+        auth = CBAuth()
+        accountService = AccountService(authInterop: auth)
+        paymentMethodsService = PaymentMethods(authInterop: auth)
+        currencyExchanger.startExchangeRateFetching()
+
+        // Pre-fetch data
+        Task {
+            try await accountService.refreshAccount(kDashAccount)
+            try await paymentMethodsService.fetchPaymentMethods()
+        }
+    }
+
+    static func initialize() {
+        shared.initialize()
+    }
 
     public static let shared = Coinbase()
-
-    init() {
-        CoinbaseAPI.shared.secureTokenProvider = auth
-    }
 }
 
 extension Coinbase {
     var isAuthorized: Bool { auth.currentUser != nil }
 
     var paymentMethods: [CoinbasePaymentMethod] {
-        guard let paymentMethods = auth.currentUser?.paymentMethods else {
-            return []
+        get async throws {
+            try await paymentMethodsService.fetchPaymentMethods()
         }
-
-        return paymentMethods
     }
 
     var lastKnownBalance: UInt64? {
-        guard let balance = auth.currentUser?.balance else {
-            return nil
-        }
-
-        return balance
+        dashAccount?.balance
     }
 
     var sendLimit: Decimal {
         auth.currentUser?.sendLimit ?? Coinbase.sendLimitAmount
     }
+
+    var dashAccount: CBAccount? {
+        accountService.dashAccount
+    }
 }
 
 extension Coinbase {
-    @MainActor public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
+    @MainActor
+    public func signIn(with presentationContext: ASWebAuthenticationPresentationContextProviding) async throws {
         try await auth.signIn(with: presentationContext)
+        try await accountService.refreshAccount(kDashAccount)
     }
 
     public func createNewCoinbaseDashAddress() async throws -> String {
-        guard let coinbaseUserAccountId = auth.currentUser?.accountId else {
-            throw Coinbase.Error.general(.noActiveUser)
+        do {
+            return try await accountService.retrieveAddress(for: kDashAccount)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
         }
-
-        return try await coinbaseService.createCoinbaseAccountAddress(accountId: coinbaseUserAccountId)
     }
 
     public func getDashExchangeRate() async throws -> CoinbaseExchangeRate? {
-        try await coinbaseService.getCoinbaseExchangeRates(currency: kDashCurrency)
+        do {
+            return try await coinbaseService.getCoinbaseExchangeRates(currency: kDashCurrency)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
+        }
     }
 
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                  amount: UInt64) async throws -> CoinbaseTransaction {
-        guard let accountId = auth.currentUser?.accountId else {
-            throw Coinbase.Error.general(.noActiveUser)
+        do {
+            return try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
         }
-
-        let tx = try await tx.send(from: accountId, amount: amount, verificationCode: verificationCode)
-        try? await auth.currentUser?.refreshAccount()
-        return tx
     }
 
     /// Place Buy Order
@@ -104,12 +147,16 @@ extension Coinbase {
     ///
     /// - Throws: Coinbase.Error
     ///
-    func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
-        guard let accountId = auth.currentUser?.accountId else {
-            throw Coinbase.Error.general(.noActiveUser)
+    func placeCoinbaseBuyOrder(amount: UInt64,
+                               paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+        do {
+            return try await accountService.placeBuyOrder(for: kDashAccount, amount: amount, paymentMethod: paymentMethod)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
         }
-
-        return try await tx.placeCoinbaseBuyOrder(accountId: accountId, amount: amount, paymentMethod: paymentMethod)
     }
 
     /// Commit Buy Order
@@ -122,20 +169,73 @@ extension Coinbase {
     /// - Throws: Coinbase.Error
     ///
     func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
-        guard let accountId = auth.currentUser?.accountId else {
-            throw Coinbase.Error.general(.noActiveUser)
+        do {
+            return try await accountService.commitBuyOrder(accountName: kDashAccount, orderID: orderID)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
         }
+    }
 
-        let order = try await tx.commitCoinbaseBuyOrder(accountId: accountId, orderID: orderID)
-        return order
+    /// Place trade order
+    ///
+    /// This method creates an on order to trade between accounts
+    ///
+    /// - Parameters:
+    ///   - origin: Account we use to covert from
+    ///   - destination: Account we use to convert to
+    ///   - amount: Plain amount in crypto. The amount should be in the same currency as origin's account currency
+    ///
+    /// - Returns: Order `CoinbaseSwapeTrade`
+    ///
+    /// - Throws: `Coinbase.Error`
+    ///
+    ///
+    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: String) async throws -> CoinbaseSwapeTrade {
+        do {
+            return try await accountService.placeTradeOrder(from: origin, to: destination, amount: amount)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
+        }
+    }
+
+    /// Commit Trade Order
+    ///
+    /// - Parameters:
+    ///   - origin: Instance of `CBAccount` you used in `placeTradeOrder` method to convert from
+    ///   - orderID: Order id from `CoinbaseSwapeTrade` you receive by calling `placeTradeOrder`
+    ///
+    /// - Returns: CoinbasePlaceBuyOrder
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
+        do {
+            return try await accountService.commitTradeOrder(origin: origin, orderID: orderID)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
+        } catch {
+            throw error
+        }
     }
 
     public func signOut() async throws {
-        guard let _ = auth.currentUser?.accountId else {
-            throw Coinbase.Error.general(.noActiveUser)
+        guard isAuthorized else {
+            return
         }
 
         try await auth.signOut()
+        accountService.removeStoredAccount()
+    }
+
+    public func accounts() async throws -> [CBAccount] {
+        try await accountService.allAccounts()
     }
 
     public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
@@ -158,3 +258,16 @@ extension String {
         return localizedAmount(locale: locale)
     }
 }
+
+// MARK: - Coinbase + CoinbaseAPIAccessTokenProvider
+
+extension Coinbase: CoinbaseAPIAccessTokenProvider {
+    var accessToken: String? {
+        auth.accessToken
+    }
+
+    func refreshTokenIfNeeded() async throws {
+        try await auth.refreshTokenIfNeeded()
+    }
+}
+

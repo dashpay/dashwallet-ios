@@ -42,9 +42,6 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
-    override var isMaxButtonHidden: Bool { false }
-
-
     var isSendAllowed: Bool {
         amount.plainAmount > 0 && !canShowInsufficientFunds && (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced)
@@ -68,42 +65,27 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
-        checkError()
+        checkAmountForErrors()
     }
 
-    func selectAllFunds(_ preparationHandler: () -> Void) {
-        let authManager = DSAuthenticationManager.sharedInstance()
-
-        if authManager.didAuthenticate {
-            selectAllFunds()
-        }
-        else {
-            authManager
-                .authenticate(withPrompt: nil, usingBiometricAuthentication: true,
-                              alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
-                    if authenticatedOrSuccess {
-                        self?.selectAllFunds()
-                    }
-                }
+    func selectAllFunds() {
+        auth { [weak self] isAuthenticated in
+            if isAuthenticated {
+                self?.selectAllFundsWithoutAuth()
+            }
         }
     }
 
-    override func amountDidChange() {
-        checkError()
-
-        super.amountDidChange()
-    }
-
-    private func selectAllFunds() {
+    internal func selectAllFundsWithoutAuth() {
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
 
         if allAvailableFunds > 0 {
-            updateCurrentAmountObject(with: Int64(allAvailableFunds))
+            updateCurrentAmountObject(with: allAvailableFunds)
         }
     }
 
-    internal func checkError() {
+    override func checkAmountForErrors() {
         guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced
         else {
@@ -117,6 +99,21 @@ class SendAmountModel: BaseAmountModel {
         }
 
         error = nil
+    }
+
+    internal func auth(completionBlock: @escaping ((Bool) -> Void)) {
+        let authManager = DSAuthenticationManager.sharedInstance()
+
+        if authManager.didAuthenticate {
+            completionBlock(true)
+        }
+        else {
+            authManager.authenticate(withPrompt: nil,
+                                     usingBiometricAuthentication: true,
+                                     alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
+                completionBlock(authenticatedOrSuccess)
+            }
+        }
     }
 
     deinit {
@@ -134,6 +131,6 @@ extension SendAmountModel: SyncingActivityMonitorObserver {
     func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        checkError()
+        checkAmountForErrors()
     }
 }

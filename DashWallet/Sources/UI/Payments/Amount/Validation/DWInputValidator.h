@@ -21,7 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWInputValidator <NSObject>
 
+
 - (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string;
+- (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string numberFormatter:(NSNumberFormatter *)numberFormatter;
 
 @end
 

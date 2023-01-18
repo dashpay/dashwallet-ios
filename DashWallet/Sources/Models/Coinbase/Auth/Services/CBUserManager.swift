@@ -35,11 +35,13 @@ class CBUserManager {
         return try? decoder.decode(CBUser.self, from: data)
     }
 
-    @discardableResult func removeUser() -> Bool {
+    @discardableResult
+    func removeUser() -> Bool {
         setKeychainData(nil, kKeychainUserAccessKey, false)
     }
 
-    @discardableResult func store(user: CBUser) -> Bool {
+    @discardableResult
+    func store(user: CBUser) -> Bool {
         let encoder = JSONEncoder()
         let data = try? encoder.encode(user)
 

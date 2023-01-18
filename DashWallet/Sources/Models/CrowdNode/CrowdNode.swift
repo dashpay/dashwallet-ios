@@ -79,7 +79,7 @@ public final class CrowdNode {
         case linking = 1
         case validating = 2
         case confirming = 3
-        case creating = 4
+        case creating = 4    // TODO: NMI-917
         case signingUp = 5
         case done = 6
         
@@ -105,12 +105,16 @@ public final class CrowdNode {
     private(set) var linkingApiAddress: String? = nil
     private(set) var isOnlineStateRestored: Bool = false
     var showNotificationOnResult = false
-    let masternodeAPY = 0.069 // TODO: NMI-832
-    lazy var crowdnodeAPY = masternodeAPY * 0.8
+
+    let masternodeAPY: Double
+    let crowdnodeAPY: Double
 
     public static let shared: CrowdNode = .init()
 
     init() {
+        masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
+        crowdnodeAPY = masternodeAPY * 0.85
+
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
@@ -132,21 +136,9 @@ public final class CrowdNode {
                 wSelf.startTrackingValidated(address: wSelf.accountAddress, initialDelay: initialDelay)
             case .confirming:
                 wSelf.startTrackingConfirmed(address: wSelf.accountAddress, initialDelay: initialDelay)
+            default:
                 break
-            case .creating:
-//                startTrackingCreating(accountAddress!!, initialDelay)
-                break
-                default:
-                    break
             }
-//            when(status) {
-//                                OnlineAccountStatus.Linking -> startTrackingLinked(linkingApiAddress!!)
-//                                OnlineAccountStatus.Validating -> startTrackingValidated(accountAddress!!, initialDelay)
-//                                OnlineAccountStatus.Confirming -> startTrackingConfirmed(accountAddress!!, initialDelay)
-//                                OnlineAccountStatus.Creating -> startTrackingCreating(accountAddress!!, initialDelay)
-//                                else -> { }
-//                            }
-            
         }
         .store(in: &cancellableBag)
     }
@@ -437,7 +429,6 @@ extension CrowdNode {
         }
         
         let withdrawalsLastHour = getWithdrawalsForTheLast(hours: 1)
-        print("CrowdNode: withdrawalsLastHour: \(withdrawalsLastHour)")
         let perHourLimit = getWithdrawalLimit(.perHour)
 
         if withdrawalsLastHour + amount > perHourLimit {
@@ -445,7 +436,6 @@ extension CrowdNode {
         }
         
         let withdrawalsLast24h = getWithdrawalsForTheLast(hours: 24)
-        print("CrowdNode: withdrawalsLast24h: \(withdrawalsLast24h)")
         let perDayLimit = getWithdrawalLimit(.perDay)
 
         if withdrawalsLast24h + amount > perDayLimit {
@@ -453,7 +443,7 @@ extension CrowdNode {
         }
     }
     
-    func getWithdrawalsForTheLast(hours: Int) -> UInt64 {
+    private func getWithdrawalsForTheLast(hours: Int) -> UInt64 {
         let now = Date()
         let from = Calendar.current.date(byAdding: .hour, value: -hours, to: now)!
 
@@ -609,7 +599,7 @@ extension CrowdNode {
             break
         case .linking:
             DSLogger.log("CrowdNode: found linking online account in progress, account: \(address), primary: \(String(describing: primaryAddress))")
-//            checkIfAddressIsInUse(address) TODO:
+            Task { await checkIfAddressIsInUse(address: address) }
         case .creating, .signingUp:
             // This should not happen - this method is reachable only for a linked account case
             throw CrowdNode.Error.restoreLinked(state: state)
@@ -622,28 +612,38 @@ extension CrowdNode {
     
     private func startTrackingLinked(address: String) {
         DSLogger.log("CrowdNode: startTrackingLinked, account: \(address)")
-        let context = ["address": address]
-        let timer = Timer(fireAt: Date().addingTimeInterval(5), interval: 2, target: self, selector: #selector(checkIfAddressIsInUse), userInfo: context, repeats: true)
+//        let context = ["address": address]
+//        let timer = Timer(fireAt: Date().addingTimeInterval(5), interval: 2, target: self, selector: #selector(checkIfAddressIsInUseTick), userInfo: context, repeats: true)
+//        timer.tolerance = 0.5
+//        RunLoop.current.add(timer, forMode: .common)
+//        self.timer = timer
+        let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] (t) in
+            self?.checkIfAddressIsInUse(address: address)
+        }
         timer.tolerance = 0.5
-        RunLoop.current.add(timer, forMode: .common)
         self.timer = timer
     }
     
     private func startTrackingValidated(address: String, initialDelay: Int) {
-        DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
-        let context = ["address": address]
-        let timer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(initialDelay)), interval: 30, target: self, selector: #selector(checkAddressStatus), userInfo: context, repeats: true)
-        timer.tolerance = 0.5
-        RunLoop.current.add(timer, forMode: .common)
-        self.timer = timer
+//        Task {
+            DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
+            
+//            try await Task.sleep(nanoseconds: UInt64(initialDelay * 10^9))
+            let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] (t) in
+                self?.checkAddressStatus(address: address)
+            }
+            timer.tolerance = 0.5
+            self.timer = timer
+        timer.fire()
+//        }
     }
     
-    private func startTrackingConfirmed(address: String, initialDelay: Int) {
+    private func startTrackingConfirmed(address: String, fireImmediatelly: Bool) {
         Task {
             DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
+            
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
-            
             let confirmationTx = await waitForApiAddressConfirmation(accountAddress: accountAddress)
             DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashData)")
             
@@ -654,48 +654,62 @@ extension CrowdNode {
                 return
             }
             
-            let context = ["address": address]
-            let timer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(initialDelay)), interval: 30, target: self, selector: #selector(checkAddressStatus), userInfo: context, repeats: true)
+//            let context = ["address": address]
+//            let timer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(initialDelay)), interval: 20, target: self, selector: #selector(checkIfAddressIsInUseTick), userInfo: context, repeats: true)
+//            timer.tolerance = 0.5
+//            RunLoop.main.add(timer, forMode: .common)
+//            self.timer = timer
+            
+            let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] (t) in
+                
+                self?.checkIfAddressIsInUse(address: address)
+            }
             timer.tolerance = 0.5
-            RunLoop.current.add(timer, forMode: .common)
             self.timer = timer
         }
     }
     
-    @objc private func checkIfAddressIsInUse(timer: Timer) async {
-        guard let context = timer.userInfo as? [String: String] else { return }
-        
-        let address = context["address", default: ""]
-        let result = await webService.isAddressInUse(address: address)
-        primaryAddress = result.primaryAddress
+//    @objc private func checkIfAddressIsInUseTick(timer: Timer) async {
+//        guard let context = timer.userInfo as? [String: String] else { return }
+//        let address = context["address", default: ""]
+//
+//        if !address.isEmpty {
+//            await checkIfAddressIsInUse(address: address)
+//        }
+//    }
+    
+    private func checkIfAddressIsInUse(address: String) {
+        Task {
+            let result = await webService.isAddressInUse(address: address)
+            primaryAddress = result.primaryAddress
             
-        if result.isInUse && onlineAccountState <= .linking {
-            if primaryAddress == nil {
-                apiError = CrowdNode.Error.missingPrimary
-                changeOnlineState(to: .none)
-            } else {
-                accountAddress = address
-                onlineAccountAddress = address
-                crowdNodePrimaryAddress = address
-                // TODO: tax category
-                changeOnlineState(to: .validating)
+            if result.isInUse && onlineAccountState <= .linking {
+                if primaryAddress == nil {
+                    apiError = CrowdNode.Error.missingPrimary
+                    changeOnlineState(to: .none)
+                } else {
+                    accountAddress = address
+                    onlineAccountAddress = address
+                    crowdNodePrimaryAddress = result.primaryAddress
+                    // TODO: tax category
+                    changeOnlineState(to: .validating)
+                }
             }
         }
     }
     
-    @objc private func checkAddressStatus(timer: Timer) async {
-        guard let context = timer.userInfo as? [String: String] else { return }
-        
-        let address = context["address", default: ""]
-        let status = await webService.addressStatus(address: address)
-        
-        if status.lowercased() == kValidStatus && onlineAccountState != .confirming {
-            changeOnlineState(to: .confirming)
-            notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been validated, but verification is required.", comment: "CrowdNode"))
-        } else if status.lowercased() == kConfirmedStatus {
-            changeOnlineState(to: .done)
-            notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
-            refreshBalance()
+    private func checkAddressStatus(address: String) {
+        Task {
+            let status = await webService.addressStatus(address: address)
+            
+            if status.lowercased() == kValidStatus && onlineAccountState != .confirming {
+                changeOnlineState(to: .confirming)
+                notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been validated, but verification is required.", comment: "CrowdNode"))
+            } else if status.lowercased() == kConfirmedStatus {
+                changeOnlineState(to: .done)
+                notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+                refreshBalance()
+            }
         }
     }
     

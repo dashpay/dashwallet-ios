@@ -17,8 +17,11 @@
 
 import UIKit
 import WebKit
+import Combine
 
 class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
+    private var cancellableBag = Set<AnyCancellable>()
+    private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
     private var url: URL!
     
@@ -26,6 +29,10 @@ class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
         let vc = CrowdNodeWebViewController()
         vc.url = url
         return vc
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        print("CrowdNode: viewDidDisappear")
     }
     
     override func loadView() {
@@ -40,5 +47,17 @@ class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
         
         let urlRequest = URLRequest(url: url)
         webView.load(urlRequest)
+        configureObservers()
+    }
+    
+    private func configureObservers() {
+        viewModel.$signUpState
+            .removeDuplicates()
+            .sink { [weak self] state in
+                if state == .linkedOnline {
+                    self?.navigationController?.replaceLast(with: CrowdNodePortalController.controller())
+                }
+            }
+            .store(in: &cancellableBag)
     }
 }

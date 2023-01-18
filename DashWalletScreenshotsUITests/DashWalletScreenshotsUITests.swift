@@ -35,6 +35,17 @@ class DashWalletScreenshotsUITests: XCTestCase {
             // Home screen
             snapshot("1")
 
+            waitAndTap(app.otherElements["tabbar_menu_button"])
+            waitAndTap(app.cells["menu_security_item"])
+            waitAndTap(app.cells["menu_security_advanced_item"])
+            sleep(1)
+            // Advanced Security
+            snapshot("4")
+
+            waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
+            waitAndTap(app.navigationBars.buttons.element(boundBy: 0))
+
+            waitAndTap(app.otherElements["tabbar_home_button"])
             waitAndTap(app.cells["shortcut_secure_wallet"])
             waitAndTap(app.buttons["show_recovery_button"])
             waitAndTap(app.otherElements["seedphrase_checkbox"])
@@ -50,7 +61,7 @@ class DashWalletScreenshotsUITests: XCTestCase {
             waitAndTap(app.buttons["tabbar_payments_button"])
             waitAndTap(app.buttons["send_pasteboard_button"])
             waitAndTap(app.staticTexts["1"])
-            waitAndTap(app.buttons["amount_send_button"])
+            waitAndTap(app.buttons["action_button"])
             sleep(1)
             // Sending confirmation
             snapshot("2")
@@ -61,14 +72,6 @@ class DashWalletScreenshotsUITests: XCTestCase {
             sleep(1)
             // Receive screen
             snapshot("3")
-
-            waitAndTap(app.buttons["tabbar_payments_button"])
-            waitAndTap(app.otherElements["tabbar_menu_button"])
-            waitAndTap(app.cells["menu_security_item"])
-            waitAndTap(app.cells["menu_security_advanced_item"])
-            sleep(1)
-            // Advanced Security
-            snapshot("4")
         }
     }
 

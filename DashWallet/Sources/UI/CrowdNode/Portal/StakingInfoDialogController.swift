@@ -52,6 +52,7 @@ final class StakingInfoDialogController: UIViewController {
         formatter.numberStyle = .percent
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
+        formatter.multiplier = 1
         masternodeApyLabel.text = String
             .localizedStringWithFormat(NSLocalizedString("A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.",
                                                          comment: "CrowdNode"),
