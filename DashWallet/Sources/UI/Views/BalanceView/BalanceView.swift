@@ -17,10 +17,17 @@
 
 import UIKit
 
+// MARK: - BalanceViewDataSource
+
+protocol BalanceViewDataSource: AnyObject {
+    var mainAmountString: String { get }
+    var supplementaryAmountString: String { get }
+}
+
 // MARK: - BalanceView
 
 final class BalanceView: UIView {
-    public var balance: UInt64 = 0 { // In Dash
+    public weak var dataSource: BalanceViewDataSource? {
         didSet {
             reloadView()
         }
@@ -61,21 +68,15 @@ final class BalanceView: UIView {
 
 extension BalanceView {
     private func reloadView() {
+        let mainAmountString = dataSource?.mainAmountString ?? NumberFormatter.dashFormatter.string(from: 0)!
+        let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!
+
         let balanceColor = UIColor.label
         let font = UIFont.dw_font(forTextStyle: .title1)
-        let formattedAmount = balance.formattedDashAmount
-        let balanceString = formattedAmount.attributedAmountStringWithDashSymbol(tintColor: tint ?? balanceColor)
-
+        let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: tint ?? balanceColor)
         dashBalanceLabel.attributedText = balanceString
+        fiatBalanceLabel.text = supplementaryAmountString
         fiatBalanceLabel.textColor = tint ?? balanceColor
-
-        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) else {
-            fiatBalanceLabel.text = "Invalid"
-            return
-        }
-
-        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
-        fiatBalanceLabel.text = nf.string(from: fiatAmount as NSNumber) ?? "Invalid"
     }
 
     private func configureHierarchy() {

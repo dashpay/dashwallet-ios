@@ -67,8 +67,6 @@ extension CoinbaseEntryPointItem {
             return "transferCoinbase"
         }
     }
-
-
 }
 
 // MARK: - CoinbaseEntryPointModel
@@ -118,5 +116,25 @@ final class CoinbaseEntryPointModel {
     deinit {
         NotificationCenter.default.removeObserver(accountDidChangeHandle!)
         Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
+    }
+}
+
+// MARK: BalanceViewDataSource
+
+extension CoinbaseEntryPointModel: BalanceViewDataSource {
+    var mainAmountString: String {
+        balance.formattedDashAmount
+    }
+
+    var supplementaryAmountString: String {
+        let fiat: String
+
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+        }
+
+        return fiat
     }
 }
