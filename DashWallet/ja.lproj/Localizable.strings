@@ -1393,12 +1393,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "この復元フレーズがあれば、このウォレットの中の資金へのアクセスできます";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "この取引は決済に数分かかることがあります。";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "この取引は追加手数料なしで即座に完了するはずです";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "このウォレットは何も入っていないか、もしくは同期が終わっていません。復元フレーズがない場合は削除しないでください。";
 
 /* No comment provided by engineer. */

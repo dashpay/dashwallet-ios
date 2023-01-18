@@ -1393,12 +1393,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Tato fráze pro obnovení slouží jako přístup k prostředkům na peněžence.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Vyřízení této transakce může zabrat několik minut.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Tato transakce bude vyřízena okamžitě a bez poplatku navíc.";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Peněženka není prázdná nebo synchronizace se sítí není ještě dokončena, nesmíte ji smazat bez fráze pro obnovení.";
 
 /* No comment provided by engineer. */
