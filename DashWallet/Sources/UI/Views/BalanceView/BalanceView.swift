@@ -63,14 +63,19 @@ extension BalanceView {
     private func reloadView() {
         let balanceColor = UIColor.label
         let font = UIFont.dw_font(forTextStyle: .title1)
-        let balanceString = NSAttributedString.dw_dashAttributedString(forAmount: balance, tintColor: tint ?? balanceColor,
-                                                                       dashSymbolColor: dashSymbolColor ?? tint ?? balanceColor,
-                                                                       font: font)
-        dashBalanceLabel.attributedText = balanceString
+        let formattedAmount = balance.formattedDashAmount
+        let balanceString = formattedAmount.attributedAmountStringWithDashSymbol(tintColor: tint ?? balanceColor)
 
-        let fiatColor = UIColor.secondaryLabel
-        fiatBalanceLabel.textColor = tint ?? fiatColor
-        fiatBalanceLabel.text = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance))
+        dashBalanceLabel.attributedText = balanceString
+        fiatBalanceLabel.textColor = tint ?? balanceColor
+
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) else {
+            fiatBalanceLabel.text = "Invalid"
+            return
+        }
+
+        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        fiatBalanceLabel.text = nf.string(from: fiatAmount as NSNumber) ?? "Invalid"
     }
 
     private func configureHierarchy() {

@@ -24,32 +24,16 @@ extension ServiceItem {
         }
 
         if let balance = dashBalanceFormatted, let fiat = fiatBalanceFormatted {
-            let dashStr = "\(balance) DASH"
             let fiatStr = " ≈ \(fiat)"
-            let fullStr = "\(dashStr)\(fiatStr)"
+            let fullStr = "\(balance)\(fiatStr)"
             let string = NSMutableAttributedString(string: fullStr)
             string.addAttributes([NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel],
-                                 range: NSMakeRange(dashStr.count, fiatStr.count))
+                                 range: NSMakeRange(balance.count, fiatStr.count))
             string.addAttribute(.font, value: UIFont.dw_font(forTextStyle: .footnote), range: NSMakeRange(0, fullStr.count - 1))
             return string
         }
 
         return nil
-    }
-
-    var dashBalanceFormatted: String? {
-        guard let dashBalance else {
-            return nil
-        }
-
-        return dashBalance.formattedDashAmount
-    }
-
-    var fiatBalanceFormatted: String? {
-        guard let balance = dashBalance else { return nil }
-
-        let priceManger = DSPriceManager.sharedInstance()
-        return priceManger.localCurrencyString(forDashAmount: Int64(balance))
     }
 }
 
@@ -76,6 +60,9 @@ class ServiceItem: Hashable {
     var service: Service
 
     var dashBalance: UInt64?
+    var dashBalanceFormatted: String?
+    var fiatBalanceFormatted: String?
+
     var usageCount = 0
 
     var isInUse: Bool { status == .syncing || status == .authorized }
@@ -85,6 +72,17 @@ class ServiceItem: Hashable {
         self.service = service
         self.dashBalance = dashBalance
         usageCount = service.usageCount
+
+        guard let dashBalance else { return }
+
+        dashBalanceFormatted = dashBalance.formattedDashAmountWithoutCurrencySymbol
+
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: dashBalance.dashAmount, to: App.fiatCurrency) else {
+            return
+        }
+
+        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        fiatBalanceFormatted = nf.string(from: fiatAmount as NSNumber)
     }
 
     func hash(into hasher: inout Hasher) {

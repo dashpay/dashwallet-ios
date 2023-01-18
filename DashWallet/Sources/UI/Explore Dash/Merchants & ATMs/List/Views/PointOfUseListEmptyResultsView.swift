@@ -30,7 +30,8 @@ class PointOfUseListEmptyResultsView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func resetButtonAction() {
+    @objc
+    func resetButtonAction() {
         resetHandler?()
     }
 

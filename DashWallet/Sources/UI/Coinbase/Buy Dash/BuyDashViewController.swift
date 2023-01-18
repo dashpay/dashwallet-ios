@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import UIKit
 
 // MARK: - BuyDashViewController
@@ -22,7 +23,6 @@ import UIKit
 final class BuyDashViewController: BaseAmountViewController, NetworkReachabilityHandling {
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
-
 
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
@@ -33,11 +33,14 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     private var activePaymentMethodView: ActivePaymentMethodView!
     private var networkUnavailableView: UIView!
 
+    internal var cancellables = Set<AnyCancellable>()
+
     init() {
         super.init(nibName: nil, bundle: nil)
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -52,7 +55,8 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
         buyDashModel.buy()
     }
 
-    @objc func payWithTapGestureRecognizerAction() {
+    @objc
+    func payWithTapGestureRecognizerAction() {
         let vc = PaymentMethodsController.controller()
         vc.paymentMethods = buyDashModel.paymentMethods
         vc.selectedPaymentMethod = buyDashModel.activePaymentMethod
@@ -72,6 +76,10 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
         super.configureModel()
 
         buyDashModel.delegate = self
+
+        buyDashModel.$paymentMethods.sink { [weak self] items in
+            self?.activePaymentMethodView?.update(with: items.first)
+        }.store(in: &cancellables)
     }
 
     override func configureHierarchy() {
@@ -174,7 +182,8 @@ extension BuyDashViewController: BuyDashModelDelegate {
 }
 
 extension BuyDashViewController {
-    @objc override func present(error: Error) {
+    @objc
+    override func present(error: Error) {
         if case Coinbase.Error.transactionFailed(let reason) = error, reason == .limitExceded {
             amountView.showError(error.localizedDescription, textColor: .systemRed) { [weak self] in
                 let vc = CoinbaseInfoViewController.controller()

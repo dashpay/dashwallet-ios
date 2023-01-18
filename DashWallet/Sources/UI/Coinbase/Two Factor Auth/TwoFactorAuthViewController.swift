@@ -27,9 +27,11 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var twoFactorAuthField: UITextField!
     @IBOutlet var hintLabel: UILabel!
 
-    public var isVerifying = false
     public var verifyHandler: ((String) -> Void)?
     public var cancelHandler: (() -> Void)?
+
+    public var isCancelingToFail = false
+
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
@@ -38,28 +40,21 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     internal var isErrorShown = false
 
     public func showInvalidCodeState() {
-        isVerifying = false
         isErrorShown = true
         styleHintFieldErrorState()
         styleTwoFactorAuthFieldErrorState()
         hideActivityIndicator()
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        if !isVerifying {
-            cancelHandler?()
-        }
-
-        super.viewWillDisappear(animated)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
+
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         setupContentView(contentView)
 
         twoFactorAuthField.delegate = self
+        twoFactorAuthField.inputView = UIView()
 
         styleTitle()
         styleSubTitle()
@@ -81,6 +76,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         numberKeyboard.textInput = twoFactorAuthField
         contentView.addSubview(numberKeyboard)
 
+
         NSLayoutConstraint.activate([
             keyboardContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -99,7 +95,6 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
-        isVerifying = true
         verifyHandler?(twoFactorAuthField.text!)
     }
 
@@ -209,7 +204,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         hintLabel.attributedText = attributedText
     }
 
-    @objc func tappedOnLabel(_ gesture: UITapGestureRecognizer) {
+    @objc
+    func tappedOnLabel(_ gesture: UITapGestureRecognizer) {
         guard let text = contactCoinbase.text else { return }
         let contactCoinbaseRange = (text as NSString).range(of: contactCoinbaseString)
 
@@ -218,7 +214,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         }
     }
 
-    @IBAction func textFieldEditingDidChange(_ sender: Any) {
+    @IBAction
+    func textFieldEditingDidChange(_ sender: Any) {
         guard let text = twoFactorAuthField.text else { return }
 
         if text.isEmpty {
@@ -228,7 +225,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         }
     }
 
-    @objc class func controller() -> TwoFactorAuthViewController {
+    @objc
+    class func controller() -> TwoFactorAuthViewController {
         vc(TwoFactorAuthViewController.self, from: sb("Coinbase"))
     }
 }
@@ -262,6 +260,30 @@ extension TwoFactorAuthViewController: TwoFactorAuthModelDelegate {
 
     func transferFromCoinbaseForUnkownError(error: Error) {
         // TODO: naigate to error screen
+    }
+}
+
+// MARK: NavigationStackControllable
+
+extension TwoFactorAuthViewController: NavigationStackControllable {
+    func shouldPopViewController() -> Bool {
+        if isCancelingToFail {
+            let title = NSLocalizedString("Are you sure you want to cancel this transaction?", comment: "Coinbase/Buy Dash/Cancel Order")
+            let message = NSLocalizedString("Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.",
+                                            comment: "Coinbase/Buy Dash/Cancel Order")
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
+            alert.addAction(noAction)
+            let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
+                self?.cancelHandler?()
+            }
+            alert.addAction(yesAction)
+            present(alert, animated: true)
+            return false
+        }
+
+        cancelHandler?()
+        return true
     }
 }
 

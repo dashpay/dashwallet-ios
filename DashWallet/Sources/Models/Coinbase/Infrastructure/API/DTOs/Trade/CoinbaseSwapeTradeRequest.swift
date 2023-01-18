@@ -9,11 +9,11 @@ import Foundation
 
 // MARK: - CoinbaseSwapeTradeRequest
 public struct CoinbaseSwapeTradeRequest: Codable {
-    let amount: String?
-    let amountAsset: String?
-    let amountFrom: String?
-    let targetAsset: String?
-    let sourceAsset: String?
+    let amount: String
+    let amountAsset: String
+    let amountFrom = "input"
+    let targetAsset: String
+    let sourceAsset: String
 
     enum CodingKeys: String, CodingKey {
         case amount

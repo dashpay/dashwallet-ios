@@ -45,14 +45,16 @@ class Taxes: NSObject {
     var addressesUserInfos: AddressUserInfoDAO = AddressUserInfoDAOImpl()
     var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl()
 
-    @objc func initialize() {
+    @objc
+    func initialize() {
         DispatchQueue.main.async {
             // Prefetch all items
             let _ = self.addressesUserInfos.all()
         }
     }
 
-    @objc func mark(address: String, with taxCategory: TxUserInfoTaxCategory) {
+    @objc
+    func mark(address: String, with taxCategory: TxUserInfoTaxCategory) {
         addressesUserInfos.create(dto: AddressUserInfo(address: address, taxCategory: taxCategory))
     }
 

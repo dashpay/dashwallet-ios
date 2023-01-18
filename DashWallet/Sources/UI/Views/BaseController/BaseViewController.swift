@@ -28,6 +28,7 @@ class BaseViewController: UIViewController {
     }
 }
 
+
 extension UIViewController {
     class func initiate(from storyboard: UIStoryboard) -> Self {
         vc(Self.self, from: storyboard)

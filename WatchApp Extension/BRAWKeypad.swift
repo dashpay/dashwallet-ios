@@ -65,34 +65,46 @@ final class BRAWKeypad: WKInterfaceController {
 
     @IBOutlet private var display: WKInterfaceLabel!
 
-    @IBAction private func one(_ sender: AnyObject?) { append("1") }
+    @IBAction
+    private func one(_ sender: AnyObject?) { append("1") }
 
-    @IBAction private func two(_ sender: AnyObject?) { append("2") }
+    @IBAction
+    private func two(_ sender: AnyObject?) { append("2") }
 
-    @IBAction private func three(_ sender: AnyObject?) { append("3") }
+    @IBAction
+    private func three(_ sender: AnyObject?) { append("3") }
 
-    @IBAction private func four(_ sender: AnyObject?) { append("4") }
+    @IBAction
+    private func four(_ sender: AnyObject?) { append("4") }
 
-    @IBAction private func five(_ sender: AnyObject?) { append("5") }
+    @IBAction
+    private func five(_ sender: AnyObject?) { append("5") }
 
-    @IBAction private func six(_ sender: AnyObject?) { append("6") }
+    @IBAction
+    private func six(_ sender: AnyObject?) { append("6") }
 
-    @IBAction private func seven(_ sender: AnyObject?) { append("7") }
+    @IBAction
+    private func seven(_ sender: AnyObject?) { append("7") }
 
-    @IBAction private func eight(_ sender: AnyObject?) { append("8") }
+    @IBAction
+    private func eight(_ sender: AnyObject?) { append("8") }
 
-    @IBAction private func nine(_ sender: AnyObject?) { append("9") }
+    @IBAction
+    private func nine(_ sender: AnyObject?) { append("9") }
 
-    @IBAction private func zero(_ sender: AnyObject?) { append("0") }
+    @IBAction
+    private func zero(_ sender: AnyObject?) { append("0") }
 
-    @IBAction private func del(_ sender: AnyObject?) {
+    @IBAction
+    private func del(_ sender: AnyObject?) {
         if !digits.isEmpty {
             digits.removeLast()
             fmt()
         }
     }
 
-    @IBAction private func ok(_ sender: AnyObject?) {
+    @IBAction
+    private func ok(_ sender: AnyObject?) {
         guard let ctx else { return }
         ctx.delegate?.keypadDidFinish(ctx.valueInBits)
     }

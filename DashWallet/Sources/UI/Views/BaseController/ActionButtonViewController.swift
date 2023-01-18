@@ -63,6 +63,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
     internal var actionButtonDisabledTitle: String? { actionButtonTitle }
 
     internal var stackView: UIStackView!
+    internal var buttonContainer: UIView!
     private var button: DWActionButton!
     private var barButton: UIBarButtonItem!
     private var contentBottomConstraint: NSLayoutConstraint!
@@ -91,7 +92,8 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
         }
     }
 
-    @objc func actionButtonAction(sender: UIView) { }
+    @objc
+    func actionButtonAction(sender: UIView) { }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -122,7 +124,9 @@ extension ActionButtonViewController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
-        stackView = UIStackView()
+        let bottomPadding = deviceSpecificBottomPadding()
+
+        stackView = ActionButtonStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.alignment = .fill
@@ -130,6 +134,7 @@ extension ActionButtonViewController {
         stackView.spacing = 0
         stackView.preservesSuperviewLayoutMargins = true
         stackView.backgroundColor = .dw_secondaryBackground()
+        // stackView.safeAreaInsets = .init(top: 0, left: 0, bottom: view.safeAreaInsets.bottom + bottomPadding, right: 0)
         view.addSubview(stackView)
 
         if showsActionButton {
@@ -138,14 +143,14 @@ extension ActionButtonViewController {
 
         let safeAreaGuide = view.safeAreaLayoutGuide
 
-        let bottomPadding = deviceSpecificBottomPadding()
+
         contentBottomConstraint = safeAreaGuide.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: bottomPadding)
 
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: safeAreaGuide.topAnchor),
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            contentBottomConstraint,
+            stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
 
@@ -157,7 +162,7 @@ extension ActionButtonViewController {
             actionButton = barButton
         }
         else {
-            let buttonContainer = UIView()
+            buttonContainer = UIView()
             buttonContainer.backgroundColor = .dw_background()
             buttonContainer.translatesAutoresizingMaskIntoConstraints = false
             stackView.addArrangedSubview(buttonContainer)
@@ -167,6 +172,11 @@ extension ActionButtonViewController {
             button.setTitle(actionButtonTitle, for: .normal)
             button.setTitle(actionButtonDisabledTitle, for: .disabled)
             button.addTarget(self, action: #selector(actionButtonAction(sender:)), for: .touchUpInside)
+
+            if _SNAPSHOT {
+                button?.accessibilityIdentifier = "action_button"
+            }
+
             buttonContainer.addSubview(button)
             actionButton = button
 
@@ -174,7 +184,7 @@ extension ActionButtonViewController {
 
             NSLayoutConstraint.activate([
                 button.topAnchor.constraint(equalTo: buttonContainer.topAnchor, constant: 0),
-                button.bottomAnchor.constraint(equalTo: buttonContainer.bottomAnchor, constant: 0),
+                button.bottomAnchor.constraint(equalTo: buttonContainer.safeAreaLayoutGuide.bottomAnchor, constant: 0),
                 button.leadingAnchor.constraint(equalTo: marginsGuide.leadingAnchor),
                 button.trailingAnchor.constraint(equalTo: marginsGuide.trailingAnchor),
                 button.heightAnchor.constraint(equalToConstant: 46),
@@ -216,5 +226,13 @@ extension ActionButtonViewController {
         else {
             return 15
         }
+    }
+}
+
+// MARK: - ActionButtonStackView
+
+private final class ActionButtonStackView: UIStackView {
+    override var safeAreaInsets: UIEdgeInsets {
+        superview?.safeAreaInsets ?? .zero
     }
 }

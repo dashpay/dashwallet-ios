@@ -59,14 +59,17 @@ extension BaseViewController {
 
 protocol CoinbaseCodeConfirmationPreviewing: ActivityIndicatorPreviewing {
     var codeConfirmationController: TwoFactorAuthViewController? { set get }
-
+    var isCancelingToFail: Bool { get }
     func codeConfirmationControllerDidContinue(with code: String)
     func codeConfirmationControllerDidCancel()
 }
 
 extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
+    var isCancelingToFail: Bool { false }
+
     func showCodeConfirmationController() {
         let vc = TwoFactorAuthViewController.controller()
+        vc.isCancelingToFail = isCancelingToFail
         vc.verifyHandler = { [weak self] code in
             self?.codeConfirmationControllerDidContinue(with: code)
         }

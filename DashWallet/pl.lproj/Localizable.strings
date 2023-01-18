@@ -635,6 +635,9 @@
 /* CrowdNode */
 "First deposit should be more than %@" = "First deposit should be more than %@";
 
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Zapomniałeś kodu PIN?";
 
@@ -659,11 +662,17 @@
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
 
+/* Coinbase */
+"from your Coinbase account" = "from your Coinbase account";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Chcesz stworzyć rozszerzone klucze publiczne?";
 
 /* No comment provided by engineer. */
 "Generating CSV Report" = "Generating CSV Report";
+
+/* Coinbase/Convert Crypto */
+"Get Quote" = "Get Quote";
 
 /* No comment provided by engineer. */
 "Get Started" = "Zacznij";
@@ -1308,8 +1317,14 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Sprawdź na Uphold";
 
+/* Coinbase */
+"Select a coin" = "Select a coin";
+
 /* Buy Sell Dash */
 "Select a service" = "Select a service";
+
+/* Coinbase */
+"Select Account" = "Select Account";
 
 /* Sell */
 "Sell" = "Sell";
@@ -1537,8 +1552,8 @@
 /* Send Screen: to address */
 "to" = "to";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
+/* Coinbase */
+"to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "Tools" = "Narzędzia";
@@ -1631,9 +1646,6 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Użyty w adresie IP";
-
-/* Coinbase */
-"User session expired" = "User session expired";
 
 /* No comment provided by engineer. */
 "Username taken" = "Nazwa użytkownika jest już zajęta";
@@ -1800,8 +1812,14 @@
 /* CrowdNode */
 "You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
+/* Coinbase */
+"You receive" = "You receive";
+
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Otrzymałeś Dash! Jeśli zgubisz to urządzenie, stracisz swoje fundusze. Uzyskaj frazę odzyskiwania, aby móc przywrócić portfel na innym urządzeniu.";
+
+/* Coinbase */
+"You send" = "You send";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Zaproszenie do kontaktów zostało wysłane do %@";

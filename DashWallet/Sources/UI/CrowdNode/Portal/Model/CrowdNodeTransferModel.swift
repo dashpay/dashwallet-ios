@@ -123,11 +123,11 @@ final class CrowdNodeTransferModel: SendAmountModel {
         }
     }
 
-    override func selectAllFunds(_ preparationHandler: () -> Void) {
+    override func selectAllFunds() {
         if direction == .deposit {
-            super.selectAllFunds(preparationHandler)
+            super.selectAllFunds()
         } else {
-            super.updateCurrentAmountObject(with: Int64(CrowdNode.shared.balance))
+            super.updateCurrentAmountObject(with: CrowdNode.shared.balance)
         }
     }
 }

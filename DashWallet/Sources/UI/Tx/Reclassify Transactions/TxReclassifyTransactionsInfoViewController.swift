@@ -21,8 +21,9 @@ import UIKit
 
 @objc
 protocol TxReclassifyTransactionsInfoViewControllerDelegate: AnyObject {
-    @objc func txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: TxReclassifyTransactionsInfoViewController,
-                                                                      transaction: DSTransaction)
+    @objc
+    func txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: TxReclassifyTransactionsInfoViewController,
+                                                                transaction: DSTransaction)
 }
 
 // MARK: - TxReclassifyTransactionsInfoViewController
@@ -58,19 +59,22 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
 
     @objc weak var delegate: TxReclassifyTransactionsInfoViewControllerDelegate?
 
-    @IBAction func iUndersandAction() {
+    @IBAction
+    func iUndersandAction() {
         dismiss(animated: true) {
             self.delegate?.txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: self, transaction: self.transaction)
         }
     }
 
-    @IBAction func whereCanIChangeAction() {
+    @IBAction
+    func whereCanIChangeAction() {
         let vc = TxReclassifyTransactionsWhereToChangeViewController.controller()
         vc.transactionScreenImage = transactionScreenImage
         present(vc, animated: true, completion: nil)
     }
 
-    @objc static func controller() -> TxReclassifyTransactionsInfoViewController {
+    @objc
+    static func controller() -> TxReclassifyTransactionsInfoViewController {
         let storyboard = UIStoryboard(name: "Tx", bundle: nil)
         let vc = storyboard
             .instantiateViewController(identifier: "TxReclassifyTransactionsInfoViewController") as! TxReclassifyTransactionsInfoViewController
