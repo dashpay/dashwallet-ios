@@ -1393,12 +1393,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "이 지갑 내에서 자금에 접근하기 위해서는 이 복원 문구가 필요합니다";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "이 거래가 완료되는 데에는 수 분이 소요될 수 있습니다.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "이 거래는 추가 수수료 없이 곧바로 완료됩니다.";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "이 지갑은 비어 있지 않거나 동기화가 완료되지 않았습니다. 복구 문구없이 삭제할 수 없습니다.";
 
 /* No comment provided by engineer. */

@@ -1393,12 +1393,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Cette phrase de récupération vous permet d'accéder aux fonds de ce portefeuille.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Cette transaction peut prendre quelques minutes.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Cette transaction devrait être exécutée instantanément, sans frais supplémentaires.";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ce portefeuille n'est pas vide, ou bien la synchronisation n'est pas terminée. Vous ne pouvez pas l'effacer sans la phrase de récupération.";
 
 /* No comment provided by engineer. */

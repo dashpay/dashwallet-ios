@@ -21,10 +21,10 @@
 #import "DWReceiveContentView.h"
 #import "DWReceiveModel.h"
 #import "DWRequestAmountViewController.h"
-#import "DWSpecifyAmountViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWShareReceiveInfo.h"
+#import "dashwallet-swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -101,8 +101,7 @@ static CGFloat TopPadding(void) {
 
 #pragma mark - DWSpecifyAmountViewControllerDelegate
 
-- (void)specifyAmountViewController:(DWSpecifyAmountViewController *)controller
-                     didInputAmount:(uint64_t)amount {
+- (void)specifyAmountViewController:(DWSpecifyAmountViewController *_Nonnull)vc didInput:(uint64_t)amount {
     DWReceiveModel *requestModel = [[DWReceiveModel alloc] initWithAmount:amount];
     DWRequestAmountViewController *requestController =
         [DWRequestAmountViewController controllerWithModel:requestModel];
@@ -177,6 +176,7 @@ static CGFloat TopPadding(void) {
         [contentView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor],
     ]];
 }
+
 
 @end
 

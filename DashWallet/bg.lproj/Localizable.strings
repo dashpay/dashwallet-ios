@@ -1393,12 +1393,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Тази фраза за възстановяване Ви дава достъп до средствата в този портфейл.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Тази транзакция може да отнеме няколко минути, за да приключи.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Тази транзакция ще бъде уредена мигновено без допълнителна такса";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Този портфейл не е празен или синхронизирането не е приключило, не можете да го изтриете без фразата за възстановяване";
 
 /* No comment provided by engineer. */
