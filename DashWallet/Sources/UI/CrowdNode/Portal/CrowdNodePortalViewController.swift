@@ -64,7 +64,6 @@ extension CrowdNodePortalController {
         tableView.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         tableView.clipsToBounds = true
         tableView.isScrollEnabled = false
-        tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 1))
         tableView.rowHeight = UITableView.automaticDimension
 
         let colorStart = UIColor(red: 31 / 255.0, green: 134 / 255.0, blue: 201 / 255.0, alpha: 1.0).cgColor
@@ -175,18 +174,24 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var iconCircle : UIView!
     @IBOutlet var additionalInfo: UIView!
     @IBOutlet var additionalInfoLabel : UILabel!
-
-    private lazy var showInfoConstraint = additionalInfo.heightAnchor.constraint(equalToConstant: 30)
-    private lazy var collapseInfoConstraint = additionalInfo.heightAnchor.constraint(equalToConstant: 0)
+    @IBOutlet var additionalInfoIcon : UIImageView!
+    @IBOutlet var verifyButton : UIButton!
+    
+    @IBOutlet var showInfoConstraint: NSLayoutConstraint!
+    @IBOutlet var collapseInfoConstraint: NSLayoutConstraint!
+    @IBOutlet var infoBottomAnchorConstraint: NSLayoutConstraint!
+    @IBOutlet var infoFromSuperviewConstraint: NSLayoutConstraint!
+    @IBOutlet var infoFromIconConstraint: NSLayoutConstraint!
 
     fileprivate func update(with item: CrowdNodePortalItem,
                             _ crowdNodeBalance: UInt64,
-                            _ walletBalance: UInt64) {
+                            _ walletBalance: UInt64,
+                            _ onlineAccountState: CrowdNode.OnlineAccountState) {
         title.text = item.title
         subtitle.text = item.subtitle
         icon.image = UIImage(named: item.icon)
 
-        if item.isDisabled(crowdNodeBalance, walletBalance) {
+        if item.isDisabled(crowdNodeBalance, walletBalance, onlineAccountState.isLinkingInProgress) {
             let grayColor = UIColor(red: 176/255.0, green: 182/255.0, blue: 188/255.0, alpha: 1.0)
             iconCircle.backgroundColor = grayColor
             title.textColor = .dw_secondaryText()
@@ -197,13 +202,41 @@ class CrowdNodeCell: UITableViewCell {
             selectionStyle = .default
         }
 
-        if item == .deposit && crowdNodeBalance < CrowdNode.minimumDeposit {
-            showInfoConstraint.isActive = true
-            collapseInfoConstraint.isActive = false
-            additionalInfoLabel.text = item.info(crowdNodeBalance)
-        } else {
-            showInfoConstraint.isActive = false
-            collapseInfoConstraint.isActive = true
+        var showInfo: Bool
+        
+        switch item {
+        case .deposit:
+            showInfo = crowdNodeBalance < CrowdNode.minimumDeposit// && !onlineAccountState.isLinkingInProgress
+        case .withdraw:
+            showInfo = true//onlineAccountState.isLinkingInProgress
+        default:
+            showInfo = false
+        }
+        
+        additionalInfo.isHidden = !showInfo
+        showInfoConstraint.isActive = showInfo
+        collapseInfoConstraint.isActive = !showInfo
+        infoBottomAnchorConstraint.isActive = showInfo
+        
+        if showInfo {
+            additionalInfo.backgroundColor = item.infoBackgroundColor
+            additionalInfoLabel.text = item.info(crowdNodeBalance, onlineAccountState)
+            additionalInfoLabel.textColor = item.infoTextColor
+            
+            if !item.infoActionButton(for: onlineAccountState).isEmpty {
+                additionalInfoLabel.textAlignment = .left
+                additionalInfoIcon.isHidden = false
+                infoFromSuperviewConstraint.isActive = false
+                infoFromIconConstraint.isActive = true
+                verifyButton.isHidden = false
+                verifyButton.contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 8.0, bottom: 0.0, right: 8.0)
+            } else {
+                additionalInfoLabel.textAlignment = .center
+                infoFromIconConstraint.isActive = false
+                infoFromSuperviewConstraint.isActive = true
+                additionalInfoIcon.isHidden = true
+                verifyButton.isHidden = true
+            }
         }
     }
 }
@@ -228,7 +261,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
                                                  for: indexPath) as! CrowdNodeCell
 
         let item = viewModel.portalItems[(indexPath.section * 2) + indexPath.item]
-        cell.update(with: item, viewModel.crowdNodeBalance, viewModel.walletBalance)
+        cell.update(with: item, viewModel.crowdNodeBalance, viewModel.walletBalance, viewModel.onlineAccountState)
 
         return cell
     }
@@ -255,7 +288,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         tableView.deselectRow(at: indexPath, animated: true)
         let item = viewModel.portalItems[(indexPath.section * 2) + indexPath.item]
 
-        if item.isDisabled(viewModel.crowdNodeBalance, viewModel.walletBalance) {
+        if item.isDisabled(viewModel.crowdNodeBalance, viewModel.walletBalance, viewModel.onlineAccountState.isLinkingInProgress) {
             return
         }
 
@@ -265,8 +298,9 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .withdraw:
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
         case .onlineAccount:
-            UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
-            break
+            if !viewModel.onlineAccountState.isLinkingInProgress {
+                UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
+            }
         case .support:
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
@@ -286,7 +320,7 @@ extension CrowdNodePortalController: BalanceViewDataSource {
         if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: viewModel.crowdNodeBalance.dashAmount, to: App.fiatCurrency) {
             fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
         } else {
-            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+            fiat = NSLocalizedString("Syncing…", comment: "Balance")
         }
 
         return fiat

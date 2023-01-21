@@ -48,6 +48,7 @@
 		11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */; };
 		11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
 		11517C8A294B11DD004FC7BF /* CrowdNodeBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */; };
+		117728A3297A7D24006F1553 /* CrowdNodePortalItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117728A2297A7D24006F1553 /* CrowdNodePortalItem.swift */; };
 		117ECC7E29742A42003D798E /* CrowdNodeWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */; };
 		117ED4A128EC86E0006E3EE4 /* TransactionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */; };
 		117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */; };
@@ -841,6 +842,7 @@
 		11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeEndpoint.swift; sourceTree = "<group>"; };
 		11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebService.swift; sourceTree = "<group>"; };
 		11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalance.swift; sourceTree = "<group>"; };
+		117728A2297A7D24006F1553 /* CrowdNodePortalItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalItem.swift; sourceTree = "<group>"; };
 		117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebViewController.swift; sourceTree = "<group>"; };
 		117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionObserver.swift; sourceTree = "<group>"; };
 		117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFilter.swift; sourceTree = "<group>"; };
@@ -2229,14 +2231,6 @@
 			path = ServiceOverview;
 			sourceTree = "<group>";
 		};
-		0F7258F2291BF67000A785A0 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				0F7258F3291BF6B100A785A0 /* TwoFactorAuthModel.swift */,
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
 		110C679629227895006B580C /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -2321,6 +2315,7 @@
 			isa = PBXGroup;
 			children = (
 				1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */,
+				117728A2297A7D24006F1553 /* CrowdNodePortalItem.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -4818,15 +4813,6 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		47522F4E2927CAE900EE143E /* Operation Status Controller */ = {
-			isa = PBXGroup;
-			children = (
-				47522F4F2927CB9000EE143E /* SuccessfulOperationStatusViewController.swift */,
-				47522F512927CBEE00EE143E /* FailedOperationStatusViewController.swift */,
-			);
-			path = "Operation Status Controller";
-			sourceTree = "<group>";
-		};
 		4759D51529300091002F20DC /* Enter Amount */ = {
 			isa = PBXGroup;
 			children = (
@@ -6536,6 +6522,7 @@
 				0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */,
 				2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
+				117728A3297A7D24006F1553 /* CrowdNodePortalItem.swift in Sources */,
 				47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */,
 				4751CAC0296EFD2900F63AC4 /* AccountListController.swift in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,

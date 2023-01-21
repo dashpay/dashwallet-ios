@@ -759,10 +759,10 @@
                                             <rect key="frame" x="0.0" y="0.0" width="350" height="90"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ibq-b6-Z4B" userLabel="Icon Circle">
-                                                    <rect key="frame" x="15" y="20" width="34" height="17"/>
+                                                    <rect key="frame" x="15" y="20" width="34" height="34"/>
                                                     <subviews>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.deposit" translatesAutoresizingMaskIntoConstraints="NO" id="FzY-IJ-27b">
-                                                            <rect key="frame" x="8" y="-0.33333333333333215" width="18" height="18"/>
+                                                            <rect key="frame" x="8" y="8" width="18" height="18"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" constant="18" id="4GD-BV-fMA"/>
                                                                 <constraint firstAttribute="height" constant="18" id="DCQ-bw-ljM"/>
@@ -783,16 +783,16 @@
                                                     </userDefinedRuntimeAttributes>
                                                 </view>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="g9J-9G-5ju">
-                                                    <rect key="frame" x="64" y="9.6666666666666679" width="253" height="37.666666666666657"/>
+                                                    <rect key="frame" x="64" y="34.666666666666664" width="253" height="5"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Deposit" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NDS-eh-hU1" userLabel="Title">
-                                                            <rect key="frame" x="0.0" y="0.0" width="253" height="17"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="253" height="0.0"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashWallet -&gt; CrowdNode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Nk-fs-rra" userLabel="Subtitle">
-                                                            <rect key="frame" x="0.0" y="22" width="253" height="15.666666666666664"/>
+                                                            <rect key="frame" x="0.0" y="5" width="253" height="0.0"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                             <color key="textColor" name="SecondaryTextColor"/>
                                                             <nil key="highlightedColor"/>
@@ -800,43 +800,90 @@
                                                     </subviews>
                                                 </stackView>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="252" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="KSg-YV-XHB">
-                                                    <rect key="frame" x="317" y="19.666666666666664" width="13" height="17.666666666666664"/>
+                                                    <rect key="frame" x="317" y="28.333333333333332" width="13" height="17.666666666666682"/>
                                                     <color key="tintColor" name="ChevronColor"/>
                                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
                                                 </imageView>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EAT-EC-5JS" userLabel="Additional Info">
-                                                    <rect key="frame" x="15" y="50" width="320" height="30"/>
+                                                    <rect key="frame" x="15" y="54.666666666666664" width="320" height="20.333333333333336"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tre-ab-1GV" userLabel="Additional Info Label">
-                                                            <rect key="frame" x="0.0" y="0.0" width="320" height="30"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.warning" translatesAutoresizingMaskIntoConstraints="NO" id="kZc-FW-B6T" userLabel="Info Icon">
+                                                            <rect key="frame" x="8" y="-1" width="22" height="22"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="width" constant="22" id="dcF-6z-tJH"/>
+                                                                <constraint firstAttribute="height" constant="22" id="yMD-6d-8Tn"/>
+                                                            </constraints>
+                                                        </imageView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tre-ab-1GV" userLabel="Additional Info Label">
+                                                            <rect key="frame" x="38" y="0.0" width="282" height="20.333333333333332"/>
+                                                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="13"/>
                                                             <color key="textColor" name="DashBlueColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VKL-Yb-Nfk">
+                                                            <rect key="frame" x="261.33333333333331" y="-2.3333333333333286" width="51.666666666666686" height="25"/>
+                                                            <color key="backgroundColor" name="BackgroundColor"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="25" id="AKf-Ip-lzv"/>
+                                                            </constraints>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="5"/>
+                                                            <color key="tintColor" name="BackgroundColor"/>
+                                                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                            <state key="normal" title="Verify">
+                                                                <color key="titleColor" name="DarkTitleColor"/>
+                                                            </state>
+                                                            <buttonConfiguration key="configuration" style="filled">
+                                                                <attributedString key="attributedTitle">
+                                                                    <fragment content="Verify">
+                                                                        <attributes>
+                                                                            <font key="NSFont" metaFont="system" size="11"/>
+                                                                        </attributes>
+                                                                    </fragment>
+                                                                </attributedString>
+                                                                <color key="baseForegroundColor" name="DarkTitleColor"/>
+                                                            </buttonConfiguration>
+                                                            <userDefinedRuntimeAttributes>
+                                                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                    <integer key="value" value="6"/>
+                                                                </userDefinedRuntimeAttribute>
+                                                            </userDefinedRuntimeAttributes>
+                                                        </button>
                                                     </subviews>
                                                     <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
-                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="width" secondItem="EAT-EC-5JS" secondAttribute="width" id="1dp-JF-8nd"/>
                                                         <constraint firstItem="Tre-ab-1GV" firstAttribute="height" secondItem="EAT-EC-5JS" secondAttribute="height" id="93o-6M-TeB"/>
+                                                        <constraint firstItem="kZc-FW-B6T" firstAttribute="centerY" secondItem="EAT-EC-5JS" secondAttribute="centerY" id="9dM-TY-O82"/>
+                                                        <constraint firstAttribute="height" id="BqM-e5-4Xm"/>
                                                         <constraint firstItem="Tre-ab-1GV" firstAttribute="centerY" secondItem="EAT-EC-5JS" secondAttribute="centerY" id="CuB-HZ-WSg"/>
-                                                        <constraint firstAttribute="height" constant="30" id="Orc-ue-oSi"/>
-                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="centerX" secondItem="EAT-EC-5JS" secondAttribute="centerX" id="Wue-cG-kOi"/>
+                                                        <constraint firstAttribute="trailing" secondItem="Tre-ab-1GV" secondAttribute="trailing" id="Dur-Z3-oB4"/>
+                                                        <constraint firstAttribute="height" constant="35" id="Orc-ue-oSi"/>
+                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="leading" secondItem="kZc-FW-B6T" secondAttribute="trailing" priority="995" constant="8" id="R5V-gF-Sb1"/>
+                                                        <constraint firstItem="kZc-FW-B6T" firstAttribute="leading" secondItem="EAT-EC-5JS" secondAttribute="leading" constant="8" id="XOw-xD-4bP"/>
+                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="leading" secondItem="EAT-EC-5JS" secondAttribute="leading" id="dcb-rE-bds"/>
+                                                        <constraint firstAttribute="trailing" secondItem="VKL-Yb-Nfk" secondAttribute="trailing" constant="7" id="eSg-dr-7TA"/>
+                                                        <constraint firstItem="VKL-Yb-Nfk" firstAttribute="centerY" secondItem="EAT-EC-5JS" secondAttribute="centerY" id="mnA-P8-ZAy"/>
                                                     </constraints>
                                                     <userDefinedRuntimeAttributes>
                                                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                             <integer key="value" value="8"/>
                                                         </userDefinedRuntimeAttribute>
                                                     </userDefinedRuntimeAttributes>
+                                                    <variation key="default">
+                                                        <mask key="constraints">
+                                                            <exclude reference="BqM-e5-4Xm"/>
+                                                            <exclude reference="dcb-rE-bds"/>
+                                                        </mask>
+                                                    </variation>
                                                 </view>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="EAT-EC-5JS" firstAttribute="leading" secondItem="avt-SW-tWA" secondAttribute="leading" constant="15" id="0eL-6D-tq8"/>
                                                 <constraint firstItem="ibq-b6-Z4B" firstAttribute="leading" secondItem="avt-SW-tWA" secondAttribute="leading" constant="15" id="1yO-iG-cs5"/>
-                                                <constraint firstAttribute="bottom" secondItem="EAT-EC-5JS" secondAttribute="bottom" constant="10" id="7zM-hE-34w"/>
+                                                <constraint firstAttribute="bottom" secondItem="EAT-EC-5JS" secondAttribute="bottom" constant="15" id="7zM-hE-34w"/>
                                                 <constraint firstAttribute="trailing" secondItem="KSg-YV-XHB" secondAttribute="trailing" constant="20" id="8XY-al-NIG"/>
                                                 <constraint firstItem="g9J-9G-5ju" firstAttribute="leading" secondItem="ibq-b6-Z4B" secondAttribute="trailing" constant="15" id="Dyp-aY-iUV"/>
-                                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="78" id="Kkh-LB-u7z"/>
-                                                <constraint firstItem="EAT-EC-5JS" firstAttribute="top" secondItem="ibq-b6-Z4B" secondAttribute="bottom" constant="13" id="Lcy-7g-GKz"/>
+                                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="68" id="Kkh-LB-u7z"/>
+                                                <constraint firstItem="EAT-EC-5JS" firstAttribute="top" secondItem="g9J-9G-5ju" secondAttribute="bottom" constant="15" id="Lcy-7g-GKz"/>
                                                 <constraint firstItem="ibq-b6-Z4B" firstAttribute="top" secondItem="avt-SW-tWA" secondAttribute="top" constant="20" id="LgO-FW-Kk8"/>
                                                 <constraint firstItem="KSg-YV-XHB" firstAttribute="leading" secondItem="g9J-9G-5ju" secondAttribute="trailing" id="WSH-QI-ank"/>
                                                 <constraint firstAttribute="trailing" secondItem="EAT-EC-5JS" secondAttribute="trailing" constant="15" id="YK0-ES-ELc"/>
@@ -852,11 +899,19 @@
                                         </constraints>
                                         <connections>
                                             <outlet property="additionalInfo" destination="EAT-EC-5JS" id="NNL-n5-Uix"/>
+                                            <outlet property="additionalInfoIcon" destination="kZc-FW-B6T" id="QlP-aP-Mgv"/>
                                             <outlet property="additionalInfoLabel" destination="Tre-ab-1GV" id="Pkz-Cz-BD7"/>
+                                            <outlet property="collapseInfoConstraint" destination="BqM-e5-4Xm" id="ZV8-aY-QPk"/>
+                                            <outlet property="contentView" destination="avt-SW-tWA" id="Une-Z4-tde"/>
                                             <outlet property="icon" destination="FzY-IJ-27b" id="CW9-Pl-8ud"/>
                                             <outlet property="iconCircle" destination="ibq-b6-Z4B" id="sb1-YY-wiG"/>
+                                            <outlet property="infoBottomAnchorConstraint" destination="7zM-hE-34w" id="zzc-cB-hcj"/>
+                                            <outlet property="infoFromIconConstraint" destination="R5V-gF-Sb1" id="oxZ-Bd-mh7"/>
+                                            <outlet property="infoFromSuperviewConstraint" destination="dcb-rE-bds" id="sVy-Yw-X3w"/>
+                                            <outlet property="showInfoConstraint" destination="Orc-ue-oSi" id="3C4-P2-gcA"/>
                                             <outlet property="subtitle" destination="2Nk-fs-rra" id="Vme-zv-Bp2"/>
                                             <outlet property="title" destination="NDS-eh-hU1" id="MOY-oG-Acx"/>
+                                            <outlet property="verifyButton" destination="VKL-Yb-Nfk" id="7BJ-NJ-b04"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -1150,7 +1205,7 @@
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9EG-fn-Xy0">
-                                                                        <rect key="frame" x="0.0" y="22.999999999999893" width="266" height="34.333333333333336"/>
+                                                                        <rect key="frame" x="0.0" y="22.99999999999989" width="266" height="34.333333333333343"/>
                                                                         <attributedString key="attributedText">
                                                                             <fragment content="Members are free to leave the pool and can most often leave immediately.">
                                                                                 <attributes>
@@ -1367,6 +1422,7 @@
         <image name="image.crowdnode.logo" width="56.666667938232422" height="65"/>
         <image name="image.crowdnode.receiving.rewards" width="35.333332061767578" height="35.333332061767578"/>
         <image name="image.crowdnode.staking" width="240" height="180"/>
+        <image name="image.crowdnode.warning" width="22" height="22"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="wand.and.stars" catalog="system" width="128" height="115"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
@@ -1375,6 +1431,9 @@
         </namedColor>
         <namedColor name="ChevronColor">
             <color red="0.85098039215686272" green="0.85098039215686272" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="DashBlueColor">
             <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

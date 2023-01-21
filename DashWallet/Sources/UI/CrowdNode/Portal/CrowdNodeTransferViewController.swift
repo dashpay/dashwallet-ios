@@ -249,7 +249,7 @@ extension CrowdNodeTransferController {
     private func showWithdrawalLimitsError(period: WithdrawalLimitPeriod) {
         let vc = WithdrawalLimitsController()
         var buttonText: String? = nil
-        let isOnlineAccountDone = true // TODO: online account
+        let isOnlineAccountDone = viewModel.onlineAccountState == .done
         
         if period == .perTransaction {
             if isOnlineAccountDone {

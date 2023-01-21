@@ -86,6 +86,10 @@ public final class CrowdNode {
         static func < (lhs: CrowdNode.OnlineAccountState, rhs: CrowdNode.OnlineAccountState) -> Bool {
             return lhs.rawValue < rhs.rawValue
         }
+        
+        var isLinkingInProgress: Bool {
+            self == .linking || self == .validating || self == .confirming
+        }
     }
 
     private var cancellableBag = Set<AnyCancellable>()
@@ -127,15 +131,15 @@ public final class CrowdNode {
             guard let wSelf = self else { return }
 
             wSelf.timer?.invalidate()
-            let initialDelay = wSelf.isOnlineStateRestored ? 0 : 10
+            let fireImmediately = wSelf.isOnlineStateRestored
             
             switch state {
             case .linking:
                 wSelf.startTrackingLinked(address: wSelf.linkingApiAddress!)
             case .validating:
-                wSelf.startTrackingValidated(address: wSelf.accountAddress, initialDelay: initialDelay)
+                wSelf.startTrackingValidated(address: wSelf.accountAddress, fireImmediately: fireImmediately)
             case .confirming:
-                wSelf.startTrackingConfirmed(address: wSelf.accountAddress, initialDelay: initialDelay)
+                wSelf.startTrackingConfirmed(address: wSelf.accountAddress, fireImmediately: fireImmediately)
             default:
                 break
             }
@@ -617,28 +621,31 @@ extension CrowdNode {
 //        timer.tolerance = 0.5
 //        RunLoop.current.add(timer, forMode: .common)
 //        self.timer = timer
-        let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] (t) in
+        let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
             self?.checkIfAddressIsInUse(address: address)
         }
         timer.tolerance = 0.5
         self.timer = timer
     }
     
-    private func startTrackingValidated(address: String, initialDelay: Int) {
+    private func startTrackingValidated(address: String, fireImmediately: Bool) {
 //        Task {
             DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
             
 //            try await Task.sleep(nanoseconds: UInt64(initialDelay * 10^9))
-            let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] (t) in
+            let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
                 self?.checkAddressStatus(address: address)
             }
             timer.tolerance = 0.5
             self.timer = timer
-        timer.fire()
+        
+        if fireImmediately {
+            timer.fire()
+        }
 //        }
     }
     
-    private func startTrackingConfirmed(address: String, fireImmediatelly: Bool) {
+    private func startTrackingConfirmed(address: String, fireImmediately: Bool) {
         Task {
             DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
             
@@ -660,12 +667,15 @@ extension CrowdNode {
 //            RunLoop.main.add(timer, forMode: .common)
 //            self.timer = timer
             
-            let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] (t) in
-                
+            let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
                 self?.checkIfAddressIsInUse(address: address)
             }
             timer.tolerance = 0.5
             self.timer = timer
+            
+            if fireImmediately {
+                timer.fire()
+            }
         }
     }
     
