@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "วลีกู้คืนนี้จะทำให้คุณเข้าถึงจำนวนเงินในวอลเล็ท";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "ธุรกรรมนี้อาจใช้เวลาหลายนาทีในการชำระ";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "ธุรกรรมนี้ชำระทันทีโดยไม่มีค่าธรรมเนียมเพิ่มเติม";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
 
 /* No comment provided by engineer. */

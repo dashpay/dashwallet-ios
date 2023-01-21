@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Cụm từ phục hồi này là quyền truy cập của bạn đến số tiền trong ví này.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Giao dịch này cần mất vài phút để hoàn tất.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Giao dịch này sẽ được hoàn tất mà không mất thêm phí bổ sung";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ví này không rỗng hoặc quá trình đồng bộ chưa xong, bạn không thể xoá nó mà không có dòng khôi phục";
 
 /* No comment provided by engineer. */
