@@ -158,7 +158,7 @@ extension ActionButtonViewController {
         }
         else {
             let buttonContainer = UIView()
-            buttonContainer.backgroundColor = .dw_background()
+            buttonContainer.backgroundColor = .dw_secondaryBackground()
             buttonContainer.translatesAutoresizingMaskIntoConstraints = false
             stackView.addArrangedSubview(buttonContainer)
 

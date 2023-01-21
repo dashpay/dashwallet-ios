@@ -21,7 +21,6 @@
 #import "DWExploreHeaderView.h"
 #import "DWExploreTestnetContentsView.h"
 #import "DWUIKit.h"
-#import "UINavigationBar+DWAppearance.h"
 #import "dashwallet-Swift.h"
 
 @implementation DWExploreTestnetViewController
@@ -58,18 +57,6 @@
     [super viewDidLoad];
 
     self.view.backgroundColor = [UIColor dw_darkBlueColor];
-
-    // Setup navigation bar
-    [self.navigationController.navigationBar dw_configureForWhiteAppearance];
-    self.navigationController.navigationBar.shadowImage = nil;
-    self.navigationController.navigationBar.translucent = YES;
-    [self.navigationController.navigationBar dw_applyStandardAppearance];
-
-    UINavigationBarAppearance *standardAppearance = self.navigationController.navigationBar.standardAppearance;
-    standardAppearance.shadowColor = [UIColor separatorColor];
-
-    self.navigationController.navigationBar.scrollEdgeAppearance = standardAppearance;
-    self.navigationController.navigationBar.compactAppearance = standardAppearance;
 
     UIView *contentView = [[UIView alloc] init];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
