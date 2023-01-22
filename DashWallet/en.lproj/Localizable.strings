@@ -175,6 +175,9 @@
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
+/* Coinbase/Buy Dash/Cancel Order */
+"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
 
@@ -286,6 +289,9 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancel";
+
+/* Coinbase/Buy Dash/Cancel Order */
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Change";
@@ -635,6 +641,9 @@
 /* CrowdNode */
 "First deposit should be more than %@" = "First deposit should be more than %@";
 
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Forgot PIN?";
 
@@ -659,11 +668,17 @@
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
 
+/* Coinbase */
+"from your Coinbase account" = "from your Coinbase account";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
 
 /* No comment provided by engineer. */
 "Generating CSV Report" = "Generating CSV Report";
+
+/* Coinbase/Convert Crypto */
+"Get Quote" = "Get Quote";
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
@@ -1308,8 +1323,14 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "See on Uphold";
 
+/* Coinbase */
+"Select a coin" = "Select a coin";
+
 /* Buy Sell Dash */
 "Select a service" = "Select a service";
+
+/* Coinbase */
+"Select the coin" = "Select the coin";
 
 /* Sell */
 "Sell" = "Sell";
@@ -1537,8 +1558,8 @@
 /* Send Screen: to address */
 "to" = "to";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
+/* Coinbase */
+"to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "Tools" = "Tools";
@@ -1631,9 +1652,6 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Used at IP address";
-
-/* Coinbase */
-"User session expired" = "User session expired";
 
 /* No comment provided by engineer. */
 "Username taken" = "Username taken";
@@ -1800,8 +1818,14 @@
 /* CrowdNode */
 "You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
+/* Coinbase */
+"You receive" = "You receive";
+
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+
+/* Coinbase */
+"You send" = "You send";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "You sent the contact request to %@";

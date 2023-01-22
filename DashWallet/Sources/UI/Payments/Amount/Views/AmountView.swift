@@ -17,45 +17,16 @@
 
 import UIKit
 
-// MARK: - AmountViewDataSource
 
-protocol AmountViewDataSource: AmountInputControlDataSource {
-    var localCurrency: String { get }
-}
-
-// MARK: - AmountViewDelegate
-
-protocol AmountViewDelegate: AmountInputControlDelegate {
-    var amountInputStyle: AmountInputControl.Style { get }
-    var isMaxButtonHidden: Bool { get }
-}
 
 // MARK: - AmountView
 
 class AmountView: UIView {
-    public weak var dataSource: AmountViewDataSource? {
-        didSet {
-            amountInputControl.dataSource = dataSource
-            updateView()
-        }
-    }
-
-    public weak var delegate: AmountViewDelegate? {
-        didSet {
-            amountInputControl.delegate = delegate
-            updateView()
-        }
-    }
-
     public var textInput: UITextInput {
         amountInputControl.textField
     }
 
-    public var amountInputStyle: AmountInputControl.Style
-
-    public var isMaxButtonHidden: Bool {
-        delegate?.isMaxButtonHidden ?? false
-    }
+    private(set) var amountInputStyle: AmountInputControl.Style
 
     public var amountType: AmountInputControl.AmountType {
         set {
@@ -69,9 +40,9 @@ class AmountView: UIView {
     public var maxButtonAction: (() -> Void)?
     public var infoButtonHandler: (() -> Void)?
 
-    private var maxButton: UIButton!
-    private var amountInputControl: AmountInputControl!
-    private var inputTypeSwitcher: AmountInputTypeSwitcher!
+    private(set) var maxButton: UIButton!
+    private(set) var amountInputControl: AmountInputControl!
+    private(set) var inputTypeSwitcher: AmountInputTypeSwitcher!
 
     private var errorStackView: UIStackView!
     private var errorLabel: UILabel!
@@ -81,7 +52,8 @@ class AmountView: UIView {
         .init(width: AmountView.noIntrinsicMetric, height: 90)
     }
 
-    @discardableResult override func becomeFirstResponder() -> Bool {
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
         amountInputControl.becomeFirstResponder()
     }
 
@@ -122,33 +94,18 @@ class AmountView: UIView {
         errorLabel.text = nil
     }
 
-    public func reloadData() {
-        amountInputControl.reloadData()
-    }
-
-    public func reloadInputTypeSwitcher() {
-        updateView()
-    }
-
-    @objc func maxButtonActionHandler() {
+    @objc
+    func maxButtonActionHandler() {
         maxButtonAction?()
     }
 
-    @objc func infoButtonAction() {
+    @objc
+    func infoButtonAction() {
         infoButtonHandler?()
     }
 }
 
 extension AmountView {
-    private func updateView() {
-        inputTypeSwitcher.items = [
-            .init(currencySymbol: "DASH", currencyCode: "DASH"),
-            .init(currencySymbol: dataSource?.localCurrency ?? "", currencyCode: "FIAT"),
-        ]
-
-        maxButton.isHidden = isMaxButtonHidden
-    }
-
     private func configureHierarchy() {
         let contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -161,19 +118,11 @@ extension AmountView {
         contentView.addSubview(maxButton)
 
         amountInputControl = AmountInputControl(style: amountInputStyle)
-        amountInputControl.swapingHandler = { [weak self] _ in
-            self?.inputTypeSwitcher.selectedNextItem()
-        }
-        amountInputControl.dataSource = dataSource
         amountInputControl.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(amountInputControl)
 
-        inputTypeSwitcher = .init(frame: .zero)
+        inputTypeSwitcher = AmountInputTypeSwitcher(frame: .zero)
         inputTypeSwitcher.translatesAutoresizingMaskIntoConstraints = false
-        inputTypeSwitcher.selectItemHandler = { [weak self] item in
-            let type: AmountInputControl.AmountType = item.isMain ? .main : .supplementary
-            self?.amountInputControl.setActiveType(type, animated: true, completion: nil)
-        }
         contentView.addSubview(inputTypeSwitcher)
 
         errorStackView = UIStackView()

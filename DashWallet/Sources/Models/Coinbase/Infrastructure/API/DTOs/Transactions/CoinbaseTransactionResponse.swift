@@ -94,3 +94,9 @@ struct To: Codable {
         case addressURL = "address_url"
     }
 }
+
+// MARK: - AddressInfo
+
+struct AddressInfo: Codable {
+    let address: String?
+}

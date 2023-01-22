@@ -88,8 +88,6 @@ class AmountInputControl: UIControl {
         }
     }
 
-    public var swapingHandler: ((AmountType) -> Void)?
-
     public var isCurrencySelectorHidden: Bool {
         (style == .basic && amountType == .main) ||
             (delegate?.isCurrencySelectorHidden ?? false)
@@ -140,92 +138,30 @@ class AmountInputControl: UIControl {
     }
 
     func setActiveType(_ type: AmountType, animated: Bool, completion: (() -> Void)? = nil) {
-        guard style == .oppositeAmount else {
-            amountType = type
-            updateAppearance()
-            updateCurrencySelectorPossition()
-            delegate?.amountInputControlDidSwapInputs()
-            completion?()
-            return
-        }
-
-        let wasSwapped = type != .supplementary
-        let bigLabel: UILabel = wasSwapped ? supplementaryAmountLabel : mainAmountLabel
-        let smallLabel: UILabel = wasSwapped ? mainAmountLabel : supplementaryAmountLabel
-
-        let scale = kSupplementaryAmountFontSize / kMainAmountFontSize
-
-        bigLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
-        bigLabel.transform = CGAffineTransform(scaleX: 1.0 / scale, y: 1.0 / scale)
-
-        smallLabel.frame = CGRect(x: 0, y: smallLabel.frame.minY, width: bounds.width, height: kMainAmountLabelHeight)
-        smallLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
-        smallLabel.transform = CGAffineTransform(scaleX: scale, y: scale)
-
-        let updateAlphaAndTransform = {
-            bigLabel.transform = .identity
-            smallLabel.transform = .identity
-            bigLabel.alpha = kSmallAmountTextAlpha
-            smallLabel.alpha = kBigAmountTextAlpha
-        }
-
-        // Change possition
-        let bigFramePosition = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
-        let smallFramePosition = CGRect(x: 0, y: kMainAmountLabelHeight, width: bounds.width,
-                                        height: kSupplementaryAmountLabelHeight)
-
-        let changePossiton = {
-            bigLabel.frame = smallFramePosition
-            smallLabel.frame = bigFramePosition
-        }
-
-        amountType = type
-        delegate?.amountInputControlDidSwapInputs()
-        supplementaryAmountHelperLabel.font = wasSwapped ? bigLabel.font : smallLabel.font
-
-        if animated {
-            currencySelectorButton.isHidden = true
-
-            UIView.animate(withDuration: 0.1, delay: 0.0, options: .curveEaseOut, animations: {
-                updateAlphaAndTransform()
-            }) { _ in
-                UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, animations: {
-                    changePossiton()
-                }) { _ in
-                    self.currencySelectorButton.isHidden = self.isCurrencySelectorHidden
-                    self.updateCurrencySelectorPossition()
-                    completion?()
-                }
-            }
-        }
-        else {
-            updateAlphaAndTransform()
-            changePossiton()
-            updateCurrencySelectorPossition()
-            completion?()
-            delegate?.amountInputControlDidSwapInputs()
-        }
+        setActiveType(type, animated: animated, notifyDelegate: false, completion: completion)
     }
 
-    @discardableResult override func becomeFirstResponder() -> Bool {
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
         let val = textField.becomeFirstResponder()
         let endOfDocumentPosition = textField.endOfDocument
         textField.selectedTextRange = textField.textRange(from: endOfDocumentPosition, to: endOfDocumentPosition)
         return val
     }
 
-    @discardableResult override func resignFirstResponder() -> Bool {
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
         textField.resignFirstResponder()
     }
 
     // MARK: Actions
 
-    @objc func switchAmountCurrencyAction() {
+    @objc
+    func switchAmountCurrencyAction() {
         guard style == .oppositeAmount else { return }
 
         let nextType = amountType.toggle()
-        setActiveType(nextType, animated: true)
-        swapingHandler?(nextType)
+        setActiveType(nextType, animated: true, notifyDelegate: true)
     }
 
     internal func pasteAction() {
@@ -237,7 +173,8 @@ class AmountInputControl: UIControl {
         becomeFirstResponder()
     }
 
-    @objc func currencySelectorButtonAction() {
+    @objc
+    func currencySelectorButtonAction() {
         delegate?.amountInputControlChangeCurrencyDidTap()
     }
 }
@@ -370,6 +307,74 @@ extension AmountInputControl {
 
         updateAppearance()
     }
+
+    private func setActiveType(_ type: AmountType, animated: Bool, notifyDelegate: Bool, completion: (() -> Void)? = nil) {
+        guard style == .oppositeAmount else {
+            amountType = type
+            updateAppearance()
+            updateCurrencySelectorPossition()
+            if notifyDelegate { delegate?.amountInputControlDidSwapInputs() }
+            completion?()
+            return
+        }
+
+        let wasSwapped = type != .supplementary
+        let bigLabel: UILabel = wasSwapped ? supplementaryAmountLabel : mainAmountLabel
+        let smallLabel: UILabel = wasSwapped ? mainAmountLabel : supplementaryAmountLabel
+
+        let scale = kSupplementaryAmountFontSize / kMainAmountFontSize
+
+        bigLabel.font = .dw_regularFont(ofSize: kSupplementaryAmountFontSize)
+        bigLabel.transform = CGAffineTransform(scaleX: 1.0 / scale, y: 1.0 / scale)
+
+        smallLabel.frame = CGRect(x: 0, y: smallLabel.frame.minY, width: bounds.width, height: kMainAmountLabelHeight)
+        smallLabel.font = .dw_regularFont(ofSize: kMainAmountFontSize)
+        smallLabel.transform = CGAffineTransform(scaleX: scale, y: scale)
+
+        let updateAlphaAndTransform = {
+            bigLabel.transform = .identity
+            smallLabel.transform = .identity
+            bigLabel.alpha = kSmallAmountTextAlpha
+            smallLabel.alpha = kBigAmountTextAlpha
+        }
+
+        // Change possition
+        let bigFramePosition = CGRect(x: 0, y: 0, width: bounds.width, height: kMainAmountLabelHeight)
+        let smallFramePosition = CGRect(x: 0, y: kMainAmountLabelHeight, width: bounds.width,
+                                        height: kSupplementaryAmountLabelHeight)
+
+        let changePossiton = {
+            bigLabel.frame = smallFramePosition
+            smallLabel.frame = bigFramePosition
+        }
+
+        amountType = type
+        if notifyDelegate { delegate?.amountInputControlDidSwapInputs() }
+        supplementaryAmountHelperLabel.font = wasSwapped ? bigLabel.font : smallLabel.font
+
+        if animated {
+            currencySelectorButton.isHidden = true
+
+            UIView.animate(withDuration: 0.1, delay: 0.0, options: .curveEaseOut, animations: {
+                updateAlphaAndTransform()
+            }) { _ in
+                UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1.0, animations: {
+                    changePossiton()
+                }) { _ in
+                    self.currencySelectorButton.isHidden = self.isCurrencySelectorHidden
+                    self.updateCurrencySelectorPossition()
+                    completion?()
+                }
+            }
+        }
+        else {
+            updateAlphaAndTransform()
+            changePossiton()
+            updateCurrencySelectorPossition()
+            completion?()
+            if notifyDelegate { delegate?.amountInputControlDidSwapInputs() }
+        }
+    }
 }
 
 // MARK: Utils
@@ -438,11 +443,13 @@ final class CopyPasteableContol: UIControl {
         configureMenuControl()
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func longPressGestureRecognizerAction(gesture: UILongPressGestureRecognizer) {
+    @objc
+    func longPressGestureRecognizerAction(gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .recognized else { return }
 
         if let recognizerView = gesture.view {

@@ -1,6 +1,6 @@
 //
-//  Created by hadia
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Created by tkhp
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
 
 import Foundation
 
-// MARK: - TwoFactorAuthModelDelegate
+// MARK: - CBAuthInterop
 
-protocol TwoFactorAuthModelDelegate: AnyObject {
-    func transferFromCoinbaseSuccess()
-    func transferFromCoinbaseForTwoFactorAuthError(error: Error)
-    func transferFromCoinbaseForUnkownError(error: Error)
+protocol CBAuthInterop: AnyObject {
+    func refreshTokenIfNeeded() async throws
 }
 
-// MARK: - TwoFactorAuthModel
+// MARK: - CBAuth + CBAuthInterop
 
-class TwoFactorAuthModel {
-    weak var delegate: TwoFactorAuthModelDelegate?
+extension CBAuth: CBAuthInterop {
+    func refreshTokenIfNeeded() async throws {
+        try await refreshUserToken()
+    }
 }

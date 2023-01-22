@@ -38,7 +38,8 @@ final class ProvideAmountViewController: SendAmountViewController {
         super.init()
     }
 
-    @available(*, unavailable) required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -50,7 +51,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
         DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-        delegate?.provideAmountViewControllerDidInput(amount: UInt64(model.amount.plainAmount))
+        delegate?.provideAmountViewControllerDidInput(amount: model.amount.plainAmount)
     }
 
     override func configureHierarchy() {
@@ -94,21 +95,20 @@ final class ProvideAmountViewController: SendAmountViewController {
         let balanceStackView = UIStackView()
         balanceStackView.axis = .horizontal
         balanceStackView.spacing = 2
-        balanceStackView.alignment = .center
+        balanceStackView.alignment = .lastBaseline
         textContainer.addArrangedSubview(balanceStackView)
 
         let balanceTitleLabel = UILabel()
         balanceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceTitleLabel.font = .dw_font(forTextStyle: .body)
+        balanceTitleLabel.font = .dw_font(forTextStyle: .subheadline)
         balanceTitleLabel.textColor = .dw_secondaryText()
         balanceTitleLabel.text = NSLocalizedString("Balance", comment: "Send Screen: to address") + ":"
         balanceStackView.addArrangedSubview(balanceTitleLabel)
 
         balanceLabel = UILabel()
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceLabel.font = .dw_font(forTextStyle: .body)
+        balanceLabel.font = .dw_font(forTextStyle: .subheadline)
         balanceLabel.textColor = .dw_secondaryText()
-        balanceLabel.text = "5.50 DASH ~ 320.74€"
         balanceStackView.addArrangedSubview(balanceLabel)
 
         let spacer = UIView()
@@ -156,11 +156,13 @@ final class ProvideAmountViewController: SendAmountViewController {
         ])
     }
 
-    @objc func walletBalanceDidChangeNotification(notification: Notification) {
+    @objc
+    func walletBalanceDidChangeNotification(notification: Notification) {
         updateBalance()
     }
 
-    @objc func toggleBalanceVisibilityAction() {
+    @objc
+    func toggleBalanceVisibilityAction() {
         isBalanceHidden.toggle()
         updateBalance()
     }
@@ -203,18 +205,21 @@ extension ProvideAmountViewController {
     private func updateBalance() {
         let balance = model.walletBalance
 
-        let dashNumber = Decimal(balance) / Decimal(DUFFS)
+        let fiat: String
 
-        let fiat: String = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance)) ?? "Syncing..."
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+        }
 
-        let dashStr = "\(dashNumber) DASH"
+        let dashStr = balance.formattedDashAmount
         let fiatStr = " ≈ \(fiat)"
         let fullStr = "\(dashStr)\(fiatStr)"
 
         if isBalanceHidden {
             balanceLabel.text = String(repeating: "*", count: fullStr.count + 4)
-        }
-        else {
+        } else {
             balanceLabel.text = fullStr
         }
     }

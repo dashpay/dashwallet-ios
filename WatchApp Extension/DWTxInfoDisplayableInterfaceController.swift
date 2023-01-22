@@ -42,7 +42,8 @@ extension WKInterfaceController: DWTxInfoDisplayableInterfaceController {
                                           object: nil)
     }
 
-    @objc private func txReceived(_ notification: Notification?) {
+    @objc
+    private func txReceived(_ notification: Notification?) {
         if Thread.current != .main {
             DispatchQueue.main.async {
                 self.txReceived(notification)

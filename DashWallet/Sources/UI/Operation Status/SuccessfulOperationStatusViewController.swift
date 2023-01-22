@@ -18,7 +18,7 @@
 import UIKit
 
 final class SuccessfulOperationStatusViewController: ActionButtonViewController, NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 
     @IBOutlet var contentView: UIView!
     @IBOutlet var titleLabel: UILabel!

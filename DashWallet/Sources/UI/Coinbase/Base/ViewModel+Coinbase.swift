@@ -28,8 +28,9 @@ protocol CoinbaseTransactionDelegate: AnyObject {
 // MARK: - CoinbaseTransactionSendable
 
 protocol CoinbaseTransactionSendable {
-    var plainAmount: UInt64 { get }
-    var transactionDelegate: CoinbaseTransactionDelegate? { get }
+    /// Amount to transfer in Dash
+    var amountToTransfer: UInt64 { get }
+    var transactionDelegate: CoinbaseTransactionDelegate? { set get }
 
     func transferFromCoinbase()
     func continueTransferFromCoinbase(with verificationCode: String)
@@ -41,7 +42,7 @@ extension CoinbaseTransactionSendable {
     }
 
     func transferFromCoinbase() {
-        let amount = plainAmount
+        let amount = amountToTransfer
 
         Task {
             try await transferFromCoinbase(amount: amount, with: nil)
@@ -49,7 +50,7 @@ extension CoinbaseTransactionSendable {
     }
 
     func continueTransferFromCoinbase(with verificationCode: String) {
-        let amount = plainAmount
+        let amount = amountToTransfer
 
         Task {
             try await transferFromCoinbase(amount: amount, with: verificationCode)

@@ -109,7 +109,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
 
-    private func handleTransfer(amount: Int64) async throws -> Bool {
+    private func handleTransfer(amount: UInt64) async throws -> Bool {
         if mode == .deposit {
             return try await viewModel.deposit(amount: amount)
         } else {
@@ -117,7 +117,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
     
-    private func handleWithdraw(amount: Int64) async throws -> Bool {
+    private func handleWithdraw(amount: UInt64) async throws -> Bool {
         do {
             return try await viewModel.withdraw(amount: amount)
         } catch CrowdNode.Error.withdrawLimit(_, let period) {

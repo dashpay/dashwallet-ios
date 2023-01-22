@@ -18,7 +18,7 @@
 import UIKit
 
 final class FailedOperationStatusViewController: BaseViewController, NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
@@ -48,15 +48,18 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
         }
     }
 
-    @IBAction func retryAction() {
+    @IBAction
+    func retryAction() {
         retryHandler?()
     }
 
-    @IBAction func supportAction() {
+    @IBAction 
+    func supportAction() {
         supportHandler?()
     }
 
-    @IBAction func cancelAction() {
+    @IBAction
+    func cancelAction() {
         cancelHandler?()
     }
 

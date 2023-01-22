@@ -40,7 +40,8 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
 
     private var isNeedToShowSignOutError = true
 
-    @IBAction func signOutAction() {
+    @IBAction
+    func signOutAction() {
         isNeedToShowSignOutError = false
         model.signOut()
     }
@@ -89,7 +90,7 @@ extension CoinbaseEntryPointViewController {
         connectionStatusLabel.text = isOnline
             ? NSLocalizedString("Connected", comment: "Coinbase Entry Point")
             : NSLocalizedString("Disconnected", comment: "Coinbase Entry Point")
-        balanceView.balance = model.balance
+        balanceView.dataSource = model
     }
 
     private func configureHierarchy() {
@@ -176,8 +177,7 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         case .sellDash:
             vc = BuyDashViewController()
         case .convertCrypto:
-            showSuccessTransactionStatus(text: "Test text")
-            return
+            vc = CustodialSwapsViewController()
         case .transferDash:
             vc = TransferAmountViewController()
         }

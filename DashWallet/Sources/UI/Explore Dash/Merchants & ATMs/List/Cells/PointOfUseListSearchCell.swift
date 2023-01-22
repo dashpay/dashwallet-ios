@@ -73,7 +73,8 @@ final class PointOfUseListSearchCell: UITableViewCell {
 // MARK: UISearchBarDelegate
 
 extension PointOfUseListSearchCell: UISearchBarDelegate {
-    @objc func performSearch() {
+    @objc
+    func performSearch() {
         if let q = query {
             delegate?.searchCell(self, shouldStartSearchWith: q)
         }

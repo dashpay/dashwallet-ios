@@ -15,7 +15,7 @@
 --wrapreturntype preserve #wrapArguments
 --closingparen same-line # wrapArguments
 --wraptypealiases before-first # wrapArguments
---funcattributes same-line # wrapAttributes
+--funcattributes prev-line # wrapAttributes
 --typeattributes prev-line # wrapAttributes
 --wrapternary before-operators # wraprations
 --extensionacl on-declarations # extensionAccessControl

@@ -312,23 +312,23 @@ extension CrowdNodeModel {
 }
 
 extension CrowdNodeModel {
-    func deposit(amount: Int64) async throws -> Bool {
+    func deposit(amount: UInt64) async throws -> Bool {
         guard amount > 0 else { return false }
 
-        let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: UInt64(amount))
+        let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: amount)
         if await authenticate(allowBiometric: usingBiometric) {
-            try await crowdNode.deposit(amount: UInt64(amount))
+            try await crowdNode.deposit(amount: amount)
             return true
         }
 
         return false
     }
 
-    func withdraw(amount: Int64) async throws -> Bool {
+    func withdraw(amount: UInt64) async throws -> Bool {
         guard amount > 0 && walletBalance >= CrowdNode.minimumLeftoverBalance else { return false }
         
         if !DSAuthenticationManager.sharedInstance().didAuthenticate {
-            let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: UInt64(amount))
+            let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: amount)
             let authenticated = await authenticate(allowBiometric: usingBiometric)
             
             if !authenticated {
@@ -336,7 +336,7 @@ extension CrowdNodeModel {
             }
         }
         
-        try await crowdNode.withdraw(amount: UInt64(amount))
+        try await crowdNode.withdraw(amount: amount)
         return true
     }
 }

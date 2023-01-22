@@ -24,10 +24,22 @@ enum AmountType {
     case supplementary
 }
 
+// MARK: - AmountInputItem
+
+struct AmountInputItem: Equatable {
+    let currencyName: String
+    let currencyCode: String
+
+    var isMain: Bool { currencyCode == kDashCurrency }
+
+    static let dash = AmountInputItem(currencyName: kDashCurrency, currencyCode: kDashCurrency)
+    static var app: AmountInputItem { .init(currencyName: App.fiatCurrency, currencyCode: App.fiatCurrency) }
+}
+
 // MARK: - BaseAmountModel
 
 class BaseAmountModel {
-    var activeAmountType: AmountType = .main
+    var activeAmountType: AmountType { currentInputItem.isMain ? .main : .supplementary }
 
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
@@ -35,8 +47,9 @@ class BaseAmountModel {
         activeAmountType == .main ? mainAmount : supplementaryAmount
     }
 
-    var isMaxButtonHidden: Bool {
-        true
+    var localCurrency: String {
+        let locale = Locale.current as NSLocale
+        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode)!
     }
 
     var error: Error? {
@@ -47,10 +60,23 @@ class BaseAmountModel {
         }
     }
 
+    var currentInputItem: AmountInputItem {
+        didSet {
+            inputsSwappedHandler?(activeAmountType)
+        }
+    }
+    var inputItems: [AmountInputItem] = [] {
+        didSet {
+            amountInputItemsChangeHandler?()
+        }
+    }
+
     public var errorHandler: ((Error) -> Void)?
     public var amountChangeHandler: ((AmountObject) -> Void)?
     public var presentCurrencyPickerHandler: (() -> Void)?
     public var inputsSwappedHandler: ((AmountType) -> Void)?
+    public var amountInputItemsChangeHandler: (() -> Void)?
+
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
         let chain = DWEnvironment.sharedInstance().currentChain
         let amount = amount.plainAmount
@@ -60,8 +86,7 @@ class BaseAmountModel {
 
     public var minimumOutputAmountFormattedString: String {
         let chain = DWEnvironment.sharedInstance().currentChain
-        return DSPriceManager.sharedInstance()
-            .string(forDashAmount: Int64(chain.minOutputAmount)) ?? NSLocalizedString("Unknown", comment: "")
+        return chain.minOutputAmount.formattedDashAmount
     }
 
     internal var mainAmountValidator: DWAmountInputValidator!
@@ -70,9 +95,23 @@ class BaseAmountModel {
     internal var localFormatter: NumberFormatter
     var localCurrencyCode: String
 
+    internal var supplementaryCurrencyCode: String {
+        localCurrencyCode
+    }
+
+    internal var supplementaryNumberFormatter: NumberFormatter {
+        localFormatter
+    }
+
     init() {
-        localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
-        localCurrencyCode = DSPriceManager.sharedInstance().localCurrencyCode
+        localCurrencyCode = App.fiatCurrency
+        localFormatter = NumberFormatter.fiatFormatter(currencyCode: localCurrencyCode)
+
+        currentInputItem = .dash
+        inputItems = [
+            .app,
+            .dash,
+        ]
 
         mainAmountValidator = DWAmountInputValidator(type: .dash)
         supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency)
@@ -80,36 +119,60 @@ class BaseAmountModel {
         updateAmountObjects(with: "0")
     }
 
+    func select(inputItem: AmountInputItem) {
+        let currentAmount = amount
+
+        currentInputItem = inputItem
+
+        if activeAmountType == .supplementary {
+            if supplementaryAmount == nil && currentAmount.fiatCurrencyCode == supplementaryCurrencyCode {
+                supplementaryAmount = mainAmount.localAmount
+            } else if currentAmount.fiatCurrencyCode != supplementaryCurrencyCode {
+                let mainAmount = AmountObject(plainAmount: currentAmount.plainAmount,
+                                              fiatCurrencyCode: supplementaryCurrencyCode,
+                                              localFormatter: supplementaryNumberFormatter)
+                supplementaryAmount = mainAmount.localAmount
+            }
+        } else {
+            if mainAmount == nil || mainAmount.fiatCurrencyCode != currentAmount.fiatCurrencyCode {
+                mainAmount = supplementaryAmount.dashAmount
+            }
+        }
+
+        amountDidChange()
+    }
+
+    func selectInputItem(at index: Int) {
+        select(inputItem: inputItems[index])
+    }
+
     func setupCurrencyCode(_ code: String) {
-        guard let price = DSPriceManager.sharedInstance().price(forCurrencyCode: code) else { return }
+        guard let price = try? CurrencyExchanger.shared.rate(for: code) else { return }
 
         localFormatter.currencyCode = code
         localCurrencyCode = code
 
+        currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : .app
+        inputItems = [
+            .app,
+            .dash,
+        ]
+
         let max = NSDecimalNumber(value: MAX_MONEY/DUFFS)
-        localFormatter.maximum = NSDecimalNumber(decimal: price.price.decimalValue).multiplying(by: max)
+        localFormatter.maximum = NSDecimalNumber(decimal: price).multiplying(by: max)
 
         rebuildAmounts()
     }
 
-    func updateInputField(with replacementText: String, in range: NSRange) {
-        let lastInputString = amount.amountInternalRepresentation
-
-        guard let validatedString = validator?.validatedString(fromLastInputString: lastInputString, range: range,
-                                                               replacementString: replacementText) else {
-            return
-        }
-
-        updateAmountObjects(with: validatedString)
-    }
-
     func updateAmountObjects(with inputString: String) {
         if activeAmountType == .main {
-            mainAmount = AmountObject(dashAmountString: inputString, fiatCurrencyCode: localCurrencyCode,
-                                      localFormatter: localFormatter)
+            mainAmount = AmountObject(dashAmountString: inputString,
+                                      fiatCurrencyCode: supplementaryCurrencyCode,
+                                      localFormatter: supplementaryNumberFormatter)
             supplementaryAmount = nil
-        } else if let amount = AmountObject(localAmountString: inputString, fiatCurrencyCode: localCurrencyCode,
-                                            localFormatter: localFormatter) {
+        } else if let amount = AmountObject(localAmountString: inputString,
+                                            fiatCurrencyCode: supplementaryCurrencyCode,
+                                            localFormatter: supplementaryNumberFormatter) {
             supplementaryAmount = amount
             mainAmount = nil
         }
@@ -117,9 +180,10 @@ class BaseAmountModel {
         amountDidChange()
     }
 
-    internal func updateCurrentAmountObject(with amount: Int64) {
-        let amountObject = AmountObject(plainAmount: Int64(amount), fiatCurrencyCode: localCurrencyCode,
-                                        localFormatter: localFormatter)
+    internal func updateCurrentAmountObject(with amount: UInt64) {
+        let amountObject = AmountObject(plainAmount: amount,
+                                        fiatCurrencyCode: supplementaryCurrencyCode,
+                                        localFormatter: supplementaryNumberFormatter)
         updateCurrentAmountObject(with: amountObject)
     }
 
@@ -129,21 +193,19 @@ class BaseAmountModel {
             supplementaryAmount = nil
         } else {
             mainAmount = nil
-            supplementaryAmount = newObject.localAmount(localValidator: supplementaryAmountValidator,
-                                                        localFormatter: localFormatter, currencyCode: localCurrencyCode)
+            supplementaryAmount = newObject.localAmount
         }
 
         amountDidChange()
     }
 
     internal func rebuildAmounts() {
-        let amount = activeAmountType == .main
-            ? mainAmount.amountInternalRepresentation
-            : supplementaryAmount.amountInternalRepresentation
+        let amount = amount.amountInternalRepresentation
         updateAmountObjects(with: amount)
     }
 
     internal func amountDidChange() {
+        error = nil
         checkAmountForErrors()
         amountChangeHandler?(amount)
     }
@@ -152,10 +214,6 @@ class BaseAmountModel {
 }
 
 extension BaseAmountModel {
-    var validator: DWInputValidator? {
-        activeAmountType == .supplementary ? supplementaryAmountValidator : mainAmountValidator
-    }
-
     var isAmountValidForProceeding: Bool {
         amount.plainAmount > 0
     }
@@ -165,11 +223,20 @@ extension BaseAmountModel {
     }
 
     var isSwapToLocalCurrencyAllowed: Bool {
-        DSPriceManager.sharedInstance().localCurrencyDashPrice != nil
+        CurrencyExchanger.shared.hasRate(for: localCurrencyCode)
     }
 
     var walletBalance: UInt64 {
         DWEnvironment.sharedInstance().currentWallet.balance
+    }
+
+    var fiatWalletBalanceFormatted: String {
+        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: walletBalance.dashAmount, to: App.fiatCurrency) else {
+            return "Invalid"
+        }
+
+        let nf = supplementaryNumberFormatter
+        return nf.string(from: fiatAmount as NSNumber)!
     }
 
     var walletBalanceFormatted: String {
@@ -177,14 +244,9 @@ extension BaseAmountModel {
     }
 }
 
-// MARK: AmountViewDataSource
+// MARK: AmountInputControlDataSource
 
-extension BaseAmountModel: AmountViewDataSource {
-    var localCurrency: String {
-        let locale = Locale.current as NSLocale
-        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode)!
-    }
-
+extension BaseAmountModel: AmountInputControlDataSource {
     var currentInputString: String {
         amount.amountInternalRepresentation
     }
@@ -198,43 +260,45 @@ extension BaseAmountModel: AmountViewDataSource {
     }
 }
 
-// MARK: AmountViewDelegate
-
-extension BaseAmountModel: AmountViewDelegate {
-    var amountInputStyle: AmountInputControl.Style {
-        .oppositeAmount
-    }
-
+extension BaseAmountModel {
     @objc var isCurrencySelectorHidden: Bool {
         false
     }
 
-    func amountInputControlDidSwapInputs() {
-        assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
+    func updateInputField(with replacementText: String, in range: NSRange) {
+        let lastInputString = amount.amountInternalRepresentation
+
+        let validator: DWInputValidator
+        let numberFormatter: NumberFormatter
 
         if activeAmountType == .main {
-            if supplementaryAmount == nil {
-                supplementaryAmount = mainAmount.localAmount(localValidator: supplementaryAmountValidator,
-                                                             localFormatter: localFormatter, currencyCode: localCurrencyCode)
-            }
-            activeAmountType = .supplementary
+            validator = mainAmountValidator
+            numberFormatter = NumberFormatter.dashFormatter
         } else {
-            if mainAmount == nil {
-                mainAmount = supplementaryAmount.dashAmount(dashValidator: mainAmountValidator, localFormatter: localFormatter,
-                                                            currencyCode: localCurrencyCode)
-            }
-            activeAmountType = .main
+            validator = supplementaryAmountValidator
+            numberFormatter = supplementaryNumberFormatter
         }
 
-        inputsSwappedHandler?(activeAmountType)
-        amountDidChange()
+        let validatedString = validator.validatedString(fromLastInputString: lastInputString,
+                                                        range: range,
+                                                        replacementString: replacementText,
+                                                        numberFormatter: numberFormatter)
+        guard let validatedString else {
+            return
+        }
+
+        updateAmountObjects(with: validatedString)
     }
 
-    func amountInputControlChangeCurrencyDidTap() {
-        presentCurrencyPickerHandler?()
+    func amountInputControlDidSwapInputs() {
+        assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
+        assert(inputItems.count == 2, "Swap only if we have two input types")
+
+        let inputItem = inputItems[0] == currentInputItem ? inputItems[1] : inputItems[0]
+        select(inputItem: inputItem)
     }
 
-    func amountInputWantToPasteFromClipboard() {
+    func pasteFromClipboard() {
         guard var string = UIPasteboard.general.string else { return }
         string = string.localizedAmount()
 

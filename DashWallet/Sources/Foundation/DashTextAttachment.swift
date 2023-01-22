@@ -30,17 +30,15 @@ final class DashTextAttachment: NSTextAttachment {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func attachmentBounds(for textContainer: NSTextContainer?, proposedLineFragment lineFrag: CGRect,
-                                   glyphPosition position: CGPoint, characterIndex charIndex: Int)
-        -> CGRect {
-        let height = lineFrag.size.height
-        var scale: CGFloat = 1
-        let imageSize = image?.size ?? .zero
+    override func attachmentBounds(for textContainer: NSTextContainer?,
+                                   proposedLineFragment lineFrag: CGRect,
+                                   glyphPosition position: CGPoint,
+                                   characterIndex charIndex: Int) -> CGRect {
+        guard let imageSize = image?.size else { return .zero }
 
-        if height < imageSize.height {
-            scale = height/imageSize.height - 0.2
-        }
+        let height = lineFrag.size.height - 10
+        let scale = height/imageSize.height
 
-        return CGRect(x: 0, y: -1, width: imageSize.width*scale, height: imageSize.height*scale);
+        return CGRect(x: 0, y: -1, width: imageSize.width*scale, height: height);
     }
 }
