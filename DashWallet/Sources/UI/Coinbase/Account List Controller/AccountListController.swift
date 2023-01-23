@@ -91,7 +91,7 @@ extension AccountListController {
         searchController.searchBar.delegate = self
 
         activityIndicatorView = UIActivityIndicatorView(style: .medium)
-        activityIndicatorView.color = UIColor.dw_label()
+        activityIndicatorView.color = .dw_label()
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
         activityIndicatorView.startAnimating()
         view.addSubview(activityIndicatorView)
