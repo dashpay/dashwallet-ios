@@ -81,7 +81,7 @@ extension AtmListSegmnets {
 @objc
 class AtmListViewController: ExplorePointOfUseListViewController {
     override var locationServicePopupTitle: String {
-        NSLocalizedString("ATM search works better with Location Services turned on", comment: "")
+        NSLocalizedString("ATM search works better with Location Services turned on.", comment: "")
     }
 
     override var locationServicePopupDetails: String {
