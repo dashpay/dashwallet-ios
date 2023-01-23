@@ -100,7 +100,7 @@ extension PointOfUseDetailsViewController {
     private func prepareContentView() {
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.backgroundColor = UIColor.dw_background()
+        contentView.backgroundColor = .dw_secondaryBackground()
         view.addSubview(contentView)
 
         let constraint: [NSLayoutConstraint]
@@ -160,7 +160,7 @@ extension PointOfUseDetailsViewController {
 extension PointOfUseDetailsViewController {
     func detailsView(for pointOfUse: ExplorePointOfUse) -> PointOfUseDetailsView? {
         switch pointOfUse.category {
-        case .merchant(let m):
+        case .merchant:
             return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
         case .atm:
             return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
@@ -182,9 +182,9 @@ extension ExplorePointOfUse {
 
     var title: String? {
         switch category {
-        case .merchant(let m):
+        case .merchant:
             return name
-        case .atm(let atm):
+        case .atm:
             return source
         case .unknown:
             return nil
@@ -200,7 +200,7 @@ extension ExplorePointOfUse {
                 let distance = CLLocation(latitude: latitude!, longitude: longitude!).distance(from: currentLocation)
                 let distanceString = ExploreDash.distanceFormatter
                     .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-                return "\(distanceString)) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
+                return "\(distanceString) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
             } else {
                 return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
             }

@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Αυτή η φράση ανάκτησης σας δίνει πρόσβασή στα χρήματα αυτού του πορτοφολιού.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Αυτή η συναλλαγή μπορεί να πάρει μερικά λεπτά για να διευθετηθεί.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Αυτή η συναλλαγή θα πρέπει να διευθετηθεί άμεσα χωρίς πρόσθετη χρέωση";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Αυτό το πορτοφόλι δεν είναι άδειο η ο συγχρονισμός δεν έχει ολοκληρωθεί , δεν θα πρέπει να το καθαρίσετε χωρίς την φράση ανάκτησης";
 
 /* No comment provided by engineer. */

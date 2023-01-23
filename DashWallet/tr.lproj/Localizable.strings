@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Bu kurtarma sözcük grubu cüzdanınızdaki paranıza erişmenizi sağlar.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "İşlemin tamamlanması birkaç dakika sürebilir.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Bu işlem hiç ek ücret ödenmeden anında tamamlanabilir";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Bu cüzdan boş değil veya eşleşme daha bitmedi, kurtarma metni olmadan sıfırlayamazsınız";
 
 /* No comment provided by engineer. */

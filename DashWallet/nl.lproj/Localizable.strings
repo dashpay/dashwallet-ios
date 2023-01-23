@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Deze herstelzin is uw toegang tot het saldo in deze portemonnee.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "De afhandeling van deze transactie kan enkele minuten duren.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Deze transactie wordt direct afgehandeld en zonder extra transactiekosten";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Deze portemonnee is niet leeg of sync is nog niet klaar, je mag het niet wissen zonder de herstelzin.";
 
 /* No comment provided by engineer. */

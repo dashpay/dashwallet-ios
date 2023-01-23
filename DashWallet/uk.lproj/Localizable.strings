@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Ця фраза відновлення - ваш доступ до коштів у цьому гаманці.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Підтвердження може тривати кілька хвилин.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Цю транзакцію буде підтверджено негайно без додаткової комісії.";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Цей гаманець не порожній або синхронізація не завершена, ви не можете стерти його без фрази відновлення";
 
 /* No comment provided by engineer. */

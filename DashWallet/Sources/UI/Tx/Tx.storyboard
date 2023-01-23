@@ -116,7 +116,7 @@
                                                         </label>
                                                         <view contentMode="scaleToFill" horizontalCompressionResistancePriority="751" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aCU-qG-s1L">
                                                             <rect key="frame" x="60.5" y="0.0" width="50" height="28"/>
-                                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </view>
                                                         <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" ambiguous="YES" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="K9z-XC-5BV">
                                                             <rect key="frame" x="130.5" y="0.0" width="215.5" height="28"/>
@@ -364,7 +364,7 @@
                                                         </label>
                                                         <view contentMode="scaleToFill" horizontalCompressionResistancePriority="751" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3vh-lO-zPb">
                                                             <rect key="frame" x="61.5" y="0.0" width="50" height="28"/>
-                                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </view>
                                                         <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" ambiguous="YES" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="Rrw-SO-PUw">
                                                             <rect key="frame" x="131.5" y="0.0" width="212.5" height="28"/>

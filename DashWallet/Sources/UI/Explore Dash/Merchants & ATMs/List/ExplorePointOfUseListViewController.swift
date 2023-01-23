@@ -249,7 +249,7 @@ extension ExplorePointOfUseListViewController {
 
     @objc
     internal func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         let appliedFiltersStackView = UIStackView()
         appliedFiltersStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -285,7 +285,7 @@ extension ExplorePointOfUseListViewController {
 
         let standardAppearance = UIToolbarAppearance()
         standardAppearance.configureWithDefaultBackground()
-        standardAppearance.backgroundColor = .systemBackground
+        standardAppearance.backgroundColor = .dw_secondaryBackground()
         navigationController?.toolbar.standardAppearance = standardAppearance
         if #available(iOS 15.0, *) {
             navigationController?.toolbar.scrollEdgeAppearance = standardAppearance
@@ -298,7 +298,7 @@ extension ExplorePointOfUseListViewController {
         view.addSubview(mapView)
 
         contentView = UIView()
-        contentView.backgroundColor = .dw_background()
+        contentView.backgroundColor = .dw_secondaryBackground()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.clipsToBounds = false
         contentView.layer.masksToBounds = true
@@ -322,6 +322,7 @@ extension ExplorePointOfUseListViewController {
         handlerView.addGestureRecognizer(panRecognizer)
 
         tableView = UITableView()
+        tableView.backgroundColor = .dw_secondaryBackground()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.keyboardDismissMode = .onDrag
         tableView.showsVerticalScrollIndicator = false
@@ -545,10 +546,11 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .nextPage:
             let cell = tableView.dequeueReusableCell(withIdentifier: FetchingNextPageCell.dw_reuseIdentifier,
                                                      for: indexPath) as! FetchingNextPageCell
-
+            cell.contentView.backgroundColor = .dw_secondaryBackground()
             return cell
         }
 
+        cell.contentView.backgroundColor = .dw_secondaryBackground()
         cell.selectionStyle = .none
         return cell
     }

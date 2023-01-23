@@ -1411,12 +1411,6 @@
 "This recovery phrase is your access to the funds in this wallet." = "Frasa pemulihan ini adalah akses Anda ke dana di dompet ini.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Transaksi ini mungkin perlu beberapa menit untuk diselesaikan.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Transaksi ini harus diselesaikan secara instan tanpa biaya tambahan";
-
-/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Dompet ini tidak kosong atau sinkronisasi belum selesai, Anda tidak dapat menghapusnya tanpa frasa pemulihan";
 
 /* No comment provided by engineer. */
