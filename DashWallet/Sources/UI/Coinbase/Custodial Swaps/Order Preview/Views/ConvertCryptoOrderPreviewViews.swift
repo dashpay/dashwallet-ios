@@ -58,6 +58,8 @@ class ConvertCryptoOrderPreviewSourceCell: UITableViewCell {
     }
 
     internal func configureHierarchy() {
+        contentView.backgroundColor = .dw_background()
+
         let subheadlineFont = UIFont.dw_font(forTextStyle: .subheadline)
 
         let contentStackView = UIStackView()
