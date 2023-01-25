@@ -263,4 +263,8 @@ extension CrowdNodeModel {
         
         return URL(string: CrowdNode.apiLinkUrl + crowdNode.accountAddress)!
     }
+    
+    func cancelLinkingOnlineAccount() {
+        crowdNode.stopTrackingLinked()
+    }
 }

@@ -72,4 +72,13 @@ extension CrowdNode {
         get { UserDefaults.standard.value(forKey: kCrowdNodePrimaryAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodePrimaryAddress) }
     }
+    
+    func resetUserDefaults() {
+        infoShown = false
+        lastKnownBalance = 0
+        withdrawalLimitsInfoShown = false
+        savedOnlineAccountState = .none
+        onlineAccountAddress = nil
+        crowdNodePrimaryAddress = nil
+    }
 }

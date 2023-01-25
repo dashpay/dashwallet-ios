@@ -38,12 +38,17 @@ final class CrowdNodePortalController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        configureObservers()
+        viewModel.showNotificationOnResult = false
+        
+        if cancellableBag.isEmpty {
+            configureObservers()
+        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         cancellableBag.removeAll()
+        viewModel.showNotificationOnResult = true
     }
 
     @objc static func controller() -> CrowdNodePortalController {
@@ -51,8 +56,11 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc func infoButtonAction() {
-        let vc = StakingInfoDialogController.controller()
-        present(vc, animated: true, completion: nil)
+        if viewModel.signUpState == .linkedOnline {
+            present(OnlineAccountInfoController.controller(), animated: true, completion: nil)
+        } else {
+            present(StakingInfoDialogController.controller(), animated: true, completion: nil)
+        }
     }
 }
 
@@ -114,6 +122,16 @@ extension CrowdNodePortalController {
                 ],
                 with: .none)
             })
+            .store(in: &cancellableBag)
+        
+        viewModel.$onlineAccountState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadRows(at: [
+                    IndexPath(item: 1, section: 0),
+                ],
+                with: .none)
+            }
             .store(in: &cancellableBag)
 
         viewModel.$animateBalanceLabel
@@ -180,8 +198,6 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var showInfoConstraint: NSLayoutConstraint!
     @IBOutlet var collapseInfoConstraint: NSLayoutConstraint!
     @IBOutlet var infoBottomAnchorConstraint: NSLayoutConstraint!
-    @IBOutlet var infoFromSuperviewConstraint: NSLayoutConstraint!
-    @IBOutlet var infoFromIconConstraint: NSLayoutConstraint!
 
     fileprivate func update(with item: CrowdNodePortalItem,
                             _ crowdNodeBalance: UInt64,
@@ -206,9 +222,9 @@ class CrowdNodeCell: UITableViewCell {
         
         switch item {
         case .deposit:
-            showInfo = crowdNodeBalance < CrowdNode.minimumDeposit// && !onlineAccountState.isLinkingInProgress
+            showInfo = crowdNodeBalance < CrowdNode.minimumDeposit && !onlineAccountState.isLinkingInProgress
         case .withdraw:
-            showInfo = true//onlineAccountState.isLinkingInProgress
+            showInfo = onlineAccountState.isLinkingInProgress
         default:
             showInfo = false
         }
@@ -222,18 +238,13 @@ class CrowdNodeCell: UITableViewCell {
             additionalInfo.backgroundColor = item.infoBackgroundColor
             additionalInfoLabel.text = item.info(crowdNodeBalance, onlineAccountState)
             additionalInfoLabel.textColor = item.infoTextColor
-            
+
             if !item.infoActionButton(for: onlineAccountState).isEmpty {
                 additionalInfoLabel.textAlignment = .left
                 additionalInfoIcon.isHidden = false
-                infoFromSuperviewConstraint.isActive = false
-                infoFromIconConstraint.isActive = true
                 verifyButton.isHidden = false
-                verifyButton.contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 8.0, bottom: 0.0, right: 8.0)
             } else {
                 additionalInfoLabel.textAlignment = .center
-                infoFromIconConstraint.isActive = false
-                infoFromSuperviewConstraint.isActive = true
                 additionalInfoIcon.isHidden = true
                 verifyButton.isHidden = true
             }

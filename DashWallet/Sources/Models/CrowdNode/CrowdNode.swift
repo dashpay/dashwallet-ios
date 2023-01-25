@@ -127,24 +127,26 @@ public final class CrowdNode {
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
         
-        $onlineAccountState.sink { [weak self] state in
-            guard let wSelf = self else { return }
+        $onlineAccountState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let wSelf = self else { return }
 
-            wSelf.timer?.invalidate()
-            let fireImmediately = wSelf.isOnlineStateRestored
-            
-            switch state {
-            case .linking:
-                wSelf.startTrackingLinked(address: wSelf.linkingApiAddress!)
-            case .validating:
-                wSelf.startTrackingValidated(address: wSelf.accountAddress, fireImmediately: fireImmediately)
-            case .confirming:
-                wSelf.startTrackingConfirmed(address: wSelf.accountAddress, fireImmediately: fireImmediately)
-            default:
-                break
+                wSelf.timer?.invalidate()
+                let fireImmediately = wSelf.isOnlineStateRestored
+                
+                switch state {
+                case .linking:
+                    wSelf.startTrackingLinked(address: wSelf.linkingApiAddress!)
+                case .validating:
+                    wSelf.startTrackingValidated(address: wSelf.accountAddress, fireImmediately: fireImmediately)
+                case .confirming:
+                    wSelf.startTrackingConfirmed(address: wSelf.accountAddress, fireImmediately: fireImmediately)
+                default:
+                    break
+                }
             }
-        }
-        .store(in: &cancellableBag)
+            .store(in: &cancellableBag)
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
@@ -252,6 +254,7 @@ extension CrowdNode {
         signUpState = .notStarted
         accountAddress = ""
         apiError = nil
+        resetUserDefaults()
     }
 }
 
@@ -572,6 +575,21 @@ extension CrowdNode {
         changeOnlineState(to: .linking)
     }
     
+    func stopTrackingLinked() {
+        if signUpState == .notStarted && onlineAccountState <= .linking {
+            DSLogger.log("CrowdNode: stopTrackingLinked")
+            changeOnlineState(to: .none)
+    
+            if let address = linkingApiAddress {
+                Task {
+                    // One last check just in case
+                    try await Task.sleep(nanoseconds: 5 * UInt64(pow(10.0, 9.0)))
+                    checkIfAddressIsInUse(address: address)
+                }
+            }
+        }
+    }
+    
     private func changeOnlineState(to: OnlineAccountState, save: Bool = true) {
         if signUpState != .finished {
             if to < .validating {
@@ -603,7 +621,7 @@ extension CrowdNode {
             break
         case .linking:
             DSLogger.log("CrowdNode: found linking online account in progress, account: \(address), primary: \(String(describing: primaryAddress))")
-            Task { await checkIfAddressIsInUse(address: address) }
+            checkIfAddressIsInUse(address: address)
         case .creating, .signingUp:
             // This should not happen - this method is reachable only for a linked account case
             throw CrowdNode.Error.restoreLinked(state: state)
@@ -616,11 +634,6 @@ extension CrowdNode {
     
     private func startTrackingLinked(address: String) {
         DSLogger.log("CrowdNode: startTrackingLinked, account: \(address)")
-//        let context = ["address": address]
-//        let timer = Timer(fireAt: Date().addingTimeInterval(5), interval: 2, target: self, selector: #selector(checkIfAddressIsInUseTick), userInfo: context, repeats: true)
-//        timer.tolerance = 0.5
-//        RunLoop.current.add(timer, forMode: .common)
-//        self.timer = timer
         let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
             self?.checkIfAddressIsInUse(address: address)
         }
@@ -629,20 +642,16 @@ extension CrowdNode {
     }
     
     private func startTrackingValidated(address: String, fireImmediately: Bool) {
-//        Task {
-            DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
-            
-//            try await Task.sleep(nanoseconds: UInt64(initialDelay * 10^9))
-            let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-                self?.checkAddressStatus(address: address)
-            }
-            timer.tolerance = 0.5
-            self.timer = timer
+        DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
+        let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            self?.checkAddressStatus(address: address)
+        }
+        timer.tolerance = 0.5
+        self.timer = timer
         
         if fireImmediately {
             timer.fire()
         }
-//        }
     }
     
     private func startTrackingConfirmed(address: String, fireImmediately: Bool) {
@@ -661,12 +670,6 @@ extension CrowdNode {
                 return
             }
             
-//            let context = ["address": address]
-//            let timer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(initialDelay)), interval: 20, target: self, selector: #selector(checkIfAddressIsInUseTick), userInfo: context, repeats: true)
-//            timer.tolerance = 0.5
-//            RunLoop.main.add(timer, forMode: .common)
-//            self.timer = timer
-            
             let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
                 self?.checkIfAddressIsInUse(address: address)
             }
@@ -678,15 +681,6 @@ extension CrowdNode {
             }
         }
     }
-    
-//    @objc private func checkIfAddressIsInUseTick(timer: Timer) async {
-//        guard let context = timer.userInfo as? [String: String] else { return }
-//        let address = context["address", default: ""]
-//
-//        if !address.isEmpty {
-//            await checkIfAddressIsInUse(address: address)
-//        }
-//    }
     
     private func checkIfAddressIsInUse(address: String) {
         Task {

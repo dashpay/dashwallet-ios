@@ -65,6 +65,16 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             viewModel.shouldShowWithdrawalLimitsDialog = false
         }
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewModel.showNotificationOnResult = false
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewModel.showNotificationOnResult = true
+    }
 
     override var actionButtonTitle: String? {
         mode.title

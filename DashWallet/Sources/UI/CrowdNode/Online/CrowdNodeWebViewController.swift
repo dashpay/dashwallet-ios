@@ -32,7 +32,7 @@ class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        print("CrowdNode: viewDidDisappear")
+        viewModel.cancelLinkingOnlineAccount()
     }
     
     override func loadView() {
@@ -45,17 +45,20 @@ class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        navigationItem.title = NSLocalizedString("Log in to CrowdNode", comment: "CrowdNode WebView")
         let urlRequest = URLRequest(url: url)
         webView.load(urlRequest)
+        
         configureObservers()
     }
     
     private func configureObservers() {
         viewModel.$signUpState
             .removeDuplicates()
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 if state == .linkedOnline {
-                    self?.navigationController?.replaceLast(with: CrowdNodePortalController.controller())
+                    self?.navigationController?.replaceLast(3, with: CrowdNodePortalController.controller())
                 }
             }
             .store(in: &cancellableBag)

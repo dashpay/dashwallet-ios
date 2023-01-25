@@ -39,12 +39,12 @@ final class StakingInfoDialogController: UIViewController {
     }
 
     @IBAction func copyAddressAction() {
-        UIPasteboard.general.string = CrowdNode.shared.accountAddress
+        UIPasteboard.general.string = viewModel.accountAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
 
     private func configureHierarchy() {
-        addressLabel.text = CrowdNode.shared.accountAddress
+        addressLabel.text = viewModel.accountAddress
         let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
         minimumDepositLabel.text = String.localizedStringWithFormat(NSLocalizedString("You only need %@ to join the pool.", comment: "CrowdNode"), minimumDeposit)
 

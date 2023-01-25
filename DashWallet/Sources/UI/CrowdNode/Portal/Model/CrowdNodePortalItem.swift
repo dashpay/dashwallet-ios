@@ -97,13 +97,13 @@ extension CrowdNodePortalItem {
                 return String.localizedStringWithFormat(NSLocalizedString("Deposit %@ to start earning", comment: "CrowdNode Portal"), minimumDeposit)
             }
         case .withdraw:
-//            if onlineAccountState == .confirming {
+            if onlineAccountState == .confirming {
                 return NSLocalizedString("Verification Required", comment: "CrowdNode Portal")
-//            } else if onlineAccountState == .validating {
-//                return NSLocalizedString("Validating address…", comment: "CrowdNode Portal")
-//            } else {
-//                return ""
-//            }
+            } else if onlineAccountState == .validating {
+                return NSLocalizedString("Validating address…", comment: "CrowdNode Portal")
+            } else {
+                return ""
+            }
         default:
             return ""
         }
@@ -128,7 +128,7 @@ extension CrowdNodePortalItem {
     }
     
     func infoActionButton(for state: CrowdNode.OnlineAccountState) -> String {
-        if self == .withdraw {//&& state == .confirming {
+        if self == .withdraw && state == .confirming {
             return NSLocalizedString("Verify", comment: "CrowdNode Portal")
         }
         
