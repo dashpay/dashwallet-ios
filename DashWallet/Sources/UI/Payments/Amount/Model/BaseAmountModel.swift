@@ -71,6 +71,14 @@ class BaseAmountModel {
     public var amountChangeHandler: ((AmountObject) -> Void)?
     public var amountInputItemsChangeHandler: (() -> Void)?
 
+    public var isAllowedToContinue: Bool {
+        isAmountValidForProceeding
+    }
+
+    var isAmountValidForProceeding: Bool {
+        amount.plainAmount > 0
+    }
+
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
         let chain = DWEnvironment.sharedInstance().currentChain
         let amount = amount.plainAmount
@@ -208,10 +216,6 @@ class BaseAmountModel {
 }
 
 extension BaseAmountModel {
-    var isAmountValidForProceeding: Bool {
-        amount.plainAmount > 0
-    }
-
     var isLocalCurrencySelected: Bool {
         activeAmountType == .supplementary
     }

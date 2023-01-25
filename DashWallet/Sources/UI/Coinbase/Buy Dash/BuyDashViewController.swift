@@ -45,11 +45,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     }
 
     // MARK: Actions
-    override func amountDidChange() {
-        super.amountDidChange()
-        actionButton?.isEnabled = buyDashModel.canContinue
-    }
-
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         buyDashModel.buy()

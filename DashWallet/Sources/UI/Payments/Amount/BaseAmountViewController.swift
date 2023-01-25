@@ -84,6 +84,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func amountDidChange() {
+        actionButton?.isEnabled = model.isAllowedToContinue
         amountView.amountInputControl.reloadData()
         showErrorIfNeeded()
     }
@@ -124,6 +125,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        actionButton?.isEnabled = model.isAllowedToContinue
         amountView.becomeFirstResponder()
         showErrorIfNeeded()
     }

@@ -38,12 +38,6 @@ class SpecifyAmountViewController: BaseAmountViewController {
         delegate?.specifyAmountViewController(self, didInput: UInt64(model.amount.plainAmount))
     }
 
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        actionButton?.isEnabled = model.isAmountValidForProceeding
-    }
-
     override func configureHierarchy() {
         super.configureHierarchy()
 

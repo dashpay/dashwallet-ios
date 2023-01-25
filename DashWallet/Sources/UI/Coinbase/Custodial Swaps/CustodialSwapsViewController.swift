@@ -47,7 +47,7 @@ class CustodialSwapsViewController: TransferAmountViewController {
             self.converterView.reloadView()
             self.amountView.inputTypeSwitcher.reloadData()
             self.amountView.amountInputControl.reloadData()
-            self.actionButton?.isEnabled = self.custodialSwapsModel.isSendAllowed
+            self.actionButton?.isEnabled = self.model.isAllowedToContinue
             self.dismiss(animated: true)
         }
 

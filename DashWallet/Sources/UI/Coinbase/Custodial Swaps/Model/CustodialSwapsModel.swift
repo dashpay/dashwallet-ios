@@ -67,8 +67,8 @@ class CustodialSwapsModel: SendAmountModel {
 
     weak var delegate: CustodialSwapsModelDelegate?
 
-    override var isSendAllowed: Bool {
-        selectedAccount != nil && amount.plainAmount > 0 && !canShowInsufficientFunds
+    override var isAllowedToContinue: Bool {
+        super.isAllowedToContinue && selectedAccount != nil && !canShowInsufficientFunds
     }
 
     override var canShowInsufficientFunds: Bool {

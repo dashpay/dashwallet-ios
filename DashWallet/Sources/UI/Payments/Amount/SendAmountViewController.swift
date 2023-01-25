@@ -44,16 +44,4 @@ class SendAmountViewController: BaseAmountViewController {
     override func maxButtonAction() {
         sendAmountModel.selectAllFunds()
     }
-
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        actionButton?.isEnabled = sendAmountModel.isSendAllowed
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        actionButton?.isEnabled = sendAmountModel.isSendAllowed
-    }
 }

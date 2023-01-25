@@ -34,12 +34,7 @@ enum BuyDashFailureReason {
 // MARK: - BuyDashModel
 
 final class BuyDashModel: BaseAmountModel {
-
     weak var delegate: BuyDashModelDelegate?
-
-    var canContinue: Bool {
-        amount.plainAmount > 0
-    }
 
     @Published var paymentMethods: [CoinbasePaymentMethod] = []
 
