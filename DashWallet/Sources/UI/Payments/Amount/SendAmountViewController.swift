@@ -29,16 +29,16 @@ class SendAmountViewController: BaseAmountViewController {
     }
 
     init() {
-        super.init(nibName: nil, bundle: nil)
+        super.init(model: SendAmountModel())
+    }
+
+    override init(model: BaseAmountModel) {
+        super.init(model: model)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func initializeModel() {
-        model = SendAmountModel()
     }
 
     override func maxButtonAction() {

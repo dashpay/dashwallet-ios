@@ -40,6 +40,14 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
         NSLocalizedString("Transfer", comment: "Coinbase")
     }
 
+    override init() {
+        super.init(model: TransferAmountModel())
+    }
+
+    override init(model: BaseAmountModel) {
+        super.init(model: model)
+    }
+
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         transferModel.initializeTransfer()
@@ -54,9 +62,8 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
     func didTapOnFromView() { }
 
     // MARK: Life Cycle
-
-    override func initializeModel() {
-        model = TransferAmountModel()
+    override func configureModel() {
+        super.configureModel()
         transferModel.delegate = self
     }
 

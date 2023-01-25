@@ -36,7 +36,7 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     internal var cancellables = Set<AnyCancellable>()
 
     init() {
-        super.init(nibName: nil, bundle: nil)
+        super.init(model: BuyDashModel())
     }
 
     @available(*, unavailable)
@@ -68,10 +68,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     }
 
     // MARK: Life cycle
-    override func initializeModel() {
-        model = BuyDashModel()
-    }
-
     override func configureModel() {
         super.configureModel()
 

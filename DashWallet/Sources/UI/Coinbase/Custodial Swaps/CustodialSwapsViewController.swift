@@ -27,6 +27,10 @@ class CustodialSwapsViewController: TransferAmountViewController {
 
     private var custodialSwapsModel: CustodialSwapsModel { model as! CustodialSwapsModel }
 
+    override init() {
+        super.init(model: CustodialSwapsModel())
+    }
+
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         custodialSwapsModel.convert()
@@ -51,10 +55,7 @@ class CustodialSwapsViewController: TransferAmountViewController {
         present(nvc, animated: true)
     }
 
-    override func initializeModel() {
-        model = CustodialSwapsModel()
-    }
-
+    // MARK: Life cycle
     override func configureModel() {
         super.configureModel()
 
