@@ -189,13 +189,13 @@ class BaseAmountModel {
         updateCurrentAmountObject(with: amountObject)
     }
 
-    internal func updateCurrentAmountObject(with newObject: AmountObject) {
+    internal func updateCurrentAmountObject(with dashAmount: AmountObject) {
         if activeAmountType == .main {
-            mainAmount = newObject
+            mainAmount = dashAmount
             supplementaryAmount = nil
         } else {
             mainAmount = nil
-            supplementaryAmount = newObject.localAmount
+            supplementaryAmount = dashAmount.localAmount
         }
 
         amountDidChange()

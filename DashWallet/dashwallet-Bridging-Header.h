@@ -33,8 +33,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
-#import "DWAmountObject.h"
-#import "DWAmountModel.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
