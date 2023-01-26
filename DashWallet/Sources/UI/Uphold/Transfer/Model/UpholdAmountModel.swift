@@ -134,3 +134,34 @@ final class UpholdAmountModel: BaseAmountModel {
         state = .none
     }
 }
+
+// MARK: ConverterViewDataSource
+
+extension UpholdAmountModel: ConverterViewDataSource {
+    var fromItem: SourceViewDataProvider? {
+        ConverterViewSourceItem(image: .asset("service.uphold.square"),
+                                title: "Uphold",
+                                balanceFormatted: card.formattedDashAmount,
+                                fiatBalanceFormatted: card.fiatBalanceFormatted)
+    }
+
+    var toItem: SourceViewDataProvider? {
+        ConverterViewSourceItem.dash()
+    }
+}
+
+extension DWUpholdCardObject {
+    var formattedDashAmount: String {
+        available.formattedDashAmount
+    }
+
+    var fiatBalanceFormatted: String {
+        let amount = available.decimalValue
+        guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: amount, to: App.fiatCurrency) else {
+            return NSLocalizedString("Updating Price", comment: "Exchange")
+        }
+
+        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        return nf.string(from: fiatAmount as NSNumber)!
+    }
+}

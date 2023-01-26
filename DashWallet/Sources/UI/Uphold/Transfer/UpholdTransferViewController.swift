@@ -36,6 +36,8 @@ final class UpholdTransferViewController: BaseAmountViewController {
     var upholdAmountModel: UpholdAmountModel { model as! UpholdAmountModel }
     override var isMaxButtonHidden: Bool { true }
 
+    private var converterView: ConverterView!
+
     @objc(initWithCard:)
     init(card: DWUpholdCardObject) {
         super.init(model: UpholdAmountModel(card: card))
@@ -85,6 +87,37 @@ final class UpholdTransferViewController: BaseAmountViewController {
                 }
             }
         }
+    }
+
+    override func configureHierarchy() {
+        super.configureHierarchy()
+
+        view.backgroundColor = .dw_secondaryBackground()
+
+        navigationItem.title = NSLocalizedString("Transfer from Uphold", comment: "Coinbase")
+        navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.largeTitleDisplayMode = .never
+
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 20
+        stackView.alignment = .fill
+        contentView.addSubview(stackView)
+
+        // Move amount view into stack view
+        stackView.addArrangedSubview(amountView)
+
+        converterView = ConverterView(frame: .zero)
+        converterView.dataSource = model as? ConverterViewDataSource
+        converterView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(converterView)
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
+        ])
     }
 
     override func maxButtonAction() {

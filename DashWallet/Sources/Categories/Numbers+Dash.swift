@@ -110,4 +110,8 @@ extension NSDecimalNumber {
         let amount = multiplying(by: duffs)
         return amount.uint64Value
     }
+
+    var formattedDashAmount: String {
+        decimalValue.formattedDashAmount
+    }
 }
