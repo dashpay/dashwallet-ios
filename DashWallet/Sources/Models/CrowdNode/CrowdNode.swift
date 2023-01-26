@@ -253,6 +253,8 @@ extension CrowdNode {
         DSLogger.log("CrowdNode reset triggered")
         signUpState = .notStarted
         accountAddress = ""
+        linkingApiAddress = nil
+        primaryAddress = nil
         apiError = nil
         resetUserDefaults()
     }
