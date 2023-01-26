@@ -252,10 +252,12 @@ extension CrowdNode {
     private func reset() {
         DSLogger.log("CrowdNode reset triggered")
         signUpState = .notStarted
+        onlineAccountState = .none
         accountAddress = ""
         linkingApiAddress = nil
         primaryAddress = nil
         apiError = nil
+        balance = 0
         resetUserDefaults()
     }
 }
