@@ -165,6 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)transferButtonAction:(id)sender {
     DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:self.model.dashCard];
     controller.delegate = self;
+    controller.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
