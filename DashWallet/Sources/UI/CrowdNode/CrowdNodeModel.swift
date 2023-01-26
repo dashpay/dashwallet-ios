@@ -167,7 +167,11 @@ final class CrowdNodeModel {
                 var outputMessage = ""
 
                 switch state {
-                case .notInitiated, .notStarted, .acceptTermsRequired, .error:
+                case .notInitiated, .notStarted:
+                    signUpEnabled = true
+                    self?.getAccountAddress()
+                    
+                case .acceptTermsRequired, .error:
                     signUpEnabled = true
 
                 case .fundingWallet, .signingUp:
@@ -195,7 +199,6 @@ final class CrowdNodeModel {
             .store(in: &cancellableBag)
 
         crowdNode.restoreState()
-        getAccountAddress()
     }
 }
 
