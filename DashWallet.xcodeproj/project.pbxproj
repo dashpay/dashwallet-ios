@@ -44,7 +44,8 @@
 		1147687E294B789800FB1EEE /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */; };
 		114CFED0296469D9005F421B /* CrowdNodeDepositTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */; };
 		114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFED1296489CD005F421B /* MinimumDepositBanner.swift */; };
-		114D16B629812730009A124C /* OnlineAccountInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B529812730009A124C /* OnlineAccountInfoController.swift */; };
+		114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B529812730009A124C /* OnlineAccountDetailsController.swift */; };
+		114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */; };
 		11517C832949E6A3004FC7BF /* CrowdNodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */; };
 		11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */; };
 		11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
@@ -839,7 +840,8 @@
 		1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
 		114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeDepositTx.swift; sourceTree = "<group>"; };
 		114CFED1296489CD005F421B /* MinimumDepositBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimumDepositBanner.swift; sourceTree = "<group>"; };
-		114D16B529812730009A124C /* OnlineAccountInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountInfoController.swift; sourceTree = "<group>"; };
+		114D16B529812730009A124C /* OnlineAccountDetailsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountDetailsController.swift; sourceTree = "<group>"; };
+		114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountConfirmationController.swift; sourceTree = "<group>"; };
 		11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPI.swift; sourceTree = "<group>"; };
 		11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeEndpoint.swift; sourceTree = "<group>"; };
 		11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebService.swift; sourceTree = "<group>"; };
@@ -2288,7 +2290,8 @@
 			isa = PBXGroup;
 			children = (
 				117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */,
-				114D16B529812730009A124C /* OnlineAccountInfoController.swift */,
+				114D16B529812730009A124C /* OnlineAccountDetailsController.swift */,
+				114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */,
 			);
 			path = Online;
 			sourceTree = "<group>";
@@ -6507,7 +6510,7 @@
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
-				114D16B629812730009A124C /* OnlineAccountInfoController.swift in Sources */,
+				114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */,
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
@@ -6568,6 +6571,7 @@
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
+				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
 				47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,

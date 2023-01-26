@@ -235,7 +235,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="FFc-fd-cfG" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="Giz-2P-2if"/>
                                             <constraint firstAttribute="width" constant="65" id="mj4-By-5q2"/>
@@ -854,6 +854,9 @@
                                                                     <integer key="value" value="6"/>
                                                                 </userDefinedRuntimeAttribute>
                                                             </userDefinedRuntimeAttributes>
+                                                            <connections>
+                                                                <action selector="verifyButtonAction" destination="Ega-NE-8X2" eventType="touchUpInside" id="PDI-6R-08o"/>
+                                                            </connections>
                                                         </button>
                                                     </subviews>
                                                     <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1407,10 +1410,10 @@
             </objects>
             <point key="canvasLocation" x="2243" y="4"/>
         </scene>
-        <!--Online Account Info Controller-->
+        <!--Online Account Details Controller-->
         <scene sceneID="ghH-wr-KK0">
             <objects>
-                <viewController storyboardIdentifier="OnlineAccountInfoController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="4RZ-lQ-w8S" customClass="OnlineAccountInfoController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="OnlineAccountDetailsController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="4RZ-lQ-w8S" customClass="OnlineAccountDetailsController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1lq-Mc-dOo">
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1452,8 +1455,7 @@
                                         <attributedString key="attributedText">
                                             <fragment content="Your primary Dash address that you currently use for your CrowdNode account">
                                                 <attributes>
-                                                    <color key="NSColor" name="SecondaryTextColor"/>
-                                                    <font key="NSFont" metaFont="system" size="14"/>
+                                                    <font key="NSFont" metaFont="menu" size="14"/>
                                                     <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
                                                 </attributes>
                                             </fragment>
@@ -1488,7 +1490,7 @@
                                                 </connections>
                                             </button>
                                         </subviews>
-                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <color key="backgroundColor" red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="SjH-ef-F2Y" firstAttribute="top" secondItem="euk-KI-SlX" secondAttribute="bottom" constant="5" id="3Pw-tH-ID5"/>
                                             <constraint firstAttribute="trailing" secondItem="EvD-MB-RvZ" secondAttribute="trailing" constant="10" id="5ts-r3-9QS"/>
@@ -1510,8 +1512,7 @@
                                         <attributedString key="attributedText">
                                             <fragment content="Dash address designated for your CrowdNode account in the Dash Wallet on this device ">
                                                 <attributes>
-                                                    <color key="NSColor" name="SecondaryTextColor"/>
-                                                    <font key="NSFont" metaFont="system" size="14"/>
+                                                    <font key="NSFont" metaFont="menu" size="14"/>
                                                     <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
                                                 </attributes>
                                             </fragment>
@@ -1546,7 +1547,7 @@
                                                 </connections>
                                             </button>
                                         </subviews>
-                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <color key="backgroundColor" red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="swv-lX-d1y" firstAttribute="top" secondItem="qbb-x8-ATB" secondAttribute="top" constant="17" id="9RQ-Qs-UUM"/>
                                             <constraint firstItem="swv-lX-d1y" firstAttribute="centerY" secondItem="qbb-x8-ATB" secondAttribute="centerY" id="OXD-6G-lKH"/>
@@ -1567,7 +1568,7 @@
                             </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Dxh-QM-nH1"/>
-                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <color key="backgroundColor" name="BackgroundColor"/>
                         <constraints>
                             <constraint firstItem="5kW-67-RT1" firstAttribute="trailing" secondItem="Dxh-QM-nH1" secondAttribute="trailing" id="1Lx-KX-fPQ"/>
                             <constraint firstItem="5kW-67-RT1" firstAttribute="top" secondItem="Dxh-QM-nH1" secondAttribute="top" constant="5" id="59O-IK-5Bv"/>
@@ -1584,6 +1585,182 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GnX-id-d4o" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2974" y="4"/>
+        </scene>
+        <!--Online Account Confirmation Controller-->
+        <scene sceneID="05O-Ug-XaK">
+            <objects>
+                <viewController storyboardIdentifier="OnlineAccountConfirmationController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Nh8-4f-ZHX" customClass="OnlineAccountConfirmationController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="tfr-k8-QYp">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QMR-JZ-ttN" userLabel="Close Button">
+                                <rect key="frame" x="330" y="52" width="60" height="45"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="60" id="9LX-u8-OSg"/>
+                                    <constraint firstAttribute="height" constant="45" id="Xon-Yb-pjO"/>
+                                </constraints>
+                                <color key="tintColor" name="Label"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal">
+                                    <color key="titleColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <imageReference key="image" image="xmark" catalog="system" symbolScale="medium"/>
+                                </state>
+                                <connections>
+                                    <action selector="closeAction" destination="Nh8-4f-ZHX" eventType="touchUpInside" id="5A5-N6-rxG"/>
+                                </connections>
+                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="lID-Lh-OKe">
+                                <rect key="frame" x="20" y="97.000000000000028" width="350" height="374.66666666666674"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="249" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y5m-ld-bo5" userLabel="Title Label">
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="73.666666666666671"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="Verify your API Dash address">
+                                                <attributes>
+                                                    <color key="NSColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                    <font key="NSFont" metaFont="systemBold" size="28"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineHeightMultiple="1.1000000000000001" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n1B-Lg-S2x">
+                                        <rect key="frame" x="0.0" y="88.666666666666657" width="350" height="56.333333333333343"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="Send 0.00054321 Dash from your primary Dash address that you currently use for your CrowdNode account">
+                                                <attributes>
+                                                    <font key="NSFont" metaFont="menu" size="14"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J6m-Je-HsS" userLabel="Primary Address Container">
+                                        <rect key="frame" x="0.0" y="160" width="350" height="74"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Primary Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="p7w-Dg-gW2" userLabel="Account Label">
+                                                <rect key="frame" x="15" y="9" width="141.66666666666666" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bWq-ZN-pyl" userLabel="Account Address">
+                                                <rect key="frame" x="15" y="30.999999999999996" width="280" height="33.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jh1-LF-fuV" userLabel="Copy Button">
+                                                <rect key="frame" x="310" y="17" width="30" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="40" id="7S1-6v-gSN"/>
+                                                    <constraint firstAttribute="width" constant="30" id="Ebg-W6-k6S"/>
+                                                </constraints>
+                                                <color key="tintColor" name="IconTintColor"/>
+                                                <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
+                                                <connections>
+                                                    <action selector="copyAddressAction" destination="Nh8-4f-ZHX" eventType="touchUpInside" id="vSv-cD-u9O"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" red="0.96862745100000003" green="0.96862745100000003" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="jh1-LF-fuV" secondAttribute="trailing" constant="10" id="4HO-LT-Pjd"/>
+                                            <constraint firstAttribute="trailing" secondItem="bWq-ZN-pyl" secondAttribute="trailing" constant="55" id="Hzt-pg-GIm"/>
+                                            <constraint firstItem="bWq-ZN-pyl" firstAttribute="leading" secondItem="J6m-Je-HsS" secondAttribute="leading" constant="15" id="LY6-4h-5T4"/>
+                                            <constraint firstItem="jh1-LF-fuV" firstAttribute="centerY" secondItem="J6m-Je-HsS" secondAttribute="centerY" id="NIQ-6A-SQn"/>
+                                            <constraint firstItem="jh1-LF-fuV" firstAttribute="top" secondItem="J6m-Je-HsS" secondAttribute="top" constant="17" id="UiQ-TV-9Y6"/>
+                                            <constraint firstItem="p7w-Dg-gW2" firstAttribute="leading" secondItem="J6m-Je-HsS" secondAttribute="leading" constant="15" id="jFS-pi-rt1"/>
+                                            <constraint firstItem="bWq-ZN-pyl" firstAttribute="top" secondItem="p7w-Dg-gW2" secondAttribute="bottom" constant="5" id="nlE-K6-27e"/>
+                                            <constraint firstItem="p7w-Dg-gW2" firstAttribute="top" secondItem="J6m-Je-HsS" secondAttribute="top" constant="9" id="oX3-F8-Tfo"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="12"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gew-yC-MiC">
+                                        <rect key="frame" x="0.0" y="248.99999999999997" width="350" height="36.666666666666657"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="to the Dash address designated for your CrowdNode account in the Dash Wallet on this device">
+                                                <attributes>
+                                                    <font key="NSFont" metaFont="menu" size="14"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pIJ-kA-hQF" userLabel="Address Container">
+                                        <rect key="frame" x="0.0" y="300.66666666666669" width="350" height="74"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sht-lh-94N" userLabel="Account Label">
+                                                <rect key="frame" x="15" y="9" width="88.333333333333329" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ppu-OJ-NPb" userLabel="Account Address">
+                                                <rect key="frame" x="15" y="30.999999999999996" width="280" height="33.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hq0-07-092" userLabel="Copy Button">
+                                                <rect key="frame" x="310" y="17" width="30" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="40" id="pyM-AR-h9E"/>
+                                                    <constraint firstAttribute="width" constant="30" id="q2n-X6-pZz"/>
+                                                </constraints>
+                                                <color key="tintColor" name="IconTintColor"/>
+                                                <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
+                                                <connections>
+                                                    <action selector="copyAddressAction" destination="Nh8-4f-ZHX" eventType="touchUpInside" id="mob-2c-6ye"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" red="0.96862745100000003" green="0.96862745100000003" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstItem="sht-lh-94N" firstAttribute="top" secondItem="pIJ-kA-hQF" secondAttribute="top" constant="9" id="1iz-Pr-Xjm"/>
+                                            <constraint firstItem="ppu-OJ-NPb" firstAttribute="leading" secondItem="pIJ-kA-hQF" secondAttribute="leading" constant="15" id="2lz-Af-G4Y"/>
+                                            <constraint firstItem="hq0-07-092" firstAttribute="centerY" secondItem="pIJ-kA-hQF" secondAttribute="centerY" id="Gjr-Uo-5co"/>
+                                            <constraint firstItem="sht-lh-94N" firstAttribute="leading" secondItem="pIJ-kA-hQF" secondAttribute="leading" constant="15" id="QUM-PJ-4EG"/>
+                                            <constraint firstItem="ppu-OJ-NPb" firstAttribute="top" secondItem="sht-lh-94N" secondAttribute="bottom" constant="5" id="Tf8-cf-2Ro"/>
+                                            <constraint firstItem="hq0-07-092" firstAttribute="top" secondItem="pIJ-kA-hQF" secondAttribute="top" constant="17" id="Xrm-R4-Y49"/>
+                                            <constraint firstAttribute="trailing" secondItem="hq0-07-092" secondAttribute="trailing" constant="10" id="hKn-nV-RZr"/>
+                                            <constraint firstAttribute="trailing" secondItem="ppu-OJ-NPb" secondAttribute="trailing" constant="55" id="kge-LP-DJc"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="12"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="vO1-Mu-p1D"/>
+                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="lID-Lh-OKe" firstAttribute="leading" secondItem="vO1-Mu-p1D" secondAttribute="leading" constant="20" id="0wd-re-Gao"/>
+                            <constraint firstItem="QMR-JZ-ttN" firstAttribute="trailing" secondItem="vO1-Mu-p1D" secondAttribute="trailing" id="15w-ta-TsW"/>
+                            <constraint firstItem="QMR-JZ-ttN" firstAttribute="top" secondItem="vO1-Mu-p1D" secondAttribute="top" constant="5" id="AVj-hP-32Y"/>
+                            <constraint firstItem="lID-Lh-OKe" firstAttribute="top" secondItem="QMR-JZ-ttN" secondAttribute="bottom" id="CCA-NU-GJg"/>
+                            <constraint firstItem="lID-Lh-OKe" firstAttribute="trailing" secondItem="vO1-Mu-p1D" secondAttribute="trailing" constant="-20" id="ysp-AM-VDW"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="addressLabel" destination="ppu-OJ-NPb" id="0zO-xG-qIe"/>
+                        <outlet property="primaryAddressLabel" destination="bWq-ZN-pyl" id="Seg-tk-MUl"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="RbG-Ra-8Kr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3706" y="4"/>
         </scene>
     </scenes>
     <resources>

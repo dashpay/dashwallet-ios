@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-final class OnlineAccountInfoController: UIViewController {
+final class OnlineAccountDetailsController: UIViewController {
     private let viewModel = CrowdNode.shared
 
     @IBOutlet var primaryAddressLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
 
-    static func controller() -> OnlineAccountInfoController {
-        vc(OnlineAccountInfoController.self, from: sb("CrowdNode"))
+    static func controller() -> OnlineAccountDetailsController {
+        vc(OnlineAccountDetailsController.self, from: sb("CrowdNode"))
     }
 
     override func viewDidLoad() {
