@@ -134,10 +134,6 @@ extension CustodialSwapsModel: ConverterViewDataSource {
     }
 
     var toItem: SourceViewDataProvider? {
-        ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
-                                title: "Dash",
-                                subtitle: "Dash Wallet",
-                                balanceFormatted: "", // We no need to show balance
-                                fiatBalanceFormatted: "") // We no need to show balance
+        ConverterViewSourceItem.dash(subtitle: "Dash Wallet")
     }
 }

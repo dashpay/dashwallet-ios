@@ -501,6 +501,7 @@
 		478483E829629C0700E05A5A /* CBAuthInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478483E729629C0700E05A5A /* CBAuthInterop.swift */; };
 		4789D22F2981067C00BAFEFA /* UpholdAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789D22E2981067600BAFEFA /* UpholdAmountModel.swift */; };
 		4789D2312981069700BAFEFA /* UpholdTransferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789D2302981069700BAFEFA /* UpholdTransferViewController.swift */; };
+		4789D27029825F5400BAFEFA /* CoinbaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789D26F29825F5400BAFEFA /* CoinbaseAmountViewController.swift */; };
 		478A2C7128DC554200AD1420 /* PortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C7028DC554200AD1420 /* PortalModel.swift */; };
 		478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */; };
@@ -1659,6 +1660,7 @@
 		4789D22E2981067600BAFEFA /* UpholdAmountModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpholdAmountModel.swift; sourceTree = "<group>"; };
 		4789D2302981069700BAFEFA /* UpholdTransferViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpholdTransferViewController.swift; sourceTree = "<group>"; };
 		4789D23629811FA600BAFEFA /* DWUpholdOTPProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdOTPProvider.h; sourceTree = "<group>"; };
+		4789D26F29825F5400BAFEFA /* CoinbaseAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseAmountViewController.swift; sourceTree = "<group>"; };
 		478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
 		478A2C7028DC554200AD1420 /* PortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalModel.swift; sourceTree = "<group>"; };
 		478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyDashViewController.swift; sourceTree = "<group>"; };
@@ -2069,14 +2071,14 @@
 		0F6EDFE028C8AE32000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
+				47CDEECA294A2B9F008AE06D /* Base */,
+				47C661B028FDC70F00028A8D /* Transfer Amount */,
+				478C98242942DBF200FAA0F0 /* Buy Dash */,
+				47E94B95296D7CF9000FE68E /* Custodial Swaps */,
 				4751CAD12970228300F63AC4 /* Order Preview */,
 				4751CABE296EFCC000F63AC4 /* Account List Controller */,
-				47CDEECA294A2B9F008AE06D /* Base */,
-				47E94B95296D7CF9000FE68E /* Custodial Swaps */,
-				478C98242942DBF200FAA0F0 /* Buy Dash */,
 				47522F4E2927CAE900EE143E /* Operation Status Controller */,
 				0F36937C2919A597007F4E91 /* Two Factor Auth */,
-				47C661B028FDC70F00028A8D /* Transfer Amount */,
 				0F71317328F436160072F454 /* ServiceOverview */,
 				4751136D28D9B4F400223B77 /* Info Screen */,
 				0F0E651728CA1FE30075B252 /* CoinbaseEntryPoint */,
@@ -4980,6 +4982,7 @@
 		47CDEECA294A2B9F008AE06D /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				4789D26F29825F5400BAFEFA /* CoinbaseAmountViewController.swift */,
 				47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */,
 				477F501429531C07003C7508 /* ViewModel+Coinbase.swift */,
 			);
@@ -6466,6 +6469,7 @@
 				478483E829629C0700E05A5A /* CBAuthInterop.swift in Sources */,
 				47B30D822911259D0080C326 /* UIViewController+Payments.swift in Sources */,
 				2A7AF38F2482BDF1001D74F9 /* UIFont+DWDPItem.m in Sources */,
+				4789D27029825F5400BAFEFA /* CoinbaseAmountViewController.swift in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
