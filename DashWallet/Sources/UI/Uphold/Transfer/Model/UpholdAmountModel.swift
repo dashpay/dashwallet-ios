@@ -49,7 +49,7 @@ final class UpholdAmountModel: BaseAmountModel {
     }
 
     override var isAllowedToContinue: Bool {
-        super.isAllowedToContinue &&
+        isAmountValidForProceeding &&
             card.available.plainDashAmount >= amount.plainAmount
     }
 
@@ -76,6 +76,15 @@ final class UpholdAmountModel: BaseAmountModel {
 
         let amount = String(describing: amount.plainAmount.dashAmount)
         createTransaction(for: amount, feeWasDeductedFromAmount: false, otpToken: otpToken)
+    }
+
+    override func checkAmountForErrors() {
+        guard card.available.plainDashAmount >= amount.plainAmount else {
+            error = SendAmountError.insufficientFunds
+            return
+        }
+
+        error = nil
     }
 
     private func createTransaction(for amount: String, feeWasDeductedFromAmount: Bool, otpToken: String?) {
