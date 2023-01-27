@@ -111,6 +111,7 @@ final class UpholdTransferViewController: BaseAmountViewController {
         converterView = ConverterView(frame: .zero)
         converterView.dataSource = model as? ConverterViewDataSource
         converterView.translatesAutoresizingMaskIntoConstraints = false
+        converterView.isSwappingAllowed = false
         stackView.addArrangedSubview(converterView)
 
         NSLayoutConstraint.activate([
@@ -149,6 +150,11 @@ extension UpholdTransferViewController: DWUpholdOTPProvider {
 
 extension UpholdTransferViewController: DWUpholdConfirmViewControllerDelegate {
     func upholdConfirmViewController(_ controller: DWUpholdConfirmViewController, didSendTransaction transaction: DWUpholdTransactionObject) {
+        hideActivityIndicator()
         delegate?.upholdTransferViewController(self, didSend: transaction)
+    }
+
+    func upholdConfirmViewControllerDidCancelTransaction(_ controller: DWUpholdConfirmViewController) {
+        hideActivityIndicator()
     }
 }

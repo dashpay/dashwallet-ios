@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdConfirmViewController:(DWUpholdConfirmViewController *)controller
                  didSendTransaction:(DWUpholdTransactionObject *)transaction;
+- (void)upholdConfirmViewControllerDidCancelTransaction:(DWUpholdConfirmViewController *)controller;
 
 @end
 
