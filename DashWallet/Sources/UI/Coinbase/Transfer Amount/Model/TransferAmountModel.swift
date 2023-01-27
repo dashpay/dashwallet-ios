@@ -50,6 +50,22 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
+    override var isAllowedToContinue: Bool {
+        if direction == .toCoinbase {
+            return super.isAllowedToContinue
+        } else {
+            return isAmountValidForProceeding && !canShowInsufficientFunds
+        }
+    }
+
+    override var canShowInsufficientFunds: Bool {
+        if direction == .toCoinbase {
+            return super.canShowInsufficientFunds
+        } else {
+            return amountToTransfer > (Coinbase.shared.lastKnownBalance ?? 0)
+        }
+    }
+
     override init() {
         super.init()
 

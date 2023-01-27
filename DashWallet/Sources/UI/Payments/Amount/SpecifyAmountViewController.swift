@@ -66,4 +66,9 @@ class SpecifyAmountViewController: BaseAmountViewController {
     override func configureConstraints() {
         // NOP
     }
+
+    @objc
+    static func controller() -> SpecifyAmountViewController {
+        SpecifyAmountViewController(model: BaseAmountModel())
+    }
 }

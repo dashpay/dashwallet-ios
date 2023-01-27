@@ -42,6 +42,10 @@ final class BuyDashModel: SendAmountModel {
         selectedPaymentMethod ?? paymentMethods.first
     }
 
+    override var isAllowedToContinue: Bool {
+        isAmountValidForProceeding
+    }
+
     var dashPriceDisplayString: String {
         guard let rate = try? Coinbase.shared.currencyExchanger.rate(for: App.fiatCurrency),
               let fiatBalanceFormatted = localFormatter.string(from: rate as NSNumber) else {
