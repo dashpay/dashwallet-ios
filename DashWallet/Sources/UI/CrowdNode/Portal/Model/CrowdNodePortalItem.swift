@@ -114,7 +114,7 @@ extension CrowdNodePortalItem {
         case .deposit:
             return UIColor.dw_dashBlue().withAlphaComponent(0.08)
         default:
-            return UIColor(red: 0.949, green: 0.949, blue: 0.949, alpha: 1)
+            return .dw_secondaryBackground()
         }
     }
     

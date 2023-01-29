@@ -113,6 +113,7 @@ extension NewAccountViewController {
         baseString.append(privacyPolicyString)
 
         acceptTermsText.attributedText = baseString
+        acceptTermsText.textColor = .label
         acceptTermsText.font = UIFont.dw_regularFont(ofSize: 14)
         acceptTermsCheckBox.style = .square
         acceptTermsCheckBox.isOn = false
