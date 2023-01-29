@@ -46,6 +46,7 @@ extension CrowdNode {
     static let apiOffset: UInt64 = 20000
     static let minimumDeposit = UInt64(kOneDash / 2)
     static let minimumLeftoverBalance: UInt64 = 30_000
+    static let apiConfirmationDashAmount: UInt64 = 54321
 
     static let notificationID = "CrowdNode"
 
@@ -55,4 +56,5 @@ extension CrowdNode {
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"
     static let supportUrl = "https://knowledge.crowdnode.io/"
     static let withdrawalLimitsUrl = "https://knowledge.crowdnode.io/en/articles/6387601-api-withdrawal-limits"
+    static let apiLinkUrl = baseUrl + "APILink/"
 }

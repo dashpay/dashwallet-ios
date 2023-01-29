@@ -53,7 +53,9 @@ extension String {
             attributedString.insert(dashSymbolAttributedString, at: 0)
         }
 
-        let amountRange = NSRange(location: 2,
+        
+        let amountLocation = dashSymbolRange.lowerBound == 0 ? 2 : 0
+        let amountRange = NSRange(location: amountLocation,
                                   length: attributedString.string.count - 2)
 
         attributedString.addAttribute(.foregroundColor, value: tintColor, range: amountRange)

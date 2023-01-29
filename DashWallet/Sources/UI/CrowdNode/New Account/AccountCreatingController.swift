@@ -30,6 +30,7 @@ final class AccountCreatingController: UIViewController {
         super.viewDidLoad()
 
         viewModel.showNotificationOnResult = false
+        configureHierarchy()
         configureObservers()
     }
 
@@ -49,6 +50,13 @@ final class AccountCreatingController: UIViewController {
 }
 
 extension AccountCreatingController {
+    private func configureHierarchy() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        navigationItem.standardAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
+    }
+    
     private func configureObservers() {
         viewModel.$signUpState
             .receive(on: DispatchQueue.main)

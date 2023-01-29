@@ -17,41 +17,68 @@
 
 import Foundation
 
-private let kCrowdNodeInfoShown = "crowdNodeInfoShownKey"
-private let kLastKnownCrowdNodeBalance = "lastKnownCrowdNodeBalanceKey"
-private let kCrowdNodeWithdrawalLimitPerTx = "crowdNodeWithdrawalLimitPerTxKey"
-private let kCrowdNodeWithdrawalLimitPerHour = "crowdNodeWithdrawalLimitPerHourKey"
-private let kCrowdNodeWithdrawalLimitPerDay = "crowdNodeWithdrawalLimitPerDayKey"
-private let kCrowdNodeWithdrawalLimitsInfoShown = "crowdNodeWithdrawalLimitsInfoShownKey"
+private let kInfoShown = "crowdNodeInfoShownKey"
+private let kLastKnownBalance = "lastKnownCrowdNodeBalanceKey"
+private let kWithdrawalLimitPerTx = "crowdNodeWithdrawalLimitPerTxKey"
+private let kWithdrawalLimitPerHour = "crowdNodeWithdrawalLimitPerHourKey"
+private let kWithdrawalLimitPerDay = "crowdNodeWithdrawalLimitPerDayKey"
+private let kWithdrawalLimitsInfoShown = "crowdNodeWithdrawalLimitsInfoShownKey"
+private let kOnlineAccountState = "сrowdNodeOnlineAccountStateKey"
+private let kOnlineAccountAddress = "crowdNodeOnlineAccountAddressKey"
+private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
 
 extension CrowdNode {
     var infoShown: Bool {
-        get { UserDefaults.standard.bool(forKey: kCrowdNodeInfoShown) }
-        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeInfoShown) }
+        get { UserDefaults.standard.bool(forKey: kInfoShown) }
+        set(value) { UserDefaults.standard.set(value, forKey: kInfoShown) }
     }
     
     var lastKnownBalance: UInt64 {
-        get { UserDefaults.standard.value(forKey: kLastKnownCrowdNodeBalance) as? UInt64 ?? 0 }
-        set(value) { UserDefaults.standard.set(value, forKey: kLastKnownCrowdNodeBalance) }
+        get { UserDefaults.standard.value(forKey: kLastKnownBalance) as? UInt64 ?? 0 }
+        set(value) { UserDefaults.standard.set(value, forKey: kLastKnownBalance) }
     }
     
     var crowdNodeWithdrawalLimitPerTx: UInt64 {
-        get { UserDefaults.standard.value(forKey: kCrowdNodeWithdrawalLimitPerTx) as? UInt64 ?? 15 * kOneDash }
-        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeWithdrawalLimitPerTx) }
+        get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerTx) as? UInt64 ?? 15 * kOneDash }
+        set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerTx) }
     }
     
     var crowdNodeWithdrawalLimitPerHour: UInt64 {
-        get { UserDefaults.standard.value(forKey: kCrowdNodeWithdrawalLimitPerHour) as? UInt64 ?? 30 * kOneDash }
-        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeWithdrawalLimitPerHour) }
+        get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerHour) as? UInt64 ?? 30 * kOneDash }
+        set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerHour) }
     }
     
     var crowdNodeWithdrawalLimitPerDay: UInt64 {
-        get { UserDefaults.standard.value(forKey: kCrowdNodeWithdrawalLimitPerDay) as? UInt64 ?? 60 * kOneDash }
-        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeWithdrawalLimitPerDay) }
+        get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerDay) as? UInt64 ?? 60 * kOneDash }
+        set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerDay) }
     }
     
     var withdrawalLimitsInfoShown: Bool {
-        get { UserDefaults.standard.bool(forKey: kCrowdNodeWithdrawalLimitsInfoShown) }
-        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeWithdrawalLimitsInfoShown) }
+        get { UserDefaults.standard.bool(forKey: kWithdrawalLimitsInfoShown) }
+        set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitsInfoShown) }
+    }
+    
+    var savedOnlineAccountState: OnlineAccountState {
+        get { OnlineAccountState(rawValue: UserDefaults.standard.integer(forKey: kOnlineAccountState)) ?? .none }
+        set(value) { UserDefaults.standard.set(value.rawValue, forKey: kOnlineAccountState) }
+    }
+    
+    var onlineAccountAddress: String? {
+        get { UserDefaults.standard.value(forKey: kOnlineAccountAddress) as? String }
+        set(value) { UserDefaults.standard.set(value, forKey: kOnlineAccountAddress) }
+    }
+    
+    var crowdNodePrimaryAddress: String? {
+        get { UserDefaults.standard.value(forKey: kCrowdNodePrimaryAddress) as? String }
+        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodePrimaryAddress) }
+    }
+    
+    func resetUserDefaults() {
+        infoShown = false
+        lastKnownBalance = 0
+        withdrawalLimitsInfoShown = false
+        savedOnlineAccountState = .none
+        onlineAccountAddress = nil
+        crowdNodePrimaryAddress = nil
     }
 }

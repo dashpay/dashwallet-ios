@@ -25,17 +25,31 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UxQ-U0-ggd" userLabel="Explainer One">
-                                <rect key="frame" x="20" y="100.66666666666669" width="350" height="67"/>
-                                <string key="text">CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address.</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" name="TertiaryTextColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UxQ-U0-ggd" userLabel="Explainer One">
+                                <rect key="frame" x="20" y="100.66666666666669" width="350" height="76"/>
+                                <attributedString key="attributedText">
+                                    <fragment>
+                                        <string key="content">CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address.</string>
+                                        <attributes>
+                                            <color key="NSColor" name="TertiaryTextColor"/>
+                                            <font key="NSFont" metaFont="system" size="14"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1dX-4E-qVf" userLabel="Explainer Two">
-                                <rect key="frame" x="20" y="177.66666666666666" width="350" height="50.333333333333343"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" name="TertiaryTextColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1dX-4E-qVf" userLabel="Explainer Two">
+                                <rect key="frame" x="20" y="186.66666666666666" width="350" height="56.333333333333343"/>
+                                <attributedString key="attributedText">
+                                    <fragment content="Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address.">
+                                        <attributes>
+                                            <color key="NSColor" name="TertiaryTextColor"/>
+                                            <font key="NSFont" metaFont="system" size="14"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4DJ-bK-bvd" userLabel="Action Button" customClass="DWActionButton">
@@ -50,25 +64,25 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nxj-pM-Pl9" userLabel="Address Container">
-                                <rect key="frame" x="20" y="258" width="350" height="58"/>
+                                <rect key="frame" x="20" y="273" width="350" height="76"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C7C-3J-thP" userLabel="Account Label">
-                                        <rect key="frame" x="15" y="9" width="77.333333333333329" height="14.333333333333336"/>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                        <rect key="frame" x="15" y="9" width="88.333333333333329" height="17"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" name="TertiaryTextColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lPE-iA-urR" userLabel="Account Address">
-                                        <rect key="frame" x="15" y="28.333333333333314" width="320" height="18"/>
+                                        <rect key="frame" x="15" y="31" width="280" height="36"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="de8-l5-sCC" userLabel="Copy Button">
-                                        <rect key="frame" x="310" y="14" width="30" height="30"/>
+                                        <rect key="frame" x="300" y="18" width="40" height="40"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="7uL-7t-igU"/>
-                                            <constraint firstAttribute="width" secondItem="de8-l5-sCC" secondAttribute="height" multiplier="1:1" id="dqP-HR-pDv"/>
+                                            <constraint firstAttribute="height" constant="40" id="7uL-7t-igU"/>
+                                            <constraint firstAttribute="width" constant="40" id="LFq-iT-jpe"/>
                                         </constraints>
                                         <color key="tintColor" name="IconTintColor"/>
                                         <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
@@ -80,9 +94,9 @@
                                 <color key="backgroundColor" red="0.92156862745098034" green="0.92941176470588238" blue="0.93333333333333335" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstItem="C7C-3J-thP" firstAttribute="top" secondItem="Nxj-pM-Pl9" secondAttribute="top" constant="9" id="4aB-8e-POb"/>
+                                    <constraint firstAttribute="bottom" secondItem="lPE-iA-urR" secondAttribute="bottom" constant="9" id="65c-Fy-qwM"/>
                                     <constraint firstAttribute="trailing" secondItem="de8-l5-sCC" secondAttribute="trailing" constant="10" id="CK6-68-hJB"/>
-                                    <constraint firstAttribute="trailing" secondItem="lPE-iA-urR" secondAttribute="trailing" constant="15" id="HhJ-0i-L9m"/>
-                                    <constraint firstAttribute="height" constant="58" id="PoE-am-RAI"/>
+                                    <constraint firstItem="de8-l5-sCC" firstAttribute="leading" secondItem="lPE-iA-urR" secondAttribute="trailing" constant="5" id="HhJ-0i-L9m"/>
                                     <constraint firstItem="de8-l5-sCC" firstAttribute="centerY" secondItem="Nxj-pM-Pl9" secondAttribute="centerY" id="Q6Q-2H-4rx"/>
                                     <constraint firstItem="lPE-iA-urR" firstAttribute="leading" secondItem="Nxj-pM-Pl9" secondAttribute="leading" constant="15" id="aua-GK-Se2"/>
                                     <constraint firstItem="lPE-iA-urR" firstAttribute="top" secondItem="C7C-3J-thP" secondAttribute="bottom" constant="5" id="fgz-sO-LWt"/>
@@ -146,6 +160,9 @@
                         <outlet property="acceptTermsText" destination="HH4-Qf-Qjr" id="kcs-4n-iid"/>
                         <outlet property="actionButton" destination="4DJ-bK-bvd" id="IDa-uT-0D5"/>
                         <outlet property="addressLabel" destination="lPE-iA-urR" id="u8P-2J-yE7"/>
+                        <outlet property="explainerLabel1" destination="UxQ-U0-ggd" id="ZKS-Ye-DQm"/>
+                        <outlet property="explainerLabel2" destination="1dX-4E-qVf" id="FCT-UF-HAr"/>
+                        <outlet property="titleLabel" destination="JGO-bv-xnp" id="rEL-iZ-XYc"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -232,7 +249,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="FFc-fd-cfG" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="Giz-2P-2if"/>
                                             <constraint firstAttribute="width" constant="65" id="mj4-By-5q2"/>
@@ -411,7 +428,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="wsW-1v-OUF" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="2hQ-7r-dOU"/>
                                             <constraint firstAttribute="width" constant="65" id="ww6-lj-WM0"/>
@@ -465,7 +482,7 @@
                                 <rect key="frame" x="20" y="300" width="350" height="164.00000000000006"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="RrR-Ij-X7B" userLabel="New Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="0.0" width="350" height="154"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="218"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.account.new" translatesAutoresizingMaskIntoConstraints="NO" id="oqB-km-Cfg" userLabel="image.crowdnode.account.new">
@@ -625,7 +642,7 @@
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" ambiguous="YES" id="ZQI-dO-W89" userLabel="Link Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="164" width="350" height="0.0"/>
+                                        <rect key="frame" x="0.0" y="228" width="350" height="0.0"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="image.crowdnode.account.link" translatesAutoresizingMaskIntoConstraints="NO" id="eAN-HF-8eJ" userLabel="image.crowdnode.account.new">
@@ -756,10 +773,10 @@
                                             <rect key="frame" x="0.0" y="0.0" width="350" height="90"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ibq-b6-Z4B" userLabel="Icon Circle">
-                                                    <rect key="frame" x="15" y="20" width="34" height="17"/>
+                                                    <rect key="frame" x="15" y="20" width="34" height="34"/>
                                                     <subviews>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.deposit" translatesAutoresizingMaskIntoConstraints="NO" id="FzY-IJ-27b">
-                                                            <rect key="frame" x="8" y="-0.33333333333333215" width="18" height="18"/>
+                                                            <rect key="frame" x="8" y="8" width="18" height="18"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" constant="18" id="4GD-BV-fMA"/>
                                                                 <constraint firstAttribute="height" constant="18" id="DCQ-bw-ljM"/>
@@ -780,16 +797,16 @@
                                                     </userDefinedRuntimeAttributes>
                                                 </view>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="g9J-9G-5ju">
-                                                    <rect key="frame" x="64" y="9.6666666666666679" width="253" height="37.666666666666657"/>
+                                                    <rect key="frame" x="64" y="34.666666666666664" width="253" height="5"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Deposit" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NDS-eh-hU1" userLabel="Title">
-                                                            <rect key="frame" x="0.0" y="0.0" width="253" height="17"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="253" height="0.0"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashWallet -&gt; CrowdNode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Nk-fs-rra" userLabel="Subtitle">
-                                                            <rect key="frame" x="0.0" y="22" width="253" height="15.666666666666664"/>
+                                                            <rect key="frame" x="0.0" y="5" width="253" height="0.0"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                             <color key="textColor" name="SecondaryTextColor"/>
                                                             <nil key="highlightedColor"/>
@@ -797,43 +814,93 @@
                                                     </subviews>
                                                 </stackView>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="252" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="KSg-YV-XHB">
-                                                    <rect key="frame" x="317" y="19.666666666666664" width="13" height="17.666666666666664"/>
+                                                    <rect key="frame" x="317" y="28.333333333333332" width="13" height="17.666666666666682"/>
                                                     <color key="tintColor" name="ChevronColor"/>
                                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
                                                 </imageView>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EAT-EC-5JS" userLabel="Additional Info">
-                                                    <rect key="frame" x="15" y="50" width="320" height="30"/>
+                                                    <rect key="frame" x="15" y="54.666666666666664" width="320" height="20.333333333333336"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tre-ab-1GV" userLabel="Additional Info Label">
-                                                            <rect key="frame" x="0.0" y="0.0" width="320" height="30"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                            <color key="textColor" name="DashBlueColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
+                                                        <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="A3h-Vc-pN2">
+                                                            <rect key="frame" x="0.0" y="0.0" width="320" height="20.333333333333332"/>
+                                                            <subviews>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.warning" translatesAutoresizingMaskIntoConstraints="NO" id="kZc-FW-B6T" userLabel="Info Icon">
+                                                                    <rect key="frame" x="8" y="0.0" width="22" height="20.333333333333332"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" constant="22" id="dcF-6z-tJH"/>
+                                                                        <constraint firstAttribute="height" constant="22" id="yMD-6d-8Tn"/>
+                                                                    </constraints>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tre-ab-1GV" userLabel="Additional Info Label">
+                                                                    <rect key="frame" x="38" y="0.0" width="282" height="20.333333333333332"/>
+                                                                    <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="13"/>
+                                                                    <color key="textColor" name="DashBlueColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                            <edgeInsets key="layoutMargins" top="0.0" left="8" bottom="0.0" right="0.0"/>
+                                                        </stackView>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VKL-Yb-Nfk">
+                                                            <rect key="frame" x="259.33333333333331" y="-2.3333333333333286" width="54.666666666666686" height="25"/>
+                                                            <color key="backgroundColor" name="BackgroundColor"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="25" id="AKf-Ip-lzv"/>
+                                                            </constraints>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="5"/>
+                                                            <color key="tintColor" name="BackgroundColor"/>
+                                                            <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
+                                                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                            <state key="normal" title="Verify">
+                                                                <color key="titleColor" name="DarkTitleColor"/>
+                                                            </state>
+                                                            <buttonConfiguration key="configuration" style="filled">
+                                                                <attributedString key="attributedTitle">
+                                                                    <fragment content="Verify">
+                                                                        <attributes>
+                                                                            <font key="NSFont" metaFont="smallSystem"/>
+                                                                        </attributes>
+                                                                    </fragment>
+                                                                </attributedString>
+                                                                <color key="baseForegroundColor" name="DarkTitleColor"/>
+                                                            </buttonConfiguration>
+                                                            <userDefinedRuntimeAttributes>
+                                                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                    <integer key="value" value="6"/>
+                                                                </userDefinedRuntimeAttribute>
+                                                            </userDefinedRuntimeAttributes>
+                                                        </button>
                                                     </subviews>
                                                     <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
-                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="width" secondItem="EAT-EC-5JS" secondAttribute="width" id="1dp-JF-8nd"/>
-                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="height" secondItem="EAT-EC-5JS" secondAttribute="height" id="93o-6M-TeB"/>
-                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="centerY" secondItem="EAT-EC-5JS" secondAttribute="centerY" id="CuB-HZ-WSg"/>
-                                                        <constraint firstAttribute="height" constant="30" id="Orc-ue-oSi"/>
-                                                        <constraint firstItem="Tre-ab-1GV" firstAttribute="centerX" secondItem="EAT-EC-5JS" secondAttribute="centerX" id="Wue-cG-kOi"/>
+                                                        <constraint firstItem="A3h-Vc-pN2" firstAttribute="leading" secondItem="EAT-EC-5JS" secondAttribute="leading" id="7df-5c-ofN"/>
+                                                        <constraint firstAttribute="height" id="BqM-e5-4Xm"/>
+                                                        <constraint firstAttribute="height" constant="35" id="Orc-ue-oSi"/>
+                                                        <constraint firstItem="A3h-Vc-pN2" firstAttribute="height" secondItem="EAT-EC-5JS" secondAttribute="height" id="Zar-Ki-qhk"/>
+                                                        <constraint firstAttribute="trailing" secondItem="VKL-Yb-Nfk" secondAttribute="trailing" constant="6" id="eSg-dr-7TA"/>
+                                                        <constraint firstItem="VKL-Yb-Nfk" firstAttribute="centerY" secondItem="EAT-EC-5JS" secondAttribute="centerY" id="mnA-P8-ZAy"/>
+                                                        <constraint firstItem="A3h-Vc-pN2" firstAttribute="top" secondItem="EAT-EC-5JS" secondAttribute="top" id="xgL-Po-Owj"/>
+                                                        <constraint firstAttribute="trailing" secondItem="A3h-Vc-pN2" secondAttribute="trailing" id="ye8-23-S6e"/>
                                                     </constraints>
                                                     <userDefinedRuntimeAttributes>
                                                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                             <integer key="value" value="8"/>
                                                         </userDefinedRuntimeAttribute>
                                                     </userDefinedRuntimeAttributes>
+                                                    <variation key="default">
+                                                        <mask key="constraints">
+                                                            <exclude reference="BqM-e5-4Xm"/>
+                                                        </mask>
+                                                    </variation>
                                                 </view>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="EAT-EC-5JS" firstAttribute="leading" secondItem="avt-SW-tWA" secondAttribute="leading" constant="15" id="0eL-6D-tq8"/>
                                                 <constraint firstItem="ibq-b6-Z4B" firstAttribute="leading" secondItem="avt-SW-tWA" secondAttribute="leading" constant="15" id="1yO-iG-cs5"/>
-                                                <constraint firstAttribute="bottom" secondItem="EAT-EC-5JS" secondAttribute="bottom" constant="10" id="7zM-hE-34w"/>
+                                                <constraint firstAttribute="bottom" secondItem="EAT-EC-5JS" secondAttribute="bottom" constant="15" id="7zM-hE-34w"/>
                                                 <constraint firstAttribute="trailing" secondItem="KSg-YV-XHB" secondAttribute="trailing" constant="20" id="8XY-al-NIG"/>
                                                 <constraint firstItem="g9J-9G-5ju" firstAttribute="leading" secondItem="ibq-b6-Z4B" secondAttribute="trailing" constant="15" id="Dyp-aY-iUV"/>
-                                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="78" id="Kkh-LB-u7z"/>
-                                                <constraint firstItem="EAT-EC-5JS" firstAttribute="top" secondItem="ibq-b6-Z4B" secondAttribute="bottom" constant="13" id="Lcy-7g-GKz"/>
+                                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="68" id="Kkh-LB-u7z"/>
+                                                <constraint firstItem="EAT-EC-5JS" firstAttribute="top" secondItem="g9J-9G-5ju" secondAttribute="bottom" constant="15" id="Lcy-7g-GKz"/>
                                                 <constraint firstItem="ibq-b6-Z4B" firstAttribute="top" secondItem="avt-SW-tWA" secondAttribute="top" constant="20" id="LgO-FW-Kk8"/>
                                                 <constraint firstItem="KSg-YV-XHB" firstAttribute="leading" secondItem="g9J-9G-5ju" secondAttribute="trailing" id="WSH-QI-ank"/>
                                                 <constraint firstAttribute="trailing" secondItem="EAT-EC-5JS" secondAttribute="trailing" constant="15" id="YK0-ES-ELc"/>
@@ -849,11 +916,17 @@
                                         </constraints>
                                         <connections>
                                             <outlet property="additionalInfo" destination="EAT-EC-5JS" id="NNL-n5-Uix"/>
+                                            <outlet property="additionalInfoIcon" destination="kZc-FW-B6T" id="QlP-aP-Mgv"/>
                                             <outlet property="additionalInfoLabel" destination="Tre-ab-1GV" id="Pkz-Cz-BD7"/>
+                                            <outlet property="collapseInfoConstraint" destination="BqM-e5-4Xm" id="ZV8-aY-QPk"/>
+                                            <outlet property="contentView" destination="avt-SW-tWA" id="Une-Z4-tde"/>
                                             <outlet property="icon" destination="FzY-IJ-27b" id="CW9-Pl-8ud"/>
                                             <outlet property="iconCircle" destination="ibq-b6-Z4B" id="sb1-YY-wiG"/>
+                                            <outlet property="infoBottomAnchorConstraint" destination="7zM-hE-34w" id="zzc-cB-hcj"/>
+                                            <outlet property="showInfoConstraint" destination="Orc-ue-oSi" id="3C4-P2-gcA"/>
                                             <outlet property="subtitle" destination="2Nk-fs-rra" id="Vme-zv-Bp2"/>
                                             <outlet property="title" destination="NDS-eh-hU1" id="MOY-oG-Acx"/>
+                                            <outlet property="verifyButton" destination="VKL-Yb-Nfk" id="7BJ-NJ-b04"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -1147,7 +1220,7 @@
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9EG-fn-Xy0">
-                                                                        <rect key="frame" x="0.0" y="22.99999999999989" width="266" height="34.333333333333343"/>
+                                                                        <rect key="frame" x="0.0" y="22.999999999999886" width="266" height="34.333333333333343"/>
                                                                         <attributedString key="attributedText">
                                                                             <fragment content="Members are free to leave the pool and can most often leave immediately.">
                                                                                 <attributes>
@@ -1348,6 +1421,184 @@
             </objects>
             <point key="canvasLocation" x="2243" y="4"/>
         </scene>
+        <!--Online Account Info Controller-->
+        <scene sceneID="ghH-wr-KK0">
+            <objects>
+                <viewController storyboardIdentifier="OnlineAccountInfoController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="4RZ-lQ-w8S" customClass="OnlineAccountInfoController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="1lq-Mc-dOo">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5kW-67-RT1" userLabel="Close Button">
+                                <rect key="frame" x="330" y="52" width="60" height="45"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="45" id="UCV-pZ-hqM"/>
+                                    <constraint firstAttribute="width" constant="60" id="VXX-8X-nT3"/>
+                                </constraints>
+                                <color key="tintColor" name="Label"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal">
+                                    <color key="titleColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <imageReference key="image" image="xmark" catalog="system" symbolScale="medium"/>
+                                </state>
+                                <connections>
+                                    <action selector="closeAction" destination="4RZ-lQ-w8S" eventType="touchUpInside" id="mmf-AB-f4d"/>
+                                </connections>
+                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="cBL-hK-cQe">
+                                <rect key="frame" x="20" y="97" width="350" height="355"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="249" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bzd-lt-ImN" userLabel="Title Label">
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="73.666666666666671"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="Information about your online account">
+                                                <attributes>
+                                                    <color key="NSColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                    <font key="NSFont" metaFont="systemBold" size="28"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineHeightMultiple="1.1000000000000001" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="okJ-rm-yKa">
+                                        <rect key="frame" x="0.0" y="88.666666666666657" width="350" height="36.666666666666657"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="Your primary Dash address that you currently use for your CrowdNode account">
+                                                <attributes>
+                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                    <font key="NSFont" metaFont="system" size="14"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7WG-My-ZjI" userLabel="Primary Address Container">
+                                        <rect key="frame" x="0.0" y="140.33333333333334" width="350" height="74"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Primary Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="euk-KI-SlX" userLabel="Account Label">
+                                                <rect key="frame" x="15" y="9" width="141.66666666666666" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SjH-ef-F2Y" userLabel="Account Address">
+                                                <rect key="frame" x="15" y="30.999999999999968" width="280" height="33.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EvD-MB-RvZ" userLabel="Copy Button">
+                                                <rect key="frame" x="310" y="17" width="30" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="40" id="Rvl-kk-zwf"/>
+                                                    <constraint firstAttribute="width" constant="30" id="eCg-nb-O1Y"/>
+                                                </constraints>
+                                                <color key="tintColor" name="IconTintColor"/>
+                                                <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
+                                                <connections>
+                                                    <action selector="copyAddressAction" destination="4RZ-lQ-w8S" eventType="touchUpInside" id="U5y-GE-wX0"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="SjH-ef-F2Y" firstAttribute="top" secondItem="euk-KI-SlX" secondAttribute="bottom" constant="5" id="3Pw-tH-ID5"/>
+                                            <constraint firstAttribute="trailing" secondItem="EvD-MB-RvZ" secondAttribute="trailing" constant="10" id="5ts-r3-9QS"/>
+                                            <constraint firstItem="SjH-ef-F2Y" firstAttribute="leading" secondItem="7WG-My-ZjI" secondAttribute="leading" constant="15" id="MGi-6y-uoM"/>
+                                            <constraint firstItem="EvD-MB-RvZ" firstAttribute="top" secondItem="7WG-My-ZjI" secondAttribute="top" constant="17" id="UBu-nO-xDt"/>
+                                            <constraint firstAttribute="trailing" secondItem="SjH-ef-F2Y" secondAttribute="trailing" constant="55" id="fDA-YE-uOo"/>
+                                            <constraint firstItem="euk-KI-SlX" firstAttribute="leading" secondItem="7WG-My-ZjI" secondAttribute="leading" constant="15" id="jnf-AB-LHy"/>
+                                            <constraint firstItem="euk-KI-SlX" firstAttribute="top" secondItem="7WG-My-ZjI" secondAttribute="top" constant="9" id="kEn-P4-Teg"/>
+                                            <constraint firstItem="EvD-MB-RvZ" firstAttribute="centerY" secondItem="7WG-My-ZjI" secondAttribute="centerY" id="w3W-2l-TfP"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="12"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MZa-OL-kHx">
+                                        <rect key="frame" x="0.0" y="229.33333333333331" width="350" height="36.666666666666686"/>
+                                        <attributedString key="attributedText">
+                                            <fragment content="Dash address designated for your CrowdNode account in the Dash Wallet on this device ">
+                                                <attributes>
+                                                    <color key="NSColor" name="SecondaryTextColor"/>
+                                                    <font key="NSFont" metaFont="system" size="14"/>
+                                                    <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                                </attributes>
+                                            </fragment>
+                                        </attributedString>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qbb-x8-ATB" userLabel="Address Container">
+                                        <rect key="frame" x="0.0" y="281" width="350" height="74"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Dash address" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yp0-cN-bvz" userLabel="Account Label">
+                                                <rect key="frame" x="15" y="9" width="88.333333333333329" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="yfLBSjZxH9Ut2aVNHRy6xRm3CwynpU2GQw" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Ps-s9-WFJ" userLabel="Account Address">
+                                                <rect key="frame" x="15" y="30.999999999999996" width="280" height="33.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="swv-lX-d1y" userLabel="Copy Button">
+                                                <rect key="frame" x="310" y="17" width="30" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="40" id="Ie8-Rh-aLm"/>
+                                                    <constraint firstAttribute="width" constant="30" id="JQ8-2J-p69"/>
+                                                </constraints>
+                                                <color key="tintColor" name="IconTintColor"/>
+                                                <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
+                                                <connections>
+                                                    <action selector="copyAddressAction" destination="4RZ-lQ-w8S" eventType="touchUpInside" id="NqH-rW-HsO"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="swv-lX-d1y" firstAttribute="top" secondItem="qbb-x8-ATB" secondAttribute="top" constant="17" id="9RQ-Qs-UUM"/>
+                                            <constraint firstItem="swv-lX-d1y" firstAttribute="centerY" secondItem="qbb-x8-ATB" secondAttribute="centerY" id="OXD-6G-lKH"/>
+                                            <constraint firstItem="3Ps-s9-WFJ" firstAttribute="top" secondItem="yp0-cN-bvz" secondAttribute="bottom" constant="5" id="UOg-NR-Uis"/>
+                                            <constraint firstItem="3Ps-s9-WFJ" firstAttribute="leading" secondItem="qbb-x8-ATB" secondAttribute="leading" constant="15" id="ff6-8A-v3k"/>
+                                            <constraint firstAttribute="trailing" secondItem="3Ps-s9-WFJ" secondAttribute="trailing" constant="55" id="nsw-eM-0Yz"/>
+                                            <constraint firstItem="yp0-cN-bvz" firstAttribute="leading" secondItem="qbb-x8-ATB" secondAttribute="leading" constant="15" id="pSD-HO-gQT"/>
+                                            <constraint firstItem="yp0-cN-bvz" firstAttribute="top" secondItem="qbb-x8-ATB" secondAttribute="top" constant="9" id="sxE-oI-2Gw"/>
+                                            <constraint firstAttribute="trailing" secondItem="swv-lX-d1y" secondAttribute="trailing" constant="10" id="vmD-o5-kwP"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="12"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Dxh-QM-nH1"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="5kW-67-RT1" firstAttribute="trailing" secondItem="Dxh-QM-nH1" secondAttribute="trailing" id="1Lx-KX-fPQ"/>
+                            <constraint firstItem="5kW-67-RT1" firstAttribute="top" secondItem="Dxh-QM-nH1" secondAttribute="top" constant="5" id="59O-IK-5Bv"/>
+                            <constraint firstItem="cBL-hK-cQe" firstAttribute="top" secondItem="5kW-67-RT1" secondAttribute="bottom" id="FP1-Ce-Rh8"/>
+                            <constraint firstItem="cBL-hK-cQe" firstAttribute="leading" secondItem="Dxh-QM-nH1" secondAttribute="leading" constant="20" id="UFX-eM-m7K"/>
+                            <constraint firstItem="cBL-hK-cQe" firstAttribute="trailing" secondItem="Dxh-QM-nH1" secondAttribute="trailing" constant="-20" id="xYg-zg-cam"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="addressLabel" destination="3Ps-s9-WFJ" id="Ibj-bo-egr"/>
+                        <outlet property="primaryAddressLabel" destination="SjH-ef-F2Y" id="RSO-Ux-fuc"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="GnX-id-d4o" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2974" y="4"/>
+        </scene>
     </scenes>
     <resources>
         <image name="bell.circle.fill" catalog="system" width="128" height="123"/>
@@ -1364,6 +1615,7 @@
         <image name="image.crowdnode.logo" width="56.666667938232422" height="65"/>
         <image name="image.crowdnode.receiving.rewards" width="35.333332061767578" height="35.333332061767578"/>
         <image name="image.crowdnode.staking" width="240" height="180"/>
+        <image name="image.crowdnode.warning" width="22" height="22"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="wand.and.stars" catalog="system" width="128" height="115"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
@@ -1372,6 +1624,9 @@
         </namedColor>
         <namedColor name="ChevronColor">
             <color red="0.85098039215686272" green="0.85098039215686272" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="DashBlueColor">
             <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

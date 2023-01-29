@@ -49,4 +49,21 @@ extension CrowdNodeService {
         
         return map
     }
+    
+    func isAddressInUse(address: String) async -> IsAddressInUse {
+        do {
+            return try await httpClient.request(.isAddressInUse(address))
+        } catch {
+            return IsAddressInUse(isInUse: false, primaryAddress: nil)
+        }
+    }
+    
+    func addressStatus(address: String) async -> String {
+        do {
+            let result: AddressStatus = try await httpClient.request(.addressStatus(address))
+            return result.status
+        } catch {
+            return ""
+        }
+    }
 }

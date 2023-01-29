@@ -45,12 +45,12 @@ final class GettingStartedViewController: UIViewController {
 
     @IBAction func newAccountAction() {
         if viewModel.canSignUp {
-            navigationController?.pushViewController(NewAccountViewController.controller(), animated: true)
+            navigationController?.pushViewController(NewAccountViewController.controller(online: false), animated: true)
         }
     }
 
     @IBAction func linkAccountAction() {
-        print("CrowdNode: link account")
+        navigationController?.pushViewController(NewAccountViewController.controller(online: true), animated: true)
     }
 
     @IBAction func backupPassphraseAction() {
@@ -93,6 +93,13 @@ final class GettingStartedViewController: UIViewController {
 
 extension GettingStartedViewController {
     private func configureHierarchy() {
+        view.backgroundColor = UIColor.dw_secondaryBackground()
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        navigationItem.standardAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
+        
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)

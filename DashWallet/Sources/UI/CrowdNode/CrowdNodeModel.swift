@@ -26,14 +26,14 @@ public class CrowdNodeModelObjcWrapper: NSObject {
         let state = CrowdNode.shared.signUpState
 
         switch state {
-        case .finished:
+        case .finished, .linkedOnline:
             return CrowdNodePortalController.controller()
 
         case .fundingWallet, .acceptingTerms, .signingUp:
             return AccountCreatingController.controller()
 
         case .acceptTermsRequired:
-            return NewAccountViewController.controller()
+            return NewAccountViewController.controller(online: false)
 
         default:
             if CrowdNode.shared.infoShown {
@@ -42,98 +42,6 @@ public class CrowdNodeModelObjcWrapper: NSObject {
             else {
                 return WelcomeToCrowdNodeViewController.controller()
             }
-        }
-    }
-}
-
-// MARK: - CrowdNodePortalItem
-
-enum CrowdNodePortalItem: CaseIterable {
-    case deposit
-    case withdraw
-    case onlineAccount
-    case support
-}
-
-extension CrowdNodePortalItem {
-    var title: String {
-        switch self {
-        case .deposit:
-            return NSLocalizedString("Deposit", comment: "CrowdNode Portal")
-        case .withdraw:
-            return NSLocalizedString("Withdraw", comment: "CrowdNode Portal")
-        case .onlineAccount:
-            return NSLocalizedString("Create Online Account", comment: "CrowdNode Portal")
-        case .support:
-            return NSLocalizedString("CrowdNode Support", comment: "CrowdNode Portal")
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .deposit:
-            return NSLocalizedString("DashWallet ➝ CrowdNode", comment: "CrowdNode Portal")
-        case .withdraw:
-            return NSLocalizedString("CrowdNode ➝ DashWallet", comment: "CrowdNode Portal")
-        case .onlineAccount:
-            return NSLocalizedString("Protect your savings", comment: "CrowdNode Portal")
-        case .support:
-            return ""
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .deposit:
-            return "image.crowdnode.deposit"
-        case .withdraw:
-            return "image.crowdnode.withdraw"
-        case .onlineAccount:
-            return "image.crowdnode.online"
-        case .support:
-            return "image.crowdnode.support"
-        }
-    }
-
-    var iconCircleColor: UIColor {
-        switch self {
-        case .deposit:
-            return UIColor.systemGreen
-
-        default:
-            return UIColor.dw_dashBlue()
-        }
-    }
-
-    func isDisabled(_ crowdNodeBalance: UInt64, _ walletBalance: UInt64) -> Bool {
-        switch self {
-        case .deposit:
-            return walletBalance <= 0
-
-        case .withdraw:
-            return crowdNodeBalance <= 0 || walletBalance < CrowdNode.minimumLeftoverBalance
-
-        default:
-            return false
-        }
-    }
-
-
-    func info(_ crowdNodeBalance: UInt64) -> String {
-        switch self {
-        case .deposit:
-            let negligibleAmount = CrowdNode.minimumDeposit / 50
-            let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
-
-            if crowdNodeBalance < negligibleAmount {
-                return String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ to start earning", comment: "CrowdNode Portal"), minimumDeposit)
-            } else {
-                return String.localizedStringWithFormat(NSLocalizedString("Deposit %@ to start earning", comment: "CrowdNode Portal"), minimumDeposit)
-            }
-        case .withdraw:
-            return NSLocalizedString("Verification Required", comment: "CrowdNode Portal")
-        default:
-            return ""
         }
     }
 }
@@ -152,6 +60,7 @@ final class CrowdNodeModel {
     @Published private(set) var accountAddress = ""
     @Published private(set) var signUpEnabled = false
     @Published private(set) var signUpState: CrowdNode.SignUpState
+    @Published private(set) var onlineAccountState: CrowdNode.OnlineAccountState
     @Published private(set) var crowdNodeBalance: UInt64 = 0
     @Published private(set) var walletBalance: UInt64 = 0
     @Published private(set) var hasEnoughWalletBalance = false
@@ -187,6 +96,7 @@ final class CrowdNodeModel {
 
     init() {
         signUpState = crowdNode.signUpState
+        onlineAccountState = crowdNode.onlineAccountState
         observeState()
         observeBalances()
     }
@@ -257,7 +167,11 @@ final class CrowdNodeModel {
                 var outputMessage = ""
 
                 switch state {
-                case .notInitiated, .notStarted, .acceptTermsRequired, .error:
+                case .notInitiated, .notStarted:
+                    signUpEnabled = true
+                    self?.getAccountAddress()
+                    
+                case .acceptTermsRequired, .error:
                     signUpEnabled = true
 
                 case .fundingWallet, .signingUp:
@@ -279,9 +193,12 @@ final class CrowdNodeModel {
         crowdNode.$apiError
             .sink { [weak self] error in self?.error = error }
             .store(in: &cancellableBag)
+        
+        crowdNode.$onlineAccountState
+            .sink { [weak self] state in self?.onlineAccountState = state }
+            .store(in: &cancellableBag)
 
         crowdNode.restoreState()
-        getAccountAddress()
     }
 }
 
@@ -338,5 +255,19 @@ extension CrowdNodeModel {
         
         try await crowdNode.withdraw(amount: amount)
         return true
+    }
+}
+
+// MARK: online account
+extension CrowdNodeModel {
+    func linkOnlineAccount() -> URL {
+        precondition(!accountAddress.isEmpty)
+        crowdNode.trackLinkingAccount(address :accountAddress)
+        
+        return URL(string: CrowdNode.apiLinkUrl + crowdNode.accountAddress)!
+    }
+    
+    func cancelLinkingOnlineAccount() {
+        crowdNode.stopTrackingLinked()
     }
 }
