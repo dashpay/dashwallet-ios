@@ -17,6 +17,12 @@
 
 final class OnlineAccountConfirmationController: UIViewController {
     private let viewModel = CrowdNode.shared
+    private var paymentRequest: DSPaymentRequest {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let paymentRequest = DSPaymentRequest.init(string: viewModel.accountAddress, on: chain)
+        paymentRequest.amount = CrowdNode.apiConfirmationDashAmount
+        return paymentRequest
+    }
 
     @IBOutlet var primaryAddressLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
@@ -50,11 +56,14 @@ final class OnlineAccountConfirmationController: UIViewController {
     }
     
     @IBAction func showQrAction() {
-        // TODO
+        present(ConfirmationTransactionQRController.controller(paymentRequest), animated: true)
     }
     
     @IBAction func shareAction() {
-        // TODO
+        let sharedObjects: [AnyObject] = [paymentRequest.url as AnyObject]
+        let activityViewController = UIActivityViewController(activityItems: sharedObjects, applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view
+        self.present(activityViewController, animated: true, completion: nil)
     }
 
     private func configureHierarchy() {

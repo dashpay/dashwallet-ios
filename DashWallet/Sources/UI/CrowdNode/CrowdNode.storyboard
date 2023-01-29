@@ -1914,6 +1914,66 @@
             </objects>
             <point key="canvasLocation" x="3706" y="4"/>
         </scene>
+        <!--Confirmation TransactionQR Controller-->
+        <scene sceneID="iW7-ui-1pA">
+            <objects>
+                <viewController storyboardIdentifier="ConfirmationTransactionQRController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="5Va-A4-Z39" customClass="ConfirmationTransactionQRController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Aym-QU-NBM">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="uRB-O0-XBa">
+                                <rect key="frame" x="172.66666666666666" y="62" width="45" height="4"/>
+                                <color key="backgroundColor" red="0.69019607843137254" green="0.71372549019607845" blue="0.73725490196078436" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="45" id="ZUF-aN-FHn"/>
+                                    <constraint firstAttribute="height" constant="4" id="xco-Ji-2y8"/>
+                                </constraints>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="OV6-MZ-6rw">
+                                <rect key="frame" x="20" y="81" width="350" height="342.33333333333331"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="249" text="Scan QR" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NgJ-ic-mLy" userLabel="Title Label">
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="28.666666666666668"/>
+                                        <fontDescription key="fontDescription" name=".AppleSystemUIFontBold" family=".AppleSystemUIFont" pointSize="24"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This QR already contains the payment request for 0.0054321 Dash" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ICh-Mv-acJ">
+                                        <rect key="frame" x="0.0" y="43.666666666666671" width="350" height="33.666666666666671"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" name="SecondaryTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ps8-mI-AaA">
+                                        <rect key="frame" x="0.0" y="92.333333333333343" width="350" height="250.00000000000003"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="350" id="AqC-De-jfc"/>
+                                            <constraint firstAttribute="height" constant="250" id="Hjs-9D-650"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Rkj-2P-onR"/>
+                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="OV6-MZ-6rw" firstAttribute="top" secondItem="uRB-O0-XBa" secondAttribute="bottom" constant="15" id="2Jd-oI-l3A"/>
+                            <constraint firstItem="uRB-O0-XBa" firstAttribute="top" secondItem="Rkj-2P-onR" secondAttribute="top" constant="15" id="TJs-EV-e48"/>
+                            <constraint firstItem="OV6-MZ-6rw" firstAttribute="trailing" secondItem="Rkj-2P-onR" secondAttribute="trailing" constant="-20" id="Ufn-Dr-Y7m"/>
+                            <constraint firstItem="OV6-MZ-6rw" firstAttribute="leading" secondItem="Rkj-2P-onR" secondAttribute="leading" constant="20" id="bay-FL-rYa"/>
+                            <constraint firstItem="uRB-O0-XBa" firstAttribute="centerX" secondItem="Rkj-2P-onR" secondAttribute="centerX" id="dzq-BR-y3H"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="messageLabel" destination="ICh-Mv-acJ" id="ElL-98-WqD"/>
+                        <outlet property="qrImage" destination="ps8-mI-AaA" id="q4g-Qt-jFU"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TiY-5g-nb9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4440" y="3.5545023696682461"/>
+        </scene>
     </scenes>
     <resources>
         <image name="bell.circle.fill" catalog="system" width="128" height="123"/>
