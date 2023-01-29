@@ -20,6 +20,11 @@ final class OnlineAccountConfirmationController: UIViewController {
 
     @IBOutlet var primaryAddressLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
+    @IBOutlet var infoLabel: UILabel!
+    @IBOutlet var documentationLinkButton: UIStackView!
+    @IBOutlet var qrButton: UIButton!
+    @IBOutlet var shareButton: UIButton!
+    @IBOutlet var attentionBox: UIView!
 
     static func controller() -> OnlineAccountConfirmationController {
         vc(OnlineAccountConfirmationController.self, from: sb("CrowdNode"))
@@ -34,13 +39,40 @@ final class OnlineAccountConfirmationController: UIViewController {
         dismiss(animated: true)
     }
 
+    @IBAction func copyPrimaryAddressAction() {
+        UIPasteboard.general.string = viewModel.primaryAddress
+        view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+    }
+    
     @IBAction func copyAddressAction() {
         UIPasteboard.general.string = viewModel.accountAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+    }
+    
+    @IBAction func showQrAction() {
+        // TODO
+    }
+    
+    @IBAction func shareAction() {
+        // TODO
     }
 
     private func configureHierarchy() {
         primaryAddressLabel.text = viewModel.primaryAddress
         addressLabel.text = viewModel.accountAddress
+        qrButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 13)
+        shareButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 13)
+        attentionBox.layer.borderWidth = 1
+        attentionBox.layer.borderColor = UIColor.systemYellow.cgColor
+        
+        let confirmationAmount = CrowdNode.apiConfirmationDashAmount.formattedDashAmount
+        infoLabel.text = String.localizedStringWithFormat(NSLocalizedString("Send %@ from your primary Dash address that you currently use for your CrowdNode account", comment: "CrowdNode Confirm"), confirmationAmount)
+        
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onDocumentationLinkTapped))
+        documentationLinkButton.addGestureRecognizer(tapGestureRecognizer)
+    }
+    
+    @objc func onDocumentationLinkTapped() {
+        UIApplication.shared.open(URL(string: CrowdNode.howToVerifyUrl)!)
     }
 }
