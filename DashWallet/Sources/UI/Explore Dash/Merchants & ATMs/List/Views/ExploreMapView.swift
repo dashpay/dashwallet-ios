@@ -212,7 +212,7 @@ class ExploreMapView: UIView {
 
         let myLocationButton = UIButton(type: .custom)
         myLocationButton.translatesAutoresizingMaskIntoConstraints = false
-        myLocationButton.backgroundColor = .dw_background()
+        myLocationButton.backgroundColor = .dw_secondaryBackground()
         myLocationButton.layer.cornerRadius = 8.0
         myLocationButton.layer.masksToBounds = true
         myLocationButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.12, x: 0, y: 3, blur: 8)

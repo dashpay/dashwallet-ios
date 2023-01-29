@@ -222,6 +222,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         title = NSLocalizedString("Where to Spend", comment: "");
 
         let infoButton = UIButton(type: .infoLight)
+        infoButton.tintColor = .dw_label()
         infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
 

@@ -182,7 +182,7 @@
 "Are you sure?" = "你确定吗？";
 
 /* No comment provided by engineer. */
-"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+"ATM search works better with Location Services turned on." = "ATM search works better with Location Services turned on.";
 
 /* No comment provided by engineer. */
 "ATMs" = "ATMs";
@@ -233,7 +233,7 @@
 "Bank Wire" = "Bank Wire";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
+"Between Dash Wallet and Coinbase." = "Between Dash Wallet and Coinbase.";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
@@ -1542,12 +1542,6 @@
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
-
-/* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
-
-/* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "此钱包并不是空的或同步尚未完成, 如果没有恢复密语, 请不要清空钱包";

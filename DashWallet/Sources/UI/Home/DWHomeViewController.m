@@ -32,7 +32,6 @@
 #import "DWSyncingAlertViewController.h"
 #import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
-#import "UINavigationBar+DWAppearance.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
@@ -83,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self.navigationController.navigationBar dw_applyOpaqueAppearanceWithColor:[UIColor dw_dashNavigationBlueColor]];
+    [self.navigationController.navigationBar applyOpaqueAppearanceWith:[UIColor dw_dashNavigationBlueColor] shadowColor:[UIColor clearColor]];
 }
 
 - (void)viewDidAppear:(BOOL)animated {

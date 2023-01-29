@@ -153,8 +153,9 @@ extension BaseAmountViewController {
 
         amountView.amountInputControl.delegate = self
         amountView.amountInputControl.dataSource = model
-
         amountView.inputTypeSwitcher.delegate = self
+
+        buttonContainer.backgroundColor = .dw_background()
 
         keyboardContainer = UIView()
         keyboardContainer.backgroundColor = .dw_background()
@@ -178,10 +179,6 @@ extension BaseAmountViewController {
         keyboardTopConstraint = keyboardStackView.topAnchor.constraint(equalTo: keyboardContainer.topAnchor, constant: 10)
 
         NSLayoutConstraint.activate([
-            amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            amountView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
-
             keyboardContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             keyboardContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             keyboardContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -190,6 +187,17 @@ extension BaseAmountViewController {
             keyboardStackView.leadingAnchor.constraint(equalTo: keyboardContainer.leadingAnchor),
             keyboardStackView.trailingAnchor.constraint(equalTo: keyboardContainer.trailingAnchor),
             keyboardStackView.bottomAnchor.constraint(equalTo: keyboardContainer.bottomAnchor, constant: -15),
+        ])
+
+        configureConstraints()
+    }
+
+    @objc
+    func configureConstraints() {
+        NSLayoutConstraint.activate([
+            amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            amountView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
         ])
     }
 }
