@@ -31,7 +31,7 @@ final class ListHandlerView: UIView {
     }
 
     private func configureHierarchy() {
-        layer.backgroundColor = UIColor.dw_background().cgColor
+        layer.backgroundColor = UIColor.dw_secondaryBackground().cgColor
         layer.masksToBounds = true
         layer.cornerRadius = 20
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]

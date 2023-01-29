@@ -24,7 +24,7 @@ class PointOfUseInfoViewController: UIViewController {
     }
 
     internal func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         let configuration = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
         let closeImage = UIImage(systemName: "xmark", withConfiguration: configuration)

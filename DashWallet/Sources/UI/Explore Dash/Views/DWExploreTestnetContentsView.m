@@ -53,7 +53,7 @@
 
         UIView *subContentView = [[UIView alloc] init];
         subContentView.translatesAutoresizingMaskIntoConstraints = NO;
-        subContentView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        subContentView.backgroundColor = [UIColor dw_backgroundColor];
         subContentView.layer.cornerRadius = 8.0;
         subContentView.layer.masksToBounds = YES;
         [contentView addSubview:subContentView];
@@ -171,6 +171,7 @@
 }
 
 - (void)configureHierarchy {
+    self.contentView.backgroundColor = [UIColor dw_backgroundColor];
     UIStackView *stackView = [UIStackView new];
     stackView.axis = UILayoutConstraintAxisHorizontal;
     stackView.spacing = 10;

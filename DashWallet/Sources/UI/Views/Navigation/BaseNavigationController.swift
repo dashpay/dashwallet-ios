@@ -89,8 +89,10 @@ class BaseNavigationController: UINavigationController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         super.delegate = self
+
+        view.backgroundColor = .dw_secondaryBackground()
+        navigationBar.applyOpaqueAppearance(with: .dw_secondaryBackground(), shadowColor: .dw_separatorLine())
     }
 }
 
@@ -133,7 +135,7 @@ extension BaseNavigationController: UINavigationControllerDelegate {
             let backButton = UIButton(type: .custom)
             backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
             backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
-            backButton.tintColor = .black
+            backButton.tintColor = .dw_label()
             backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
             backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
             let item = UIBarButtonItem(customView: backButton)
