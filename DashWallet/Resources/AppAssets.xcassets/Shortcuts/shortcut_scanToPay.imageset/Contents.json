@@ -1,17 +1,50 @@
 {
   "images" : [
     {
-      "filename" : "shortcut_scanToPay.png",
+      "filename" : "Light-M.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "shortcut_scanToPay@2x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Light-M 1.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Light-M@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "shortcut_scanToPay@3x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Light-M@2x 1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Light-M@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Light-M@3x 1.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -279,15 +279,12 @@ extension PointOfUseDetailsView {
 
 // MARK: - VerticalButton
 
-class VerticalButton: UIButton {
+class VerticalButton: DWTintedButton {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        // TODO: create a color
-        backgroundColor = UIColor(red: 0.961, green: 0.961, blue: 0.965, alpha: 1)
         imageView?.contentMode = .scaleAspectFit;
         layer.cornerRadius = 9
-        setTitleColor(.dw_dashBlue(), for: .normal)
         titleLabel?.font = .dw_mediumFont(ofSize: 11)
     }
 

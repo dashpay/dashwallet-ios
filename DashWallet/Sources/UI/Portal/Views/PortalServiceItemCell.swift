@@ -68,8 +68,6 @@ class PortalServiceItemCell: UICollectionViewCell {
             statusLabel.textColor = item.status.labelColor
             statusLabel.text = item.status.statusString
             balanceLabel.attributedText = item.balanceValue
-
-            // balanceView.isHidden = item.status == .disconnected
         }
     }
 
@@ -78,7 +76,7 @@ class PortalServiceItemCell: UICollectionViewCell {
 
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
-        contentView.backgroundColor = .white
+        contentView.backgroundColor = .dw_background()
 
         statusIcon.layer.cornerRadius = 3
         statusIcon.layer.masksToBounds = true

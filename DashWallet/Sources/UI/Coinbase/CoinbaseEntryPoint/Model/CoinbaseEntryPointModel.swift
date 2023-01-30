@@ -49,9 +49,9 @@ extension CoinbaseEntryPointItem {
         case .sellDash:
             return NSLocalizedString("Receive directly into Coinbase", comment: "Coinbase Entry Point")
         case .convertCrypto:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
+            return NSLocalizedString("Between Dash Wallet and Coinbase.", comment: "Coinbase Entry Point")
         case .transferDash:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
+            return NSLocalizedString("Between Dash Wallet and Coinbase.", comment: "Coinbase Entry Point")
         }
     }
 

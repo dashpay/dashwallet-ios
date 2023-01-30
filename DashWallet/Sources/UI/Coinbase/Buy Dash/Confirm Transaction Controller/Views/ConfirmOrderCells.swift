@@ -67,6 +67,8 @@ class ConfirmOrderGeneralInfoCell: UITableViewCell {
     }
 
     internal func configureHierarchy() {
+        contentView.backgroundColor = .dw_background()
+
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.alignment = .fill
