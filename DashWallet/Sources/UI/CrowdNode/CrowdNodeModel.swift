@@ -80,6 +80,11 @@ final class CrowdNodeModel {
         get { !crowdNode.withdrawalLimitsInfoShown }
         set(value) { crowdNode.withdrawalLimitsInfoShown = !value }
     }
+    
+    var shouldShowConfirmationDialog: Bool {
+        get { onlineAccountState == .confirming && !crowdNode.confirmationDialogShown }
+        set(value) { crowdNode.confirmationDialogShown = !value }
+    }
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }

@@ -40,3 +40,9 @@ extension CrowdNode {
         }
     }
 }
+
+extension SendCoinsService {
+    enum Error: Swift.Error {
+        case notEnoughFunds(selected: UInt64, amount: UInt64, fee: UInt64)
+    }
+}

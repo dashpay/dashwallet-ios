@@ -26,6 +26,7 @@ private let kWithdrawalLimitsInfoShown = "crowdNodeWithdrawalLimitsInfoShownKey"
 private let kOnlineAccountState = "сrowdNodeOnlineAccountStateKey"
 private let kOnlineAccountAddress = "crowdNodeOnlineAccountAddressKey"
 private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
+private let kConfirmationDialogShown = "crowdNodeConfirmationDialogShownKey"
 
 extension CrowdNode {
     var infoShown: Bool {
@@ -71,6 +72,11 @@ extension CrowdNode {
     var crowdNodePrimaryAddress: String? {
         get { UserDefaults.standard.value(forKey: kCrowdNodePrimaryAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodePrimaryAddress) }
+    }
+    
+    var confirmationDialogShown: Bool {
+        get { UserDefaults.standard.bool(forKey: kConfirmationDialogShown) }
+        set(value) { UserDefaults.standard.set(value, forKey: kConfirmationDialogShown) }
     }
     
     func resetUserDefaults() {

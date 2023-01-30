@@ -77,6 +77,10 @@ extension NewAccountViewController {
     private func configureHierarchy() {
         definesPresentationContext = true
         view.backgroundColor = UIColor.dw_background()
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        navigationItem.standardAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
 
         configureTermsCheckBox()
         

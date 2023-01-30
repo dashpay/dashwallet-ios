@@ -57,9 +57,9 @@ final class CrowdNodePortalController: UIViewController {
 
     @objc func infoButtonAction() {
         if viewModel.signUpState == .linkedOnline {
-            present(OnlineAccountDetailsController.controller(), animated: true, completion: nil)
+            present(OnlineAccountDetailsController.controller(), animated: true)
         } else {
-            present(StakingInfoDialogController.controller(), animated: true, completion: nil)
+            present(StakingInfoDialogController.controller(), animated: true)
         }
     }
     
@@ -136,6 +136,12 @@ extension CrowdNodePortalController {
                     IndexPath(item: 1, section: 0),
                 ],
                 with: .none)
+                
+                if self?.viewModel.shouldShowConfirmationDialog == true {
+                    let vc = OnlineAccountConfirmationController.controller()
+                    self?.present(vc, animated: true, completion: nil)
+                    self?.viewModel.shouldShowConfirmationDialog = false
+                }
             }
             .store(in: &cancellableBag)
 

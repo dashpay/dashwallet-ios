@@ -16,8 +16,15 @@
 //
 
 final class CrowdNodeAPIConfirmationTx: CoinsToAddressTxFilter {
-    init(address: String?) {
-        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: address)
+    private var primaryAddress: String!
+    
+    init(primaryAddress: String, apiAddress: String) {
+        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: apiAddress)
+        self.primaryAddress = primaryAddress
+    }
+    
+    override func matches(tx: DSTransaction) -> Bool {
+        return super.matches(tx: tx) && fromAddresses.contains(primaryAddress)
     }
 }
 

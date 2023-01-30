@@ -15,9 +15,10 @@
 //  limitations under the License.
 //
 
-import Foundation
+import Combine
 
 final class ConfirmationTransactionQRController: UIViewController {
+    private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNode.shared
     
     @IBOutlet var qrImage: UIImageView!
@@ -42,7 +43,9 @@ final class ConfirmationTransactionQRController: UIViewController {
         super.viewDidLoad()
         configureHierarchy()
     }
+}
 
+extension ConfirmationTransactionQRController {
     private func configureHierarchy() {
         let confirmationAmount = CrowdNode.apiConfirmationDashAmount.formattedDashAmount
         messageLabel.text = String.localizedStringWithFormat(NSLocalizedString("This QR already contains the payment request for %@", comment: "CrowdNode Confirm"), confirmationAmount)

@@ -15,7 +15,10 @@
 //  limitations under the License.
 //
 
+import Combine
+
 final class OnlineAccountConfirmationController: UIViewController {
+    private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNode.shared
     private var paymentRequest: DSPaymentRequest {
         let chain = DWEnvironment.sharedInstance().currentChain
@@ -39,6 +42,7 @@ final class OnlineAccountConfirmationController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
+        configureObservers()
     }
 
     @IBAction func closeAction() {
@@ -65,7 +69,13 @@ final class OnlineAccountConfirmationController: UIViewController {
         activityViewController.popoverPresentationController?.sourceView = self.view
         self.present(activityViewController, animated: true, completion: nil)
     }
+    
+    @objc func onDocumentationLinkTapped() {
+        UIApplication.shared.open(URL(string: CrowdNode.howToVerifyUrl)!)
+    }
+}
 
+extension OnlineAccountConfirmationController {
     private func configureHierarchy() {
         primaryAddressLabel.text = viewModel.primaryAddress
         addressLabel.text = viewModel.accountAddress
@@ -81,7 +91,23 @@ final class OnlineAccountConfirmationController: UIViewController {
         documentationLinkButton.addGestureRecognizer(tapGestureRecognizer)
     }
     
-    @objc func onDocumentationLinkTapped() {
-        UIApplication.shared.open(URL(string: CrowdNode.howToVerifyUrl)!)
+    private func configureObservers() {
+        viewModel.$onlineAccountState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                if state == .done {
+                    self?.presentingViewController?.dismiss(animated: true)
+                }
+            }
+            .store(in: &cancellableBag)
+        
+        viewModel.$apiError
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                if error != nil {
+                    self?.presentingViewController?.dismiss(animated: true)
+                }
+            }
+            .store(in: &cancellableBag)
     }
 }

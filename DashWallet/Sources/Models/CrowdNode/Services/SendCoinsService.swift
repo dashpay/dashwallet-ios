@@ -21,7 +21,7 @@ public final class SendCoinsService {
     private let transactionManager: DSTransactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
 
     func sendCoins(address: String, amount: UInt64,
-                   inputSelector: SingleInputAddressSelector? = nil) async throws
+                   inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
         -> DSTransaction {
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
@@ -36,8 +36,18 @@ public final class SendCoinsService {
             // Selecting proper inputs
             let balance = inputSelector!.selectFor(tx: transaction)
             transaction.addOutputAddress(address, amount: amount)
-
             let feeAmount = chain.fee(forTxSize: UInt(transaction.size) + UInt(TX_OUTPUT_SIZE))
+            
+            if amount + feeAmount > balance {
+                if adjustAmountDownwards {
+                    let adjustedAmount = amount - feeAmount
+                    let adjustedTx = try await sendCoins(address: address, amount: adjustedAmount, inputSelector: inputSelector)
+                    return adjustedTx
+                } else {
+                    throw Error.notEnoughFunds(selected: balance, amount: amount, fee: feeAmount)
+                }
+            }
+            
             let change = balance - (amount + feeAmount)
 
             if change > 0 {

@@ -54,8 +54,8 @@ public class CrowdNodeObjcWrapper: NSObject {
     }
 }
 
-private let kConfirmedStatus = "confirmed"
 private let kValidStatus = "valid"
+private let kConfirmedStatus = "confirmed"
 
 // MARK: - CrowdNode
 
@@ -659,13 +659,23 @@ extension CrowdNode {
     }
     
     private func startTrackingConfirmed(address: String, fireImmediately: Bool) {
+        let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            self?.checkAddressStatus(address: address)
+        }
+        timer.tolerance = 0.5
+        self.timer = timer
+        
+        if fireImmediately {
+            timer.fire()
+        }
+        
         Task {
             DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
             
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
-            let confirmationTx = await waitForApiAddressConfirmation(accountAddress: accountAddress)
-            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashData)")
+            let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
+            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashHexString)")
             
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
@@ -673,15 +683,25 @@ extension CrowdNode {
                 notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
                 return
             }
+        
+            let account = DWEnvironment.sharedInstance().currentAccount
             
-            let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
-                self?.checkIfAddressIsInUse(address: address)
-            }
-            timer.tolerance = 0.5
-            self.timer = timer
-            
-            if fireImmediately {
-                timer.fire()
+            if account.transactionIsValid(confirmationTx) {
+                do {
+                    // TODO: authentication is temporary. Should be fixed in NMI-908
+                    var authenticated = DSAuthenticationManager.sharedInstance().didAuthenticate
+                    
+                    if !authenticated {
+                        authenticated = await authenticate(allowBiometric: false)
+                    }
+                    
+                    if authenticated {
+                        let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount, inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address), adjustAmountDownwards: true)
+                        DSLogger.log("CrowdNode: confirmation tx forwarded: \(forwarded.txHashHexString)")
+                    }
+                } catch {
+                    DSLogger.log("CrowdNode error during confirmation forwarding: \(error)")
+                }
             }
         }
     }
@@ -721,8 +741,8 @@ extension CrowdNode {
         }
     }
     
-    private func waitForApiAddressConfirmation(accountAddress: String) async -> DSTransaction {
-        let filter = CrowdNodeAPIConfirmationTx(address: accountAddress)
+    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> DSTransaction {
+        let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
         let wallet = DWEnvironment.sharedInstance().currentWallet
         
         if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
@@ -739,5 +759,15 @@ extension CrowdNode {
                                        accountAddress: accountAddress)
         
         return wallet.allTransactions.contains { filter.matches(tx: $0) }
+    }
+    
+    // TODO: authentication is temporary. Should be fixed in NMI-908
+    @MainActor
+    func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
+        let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+        return await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: message,
+                                                                           usingBiometricAuthentication: allowBiometric &&
+                                                                               biometricEnabled,
+                                                                           alertIfLockout: true).0
     }
 }
