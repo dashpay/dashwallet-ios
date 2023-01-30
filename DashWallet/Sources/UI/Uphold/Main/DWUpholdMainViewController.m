@@ -132,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                            style:UIBarButtonItemStylePlain
                                                                           target:self
                                                                           action:@selector(logOutButtonAction:)];
+    rightBarButtonItem.tintColor = [UIColor dw_labelColor];
     [navigationItem setRightBarButtonItem:rightBarButtonItem animated:YES];
 
     [self.model fetch];
@@ -187,12 +188,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
                   didSendTransaction:(DWUpholdTransactionObject *)transaction {
-    for (UIViewController *vc in self.navigationController.viewControllers) {
-        if ([vc isKindOfClass:[PortalViewController class]]) {
-            [self.navigationController popToViewController:vc animated:YES];
-            break;
-        }
-    }
+    [self.navigationController popViewControllerAnimated:YES];
 
     UIAlertController *alert =
         [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
