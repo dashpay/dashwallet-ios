@@ -187,7 +187,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
                   didSendTransaction:(DWUpholdTransactionObject *)transaction {
-    [self.navigationController popToRootViewControllerAnimated:YES];
+    for (UIViewController *vc in self.navigationController.viewControllers) {
+        if ([vc isKindOfClass:[PortalViewController class]]) {
+            [self.navigationController popToViewController:vc animated:YES];
+            break;
+        }
+    }
 
     UIAlertController *alert =
         [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
@@ -209,7 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:openAction];
     alert.preferredAction = openAction;
 
-    [self presentViewController:alert animated:YES completion:nil];
+    [self.navigationController presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Private
