@@ -35,11 +35,7 @@ extension UInt64 {
     /// - Returns: Formatted dash amount without dash symbol
     ///
     var formattedDashAmountWithoutCurrencySymbol: String {
-        if #available(iOS 15.0, *) {
-            return dashAmount.formatted(.number)
-        } else {
-            return String(describing: dashAmount)
-        }
+        dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
 
     func formattedCryptoAmount(exponent: Int = 8) -> String {
@@ -81,6 +77,11 @@ extension Decimal {
     ///
     var formattedDashAmount: String {
         NumberFormatter.dashFormatter.string(from: self as NSNumber)!
+    }
+
+    var formattedDashAmountWithoutCurrencySymbol: String {
+        let formatter = NumberFormatter.dashDecimalFormatter
+        return formatter.string(from: self as NSNumber)!
     }
 
     func rounded(_ mode: NSDecimalNumber.RoundingMode = .plain) -> Decimal {
