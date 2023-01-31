@@ -21,23 +21,24 @@ import UIKit
 
 // MARK: - TransferAmountViewController
 
-class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling, ConverterViewDelegate {
-    /// Conform to NetworkReachabilityHandling
-    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
-    internal var reachabilityObserver: Any!
-
-    internal var converterView: ConverterView!
+final class TransferAmountViewController: CoinbaseAmountViewController, ConverterViewDelegate {
+    private var converterView: ConverterView!
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
-
-    private var networkUnavailableView: UIView!
+    weak var codeConfirmationController: TwoFactorAuthViewController?
 
     override var amountInputStyle: AmountInputControl.Style { .basic }
 
-    internal weak var codeConfirmationController: TwoFactorAuthViewController?
-
     override var actionButtonTitle: String? {
         NSLocalizedString("Transfer", comment: "Coinbase")
+    }
+
+    init() {
+        super.init(model: TransferAmountModel())
+    }
+
+    override init(model: BaseAmountModel) {
+        super.init(model: model)
     }
 
     override func actionButtonAction(sender: UIView) {
@@ -54,9 +55,8 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
     func didTapOnFromView() { }
 
     // MARK: Life Cycle
-
-    override func initializeModel() {
-        model = TransferAmountModel()
+    override func configureModel() {
+        super.configureModel()
         transferModel.delegate = self
     }
 
@@ -85,36 +85,11 @@ class TransferAmountViewController: SendAmountViewController, NetworkReachabilit
         converterView.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(converterView)
 
-        networkUnavailableView = NetworkUnavailableView(frame: .zero)
-        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
-        networkUnavailableView.isHidden = true
-        contentView.addSubview(networkUnavailableView)
-
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
-
-//            converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
-//            converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-//            converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-
-            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
         ])
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        networkStatusDidChange = { [weak self] _ in
-            self?.reloadView()
-        }
-        startNetworkMonitoring()
-    }
-
-    deinit {
-        stopNetworkMonitoring()
     }
 }
 
@@ -137,11 +112,10 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
 
 extension TransferAmountViewController {
     @objc
-    internal func reloadView() {
+    override func reloadView() {
+        super.reloadView()
+
         let isOnline = networkStatus == .online
-        networkUnavailableView.isHidden = isOnline
-        keyboardContainer.isHidden = !isOnline
-        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
         converterView.hasNetwork = isOnline
     }
 

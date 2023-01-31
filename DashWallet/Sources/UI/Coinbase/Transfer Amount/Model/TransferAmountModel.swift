@@ -50,6 +50,22 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
+    override var isAllowedToContinue: Bool {
+        if direction == .toCoinbase {
+            return super.isAllowedToContinue
+        } else {
+            return isAmountValidForProceeding && !canShowInsufficientFunds
+        }
+    }
+
+    override var canShowInsufficientFunds: Bool {
+        if direction == .toCoinbase {
+            return super.canShowInsufficientFunds
+        } else {
+            return amountToTransfer > (Coinbase.shared.lastKnownBalance ?? 0)
+        }
+    }
+
     override init() {
         super.init()
 
@@ -125,10 +141,8 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 extension TransferAmountModel: ConverterViewDataSource {
     var fromItem: SourceViewDataProvider? {
         direction == .toCoinbase
-            ? ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
-                                      title: "Dash Wallet",
-                                      balanceFormatted: walletBalanceFormatted,
-                                      fiatBalanceFormatted: fiatWalletBalanceFormatted)
+            ? ConverterViewSourceItem.dash(balanceFormatted: walletBalanceFormatted,
+                                           fiatBalanceFormatted: fiatWalletBalanceFormatted)
             : ConverterViewSourceItem(image: .asset("Coinbase"),
                                       title: "Coinbase",
                                       balanceFormatted: Coinbase.shared.dashAccount?.info.balanceFormatted ?? "",
@@ -137,10 +151,7 @@ extension TransferAmountModel: ConverterViewDataSource {
 
     var toItem: SourceViewDataProvider? {
         direction == .toWallet
-            ? ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
-                                      title: "Dash Wallet",
-                                      balanceFormatted: "", // We no need to show balance
-                                      fiatBalanceFormatted: "") // We no need to show balance
+            ? ConverterViewSourceItem.dash()
             : ConverterViewSourceItem(image: .asset("Coinbase"),
                                       title: "Coinbase",
                                       balanceFormatted: "",

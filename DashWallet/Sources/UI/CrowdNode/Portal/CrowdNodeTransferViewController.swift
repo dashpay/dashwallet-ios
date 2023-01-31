@@ -24,7 +24,9 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
-    internal var mode: TransferDirection = .deposit
+    internal var mode: TransferDirection {
+        transferModel.direction
+    }
 
     /// Conform to NetworkReachabilityHandling
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
@@ -41,9 +43,10 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
     static func controller(mode: TransferDirection) -> CrowdNodeTransferController {
-        let vc = CrowdNodeTransferController()
-        vc.mode = mode
+        let model = CrowdNodeTransferModel()
+        model.direction = mode
 
+        let vc = CrowdNodeTransferController(model: model)
         return vc
     }
 
@@ -59,13 +62,13 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
         startNetworkMonitoring()
         configureObservers()
-        
+
         if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
             showWithdrawalLimitsInfo()
             viewModel.shouldShowWithdrawalLimitsDialog = false
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewModel.showNotificationOnResult = false
@@ -105,12 +108,6 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
 
-    override func initializeModel() {
-        let depositWithdrawlModel = CrowdNodeTransferModel()
-        depositWithdrawlModel.direction = mode
-        model = depositWithdrawlModel
-    }
-
     override func configureModel() {
         super.configureModel()
 
@@ -126,7 +123,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             return try await handleWithdraw(amount: amount)
         }
     }
-    
+
     private func handleWithdraw(amount: UInt64) async throws -> Bool {
         do {
             return try await viewModel.withdraw(amount: amount)
@@ -210,7 +207,8 @@ extension CrowdNodeTransferController {
         titleViewStackView.addArrangedSubview(dashPriceLabel)
     }
 
-    @objc func minimumDepositBannerTapAction() {
+    @objc
+    func minimumDepositBannerTapAction() {
         let vc = StakingInfoDialogController.controller()
         present(vc, animated: true, completion: nil)
     }
@@ -255,12 +253,12 @@ extension CrowdNodeTransferController {
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     private func showWithdrawalLimitsError(period: WithdrawalLimitPeriod) {
         let vc = WithdrawalLimitsController()
         var buttonText: String? = nil
         let isOnlineAccountDone = viewModel.onlineAccountState == .done
-        
+
         if period == .perTransaction {
             if isOnlineAccountDone {
                 buttonText = NSLocalizedString("Read Withdrawal Policy", comment: "CrowdNode")
@@ -268,7 +266,7 @@ extension CrowdNodeTransferController {
                 buttonText = NSLocalizedString("Create Online Account", comment: "CrowdNode")
             }
         }
-        
+
         vc.model = WithdrawalLimitDialogModel(icon: "image.crowdnode.error", buttonText: buttonText, limits: viewModel.withdrawalLimits, highlightedLimit: period.rawValue)
         vc.actionHandler = {
             if isOnlineAccountDone {
@@ -277,11 +275,11 @@ extension CrowdNodeTransferController {
                 // TODO create online account
             }
         }
-        
+
         let nvc = BaseNavigationController(rootViewController: vc)
         present(nvc, animated: true)
     }
-    
+
     private func showWithdrawalLimitsInfo() {
         let vc = WithdrawalLimitsController()
         vc.model = WithdrawalLimitDialogModel(icon: "image.crowdnode.info", buttonText: nil, limits: viewModel.withdrawalLimits, highlightedLimit: -1)

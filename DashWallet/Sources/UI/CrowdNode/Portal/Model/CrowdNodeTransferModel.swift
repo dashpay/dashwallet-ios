@@ -107,12 +107,12 @@ final class CrowdNodeTransferModel: SendAmountModel {
         return displayString
     }
 
-    override var isSendAllowed: Bool {
+    override var isAllowedToContinue: Bool {
         let minDepositAmount = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
         let minWithdrawAmount = CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
         let minValue = direction == .deposit ? minDepositAmount : minWithdrawAmount
 
-        return super.isSendAllowed && amount.plainAmount > minValue
+        return super.isAllowedToContinue && amount.plainAmount > minValue
     }
 
     override var canShowInsufficientFunds: Bool {

@@ -117,6 +117,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self reloadActionButtonTitles];
 }
 
+#pragma mark - Internal
+
+- (void)interactiveTransitionWillDismiss {
+    [self.delegate confirmPaymentViewControllerDidCancel:self];
+}
+
 #pragma mark - Private
 
 - (void)setupView {
