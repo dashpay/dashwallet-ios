@@ -27,13 +27,13 @@ class CrowdNodeService {
 
 extension CrowdNodeService {
     func getBalance(address: String) async throws -> CrowdNodeBalance {
-       try await httpClient.request(.getBalance(address))
+        try await httpClient.request(.getBalance(address))
     }
-    
+
     func getWithdrawalLimits(address: String) async throws -> [WithdrawalLimitPeriod: UInt64?] {
         let limits: [WithdrawalLimit] = try await httpClient.request(.getWithdrawalLimits(address))
         var map: [WithdrawalLimitPeriod: UInt64?] = [:]
-        
+
         limits.forEach { limit in
             switch limit.key.lowercased() {
             case WithdrawalLimit.maxPerTxKey.lowercased():
@@ -46,10 +46,10 @@ extension CrowdNodeService {
                 break
             }
         }
-        
+
         return map
     }
-    
+
     func isAddressInUse(address: String) async -> IsAddressInUse {
         do {
             return try await httpClient.request(.isAddressInUse(address))
@@ -57,7 +57,7 @@ extension CrowdNodeService {
             return IsAddressInUse(isInUse: false, primaryAddress: nil)
         }
     }
-    
+
     func addressStatus(address: String) async -> String {
         do {
             let result: AddressStatus = try await httpClient.request(.addressStatus(address))

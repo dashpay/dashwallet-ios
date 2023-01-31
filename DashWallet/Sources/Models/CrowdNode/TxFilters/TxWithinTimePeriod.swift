@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -20,13 +20,13 @@ import Foundation
 public final class TxWithinTimePeriod: TransactionFilter {
     private let from: Date
     private let to: Date
-    
+
     init(from: Date, to: Date) {
         self.from = from
         self.to = to
     }
 
     func matches(tx: DSTransaction) -> Bool {
-        return tx.timestamp >= from.timeIntervalSince1970 && tx.timestamp <= to.timeIntervalSince1970
+        tx.timestamp >= from.timeIntervalSince1970 && tx.timestamp <= to.timeIntervalSince1970
     }
 }

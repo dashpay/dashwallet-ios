@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -30,11 +30,13 @@ final class OnlineAccountDetailsController: UIViewController {
         configureHierarchy()
     }
 
-    @IBAction func closeAction() {
+    @IBAction
+    func closeAction() {
         dismiss(animated: true)
     }
 
-    @IBAction func copyAddressAction() {
+    @IBAction
+    func copyAddressAction() {
         UIPasteboard.general.string = viewModel.accountAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }

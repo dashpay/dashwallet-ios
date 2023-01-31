@@ -21,7 +21,8 @@ import Combine
 
 @objc
 public class CrowdNodeModelObjcWrapper: NSObject {
-    @objc public class func getRootVC() -> UIViewController {
+    @objc
+    public class func getRootVC() -> UIViewController {
         CrowdNode.shared.restoreState()
         let state = CrowdNode.shared.signUpState
 
@@ -75,12 +76,12 @@ final class CrowdNodeModel {
         get { crowdNode.showNotificationOnResult }
         set(value) { crowdNode.showNotificationOnResult = value }
     }
-    
+
     var shouldShowWithdrawalLimitsDialog: Bool {
         get { !crowdNode.withdrawalLimitsInfoShown }
         set(value) { crowdNode.withdrawalLimitsInfoShown = !value }
     }
-    
+
     var shouldShowConfirmationDialog: Bool {
         get { onlineAccountState == .confirming && !crowdNode.confirmationDialogShown }
         set(value) { crowdNode.confirmationDialogShown = !value }
@@ -93,11 +94,11 @@ final class CrowdNodeModel {
     }
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
-    var withdrawalLimits: [Int] {[
+    var withdrawalLimits: [Int] { [
         Int(crowdNode.crowdNodeWithdrawalLimitPerTx / kOneDash),
         Int(crowdNode.crowdNodeWithdrawalLimitPerHour / kOneDash),
-        Int(crowdNode.crowdNodeWithdrawalLimitPerDay / kOneDash)
-    ]}
+        Int(crowdNode.crowdNodeWithdrawalLimitPerDay / kOneDash),
+    ] }
 
     init() {
         signUpState = crowdNode.signUpState
@@ -175,7 +176,7 @@ final class CrowdNodeModel {
                 case .notInitiated, .notStarted:
                     signUpEnabled = true
                     self?.getAccountAddress()
-                    
+
                 case .acceptTermsRequired, .error:
                     signUpEnabled = true
 
@@ -198,7 +199,7 @@ final class CrowdNodeModel {
         crowdNode.$apiError
             .sink { [weak self] error in self?.error = error }
             .store(in: &cancellableBag)
-        
+
         crowdNode.$onlineAccountState
             .sink { [weak self] state in self?.onlineAccountState = state }
             .store(in: &cancellableBag)
@@ -248,16 +249,16 @@ extension CrowdNodeModel {
 
     func withdraw(amount: UInt64) async throws -> Bool {
         guard amount > 0 && walletBalance >= CrowdNode.minimumLeftoverBalance else { return false }
-        
+
         if !DSAuthenticationManager.sharedInstance().didAuthenticate {
             let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: amount)
             let authenticated = await authenticate(allowBiometric: usingBiometric)
-            
+
             if !authenticated {
                 return false
             }
         }
-        
+
         try await crowdNode.withdraw(amount: amount)
         return true
     }
@@ -268,10 +269,10 @@ extension CrowdNodeModel {
     func linkOnlineAccount() -> URL {
         precondition(!accountAddress.isEmpty)
         crowdNode.trackLinkingAccount(address: accountAddress)
-        
+
         return URL(string: CrowdNode.apiLinkUrl + crowdNode.accountAddress)!
     }
-    
+
     func cancelLinkingOnlineAccount() {
         crowdNode.stopTrackingLinked()
     }

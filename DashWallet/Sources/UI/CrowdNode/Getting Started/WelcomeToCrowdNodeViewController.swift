@@ -34,14 +34,16 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
         cancellableBag.removeAll()
     }
 
-    @IBAction func continueAction() {
+    @IBAction
+    func continueAction() {
         navigationController?.replaceLast(with: GettingStartedViewController.controller())
     }
 
-    @objc static func controller() -> WelcomeToCrowdNodeViewController {
+    @objc
+    static func controller() -> WelcomeToCrowdNodeViewController {
         vc(WelcomeToCrowdNodeViewController.self, from: sb("CrowdNode"))
     }
-    
+
     private func configureHierarchy() {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         let appearance = UINavigationBarAppearance()

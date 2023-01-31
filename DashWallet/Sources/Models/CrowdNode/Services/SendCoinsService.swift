@@ -37,7 +37,7 @@ public final class SendCoinsService {
             let balance = inputSelector!.selectFor(tx: transaction)
             transaction.addOutputAddress(address, amount: amount)
             let feeAmount = chain.fee(forTxSize: UInt(transaction.size) + UInt(TX_OUTPUT_SIZE))
-            
+
             if amount + feeAmount > balance {
                 if adjustAmountDownwards {
                     let adjustedAmount = amount - feeAmount
@@ -47,7 +47,7 @@ public final class SendCoinsService {
                     throw Error.notEnoughFunds(selected: balance, amount: amount, fee: feeAmount)
                 }
             }
-            
+
             let change = balance - (amount + feeAmount)
 
             if change > 0 {

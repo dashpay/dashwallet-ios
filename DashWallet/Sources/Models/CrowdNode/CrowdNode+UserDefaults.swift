@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -33,52 +33,52 @@ extension CrowdNode {
         get { UserDefaults.standard.bool(forKey: kInfoShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kInfoShown) }
     }
-    
+
     var lastKnownBalance: UInt64 {
         get { UserDefaults.standard.value(forKey: kLastKnownBalance) as? UInt64 ?? 0 }
         set(value) { UserDefaults.standard.set(value, forKey: kLastKnownBalance) }
     }
-    
+
     var crowdNodeWithdrawalLimitPerTx: UInt64 {
         get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerTx) as? UInt64 ?? 15 * kOneDash }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerTx) }
     }
-    
+
     var crowdNodeWithdrawalLimitPerHour: UInt64 {
         get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerHour) as? UInt64 ?? 30 * kOneDash }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerHour) }
     }
-    
+
     var crowdNodeWithdrawalLimitPerDay: UInt64 {
         get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerDay) as? UInt64 ?? 60 * kOneDash }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerDay) }
     }
-    
+
     var withdrawalLimitsInfoShown: Bool {
         get { UserDefaults.standard.bool(forKey: kWithdrawalLimitsInfoShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitsInfoShown) }
     }
-    
+
     var savedOnlineAccountState: OnlineAccountState {
         get { OnlineAccountState(rawValue: UserDefaults.standard.integer(forKey: kOnlineAccountState)) ?? .none }
         set(value) { UserDefaults.standard.set(value.rawValue, forKey: kOnlineAccountState) }
     }
-    
+
     var onlineAccountAddress: String? {
         get { UserDefaults.standard.value(forKey: kOnlineAccountAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kOnlineAccountAddress) }
     }
-    
+
     var crowdNodePrimaryAddress: String? {
         get { UserDefaults.standard.value(forKey: kCrowdNodePrimaryAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodePrimaryAddress) }
     }
-    
+
     var confirmationDialogShown: Bool {
         get { UserDefaults.standard.bool(forKey: kConfirmationDialogShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kConfirmationDialogShown) }
     }
-    
+
     func resetUserDefaults() {
         infoShown = false
         lastKnownBalance = 0

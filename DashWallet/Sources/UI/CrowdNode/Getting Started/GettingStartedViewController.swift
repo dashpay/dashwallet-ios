@@ -43,17 +43,20 @@ final class GettingStartedViewController: UIViewController {
         cancellableBag.removeAll()
     }
 
-    @IBAction func newAccountAction() {
+    @IBAction
+    func newAccountAction() {
         if viewModel.canSignUp {
             navigationController?.pushViewController(NewAccountViewController.controller(online: false), animated: true)
         }
     }
 
-    @IBAction func linkAccountAction() {
+    @IBAction
+    func linkAccountAction() {
         navigationController?.pushViewController(NewAccountViewController.controller(online: true), animated: true)
     }
 
-    @IBAction func backupPassphraseAction() {
+    @IBAction
+    func backupPassphraseAction() {
         let alert =
             UIAlertController(title: NSLocalizedString("Backup your passphrase to create a CrowdNode account", comment: ""),
                               message: NSLocalizedString("If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.",
@@ -69,7 +72,8 @@ final class GettingStartedViewController: UIViewController {
         navigationController?.present(alert, animated: true, completion: nil)
     }
 
-    @IBAction func buyDashAction() {
+    @IBAction
+    func buyDashAction() {
         let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
         let alert = UIAlertController(title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
                                       message: String.localizedStringWithFormat(NSLocalizedString("You should have at least %@ to proceed with the CrowdNode verification.",
@@ -86,7 +90,8 @@ final class GettingStartedViewController: UIViewController {
         navigationController?.present(alert, animated: true, completion: nil)
     }
 
-    @objc static func controller() -> GettingStartedViewController {
+    @objc
+    static func controller() -> GettingStartedViewController {
         vc(GettingStartedViewController.self, from: sb("CrowdNode"))
     }
 }
@@ -94,12 +99,12 @@ final class GettingStartedViewController: UIViewController {
 extension GettingStartedViewController {
     private func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
-        
+
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
         navigationItem.standardAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
-        
+
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
@@ -157,7 +162,8 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
         self.navigationController?.present(navigationController, animated: true)
     }
 
-    @objc private func dismissModalControllerBarButtonAction() {
+    @objc
+    private func dismissModalControllerBarButtonAction() {
         dismiss(animated: true)
     }
 

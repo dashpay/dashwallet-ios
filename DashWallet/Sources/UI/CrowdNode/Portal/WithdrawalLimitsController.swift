@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,12 +17,16 @@
 
 import UIKit
 
+// MARK: - WithdrawalLimitDialogModel
+
 struct WithdrawalLimitDialogModel {
     let icon: String
     let buttonText: String?
     let limits: [Int]
     let highlightedLimit: Int
 }
+
+// MARK: - WithdrawalLimitsController
 
 final class WithdrawalLimitsController: BaseViewController {
 
@@ -31,17 +35,19 @@ final class WithdrawalLimitsController: BaseViewController {
         NSLocalizedString("per hour", comment: "CrowdNode"),
         NSLocalizedString("per 24 hours", comment: "CrowdNode"),
     ]
-    
+
     var actionHandler: (() -> ())?
     var model: WithdrawalLimitDialogModel? = nil
-    
-    
+
+
     // MARK: Actions
-    @objc func closeAction() {
+    @objc
+    func closeAction() {
         dismiss(animated: true)
     }
 
-    @objc func actionButtonAction() {
+    @objc
+    func actionButtonAction() {
         actionHandler?()
     }
 
@@ -93,26 +99,26 @@ extension WithdrawalLimitsController {
         descriptionLabel.textColor = .dw_secondaryText()
         descriptionLabel.text = NSLocalizedString("Due to CrowdNode’s terms of service users can withdraw no more than:", comment: "CrowdNode")
         scrollView.addSubview(descriptionLabel)
-        
+
         let limitsStackView = UIStackView()
         limitsStackView.translatesAutoresizingMaskIntoConstraints = false
         limitsStackView.axis = .horizontal
         limitsStackView.distribution = .fillEqually
         scrollView.addSubview(limitsStackView)
-        
+
         let limitLabelsStackView = UIStackView()
         limitLabelsStackView.translatesAutoresizingMaskIntoConstraints = false
         limitLabelsStackView.axis = .horizontal
         limitLabelsStackView.distribution = .fillEqually
         scrollView.addSubview(limitLabelsStackView)
-        
-        model?.limits.enumerated().forEach({
+
+        model?.limits.enumerated().forEach {
             let isHighlighted = $0.offset == model?.highlightedLimit
             let limit = createLimitText(limit: $0.element, isHighlighted: isHighlighted)
             limitsStackView.addArrangedSubview(limit)
             let limitLabel = createLimitLabel(label: limitLabels[$0.offset], isHighlighted: isHighlighted)
             limitLabelsStackView.addArrangedSubview(limitLabel)
-        })
+        }
 
         let frameGuide = scrollView.frameLayoutGuide
         let contentGuide = scrollView.contentLayoutGuide
@@ -143,16 +149,16 @@ extension WithdrawalLimitsController {
             descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
             descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            
+
             limitsStackView.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 25),
             limitsStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             limitsStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            
+
             limitLabelsStackView.topAnchor.constraint(equalTo: limitsStackView.bottomAnchor, constant: 0),
             limitLabelsStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             limitLabelsStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
         ])
-        
+
         if let text = model?.buttonText {
             let onlineAccountHint = UILabel()
             onlineAccountHint.translatesAutoresizingMaskIntoConstraints = false
@@ -163,7 +169,7 @@ extension WithdrawalLimitsController {
             onlineAccountHint.textColor = .dw_secondaryText()
             onlineAccountHint.text = NSLocalizedString("Withdraw without limits with an online account on CrowdNode website.", comment: "CrowdNode")
             scrollView.addSubview(onlineAccountHint)
-            
+
             let actionButton = UIButton(type: .custom)
             actionButton.translatesAutoresizingMaskIntoConstraints = false
             actionButton.addTarget(self, action: #selector(actionButtonAction), for: .touchUpInside)
@@ -172,12 +178,12 @@ extension WithdrawalLimitsController {
             actionButton.titleLabel?.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.bold.rawValue)
             actionButton.setTitle(text, for: .normal)
             scrollView.addSubview(actionButton)
-            
+
             NSLayoutConstraint.activate([
                 onlineAccountHint.topAnchor.constraint(equalTo: limitLabelsStackView.bottomAnchor, constant: 30),
                 onlineAccountHint.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
                 onlineAccountHint.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-                
+
                 actionButton.topAnchor.constraint(equalTo: onlineAccountHint.bottomAnchor, constant: 15),
                 actionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
                 actionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
@@ -186,26 +192,26 @@ extension WithdrawalLimitsController {
             ])
         }
     }
-    
+
     private func createLimitText(limit: Int, isHighlighted: Bool) -> UILabel {
         let amount = UILabel()
         let attachment = NSTextAttachment();
         attachment.image = UIImage(named: "icon_dash_currency")
         attachment.bounds = CGRect(x: 5, y: 1, width: 20, height: 16)
         let attachmentString = NSAttributedString(attachment: attachment)
-        let limitString = NSMutableAttributedString.init(string: String(limit))
+        let limitString = NSMutableAttributedString(string: String(limit))
         limitString.append(attachmentString)
         amount.font = .dw_mediumFont(ofSize: 26)
         amount.textAlignment = .center
         amount.attributedText = limitString
-        
+
         if isHighlighted {
             amount.textColor = .systemRed
         }
-        
+
         return amount
     }
-    
+
     private func createLimitLabel(label: String, isHighlighted: Bool) -> UILabel {
         let limitLabel = UILabel()
         limitLabel.font = .dw_regularFont(ofSize: 14)
@@ -215,7 +221,7 @@ extension WithdrawalLimitsController {
         if isHighlighted {
             limitLabel.textColor = .systemRed
         }
-        
+
         return limitLabel
     }
 }

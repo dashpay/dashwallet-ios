@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,10 +17,12 @@
 
 import Combine
 
+// MARK: - ConfirmationTransactionQRController
+
 final class ConfirmationTransactionQRController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNode.shared
-    
+
     @IBOutlet var qrImage: UIImageView!
     @IBOutlet var messageLabel: UILabel!
     private var paymentRequest: DSPaymentRequest!
@@ -29,13 +31,13 @@ final class ConfirmationTransactionQRController: UIViewController {
         let vc = vc(ConfirmationTransactionQRController.self, from: sb("CrowdNode"))
         vc.modalPresentationStyle = .pageSheet
         vc.paymentRequest = paymentRequest
-        
+
         if #available(iOS 15.0, *) {
             if let sheet = vc.sheetPresentationController {
                 sheet.detents = [.medium()]
             }
         }
-        
+
         return vc
     }
 
@@ -48,22 +50,23 @@ final class ConfirmationTransactionQRController: UIViewController {
 extension ConfirmationTransactionQRController {
     private func configureHierarchy() {
         let confirmationAmount = CrowdNode.apiConfirmationDashAmount.formattedDashAmount
-        messageLabel.text = String.localizedStringWithFormat(NSLocalizedString("This QR already contains the payment request for %@", comment: "CrowdNode Confirm"), confirmationAmount)
+        messageLabel.text = String.localizedStringWithFormat(NSLocalizedString("This QR already contains the payment request for %@", comment: "CrowdNode Confirm"),
+                                                             confirmationAmount)
         configureQrImage()
     }
-    
+
     private func configureQrImage() {
         let rawQRImage = UIImage.dw_image(withQRCodeData: paymentRequest.data!, color: CIColor(color: UIColor.label))
-        
+
         let overlayImage = UIImage(named: "dash_logo_qr")!.withTintColor(.label)
         let screenWidth = CGRectGetWidth(UIScreen.main.bounds)
         let padding = 38.0
         let side = screenWidth - padding * 2;
-        
+
         var resizedImage = rawQRImage.dw_resize(CGSizeMake(side, side), with: .none)
         resizedImage = resizedImage.dw_imageByCuttingHoleInCenter(with: CGSizeMake(84.0, 84.0))
         let image = resizedImage.dw_imageByMerging(with: overlayImage)
-        
+
         qrImage.image = image
     }
 }

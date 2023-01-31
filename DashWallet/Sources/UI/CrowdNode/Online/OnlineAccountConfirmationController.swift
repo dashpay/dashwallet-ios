@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,12 +17,14 @@
 
 import Combine
 
+// MARK: - OnlineAccountConfirmationController
+
 final class OnlineAccountConfirmationController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNode.shared
     private var paymentRequest: DSPaymentRequest {
         let chain = DWEnvironment.sharedInstance().currentChain
-        let paymentRequest = DSPaymentRequest.init(string: viewModel.accountAddress, on: chain)
+        let paymentRequest = DSPaymentRequest(string: viewModel.accountAddress, on: chain)
         paymentRequest.amount = CrowdNode.apiConfirmationDashAmount
         return paymentRequest
     }
@@ -45,32 +47,38 @@ final class OnlineAccountConfirmationController: UIViewController {
         configureObservers()
     }
 
-    @IBAction func closeAction() {
+    @IBAction
+    func closeAction() {
         dismiss(animated: true)
     }
 
-    @IBAction func copyPrimaryAddressAction() {
+    @IBAction
+    func copyPrimaryAddressAction() {
         UIPasteboard.general.string = viewModel.primaryAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
-    
-    @IBAction func copyAddressAction() {
+
+    @IBAction
+    func copyAddressAction() {
         UIPasteboard.general.string = viewModel.accountAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
-    
-    @IBAction func showQrAction() {
+
+    @IBAction
+    func showQrAction() {
         present(ConfirmationTransactionQRController.controller(paymentRequest), animated: true)
     }
-    
-    @IBAction func shareAction() {
+
+    @IBAction
+    func shareAction() {
         let sharedObjects: [AnyObject] = [paymentRequest.url as AnyObject]
         let activityViewController = UIActivityViewController(activityItems: sharedObjects, applicationActivities: nil)
-        activityViewController.popoverPresentationController?.sourceView = self.view
-        self.present(activityViewController, animated: true, completion: nil)
+        activityViewController.popoverPresentationController?.sourceView = view
+        present(activityViewController, animated: true, completion: nil)
     }
-    
-    @objc func onDocumentationLinkTapped() {
+
+    @objc
+    func onDocumentationLinkTapped() {
         UIApplication.shared.open(URL(string: CrowdNode.howToVerifyUrl)!)
     }
 }
@@ -83,14 +91,16 @@ extension OnlineAccountConfirmationController {
         shareButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 13)
         attentionBox.layer.borderWidth = 1
         attentionBox.layer.borderColor = UIColor.systemYellow.cgColor
-        
+
         let confirmationAmount = CrowdNode.apiConfirmationDashAmount.formattedDashAmount
-        infoLabel.text = String.localizedStringWithFormat(NSLocalizedString("Send %@ from your primary Dash address that you currently use for your CrowdNode account", comment: "CrowdNode Confirm"), confirmationAmount)
-        
+        infoLabel.text = String
+            .localizedStringWithFormat(NSLocalizedString("Send %@ from your primary Dash address that you currently use for your CrowdNode account", comment: "CrowdNode Confirm"),
+                                       confirmationAmount)
+
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onDocumentationLinkTapped))
         documentationLinkButton.addGestureRecognizer(tapGestureRecognizer)
     }
-    
+
     private func configureObservers() {
         viewModel.$onlineAccountState
             .receive(on: DispatchQueue.main)
@@ -100,7 +110,7 @@ extension OnlineAccountConfirmationController {
                 }
             }
             .store(in: &cancellableBag)
-        
+
         viewModel.$apiError
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in

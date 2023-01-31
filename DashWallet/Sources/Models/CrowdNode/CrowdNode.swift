@@ -22,15 +22,18 @@ import Combine
 
 @objc
 public class CrowdNodeObjcWrapper: NSObject {
-    @objc public class func restoreState() {
+    @objc
+    public class func restoreState() {
         CrowdNode.shared.restoreState()
     }
 
-    @objc public class func isInterrupted() -> Bool {
+    @objc
+    public class func isInterrupted() -> Bool {
         CrowdNode.shared.signUpState == .acceptTermsRequired
     }
 
-    @objc public class func continueInterrupted() {
+    @objc
+    public class func continueInterrupted() {
         let crowdNode = CrowdNode.shared
 
         if crowdNode.signUpState == .acceptTermsRequired {
@@ -41,15 +44,18 @@ public class CrowdNodeObjcWrapper: NSObject {
         }
     }
 
-    @objc public class func crowdNodeWebsiteUrl() -> URL {
+    @objc
+    public class func crowdNodeWebsiteUrl() -> URL {
         URL(string: CrowdNode.websiteUrl)!
     }
 
-    @objc public class func notificationID() -> String {
+    @objc
+    public class func notificationID() -> String {
         CrowdNode.notificationID
     }
 
-    @objc public class func apiOffset() -> UInt64 {
+    @objc
+    public class func apiOffset() -> UInt64 {
         CrowdNode.apiOffset
     }
 }
@@ -73,20 +79,20 @@ public final class CrowdNode {
         // Link Existing Account
         case linkedOnline
     }
-    
+
     enum OnlineAccountState: Int, Comparable {
         case none = 0
         case linking = 1
         case validating = 2
         case confirming = 3
-        case creating = 4    // TODO: NMI-917
+        case creating = 4 // TODO: NMI-917
         case signingUp = 5
         case done = 6
-        
+
         static func < (lhs: CrowdNode.OnlineAccountState, rhs: CrowdNode.OnlineAccountState) -> Bool {
-            return lhs.rawValue < rhs.rawValue
+            lhs.rawValue < rhs.rawValue
         }
-        
+
         var isLinkingInProgress: Bool {
             self == .linking || self == .validating || self == .confirming
         }
@@ -107,7 +113,7 @@ public final class CrowdNode {
     private(set) var accountAddress = ""
     private(set) var primaryAddress: String? = nil
     private(set) var linkingApiAddress: String? = nil
-    private(set) var isOnlineStateRestored: Bool = false
+    private(set) var isOnlineStateRestored = false
     var showNotificationOnResult = false
 
     let masternodeAPY: Double
@@ -126,7 +132,7 @@ public final class CrowdNode {
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
-        
+
         $onlineAccountState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
@@ -134,7 +140,7 @@ public final class CrowdNode {
 
                 wSelf.timer?.invalidate()
                 let fireImmediately = wSelf.isOnlineStateRestored
-                
+
                 switch state {
                 case .linking:
                     wSelf.startTrackingLinked(address: wSelf.linkingApiAddress!)
@@ -166,21 +172,21 @@ extension CrowdNode {
 
         DSLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
-        
+
         if tryRestoreSignUp() {
             refreshWithdrawalLimits()
             return
         }
-        
+
         var onlineState = savedOnlineAccountState
-        
+
         if let address = getOnlineAccountAddress(state: onlineState) {
             accountAddress = address
-            
+
             if onlineState == .none {
                 onlineState = .linking
             }
-            
+
             do {
                 try tryRestoreLinkedOnlineAccount(state: onlineState, address: address)
                 refreshWithdrawalLimits()
@@ -189,7 +195,7 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func tryRestoreSignUp() -> Bool {
         let fullSet = FullCrowdNodeSignUpTxSet()
         let wallet = DWEnvironment.sharedInstance().currentWallet
@@ -220,7 +226,7 @@ extension CrowdNode {
             setSigningUp(address: signUpRequest.fromAddresses.first!)
             return true
         }
-        
+
         return false
     }
 
@@ -384,9 +390,9 @@ extension CrowdNode {
     func withdraw(amount: UInt64) async throws {
         guard !accountAddress.isEmpty else { return }
         guard amount <= balance else { return }
-        
+
         try checkWithdrawalLimits(amount)
-        
+
         let account = DWEnvironment.sharedInstance().currentAccount
         let maxPermil = ApiCode.withdrawAll.rawValue
         let permil = UInt64(round(Double(amount * maxPermil) / Double(balance)))
@@ -432,21 +438,21 @@ extension CrowdNode {
             tx in filter.matches(tx: tx)
         }
     }
-    
+
     private func checkWithdrawalLimits(_ amount: UInt64) throws {
         let perTransactionLimit = getWithdrawalLimit(.perTransaction)
-        
+
         if amount > perTransactionLimit {
             throw CrowdNode.Error.withdrawLimit(amount: perTransactionLimit, period: .perTransaction)
         }
-        
+
         let withdrawalsLastHour = getWithdrawalsForTheLast(hours: 1)
         let perHourLimit = getWithdrawalLimit(.perHour)
 
         if withdrawalsLastHour + amount > perHourLimit {
             throw CrowdNode.Error.withdrawLimit(amount: perHourLimit, period: .perHour)
         }
-        
+
         let withdrawalsLast24h = getWithdrawalsForTheLast(hours: 24)
         let perDayLimit = getWithdrawalLimit(.perDay)
 
@@ -454,7 +460,7 @@ extension CrowdNode {
             throw CrowdNode.Error.withdrawLimit(amount: perDayLimit, period: .perDay)
         }
     }
-    
+
     private func getWithdrawalsForTheLast(hours: Int) -> UInt64 {
         let now = Date()
         let from = Calendar.current.date(byAdding: .hour, value: -hours, to: now)!
@@ -464,7 +470,7 @@ extension CrowdNode {
             .and(txFilter: TxWithinTimePeriod(from: from, to: now))
         let withdrawals = wallet.allTransactions.filter { tx in filter.matches(tx: tx) }
         let chain = DWEnvironment.sharedInstance().currentChain
-        
+
         return withdrawals.compactMap { tx in chain.amountReceived(from: tx) }.reduce(0, +)
     }
 }
@@ -542,15 +548,15 @@ extension CrowdNode {
         Task {
             do {
                 let limits = try await webService.getWithdrawalLimits(address: accountAddress)
-            
+
                 if let value = limits[WithdrawalLimitPeriod.perTransaction], let perTx = value {
                     crowdNodeWithdrawalLimitPerTx = perTx
                 }
-                
+
                 if let value = limits[WithdrawalLimitPeriod.perHour], let perHour = value {
                     crowdNodeWithdrawalLimitPerHour = perHour
                 }
-                
+
                 if let value = limits[WithdrawalLimitPeriod.perDay], let perDay = value {
                     crowdNodeWithdrawalLimitPerDay = perDay
                 }
@@ -559,7 +565,7 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func getWithdrawalLimit(_ period: WithdrawalLimitPeriod) -> UInt64 {
         switch period {
         case .perTransaction:
@@ -579,12 +585,12 @@ extension CrowdNode {
         onlineAccountAddress = address
         changeOnlineState(to: .linking)
     }
-    
+
     func stopTrackingLinked() {
         if signUpState == .notStarted && onlineAccountState <= .linking {
             DSLogger.log("CrowdNode: stopTrackingLinked")
             changeOnlineState(to: .none)
-    
+
             if let address = linkingApiAddress {
                 Task {
                     // One last check just in case
@@ -594,7 +600,7 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func changeOnlineState(to: OnlineAccountState, save: Bool = true) {
         if signUpState != .finished {
             if to < .validating {
@@ -603,24 +609,24 @@ extension CrowdNode {
                 signUpState = .linkedOnline
             }
         }
-        
+
         if onlineAccountState == .none {
             isOnlineStateRestored = true
         }
-        
+
         onlineAccountState = to
-        
+
         if save {
             savedOnlineAccountState = to
         }
     }
-    
-    
+
+
     private func tryRestoreLinkedOnlineAccount(state: OnlineAccountState, address: String) throws {
         if let address = crowdNodePrimaryAddress {
             primaryAddress = address
         }
-        
+
         switch state {
         case .none:
             break
@@ -636,7 +642,7 @@ extension CrowdNode {
             break
         }
     }
-    
+
     private func startTrackingLinked(address: String) {
         DSLogger.log("CrowdNode: startTrackingLinked, account: \(address)")
         let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
@@ -645,7 +651,7 @@ extension CrowdNode {
         timer.tolerance = 0.5
         self.timer = timer
     }
-    
+
     private func startTrackingValidated(address: String, fireImmediately: Bool) {
         DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
         let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
@@ -653,51 +659,53 @@ extension CrowdNode {
         }
         timer.tolerance = 0.5
         self.timer = timer
-        
+
         if fireImmediately {
             timer.fire()
         }
     }
-    
+
     private func startTrackingConfirmed(address: String, fireImmediately: Bool) {
         let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
             self?.checkAddressStatus(address: address)
         }
         timer.tolerance = 0.5
         self.timer = timer
-        
+
         if fireImmediately {
             timer.fire()
         }
-        
+
         Task {
             DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
-            
+
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
             let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
             DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashHexString)")
-            
+
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
                 changeOnlineState(to: .done)
                 notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
                 return
             }
-        
+
             let account = DWEnvironment.sharedInstance().currentAccount
-            
+
             if account.transactionIsValid(confirmationTx) {
                 do {
                     // TODO: authentication is temporary. Should be fixed in NMI-908
                     var authenticated = DSAuthenticationManager.sharedInstance().didAuthenticate
-                    
+
                     if !authenticated {
                         authenticated = await authenticate(allowBiometric: false)
                     }
-                    
+
                     if authenticated {
-                        let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount, inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address), adjustAmountDownwards: true)
+                        let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount,
+                                                                             inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address),
+                                                                             adjustAmountDownwards: true)
                         DSLogger.log("CrowdNode: confirmation tx forwarded: \(forwarded.txHashHexString)")
                     }
                 } catch {
@@ -706,12 +714,12 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func checkIfAddressIsInUse(address: String) {
         Task {
             let result = await webService.isAddressInUse(address: address)
             primaryAddress = result.primaryAddress
-            
+
             if result.isInUse && onlineAccountState <= .linking {
                 if primaryAddress == nil {
                     apiError = CrowdNode.Error.missingPrimary
@@ -726,11 +734,11 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func checkAddressStatus(address: String) {
         Task {
             let status = await webService.addressStatus(address: address)
-            
+
             if status.lowercased() == kValidStatus && onlineAccountState != .confirming {
                 changeOnlineState(to: .confirming)
                 notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been validated, but verification is required.", comment: "CrowdNode"))
@@ -741,11 +749,11 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> DSTransaction {
         let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
         let wallet = DWEnvironment.sharedInstance().currentWallet
-        
+
         if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
             return tx
         }
@@ -753,15 +761,15 @@ extension CrowdNode {
             return await txObserver.first(filters: filter)
         }
     }
-    
+
     private func hasDepositConfirmations() -> Bool {
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
                                        accountAddress: accountAddress)
-        
+
         return wallet.allTransactions.contains { filter.matches(tx: $0) }
     }
-    
+
     // TODO: authentication is temporary. Should be fixed in NMI-908
     @MainActor
     private func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
@@ -771,33 +779,33 @@ extension CrowdNode {
                                                                                biometricEnabled,
                                                                            alertIfLockout: true).0
     }
-    
+
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
         let savedAddress = onlineAccountAddress
-        
+
         if savedAddress != nil && state != .none {
             return savedAddress
         } else if let confirmationTx = getApiAddressConfirmationTx() {
             let account = DWEnvironment.sharedInstance().currentAccount
-                
+
             if let apiAddress = account.externalAddresses(of: confirmationTx).first {
                 onlineAccountAddress = apiAddress
                 signUpState = .linkedOnline
                 savedOnlineAccountState = .linking
-                
+
                 return apiAddress
             }
         }
-        
+
         return nil
     }
-    
+
     private func getApiAddressConfirmationTx() -> DSTransaction? {
         let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
-     
+
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let account = DWEnvironment.sharedInstance().currentAccount
-        
+
         for confirmationTx in wallet.allTransactions {
             if filter.matches(tx: confirmationTx) {
                 let receivedTo = account.externalAddresses(of: confirmationTx).first
@@ -806,13 +814,13 @@ extension CrowdNode {
                 let forwardedTx = wallet.allTransactions.first {
                     forwardedConfirmationFilter.matches(tx: $0)
                 }
-                
+
                 if forwardedTx != nil && receivedTo != nil && forwardedConfirmationFilter.fromAddresses.contains(receivedTo!) {
                     return confirmationTx
                 }
             }
         }
-        
+
         return nil
     }
 }

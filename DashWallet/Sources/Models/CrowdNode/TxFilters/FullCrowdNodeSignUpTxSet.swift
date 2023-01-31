@@ -49,7 +49,7 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             // Already included
             return
         }
-        
+
         let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
         let crowdNodeTxFilters = [
             CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),

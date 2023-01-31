@@ -31,8 +31,8 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     @IBOutlet var addressLabel: UILabel!
     @IBOutlet var acceptTermsCheckBox: DWCheckbox!
     @IBOutlet var acceptTermsText: UITextView!
-    
-    var isLinkingOnlineAccount: Bool = false
+
+    var isLinkingOnlineAccount = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,14 +41,16 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
         configureObservers()
     }
 
-    @objc static func controller(online: Bool) -> NewAccountViewController {
+    @objc
+    static func controller(online: Bool) -> NewAccountViewController {
         let vc = vc(NewAccountViewController.self, from: sb("CrowdNode"))
         vc.isLinkingOnlineAccount = online
-        
+
         return vc
     }
 
-    @IBAction func continueAction() {
+    @IBAction
+    func continueAction() {
         if isLinkingOnlineAccount {
             let linkingUrl = viewModel.linkOnlineAccount()
             navigationController?.pushViewController(CrowdNodeWebViewController.controller(url: linkingUrl), animated: true)
@@ -58,12 +60,14 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
         }
     }
 
-    @IBAction func copyAddress() {
+    @IBAction
+    func copyAddress() {
         UIPasteboard.general.string = addressLabel.text
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
 
-    @IBAction func onTermsChecked() {
+    @IBAction
+    func onTermsChecked() {
         actionButton.isEnabled = acceptTermsCheckBox.isOn && viewModel.signUpEnabled
     }
 
@@ -83,7 +87,7 @@ extension NewAccountViewController {
         navigationItem.scrollEdgeAppearance = appearance
 
         configureTermsCheckBox()
-        
+
         if isLinkingOnlineAccount {
             configureForLinkingOnlineAccount()
         } else {
@@ -129,11 +133,12 @@ extension NewAccountViewController {
         UIApplication.shared.open(URL)
         return false
     }
-    
+
     private func configureForLinkingOnlineAccount() {
         titleLabel.text = NSLocalizedString("Link Existing CrowdNode Account", comment: "CrowdNode")
         actionButton.setTitle("Log in to CrowdNode", for: .normal)
-        explainerLabel1.text = NSLocalizedString("All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.", comment: "CrowdNode")
+        explainerLabel1.text = NSLocalizedString("All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.",
+                                                 comment: "CrowdNode")
         explainerLabel2.isHidden = true
         explainerLabel2.heightAnchor.constraint(equalToConstant: 0).isActive = true
     }

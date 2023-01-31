@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,26 +15,27 @@
 //  limitations under the License.
 //
 
+import Combine
 import UIKit
 import WebKit
-import Combine
 
 class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
     private var url: URL!
-    
-    @objc static func controller(url: URL) -> CrowdNodeWebViewController {
+
+    @objc
+    static func controller(url: URL) -> CrowdNodeWebViewController {
         let vc = CrowdNodeWebViewController()
         vc.url = url
         return vc
     }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         viewModel.cancelLinkingOnlineAccount()
     }
-    
+
     override func loadView() {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
@@ -44,14 +45,14 @@ class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         navigationItem.title = NSLocalizedString("Log in to CrowdNode", comment: "CrowdNode WebView")
         let urlRequest = URLRequest(url: url)
         webView.load(urlRequest)
-        
+
         configureObservers()
     }
-    
+
     private func configureObservers() {
         viewModel.$signUpState
             .removeDuplicates()
