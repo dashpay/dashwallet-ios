@@ -53,7 +53,7 @@ extension String {
             attributedString.insert(dashSymbolAttributedString, at: 0)
         }
 
-        
+
         let amountLocation = dashSymbolRange.lowerBound == 0 ? 2 : 0
         let amountRange = NSRange(location: amountLocation,
                                   length: attributedString.string.count - 2)
@@ -120,17 +120,15 @@ extension String {
         let isCurrencySymbolAtTheBeginning = currencySymbolRange.lowerBound == format.startIndex
         let isCurrencySymbolAtTheEnd = currencySymbolRange.upperBound == format.endIndex
 
-        if !isCurrencySymbolAtTheBeginning && !isCurrencySymbolAtTheEnd {
-            // special case to deal with RTL languages
-            if format.hasPrefix("\u{0000200e}") || format.hasPrefix("\u{0000200f}") {
-                return numberFormatter.currencySymbol
-            }
+        // special case to deal with RTL languages
+        if format.hasPrefix("\u{0000200e}") || format.hasPrefix("\u{0000200f}") {
+            return numberFormatter.currencySymbol
         }
 
         var charSet: CharacterSet = .decimalDigits
         charSet.formUnion(.whitespaces)
 
-        let separatedString = components(separatedBy: charSet)
+        let separatedString = components(separatedBy: charSet).filter { !$0.isEmpty }
 
         if isCurrencySymbolAtTheBeginning {
             return separatedString.first

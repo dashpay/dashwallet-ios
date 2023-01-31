@@ -75,7 +75,6 @@ class AccountService {
     }
 
     public func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
-        let account = try await account(by: kDashAccount)
         let order = try await origin.commitTradeOrder(orderID: orderID)
         return order
     }

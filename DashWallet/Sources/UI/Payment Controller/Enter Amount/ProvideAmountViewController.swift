@@ -35,7 +35,7 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     init(address: String) {
         self.address = address
-        super.init()
+        super.init(model: SendAmountModel())
     }
 
     @available(*, unavailable)

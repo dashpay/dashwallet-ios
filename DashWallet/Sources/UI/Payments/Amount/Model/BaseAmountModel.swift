@@ -65,6 +65,7 @@ class BaseAmountModel {
             inputsSwappedHandler?(activeAmountType)
         }
     }
+
     var inputItems: [AmountInputItem] = [] {
         didSet {
             amountInputItemsChangeHandler?()
@@ -76,6 +77,14 @@ class BaseAmountModel {
     public var presentCurrencyPickerHandler: (() -> Void)?
     public var inputsSwappedHandler: ((AmountType) -> Void)?
     public var amountInputItemsChangeHandler: (() -> Void)?
+
+    public var isAllowedToContinue: Bool {
+        isAmountValidForProceeding
+    }
+
+    var isAmountValidForProceeding: Bool {
+        amount.plainAmount > 0
+    }
 
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
         let chain = DWEnvironment.sharedInstance().currentChain
@@ -187,13 +196,13 @@ class BaseAmountModel {
         updateCurrentAmountObject(with: amountObject)
     }
 
-    internal func updateCurrentAmountObject(with newObject: AmountObject) {
+    internal func updateCurrentAmountObject(with dashAmount: AmountObject) {
         if activeAmountType == .main {
-            mainAmount = newObject
+            mainAmount = dashAmount
             supplementaryAmount = nil
         } else {
             mainAmount = nil
-            supplementaryAmount = newObject.localAmount
+            supplementaryAmount = dashAmount.localAmount
         }
 
         amountDidChange()
@@ -214,10 +223,6 @@ class BaseAmountModel {
 }
 
 extension BaseAmountModel {
-    var isAmountValidForProceeding: Bool {
-        amount.plainAmount > 0
-    }
-
     var isLocalCurrencySelected: Bool {
         activeAmountType == .supplementary
     }

@@ -16,7 +16,6 @@
 //
 
 #import "DWConfirmPaymentViewController.h"
-
 #import "DWUpholdOTPProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdConfirmViewController:(DWUpholdConfirmViewController *)controller
                  didSendTransaction:(DWUpholdTransactionObject *)transaction;
+- (void)upholdConfirmViewControllerDidCancelTransaction:(DWUpholdConfirmViewController *)controller;
 
 @end
 

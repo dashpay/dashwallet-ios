@@ -44,11 +44,17 @@ extension NumberFormatter {
             return formattedString
         }
 
-        guard let currencySymbolRange = formattedString.range(of: currencySymbol) else {
+        var currencySymbolRange: Range<String.Index>! = formattedString.range(of: currencySymbol)
+
+        if currencySymbolRange == nil && currencySymbol.count != numberFormatter.currencySymbol.count {
             assertionFailure("Invalid formatted string")
-            return ""
+        } else if currencySymbolRange == nil {
+            currencySymbolRange = formattedString.range(of: numberFormatter.currencySymbol)
         }
 
+        guard let currencySymbolRange else {
+            fatalError("Invalid formatted string")
+        }
 
         let isCurrencySymbolAtTheBeginning = currencySymbolRange.lowerBound == formattedString.startIndex
         var currencySymbolNumberSeparator: String

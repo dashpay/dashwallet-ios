@@ -106,7 +106,7 @@ extension AmountObject {
         if amountType == .main { return self }
 
         let dashAmount = NumberFormatter.dashFormatter.number(from: mainFormatted)!
-        let amountInternalRepresentation = NumberFormatter.decimalFormatter.string(from: dashAmount)!
+        let amountInternalRepresentation = NumberFormatter.dashDecimalFormatter.string(from: dashAmount)!
 
         return object(with: amountInternalRepresentation)
     }
