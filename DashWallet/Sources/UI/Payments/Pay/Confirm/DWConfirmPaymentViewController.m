@@ -119,10 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Internal
 
-- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^__nullable)(void))completion {
+- (void)interactiveTransitionWillDismiss {
     [self.delegate confirmPaymentViewControllerDidCancel:self];
-
-    [super dismissViewControllerAnimated:flag completion:completion];
 }
 
 #pragma mark - Private

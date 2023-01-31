@@ -29,7 +29,11 @@ class SendAmountViewController: BaseAmountViewController {
     }
 
     init() {
-        super.init(nibName: nil, bundle: nil)
+        super.init(model: SendAmountModel())
+    }
+
+    override init(model: BaseAmountModel) {
+        super.init(model: model)
     }
 
     @available(*, unavailable)
@@ -37,23 +41,7 @@ class SendAmountViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func initializeModel() {
-        model = SendAmountModel()
-    }
-
     override func maxButtonAction() {
         sendAmountModel.selectAllFunds()
-    }
-
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        actionButton?.isEnabled = sendAmountModel.isSendAllowed
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        actionButton?.isEnabled = sendAmountModel.isSendAllowed
     }
 }

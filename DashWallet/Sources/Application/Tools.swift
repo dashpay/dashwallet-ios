@@ -29,7 +29,20 @@ private var _dashFormatter: NumberFormatter = {
     return dashFormat
 }()
 
+private var _dashDecimalFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.isLenient = true
+    formatter.numberStyle = .none
+    formatter.generatesDecimalNumbers = true
+    formatter.locale = Locale.current
+    formatter.minimumIntegerDigits = 1
+    formatter.minimumFractionDigits = 0
+    formatter.maximumFractionDigits = 8
+    return formatter
+}()
+
 extension NumberFormatter {
+
     static var decimalFormatter: NumberFormatter {
         guard let formatter = _decimalFormatter else {
             let formatter = NumberFormatter()
@@ -46,6 +59,16 @@ extension NumberFormatter {
         return formatter
     }
 
+    static func dashDecimalFormatter(for locale: Locale) -> NumberFormatter {
+        let formatter = dashDecimalFormatter.copy() as! NumberFormatter
+        formatter.locale = locale
+        return formatter
+    }
+
+    /// Returns `NumberFormatter` that formats a number into a currency string using selected currency
+    ///
+    /// - Returns:`NumberFormatter`
+    ///
     static var fiatFormatter: NumberFormatter {
         if let fiatFormatter = _fiatFormatter, fiatFormatter.currencyCode == App.fiatCurrency {
             return fiatFormatter
@@ -59,6 +82,14 @@ extension NumberFormatter {
 
     static var dashFormatter: NumberFormatter {
         _dashFormatter
+    }
+
+    /// Returns `NumberFormatter` that formats a number into dash format, but without currency symbol
+    ///
+    /// - Returns:`NumberFormatter`
+    ///
+    static var dashDecimalFormatter: NumberFormatter {
+        _dashDecimalFormatter
     }
 
     static func cryptoFormatter(currencyCode: String, exponent: Int) -> NumberFormatter {

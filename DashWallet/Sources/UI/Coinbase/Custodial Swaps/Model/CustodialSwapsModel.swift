@@ -67,8 +67,10 @@ class CustodialSwapsModel: SendAmountModel {
 
     weak var delegate: CustodialSwapsModelDelegate?
 
-    override var isSendAllowed: Bool {
-        selectedAccount != nil && amount.plainAmount > 0 && !canShowInsufficientFunds
+    override var isAllowedToContinue: Bool {
+        isAmountValidForProceeding &&
+            selectedAccount != nil &&
+            !canShowInsufficientFunds
     }
 
     override var canShowInsufficientFunds: Bool {
@@ -109,7 +111,8 @@ class CustodialSwapsModel: SendAmountModel {
     override func selectAllFundsWithoutAuth() {
         guard let selectedAccount else { return }
 
-        let max = AmountObject(localAmountString: selectedAccount.info.balance.amount, fiatCurrencyCode: selectedAccount.info.balance.currency,
+        let max = AmountObject(localAmountString: selectedAccount.info.balance.amount,
+                               fiatCurrencyCode: selectedAccount.info.balance.currency,
                                localFormatter: supplementaryNumberFormatter)
         supplementaryAmount = max
         mainAmount = supplementaryAmount.dashAmount
@@ -133,10 +136,6 @@ extension CustodialSwapsModel: ConverterViewDataSource {
     }
 
     var toItem: SourceViewDataProvider? {
-        ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
-                                title: "Dash",
-                                subtitle: "Dash Wallet",
-                                balanceFormatted: "", // We no need to show balance
-                                fiatBalanceFormatted: "") // We no need to show balance
+        ConverterViewSourceItem.dash(subtitle: "Dash Wallet")
     }
 }
