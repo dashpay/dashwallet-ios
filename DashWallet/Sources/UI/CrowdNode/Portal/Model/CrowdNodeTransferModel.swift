@@ -108,7 +108,6 @@ final class CrowdNodeTransferModel: SendAmountModel {
     }
 
     override var isAllowedToContinue: Bool {
-        // TODO: Do we need to have a different logic here depends on direction?
         let minDepositAmount = CrowdNode.apiOffset + ApiCode.maxCode().rawValue
         let minWithdrawAmount = CrowdNode.shared.balance / ApiCode.withdrawAll.rawValue
         let minValue = direction == .deposit ? minDepositAmount : minWithdrawAmount
