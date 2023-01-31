@@ -28,3 +28,8 @@ final class CrowdNodeAPIConfirmationTx: CoinsToAddressTxFilter {
     }
 }
 
+final class CrowdNodeAPIConfirmationTxForwarded: CoinsToAddressTxFilter {
+    init() {
+        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: CrowdNode.crowdNodeAddress, withFee: true)
+    }
+}

@@ -172,9 +172,10 @@ extension CrowdNode {
             return
         }
         
-        if let address = onlineAccountAddress {
+        var onlineState = savedOnlineAccountState
+        
+        if let address = getOnlineAccountAddress(state: onlineState) {
             accountAddress = address
-            var onlineState = savedOnlineAccountState
             
             if onlineState == .none {
                 onlineState = .linking
@@ -763,11 +764,55 @@ extension CrowdNode {
     
     // TODO: authentication is temporary. Should be fixed in NMI-908
     @MainActor
-    func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
+    private func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
         let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
         return await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: message,
                                                                            usingBiometricAuthentication: allowBiometric &&
                                                                                biometricEnabled,
                                                                            alertIfLockout: true).0
+    }
+    
+    private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
+        let savedAddress = onlineAccountAddress
+        
+        if savedAddress != nil && state != .none {
+            return savedAddress
+        } else if let confirmationTx = getApiAddressConfirmationTx() {
+            let account = DWEnvironment.sharedInstance().currentAccount
+                
+            if let apiAddress = account.externalAddresses(of: confirmationTx).first {
+                onlineAccountAddress = apiAddress
+                signUpState = .linkedOnline
+                savedOnlineAccountState = .linking
+                
+                return apiAddress
+            }
+        }
+        
+        return nil
+    }
+    
+    private func getApiAddressConfirmationTx() -> DSTransaction? {
+        let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
+     
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let account = DWEnvironment.sharedInstance().currentAccount
+        
+        for confirmationTx in wallet.allTransactions {
+            if filter.matches(tx: confirmationTx) {
+                let receivedTo = account.externalAddresses(of: confirmationTx).first
+                let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
+                // There might be several matching transactions. The real one will be forwarded to CrowdNode
+                let forwardedTx = wallet.allTransactions.first {
+                    forwardedConfirmationFilter.matches(tx: $0)
+                }
+                
+                if forwardedTx != nil && receivedTo != nil && forwardedConfirmationFilter.fromAddresses.contains(receivedTo!) {
+                    return confirmationTx
+                }
+            }
+        }
+        
+        return nil
     }
 }
