@@ -25,6 +25,7 @@
 #import "DWDPRegistrationStatusTableViewCell.h"
 #import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -67,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
         index = indexPath.row - 1;
     }
     else {
-        index = indexPath.row;
+        index = indexPath.row - 1;
     }
     return self.items[index];
 }
@@ -80,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
         return 1 + itemsCount;
     }
     else {
-        return itemsCount;
+        return 1 + itemsCount;
     }
 }
 
@@ -110,6 +111,13 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
     else {
+        if (indexPath.row == 0) {
+            NSString *cellId = CNCreateAccountCell.dw_reuseIdentifier;
+            CNCreateAccountCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                        forIndexPath:indexPath];
+            return cell;
+        }
+
         NSString *cellId = DWTxListTableViewCell.dw_reuseIdentifier;
         DWTxListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                       forIndexPath:indexPath];

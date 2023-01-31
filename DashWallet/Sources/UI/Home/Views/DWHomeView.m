@@ -29,6 +29,7 @@
 #import "DWTxListEmptyTableViewCell.h"
 #import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -93,6 +94,10 @@ NS_ASSUME_NONNULL_BEGIN
             NSParameterAssert(nib);
             [tableView registerNib:nib forCellReuseIdentifier:cellId];
         }
+
+
+        UINib *nib = [UINib nibWithNibName:@"CNCreateAccountCell" bundle:nil];
+        [tableView registerNib:nib forCellReuseIdentifier:CNCreateAccountCell.dw_reuseIdentifier];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(setNeedsLayout)
@@ -164,16 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         self.tableView.dataSource = dataSource;
-
         [self.tableView reloadData];
-
-        //        if (shouldAnimate && self.window) {
-        //            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-        //                          withRowAnimation:UITableViewRowAnimationAutomatic];
-        //        }
-        //        else {
-        //            [self.tableView reloadData];
-        //        }
     }
 }
 
