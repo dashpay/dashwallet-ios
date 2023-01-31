@@ -2166,16 +2166,12 @@
 		0F6EDFE028C8AE32000427E7 /* Coinbase */ = {
 			isa = PBXGroup;
 			children = (
-				47CDEECA294A2B9F008AE06D /* Base */,
 				47C661B028FDC70F00028A8D /* Transfer Amount */,
-				478C98242942DBF200FAA0F0 /* Buy Dash */,
-				47E94B95296D7CF9000FE68E /* Custodial Swaps */,
 				4751CAD12970228300F63AC4 /* Order Preview */,
 				4751CABE296EFCC000F63AC4 /* Account List Controller */,
 				47CDEECA294A2B9F008AE06D /* Base */,
 				47E94B95296D7CF9000FE68E /* Custodial Swaps */,
 				478C98242942DBF200FAA0F0 /* Buy Dash */,
-				47522F4E2927CAE900EE143E /* Operation Status Controller */,
 				0F36937C2919A597007F4E91 /* Two Factor Auth */,
 				0F71317328F436160072F454 /* ServiceOverview */,
 				4751136D28D9B4F400223B77 /* Info Screen */,
@@ -6446,7 +6442,6 @@
 				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */,
 				47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */,
 				117ED4AA28ED6766006E3EE4 /* SpendableTransaction.swift in Sources */,
-				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */,
 				119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */,
 				0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */,
@@ -6499,7 +6494,6 @@
 				0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				47E94B97296D7D5B000FE68E /* CustodialSwapsViewController.swift in Sources */,
-				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
 				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */,
