@@ -33,9 +33,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBasePayViewController () <DWPaymentProcessorDelegate,
-                                       DWQRScanModelDelegate,
-                                       DWConfirmPaymentViewControllerDelegate,
+@interface DWBasePayViewController () <DWQRScanModelDelegate,
                                        SuccessTxDetailViewControllerDelegate,
                                        PaymentControllerDelegate,
                                        PaymentControllerPresentationContextProviding>

@@ -81,8 +81,6 @@ final class ExploreMapAnnotationView: MKAnnotationView {
 
         imageView.frame = bounds
     }
-
-    static var reuseIdentifier: String { "MerchantAnnotationView" }
 }
 
 
