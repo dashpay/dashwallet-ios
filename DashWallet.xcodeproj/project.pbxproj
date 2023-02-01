@@ -508,6 +508,7 @@
 		4730586E295AB3BE004641DA /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		47305870295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
+		474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7210298A1A9500475CA6 /* UIView+Reuse.swift */; };
 		4751136C28D9A3DB00223B77 /* PortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136B28D9A3DB00223B77 /* PortalViewController.swift */; };
 		4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */; };
 		4751137528DAF28800223B77 /* UIAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751137428DAF28800223B77 /* UIAssembly.swift */; };
@@ -1712,6 +1713,7 @@
 		4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDevice+Compatibility.swift"; sourceTree = "<group>"; };
 		4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarAppearanceCustomizable.swift; sourceTree = "<group>"; };
 		47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+AlertPresenting.swift"; sourceTree = "<group>"; };
+		474C7210298A1A9500475CA6 /* UIView+Reuse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Reuse.swift"; sourceTree = "<group>"; };
 		4751136B28D9A3DB00223B77 /* PortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalViewController.swift; sourceTree = "<group>"; };
 		4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseInfoViewController.swift; sourceTree = "<group>"; };
 		4751137428DAF28800223B77 /* UIAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAssembly.swift; sourceTree = "<group>"; };
@@ -4272,6 +4274,7 @@
 				4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */,
 				47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */,
 				47F005FE297164600029EB10 /* UITableView+DashWallet.swift */,
+				474C7210298A1A9500475CA6 /* UIView+Reuse.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";

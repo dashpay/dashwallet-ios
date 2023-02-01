@@ -177,7 +177,7 @@ extension OrderPreviewViewController {
         tableView.dataSource = self
         tableView.layoutMargins = .init(top: 0.0, left: 15, bottom: 0.0, right: 0)
         tableView.separatorInset = tableView.layoutMargins
-        tableView.register(ConfirmOrderGeneralInfoCell.self, forCellReuseIdentifier: ConfirmOrderGeneralInfoCell.dw_reuseIdentifier)
+        tableView.register(ConfirmOrderGeneralInfoCell.self, forCellReuseIdentifier: ConfirmOrderGeneralInfoCell.reuseIdentifier)
         view.addSubview(tableView)
 
         buttonsStackView = UIStackView()

@@ -15,10 +15,10 @@
 //  limitations under the License.
 //
 
-import UIKit
+import Foundation
 
-extension UITableView {
-    func dequeueReusableCell<T: UITableViewCell>(type: T.Type, for indexPath: IndexPath) -> T {
-        dequeueReusableCell(withIdentifier: T.reuseIdentifier, for: indexPath) as! T
+extension UIView {
+    static var reuseIdentifier: String {
+        String(String(describing: type(of: Self.self)).split(separator: ".").first!)
     }
 }

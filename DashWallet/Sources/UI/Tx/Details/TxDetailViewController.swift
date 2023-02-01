@@ -27,13 +27,22 @@ enum TxDetailDisplayType {
     case masternodeRegistration
 }
 
+// MARK: - BaseTxDetailsViewController
+
+@objc
+class BaseTxDetailsViewController: BaseViewController {
+    @IBOutlet var tableView: UITableView!
+
+
+
+}
+
 // MARK: - TXDetailViewController
 
 @objc
-class TXDetailViewController: UIViewController {
+class TXDetailViewController: BaseTxDetailsViewController {
     @objc var model: TxDetailModel!
 
-    @IBOutlet var tableView: UITableView!
     @IBOutlet var closeButton: DWActionButton!
 
     var dataSource: UITableViewDiffableDataSource<Section, Item>! = nil
@@ -138,7 +147,7 @@ extension TXDetailViewController {
 
                 switch section {
                 case .header:
-                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.dw_reuseIdentifier,
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailHeaderCell
                     cell.model = self?.model
                     cell.selectionStyle = .none
@@ -147,20 +156,20 @@ extension TXDetailViewController {
 
                     return cell
                 case .info:
-                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailInfoCell.dw_reuseIdentifier,
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailInfoCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailInfoCell
                     cell.update(with: item)
                     cell.selectionStyle = .none
                     cell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0)
                     return cell
                 case .taxCategory:
-                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.dw_reuseIdentifier,
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailTaxCategoryCell
                     cell.update(with: item)
                     return cell
 
                 case .explorer:
-                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.dw_reuseIdentifier,
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailActionCell
                     cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
                     return cell
@@ -211,8 +220,6 @@ extension TXDetailViewController {
     func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        // Make sure we have 20pt padding on the sides
-        // tableView.contentInset = .init(top: 0, left: 0, bottom: 0, right: 5)
         tableView.backgroundColor = UIColor.dw_secondaryBackground()
         tableView.delegate = self
     }

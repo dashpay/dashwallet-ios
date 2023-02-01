@@ -63,7 +63,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIView+DWHUD.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
-#import "UIView+DWReuseHelper.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
