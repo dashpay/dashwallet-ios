@@ -33,6 +33,8 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
+#import "DWDateFormatter.h"
+
 // -- CrowdNode
 #import "DWCheckbox.h"
 #import "DWBackupInfoViewController.h"
