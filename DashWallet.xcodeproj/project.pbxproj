@@ -508,7 +508,11 @@
 		4730586E295AB3BE004641DA /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		47305870295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
+		474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */; };
+		474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */; };
 		474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7210298A1A9500475CA6 /* UIView+Reuse.swift */; };
+		474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */; };
+		474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */; };
 		4751136C28D9A3DB00223B77 /* PortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136B28D9A3DB00223B77 /* PortalViewController.swift */; };
 		4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */; };
 		4751137528DAF28800223B77 /* UIAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751137428DAF28800223B77 /* UIAssembly.swift */; };
@@ -1713,7 +1717,11 @@
 		4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDevice+Compatibility.swift"; sourceTree = "<group>"; };
 		4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarAppearanceCustomizable.swift; sourceTree = "<group>"; };
 		47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+AlertPresenting.swift"; sourceTree = "<group>"; };
+		474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailHeaderCell.xib; sourceTree = "<group>"; };
+		474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailTaxCategoryCell.xib; sourceTree = "<group>"; };
 		474C7210298A1A9500475CA6 /* UIView+Reuse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Reuse.swift"; sourceTree = "<group>"; };
+		474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailInfoCell.xib; sourceTree = "<group>"; };
+		474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailActionCell.xib; sourceTree = "<group>"; };
 		4751136B28D9A3DB00223B77 /* PortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalViewController.swift; sourceTree = "<group>"; };
 		4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseInfoViewController.swift; sourceTree = "<group>"; };
 		4751137428DAF28800223B77 /* UIAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAssembly.swift; sourceTree = "<group>"; };
@@ -2557,6 +2565,10 @@
 			isa = PBXGroup;
 			children = (
 				47A5146328491C60005A8E3E /* TxDetailCells.swift */,
+				474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */,
+				474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */,
+				474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */,
+				474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5901,6 +5913,7 @@
 				2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */,
 				2AFF01E0243F74BF003718DC /* DWDPRegistrationErrorTableViewCell.xib in Resources */,
 				47838B7F290160860003E8AB /* ExploreDash.storyboard in Resources */,
+				474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */,
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
 				2A60C9452444BF3A00AF72CF /* DWConfirmUsernameContentView.xib in Resources */,
 				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
@@ -5913,9 +5926,11 @@
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
+				474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */,
 				2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */,
+				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
 				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
@@ -5953,6 +5968,7 @@
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
 				2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */,
 				2ACCD865231959CD00A96B62 /* DWAmountPreviewView.xib in Resources */,
+				474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */,
 				2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */,
 				47083B3829893F4B0010AF71 /* CNCreateAccountCell.xib in Resources */,
 			);
@@ -6289,6 +6305,7 @@
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
 				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
+				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
 				2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
@@ -6701,6 +6718,7 @@
 				2AD6E54D2487CE0100B52F14 /* DWContactsDataSourceObject.m in Sources */,
 				2A8DBA702630A609009094BD /* DWExtendedPublicKeysViewController.m in Sources */,
 				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
+				474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
 				1147687E294B789800FB1EEE /* CrowdNodePortalViewController.swift in Sources */,
 				47F4B6CA29484C9800AED4C9 /* ConfirmOrderModel.swift in Sources */,

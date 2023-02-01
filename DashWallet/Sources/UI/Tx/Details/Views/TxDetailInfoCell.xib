@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TxDetailInfoCell" rowHeight="52" id="038-A6-sn0" customClass="TxDetailInfoCell" customModule="dashwallet" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="038-A6-sn0" id="0cY-Zb-ruo">
+                <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bYU-gv-Vs3">
+                        <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="999" constant="52" id="5cr-mN-6EB"/>
+                        </constraints>
+                    </view>
+                    <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="gkE-Dz-74w">
+                        <rect key="frame" x="15" y="12" width="344" height="28"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Syt-h5-5KT">
+                                <rect key="frame" x="0.0" y="0.0" width="41.666666666666664" height="28"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" horizontalCompressionResistancePriority="751" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fbF-zZ-t8J">
+                                <rect key="frame" x="61.666666666666671" y="0.0" width="50" height="28"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" ambiguous="YES" axis="vertical" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="WPy-sh-uzr">
+                                <rect key="frame" x="131.66666666666663" y="0.0" width="212.33333333333337" height="28"/>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" name="BackgroundColor"/>
+                    </stackView>
+                </subviews>
+                <color key="backgroundColor" name="BackgroundColor"/>
+                <constraints>
+                    <constraint firstItem="gkE-Dz-74w" firstAttribute="centerY" secondItem="0cY-Zb-ruo" secondAttribute="centerY" id="EWm-as-Npc"/>
+                    <constraint firstItem="bYU-gv-Vs3" firstAttribute="leading" secondItem="0cY-Zb-ruo" secondAttribute="leading" id="EqT-ET-rcf"/>
+                    <constraint firstAttribute="trailing" secondItem="gkE-Dz-74w" secondAttribute="trailing" constant="15" id="FeG-zE-guT"/>
+                    <constraint firstAttribute="bottom" secondItem="gkE-Dz-74w" secondAttribute="bottom" constant="12" id="G7d-9d-q9L"/>
+                    <constraint firstItem="gkE-Dz-74w" firstAttribute="leading" secondItem="0cY-Zb-ruo" secondAttribute="leading" constant="15" id="KqP-4d-J3a"/>
+                    <constraint firstItem="gkE-Dz-74w" firstAttribute="top" secondItem="0cY-Zb-ruo" secondAttribute="top" constant="12" id="iZg-6Q-uQd"/>
+                    <constraint firstAttribute="bottom" secondItem="bYU-gv-Vs3" secondAttribute="bottom" id="tKX-Uf-Bbs"/>
+                    <constraint firstAttribute="trailing" secondItem="bYU-gv-Vs3" secondAttribute="trailing" id="vLx-6h-wG7"/>
+                    <constraint firstItem="bYU-gv-Vs3" firstAttribute="top" secondItem="0cY-Zb-ruo" secondAttribute="top" id="voe-m2-40q"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="titleLabel" destination="Syt-h5-5KT" id="lzL-HW-83g"/>
+                <outlet property="valueLabelsStack" destination="WPy-sh-uzr" id="qmz-NQ-YMW"/>
+            </connections>
+            <point key="canvasLocation" x="89" y="42"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>
