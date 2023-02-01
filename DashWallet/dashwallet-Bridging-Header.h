@@ -63,6 +63,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
 #import "UIView+DWHUD.h"
+#import "UIView+DWAnimations.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
 #import "NSAttributedString+DWBuilder.h"

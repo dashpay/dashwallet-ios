@@ -23,7 +23,6 @@
 #import "DWDPRegistrationErrorTableViewCell.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDPRegistrationStatusTableViewCell.h"
-#import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
@@ -122,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWTxListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                       forIndexPath:indexPath];
         DSTransaction *transaction = [self transactionForIndexPath:indexPath];
-        [cell configureWithTransaction:transaction dataProvider:self.dataProvider];
+        [cell updateWith:transaction dataProvider:_dataProvider];
         return cell;
     }
 }

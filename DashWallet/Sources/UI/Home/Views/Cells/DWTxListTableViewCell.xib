@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -24,64 +24,17 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1uJ-po-8L4" userLabel="Rounded View">
                                 <rect key="frame" x="0.0" y="0.0" width="288" height="70"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kOJ-5O-jnp" userLabel="Center View">
-                                        <rect key="frame" x="10" y="2.5" width="266" height="65.5"/>
-                                        <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="248" verticalHuggingPriority="255" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JcG-Fh-4sJ" userLabel="Direction State Label">
-                                                <rect key="frame" x="0.0" y="17" width="219" height="15"/>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                                <color key="textColor" name="DarkTitleColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="246" verticalHuggingPriority="254" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pNw-3q-KIq" userLabel="Date Label">
-                                                <rect key="frame" x="0.0" y="34" width="221.5" height="13.5"/>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                <color key="textColor" name="TertiaryTextColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="1000" text="Label" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="93j-8R-v9x" userLabel="Dash Label">
-                                                <rect key="frame" x="235" y="17" width="31" height="15"/>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                                <nil key="textColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="1000" text="Label" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BDI-0a-IA8" userLabel="Fiat Label">
-                                                <rect key="frame" x="237.5" y="34" width="28.5" height="13.5"/>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                <color key="textColor" name="TertiaryTextColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kOJ-5O-jnp" userLabel="Center View" customClass="TransactionItemView" customModule="dashwallet" customModuleProvider="target">
+                                        <rect key="frame" x="15" y="17" width="258" height="36"/>
                                         <color key="backgroundColor" name="BackgroundColor"/>
-                                        <constraints>
-                                            <constraint firstItem="93j-8R-v9x" firstAttribute="top" secondItem="kOJ-5O-jnp" secondAttribute="top" constant="17" id="2xM-sI-oFf"/>
-                                            <constraint firstItem="JcG-Fh-4sJ" firstAttribute="leading" secondItem="kOJ-5O-jnp" secondAttribute="leading" id="74J-N7-oyU"/>
-                                            <constraint firstAttribute="trailing" secondItem="BDI-0a-IA8" secondAttribute="trailing" id="F6l-DB-hnn"/>
-                                            <constraint firstItem="93j-8R-v9x" firstAttribute="centerY" secondItem="JcG-Fh-4sJ" secondAttribute="centerY" id="Inj-ie-ALd"/>
-                                            <constraint firstAttribute="bottom" secondItem="pNw-3q-KIq" secondAttribute="bottom" constant="18" id="L7J-Bq-Jtq"/>
-                                            <constraint firstItem="JcG-Fh-4sJ" firstAttribute="top" secondItem="kOJ-5O-jnp" secondAttribute="top" constant="17" id="Qrq-fE-HOf"/>
-                                            <constraint firstItem="BDI-0a-IA8" firstAttribute="leading" secondItem="pNw-3q-KIq" secondAttribute="trailing" constant="16" id="S8t-yg-GAn"/>
-                                            <constraint firstItem="pNw-3q-KIq" firstAttribute="top" secondItem="JcG-Fh-4sJ" secondAttribute="bottom" constant="2" id="SZS-8A-O8w"/>
-                                            <constraint firstAttribute="trailing" secondItem="93j-8R-v9x" secondAttribute="trailing" id="WYQ-35-hri"/>
-                                            <constraint firstItem="pNw-3q-KIq" firstAttribute="leading" secondItem="kOJ-5O-jnp" secondAttribute="leading" id="YOM-gG-KBU"/>
-                                            <constraint firstItem="93j-8R-v9x" firstAttribute="leading" secondItem="JcG-Fh-4sJ" secondAttribute="trailing" constant="16" id="dDQ-9W-ixS"/>
-                                            <constraint firstItem="BDI-0a-IA8" firstAttribute="top" secondItem="93j-8R-v9x" secondAttribute="bottom" constant="2" id="pPo-Um-atQ"/>
-                                            <constraint firstItem="BDI-0a-IA8" firstAttribute="centerY" secondItem="pNw-3q-KIq" secondAttribute="centerY" id="yiL-2Q-Slr"/>
-                                            <constraint firstAttribute="bottom" secondItem="BDI-0a-IA8" secondAttribute="bottom" constant="18" id="yqY-8Y-Mfi"/>
-                                        </constraints>
                                     </view>
                                 </subviews>
                                 <color key="backgroundColor" name="BackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="top" relation="greaterThanOrEqual" secondItem="1uJ-po-8L4" secondAttribute="top" id="3Ww-6L-Fop"/>
-                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="centerY" secondItem="1uJ-po-8L4" secondAttribute="centerY" id="LgL-Cu-vKT"/>
-                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="kOJ-5O-jnp" secondAttribute="bottom" id="cCT-37-uiD"/>
-                                    <constraint firstAttribute="trailing" secondItem="kOJ-5O-jnp" secondAttribute="trailing" constant="12" id="f8L-4c-pez"/>
-                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="leading" secondItem="1uJ-po-8L4" secondAttribute="leading" constant="10" id="uac-C5-Jvk"/>
+                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="top" secondItem="1uJ-po-8L4" secondAttribute="top" constant="17" id="519-75-XgO"/>
+                                    <constraint firstAttribute="bottom" secondItem="kOJ-5O-jnp" secondAttribute="bottom" constant="17" id="KP8-j6-1Ym"/>
+                                    <constraint firstAttribute="trailing" secondItem="kOJ-5O-jnp" secondAttribute="trailing" constant="15" id="f8L-4c-pez"/>
+                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="leading" secondItem="1uJ-po-8L4" secondAttribute="leading" constant="15" id="uac-C5-Jvk"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -108,13 +61,10 @@
                     <constraint firstItem="ur6-aR-ORy" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="hqS-Hf-I67"/>
                 </constraints>
             </tableViewCellContentView>
-            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <viewLayoutGuide key="safeArea" id="aW0-zy-SZf"/>
+            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <connections>
-                <outlet property="dashAmountLabel" destination="93j-8R-v9x" id="KGD-VG-TjG"/>
-                <outlet property="dateLabel" destination="pNw-3q-KIq" id="tNO-z2-W4g"/>
-                <outlet property="directionStateLabel" destination="JcG-Fh-4sJ" id="it8-Pc-Qut"/>
-                <outlet property="fiatAmountLabel" destination="BDI-0a-IA8" id="cwm-a2-aDR"/>
+                <outlet property="txItemView" destination="kOJ-5O-jnp" id="Pet-dI-5Lf"/>
             </connections>
             <point key="canvasLocation" x="33.333333333333336" y="30.46875"/>
         </tableViewCell>
@@ -123,14 +73,8 @@
         <namedColor name="BackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="DarkTitleColor">
-            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
-            <color red="0.96899998188018799" green="0.96899998188018799" blue="0.96899998188018799" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="TertiaryTextColor">
-            <color red="0.47099998593330383" green="0.47099998593330383" blue="0.47099998593330383" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>
