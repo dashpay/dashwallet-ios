@@ -33,31 +33,6 @@ class TxDetailHeaderCell: UITableViewCell {
     }
 
     private func updateView() {
-        var title: String!
-        var iconTintColor: UIColor!
-        var iconName: String!
-
-        switch model.direction {
-        case .moved:
-            iconName = "arrow.up.circle.fill"
-            title = NSLocalizedString("Moved to Address", comment: "");
-            iconTintColor = UIColor.dw_iconTint()
-        case .sent:
-            iconName = "arrow.up.circle.fill"
-            title = NSLocalizedString("Amount Sent", comment: "");
-            iconTintColor = UIColor.dw_dashBlue() // Black or White (in Dark Mode)
-        case .received:
-            iconName = "arrow.down.circle.fill"
-            title = NSLocalizedString("Amount received", comment: "");
-            iconTintColor = UIColor.dw_green()
-        case .notAccountFunds:
-            iconName = "arrow.down.circle.fill"
-            title = NSLocalizedString("Registered Masternode", comment: "");
-            iconTintColor = UIColor.dw_iconTint() // Black or White (in Dark Mode)
-        default:
-            break
-        }
-
         if model.direction == .notAccountFunds {
             fiatAmountLabel.text = "";
             dashAmountLabel.text = "";
@@ -69,17 +44,12 @@ class TxDetailHeaderCell: UITableViewCell {
                                   tintColor: .label)
         }
 
-        titleLabel.text = title
-        titleLabel.textColor = iconTintColor
+        titleLabel.text = model.direction.title
+        iconImageView.image = model.direction.icon
 
-        if let name = iconName {
-            let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
-
-            let image = UIImage(systemName: name, withConfiguration: iconConfig)
-
-            iconImageView.image = image
-            iconImageView.tintColor = iconTintColor
-        }
+        let tintColor = model.direction.tintColor
+        titleLabel.textColor = tintColor
+        iconImageView.tintColor = tintColor
     }
 
     override func awakeFromNib() {
@@ -90,8 +60,6 @@ class TxDetailHeaderCell: UITableViewCell {
         dashAmountLabel.font = UIFont.dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
         fiatAmountLabel.font = UIFont.dw_font(forTextStyle: .footnote)
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailHeaderCell" }
 }
 
 // MARK: - TxDetailActionCell
@@ -101,8 +69,6 @@ class TxDetailActionCell: TxDetailTitleCell {
         super.awakeFromNib()
         titleLabel.textColor = .dw_label()
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailActionCell" }
 }
 
 // MARK: - TxDetailInfoCell
@@ -160,8 +126,6 @@ class TxDetailInfoCell: TxDetailTitleDetailsCell {
             view.removeFromSuperview()
         }
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailInfoCell" }
 }
 
 // MARK: - TxDetailTaxCategoryCell
@@ -184,8 +148,6 @@ class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
 
         categoryLabel?.font = UIFont.dw_font(forTextStyle: .footnote)
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailTaxCategoryCell" }
 }
 
 // MARK: - TxDetailTitleDetailsCell
