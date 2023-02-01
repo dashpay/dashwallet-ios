@@ -186,7 +186,8 @@ class ExplorePointOfUseListViewController: UIViewController {
 }
 
 extension ExplorePointOfUseListViewController {
-    @objc internal func configureModel() { }
+    @objc
+    internal func configureModel() { }
 }
 
 // MARK: DWLocationObserver
@@ -225,11 +226,13 @@ extension ExplorePointOfUseListViewController {
         }
     }
 
-    @objc internal func subtitleForFilterCell() -> String? {
+    @objc
+    internal func subtitleForFilterCell() -> String? {
         nil
     }
 
-    @objc internal func refreshFilterCell() {
+    @objc
+    internal func refreshFilterCell() {
         filterCell?.title = currentSegment.title
         filterCell?.subtitle = subtitleForFilterCell()
 
@@ -244,7 +247,8 @@ extension ExplorePointOfUseListViewController {
         }
     }
 
-    @objc internal func configureHierarchy() {
+    @objc
+    internal func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
         let appliedFiltersStackView = UIStackView()
@@ -407,11 +411,13 @@ extension ExplorePointOfUseListViewController {
         navigationController?.setToolbarHidden(isHidden, animated: false)
     }
 
-    @objc private func showMapAction() {
+    @objc
+    private func showMapAction() {
         showMap()
     }
 
-    @objc private func moveAction(sender: UIPanGestureRecognizer) {
+    @objc
+    private func moveAction(sender: UIPanGestureRecognizer) {
         let translatedPoint: CGPoint = sender.translation(in: view)
 
         contentViewTopLayoutConstraint.constant += translatedPoint.x
@@ -549,7 +555,8 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         return cell
     }
 
-    @objc func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    @objc
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }

@@ -94,7 +94,8 @@ class ServiceOverviewViewController: ActionButtonViewController, UITableViewDele
         }
     }
 
-    @objc class func controller() -> ServiceOverviewViewController {
+    @objc
+    class func controller() -> ServiceOverviewViewController {
         vc(ServiceOverviewViewController.self, from: sb("Coinbase"))
     }
 }

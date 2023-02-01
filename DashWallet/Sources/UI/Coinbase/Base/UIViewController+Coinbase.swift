@@ -52,14 +52,17 @@ extension BaseViewController {
 
 protocol CoinbaseCodeConfirmationPreviewing: ActivityIndicatorPreviewing {
     var codeConfirmationController: TwoFactorAuthViewController? { set get }
-
+    var isCancelingToFail: Bool { get }
     func codeConfirmationControllerDidContinue(with code: String)
     func codeConfirmationControllerDidCancel()
 }
 
 extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
+    var isCancelingToFail: Bool { false }
+
     func showCodeConfirmationController() {
         let vc = TwoFactorAuthViewController.controller()
+        vc.isCancelingToFail = isCancelingToFail
         vc.verifyHandler = { [weak self] code in
             self?.codeConfirmationControllerDidContinue(with: code)
         }
@@ -79,14 +82,31 @@ extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
 
 // MARK: - CoinbaseTransactionHandling
 
-protocol CoinbaseTransactionHandling: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionDelegate { }
+protocol CoinbaseTransactionHandling: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionDelegate, ErrorPresentable { }
 
 extension CoinbaseTransactionHandling where Self: BaseViewController {
     func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error) {
-        DSLogger.log("Tranfer from coinbase: transferFromCoinbaseToWalletDidFail")
-        showAlert(with: "Error", message: error.localizedDescription)
-        hideActivityIndicator()
+        if case Coinbase.Error.transactionFailed(let r) = error {
+            switch r {
+            case .twoFactorRequired:
+                showCodeConfirmationController()
+            case .invalidVerificationCode:
+                showInvalidCodeState()
+            case .invalidAmount, .enteredAmountTooLow, .limitExceded, .notEnoughFunds:
+                hideActivityIndicator()
+                present(error: error)
+            case .message(let msg):
+                showFailedTransactionStatus(text: msg)
+            default:
+                showFailedTransactionStatus(text: r.localizedDescription)
+            }
+        } else {
+            hideActivityIndicator()
+            present(error: error)
+        }
     }
+
+    private func handleTransferFailure(with reason: Coinbase.Error.TransactionFailureReason) { }
 
     func transferFromCoinbaseToWalletDidCancel() {
         hideActivityIndicator()
@@ -95,16 +115,5 @@ extension CoinbaseTransactionHandling where Self: BaseViewController {
     func transferFromCoinbaseToWalletDidSucceed() {
         codeConfirmationController = nil
         showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device", comment: "Coinbase"))
-    }
-
-    func transferFromCoinbaseToWalletDidFail(with reason: Coinbase.Error.TransactionFailureReason) {
-        switch reason {
-        case .twoFactorRequired:
-            showCodeConfirmationController()
-        case .invalidVerificationCode:
-            showInvalidCodeState()
-        default:
-            showFailedTransactionStatus(text: reason.localizedDescription)
-        }
     }
 }

@@ -86,6 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showActivityIndicator {
+    if (_activityIndicator.isAnimating)
+        return;
+
     [super setEnabled:NO];
     [super setImage:nil forState:UIControlStateNormal];
 
@@ -96,6 +99,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)hideActivityIndicator {
+    if (!_activityIndicator.isAnimating)
+        return;
+
     [super setEnabled:YES];
     [super setImage:_activeImage forState:UIControlStateNormal];
 

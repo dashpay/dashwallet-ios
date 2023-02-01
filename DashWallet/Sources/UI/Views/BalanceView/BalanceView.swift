@@ -17,10 +17,17 @@
 
 import UIKit
 
+// MARK: - BalanceViewDataSource
+
+protocol BalanceViewDataSource: AnyObject {
+    var mainAmountString: String { get }
+    var supplementaryAmountString: String { get }
+}
+
 // MARK: - BalanceView
 
 final class BalanceView: UIView {
-    public var balance: UInt64 = 0 { // In Dash
+    public weak var dataSource: BalanceViewDataSource? {
         didSet {
             reloadView()
         }
@@ -55,14 +62,14 @@ final class BalanceView: UIView {
 
 extension BalanceView {
     private func reloadView() {
+        let mainAmountString = dataSource?.mainAmountString ?? NumberFormatter.dashFormatter.string(from: 0)!
+        let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!
+
         let balanceColor = UIColor.label
         let font = UIFont.dw_font(forTextStyle: .title1)
-        let balanceString = NSAttributedString.dw_dashAttributedString(forAmount: balance, tintColor: balanceColor,
-                                                                       dashSymbolColor: dashSymbolColor ?? balanceColor,
-                                                                       font: font)
+        let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: balanceColor)
         dashBalanceLabel.attributedText = balanceString
-
-        fiatBalanceLabel.text = DSPriceManager.sharedInstance().localCurrencyString(forDashAmount: Int64(balance))
+        fiatBalanceLabel.text = supplementaryAmountString
     }
 
     private func configureHierarchy() {

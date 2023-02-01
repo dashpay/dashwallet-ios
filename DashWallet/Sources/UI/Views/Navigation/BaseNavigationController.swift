@@ -99,7 +99,8 @@ class BaseNavigationController: UINavigationController {
 // MARK: Actions
 
 extension BaseNavigationController {
-    @objc func backButtonAction() {
+    @objc
+    func backButtonAction() {
         guard let topViewController = topViewController as? NavigationStackControllable else {
             popViewController(animated: true)
             return

@@ -22,6 +22,25 @@ import Foundation
 struct BasePaginationResponse<T: Codable>: Codable {
     let pagination: Pagination
     let data: [T]
+
+    struct Pagination: Codable {
+        let endingBefore: String?
+        let previousEndingBefore: String?
+        let nextStartingAfter: String?
+        let startingAfter: String?
+        let limit: Int?
+        let order, previousURI, nextURI: String?
+
+        enum CodingKeys: String, CodingKey {
+            case endingBefore = "ending_before"
+            case startingAfter = "starting_after"
+            case previousEndingBefore = "previous_ending_before"
+            case nextStartingAfter = "next_starting_after"
+            case limit, order
+            case previousURI = "previous_uri"
+            case nextURI = "next_uri"
+        }
+    }
 }
 
 // MARK: - BaseDataResponse
@@ -35,3 +54,4 @@ struct BaseDataResponse<T: Codable>: Codable {
 struct BaseDataCollectionResponse<T: Codable>: Codable {
     let data: [T]
 }
+

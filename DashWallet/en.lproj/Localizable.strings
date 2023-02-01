@@ -137,9 +137,6 @@
 "Amount Sent" = "Amount Sent";
 
 /* No comment provided by engineer. */
-"Amount too small" = "Amount too small";
-
-/* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
 
 /* Coinbase/Payment Methods */
@@ -157,11 +154,14 @@
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
+/* Coinbase/Buy Dash/Cancel Order */
+"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
 
 /* No comment provided by engineer. */
-"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+"ATM search works better with Location Services turned on." = "ATM search works better with Location Services turned on";
 
 /* No comment provided by engineer. */
 "ATMs" = "ATMs";
@@ -177,9 +177,6 @@
 
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
-
-/* lowercase, ex. 4 Dash available */
-"available" = "available";
 
 /* No comment provided by engineer. */
 "Available balance" = "Available balance";
@@ -203,7 +200,7 @@
 "Bank Wire" = "Bank Wire";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
+"Between Dash Wallet and Coinbase." = "Between Dash Wallet and Coinbase.";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
@@ -259,6 +256,9 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancel";
+
+/* Coinbase/Buy Dash/Cancel Order */
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Change";
@@ -483,13 +483,7 @@
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer" = "Enter the amount to transfer";
-
-/* No comment provided by engineer. */
 "Enter your 2FA code below" = "Enter your 2FA code below";
-
-/* Coinbase */
-"Entered amount is too low. The minimum amount is %@" = "Entered amount is too low. The minimum amount is %@";
 
 /* No comment provided by engineer. */
 "Error" = "Error";
@@ -563,6 +557,9 @@
 /* No comment provided by engineer. */
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
 
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
+
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Forgot PIN?";
 
@@ -575,17 +572,20 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Found potential missing words:\n%@";
 
-/* Coinbase: transfer dash to/from */
-"FROM" = "FROM";
-
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+
+/* Coinbase */
+"from your Coinbase account" = "from your Coinbase account";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
 
 /* No comment provided by engineer. */
 "Generating CSV Report" = "Generating CSV Report";
+
+/* Coinbase/Convert Crypto */
+"Get Quote" = "Get Quote";
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
@@ -1200,8 +1200,14 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "See on Uphold";
 
+/* Coinbase */
+"Select a coin" = "Select a coin";
+
 /* Buy Sell Dash */
 "Select a service" = "Select a service";
+
+/* Coinbase */
+"Select the coin" = "Select the coin";
 
 /* Sell */
 "Sell" = "Sell";
@@ -1359,6 +1365,9 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
 
+/* Coinbase */
+"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+
 /* No comment provided by engineer. */
 "There are no new notifications" = "There are no new notifications";
 
@@ -1401,8 +1410,8 @@
 /* Send Screen: to address */
 "to" = "to";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
+/* Coinbase */
+"to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "Tools" = "Tools";
@@ -1492,9 +1501,6 @@
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Used at IP address";
-
-/* Coinbase */
-"User session expired" = "User session expired";
 
 /* No comment provided by engineer. */
 "Username taken" = "Username taken";
@@ -1628,14 +1634,17 @@
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
 
+/* Coinbase */
+"You receive" = "You receive";
+
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
+/* Coinbase */
+"You send" = "You send";
+
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "You sent the contact request to %@";
-
-/* Sign out from coinbase due to error */
-"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
@@ -1648,9 +1657,6 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
-
-/* Coinbase/Buy Dash/Confirm Order */
-"You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";

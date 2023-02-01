@@ -25,11 +25,14 @@ extension Coinbase {
     enum Error: Swift.Error, LocalizedError {
         enum GeneralFailureReason: LocalizedError {
             case noActiveUser
+            case revokedToken
 
             var errorDescription: String? {
                 switch self {
                 case .noActiveUser:
                     return NSLocalizedString("No active user", comment: "Coinbase")
+                case .revokedToken:
+                    return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
                 }
             }
         }
@@ -71,20 +74,26 @@ extension Coinbase {
                     return 6
                 case .message:
                     return 7
+                case .invalidAmount:
+                    return 8
                 }
             }
 
+            case invalidAmount
             case failedToObtainNewAddress
             case twoFactorRequired
             case invalidVerificationCode
             case notEnoughFunds
-            case enteredAmountTooLow
+            case enteredAmountTooLow(minimumAmount: String)
             case limitExceded
             case unknown(any Swift.Error)
             case message(String)
 
             var errorDescription: String? {
                 switch self {
+                case .invalidAmount:
+                    let amountString = DSTransaction.txMinOutputAmount().formattedDashAmount
+                    return String(format: NSLocalizedString("Dash payments can't be less than %@", comment: "Coinbase"), amountString)
                 case .failedToObtainNewAddress:
                     return NSLocalizedString("There was an error while obtaining new address", comment: "Coinbase")
                 case .twoFactorRequired:
@@ -93,12 +102,8 @@ extension Coinbase {
                     return NSLocalizedString("The code is incorrect. Please check and try again!", comment: "Coinbase")
                 case .notEnoughFunds:
                     return NSLocalizedString("Insufficient funds", comment: "Coinbase")
-                case .enteredAmountTooLow:
-                    let max = NSDecimalNumber(decimal: kMinUSDAmountOrder)
-                    let localFormatter = DSPriceManager.sharedInstance().localFormat.copy() as! NumberFormatter
-                    localFormatter.currencyCode = Coinbase.sendLimitCurrency
-                    let str = localFormatter.string(from: max) ?? "$1.99"
-                    return String(format: NSLocalizedString("Entered amount is too low. The minimum amount is %@", comment: "Coinbase"), str)
+                case .enteredAmountTooLow(let minAmount):
+                    return String(format: NSLocalizedString("The minimum amount you can send is %@", comment: "Coinbase"), minAmount)
                 case .limitExceded:
                     return NSLocalizedString("You exceeded the authorization limit on Coinbase.", comment: "Coinbase")
                 case .unknown:
@@ -109,7 +114,7 @@ extension Coinbase {
             }
         }
 
-        case userSessionExpired
+        case userSessionRevoked
         case general(GeneralFailureReason)
         case authFailed(AuthFailureReason)
         case transactionFailed(TransactionFailureReason)
@@ -117,8 +122,8 @@ extension Coinbase {
 
         var errorDescription: String? {
             switch self {
-            case .userSessionExpired:
-                return NSLocalizedString("User session expired", comment: "Coinbase")
+            case .userSessionRevoked:
+                return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
             case .general(let r):
                 return r.localizedDescription
             case .authFailed(let r):

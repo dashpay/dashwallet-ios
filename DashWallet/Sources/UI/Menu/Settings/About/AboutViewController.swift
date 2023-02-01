@@ -25,7 +25,8 @@ class AboutViewController: UIViewController {
 
     private weak var techInfoAlert: UIAlertController?
 
-    @objc static func controller() -> AboutViewController {
+    @objc
+    static func controller() -> AboutViewController {
         let controller = AboutViewController()
         controller.hidesBottomBarWhenPushed = true
         controller.title = NSLocalizedString("About", comment: "")

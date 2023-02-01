@@ -62,11 +62,15 @@ protocol ErrorPresentable: MessagePresentable {
 }
 
 extension ErrorPresentable where Self: UIViewController {
+    func present(error: Error) {
+        present(message: error.localizedDescription, level: .error)
+    }
+
     func present(message: MessageDataProvider) {
         present(message: message.message, level: message.level)
     }
 
     func present(message: String, level: MessageLevel) {
-        showAlert(with: "Error", message: message)
+        showAlert(with: NSLocalizedString("Error", comment: ""), message: message)
     }
 }

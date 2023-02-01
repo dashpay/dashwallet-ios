@@ -57,11 +57,13 @@ class PointOfUseDetailsViewController: UIViewController {
 }
 
 extension PointOfUseDetailsViewController {
-    @objc func payAction() {
+    @objc
+    func payAction() {
         payWithDashHandler?()
     }
 
-    @objc func callAction() {
+    @objc
+    func callAction() {
         guard let phone = pointOfUse.phone else { return }
 
         let fixedPhone = phone.replacingOccurrences(of: " ", with: "")
@@ -71,7 +73,8 @@ extension PointOfUseDetailsViewController {
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 
-    @objc func websiteAction() {
+    @objc
+    func websiteAction() {
         guard let website = pointOfUse.website, let url = URL(string: website) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }

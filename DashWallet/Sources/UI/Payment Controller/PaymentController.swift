@@ -29,6 +29,7 @@ protocol AmountViewController where Self: BaseAmountViewController { }
 protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
+    func paymentControllerDidFailTransaction(_ controller: PaymentController)
 }
 
 // MARK: - PaymentControllerPresentationContextProviding
@@ -66,12 +67,14 @@ final class PaymentController: NSObject {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc public func performPayment(with input: DWPaymentInput) {
+    @objc
+    public func performPayment(with input: DWPaymentInput) {
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
 
-    @objc(performPaymentWithFile:) public func performPayment(with file: Data) {
+    @objc(performPaymentWithFile:)
+    public func performPayment(with file: Data) {
         paymentProcessor.reset()
         paymentProcessor.processFile(file)
     }
@@ -181,6 +184,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         provideAmountViewController?.hideActivityIndicator()
+
         confirmViewController?.sendingEnabled = true
 
         if error.domain == DSErrorDomain,

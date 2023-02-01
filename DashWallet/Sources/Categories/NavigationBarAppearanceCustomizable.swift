@@ -38,7 +38,8 @@ extension NavigationBarAppearanceCustomizable {
 
 @objc
 extension UINavigationBar {
-    @objc func applyOpaqueAppearance(with color: UIColor, shadowColor: UIColor? = nil) {
+    @objc
+    func applyOpaqueAppearance(with color: UIColor, shadowColor: UIColor? = nil) {
         let standardAppearance = UINavigationBarAppearance()
         standardAppearance.configureWithOpaqueBackground()
         standardAppearance.backgroundColor = color

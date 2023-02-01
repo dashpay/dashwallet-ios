@@ -33,30 +33,29 @@ enum BuyDashFailureReason {
 
 // MARK: - BuyDashModel
 
-final class BuyDashModel: BaseAmountModel {
-
+final class BuyDashModel: SendAmountModel {
     weak var delegate: BuyDashModelDelegate?
 
-    var canContinue: Bool {
-        amount.plainAmount > 0
-    }
-
-    var paymentMethods: [CoinbasePaymentMethod] {
-        Coinbase.shared.paymentMethods
-    }
+    @Published var paymentMethods: [CoinbasePaymentMethod] = []
 
     var activePaymentMethod: CoinbasePaymentMethod? {
         selectedPaymentMethod ?? paymentMethods.first
     }
 
+    override var isAllowedToContinue: Bool {
+        isAmountValidForProceeding
+    }
+
     var dashPriceDisplayString: String {
+        guard let rate = try? Coinbase.shared.currencyExchanger.rate(for: App.fiatCurrency),
+              let fiatBalanceFormatted = localFormatter.string(from: rate as NSNumber) else {
+            return NSLocalizedString("Syncing...", comment: "Price")
+        }
+
         let dashAmount = kOneDash
         let dashAmountFormatted = dashAmount.formattedDashAmount
 
-        let priceManger = DSPriceManager.sharedInstance()
-        let fiatBalanceFormatted = priceManger.localCurrencyString(forDashAmount: Int64(dashAmount)) ?? NSLocalizedString("Syncing", comment: "Price")
-
-        let displayString = "\(dashAmountFormatted) DASH ≈ \(fiatBalanceFormatted)"
+        let displayString = "\(dashAmountFormatted) ≈ \(fiatBalanceFormatted)"
         return displayString
     }
 
@@ -64,6 +63,10 @@ final class BuyDashModel: BaseAmountModel {
 
     override init() {
         super.init()
+
+        Task {
+            paymentMethods = try await Coinbase.shared.paymentMethods
+        }
     }
 
     public func select(paymentMethod: CoinbasePaymentMethod) {
@@ -75,7 +78,7 @@ final class BuyDashModel: BaseAmountModel {
             return
         }
 
-        let amount = UInt64(amount.plainAmount)
+        let amount = amount.plainAmount
         Task {
             do {
                 let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
@@ -85,19 +88,9 @@ final class BuyDashModel: BaseAmountModel {
             } catch {
                 await MainActor.run { [weak self] in
                     self?.error = error
-//                    self?.errorHandler?(error)
                 }
             }
         }
-    }
-
-    override func amountDidChange() {
-        error = nil
-        super.amountDidChange()
-    }
-
-    override func checkAmountForErrors() {
-        DSPriceManager.sharedInstance()
     }
 }
 

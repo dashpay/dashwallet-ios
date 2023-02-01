@@ -28,11 +28,13 @@ final class CoinbaseFeeInfoController: BaseViewController {
     private var learnMoreButton: UIButton!
 
     // MARK: Actions
-    @objc func closeAction() {
+    @objc
+    func closeAction() {
         dismiss(animated: true)
     }
 
-    @objc func learnMoreAction() {
+    @objc
+    func learnMoreAction() {
         UIApplication.shared.open(kCoinbaseFeeInfoURL)
     }
 

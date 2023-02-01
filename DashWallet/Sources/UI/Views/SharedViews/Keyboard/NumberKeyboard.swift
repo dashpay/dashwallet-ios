@@ -86,11 +86,13 @@ class NumberKeyboard: UIView {
         configureHierarchy()
     }
 
-    @objc public func configureWithCustomFunctionButtonTitle(_ title: String) {
+    @objc
+    public func configureWithCustomFunctionButtonTitle(_ title: String) {
         functionButton.value = .custom(title)
     }
 
-    @objc public func configureFunctionButtonAsHidden() {
+    @objc
+    public func configureFunctionButtonAsHidden() {
         functionButton.isHidden = true
     }
 
@@ -134,7 +136,8 @@ class NumberKeyboard: UIView {
 }
 
 extension NumberKeyboard {
-    @objc func clearButtonLongPressGestureRecognizerAction(gestureRecognizer: UIGestureRecognizer) {
+    @objc
+    func clearButtonLongPressGestureRecognizerAction(gestureRecognizer: UIGestureRecognizer) {
         if gestureRecognizer.state == .began {
             isClearButtonLongPressGestureActive = true
             performClearButtonLongPress(isFirstCall: true)
@@ -143,7 +146,8 @@ extension NumberKeyboard {
         }
     }
 
-    @objc func performClearButtonLongPress(isFirstCall: Bool) {
+    @objc
+    func performClearButtonLongPress(isFirstCall: Bool) {
         guard let textInput else { return }
 
         if isClearButtonLongPressGestureActive {

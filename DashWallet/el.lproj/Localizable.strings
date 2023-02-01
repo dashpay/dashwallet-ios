@@ -38,37 +38,37 @@
 "1 hour" = "1 ώρα";
 
 /* Explore Dash: Filters */
-"1 mile" = "1 mile";
+"1 mile" = "1 μίλι";
 
 /* Shorten version of minute */
 "1 min" = "1 λεπτό";
 
 /* Explore Dash: Filters */
-"2 km" = "2 km";
+"2 km" = "2 χλμ";
 
 /* Explore Dash: Filters */
-"20 miles" = "20 miles";
+"20 miles" = "20 μίλια";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 ώρες";
 
 /* Explore Dash: Filters */
-"32 km" = "32 km";
+"32 km" = "32 χλμ";
 
 /* Explore Dash: Filters */
-"5 miles" = "5 miles";
+"5 miles" = "5 μίλια";
 
 /* Shorten version of minutes */
 "5 min" = "5 λεπτά";
 
 /* Explore Dash: Filters */
-"50 miles" = "50 miles";
+"50 miles" = "50 μίλια";
 
 /* Explore Dash: Filters */
-"8 km" = "8 km";
+"8 km" = "8 χλμ";
 
 /* Explore Dash: Filters */
-"80 km" = "80 km";
+"80 km" = "80 χλμ";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" δεν είναι μια φράση ανάκτησης";
@@ -89,13 +89,13 @@
 "Accept" = "Αποδοχή";
 
 /* No comment provided by engineer. */
-"Accepts DASH directly" = "Accepts DASH directly";
+"Accepts DASH directly" = "Δέχεται απευθείας DASH";
 
 /* No comment provided by engineer. */
 "Activity" = "Δραστηριότητα";
 
 /* No comment provided by engineer. */
-"Add" = "Add";
+"Add" = "Προσθήκη";
 
 /* Add <username> as your contact... */
 "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Προσθέστε τον/την %@ ως επαφή σας για άμεση πληρωμή στο Όνομα Χρήστη και για την διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
@@ -116,7 +116,7 @@
 "All" = "Όλα";
 
 /* No comment provided by engineer. */
-"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Όλες οι πληρωμές θα θεωρούνται ως Έξοδα και όλες οι εισερχόμενες συναλλαγές Έσοδα. Ο ιδιοκτήτης αυτού του πορτοφολιού είναι υπεύθυνος για την πραγματοποίηση τυχόν προσαρμογών της βάσης κόστους στο σύστημα φορολογικής αναφοράς που έχει επιλέξει.";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Επιτρέψτε πρόσβαση της κάμερας στις Ρυθμίσεις";
@@ -128,16 +128,13 @@
 "Allow Touch ID access in Settings" = "Επιτρέψτε πρόσβαση του Touch ID στις Ρυθμίσεις";
 
 /* Coinbase/Buy Dash */
-"Amount in Dash" = "Amount in Dash";
+"Amount in Dash" = "Ποσό σε Dash";
 
 /* No comment provided by engineer. */
-"Amount received" = "Amount received";
+"Amount received" = "Ποσοστό Ληφθέντων";
 
 /* No comment provided by engineer. */
 "Amount Sent" = "Ποσοστό Απεσταλμένων";
-
-/* No comment provided by engineer. */
-"Amount too small" = "Το ποσό είναι πολύ μικρό";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Μια διαισθητική και οικεία εμπειρία σε όλες τις συσκευές σας";
@@ -157,29 +154,29 @@
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
+/* Coinbase/Buy Dash/Cancel Order */
+"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "Είστε σίγουροι;";
 
 /* No comment provided by engineer. */
-"ATM search works better with Location Services turned on" = "ATM search works better with Location Services turned on";
+"ATM search works better with Location Services turned on." = "Η αναζήτηση ΑΤΜ λειτουργεί καλύτερα με ενεργοποιημένες τις Υπηρεσίες τοποθεσίας.";
 
 /* No comment provided by engineer. */
-"ATMs" = "ATMs";
+"ATMs" = "ATM";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Η ταυτοποίηση δεν είναι διαθέσιμη";
 
 /* Location Service Status */
-"Authorized" = "Authorized";
+"Authorized" = "Εξουσιοδοτημένο";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Αυτόματη Αποσύνδεση";
 
 /* No comment provided by engineer. */
 "Autohide Balance" = "Αυτόματη απόκρυψη Υπολοίπου";
-
-/* lowercase, ex. 4 Dash available */
-"available" = "διαθέσιμο";
 
 /* No comment provided by engineer. */
 "Available balance" = "Διαθέσιμο υπόλοιπο";
@@ -191,7 +188,7 @@
 "Bad recovery phrase" = "Λάθος φράση ανάκτησης";
 
 /* Send Screen: to address */
-"Balance" = "Balance";
+"Balance" = "Υπόλοιπο";
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Το υπόλοιπο αποκρύφτηκε";
@@ -203,10 +200,10 @@
 "Bank Wire" = "Bank Wire";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
+"Between Dash Wallet and Coinbase." = "Μεταξύ Dash Wallet και Coinbase.";
 
 /* Dash Service Overview */
-"Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
+"Between Dash Wallet and your Coinbase account" = "Μεταξύ του Dash Wallet και του λογαριασμού σας στην Coinbase.";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "μπλόκ #%1$d από %2$d";
@@ -216,7 +213,7 @@
 
 /* Buy
    buy */
-"Buy" = "Buy";
+"Buy" = "Αγορά";
 
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Αγορά και Πώληση Dash";
@@ -225,40 +222,43 @@
 "Buy / Sell Dash" = "Αγορά / Πώληση Dash";
 
 /* Buy a Gift Card */
-"Buy a Gift Card" = "Buy a Gift Card";
+"Buy a Gift Card" = "Αγοράστε μια δωροκάρτα";
 
 /* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Buy a gift card with Dash.";
+"Buy a gift card with Dash." = "Αγοράστε μια δωροκάρτα με Dash.";
 
 /* Dash Service Overview */
-"Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
+"Buy and convert Dash with another crypto" = "Αγοράστε και μετατρέψτε τα Dash σε άλλο κρυπτονόμισμα";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Αγορά Dash";
 
 /* Dash Service Overview */
-"Buy Dash with fiat" = "Buy Dash with fiat";
+"Buy Dash with fiat" = "Αγορά Dash με χρήματα";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
 
 /* No comment provided by engineer. */
-"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+"Buy gift cards with your Dash" = "Αγοράστε δωροκάρτες με το Dash σας";
 
 /* No comment provided by engineer. */
-"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Αγοράστε δωροκάρτες με το Dash σας για το ακριβές ποσό της αγοράς σας.";
 
 /* Buy/Sell */
-"Buy/Sell" = "Buy/Sell";
+"Buy/Sell" = "Αγορά/Πώληση";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Με την εκκαθάριση αυτής της συσκευής δεν θα έχετε πλέον πρόσβαση στα χρήματα αυτής της συσκευής. Αυτό θα πρέπει να γίνει μόνο εάν δεν έχετε πλέον πρόσβαση στη φράση πρόσβασης και έχετε ξεχάσει και τον κωδικό PIN.";
 
 /* Call */
-"Call" = "Call";
+"Call" = "Κλήση";
 
 /* No comment provided by engineer. */
 "Cancel" = "Ακύρωση";
+
+/* Coinbase/Buy Dash/Cancel Order */
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Αλλαγή";
@@ -294,10 +294,10 @@
 "Coinbase" = "Coinbase";
 
 /* Coinbase Two Factor Auth */
-"Coinbase 2FA code" = "Coinbase 2FA code";
+"Coinbase 2FA code" = "Κωδικός Coinbase 2FA";
 
 /* Coinbase/Buy Dash */
-"Coinbase Fee" = "Coinbase Fee";
+"Coinbase Fee" = "Προμήθεια Coinbase";
 
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
@@ -322,7 +322,7 @@
 
 /* Buy Sell Portal
    Coinbase Entry Point */
-"Connected" = "Connected";
+"Connected" = "Συνδέθηκε";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Συνδεδεμένοι χρήστες: %d";
@@ -332,7 +332,7 @@
 
 /* Coinbase
    Coinbase Two Factor Auth */
-"Contact Coinbase Support" = "Contact Coinbase Support";
+"Contact Coinbase Support" = "Επικοινωνία με την υποστήριξη της Coinbase";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Εκκρεμεί Αίτημα Επαφής";
@@ -350,7 +350,7 @@
 "Continue" = "Συνέχεια";
 
 /* Coinbase Entry Point */
-"Convert Crypto" = "Convert Crypto";
+"Convert Crypto" = "Μετατροπή Κρυπτονομισμάτων";
 
 /* No comment provided by engineer. */
 "Copied" = "Αντιγράφηκε";
@@ -383,16 +383,16 @@
 "Create a New Wallet" = "Δημιουργία Νέου Πορτοφολιού";
 
 /* Coinbase/Payment Methods */
-"Credit Card" = "Credit Card";
+"Credit Card" = "Πιστωτική Κάρτα";
 
 /* No comment provided by engineer. */
-"CSV Export" = "CSV Export";
+"CSV Export" = "Εξαγωγή CSV";
 
 /* Explore Dash: Filters */
-"Current location" = "Current location";
+"Current location" = "Τρέχουσα τοποθεσία";
 
 /* Explore Dash/Merchants/Filters */
-"Current Location Settings" = "Current Location Settings";
+"Current Location Settings" = "Ρυθμίσεις τρέχουσας τοποθεσίας";
 
 /* No comment provided by engineer. */
 "Current user: %@" = "Τρέχων χρήστης: %@";
@@ -410,7 +410,7 @@
 "Dash username" = "Όνομα Χρήστη Dash";
 
 /* Buy Dash */
-"Dash Wallet on this device" = "Dash Wallet on this device";
+"Dash Wallet on this device" = "Dash Wallet σε αυτή τη συσκευή";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Προμήθεια αναβάθμισης σε DashPay";
@@ -422,7 +422,7 @@
 "Default currency, shortcuts, about…" = "Προεπιλεγμένο νόμισμα, συντομεύσεις, σχετικά με...";
 
 /* Location Service Status */
-"Denied" = "Denied";
+"Denied" = "Απορρίφθηκε";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας).";
@@ -431,17 +431,17 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
 
 /* Direction */
-"Direction" = "Direction";
+"Direction" = "Κατεύθυνση";
 
 /* Coinbase Entry Point */
-"Disconnect Coinbase Account" = "Disconnect Coinbase Account";
+"Disconnect Coinbase Account" = "Αποσύνδεση λογαριασμού Coinbase";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
-"Disconnected" = "Disconnected";
+"Disconnected" = "Αποσυνδεδεμένο";
 
 /* Explore Dash: Filters */
-"Distance" = "Distance";
+"Distance" = "Απόσταση";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Μην τραβήξετε στιγμιότυπο οθόνης";
@@ -456,7 +456,7 @@
 "Earlier" = "Νωρίτερα";
 
 /* No comment provided by engineer. */
-"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Πραγματοποιήστε εύκολα αγορές με τα DASH σας σε πάνω από 155.000 τοποθεσίες και διαδικτυακούς εμπόρους.";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "πχ: johndoe";
@@ -474,7 +474,7 @@
 "Enter" = "Είσοδος";
 
 /* Coinbase Two Factor Auth */
-"Enter Coinbase 2FA code" = "Enter Coinbase 2FA code";
+"Enter Coinbase 2FA code" = "Εισάγετε τον 2FA κωδικό Coinbase ";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "Εισάγετε PIN";
@@ -483,13 +483,7 @@
 "Enter Recovery Phrase" = "Εισάγετε την φράσης ανάκτησης";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer" = "Εισάγετε το ποσό που θα μεταφερθεί";
-
-/* No comment provided by engineer. */
 "Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
-
-/* Coinbase */
-"Entered amount is too low. The minimum amount is %@" = "Entered amount is too low. The minimum amount is %@";
 
 /* No comment provided by engineer. */
 "Error" = "Σφάλμα";
@@ -501,16 +495,16 @@
 "Exit" = "Έξοδος";
 
 /* No comment provided by engineer. */
-"Expense" = "Expense";
+"Expense" = "Έξοδα";
 
 /* No comment provided by engineer. */
-"Explore" = "Explore";
+"Explore" = "Εξερευνήστε";
 
 /* No comment provided by engineer. */
-"Explore Dash" = "Explore Dash";
+"Explore Dash" = "Εξερευνήστε το Dash";
 
 /* No comment provided by engineer. */
-"Extended Public Keys" = "Extended Public Keys";
+"Extended Public Keys" = "Εκτεταμένα Δημόσια Κλειδιά";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "όριο Face ID ";
@@ -522,7 +516,7 @@
 "Failed to sync" = "Failed to sync";
 
 /* Explore Dash */
-"Failed to sync on" = "Failed to sync on";
+"Failed to sync on" = "Απέτυχε ο συγχρονισμός";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Η ενημέρωση του πορτοφολιού απέτυχε";
@@ -537,7 +531,7 @@
 "Fee will be deducted from requested amount." = "Το τέλος θα αφαιρεθεί από το ποσό που ζητήσατε.";
 
 /* Explore Dash */
-"Fetching Info" = "Fetching Info";
+"Fetching Info" = "Λήψη πληροφοριών";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Account";
@@ -546,22 +540,25 @@
 "Filter Transactions" = "Φίλτρο Συναλλαγών";
 
 /* Explore Dash/Merchants/Filters */
-"Filtered by:" = "Filtered by:";
+"Filtered by:" = "Φιλτράρεται από:";
 
 /* Explore Dash */
-"Filters" = "Filters";
+"Filters" = "Φίλτρα";
 
 /* No comment provided by engineer. */
-"Find a merchant." = "Find a merchant.";
+"Find a merchant." = "Βρείτε έναν έμπορο.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Βρείτε έναν χρήστη στο Δίκτυο του Dash";
 
 /* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+"Find merchants who accept Dash as payment." = "Βρείτε εμπόρους που δέχονται το Dash ως πληρωμή";
 
 /* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Βρείτε πού μπορείτε να αγοράσετε ή να πουλήσετε DASH και άλλα κρυπτονομίσματα με μετρητά.";
+
+/* Coinbase */
+"For your security, you have been signed out." = "For your security, you have been signed out.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Ξεχάσατε το PIN;";
@@ -575,23 +572,26 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Βρέθηκαν οι πιθανές λέξεις που λείπουν:\n%@";
 
-/* Coinbase: transfer dash to/from */
-"FROM" = "FROM";
-
 /* Dash Service Overview */
-"From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
+"From Uphold to your Dash Wallet" = "Από την Uphold στο Dash Wallet σας";
+
+/* Coinbase */
+"from your Coinbase account" = "from your Coinbase account";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
 
 /* No comment provided by engineer. */
-"Generating CSV Report" = "Generating CSV Report";
+"Generating CSV Report" = "Δημιουργία αναφοράς CSV";
+
+/* Coinbase/Convert Crypto */
+"Get Quote" = "Αποκτήστε προσφορά";
 
 /* No comment provided by engineer. */
 "Get Started" = "Ξεκινήστε";
 
 /* Explore Dash: Filters */
-"Gift Card" = "Gift Card";
+"Gift Card" = "Δωροκάρτα";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
@@ -600,7 +600,7 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
-"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
+"Grant GPS permissions so we can show you locations near you." = "Χορηγήστε δικαιώματα GPS ώστε να μπορούμε να σας δείξουμε τοποθεσίες κοντά σας.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "αιτήθηκε να γίνει φίλος / φίλη σας";
@@ -624,7 +624,7 @@
 "History" = "Ιστορικό";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "How to Use a Gift Card";
+"How to Use a Gift Card" = "Πώς να χρησιμοποιήσετε μια δωροκάρτα";
 
 /* No comment provided by engineer. */
 "I Accept" = "Αποδέχομαι";
@@ -642,7 +642,7 @@
 "If you still would like to wipe it please input: \"%@\"" = "Εάν εξακολουθείτε να θέλετε να κάνετε εκκαθάριση παρακαλώ εισάγετε: \"%@\"";
 
 /* No comment provided by engineer. */
-"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
+"If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "Αν θέλετε να αποθηκεύσετε χειροκίνητα αναταξινομημένους τύπους συναλλαγών, θα πρέπει να εξάγετε ένα αρχείο συναλλαγών CSV.";
 
 /* No comment provided by engineer. */
 "Ignore" = "Παράβλεψη";
@@ -654,10 +654,10 @@
 "Import Private Key" = "Εισάγετε το ιδιωτικό κλειδί";
 
 /* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Import private key, Export CSV…";
+"Import private key, Export CSV…" = "Εισαγωγή ιδιωτικού κλειδιού, εξαγωγή CSV...";
 
 /* No comment provided by engineer. */
-"Income" = "Income";
+"Income" = "Εισόδημα";
 
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
@@ -687,7 +687,7 @@
 "Invalid QR Code" = "Μη έγκυρος κωδικός QR";
 
 /* Coinbase Two Factor Auth */
-"It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "It could be the code from the SMS on your phone. If not, enter the code from the authentication app.";
+"It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "Θα μπορούσε να είναι ο κωδικός από το SMS στο τηλέφωνό σας. Εάν όχι, εισαγάγετε τον κωδικό από την εφαρμογή ελέγχου ταυτότητας.";
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
@@ -708,17 +708,17 @@
 "Keypair %ld" = "Keypair %ld";
 
 /* Explore Dash */
-"Last device sync" = "Last device sync";
+"Last device sync" = "Τελευταίος συγχρονισμός συσκευής";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
-"Last known balance" = "Last known balance";
+"Last known balance" = "Τελευταίο γνωστό υπόλοιπο";
 
 /* Explore Dash */
-"Last server update" = "Last server update";
+"Last server update" = "Τελευταία ενημέρωση διακομιστή";
 
 /* No comment provided by engineer. */
-"Learn More" = "Learn More";
+"Learn More" = "Μάθετε περισσότερα";
 
 /* Info Screen */
 "Learn More..." = "Learn More...";
@@ -730,22 +730,22 @@
 "Letters and numbers only" = "Μόνο γράμματα και αριθμοί ";
 
 /* Dash Service Overview */
-"Link Coinbase Account" = "Link Coinbase Account";
+"Link Coinbase Account" = "Συνδέστε το λογαριασμό στην Coinbase";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
 
 /* Dash Service Overview */
-"Link Uphold account" = "Link Uphold account";
+"Link Uphold account" = "Σύνδεση Uphold λογαριασμού";
 
 /* Buy Sell Portal */
 "Link your account" = "Link your account";
 
 /* Dash Service Overview */
-"Link your Coinbase account" = "Link your Coinbase account";
+"Link your Coinbase account" = "Συνδέστε το λογαριασμό σας στην Coinbase";
 
 /* Dash Service Overview */
-"Link your Uphold account" = "Link your Uphold account";
+"Link your Uphold account" = "Σύνδεση Uphold λογαριασμού";
 
 /* No comment provided by engineer. */
 "Load more" = "Φόρτωσε περισσότερα";
@@ -757,7 +757,7 @@
 "Local requested amount: %@" = "Τοπικό ποσό που ζητήθηκε: %@";
 
 /* Explore Dash/Merchants/Filters */
-"Location" = "Location";
+"Location" = "Τοποθεσία";
 
 /* No comment provided by engineer. */
 "Locked" = "Κλείδωσε";
@@ -784,13 +784,13 @@
 "Low" = "χαμηλά";
 
 /* No comment provided by engineer. */
-"Manage GPS Permission" = "Manage GPS Permission";
+"Manage GPS Permission" = "Διαχείριση άδειας GPS";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Διαχείριση Έμπιστου Κόμβου";
 
 /* Map */
-"Map" = "Map";
+"Map" = "Χάρτης";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "Λίστα masternode #%1$d of %2$d";
@@ -814,7 +814,7 @@
 "Medium" = "Μέσο";
 
 /* No comment provided by engineer. */
-"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+"Merchant search works better with Location Services turned on." = "Η εμπορική αναζήτηση λειτουργεί καλύτερα με ενεργοποιημένες τις Υπηρεσίες τοποθεσίας.";
 
 /* Validation rule */
 "Minimum 3 characters" = "Ελάχιστο 3 χαρακτήρες";
@@ -838,13 +838,13 @@
 "Name" = "Όνομα";
 
 /* Explore Dash: Filters */
-"Name: from A to Z" = "Name: from A to Z";
+"Name: from A to Z" = "Όνομα: από το Α έως το Ω";
 
 /* Explore Dash: Filters */
-"Name: from Z to A" = "Name: from Z to A";
+"Name: from Z to A" = "Όνομα: από το Ζ στο Α";
 
 /* Nearby */
-"Nearby" = "Nearby";
+"Nearby" = "Κοντινή τοποθεσία";
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Need help? ";
@@ -856,7 +856,7 @@
 "Network fee" = "Τέλος δικτύου";
 
 /* Network Unavailable */
-"Network Unavailable" = "Network Unavailable";
+"Network Unavailable" = "Μη διαθέσιμο δίκτυο";
 
 /* (List of) New (notifications) */
 "New" = "Νέο";
@@ -868,7 +868,7 @@
 "NFC device didn't transmit a valid Dash address" = "Η συσκευή NFC δεν μεταδίδει έγκυρη διεύθυνση Dash";
 
 /* No comment provided by engineer. */
-"No" = "No";
+"No" = "Όχι";
 
 /* Coinbase */
 "No active user" = "No active user";
@@ -880,7 +880,7 @@
 "No payment methods found" = "No payment methods found";
 
 /* Explore Dash/Merchants/Filters */
-"No Results Found" = "No Results Found";
+"No Results Found" = "Δεν βρέθηκαν αποτελέσματα";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Κόμβου";
@@ -898,10 +898,10 @@
 "Not a valid Dash address" = "Δεν είναι μια έγκυρη διεύθυνση Dash";
 
 /* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Δεν δέχονται όλα τα καταστήματα το DASH απευθείας, αλλά μπορείτε να αγοράσετε μια δωροκάρτα με το Dash σας.";
 
 /* Location Service Status */
-"Not Determined" = "Not Determined";
+"Not Determined" = "Δεν έχει καθοριστεί";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Δεν έχουν χρησιμοποιηθεί ακόμη";
@@ -922,13 +922,13 @@
 "Online" = "Online";
 
 /* Online Merchant */
-"Online Merchant" = "Online Merchant";
+"Online Merchant" = "Online έμπορος";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Κλειδιά Χειριστή";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Order Preview" = "Order Preview";
+"Order Preview" = "Προεπισκόπηση παραγγελίας";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Διεύθυνση Κατόχου";
@@ -946,16 +946,16 @@
 "Pay Directly to Username" = "Πληρώστε απευθείας στο όνομα χρήστη";
 
 /* Coinbase/Buy Dash */
-"Pay with" = "Pay with";
+"Pay with" = "Πληρώστε με";
 
 /* Pay with Dash */
-"Pay with Dash" = "Pay with Dash";
+"Pay with Dash" = "Πληρώστε με Dash";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Πληρώστε με ευκολία";
 
 /* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
+"Pay with the DASH Wallet." = "Πληρώστε με το πορτοφόλι DASH.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Πληρωμή";
@@ -970,10 +970,10 @@
 "Paying..." = "Πληρωμή...";
 
 /* Coinbase/Buy Dash */
-"Payment method" = "Payment method";
+"Payment method" = "Μέθοδος πληρωμής";
 
 /* Explore Dash/Merchants/Filters */
-"Payment Type" = "Payment Type";
+"Payment Type" = "Τύπος πληρωμής";
 
 /* No comment provided by engineer. */
 "Payments" = "Πληρωμές";
@@ -991,7 +991,7 @@
 "Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
 
 /* Network Unavailable */
-"Please check your network connection" = "Please check your network connection";
+"Please check your network connection" = "Ελέγξτε τη σύνδεση δικτύου σας";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Παρακαλώ εισάγετε το PIN για να αναβαθμίσετε το πορτοφόλι";
@@ -1033,7 +1033,7 @@
 "Public key" = "Δημόσιο κλειδί";
 
 /* Coinbase/Buy Dash */
-"Purchase" = "Purchase";
+"Purchase" = "Αγορά";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Γρήγορη Λήψη";
@@ -1042,7 +1042,7 @@
 "Quorums validated: %d/%d" = "Quorums που επικυρώθηκαν: %1$d/%2$d";
 
 /* Explore Dash/Merchants/Filters */
-"Radius" = "Radius";
+"Radius" = "Ακτίνα";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Ρυθμός: %1$@ = %2$@";
@@ -1087,7 +1087,7 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Η φράση ανάκτησης πρέπει να έχει 12, 15, 18, 21 ή 24 λέξεις";
 
 /* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+"Redeem your gift card online within seconds or at the cashier." = "Εξαργυρώστε τη δωροκάρτα σας online μέσα σε λίγα δευτερόλεπτα ή σε ταμείο.";
 
 /* Button title, Register (username) */
 "Register" = "Εγγραφή";
@@ -1114,7 +1114,7 @@
 "Reset" = "Επαναφορά";
 
 /* Explore Dash: Filters */
-"Reset Filters" = "Reset Filters";
+"Reset Filters" = "Επαναφορά φίλτρων";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Επαναφορά στα Προεπιλεγμένα";
@@ -1123,7 +1123,7 @@
 "Reset Wallet" = "Επαναφορά Πορτοφολιού";
 
 /* Location Service Status */
-"Restricted" = "Restricted";
+"Restricted" = "Περιορισμένο";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
@@ -1141,7 +1141,7 @@
 "Rewards" = "Ανταμοιβές";
 
 /* No comment provided by engineer. */
-"Scan" = "Ανίχνευση";
+"Scan" = "Σάρωση";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Σαρώστε το ιδιωτικό κλειδί";
@@ -1200,14 +1200,20 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Δείτε στο Uphold";
 
+/* Coinbase */
+"Select a coin" = "Επιλέξτε ένα νόμισμα";
+
 /* Buy Sell Dash */
 "Select a service" = "Select a service";
 
+/* Coinbase */
+"Select the coin" = "Επιλέξτε το νόμισμα";
+
 /* Sell */
-"Sell" = "Sell";
+"Sell" = "Πωλήστε";
 
 /* Buy Dash */
-"Sell Dash" = "Sell Dash";
+"Sell Dash" = "Πώληση Dash";
 
 /* No comment provided by engineer. */
 "Send" = "Αποστολή";
@@ -1273,7 +1279,7 @@
 "Share" = "Μοιραστείτε";
 
 /* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "Shop with DASH at over 150k merchants";
+"Shop with DASH at over 150k merchants" = "Αγοράστε με το DASH σε πάνω από 150 χιλιάδες εμπόρους";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Προβολή κλειδιών Masternode";
@@ -1297,16 +1303,16 @@
 "Sort Contacts" = "Ταξινόμηση Επαφών";
 
 /* Explore Dash/Filters */
-"Sorted by distance" = "Sorted by distance";
+"Sorted by distance" = "Ταξινόμηση κατά απόσταση";
 
 /* Explore Dash/Filters */
-"Sorted by name" = "Sorted by name";
+"Sorted by name" = "Ταξινόμηση κατά όνομα";
 
 /* Explore Dash/Filters */
-"Sorting: A to Z" = "Sorting: A to Z";
+"Sorting: A to Z" = "Ταξινόμηση: Α έως Ω";
 
 /* Explore Dash/Filters */
-"Sorting: Z to A" = "Sorting: Z to A";
+"Sorting: Z to A" = "Ταξινόμηση: Ζ προς Α";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Καθορίστε το ποσό";
@@ -1339,7 +1345,7 @@
 "Syncing Balance" = "Συγχρονισμός Υπολοίπου";
 
 /* Explore Dash */
-"Syncing..." = "Syncing...";
+"Syncing..." = "Συγχρονισμός...";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Πατήστε";
@@ -1351,13 +1357,16 @@
 "Tap to unhide balance" = "Πατήστε για να αποκαλύψετε το υπόλοιπο";
 
 /* No comment provided by engineer. */
-"Tax Category" = "Tax Category";
+"Tax Category" = "Φορολογική κατηγορία";
 
 /* Coinbase Two Factor Auth */
-"The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
+"The code is incorrect. Please check and try again!" = "Ο κωδικός είναι λανθασμένος. Παρακαλώ ελέγξτε και δοκιμάστε ξανά!";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
+
+/* Coinbase */
+"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Δεν υπάρχουν νέες ειδοποιήσεις";
@@ -1381,10 +1390,10 @@
 "This app is open source:" = "Αυτή η εφαρμογή είναι ανοικτού κώδικα";
 
 /* This ATM is located in the */
-"This ATM is located in the" = "This ATM is located in the";
+"This ATM is located in the" = "Αυτό το ΑΤΜ βρίσκεται στο";
 
 /* Coinbase Two Factor Auth */
-"This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
+"This extra step shows it’s really you trying to make a transaction." = "Αυτό το επιπλέον βήμα δείχνει ότι πραγματικά προσπαθείτε να κάνετε μια συναλλαγή.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Αυτός ο κωδικός PIN θα χρειαστεί να ξεκλειδώσετε την εφαρμογή σας κάθε φορά που την χρησιμοποιείτε.";
@@ -1399,10 +1408,10 @@
 "This will move all coins from that wallet to your wallet on this device." = "Αυτό θα μεταφέρει όλα τα νομίσματα από αυτό το πορτοφόλι στο πορτοφόλι σας σε αυτή τη συσκευή.";
 
 /* Send Screen: to address */
-"to" = "to";
+"to" = "στο";
 
-/* Coinbase: transfer dash to/from */
-"TO" = "TO";
+/* Coinbase */
+"to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* No comment provided by engineer. */
 "Tools" = "Εργαλεία";
@@ -1422,25 +1431,25 @@
 /* Coinbase
    Coinbase Entry Point
    Dash Service Overview */
-"Transfer Dash" = "Transfer Dash";
+"Transfer Dash" = "Μεταφορά Dash";
 
 /* No comment provided by engineer. */
 "Transfer Dash from your Uphold account to this wallet" = "Μεταφέρετε Dash από τον Uphold λογαριασμό σας σε αυτό το πορτοφόλι";
 
 /* Coinbase */
-"Transfer Failed" = "Transfer Failed";
+"Transfer Failed" = "Η μεταφορά απέτυχε";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Μεταφορά από Uphold";
 
 /* No comment provided by engineer. */
-"Transfer In" = "Transfer In";
+"Transfer In" = "Μεταφορά στο";
 
 /* No comment provided by engineer. */
-"Transfer Out" = "Transfer Out";
+"Transfer Out" = "Μεταφορά προς";
 
 /* Coinbase */
-"Transfer successful" = "Transfer successful";
+"Transfer successful" = "Επιτυχής μεταφορά";
 
 /* An action */
 "Try again" = "Προσπαθήστε ξανά";
@@ -1458,7 +1467,7 @@
 "Unable to get new QR code" = "Δεν είναι δυνατή η λήψη νέου QR κωδικού";
 
 /* No comment provided by engineer. */
-"Unknown" = "Unknown";
+"Unknown" = "Άγνωστο";
 
 /* Coinbase */
 "Unknown Balance" = "Unknown Balance";
@@ -1473,7 +1482,7 @@
 "Updated: %@" = "Ανανεώθηκε: %@";
 
 /* Updating Price */
-"Updating Price" = "Updating Price";
+"Updating Price" = "Ανανέωση Τιμής";
 
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Προμήθεια Αναβάθμισης";
@@ -1485,16 +1494,13 @@
 "Uphold" = "Uphold";
 
 /* Explore Dash/Filters */
-"Use gift card" = "Use gift card";
+"Use gift card" = "Χρησιμοποιήστε δωροκάρτα";
 
 /* No comment provided by engineer. */
 "Used" = "Χρησιμοποιήθηκε";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Χρησιμοποιήθηκε στη διεύθυνση IP";
-
-/* Coinbase */
-"User session expired" = "User session expired";
 
 /* No comment provided by engineer. */
 "Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";
@@ -1524,10 +1530,10 @@
 "View All" = "Προβολή Όλων";
 
 /* View all locations */
-"View all locations" = "View all locations";
+"View all locations" = "Δείτε όλες τις τοποθεσίες";
 
 /* No comment provided by engineer. */
-"View in Block Explorer" = "Προβολή στον Explorer των Block";
+"View in Block Explorer" = "Προβολή στον Explorer";
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "Προβολή φράσης πρόσβασης, εφεδρικού πορτοφολιού ...";
@@ -1563,7 +1569,7 @@
 "We do not store this recovery phrase." = "Δεν αποθηκεύουμε αυτήν την φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "We have 2 types of merchants";
+"We have 2 types of merchants" = "Έχουμε 2 τύπους εμπόρων";
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Εντοπίσαμε ότι το Dash Wallet κατέρρευσε κατά τη διάρκεια της μεταφοράς. Η επανασάρωση του blockchain θα λύσει αυτό το ζήτημα ή μπορείτε να προσπαθήσετε ξανά. Η επανασάρωση  θα πρέπει κατά προτίμηση να εκτελεστει σε wifi και θα διαρκέσει έως και μισή ώρα. Τα χρηματά σας θα είναι διαθέσιμα μόλις ολοκληρωθεί η διαδικασία συγχρονισμού.";
@@ -1572,7 +1578,7 @@
 "We Upgraded" = "Αναβαθμίσαμε";
 
 /* Website */
-"Website" = "Website";
+"Website" = "Ιστοσελίδα";
 
 /* No comment provided by engineer. */
 "Welcome" = "Καλώς ορίσατε";
@@ -1581,10 +1587,10 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Όταν επιβεβαιωθεί η συναλλαγή, το άλλο πορτοφόλι θα είναι άχρηστο και δεν θα πρέπει να επαναχρησιμοποιηθεί για λόγους ασφαλείας.";
 
 /* No comment provided by engineer. */
-"Where to Spend" = "Where to Spend";
+"Where to Spend" = "Πού να ξοδέψετε";
 
 /* No comment provided by engineer. */
-"Where to Spend?" = "Where to Spend?";
+"Where to Spend?" = "Πού να ξοδέψετε;";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
@@ -1602,7 +1608,7 @@
 "with Dash blockchain" = "Μεσώ του Dash blockchain";
 
 /* No comment provided by engineer. */
-"Yes" = "Yes";
+"Yes" = "Ναι";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Αποδεχθήκατε το αίτημα επαφής από %@";
@@ -1620,7 +1626,7 @@
 "You can authenticate with Touch ID for payments below" = "Μπορείτε να επαληθεύσετε το Touch ID για πληρωμές παρακάτω";
 
 /* Coinbase */
-"You exceeded the authorization limit on Coinbase." = "You exceeded the authorization limit on Coinbase.";
+"You exceeded the authorization limit on Coinbase." = "Υπερβήκατε το όριο εξουσιοδότησης στην Coinbase.";
 
 /* No comment provided by engineer. */
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "Έχετε επιλέξει το \"%@\" ως το όνομα χρήστη σας. Το όνομα χρήστη σας δεν μπορεί να αλλάξει μόλις εγγραφεί.";
@@ -1628,20 +1634,23 @@
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Πρέπει να εισάγετε το PIN σας για να μπείτε στο Dash Πορτοφόλι";
 
+/* Coinbase */
+"You receive" = "You receive";
+
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Λάβατε Dash! Αν χάσετε αυτή τη συσκευή, θα χάσετε τα χρήματά σας. Πάρτε τη φράση ανάκτησης για να μπορέσετε να επαναφέρετε το πορτοφόλι σας σε άλλη συσκευή.";
 
+/* Coinbase */
+"You send" = "You send";
+
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Στείλατε το αίτημα επαφής στο %@";
-
-/* Sign out from coinbase due to error */
-"You were signed out from Coinbase, please sign in again" = "You were signed out from Coinbase, please sign in again";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Θα πρέπει επίσης να αποσυνδεθείτε από την ιστοσελίδα Uphold χρησιμοποιώντας το πρόγραμμα περιήγησης σας";
 
 /* No comment provided by engineer. */
-"You will lose all your manually reclassified transactions types" = "You will lose all your manually reclassified transactions types";
+"You will lose all your manually reclassified transactions types" = "Θα χάσετε όλους τους χειροκίνητα αναταξινομημένους τύπους συναλλαγών σας";
 
 /* No comment provided by engineer. */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Θα χρειαστείτε αυτή τη φράση ανάκτησης για να αποκτήσετε πρόσβαση στα χρήματά σας εάν αυτή η συσκευή χαθεί, καταστραφεί ή εάν το Πορτοφόλι Dash απεγκατασταθει τυχαία από αυτήν τη συσκευή.";
@@ -1649,23 +1658,20 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
-/* Coinbase/Buy Dash/Confirm Order */
-"You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive 0.99 Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
-
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
 
 /* No comment provided by engineer. */
-"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
+"Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Η τοποθεσία σας χρησιμοποιείται για να δείξει τη θέση σας στο χάρτη, τα ΑΤΜ στο επιλεγμένο περιοχή και να βελτιώσει τα αποτελέσματα αναζήτησης.";
 
 /* No comment provided by engineer. */
-"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
+"Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Η τοποθεσία σας χρησιμοποιείται για να δείξει τη θέση σας στο χάρτη, τους εμπόρους στην επιλεγμένη περιοχή και να βελτιώσει τα αποτελέσματα αναζήτησης.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Το υπόλοιπο του Uphold λογαριασμού σας σε Dash είναι";
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Το όνομα χρήστη %@ δημιουργήθηκε με επιτυχία στο Dash Δίκτυο";
