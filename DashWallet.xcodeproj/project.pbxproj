@@ -488,6 +488,7 @@
 		47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */; };
 		47083B3629893E700010AF71 /* CNCreateAccountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3529893E700010AF71 /* CNCreateAccountCell.swift */; };
 		47083B3829893F4B0010AF71 /* CNCreateAccountCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */; };
+		47083B3B298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3A298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift */; };
 		4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
 		4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C311287E78BD00B4BD48 /* SeedDB.swift */; };
 		4709C315287EA11900B4BD48 /* TxUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TxUserInfo.swift */; };
@@ -1697,6 +1698,7 @@
 		47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DSTransaction+DashWallet.swift"; sourceTree = "<group>"; };
 		47083B3529893E700010AF71 /* CNCreateAccountCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNCreateAccountCell.swift; sourceTree = "<group>"; };
 		47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CNCreateAccountCell.xib; sourceTree = "<group>"; };
+		47083B3A298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNCreateAccountTxDetailsViewController.swift; sourceTree = "<group>"; };
 		4709C30E287E787700B4BD48 /* Migrations.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Migrations.bundle; sourceTree = "<group>"; };
 		4709C311287E78BD00B4BD48 /* SeedDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SeedDB.swift; sourceTree = "<group>"; };
 		4709C314287EA11900B4BD48 /* TxUserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxUserInfo.swift; sourceTree = "<group>"; };
@@ -2353,6 +2355,7 @@
 		11C5F51128E5D0C500F6F135 /* CrowdNode */ = {
 			isa = PBXGroup;
 			children = (
+				47083B392989488D0010AF71 /* Tx Details */,
 				47083B3329893E260010AF71 /* Views */,
 				110C679629227895006B580C /* Extensions */,
 				117ECC7C29742A30003D798E /* Online */,
@@ -2415,6 +2418,7 @@
 		2A0C69B62313EB4A001B8C90 /* Transitions */ = {
 			isa = PBXGroup;
 			children = (
+				474C7216298A421000475CA6 /* Item */,
 				2A0C69C723142DF1001B8C90 /* Animations */,
 				2A1B7DB9232550BA00BA8C6A /* Modal */,
 				2A1B7DA22323ABED00BA8C6A /* Popup */,
@@ -4584,6 +4588,14 @@
 				47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */,
 			);
 			path = "Tx Cell";
+			sourceTree = "<group>";
+		};
+		47083B392989488D0010AF71 /* Tx Details */ = {
+			isa = PBXGroup;
+			children = (
+				47083B3A298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift */,
+			);
+			path = "Tx Details";
 			sourceTree = "<group>";
 		};
 		4709C310287E78BD00B4BD48 /* Migrations */ = {
@@ -6875,6 +6887,7 @@
 				47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */,
 				4751CAD92970509600F63AC4 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
+				47083B3B298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift in Sources */,
 				2AB7303E24D0BC0400DCB420 /* UIColor+DWDashPay.m in Sources */,
 				1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */,
 				47C6E6E329196D48003FEDF2 /* TerritoriesListCell.swift in Sources */,

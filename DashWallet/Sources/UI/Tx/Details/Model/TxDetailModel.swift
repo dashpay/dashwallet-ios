@@ -27,6 +27,10 @@ class TxDetailModel: NSObject {
     var dataItem: DWTransactionListDataItem
     var txTaxCategory: TxUserInfoTaxCategory
 
+    var title: String {
+        direction.title
+    }
+
     var direction: DSTransactionDirection {
         dataItem.direction
     }
@@ -38,7 +42,6 @@ class TxDetailModel: NSObject {
     var fiatAmountString: String {
         dataItem.fiatAmount;
     }
-
 
     @objc
     init(transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
@@ -62,37 +65,6 @@ class TxDetailModel: NSObject {
 }
 
 extension TxDetailModel {
-    func dashAmountString(with font: UIFont, tintColor: UIColor) -> NSAttributedString {
-        let dashFormat = NumberFormatter()
-        dashFormat.locale = Locale(identifier: "ru_RU")
-        dashFormat.isLenient = true
-        dashFormat.numberStyle = .currency
-        dashFormat.generatesDecimalNumbers = true
-
-        if let positiveFormatRange = dashFormat.positiveFormat.range(of: "#") {
-            var positiveFormat: String = dashFormat.positiveFormat
-            positiveFormat.replaceSubrange(positiveFormatRange, with: "-#")
-            dashFormat.negativeFormat = positiveFormat
-        }
-
-        dashFormat.currencyCode = "DASH"
-        dashFormat.currencySymbol = DASH
-
-        dashFormat.maximumFractionDigits = 8;
-        dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
-        let maxAmount = MAX_MONEY/Int64(NSDecimalNumber(decimal: pow(10.0, dashFormat.maximumFractionDigits)).intValue)
-        dashFormat.maximum = NSNumber(value: maxAmount)
-
-        let dashAmount = dataItem.dashAmount;
-
-        let number = NSDecimalNumber(value: dashAmount).multiplying(byPowerOf10: -Int16(dashFormat.maximumFractionDigits))
-        let formattedNumber: String = dashFormat.string(from: number)!
-        let symbol = dataItem.directionSymbol;
-        let amount = symbol + formattedNumber
-
-        return NSAttributedString.dw_dashAttributedString(forFormattedAmount: amount, tintColor: tintColor, font: font)
-    }
-
     func dashAmountString(with font: UIFont) -> NSAttributedString {
         dataProvider.dashAmountString(from: dataItem, font: font)
     }
@@ -304,7 +276,7 @@ extension TxDetailModel {
 
     var date: DWTitleDetailCellModel {
         let title = NSLocalizedString("Date", comment: "")
-        let detail = dataProvider.longDateString(for: transaction)
+        let detail = transaction.formattedLongTxDate
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
     }
@@ -314,5 +286,21 @@ extension TxDetailModel {
         let detail = txTaxCategory.stringValue
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
+    }
+}
+
+// MARK: TxDetailHeaderCellDataProvider
+
+extension TxDetailModel: TxDetailHeaderCellDataProvider {
+    var fiatAmount: String {
+        dataItem.fiatAmount
+    }
+
+    var icon: UIImage {
+        dataItem.direction.icon
+    }
+
+    var tintColor: UIColor {
+        dataItem.direction.tintColor
     }
 }

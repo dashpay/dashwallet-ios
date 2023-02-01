@@ -195,7 +195,7 @@ extension TXDetailViewController {
                 case .header:
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailHeaderCell
-                    cell.model = self?.model
+                    cell.updateView(with: wSelf.model)
                     cell.selectionStyle = .none
                     cell.backgroundColor = .clear
                     cell.backgroundView?.backgroundColor = .clear

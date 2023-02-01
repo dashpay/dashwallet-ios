@@ -17,6 +17,17 @@
 
 import UIKit
 
+// MARK: - TxDetailHeaderCellDataProvider
+
+protocol TxDetailHeaderCellDataProvider {
+    var title: String { get }
+    var fiatAmount: String { get }
+    var icon: UIImage { get }
+    var tintColor: UIColor { get }
+
+    func dashAmountString(with font: UIFont) -> NSAttributedString
+}
+
 // MARK: - TxDetailHeaderCell
 
 class TxDetailHeaderCell: UITableViewCell {
@@ -26,30 +37,14 @@ class TxDetailHeaderCell: UITableViewCell {
 
     @IBOutlet var iconImageView: UIImageView!
 
-    var model: TxDetailModel! {
-        didSet {
-            updateView()
-        }
-    }
+    func updateView(with data: TxDetailHeaderCellDataProvider) {
+        let font = UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
+        dashAmountLabel.attributedText = data.dashAmountString(with: font)
+        fiatAmountLabel.text = data.fiatAmount;
 
-    private func updateView() {
-        if model.direction == .notAccountFunds {
-            fiatAmountLabel.text = "";
-            dashAmountLabel.text = "";
-        }
-        else {
-            fiatAmountLabel.text = model.fiatAmountString;
-            dashAmountLabel.attributedText = model
-                .dashAmountString(with: UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue),
-                                  tintColor: .label)
-        }
-
-        titleLabel.text = model.direction.title
-        iconImageView.image = model.direction.icon
-
-        let tintColor = model.direction.tintColor
-        titleLabel.textColor = tintColor
-        iconImageView.tintColor = tintColor
+        titleLabel.text = data.title
+        iconImageView.image = data.icon
+        iconImageView.tintColor = data.tintColor
     }
 
     override func awakeFromNib() {
@@ -59,6 +54,9 @@ class TxDetailHeaderCell: UITableViewCell {
         titleLabel.font = UIFont.dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
         dashAmountLabel.font = UIFont.dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
         fiatAmountLabel.font = UIFont.dw_font(forTextStyle: .footnote)
+
+        titleLabel.textColor = .dw_label()
+        dashAmountLabel.textColor = .dw_label()
     }
 }
 
