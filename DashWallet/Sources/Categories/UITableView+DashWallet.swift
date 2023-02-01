@@ -18,6 +18,14 @@
 import UIKit
 
 extension UITableView {
+    func registerNib<T: UITableViewCell>(for type: T.Type) {
+        register(UINib(nibName: T.reuseIdentifier, bundle: nil), forCellReuseIdentifier: T.reuseIdentifier)
+    }
+
+    func registerClass<T: UITableViewCell>(for type: T.Type) {
+        register(T.self, forCellReuseIdentifier: T.reuseIdentifier)
+    }
+
     func dequeueReusableCell<T: UITableViewCell>(type: T.Type, for indexPath: IndexPath) -> T {
         dequeueReusableCell(withIdentifier: T.reuseIdentifier, for: indexPath) as! T
     }
