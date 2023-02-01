@@ -82,8 +82,8 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
     }
 
     private func prepareTransactionScreenImage() {
-        let vc = TXDetailViewController.controller()
-        vc.model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+        let model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+        let vc = TXDetailViewController(model: model)
         dw_embedChild(vc, inContainer: transactionScreenContainer)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

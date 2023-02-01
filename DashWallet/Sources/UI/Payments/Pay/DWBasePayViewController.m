@@ -180,9 +180,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
 
-    SuccessTxDetailViewController *vc = [SuccessTxDetailViewController controller];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
     vc.modalPresentationStyle = UIModalPresentationFullScreen;
-    vc.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
     vc.contactItem = _paymentController.contactItem;
     vc.delegate = self;
     [self presentViewController:vc

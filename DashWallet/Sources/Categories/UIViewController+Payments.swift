@@ -159,9 +159,9 @@ extension PaymentViewController {
             dismiss(animated: true)
         } else { }
 
-        let vc = SuccessTxDetailViewController()
+        let model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+        let vc = SuccessTxDetailViewController(model: model)
         vc.modalPresentationStyle = .fullScreen
-        vc.model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
         vc.contactItem = contactItem
         // vc.delegate = self
         present(vc, animated: true)

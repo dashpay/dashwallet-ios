@@ -211,9 +211,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
-    TXDetailViewController *controller = [TXDetailViewController controller];
-    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
-    [self presentViewController:controller animated:YES completion:nil];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
+
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 - (void)checkCrowdNodeState {
