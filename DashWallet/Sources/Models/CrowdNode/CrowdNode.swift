@@ -784,11 +784,13 @@ extension CrowdNode {
         let savedAddress = onlineAccountAddress
 
         if savedAddress != nil && state != .none {
+            DSLogger.log("CrowdNode: found online account address \(savedAddress!)")
             return savedAddress
         } else if let confirmationTx = getApiAddressConfirmationTx() {
             let account = DWEnvironment.sharedInstance().currentAccount
 
             if let apiAddress = account.externalAddresses(of: confirmationTx).first {
+                DSLogger.log("CrowdNode: found apiAddress in confirmation tx \(apiAddress)")
                 onlineAccountAddress = apiAddress
                 signUpState = .linkedOnline
                 savedOnlineAccountState = .linking
@@ -797,6 +799,7 @@ extension CrowdNode {
             }
         }
 
+        DSLogger.log("CrowdNode: online account address isn't found")
         return nil
     }
 
@@ -808,19 +811,26 @@ extension CrowdNode {
 
         for confirmationTx in wallet.allTransactions {
             if filter.matches(tx: confirmationTx) {
+                DSLogger.log("CrowdNode: found confirmation tx: \(confirmationTx.txHashHexString)")
                 let receivedTo = account.externalAddresses(of: confirmationTx).first
                 let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
                 // There might be several matching transactions. The real one will be forwarded to CrowdNode
                 let forwardedTx = wallet.allTransactions.first {
                     forwardedConfirmationFilter.matches(tx: $0)
                 }
+                
+                if forwardedTx != nil {
+                    DSLogger.log("CrowdNode: found forwarded tx")
+                }
 
                 if forwardedTx != nil && receivedTo != nil && forwardedConfirmationFilter.fromAddresses.contains(receivedTo!) {
+                    DSLogger.log("CrowdNode: returning confirmation tx")
                     return confirmationTx
                 }
             }
         }
 
+        DSLogger.log("CrowdNode: confirmation tx isn't found")
         return nil
     }
 }
