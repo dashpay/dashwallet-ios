@@ -126,6 +126,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentTransactionDetails:transaction];
 }
 
+- (void)homeViewShowCrowdNodeTx:(DWHomeView *)homeView {
+    CNCreateAccountTxDetailsViewController *controller = [[CNCreateAccountTxDetailsViewController alloc] init];
+
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
+}
+
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
     [self performActionForShortcut:action sender:homeView];

@@ -516,6 +516,7 @@
 		474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */; };
 		474C7218298A422500475CA6 /* TransactionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7217298A422400475CA6 /* TransactionItemView.swift */; };
 		474C721A298A803200475CA6 /* TxListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7219298A803200475CA6 /* TxListTableViewCell.swift */; };
+		474C721D298B65C100475CA6 /* Cells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C721C298B65C100475CA6 /* Cells.swift */; };
 		4751136C28D9A3DB00223B77 /* PortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136B28D9A3DB00223B77 /* PortalViewController.swift */; };
 		4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */; };
 		4751137528DAF28800223B77 /* UIAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751137428DAF28800223B77 /* UIAssembly.swift */; };
@@ -1727,6 +1728,7 @@
 		474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailActionCell.xib; sourceTree = "<group>"; };
 		474C7217298A422400475CA6 /* TransactionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionItemView.swift; sourceTree = "<group>"; };
 		474C7219298A803200475CA6 /* TxListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxListTableViewCell.swift; sourceTree = "<group>"; };
+		474C721C298B65C100475CA6 /* Cells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cells.swift; sourceTree = "<group>"; };
 		4751136B28D9A3DB00223B77 /* PortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalViewController.swift; sourceTree = "<group>"; };
 		4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseInfoViewController.swift; sourceTree = "<group>"; };
 		4751137428DAF28800223B77 /* UIAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAssembly.swift; sourceTree = "<group>"; };
@@ -4593,6 +4595,7 @@
 		47083B392989488D0010AF71 /* Tx Details */ = {
 			isa = PBXGroup;
 			children = (
+				474C721B298B659D00475CA6 /* Views */,
 				47083B3A298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift */,
 			);
 			path = "Tx Details";
@@ -4666,6 +4669,14 @@
 				474C7217298A422400475CA6 /* TransactionItemView.swift */,
 			);
 			path = Item;
+			sourceTree = "<group>";
+		};
+		474C721B298B659D00475CA6 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				474C721C298B65C100475CA6 /* Cells.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		4751136A28D9A3BE00223B77 /* Portal */ = {
@@ -6882,6 +6893,7 @@
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				4789D2312981069700BAFEFA /* UpholdTransferViewController.swift in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
+				474C721D298B65C100475CA6 /* Cells.swift in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
 				47B30D7A290D035B0080C326 /* DashTextAttachment.swift in Sources */,
 				47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */,

@@ -205,6 +205,11 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    if (indexPath.row == 0) {
+        [self.delegate homeViewShowCrowdNodeTx:self];
+        return;
+    }
+
     DSTransaction *transaction = [self.currentDataSource transactionForIndexPath:indexPath];
     if (transaction) {
         [self.delegate homeView:self didSelectTransaction:transaction];

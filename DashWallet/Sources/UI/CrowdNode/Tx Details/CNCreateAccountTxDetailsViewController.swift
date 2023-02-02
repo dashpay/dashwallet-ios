@@ -45,6 +45,13 @@ final class CNCreateAccountTxDetailsViewController: BaseTxDetailsViewController 
     var sections: [Section] = Section.allCases
 
     override func configureHierarchy() {
+        super.configureHierarchy()
+
+        let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
+        navigationItem.rightBarButtonItem = item
+
+        tableView.registerClass(for: CNCreateAccountTxDetailsInfoCell.self)
+        tableView.registerClass(for: CNCreateAccountTxDetailsTxItemCell.self)
         tableView.delegate = self
         tableView.dataSource = self
     }
@@ -66,9 +73,12 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
             cell.backgroundView?.backgroundColor = .clear
             return cell
         case .details:
-            return UITableViewCell()
+            return tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsInfoCell.reuseIdentifier, for: indexPath)
         case .txs:
-            return UITableViewCell()
+            let tx = DWEnvironment.sharedInstance().currentAccount.allTransactions[indexPath.row]
+            let cell = tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsTxItemCell.reuseIdentifier, for: indexPath) as! CNCreateAccountTxDetailsTxItemCell
+            cell.update(with: tx, dataProvider: DWTransactionListDataProvider())
+            return cell
         }
     }
 
