@@ -99,7 +99,7 @@
         return @"";
     }
 
-    NSString *iso8601String = [dataProvider ISO8601StringForTransaction:transaction];
+    NSString *iso8601String = transaction.formattedISO8601TxDate;
     NSString *taxCategoryString = [transaction defaultTaxCategoryString];
 
     if (userInfo != nil) {

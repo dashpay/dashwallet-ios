@@ -45,8 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
         return dateString;
     }
 
-    NSDate *date = [self dateForTransaction:transaction];
-    dateString = [self formattedShortTxDate:date];
+    dateString = transaction.formattedShortTxDate;
 
     if (transaction.blockHeight != TX_UNCONFIRMED) {
         self.txDates[uint256_obj(transaction.txHash)] = dateString;
@@ -56,13 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction {
-    NSDate *date = [self dateForTransaction:transaction];
-    return [self formattedLongTxDate:date];
+    return transaction.formattedLongTxDate;
 }
 
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction {
-    NSDate *date = [self dateForTransaction:transaction];
-    return [self formattedISO8601TxDate:date];
+    return transaction.formattedISO8601TxDate;
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
@@ -179,6 +176,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     return dataItem;
 }
+
 
 #pragma mark - Private
 
