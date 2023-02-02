@@ -136,6 +136,12 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
         configureHierarchy()
         configureModel()
     }
+    
+    override func actionButtonAction(sender: UIView) {
+        super.actionButtonAction(sender: sender)
+        
+        
+    }
 }
 
 extension BaseAmountViewController {

@@ -92,19 +92,12 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             return
         }
 
-        Task {
-            showActivityIndicator()
+        showActivityIndicator()
 
-            do {
-                if try await handleTransfer(amount: amount) {
-                    showSuccessfulStatus()
-                }
-
-                hideActivityIndicator()
-            } catch {
-                hideActivityIndicator()
-                showErrorStatus(err: error)
-            }
+        if mode == .deposit {
+            handleDeposit(amount: amount)
+        } else {
+            handleWithdraw(amount: amount)
         }
     }
 
@@ -116,20 +109,37 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
 
-    private func handleTransfer(amount: UInt64) async throws -> Bool {
-        if mode == .deposit {
-            return try await viewModel.deposit(amount: amount)
-        } else {
-            return try await handleWithdraw(amount: amount)
+    private func handleDeposit(amount: UInt64) {
+        checkLeftoverBalance { [weak self] canContinue in
+            guard canContinue, let wSelf = self else { self?.hideActivityIndicator(); return }
+            
+            Task {
+                do {
+                    if try await wSelf.viewModel.deposit(amount: amount) {
+                        wSelf.showSuccessfulStatus()
+                    }
+                } catch {
+                    wSelf.showErrorStatus(err: error)
+                }
+                
+                wSelf.hideActivityIndicator()
+            }
         }
     }
 
-    private func handleWithdraw(amount: UInt64) async throws -> Bool {
-        do {
-            return try await viewModel.withdraw(amount: amount)
-        } catch CrowdNode.Error.withdrawLimit(_, let period) {
-            showWithdrawalLimitsError(period: period)
-            return false
+    private func handleWithdraw(amount: UInt64) {
+        Task {
+            do {
+                if try await viewModel.withdraw(amount: amount) {
+                    showSuccessfulStatus()
+                }
+            } catch CrowdNode.Error.withdrawLimit(_, let period) {
+                showWithdrawalLimitsError(period: period)
+            } catch {
+                showErrorStatus(err: error)
+            }
+            
+            hideActivityIndicator()
         }
     }
 
