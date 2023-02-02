@@ -16,6 +16,7 @@
 //
 
 import Combine
+import WebKit
 
 // MARK: - CrowdNodeModelObjcWrapper
 
@@ -175,6 +176,7 @@ final class CrowdNodeModel {
                 switch state {
                 case .notInitiated, .notStarted:
                     signUpEnabled = true
+                    WKWebView.cleanCrowdNodeCache()
                     self?.getAccountAddress()
 
                 case .acceptTermsRequired, .error:
@@ -275,5 +277,6 @@ extension CrowdNodeModel {
 
     func cancelLinkingOnlineAccount() {
         crowdNode.stopTrackingLinked()
+        WKWebView.cleanCrowdNodeCache()
     }
 }

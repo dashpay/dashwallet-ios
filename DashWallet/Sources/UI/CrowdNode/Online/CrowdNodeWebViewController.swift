@@ -40,15 +40,23 @@ class CrowdNodeWebViewController: UIViewController {
         webView = WKWebView(frame: .zero)
         view = webView
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         navigationItem.title = NSLocalizedString("Log in to CrowdNode", comment: "CrowdNode WebView")
+        configureObservers()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
         let urlRequest = URLRequest(url: url)
         webView.load(urlRequest)
-
-        configureObservers()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        WKWebView.cleanCrowdNodeCache()
     }
 
     private func configureObservers() {

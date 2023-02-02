@@ -86,5 +86,6 @@ extension CrowdNode {
         savedOnlineAccountState = .none
         onlineAccountAddress = nil
         crowdNodePrimaryAddress = nil
+        confirmationDialogShown = false
     }
 }
