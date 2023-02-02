@@ -19,7 +19,7 @@ import Combine
 import UIKit
 import WebKit
 
-class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
+class CrowdNodeWebViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
@@ -37,9 +37,7 @@ class CrowdNodeWebViewController: UIViewController, WKUIDelegate {
     }
 
     override func loadView() {
-        let webConfiguration = WKWebViewConfiguration()
-        webView = WKWebView(frame: .zero, configuration: webConfiguration)
-        webView.uiDelegate = self
+        webView = WKWebView(frame: .zero)
         view = webView
     }
 
