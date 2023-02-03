@@ -25,7 +25,6 @@
 #import "DWHomeHeaderView.h"
 #import "DWSharedUIConstants.h"
 #import "DWSyncingHeaderView.h"
-#import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"

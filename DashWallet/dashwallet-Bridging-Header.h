@@ -34,6 +34,11 @@ static const bool _SNAPSHOT = 0;
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
 #import "DWDateFormatter.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
 
 // -- CrowdNode
 #import "DWCheckbox.h"

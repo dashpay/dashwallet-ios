@@ -189,7 +189,6 @@
 		2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531C22EA49FE00E5168A /* DWProgressView.m */; };
 		2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */; };
 		2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533722F023AB00E5168A /* DWHomeModel.m */; };
-		2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533A22F0248D00E5168A /* DWTransactionListDataSource.m */; };
 		2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */; };
 		2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */; };
 		2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */; };
@@ -485,6 +484,7 @@
 		2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF01E3243F8625003718DC /* DWDPRegistrationDoneTableViewCell.m */; };
 		2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
+		47081199298CF57D003FCA3D /* TransactionListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081198298CF57D003FCA3D /* TransactionListDataSource.swift */; };
 		47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */; };
 		47083B3629893E700010AF71 /* CNCreateAccountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3529893E700010AF71 /* CNCreateAccountCell.swift */; };
 		47083B3829893F4B0010AF71 /* CNCreateAccountCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */; };
@@ -1079,8 +1079,6 @@
 		2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeHeaderView.m; sourceTree = "<group>"; };
 		2A4E533622F023AB00E5168A /* DWHomeModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeModel.h; sourceTree = "<group>"; };
 		2A4E533722F023AB00E5168A /* DWHomeModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeModel.m; sourceTree = "<group>"; };
-		2A4E533922F0248D00E5168A /* DWTransactionListDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataSource.h; sourceTree = "<group>"; };
-		2A4E533A22F0248D00E5168A /* DWTransactionListDataSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataSource.m; sourceTree = "<group>"; };
 		2A4E533D22F025FE00E5168A /* DWTxListEmptyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxListEmptyTableViewCell.h; sourceTree = "<group>"; };
 		2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxListEmptyTableViewCell.m; sourceTree = "<group>"; };
 		2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxListEmptyTableViewCell.xib; sourceTree = "<group>"; };
@@ -1093,7 +1091,6 @@
 		2A4E534E22F19BE300E5168A /* DWSyncModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncModel.h; sourceTree = "<group>"; };
 		2A4E534F22F19BE300E5168A /* DWSyncModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncModel.m; sourceTree = "<group>"; };
 		2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxListTableViewCell.xib; sourceTree = "<group>"; };
-		2A4E535722F3349600E5168A /* DWTransactionListDataSource+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWTransactionListDataSource+DWProtected.h"; sourceTree = "<group>"; };
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
@@ -1384,7 +1381,6 @@
 		2A913E9A23A53B8E006A2A59 /* DWExtendedContainerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedContainerViewController.h; sourceTree = "<group>"; };
 		2A913E9B23A53B8E006A2A59 /* DWExtendedContainerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedContainerViewController.m; sourceTree = "<group>"; };
 		2A913E9D23A53BDF006A2A59 /* DWContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
-		2A913EA023A79909006A2A59 /* DWTransactionObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionObject.h; sourceTree = "<group>"; };
 		2A913EA223A799F3006A2A59 /* DWTransactionListDataItemObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataItemObject.h; sourceTree = "<group>"; };
 		2A913EA323A799F3006A2A59 /* DWTransactionListDataItemObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataItemObject.m; sourceTree = "<group>"; };
 		2A913EA523A79A36006A2A59 /* DWTransactionListDataItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataItem.h; sourceTree = "<group>"; };
@@ -1690,12 +1686,13 @@
 		2AFF01DC243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationErrorTableViewCell.h; sourceTree = "<group>"; };
 		2AFF01DD243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationErrorTableViewCell.m; sourceTree = "<group>"; };
 		2AFF01DE243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationErrorTableViewCell.xib; sourceTree = "<group>"; };
-		2AFF01E1243F829F003718DC /* DWDPRegistrationErrorRetryDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationErrorRetryDelegate.h; sourceTree = "<group>"; };
 		2AFF01E2243F8625003718DC /* DWDPRegistrationDoneTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationDoneTableViewCell.h; sourceTree = "<group>"; };
 		2AFF01E3243F8625003718DC /* DWDPRegistrationDoneTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationDoneTableViewCell.m; sourceTree = "<group>"; };
 		2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationDoneTableViewCell.xib; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
+		47081198298CF57D003FCA3D /* TransactionListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TransactionListDataSource.swift; path = DashWallet/Sources/UI/Home/Models/TransactionListDataSource.swift; sourceTree = SOURCE_ROOT; };
+		4708119C298CF9E0003FCA3D /* DWDPRegistrationErrorRetryDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationErrorRetryDelegate.h; sourceTree = "<group>"; };
 		47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DSTransaction+DashWallet.swift"; sourceTree = "<group>"; };
 		47083B3529893E700010AF71 /* CNCreateAccountCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNCreateAccountCell.swift; sourceTree = "<group>"; };
 		47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CNCreateAccountCell.xib; sourceTree = "<group>"; };
@@ -2635,12 +2632,9 @@
 				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
 				2A4E534E22F19BE300E5168A /* DWSyncModel.h */,
 				2A4E534F22F19BE300E5168A /* DWSyncModel.m */,
-				2A4E533922F0248D00E5168A /* DWTransactionListDataSource.h */,
-				2A4E533A22F0248D00E5168A /* DWTransactionListDataSource.m */,
-				2A4E535722F3349600E5168A /* DWTransactionListDataSource+DWProtected.h */,
+				47081198298CF57D003FCA3D /* TransactionListDataSource.swift */,
 				2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */,
 				2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */,
-				2A913EA023A79909006A2A59 /* DWTransactionObject.h */,
 				2A56EF0424193AEB002C32F3 /* DWDashPayModel.h */,
 				2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */,
 				2AFF01D9243F4559003718DC /* DWDPRegistrationStatus.h */,
@@ -6616,7 +6610,6 @@
 				478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
-				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A913E6B23A15419006A2A59 /* DWUpholdAuthURLNotification.m in Sources */,
 				47CDEECE294A3CF2008AE06D /* UIViewController+DashWallet.swift in Sources */,
 				47AE8BF528C1306000490F5E /* MerchantListLocationOffCell.swift in Sources */,
@@ -6677,6 +6670,7 @@
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
+				47081199298CF57D003FCA3D /* TransactionListDataSource.swift in Sources */,
 				2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				47838B7D290133610003E8AB /* PointOfUseListFiltersViewController.swift in Sources */,

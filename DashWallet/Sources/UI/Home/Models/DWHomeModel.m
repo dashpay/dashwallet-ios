@@ -38,6 +38,7 @@
 #import "DWTransactionListDataSource+DWProtected.h"
 #import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
