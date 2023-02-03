@@ -82,6 +82,7 @@ class MerchantDAO: PointOfUseDAO {
 
                 if types.contains(.online) {
                     boundsFilter = boundsFilter || Expression<Bool>(literal: "type = 'online'")
+                    // Expression<Bool>(literal: "type = 'both'")
                 }
 
                 queryFilter = queryFilter && boundsFilter
@@ -171,25 +172,46 @@ extension MerchantDAO {
               completion: completion)
     }
 
-    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
 
-            let anchorLatitude = userPoint?.latitude ?? bounds.center.latitude
-            let anchorLongitude = userPoint?.longitude ?? bounds.center.longitude
+            let merchantTable = Table("merchant")
+            let merchantIdColumn = ExplorePointOfUse.merchantId
+            let name = ExplorePointOfUse.name
 
-            let query = """
-                    SELECT *
-                    FROM merchant
-                    WHERE type IN ('physical', 'both')
-                        AND merchantId = \(merchantId)
-                        AND latitude > \(bounds.swCoordinate.latitude)
-                        AND latitude < \(bounds.neCoordinate.latitude)
-                        AND longitude < \(bounds.neCoordinate.longitude)
-                        AND longitude > \(bounds.swCoordinate.longitude)
-                    ORDER BY ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC
-                """
+            var queryFilter = Expression<Bool>(value: true)
+
+            queryFilter = queryFilter && Expression<Bool>(merchantIdColumn == merchantId)
+
+
+            if let bounds {
+                var boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
+                    Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)") &&
+                    Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)") &&
+                    Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
+
+                queryFilter = queryFilter && boundsFilter
+            }
+
+            var query = merchantTable
+                .select(merchantTable[*])
+                .filter(queryFilter)
+
+
+            var distanceSorting = Expression<Bool>(value: true)
+
+            if let userLocation = userPoint {
+                let anchorLatitude = userLocation.latitude
+                let anchorLongitude = userLocation.longitude
+
+                distanceSorting =
+                    Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
+            }
+
+            query = query.order(distanceSorting)
+
             do {
                 let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: Int.max)))
