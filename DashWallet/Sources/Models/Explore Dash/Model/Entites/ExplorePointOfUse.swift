@@ -133,6 +133,17 @@ struct ExplorePointOfUse {
     let logoLocation: String?
     let coverImage: String?
     let source: String?
+
+    var isPhysical: Bool {
+        switch category {
+        case .merchant(let m):
+            return m.type != .online
+        case .atm:
+            return true
+        case .unknown:
+            return false
+        }
+    }
 }
 
 // MARK: RowDecodable

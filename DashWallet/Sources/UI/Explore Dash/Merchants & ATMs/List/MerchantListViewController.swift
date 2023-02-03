@@ -193,6 +193,10 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     override func subtitleForFilterCell() -> String? {
         if model.showMap && DWLocationManager.shared.isAuthorized {
+            let physicalMerchants = items.filter { $0.isPhysical }
+
+            guard !physicalMerchants.isEmpty else { return nil }
+
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
