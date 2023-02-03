@@ -454,7 +454,6 @@ extension ExplorePointOfUseListViewController {
         let segment = model.segments[index]
         model.currentSegment = segment
 
-        searchCell?.stopSearching()
         refreshView()
     }
 }
@@ -653,5 +652,6 @@ extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControll
     func refreshView() {
         refreshFilterCell()
         updateMapVisibility()
+        updateShowMapButtonVisibility()
     }
 }
