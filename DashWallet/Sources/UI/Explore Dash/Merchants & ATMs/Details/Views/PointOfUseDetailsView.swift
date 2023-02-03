@@ -54,7 +54,7 @@ class PointOfUseDetailsView: UIView {
 
     @objc
     func callAction() {
-        guard let phone = merchant.phone else { return }
+        guard let phone = merchant.phone, !phone.isEmpty else { return }
 
         let fixedPhone = phone.replacingOccurrences(of: " ", with: "")
 
@@ -211,7 +211,7 @@ extension PointOfUseDetailsView {
         buttonsStackView.axis = .horizontal
         containerView.addArrangedSubview(buttonsStackView)
 
-        if merchant.phone != nil {
+        if let phone = merchant.phone, !phone.isEmpty {
             let button = actionButton(title: NSLocalizedString("Call", comment: "Call"), icon: "phone.circle.fill",
                                       action: #selector(callAction))
             buttonsStackView.addArrangedSubview(button)
