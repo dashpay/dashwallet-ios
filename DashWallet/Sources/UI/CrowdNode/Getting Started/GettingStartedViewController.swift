@@ -182,7 +182,7 @@ extension GettingStartedViewController {
     }
 
     private func buyDashAuthenticated() {
-        let controller = DWUpholdViewController()
+        let controller = PortalViewController.controller()
         let navigationController = BaseNavigationController(rootViewController: controller)
         self.navigationController?.present(navigationController, animated: true)
     }
