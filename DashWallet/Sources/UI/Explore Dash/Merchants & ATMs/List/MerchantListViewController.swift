@@ -129,7 +129,9 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
                 locationOffCell = itemCell
             } else {
-                return super.tableView(tableView, cellForRowAt: indexPath)
+                let cell = super.tableView(tableView, cellForRowAt: indexPath) as! PointOfUseItemCell
+                cell.subLabel.isHidden = currentSegment == .online
+                return cell
             }
         default:
             return super.tableView(tableView, cellForRowAt: indexPath)
