@@ -71,7 +71,6 @@ class MerchantDAO: PointOfUseDAO {
                 queryFilter = queryFilter && methods.map { $0.rawValue }.contains(paymentMethodColumn)
             }
 
-            // Add payment methods or bounds
             if let territory {
                 queryFilter = queryFilter && territoryColumn.like(territory)
             } else if let bounds {
@@ -82,7 +81,6 @@ class MerchantDAO: PointOfUseDAO {
 
                 if types.contains(.online) {
                     boundsFilter = boundsFilter || Expression<Bool>(literal: "type = 'online'")
-                    // Expression<Bool>(literal: "type = 'both'")
                 }
 
                 queryFilter = queryFilter && boundsFilter
@@ -108,7 +106,7 @@ class MerchantDAO: PointOfUseDAO {
                 let anchorLongitude = userLocation.longitude
 
                 distanceSorting =
-                    Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
+                    Expression<Bool>(literal: "((latitude-\(anchorLatitude))*(latitude-\(anchorLatitude))) + ((longitude - \(anchorLongitude))*(longitude - \(anchorLongitude))) ASC")
             }
 
             let nameOrdering = sortDirection == .descending ? name.collate(.nocase).desc : name.collate(.nocase).asc
@@ -124,6 +122,7 @@ class MerchantDAO: PointOfUseDAO {
                         WHEN type = 'physical' THEN 3
                         WHEN type = 'both' THEN 2
                     END
+                    ASC
                     """)
 
                 query = query.order([typeOrdering, nameOrdering])
