@@ -50,7 +50,7 @@ final class TransactionItemView: UIView {
 
         titleLabel.text = dataItem.directionText
         subtitleLabel.text = dataProvider.shortDateString(for: transaction)
-        amountLabel.attributedText = dataItem.dashAmount.formattedDashAmount.attributedAmountStringWithDashSymbol(tintColor: .dw_label())
+        amountLabel.attributedText = dataProvider.dashAmountString(from: dataItem, font: .dw_font(forTextStyle: .subheadline))
         fiatAmountLabel.text = dataItem.fiatAmount
     }
 

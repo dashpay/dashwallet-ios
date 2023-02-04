@@ -17,12 +17,23 @@
 
 import UIKit
 
+// MARK: - TransactionListDataItem
+
+enum TransactionListDataItem {
+    case tx(Transaction)
+    case crowdnode([Transaction])
+}
+
+// MARK: - TransactionListDataSource
+
 @objc(DWTransactionListDataSource)
 final class TransactionListDataSource: NSObject, UITableViewDataSource {
     weak var dataProvider: DWTransactionListDataProviderProtocol!
 
     @objc
     var items: [DSTransaction]
+
+    var _items: [TransactionListDataItem] = []
 
     var registrationStatus: DWDPRegistrationStatus?
 
@@ -100,5 +111,26 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
             cell.update(with: tx, dataProvider: dataProvider!)
             return cell
         }
+    }
+}
+
+// MARK: - TransactionListDataItemType
+
+// MARK: Objc workaround
+
+@objc(DWTransactionListDataItemType)
+enum TransactionListDataItemType: Int {
+    case tx
+    case crowdnode
+}
+
+extension TransactionListDataSource {
+    @objc
+    func itemType(by indexPath: NSIndexPath) -> TransactionListDataItemType {
+        if case TransactionListDataItem.tx = _items[indexPath.row] {
+            return .tx
+        }
+
+        return .crowdnode
     }
 }
