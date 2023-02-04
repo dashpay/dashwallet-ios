@@ -30,6 +30,10 @@ enum MerchantsListSegment: Int {
         lhs.tag == rhs.rawValue
     }
 
+    static func !=(lhs: PointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
+        lhs.tag != rhs.rawValue
+    }
+
     var pointOfUseListSegment: PointOfUseListSegment {
         let dataProvider: PointOfUseDataProvider
         let showReversedLocation: Bool
@@ -194,7 +198,9 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override func subtitleForFilterCell() -> String? {
-        if model.showMap && DWLocationManager.shared.isAuthorized {
+        if model.showMap &&
+            DWLocationManager.shared.isAuthorized &&
+            currentSegment != .all {
             let physicalMerchants = items.filter { $0.isPhysical }
 
             guard !physicalMerchants.isEmpty else { return nil }
