@@ -30,7 +30,6 @@
 #import "DWShortcutAction.h"
 #import "DWSyncModel.h"
 #import "DWSyncingAlertViewController.h"
-#import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"

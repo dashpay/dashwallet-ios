@@ -35,7 +35,6 @@
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
-#import "DWTransactionListDataSource+DWProtected.h"
 #import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
 #import "dashwallet-Swift.h"
