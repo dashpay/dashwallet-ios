@@ -217,8 +217,8 @@ class CrowdNodeCell: UITableViewCell {
                             _ crowdNodeBalance: UInt64,
                             _ walletBalance: UInt64,
                             _ onlineAccountState: CrowdNode.OnlineAccountState) {
-        title.text = item.title
-        subtitle.text = item.subtitle
+        title.text = item.title(onlineState: onlineAccountState)
+        subtitle.text = item.subtitle(onlineState: onlineAccountState)
         icon.image = UIImage(named: item.icon)
 
         if item.isDisabled(crowdNodeBalance, walletBalance, onlineAccountState.isLinkingInProgress) {
@@ -323,9 +323,18 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .withdraw:
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
         case .onlineAccount:
-            if !viewModel.onlineAccountState.isLinkingInProgress {
+            switch viewModel.onlineAccountState {
+            case .none, .creating:
+                showOnlineInfoOrEnterEmail()
+            case .signingUp:
+//                viewModel.initiateOnlineSignUp()
+                break
+            case .done:
                 UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
+            default:
+                break
             }
+            
         case .support:
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
@@ -349,5 +358,16 @@ extension CrowdNodePortalController: BalanceViewDataSource {
         }
 
         return fiat
+    }
+}
+
+extension CrowdNodePortalController {
+    private func showOnlineInfoOrEnterEmail() {
+//        if viewModel.shouldShowOnlineInfo {
+            navigationController?.pushViewController(OnlineAccountInfoController.controller(), animated: true)
+//            viewModel.shouldShowOnlineInfo = false
+//        } else {
+//            navigationController?.pushViewController(OnlineAccountInfoController.controller(), animated: true)
+//        }
     }
 }

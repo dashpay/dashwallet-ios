@@ -33,6 +33,7 @@
 		110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
 		110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* NavigationControllerExtensions.swift */; };
 		110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */; };
+		110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */; };
 		111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */; };
 		111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */; };
 		111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */; };
@@ -827,6 +828,7 @@
 		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
 		110C679929227948006B580C /* NavigationControllerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationControllerExtensions.swift; sourceTree = "<group>"; };
 		110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+CrowdNode.swift"; sourceTree = "<group>"; };
+		110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountInfoController.swift; sourceTree = "<group>"; };
 		111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimitsController.swift; sourceTree = "<group>"; };
 		111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimit.swift; sourceTree = "<group>"; };
 		111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxWithinTimePeriod.swift; sourceTree = "<group>"; };
@@ -2229,6 +2231,7 @@
 		110C679629227895006B580C /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */,
 				110C679929227948006B580C /* NavigationControllerExtensions.swift */,
 			);
 			path = Extensions;
@@ -2284,7 +2287,7 @@
 				114D16B529812730009A124C /* OnlineAccountDetailsController.swift */,
 				114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */,
 				118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */,
-				110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */,
+				110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */,
 			);
 			path = Online;
 			sourceTree = "<group>";
@@ -6486,6 +6489,7 @@
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
 				114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */,
+				110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */,
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,

@@ -27,6 +27,7 @@ private let kOnlineAccountState = "сrowdNodeOnlineAccountStateKey"
 private let kOnlineAccountAddress = "crowdNodeOnlineAccountAddressKey"
 private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
 private let kConfirmationDialogShown = "crowdNodeConfirmationDialogShownKey"
+private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
 
 extension CrowdNode {
     var infoShown: Bool {
@@ -77,6 +78,11 @@ extension CrowdNode {
     var confirmationDialogShown: Bool {
         get { UserDefaults.standard.bool(forKey: kConfirmationDialogShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kConfirmationDialogShown) }
+    }
+    
+    var onlineInfoShown: Bool {
+        get { UserDefaults.standard.bool(forKey: kOnlineInfoShown) }
+        set(value) { UserDefaults.standard.set(value, forKey: kOnlineInfoShown) }
     }
 
     func resetUserDefaults() {

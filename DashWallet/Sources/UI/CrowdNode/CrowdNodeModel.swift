@@ -87,6 +87,11 @@ final class CrowdNodeModel {
         get { onlineAccountState == .confirming && !crowdNode.confirmationDialogShown }
         set(value) { crowdNode.confirmationDialogShown = !value }
     }
+    
+    var shouldShowOnlineInfo: Bool {
+        get { signUpState != .linkedOnline && !crowdNode.onlineInfoShown }
+        set(value) { crowdNode.onlineInfoShown = !value }
+    }
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
