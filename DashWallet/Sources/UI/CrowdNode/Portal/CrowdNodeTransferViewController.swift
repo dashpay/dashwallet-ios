@@ -86,7 +86,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override func actionButtonAction(sender: UIView) {
         let amount = transferModel.amount.plainAmount
 
-        if viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
+        if mode == .deposit && viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
             minimumDepositBanner?.backgroundColor = .systemRed
             minimumDepositBanner?.dw_shakeView()
             return
