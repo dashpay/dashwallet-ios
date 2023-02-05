@@ -74,7 +74,7 @@ extension CoinbaseFeeInfoController {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textAlignment = .center
         titleLabel.font = .dw_font(forTextStyle: .title2).withWeight(500)
-        titleLabel.text = "Fees in crypto purchases"
+        titleLabel.text = NSLocalizedString("Fees in crypto purchases", comment: "Coinbase/Fee info")
         scrollView.addSubview(titleLabel)
 
         descriptionLabel = UILabel()
@@ -83,10 +83,10 @@ extension CoinbaseFeeInfoController {
         descriptionLabel.lineBreakMode = .byWordWrapping
         descriptionLabel.textAlignment = .natural
         descriptionLabel.font = .dw_font(forTextStyle: .body)
-        descriptionLabel.text = """
+        descriptionLabel.text = NSLocalizedString("""
             In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n
             Cryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.
-            """
+            """, comment: "Coinbase/Fee info")
         scrollView.addSubview(descriptionLabel)
 
         learnMoreButton = UIButton(type: .custom)
