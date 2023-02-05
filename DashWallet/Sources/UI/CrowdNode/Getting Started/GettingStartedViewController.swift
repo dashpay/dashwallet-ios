@@ -75,11 +75,16 @@ final class GettingStartedViewController: UIViewController {
                                       message: String.localizedStringWithFormat(NSLocalizedString("You should have at least %@ to proceed with the CrowdNode verification.",
                                                                                                   comment: ""), minimumDash),
                                       preferredStyle: UIAlertController.Style.alert)
-        alert
-            .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
-                                     handler: { [weak self] _ in
-                                         self?.buyDash()
-                                     }))
+        
+        
+        if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
+            alert
+                .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
+                                         handler: { [weak self] _ in
+                                             self?.buyDash()
+                                         }))
+        }
+        
         alert
             .addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel,
                                      handler: nil))

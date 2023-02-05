@@ -50,6 +50,7 @@ final class BasicInfoController: BaseViewController {
     var actionButtonText: String! {
         didSet {
             actionButton?.setTitle(NSLocalizedString(actionButtonText, comment: "Basic Info Screen"), for: .normal)
+            actionButton?.isHidden = actionButtonText.isEmpty
         }
     }
 
@@ -125,6 +126,7 @@ extension BasicInfoController {
         actionButton.setTitleColor(.dw_dashBlue(), for: .normal)
         actionButton.titleLabel?.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.bold.rawValue)
         actionButton.setTitle(actionButtonText, for: .normal)
+        actionButton.isHidden = actionButtonText.isEmpty
         scrollView.addSubview(actionButton)
 
         let frameGuide = scrollView.frameLayoutGuide

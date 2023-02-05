@@ -329,7 +329,12 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         vc.icon = "image.crowdnode.error"
         vc.headerText = NSLocalizedString("You should have a positive balance on Dash Wallet", comment: "CrowdNode")
         vc.descriptionText = String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal", comment: "CrowdNode"), CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
-        vc.actionButtonText = NSLocalizedString("Buy Dash", comment: "CrowdNode")
+        
+        if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
+            vc.actionButtonText = NSLocalizedString("Buy Dash", comment: "CrowdNode")
+        } else {
+            vc.actionButtonText = ""
+        }
         
         let nvc = BaseNavigationController(rootViewController: vc)
         
