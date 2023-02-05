@@ -45,7 +45,15 @@ class SendAmountViewController: BaseAmountViewController {
         sendAmountModel.selectAllFunds()
     }
     
-    internal func checkLeftoverBalance(completion: @escaping ((Bool) -> Void)) {
+    internal func checkLeftoverBalance(isCrowdNodeTransfer: Bool = false, completion: @escaping ((Bool) -> Void)) {
+        if CrowdNode.lastKnownBalance <= 0 && !isCrowdNodeTransfer {
+            // If CrowdNode balance is 0, then there is no need to check the leftover balance
+            completion(true)
+        }
+        
+        // If CrowdNode balance isn't empty and the user sends DASH somewhere,
+        // or if the user is making a CrowdNode deposit, then we need to check the leftover balance
+        
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
         

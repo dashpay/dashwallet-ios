@@ -110,7 +110,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     private func handleDeposit(amount: UInt64) {
-        checkLeftoverBalance { [weak self] canContinue in
+        checkLeftoverBalance(isCrowdNodeTransfer: true) { [weak self] canContinue in
             guard canContinue, let wSelf = self else { self?.hideActivityIndicator(); return }
             
             Task {
