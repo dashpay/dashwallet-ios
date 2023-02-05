@@ -188,7 +188,7 @@ extension ExplorePointOfUse: RowDecodable {
         let latitude = row[ExplorePointOfUse.latitude]
         let longitude = row[ExplorePointOfUse.longitude]
         let website = row[ExplorePointOfUse.website]
-        let phone: String? = row[ExplorePointOfUse.phone]
+        let phone: String? = row[ExplorePointOfUse.phone]?.digits
         let logoLocation = row[ExplorePointOfUse.logoLocation]
         let coverImage: String? = row[ExplorePointOfUse.coverImage]
         let source: String? = row[ExplorePointOfUse.source]

@@ -55,9 +55,7 @@ class PointOfUseDetailsView: UIView {
     @objc
     func callAction() {
         guard let phone = merchant.phone, !phone.isEmpty else { return }
-
-        var fixedPhone = phone.digits
-        guard let url = URL(string: "telprompt://\(fixedPhone)") else { return }
+        guard let url = URL(string: "telprompt://\(phone)") else { return }
 
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
