@@ -78,7 +78,7 @@ extension CrowdNodePortalItem {
             return walletBalance <= 0 || isLinkingInProgress
 
         case .withdraw:
-            return crowdNodeBalance <= 0 || walletBalance < CrowdNode.minimumLeftoverBalance || isLinkingInProgress
+            return crowdNodeBalance <= 0 || isLinkingInProgress
 
         default:
             return false
