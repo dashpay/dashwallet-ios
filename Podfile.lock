@@ -620,7 +620,7 @@ PODS:
   - FirebaseStorage (8.15.0):
     - FirebaseCore (~> 8.0)
     - GTMSessionFetcher/Core (~> 1.5)
-  - GoogleDataTransport (9.2.0):
+  - GoogleDataTransport (9.2.1):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
@@ -816,7 +816,7 @@ SPEC CHECKSUMS:
   FirebaseCoreDiagnostics: 92e07a649aeb66352b319d43bdd2ee3942af84cb
   FirebaseDynamicLinks: 1dc816ef789c5adac6fede0b46d11478175c70e4
   FirebaseStorage: 8019af461599b2c3bc61c6a5dbdfa3d2de66a4d9
-  GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
+  GoogleDataTransport: ea169759df570f4e37bdee1623ec32a7e64e67c4
   GoogleUtilities: c2bdc4cf2ce786c4d2e6b3bcfd599a25ca78f06f
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
   gRPC-Core: 3a9fdb5967d42211e875826f3f6fc163ea02c2a1

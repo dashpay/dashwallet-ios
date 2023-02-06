@@ -58,7 +58,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     override func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?, offset: Int,
                         completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes,
+        dataSource.allMerchants(by: query, in: nil, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes,
                                 sortBy: filters?.sortBy, sortDirection: filters?.sortNameDirection, territory: filters?.territory,
                                 offset: offset, completion: completion)
     }

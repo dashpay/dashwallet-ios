@@ -65,6 +65,6 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
 
     private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds!, userPoint: userPoint, completion: completion)
+        dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint, completion: completion)
     }
 }

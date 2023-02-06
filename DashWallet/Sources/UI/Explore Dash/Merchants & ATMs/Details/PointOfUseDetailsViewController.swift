@@ -65,10 +65,7 @@ extension PointOfUseDetailsViewController {
     @objc
     func callAction() {
         guard let phone = pointOfUse.phone else { return }
-
-        let fixedPhone = phone.replacingOccurrences(of: " ", with: "")
-
-        guard let url = URL(string: "telprompt://\(fixedPhone)") else { return }
+        guard let url = URL(string: "telprompt://\(phone)") else { return }
 
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }

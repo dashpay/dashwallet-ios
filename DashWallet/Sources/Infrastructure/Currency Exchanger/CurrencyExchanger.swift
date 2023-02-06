@@ -121,12 +121,18 @@ extension CurrencyExchanger {
 
             var array = prices.sorted(by: { $0.code < $1.code })
 
-            let euroObj = pricesByCode["EUR"]!
-            let usdObj = pricesByCode["USD"]!
+            let euroObj = pricesByCode["EUR"]
+            let usdObj = pricesByCode["USD"]
 
             array.removeAll(where: { $0 == euroObj || $0 == usdObj })
-            array.insert(euroObj, at: 0)
-            array.insert(usdObj, at: 0)
+
+            if let item = usdObj {
+                array.insert(item, at: 0)
+            }
+
+            if let item = euroObj {
+                array.insert(item, at: 0)
+            }
 
             self.pricesByCode = pricesByCode
             self.plainPricesByCode = plainPricesByCode

@@ -171,3 +171,7 @@ extension NSRange {
         location != NSNotFound
     }
 }
+
+extension RangeReplaceableCollection where Self: StringProtocol {
+    var digits: Self { filter(\.isWholeNumber) }
+}
