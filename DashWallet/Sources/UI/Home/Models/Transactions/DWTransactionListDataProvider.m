@@ -70,7 +70,6 @@ NS_ASSUME_NONNULL_BEGIN
     DSAccount *account = [transaction.accounts containsObject:currentAccount] ? currentAccount : nil;
 
     DSTransactionDirection transactionDirection = account ? [transaction direction] : DSTransactionDirection_NotAccountFunds;
-    uint64_t dashAmount;
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
 

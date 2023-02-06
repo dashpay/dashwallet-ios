@@ -33,6 +33,7 @@ extension String {
         return self
     }
 
+    // TODO: Better to generate images per font size
     func dashSymbolAttributedString(with tintColor: UIColor) -> NSAttributedString {
         let image = UIImage(named: kDashSymbolAssetName)!.withTintColor(tintColor)
 
@@ -103,6 +104,10 @@ extension String {
         return attributedString
     }
 
+
+    var isCurrencySymbolAtTheBeginning: Bool {
+        !(first?.isNumber ?? true)
+    }
 
     /// Extract currency symbol from string formatted by number formatter
     ///

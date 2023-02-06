@@ -82,7 +82,7 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
     }
 
     private func prepareTransactionScreenImage() {
-        let model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+        let model = TxDetailModel(transaction: transaction)
         let vc = TXDetailViewController(model: model)
         dw_embedChild(vc, inContainer: transactionScreenContainer)
 

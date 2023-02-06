@@ -159,7 +159,7 @@ extension PaymentViewController {
             dismiss(animated: true)
         } else { }
 
-        let model = TxDetailModel(transaction: transaction, dataProvider: DWTransactionListDataProvider())
+        let model = TxDetailModel(transaction: transaction)
         let vc = SuccessTxDetailViewController(model: model)
         vc.modalPresentationStyle = .fullScreen
         vc.contactItem = contactItem

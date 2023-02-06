@@ -217,7 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
     TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
 
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];

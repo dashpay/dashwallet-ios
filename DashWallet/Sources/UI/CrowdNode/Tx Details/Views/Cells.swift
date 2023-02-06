@@ -34,8 +34,8 @@ final class CNCreateAccountTxDetailsTxItemCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func update(with transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
-        txItemView.update(with: transaction, dataProvider: dataProvider)
+    func update(with transaction: TransactionDataItem) {
+        txItemView.update(with: transaction)
     }
 
     private func configureHierarchy() {
@@ -53,7 +53,6 @@ final class CNCreateAccountTxDetailsTxItemCell: UITableViewCell {
 
 // MARK: - CNCreateAccountTxDetailsInfoCell
 
-// MARK: CNCreateAccountTxDetailsInfoCell
 final class CNCreateAccountTxDetailsInfoCell: UITableViewCell {
     private let topLabel: UILabel
     private let infoLabel: UILabel

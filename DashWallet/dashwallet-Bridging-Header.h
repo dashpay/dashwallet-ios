@@ -22,9 +22,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSOperationQueue.h"
 
 //MARK: DashWallet
-#import "DWTransactionListDataProviderProtocol.h"
 #import "DWActionButton.h"
-#import "DWTransactionListDataProvider.h"
 #import "DWDPBasicUserItem.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"

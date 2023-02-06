@@ -21,9 +21,8 @@ import UIKit
 final class TxListTableViewCell: UITableViewCell {
     @IBOutlet var txItemView: TransactionItemView!
 
-    @objc
-    func update(with transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
-        txItemView.update(with: transaction, dataProvider: dataProvider)
+    func update(with transaction: Transaction) {
+        txItemView.update(with: transaction)
     }
 
     override func setHighlighted(_ highlighted: Bool, animated: Bool) {

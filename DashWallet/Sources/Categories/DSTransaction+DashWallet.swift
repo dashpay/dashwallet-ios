@@ -45,6 +45,8 @@ extension DSTransaction {
     var formattedISO8601TxDate: String {
         DWDateFormatter.sharedInstance().iso8601String(from: date)
     }
+
+
 }
 
 extension DSTransactionDirection {
@@ -93,8 +95,35 @@ extension DSTransactionDirection {
         }
     }
 
+
     private func systemImage(_ name: String) -> UIImage {
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
         return UIImage(systemName: "arrow.down.circle.fill", withConfiguration: iconConfig)!
+    }
+
+    var directionSymbol: String {
+        switch self {
+        case .moved:
+            return "⟲"
+        case .received:
+            return "+";
+        case .sent:
+            return "-";
+        default:
+            return "";
+        }
+    }
+
+    var dashAmountTintColor: UIColor {
+        switch self {
+        case .moved:
+            return .dw_quaternaryText()
+        case .sent:
+            return .dw_darkTitle()
+        case .received:
+            return .dw_dashBlue()
+        case .notAccountFunds:
+            return .dw_dashBlue()
+        }
     }
 }

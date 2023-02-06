@@ -41,17 +41,15 @@ final class TransactionItemView: UIView {
         configureHierarchy()
     }
 
-    func update(with transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
-        let dataItem = dataProvider.transactionData(for: transaction)
+    func update(with transaction: TransactionDataItem) {
+        imageContainer.backgroundColor = transaction.direction.tintColor.withAlphaComponent(0.1)
+        imageView.image = transaction.direction.icon
+        imageView.tintColor = transaction.direction.tintColor
 
-        imageContainer.backgroundColor = dataItem.direction.tintColor.withAlphaComponent(0.1)
-        imageView.image = dataItem.direction.icon
-        imageView.tintColor = dataItem.direction.tintColor
-
-        titleLabel.text = dataItem.directionText
-        subtitleLabel.text = dataProvider.shortDateString(for: transaction)
-        amountLabel.attributedText = dataProvider.dashAmountString(from: dataItem, font: .dw_font(forTextStyle: .subheadline))
-        fiatAmountLabel.text = dataItem.fiatAmount
+        titleLabel.text = transaction.stateTitle
+        subtitleLabel.text = transaction.shortDateString
+        amountLabel.attributedText = transaction.attributedDashAmount(with: .dw_font(forTextStyle: .subheadline))
+        fiatAmountLabel.text = transaction.fiatAmount
     }
 
     // MARK: Life cycle

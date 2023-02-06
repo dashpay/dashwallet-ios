@@ -178,7 +178,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
 
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
     SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
     vc.modalPresentationStyle = UIModalPresentationFullScreen;
     vc.contactItem = _paymentController.contactItem;

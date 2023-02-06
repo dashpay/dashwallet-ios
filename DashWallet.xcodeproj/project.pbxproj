@@ -486,6 +486,7 @@
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		47081197298CF20C003FCA3D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081196298CF20B003FCA3D /* Transaction.swift */; };
 		47081199298CF57D003FCA3D /* TransactionListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081198298CF57D003FCA3D /* TransactionListDataSource.swift */; };
+		4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4708119E2990F56F003FCA3D /* TransactionDataItem.swift */; };
 		47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */; };
 		47083B3629893E700010AF71 /* CNCreateAccountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3529893E700010AF71 /* CNCreateAccountCell.swift */; };
 		47083B3829893F4B0010AF71 /* CNCreateAccountCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */; };
@@ -1695,6 +1696,7 @@
 		47081196298CF20B003FCA3D /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		47081198298CF57D003FCA3D /* TransactionListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TransactionListDataSource.swift; path = DashWallet/Sources/UI/Home/Models/TransactionListDataSource.swift; sourceTree = SOURCE_ROOT; };
 		4708119C298CF9E0003FCA3D /* DWDPRegistrationErrorRetryDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationErrorRetryDelegate.h; sourceTree = "<group>"; };
+		4708119E2990F56F003FCA3D /* TransactionDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDataItem.swift; sourceTree = "<group>"; };
 		47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DSTransaction+DashWallet.swift"; sourceTree = "<group>"; };
 		47083B3529893E700010AF71 /* CNCreateAccountCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNCreateAccountCell.swift; sourceTree = "<group>"; };
 		47083B3729893F4B0010AF71 /* CNCreateAccountCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CNCreateAccountCell.xib; sourceTree = "<group>"; };
@@ -4588,6 +4590,14 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		4708119D2990F562003FCA3D /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				4708119E2990F56F003FCA3D /* TransactionDataItem.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		47083B3329893E260010AF71 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -4679,6 +4689,7 @@
 		474C7216298A421000475CA6 /* Item */ = {
 			isa = PBXGroup;
 			children = (
+				4708119D2990F562003FCA3D /* Model */,
 				474C7217298A422400475CA6 /* TransactionItemView.swift */,
 			);
 			path = Item;
@@ -6555,6 +6566,7 @@
 				2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */,
 				C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */,
 				4751CACD297021EE00F63AC4 /* ConvertCryptoOrderPreviewController.swift in Sources */,
+				4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,

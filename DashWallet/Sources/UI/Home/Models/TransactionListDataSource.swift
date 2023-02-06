@@ -28,8 +28,6 @@ enum TransactionListDataItem {
 
 @objc(DWTransactionListDataSource)
 final class TransactionListDataSource: NSObject, UITableViewDataSource {
-    weak var dataProvider: DWTransactionListDataProviderProtocol!
-
     @objc
     var items: [DSTransaction]
 
@@ -50,13 +48,15 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
     }
 
     @objc
-    init(transactions: [DSTransaction], registrationStatus: DWDPRegistrationStatus?, dataProvider: DWTransactionListDataProviderProtocol) {
+    init(transactions: [DSTransaction], registrationStatus: DWDPRegistrationStatus?) {
         items = transactions
+        _items = transactions.map { .tx(Transaction(transaction: $0)) }
         self.registrationStatus = registrationStatus
-        self.dataProvider = dataProvider
     }
 
+
     @objc
+    @available(*, deprecated, message: "Use transaction(for indexPath:) instead")
     func transactionForIndexPath(_ indexPath: IndexPath) -> DSTransaction? {
         let index: Int
         if showsRegistrationStatus {
@@ -68,6 +68,19 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
             index = indexPath.row - 1
         }
         return items[index]
+    }
+
+    func transaction(for indexPath: IndexPath) -> TransactionListDataItem? {
+        let index: Int
+        if showsRegistrationStatus {
+            if indexPath.row == 0 {
+                return nil
+            }
+            index = indexPath.row - 1
+        } else {
+            index = indexPath.row - 1
+        }
+        return _items[index]
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -105,18 +118,18 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! CNCreateAccountCell
                 return cell
             }
-            let tx = transactionForIndexPath(indexPath)!
+
             let cellId = TxListTableViewCell.dw_reuseIdentifier
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TxListTableViewCell
-            cell.update(with: tx, dataProvider: dataProvider!)
+            if case .tx(let transaction) = transaction(for: indexPath)! {
+                cell.update(with: transaction)
+            }
             return cell
         }
     }
 }
 
 // MARK: - TransactionListDataItemType
-
-// MARK: Objc workaround
 
 @objc(DWTransactionListDataItemType)
 enum TransactionListDataItemType: Int {

@@ -221,9 +221,8 @@ NS_ASSUME_NONNULL_END
     }
 
     DSTransaction *transaction = ((id<DWDPTxItem>)item).transaction;
-    id<DWTransactionListDataProviderProtocol> dataProvider = self.dataProvider;
 
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:dataProvider];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
     TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
 
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];

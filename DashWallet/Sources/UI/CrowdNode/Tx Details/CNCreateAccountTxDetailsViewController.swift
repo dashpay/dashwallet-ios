@@ -77,7 +77,7 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
         case .txs:
             let tx = DWEnvironment.sharedInstance().currentAccount.allTransactions[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsTxItemCell.reuseIdentifier, for: indexPath) as! CNCreateAccountTxDetailsTxItemCell
-            cell.update(with: tx, dataProvider: DWTransactionListDataProvider())
+            cell.update(with: Transaction(transaction: tx))
             return cell
         }
     }
