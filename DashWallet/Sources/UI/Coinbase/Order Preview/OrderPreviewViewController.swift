@@ -73,11 +73,11 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
         let vc = BasicInfoController()
         vc.mainAction = { UIApplication.shared.open(kCoinbaseFeeInfoURL) }
         vc.icon = "coinbase.fee.info"
-        vc.headerText = "Fees in crypto purchases"
-        vc.descriptionText = """
+        vc.headerText = NSLocalizedString("Fees in crypto purchases", comment: "Coinbase/Buy Dash/Fee Info")
+        vc.descriptionText = NSLocalizedString("""
             In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n
             Cryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.
-            """
+            """, comment: "Coinbase/Buy Dash/Fee Info")
         vc.actionButtonText = NSLocalizedString("Learn More...", comment: "Coinbase")
         
         let nvc = BaseNavigationController(rootViewController: vc)
