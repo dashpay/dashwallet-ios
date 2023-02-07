@@ -422,6 +422,9 @@
 "Credit Card" = "Credit Card";
 
 /* No comment provided by engineer. */
+"CrowdNode Account" = "CrowdNode Account";
+
+/* No comment provided by engineer. */
 "CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
 
 /* CrowdNode Portal */
@@ -1755,6 +1758,9 @@
 /* No comment provided by engineer. */
 "Where to Spend?" = "Де витратити?";
 
+/* Crowdnode */
+"Why do I see all these transactions?" = "Why do I see all these transactions?";
+
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Чому я не можу зробити скріншот?";
 
@@ -1847,6 +1853,9 @@
 
 /* CrowdNode */
 "Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+
+/* Crowdnode */
+"Your CrowdNode account was created using these transactions. " = "Your CrowdNode account was created using these transactions. ";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "Your CrowdNode address has been confirmed.";
