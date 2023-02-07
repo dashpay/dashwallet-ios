@@ -57,6 +57,11 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc
+    func backButtonAction() {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    @objc
     func infoButtonAction() {
         if viewModel.signUpState == .linkedOnline {
             present(OnlineAccountDetailsController.controller(), animated: true)
@@ -96,8 +101,15 @@ extension CrowdNodePortalController {
     private func configureNavBar() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
-        let image = UIImage(systemName: "chevron.backward")?.withTintColor(.white, renderingMode: .alwaysOriginal)
-        appearance.setBackIndicatorImage(image, transitionMaskImage: image)
+        
+        let backButton = UIButton(type: .custom)
+        backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
+        backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
+        backButton.tintColor = .white
+        backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+        backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)
+
         navigationItem.standardAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
 
