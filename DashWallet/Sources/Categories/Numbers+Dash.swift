@@ -30,16 +30,12 @@ extension UInt64 {
         dashAmount.formattedDashAmount
     }
 
-    /// Converts `UInt64` to formatted dash string. 123456780 ->  "1"
+    /// Converts `UInt64` to formatted dash string. 12345678 ->  "1.2345678"
     ///
     /// - Returns: Formatted dash amount without dash symbol
     ///
     var formattedDashAmountWithoutCurrencySymbol: String {
-        if #available(iOS 15.0, *) {
-            return dashAmount.formatted(.number)
-        } else {
-            return "\(dashAmount)"
-        }
+        dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
 
     func formattedCryptoAmount(exponent: Int = 8) -> String {
@@ -83,6 +79,11 @@ extension Decimal {
         NumberFormatter.dashFormatter.string(from: self as NSNumber)!
     }
 
+    var formattedDashAmountWithoutCurrencySymbol: String {
+        let formatter = NumberFormatter.dashDecimalFormatter
+        return formatter.string(from: self as NSNumber)!
+    }
+
     func rounded(_ mode: NSDecimalNumber.RoundingMode = .plain) -> Decimal {
         var result = Decimal()
         var number = self
@@ -96,5 +97,22 @@ extension Decimal {
         } else {
             return "\(self)"
         }
+    }
+}
+
+extension NSDecimalNumber {
+
+    /// Converts `Decimal` to plain dash amount in duffs
+    ///
+    /// - Returns: Plain dash amount in duffs
+    ///
+    var plainDashAmount: UInt64 {
+        let duffs = NSDecimalNumber(value: DUFFS)
+        let amount = multiplying(by: duffs)
+        return amount.uint64Value
+    }
+
+    var formattedDashAmount: String {
+        decimalValue.formattedDashAmount
     }
 }

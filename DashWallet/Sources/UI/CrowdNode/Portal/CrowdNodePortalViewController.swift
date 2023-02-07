@@ -333,7 +333,14 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .deposit:
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.deposit), animated: true)
         case .withdraw:
-            navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
+            let account = DWEnvironment.sharedInstance().currentAccount
+            let allAvailableFunds = account.maxOutputAmount
+            
+            if allAvailableFunds >= CrowdNode.minimumLeftoverBalance {
+                navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
+            } else {
+                showMinimumBalanceError()
+            }
         case .onlineAccount:
             switch viewModel.onlineAccountState {
             case .none, .creating:
@@ -350,6 +357,32 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .support:
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
+    }
+    
+    private func showMinimumBalanceError() {
+        let vc = BasicInfoController()
+        vc.icon = "image.crowdnode.error"
+        vc.headerText = NSLocalizedString("You should have a positive balance on Dash Wallet", comment: "CrowdNode")
+        vc.descriptionText = String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal", comment: "CrowdNode"), CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
+        
+        if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
+            vc.actionButtonText = NSLocalizedString("Buy Dash", comment: "CrowdNode")
+        } else {
+            vc.actionButtonText = ""
+        }
+        
+        let nvc = BaseNavigationController(rootViewController: vc)
+        
+        vc.mainAction = {
+            Task {
+                if await self.viewModel.authenticate() {
+                    let controller = PortalViewController.controller()
+                    nvc.pushViewController(controller, animated: true)
+                }
+            }
+        }
+        
+        present(nvc, animated: true)
     }
 }
 

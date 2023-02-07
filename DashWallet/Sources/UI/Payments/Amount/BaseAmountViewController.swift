@@ -51,12 +51,18 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal var numberKeyboard: NumberKeyboard!
 
-    internal var model: BaseAmountModel!
+    internal let model: BaseAmountModel
 
     func maxButtonAction() { }
 
-    internal func initializeModel() {
-        model = BaseAmountModel()
+    init(model: BaseAmountModel) {
+        self.model = model
+
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     internal func configureModel() {
@@ -78,6 +84,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func amountDidChange() {
+        actionButton?.isEnabled = model.isAllowedToContinue
         amountView.amountInputControl.reloadData()
         showErrorIfNeeded()
     }
@@ -118,6 +125,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        actionButton?.isEnabled = model.isAllowedToContinue
         amountView.becomeFirstResponder()
         showErrorIfNeeded()
     }
@@ -125,9 +133,8 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        initializeModel()
-        configureModel()
         configureHierarchy()
+        configureModel()
     }
 }
 

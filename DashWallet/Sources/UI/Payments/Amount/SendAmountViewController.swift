@@ -29,7 +29,11 @@ class SendAmountViewController: BaseAmountViewController {
     }
 
     init() {
-        super.init(nibName: nil, bundle: nil)
+        super.init(model: SendAmountModel())
+    }
+
+    override init(model: BaseAmountModel) {
+        super.init(model: model)
     }
 
     @available(*, unavailable)
@@ -37,23 +41,35 @@ class SendAmountViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func initializeModel() {
-        model = SendAmountModel()
-    }
-
     override func maxButtonAction() {
         sendAmountModel.selectAllFunds()
     }
-
-    override func amountDidChange() {
-        super.amountDidChange()
-
-        actionButton?.isEnabled = sendAmountModel.isSendAllowed
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        actionButton?.isEnabled = sendAmountModel.isSendAllowed
+    
+    internal func checkLeftoverBalance(isCrowdNodeTransfer: Bool = false, completion: @escaping ((Bool) -> Void)) {
+        if CrowdNode.lastKnownBalance <= 0 && !isCrowdNodeTransfer {
+            // If CrowdNode balance is 0, then there is no need to check the leftover balance
+            completion(true)
+        }
+        
+        // If CrowdNode balance isn't empty and the user sends DASH somewhere,
+        // or if the user is making a CrowdNode deposit, then we need to check the leftover balance
+        
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let allAvailableFunds = account.maxOutputAmount
+        
+        if model.amount.plainAmount > allAvailableFunds - CrowdNode.minimumLeftoverBalance {
+            let title = NSLocalizedString("Looks like you are emptying your Dash Wallet", comment: "Leftover balance warning")
+            let message = String.localizedStringWithFormat(NSLocalizedString("Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.", comment: "Leftover balance warning"), CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Continue", comment: "Leftover balance warning"), style: .default, handler: { _ in
+                completion(true)
+            }))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Leftover balance warning"), style: .cancel, handler: { _ in
+                completion(false)
+            }))
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            completion(true)
+        }
     }
 }

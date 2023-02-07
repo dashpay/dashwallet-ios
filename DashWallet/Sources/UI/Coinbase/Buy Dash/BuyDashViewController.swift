@@ -20,23 +20,20 @@ import UIKit
 
 // MARK: - BuyDashViewController
 
-final class BuyDashViewController: BaseAmountViewController, NetworkReachabilityHandling {
-    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
-    internal var reachabilityObserver: Any!
-
+final class BuyDashViewController: CoinbaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
+
+    override var amountInputStyle: AmountInputControl.Style { .basic }
 
     internal var buyDashModel: BuyDashModel {
         model as! BuyDashModel
     }
 
     private var activePaymentMethodView: ActivePaymentMethodView!
-    private var networkUnavailableView: UIView!
-
     internal var cancellables = Set<AnyCancellable>()
 
     init() {
-        super.init(nibName: nil, bundle: nil)
+        super.init(model: BuyDashModel())
     }
 
     @available(*, unavailable)
@@ -45,11 +42,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     }
 
     // MARK: Actions
-    override func amountDidChange() {
-        super.amountDidChange()
-        actionButton?.isEnabled = buyDashModel.canContinue
-    }
-
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         buyDashModel.buy()
@@ -68,10 +60,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
     }
 
     // MARK: Life cycle
-    override func initializeModel() {
-        model = BuyDashModel()
-    }
-
     override func configureModel() {
         super.configureModel()
 
@@ -122,11 +110,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
 
         topKeyboardView = sendingToView
 
-        networkUnavailableView = NetworkUnavailableView(frame: .zero)
-        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
-        networkUnavailableView.isHidden = true
-        contentView.addSubview(networkUnavailableView)
-
         NSLayoutConstraint.activate([
             activePaymentMethodView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
             activePaymentMethodView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
@@ -136,9 +119,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             amountView.topAnchor.constraint(equalTo: activePaymentMethodView.bottomAnchor, constant: 30),
-
-            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
         ])
     }
 
@@ -149,16 +129,6 @@ final class BuyDashViewController: BaseAmountViewController, NetworkReachability
             self?.reloadView()
         }
         startNetworkMonitoring()
-    }
-}
-
-// MARK: Private
-extension BuyDashViewController {
-    private func reloadView() {
-        let isOnline = networkStatus == .online
-        networkUnavailableView.isHidden = isOnline
-        keyboardContainer.isHidden = !isOnline
-        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
     }
 }
 

@@ -17,15 +17,42 @@
 
 import UIKit
 
-// MARK: - CoinbaseFeeInfoController
+// MARK: - BasicInfoController
 
-final class CoinbaseFeeInfoController: BaseViewController {
+final class BasicInfoController: BaseViewController {
 
     private var scrollView: UIScrollView!
     private var iconView: UIImageView!
     private var titleLabel: UILabel!
     private var descriptionLabel: UILabel!
-    private var learnMoreButton: UIButton!
+    private var actionButton: UIButton!
+    
+    var mainAction: (() -> ())?
+    
+    var icon: String! {
+        didSet {
+            iconView = UIImageView(image: UIImage(named: icon))
+        }
+    }
+    
+    var headerText: String! {
+        didSet {
+            titleLabel?.text = headerText
+        }
+    }
+
+    var descriptionText: String! {
+        didSet {
+            descriptionLabel?.text = descriptionText
+        }
+    }
+    
+    var actionButtonText: String! {
+        didSet {
+            actionButton?.setTitle(NSLocalizedString(actionButtonText, comment: "Basic Info Screen"), for: .normal)
+            actionButton?.isHidden = actionButtonText.isEmpty
+        }
+    }
 
     // MARK: Actions
     @objc
@@ -34,8 +61,8 @@ final class CoinbaseFeeInfoController: BaseViewController {
     }
 
     @objc
-    func learnMoreAction() {
-        UIApplication.shared.open(kCoinbaseFeeInfoURL)
+    func buttonAction() {
+        mainAction?()
     }
 
     override func viewDidLoad() {
@@ -46,7 +73,7 @@ final class CoinbaseFeeInfoController: BaseViewController {
 }
 
 // MARK: Life cycle
-extension CoinbaseFeeInfoController {
+extension BasicInfoController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_background()
 
@@ -65,7 +92,7 @@ extension CoinbaseFeeInfoController {
         contentView.backgroundColor = .clear
         scrollView.addSubview(contentView)
 
-        iconView = UIImageView(image: UIImage(named: "coinbase.fee.info"))
+        iconView = UIImageView(image: UIImage(named: icon))
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(iconView)
@@ -73,8 +100,9 @@ extension CoinbaseFeeInfoController {
         titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 0
         titleLabel.font = .dw_font(forTextStyle: .title2).withWeight(500)
-        titleLabel.text = "Fees in crypto purchases"
+        titleLabel.text = headerText
         scrollView.addSubview(titleLabel)
 
         descriptionLabel = UILabel()
@@ -83,20 +111,23 @@ extension CoinbaseFeeInfoController {
         descriptionLabel.lineBreakMode = .byWordWrapping
         descriptionLabel.textAlignment = .natural
         descriptionLabel.font = .dw_font(forTextStyle: .body)
-        descriptionLabel.text = """
-            In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n
-            Cryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.
-            """
+        descriptionLabel.textAlignment = .center
+        descriptionLabel.text = descriptionText
         scrollView.addSubview(descriptionLabel)
+        
+        if getLines(for: descriptionLabel) > 3 {
+            descriptionLabel.textAlignment = .left
+        }
 
-        learnMoreButton = UIButton(type: .custom)
-        learnMoreButton.translatesAutoresizingMaskIntoConstraints = false
-        learnMoreButton.addTarget(self, action: #selector(learnMoreAction), for: .touchUpInside)
-        learnMoreButton.tintColor = .dw_dashBlue()
-        learnMoreButton.setTitleColor(.dw_dashBlue(), for: .normal)
-        learnMoreButton.titleLabel?.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.bold.rawValue)
-        learnMoreButton.setTitle(NSLocalizedString("Learn More...", comment: "Info Screen"), for: .normal)
-        scrollView.addSubview(learnMoreButton)
+        actionButton = UIButton(type: .custom)
+        actionButton.translatesAutoresizingMaskIntoConstraints = false
+        actionButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        actionButton.tintColor = .dw_dashBlue()
+        actionButton.setTitleColor(.dw_dashBlue(), for: .normal)
+        actionButton.titleLabel?.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.bold.rawValue)
+        actionButton.setTitle(actionButtonText, for: .normal)
+        actionButton.isHidden = actionButtonText.isEmpty
+        scrollView.addSubview(actionButton)
 
         let frameGuide = scrollView.frameLayoutGuide
         let contentGuide = scrollView.contentLayoutGuide
@@ -128,12 +159,18 @@ extension CoinbaseFeeInfoController {
             descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
 
-            learnMoreButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 15),
-            learnMoreButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            learnMoreButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            learnMoreButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
-            learnMoreButton.heightAnchor.constraint(equalToConstant: 58),
+            actionButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 15),
+            actionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            actionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            actionButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+            actionButton.heightAnchor.constraint(equalToConstant: 58),
         ])
     }
+    
+    private func getLines(for label: UILabel) -> Int {
+        let labelSize = CGSize(width: label.frame.size.width, height: CGFloat(Float.infinity))
+        let size = (label.text ?? "").boundingRect(with: labelSize, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: label.font ?? .dw_font(forTextStyle: .body)], context: nil)
+        
+        return Int(ceil(size.height / label.font.lineHeight))
+    }
 }
-

@@ -93,7 +93,7 @@ extension CrowdNodePortalItem {
             return walletBalance <= 0 || isLinkingInProgress
 
         case .withdraw:
-            return crowdNodeBalance <= 0 || walletBalance < CrowdNode.minimumLeftoverBalance || isLinkingInProgress
+            return crowdNodeBalance <= 0 || isLinkingInProgress
 
         default:
             return false
@@ -129,7 +129,7 @@ extension CrowdNodePortalItem {
         case .deposit:
             return UIColor.dw_dashBlue().withAlphaComponent(0.08)
         default:
-            return .dw_secondaryBackground()
+            return UIColor.label.withAlphaComponent(0.06)
         }
     }
 

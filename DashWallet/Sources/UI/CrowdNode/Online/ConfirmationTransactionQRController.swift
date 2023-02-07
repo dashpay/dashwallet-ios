@@ -32,9 +32,13 @@ final class ConfirmationTransactionQRController: UIViewController {
         vc.modalPresentationStyle = .pageSheet
         vc.paymentRequest = paymentRequest
 
-        if #available(iOS 15.0, *) {
+        if #available(iOS 16.0, *) {
             if let sheet = vc.sheetPresentationController {
-                sheet.detents = [.medium()]
+                let fitId = UISheetPresentationController.Detent.Identifier("fit")
+                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { context in
+                    return 420
+                }
+                sheet.detents = [fitDetent]
             }
         }
 

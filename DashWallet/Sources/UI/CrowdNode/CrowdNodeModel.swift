@@ -277,7 +277,7 @@ extension CrowdNodeModel {
         precondition(!accountAddress.isEmpty)
         crowdNode.trackLinkingAccount(address: accountAddress)
 
-        return URL(string: CrowdNode.apiLinkUrl + crowdNode.accountAddress)!
+        return URL(string: CrowdNode.apiLinkUrl + accountAddress)!
     }
 
     func cancelLinkingOnlineAccount() {

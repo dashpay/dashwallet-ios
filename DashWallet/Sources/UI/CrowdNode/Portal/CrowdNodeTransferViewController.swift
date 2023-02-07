@@ -24,7 +24,9 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
-    internal var mode: TransferDirection = .deposit
+    internal var mode: TransferDirection {
+        transferModel.direction
+    }
 
     /// Conform to NetworkReachabilityHandling
     internal var networkStatusDidChange: ((NetworkStatus) -> ())?
@@ -41,9 +43,10 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
     static func controller(mode: TransferDirection) -> CrowdNodeTransferController {
-        let vc = CrowdNodeTransferController()
-        vc.mode = mode
+        let model = CrowdNodeTransferModel()
+        model.direction = mode
 
+        let vc = CrowdNodeTransferController(model: model)
         return vc
     }
 
@@ -83,32 +86,19 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override func actionButtonAction(sender: UIView) {
         let amount = transferModel.amount.plainAmount
 
-        if viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
+        if mode == .deposit && viewModel.shouldShowFirstDepositBanner && amount < CrowdNode.minimumDeposit {
             minimumDepositBanner?.backgroundColor = .systemRed
             minimumDepositBanner?.dw_shakeView()
             return
         }
 
-        Task {
-            showActivityIndicator()
+        showActivityIndicator()
 
-            do {
-                if try await handleTransfer(amount: amount) {
-                    showSuccessfulStatus()
-                }
-
-                hideActivityIndicator()
-            } catch {
-                hideActivityIndicator()
-                showErrorStatus(err: error)
-            }
+        if mode == .deposit {
+            handleDeposit(amount: amount)
+        } else {
+            handleWithdraw(amount: amount)
         }
-    }
-
-    override func initializeModel() {
-        let depositWithdrawlModel = CrowdNodeTransferModel()
-        depositWithdrawlModel.direction = mode
-        model = depositWithdrawlModel
     }
 
     override func configureModel() {
@@ -119,20 +109,37 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
     }
 
-    private func handleTransfer(amount: UInt64) async throws -> Bool {
-        if mode == .deposit {
-            return try await viewModel.deposit(amount: amount)
-        } else {
-            return try await handleWithdraw(amount: amount)
+    private func handleDeposit(amount: UInt64) {
+        checkLeftoverBalance(isCrowdNodeTransfer: true) { [weak self] canContinue in
+            guard canContinue, let wSelf = self else { self?.hideActivityIndicator(); return }
+            
+            Task {
+                do {
+                    if try await wSelf.viewModel.deposit(amount: amount) {
+                        wSelf.showSuccessfulStatus()
+                    }
+                } catch {
+                    wSelf.showErrorStatus(err: error)
+                }
+                
+                wSelf.hideActivityIndicator()
+            }
         }
     }
 
-    private func handleWithdraw(amount: UInt64) async throws -> Bool {
-        do {
-            return try await viewModel.withdraw(amount: amount)
-        } catch CrowdNode.Error.withdrawLimit(_, let period) {
-            showWithdrawalLimitsError(period: period)
-            return false
+    private func handleWithdraw(amount: UInt64) {
+        Task {
+            do {
+                if try await viewModel.withdraw(amount: amount) {
+                    showSuccessfulStatus()
+                }
+            } catch CrowdNode.Error.withdrawLimit(_, let period) {
+                showWithdrawalLimitsError(period: period)
+            } catch {
+                showErrorStatus(err: error)
+            }
+            
+            hideActivityIndicator()
         }
     }
 

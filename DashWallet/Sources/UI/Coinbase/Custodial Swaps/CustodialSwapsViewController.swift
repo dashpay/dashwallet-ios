@@ -19,42 +19,25 @@ import UIKit
 
 // MARK: - CustodialSwapsViewController
 
-class CustodialSwapsViewController: TransferAmountViewController {
+final class CustodialSwapsViewController: CoinbaseAmountViewController {
 
     override var actionButtonTitle: String? {
         NSLocalizedString("Get Quote", comment: "Coinbase/Convert Crypto")
     }
 
     private var custodialSwapsModel: CustodialSwapsModel { model as! CustodialSwapsModel }
+    private var converterView: ConverterView!
+
+    init() {
+        super.init(model: CustodialSwapsModel())
+    }
 
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
         custodialSwapsModel.convert()
     }
 
-    override func didChangeDirection() { }
-
-    override func didTapOnFromView() {
-        let vc = AccountListController.controller()
-        vc.selectHandler = { [weak self] account in
-            guard let self else { return }
-            self.custodialSwapsModel.selectedAccount = account
-            self.reloadView()
-            self.converterView.reloadView()
-            self.amountView.inputTypeSwitcher.reloadData()
-            self.amountView.amountInputControl.reloadData()
-            self.actionButton?.isEnabled = self.custodialSwapsModel.isSendAllowed
-            self.dismiss(animated: true)
-        }
-
-        let nvc = BaseNavigationController(rootViewController: vc)
-        present(nvc, animated: true)
-    }
-
-    override func initializeModel() {
-        model = CustodialSwapsModel()
-    }
-
+    // MARK: Life cycle
     override func configureModel() {
         super.configureModel()
 
@@ -64,15 +47,41 @@ class CustodialSwapsViewController: TransferAmountViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        navigationItem.title = NSLocalizedString("Convert Crypto", comment: "Coinbase")
+        view.backgroundColor = .dw_secondaryBackground()
 
+        navigationItem.title = NSLocalizedString("Convert Crypto", comment: "Coinbase")
+        navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.largeTitleDisplayMode = .never
+
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 20
+        stackView.alignment = .fill
+        contentView.addSubview(stackView)
+
+        // Move amount view into stack view
+        stackView.addArrangedSubview(amountView)
+
+        converterView = ConverterView(frame: .zero)
+        converterView.translatesAutoresizingMaskIntoConstraints = false
+        converterView.delegate = self
+        converterView.dataSource = model as? ConverterViewDataSource
         converterView.isChevronHidden = false
         converterView.isSwappingAllowed = false
+        stackView.addArrangedSubview(converterView)
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
+        ])
 
         // Hide all by default, except converter view
         amountView.isHidden = true
         keyboardContainer.isHidden = true
     }
+
 
     override func reloadView() {
         super.reloadView()
@@ -95,5 +104,30 @@ extension CustodialSwapsViewController: CustodialSwapsModelDelegate {
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
         hideActivityIndicator()
+    }
+}
+
+// MARK: ConverterViewDelegate
+
+extension CustodialSwapsViewController: ConverterViewDelegate {
+    func didChangeDirection() {
+        // NOP
+    }
+
+    func didTapOnFromView() {
+        let vc = AccountListController.controller()
+        vc.selectHandler = { [weak self] account in
+            guard let self else { return }
+            self.custodialSwapsModel.selectedAccount = account
+            self.reloadView()
+            self.converterView.reloadView()
+            self.amountView.inputTypeSwitcher.reloadData()
+            self.amountView.amountInputControl.reloadData()
+            self.actionButton?.isEnabled = self.model.isAllowedToContinue
+            self.dismiss(animated: true)
+        }
+
+        let nvc = BaseNavigationController(rootViewController: vc)
+        present(nvc, animated: true)
     }
 }
