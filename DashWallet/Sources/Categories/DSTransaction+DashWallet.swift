@@ -29,6 +29,76 @@ extension DSTransaction {
         let txDate = Date(timeIntervalSince1970: timestamp)
         return txDate;
     }
+
+    var dashAmount: UInt64 {
+        var amount: UInt64 = 0
+
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
+        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
+
+        let direction = direction
+
+        switch direction {
+        case .moved:
+            amount = account!.amountReceivedFromTransaction(onExternalAddresses: self)
+        case .sent:
+            amount = chain.amountSent(by: self) - chain.amountReceived(from: self) - feeUsed
+        case .received:
+            amount = account!.amountReceived(from: self)
+        case .notAccountFunds:
+            amount = 0
+        @unknown default:
+            fatalError()
+        }
+
+        return amount
+    }
+}
+
+extension DSTransaction {
+    var direction: DSTransactionDirection {
+        let currentAccount = DWEnvironment.sharedInstance().currentAccount
+        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
+
+        return account != nil ? chain.direction(of: self) : .notAccountFunds
+    }
+
+
+
+    var outputReceiveAddresses: [String] {
+        var outputReceiveAddresses: [String] = []
+
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
+        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
+
+        switch direction {
+        case .moved, .sent, .received:
+            outputReceiveAddresses = account!.externalAddresses(of: self)
+        default:
+            break
+        }
+
+        return outputReceiveAddresses
+    }
+
+    var specialInfoAddresses: [String: Int] {
+        var specialInfoAddresses: [String: Int] = [:]
+
+        switch direction {
+        case .notAccountFunds:
+            if let tx = self as? DSProviderRegistrationTransaction {
+                specialInfoAddresses = [tx.ownerAddress!: 0, tx.operatorAddress: 1, tx.votingAddress: 2]
+            } else if let tx = self as? DSProviderUpdateRegistrarTransaction {
+                specialInfoAddresses = [tx.operatorAddress: 0, tx.votingAddress: 1]
+            }
+        default:
+            break
+        }
+
+        return specialInfoAddresses
+    }
 }
 
 // MARK: UI
@@ -45,8 +115,6 @@ extension DSTransaction {
     var formattedISO8601TxDate: String {
         DWDateFormatter.sharedInstance().iso8601String(from: date)
     }
-
-
 }
 
 extension DSTransactionDirection {

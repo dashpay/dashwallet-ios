@@ -92,29 +92,10 @@ struct Transaction: TransactionDataItem {
         let currentAccount = DWEnvironment.sharedInstance().currentAccount;
         let account = transaction.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
 
-        dashAmount = 0
-        direction = account != nil ? transaction.direction() : .notAccountFunds
-        outputReceiveAddresses = []
-        switch direction {
-        case .moved:
-            dashAmount = account!.amountReceivedFromTransaction(onExternalAddresses: transaction)
-            outputReceiveAddresses = account!.externalAddresses(of: transaction)
-        case .sent:
-            dashAmount = chain.amountSent(by: transaction) - chain.amountReceived(from: transaction) - transaction.feeUsed
-            outputReceiveAddresses = account!.externalAddresses(of: transaction)
-        case .received:
-            dashAmount = account!.amountReceived(from: transaction)
-            outputReceiveAddresses = account!.externalAddresses(of: transaction)
-        case .notAccountFunds:
-            dashAmount = 0
-            if let tx = transaction as? DSProviderRegistrationTransaction {
-                specialInfoAddresses = [tx.ownerAddress!: 0, tx.operatorAddress: 1, tx.votingAddress: 2]
-            } else if let tx = transaction as? DSProviderUpdateRegistrarTransaction {
-                specialInfoAddresses = [tx.operatorAddress: 0, tx.votingAddress: 1]
-            }
-        @unknown default:
-            fatalError()
-        }
+        dashAmount = transaction.dashAmount
+        direction = transaction.direction
+        outputReceiveAddresses = transaction.outputReceiveAddresses
+        specialInfoAddresses = transaction.specialInfoAddresses
 
         // Type
         if transaction is DSCoinbaseTransaction {
