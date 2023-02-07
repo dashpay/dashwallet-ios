@@ -96,23 +96,7 @@ struct Transaction: TransactionDataItem {
         direction = transaction.direction
         outputReceiveAddresses = transaction.outputReceiveAddresses
         specialInfoAddresses = transaction.specialInfoAddresses
-
-        // Type
-        if transaction is DSCoinbaseTransaction {
-            transactionType = .reward;
-        } else if transaction is DSProviderRegistrationTransaction {
-            transactionType = .masternodeRegistration;
-        } else if transaction is DSProviderUpdateRegistrarTransaction {
-            transactionType = .masternodeUpdate;
-        } else if transaction is DSProviderUpdateServiceTransaction {
-            transactionType = .masternodeUpdate;
-        } else if transaction is DSProviderUpdateRevocationTransaction {
-            transactionType = .masternodeRevoke;
-        } else if transaction is DSCreditFundingTransaction {
-            transactionType = .blockchainIdentityRegistration;
-        } else {
-            transactionType = .classic;
-        }
+        transactionType = transaction.type
 
         if transaction is DSCoinbaseTransaction {
             // Don't show input addresses for coinbase

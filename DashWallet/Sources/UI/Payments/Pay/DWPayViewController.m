@@ -46,7 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Pay" bundle:nil];
     DWPayViewController *controller = [storyboard instantiateInitialViewController];
     controller.payModel = payModel;
-    controller.dataProvider = dataProvider;
 
     return controller;
 }

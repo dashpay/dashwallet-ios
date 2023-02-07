@@ -57,6 +57,24 @@ extension DSTransaction {
 }
 
 extension DSTransaction {
+    var type: Transaction.`Type` {
+        if self is DSCoinbaseTransaction {
+            return .reward;
+        } else if self is DSProviderRegistrationTransaction {
+            return .masternodeRegistration;
+        } else if self is DSProviderUpdateRegistrarTransaction {
+            return .masternodeUpdate;
+        } else if self is DSProviderUpdateServiceTransaction {
+            return .masternodeUpdate;
+        } else if self is DSProviderUpdateRevocationTransaction {
+            return .masternodeRevoke;
+        } else if self is DSCreditFundingTransaction {
+            return .blockchainIdentityRegistration;
+        }
+
+        return .classic;
+    }
+
     var direction: DSTransactionDirection {
         let currentAccount = DWEnvironment.sharedInstance().currentAccount
         let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
@@ -64,12 +82,9 @@ extension DSTransaction {
         return account != nil ? chain.direction(of: self) : .notAccountFunds
     }
 
-
-
     var outputReceiveAddresses: [String] {
         var outputReceiveAddresses: [String] = []
 
-        let chain = DWEnvironment.sharedInstance().currentChain
         let currentAccount = DWEnvironment.sharedInstance().currentAccount;
         let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
 
@@ -114,6 +129,21 @@ extension DSTransaction {
 
     var formattedISO8601TxDate: String {
         DWDateFormatter.sharedInstance().iso8601String(from: date)
+    }
+
+    var formattedDashAmountWithDirectionalSymbol: String {
+        let formatted = dashAmount.formattedDashAmount
+
+        if formatted.isCurrencySymbolAtTheBeginning {
+            return direction.directionSymbol + " " + dashAmount.formattedDashAmount
+        } else {
+            return direction.directionSymbol + dashAmount.formattedDashAmount
+        }
+    }
+
+    func attributedDashAmount(with font: UIFont, color: UIColor = .dw_label()) -> NSAttributedString {
+        var formatted = formattedDashAmountWithDirectionalSymbol
+        return formatted.attributedAmountStringWithDashSymbol(tintColor: color, dashSymbolColor: color, font: font)
     }
 }
 
@@ -162,7 +192,6 @@ extension DSTransactionDirection {
             fatalError()
         }
     }
-
 
     private func systemImage(_ name: String) -> UIImage {
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
