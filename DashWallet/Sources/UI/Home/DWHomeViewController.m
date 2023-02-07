@@ -125,8 +125,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentTransactionDetails:transaction];
 }
 
-- (void)homeViewShowCrowdNodeTx:(DWHomeView *)homeView {
-    CNCreateAccountTxDetailsViewController *controller = [[CNCreateAccountTxDetailsViewController alloc] init];
+- (void)homeView:(DWHomeView *)homeView showCrowdNodeTxs:(NSArray<DSTransaction *> *)transactions {
+    CNCreateAccountTxDetailsViewController *controller = [[CNCreateAccountTxDetailsViewController alloc] initWithTransactions:transactions];
 
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:nvc animated:YES completion:nil];

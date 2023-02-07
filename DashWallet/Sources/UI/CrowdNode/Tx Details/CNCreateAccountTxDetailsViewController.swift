@@ -44,6 +44,22 @@ final class CNCreateAccountTxDetailsViewController: BaseTxDetailsViewController 
 
     var sections: [Section] = Section.allCases
 
+    private let transactions: [Transaction]
+
+    @objc
+    convenience init(transactions: [DSTransaction]) {
+        self.init(transactions: transactions.map { Transaction(transaction: $0) })
+    }
+
+    init(transactions: [Transaction]) {
+        self.transactions = transactions
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func configureHierarchy() {
         super.configureHierarchy()
 
@@ -71,13 +87,17 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
             cell.backgroundView?.backgroundColor = .clear
+
             return cell
         case .details:
-            return tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsInfoCell.reuseIdentifier, for: indexPath)
+            let cell = tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsInfoCell.reuseIdentifier, for: indexPath)
+            cell.selectionStyle = .none
+            return cell
         case .txs:
-            let tx = DWEnvironment.sharedInstance().currentAccount.allTransactions[indexPath.row]
+            let tx = transactions[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsTxItemCell.reuseIdentifier, for: indexPath) as! CNCreateAccountTxDetailsTxItemCell
-            cell.update(with: Transaction(transaction: tx))
+            cell.update(with: tx)
+            cell.selectionStyle = .none
             return cell
         }
     }
@@ -93,7 +113,20 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
         case .header, .details:
             return 1
         case .txs:
-            return 5
+            return transactions.count
+        }
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let section = sections[indexPath.section]
+
+        switch section {
+        case .txs:
+            let tx = transactions[indexPath.row]
+            let vc = TXDetailViewController(model: .init(transaction: tx))
+            navigationController?.pushViewController(vc, animated: true)
+        default:
+            break
         }
     }
 }

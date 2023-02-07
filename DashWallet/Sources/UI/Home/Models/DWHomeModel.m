@@ -469,7 +469,7 @@ static BOOL IsJailbroken(void) {
                                                                                 return NSOrderedAscending;
                                                                             }
                                                                             else {
-                                                                                return [(NSNumber *)obj1 compare:obj2];
+                                                                                return [(NSNumber *)obj2 compare:obj2];
                                                                             }
                                                                         }];
         NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];

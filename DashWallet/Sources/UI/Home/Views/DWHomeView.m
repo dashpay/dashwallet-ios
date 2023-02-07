@@ -204,8 +204,10 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    if (indexPath.row == 0) {
-        [self.delegate homeViewShowCrowdNodeTx:self];
+    DWTransactionListDataItemType type = [self.currentDataSource itemTypeBy:indexPath];
+
+    if (type == DWTransactionListDataItemTypeCrowdnode) {
+        [self.delegate homeView:self showCrowdNodeTxs:[self.currentDataSource crowdnodeTxs]];
         return;
     }
 

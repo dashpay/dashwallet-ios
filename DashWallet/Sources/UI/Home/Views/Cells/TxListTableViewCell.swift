@@ -21,7 +21,7 @@ import UIKit
 final class TxListTableViewCell: UITableViewCell {
     @IBOutlet var txItemView: TransactionItemView!
 
-    func update(with transaction: Transaction) {
+    func update(with transaction: TransactionDataItem) {
         txItemView.update(with: transaction)
     }
 

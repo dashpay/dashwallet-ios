@@ -18,4 +18,6 @@
 import UIKit
 
 @objc
-final class CNCreateAccountCell: UITableViewCell { }
+final class CNCreateAccountCell: UITableViewCell {
+    func update(with transactions: [Transaction]) { }
+}

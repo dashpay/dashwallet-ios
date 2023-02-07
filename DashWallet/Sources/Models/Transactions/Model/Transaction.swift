@@ -52,6 +52,7 @@ struct Transaction: TransactionDataItem {
 
     var transactionType: `Type`
     var state: State!
+    var date: Date
     var shortDateString: String
 
     var stateTitle: String {
@@ -97,6 +98,7 @@ struct Transaction: TransactionDataItem {
         outputReceiveAddresses = transaction.outputReceiveAddresses
         specialInfoAddresses = transaction.specialInfoAddresses
         transactionType = transaction.type
+        date = transaction.date
 
         if transaction is DSCoinbaseTransaction {
             // Don't show input addresses for coinbase

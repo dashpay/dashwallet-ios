@@ -195,7 +195,7 @@ extension DSTransactionDirection {
 
     private func systemImage(_ name: String) -> UIImage {
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
-        return UIImage(systemName: "arrow.down.circle.fill", withConfiguration: iconConfig)!
+        return UIImage(systemName: name, withConfiguration: iconConfig)!
     }
 
     var directionSymbol: String {

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction;
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView;
 - (void)homeView:(DWHomeView *)homeView showReclassifyYourTransactionsFlowWithTransaction:(DSTransaction *)transaction;
-- (void)homeViewShowCrowdNodeTx:(DWHomeView *)homeView;
+- (void)homeView:(DWHomeView *)homeView showCrowdNodeTxs:(NSArray<DSTransaction *> *)transactions;
 
 @end
 

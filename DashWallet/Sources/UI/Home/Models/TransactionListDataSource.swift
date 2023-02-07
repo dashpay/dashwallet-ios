@@ -24,6 +24,17 @@ enum TransactionListDataItem {
     case crowdnode([Transaction])
 }
 
+extension TransactionListDataItem {
+    var date: Date {
+        switch self {
+        case .crowdnode(let txs):
+            return txs.last!.date
+        case .tx(let tx):
+            return tx.date
+        }
+    }
+}
+
 // MARK: - TransactionListDataSource
 
 @objc(DWTransactionListDataSource)
@@ -40,23 +51,42 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
 
     @objc
     var isEmpty: Bool {
-        items.isEmpty
+        _items.isEmpty
     }
 
     var showsRegistrationStatus: Bool {
         registrationStatus != nil
     }
 
+    private let crowdNodeTxSet: FullCrowdNodeSignUpTxSet
+
     @objc
     init(transactions: [DSTransaction], registrationStatus: DWDPRegistrationStatus?) {
         items = transactions
-        _items = transactions.map { .tx(Transaction(transaction: $0)) }
+
+        let crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+        var items: [TransactionListDataItem] = transactions.compactMap {
+            if crowdNodeTxSet.isComplete { return .tx(Transaction(transaction: $0)) }
+
+            return crowdNodeTxSet.tryInclude(tx: $0) ? nil : .tx(Transaction(transaction: $0))
+        }
+
+        if !crowdNodeTxSet.transactions.isEmpty {
+            let crowdNodeTxs: [Transaction] = crowdNodeTxSet.transactions.values
+                .sorted(by: { $0.date > $1.date })
+                .map { Transaction(transaction: $0) }
+
+            items.insert(.crowdnode(crowdNodeTxs), at: 0)
+            items.sort(by: { $0.date > $1.date })
+        }
+
+        _items = items
+        self.crowdNodeTxSet = crowdNodeTxSet
         self.registrationStatus = registrationStatus
     }
 
-
     @objc
-    @available(*, deprecated, message: "Use transaction(for indexPath:) instead")
+    @available(*, deprecated, message: "We try to don't use DSTransaction in UI")
     func transactionForIndexPath(_ indexPath: IndexPath) -> DSTransaction? {
         let index: Int
         if showsRegistrationStatus {
@@ -65,30 +95,25 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
             }
             index = indexPath.row - 1
         } else {
-            index = indexPath.row - 1
+            index = indexPath.row
         }
-        return items[index]
-    }
 
-    func transaction(for indexPath: IndexPath) -> TransactionListDataItem? {
-        let index: Int
-        if showsRegistrationStatus {
-            if indexPath.row == 0 {
-                return nil
-            }
-            index = indexPath.row - 1
-        } else {
-            index = indexPath.row - 1
+        let item = _items[index]
+
+        switch item {
+        case .tx(let tx):
+            return tx.tx
+        default:
+            return nil
         }
-        return _items[index]
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let itemsCount = items.count
+        let itemsCount = _items.count
         if showsRegistrationStatus {
             return 1 + itemsCount
         } else {
-            return 1 + itemsCount
+            return itemsCount
         }
     }
 
@@ -113,18 +138,19 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
                 return cell
             }
         } else {
-            if indexPath.row == 0 {
+            let tx = _items[indexPath.row]
+            switch tx {
+            case .crowdnode(let txs):
                 let cellId = CNCreateAccountCell.dw_reuseIdentifier
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! CNCreateAccountCell
+                cell.update(with: txs)
+                return cell
+            case .tx(let tx):
+                let cellId = TxListTableViewCell.dw_reuseIdentifier
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TxListTableViewCell
+                cell.update(with: tx)
                 return cell
             }
-
-            let cellId = TxListTableViewCell.dw_reuseIdentifier
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TxListTableViewCell
-            if case .tx(let transaction) = transaction(for: indexPath)! {
-                cell.update(with: transaction)
-            }
-            return cell
         }
     }
 }
@@ -145,5 +171,16 @@ extension TransactionListDataSource {
         }
 
         return .crowdnode
+    }
+
+    @objc
+    func crowdnodeTxs() -> [DSTransaction] {
+        crowdNodeTxSet.transactions.values.sorted(by: { $0.date > $1.date })
+    }
+}
+
+extension FullCrowdNodeSignUpTxSet {
+    var isComplete: Bool {
+        transactions.count == 5
     }
 }
