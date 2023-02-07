@@ -50,8 +50,8 @@ extension CrowdNode {
 
     static let notificationID = "CrowdNode"
 
-    static let fundsOpenUrl = baseUrl + "FundsOpen/"
-    static let apiLinkUrl = baseUrl + "APILink/"
+    static var fundsOpenUrl: String { baseUrl + "FundsOpen/" }
+    static var apiLinkUrl: String { baseUrl + "APILink/" }
     static let websiteUrl = "https://crowdnode.io/"
     static let termsOfUseUrl = "https://crowdnode.io/terms/"
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"
