@@ -136,6 +136,13 @@
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="cgd-uq-nKF"/>
             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+            <connections>
+                <outlet property="amountLabel" destination="EXe-Oa-dtD" id="CiK-Gw-TVR"/>
+                <outlet property="dateLabel" destination="6bY-sm-OoJ" id="IJi-A7-t0M"/>
+                <outlet property="fiatAmountLabel" destination="rJc-qP-qsX" id="ZfG-H8-x7x"/>
+                <outlet property="txCountLabel" destination="kqX-OR-Ppo" id="Mht-tU-9BX"/>
+                <outlet property="txTitleLabel" destination="RLe-cO-Ya5" id="mp4-tH-Ou0"/>
+            </connections>
             <point key="canvasLocation" x="32.061068702290072" y="35.211267605633807"/>
         </tableViewCell>
     </objects>

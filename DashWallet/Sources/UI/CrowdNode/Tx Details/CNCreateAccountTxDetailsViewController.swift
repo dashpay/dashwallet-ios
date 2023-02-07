@@ -17,21 +17,6 @@
 
 import UIKit
 
-// MARK: - HeaderData
-
-private struct HeaderData: TxDetailHeaderCellDataProvider {
-    var title: String { NSLocalizedString("CrowdNode Account", comment: "") }
-
-    var fiatAmount: String { "0,18 US$" }
-
-    var icon: UIImage { UIImage(named: "tx.item.cn.icon")! }
-
-    var tintColor: UIColor { .dw_label() }
-
-    func dashAmountString(with font: UIFont) -> NSAttributedString {
-        NSAttributedString(string: "DASH 1.24")
-    }
-}
 
 // MARK: - CNCreateAccountTxDetailsViewController
 
@@ -42,9 +27,8 @@ final class CNCreateAccountTxDetailsViewController: BaseTxDetailsViewController 
         case txs
     }
 
-    var sections: [Section] = Section.allCases
-
-    private let transactions: [Transaction]
+    private let model: CNCreateAccountTxDetailsModel
+    private var sections: [Section] = Section.allCases
 
     @objc
     convenience init(transactions: [DSTransaction]) {
@@ -52,7 +36,8 @@ final class CNCreateAccountTxDetailsViewController: BaseTxDetailsViewController 
     }
 
     init(transactions: [Transaction]) {
-        self.transactions = transactions
+        model = CNCreateAccountTxDetailsModel(transactions: transactions)
+
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -83,7 +68,7 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
         case .header:
             let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailHeaderCell.reuseIdentifier,
                                                      for: indexPath) as! TxDetailHeaderCell
-            cell.updateView(with: HeaderData())
+            cell.updateView(with: model)
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
             cell.backgroundView?.backgroundColor = .clear
@@ -94,7 +79,7 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
             cell.selectionStyle = .none
             return cell
         case .txs:
-            let tx = transactions[indexPath.row]
+            let tx = model.transactions[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: CNCreateAccountTxDetailsTxItemCell.reuseIdentifier, for: indexPath) as! CNCreateAccountTxDetailsTxItemCell
             cell.update(with: tx)
             cell.selectionStyle = .none
@@ -113,7 +98,7 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
         case .header, .details:
             return 1
         case .txs:
-            return transactions.count
+            return model.transactions.count
         }
     }
 
@@ -122,7 +107,7 @@ extension CNCreateAccountTxDetailsViewController: UITableViewDataSource {
 
         switch section {
         case .txs:
-            let tx = transactions[indexPath.row]
+            let tx = model.transactions[indexPath.row]
             let vc = TXDetailViewController(model: .init(transaction: tx))
             navigationController?.pushViewController(vc, animated: true)
         default:

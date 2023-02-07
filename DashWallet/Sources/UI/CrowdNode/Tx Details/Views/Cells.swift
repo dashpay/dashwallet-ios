@@ -86,7 +86,7 @@ final class CNCreateAccountTxDetailsInfoCell: UITableViewCell {
         stackView.addArrangedSubview(topLabel)
 
         infoLabel.translatesAutoresizingMaskIntoConstraints = false
-        infoLabel.textColor = .dw_secondaryText()
+        infoLabel.textColor = .dw_label()
         infoLabel.font = .dw_font(forTextStyle: .caption1)
         infoLabel.text = NSLocalizedString("Your CrowdNode account was created using these transactions. ", comment: "Crowdnode")
         infoLabel.numberOfLines = 0
