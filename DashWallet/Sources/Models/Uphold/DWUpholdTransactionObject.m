@@ -76,6 +76,21 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)mock {
+    _identifier = @"Mock Dash Account";
+    _type = DWUpholdTransactionObjectTypeWithdrawal;
+    _amount = [NSDecimalNumber numberWithFloat:3.14];
+    _fee = [NSDecimalNumber numberWithFloat:0.000123];
+    _total = [_amount decimalNumberByAdding:_fee];
+    _currency = @"DASH";
+}
+
++ (instancetype)mock {
+    DWUpholdTransactionObject *obj = [DWUpholdTransactionObject new];
+    [obj mock];
+    return obj;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -35,7 +35,7 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     init(address: String) {
         self.address = address
-        super.init()
+        super.init(model: SendAmountModel())
     }
 
     @available(*, unavailable)
@@ -45,13 +45,16 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
+        
+        checkLeftoverBalance { [weak self] canContinue in
+            guard canContinue, let wSelf = self else { return }
+            
+            wSelf.showActivityIndicator()
+            let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
+            DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-        showActivityIndicator()
-
-        let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
-        DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
-
-        delegate?.provideAmountViewControllerDidInput(amount: model.amount.plainAmount)
+            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount)
+        }
     }
 
     override func configureHierarchy() {

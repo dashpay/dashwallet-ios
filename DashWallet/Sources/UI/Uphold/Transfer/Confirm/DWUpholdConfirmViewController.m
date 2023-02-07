@@ -108,6 +108,11 @@ NS_ASSUME_NONNULL_END
     [self.transferModel confirmWithOTPToken:nil];
 }
 
+- (void)confirmPaymentViewControllerDidCancel:(nonnull DWConfirmPaymentViewController *)controller {
+    [self.resultDelegate upholdConfirmViewControllerDidCancelTransaction:self];
+}
+
+
 #pragma mark - Private
 
 - (void)showErrorWithMessage:(NSString *)message {

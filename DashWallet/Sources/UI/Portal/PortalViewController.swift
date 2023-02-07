@@ -44,6 +44,7 @@ final class PortalViewController: UIViewController {
     @objc
     func upholdAction() {
         let vc = DWUpholdViewController()
+        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 

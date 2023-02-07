@@ -44,6 +44,14 @@ struct ConverterViewSourceItem: SourceViewDataProvider {
     var subtitle: String?
     var balanceFormatted: String
     var fiatBalanceFormatted: String
+
+    static func dash(subtitle: String? = nil, balanceFormatted: String = "", fiatBalanceFormatted: String = "") -> ConverterViewSourceItem {
+        ConverterViewSourceItem(image: .asset("image.explore.dash.wts.dash"),
+                                title: "Dash",
+                                subtitle: subtitle,
+                                balanceFormatted: balanceFormatted,
+                                fiatBalanceFormatted: fiatBalanceFormatted)
+    }
 }
 
 // MARK: - ConverterViewDataSource

@@ -481,7 +481,7 @@ extension CrowdNode {
         guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
 
         Task {
-            let lastBalance = lastKnownBalance
+            let lastBalance = CrowdNode.lastKnownBalance
             var currentBalance = lastBalance
             balance = currentBalance
             isBalanceLoading = true
@@ -498,7 +498,7 @@ extension CrowdNode {
                     let duffsNumber = Decimal(DUFFS)
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
-                    lastKnownBalance = currentBalance
+                    CrowdNode.lastKnownBalance = currentBalance
 
                     var breakDifference: UInt64 = 0
 

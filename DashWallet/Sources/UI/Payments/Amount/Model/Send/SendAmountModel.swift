@@ -42,9 +42,11 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
-    var isSendAllowed: Bool {
-        amount.plainAmount > 0 && !canShowInsufficientFunds && (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-            DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced)
+    override var isAllowedToContinue: Bool {
+        super.isAllowedToContinue &&
+            !canShowInsufficientFunds &&
+            (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
+                DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced)
     }
 
     var canShowInsufficientFunds: Bool {

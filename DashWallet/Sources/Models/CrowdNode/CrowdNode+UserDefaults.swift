@@ -33,8 +33,8 @@ extension CrowdNode {
         get { UserDefaults.standard.bool(forKey: kInfoShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kInfoShown) }
     }
-
-    var lastKnownBalance: UInt64 {
+    
+    static var lastKnownBalance: UInt64 {
         get { UserDefaults.standard.value(forKey: kLastKnownBalance) as? UInt64 ?? 0 }
         set(value) { UserDefaults.standard.set(value, forKey: kLastKnownBalance) }
     }
@@ -81,7 +81,7 @@ extension CrowdNode {
 
     func resetUserDefaults() {
         infoShown = false
-        lastKnownBalance = 0
+        CrowdNode.lastKnownBalance = 0
         withdrawalLimitsInfoShown = false
         savedOnlineAccountState = .none
         onlineAccountAddress = nil
