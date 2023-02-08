@@ -71,6 +71,25 @@ extension Decimal {
         return NSDecimalNumber(decimal: plainAmount.whole).uint64Value
     }
 
+    /// Converts `Decimal` to formatted amount string for currently selected currency
+    ///
+    /// - Returns: Formatted fiat amount
+    ///
+    var formattedFiatAmount: String {
+        NumberFormatter.fiatFormatter.string(from: self as NSNumber)!
+    }
+
+    /// Converts `Decimal` to formatted amount string for provided currency
+    ///
+    /// - Parameters:
+    ///   - currency: Currency you want to use with NumberFormatter
+    ///
+    /// - Returns: Formatted fiat amount
+    ///
+    func formattedFiatAmount(_ currency: String) -> String {
+        NumberFormatter.fiatFormatter(currencyCode: currency).string(from: self as NSNumber)!
+    }
+
     /// Converts `Decimal` to formatted dash string. 123456780 -> "DASH 1"
     ///
     /// - Returns: Formatted dash amount

@@ -27,11 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) NSMutableDictionary *txDates;
 
-- (NSDate *)dateForTransaction:(DSTransaction *)transaction;
-- (NSString *)formattedShortTxDate:(NSDate *)date;
-- (NSString *)formattedLongTxDate:(NSDate *)date;
-- (NSString *)formattedISO8601TxDate:(NSDate *)date;
-
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData;
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
                                         font:(UIFont *)font;

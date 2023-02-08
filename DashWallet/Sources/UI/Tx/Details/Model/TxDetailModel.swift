@@ -21,37 +21,43 @@ import Foundation
 
 @objc
 class TxDetailModel: NSObject {
-    var transaction: DSTransaction
+    var transaction: Transaction
     var transactionId: String
-    var dataProvider: DWTransactionListDataProviderProtocol // weak
-    var dataItem: DWTransactionListDataItem
     var txTaxCategory: TxUserInfoTaxCategory
 
+    var title: String {
+        direction.title
+    }
+
     var direction: DSTransactionDirection {
-        dataItem.direction
+        transaction.direction
     }
 
     var dashAmountString: String {
-        dataProvider.dashAmountString(from: dataItem)
+        transaction.formattedDashAmountWithDirectionalSymbol
     }
 
     var fiatAmountString: String {
-        dataItem.fiatAmount;
+        transaction.fiatAmount
     }
 
-
     @objc
-    init(transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
-        transactionId = transaction.txHashHexString
+    convenience init(transaction: DSTransaction) {
+        self.init(transaction: Transaction(transaction: transaction))
+    }
+
+    init(transaction: Transaction) {
         self.transaction = transaction
-        self.dataProvider = dataProvider
-        dataItem = dataProvider.transactionData(for: transaction)
+
+        transactionId = transaction.txHashHexString
         txTaxCategory = Taxes.shared.taxCategory(for: transaction)
     }
 
     func toggleTaxCategoryOnCurrentTransaction() {
         txTaxCategory = txTaxCategory.nextTaxCategory
         let txHash = transaction.txHashData
+
+        // TODO: Move it to Domain layer
         TxUserInfoDAOImpl.shared.update(dto: TxUserInfo(hash: txHash, taxCategory: txTaxCategory))
     }
 
@@ -62,39 +68,8 @@ class TxDetailModel: NSObject {
 }
 
 extension TxDetailModel {
-    func dashAmountString(with font: UIFont, tintColor: UIColor) -> NSAttributedString {
-        let dashFormat = NumberFormatter()
-        dashFormat.locale = Locale(identifier: "ru_RU")
-        dashFormat.isLenient = true
-        dashFormat.numberStyle = .currency
-        dashFormat.generatesDecimalNumbers = true
-
-        if let positiveFormatRange = dashFormat.positiveFormat.range(of: "#") {
-            var positiveFormat: String = dashFormat.positiveFormat
-            positiveFormat.replaceSubrange(positiveFormatRange, with: "-#")
-            dashFormat.negativeFormat = positiveFormat
-        }
-
-        dashFormat.currencyCode = "DASH"
-        dashFormat.currencySymbol = DASH
-
-        dashFormat.maximumFractionDigits = 8;
-        dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
-        let maxAmount = MAX_MONEY/Int64(NSDecimalNumber(decimal: pow(10.0, dashFormat.maximumFractionDigits)).intValue)
-        dashFormat.maximum = NSNumber(value: maxAmount)
-
-        let dashAmount = dataItem.dashAmount;
-
-        let number = NSDecimalNumber(value: dashAmount).multiplying(byPowerOf10: -Int16(dashFormat.maximumFractionDigits))
-        let formattedNumber: String = dashFormat.string(from: number)!
-        let symbol = dataItem.directionSymbol;
-        let amount = symbol + formattedNumber
-
-        return NSAttributedString.dw_dashAttributedString(forFormattedAmount: amount, tintColor: tintColor, font: font)
-    }
-
     func dashAmountString(with font: UIFont) -> NSAttributedString {
-        dataProvider.dashAmountString(from: dataItem, font: font)
+        NSAttributedString.dw_dashAttributedString(forFormattedAmount: transaction.formattedDashAmountWithDirectionalSymbol, tintColor: transaction.dashAmountTintColor, font: font)
     }
 
     var explorerURL: URL? {
@@ -110,11 +85,11 @@ extension TxDetailModel {
 
 extension TxDetailModel {
     var hasSourceUser: Bool {
-        !transaction.sourceBlockchainIdentities.isEmpty
+        !transaction.tx.sourceBlockchainIdentities.isEmpty
     }
 
     var hasDestinationUser: Bool {
-        !transaction.destinationBlockchainIdentities.isEmpty
+        !transaction.tx.destinationBlockchainIdentities.isEmpty
     }
 
     var hasFee: Bool {
@@ -137,18 +112,18 @@ extension TxDetailModel {
     var shouldDisplayInputAddresses: Bool {
         if hasSourceUser {
             // Don't show item "Sent from <my username>"
-            if dataItem.direction == .sent {
+            if direction == .sent {
                 return false
             }
             else {
                 return true
             }
         }
-        return dataItem.direction != .received || (transaction is DSCoinbaseTransaction)
+        return direction != .received || transaction.isCoinbaseTransaction
     }
 
     var shouldDisplayOutputAddresses: Bool {
-        if dataItem.direction == .received && hasDestinationUser {
+        if direction == .received && hasDestinationUser {
             return false
         }
         return true
@@ -157,7 +132,7 @@ extension TxDetailModel {
     private func plainInputAddresses(with title: String, font: UIFont) -> [DWTitleDetailItem] {
         var models: [DWTitleDetailItem] = []
 
-        var addresses = Array(Set(dataItem.inputSendAddresses))
+        var addresses = transaction.inputSendAddresses
         addresses.sort()
 
         let firstAddress = addresses.first
@@ -176,7 +151,7 @@ extension TxDetailModel {
     private func plainOutputAddresses(with title: String, font: UIFont) -> [DWTitleDetailItem] {
         var models: [DWTitleDetailItem] = []
 
-        var addresses = Array(Set(dataItem.outputReceiveAddresses))
+        var addresses = Array(Set(transaction.outputReceiveAddresses))
         addresses.sort()
 
         let firstAddress = addresses.first
@@ -193,7 +168,7 @@ extension TxDetailModel {
     }
 
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.sourceBlockchainIdentities.first else {
+        guard let blockchainIdentity = transaction.tx.sourceBlockchainIdentities.first else {
             return []
         }
 
@@ -203,7 +178,7 @@ extension TxDetailModel {
     }
 
     private func destinationUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.destinationBlockchainIdentities.first else {
+        guard let blockchainIdentity = transaction.tx.destinationBlockchainIdentities.first else {
             return []
         }
 
@@ -218,7 +193,7 @@ extension TxDetailModel {
         }
 
         let title: String
-        switch dataItem.direction {
+        switch transaction.direction {
         case .sent:
             title = NSLocalizedString("Sent from", comment: "");
         case .received:
@@ -245,7 +220,7 @@ extension TxDetailModel {
         }
 
         let title: String
-        switch dataItem.direction {
+        switch transaction.direction {
         case .sent:
             title = NSLocalizedString("Sent to", comment: "")
         case .received:
@@ -268,11 +243,11 @@ extension TxDetailModel {
 
     func specialInfo(with font: UIFont) -> [DWTitleDetailItem] {
         var models: [DWTitleDetailItem] = []
-        let addresses = dataItem.specialInfoAddresses
+        guard let addresses = transaction.specialInfoAddresses else { return [] }
 
         for address in addresses.keys {
             let detail = NSAttributedString.dw_dashAddressAttributedString(address, with: font)
-            let type = addresses[address]!.intValue
+            let type = addresses[address]
             var title: String;
             switch type {
             case 0:
@@ -304,7 +279,7 @@ extension TxDetailModel {
 
     var date: DWTitleDetailCellModel {
         let title = NSLocalizedString("Date", comment: "")
-        let detail = dataProvider.longDateString(for: transaction)
+        let detail = transaction.tx.formattedLongTxDate
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
     }
@@ -314,5 +289,21 @@ extension TxDetailModel {
         let detail = txTaxCategory.stringValue
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
+    }
+}
+
+// MARK: TxDetailHeaderCellDataProvider
+
+extension TxDetailModel: TxDetailHeaderCellDataProvider {
+    var fiatAmount: String {
+        transaction.fiatAmount
+    }
+
+    var icon: UIImage {
+        transaction.direction.icon
+    }
+
+    var tintColor: UIColor {
+        transaction.direction.tintColor
     }
 }

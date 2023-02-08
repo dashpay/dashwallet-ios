@@ -537,7 +537,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="140" height="40"/>
                                     <subviews>
                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="portal.coinbase" translatesAutoresizingMaskIntoConstraints="NO" id="Ma7-eg-p1L">
-                                            <rect key="frame" x="0.0" y="2.5" width="35" height="35"/>
+                                            <rect key="frame" x="0.0" y="2.6666666666666679" width="35" height="35"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="35" id="0JN-IQ-uon"/>
                                                 <constraint firstAttribute="height" constant="35" id="1ql-Ce-xQz"/>
@@ -854,7 +854,7 @@
                                 <rect key="frame" x="0.0" y="100" width="414" height="762"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="dashwallet.PaymentMethodCell" rowHeight="48" id="9jQ-PG-jQW" customClass="PaymentMethodCell" customModule="dashwallet" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="PaymentMethodCell" rowHeight="48" id="9jQ-PG-jQW" customClass="PaymentMethodCell" customModule="dashwallet" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="50" width="414" height="48"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="9jQ-PG-jQW" id="dM6-3W-t4q">

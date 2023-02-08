@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by tkhp
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,10 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import Foundation
 
-#import "DWTransactionListDataProviderProtocol.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@class DSTransaction;
-
-@interface DWTxListTableViewCell : UITableViewCell
-
-- (void)configureWithTransaction:(DSTransaction *)transaction
-                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
-
-@end
-
-NS_ASSUME_NONNULL_END
+extension UIView {
+    static var reuseIdentifier: String {
+        String(String(describing: type(of: Self.self)).split(separator: ".").first!)
+    }
+}

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -25,6 +25,7 @@ private let kWithdrawalLimitPerDay = "crowdNodeWithdrawalLimitPerDayKey"
 private let kWithdrawalLimitsInfoShown = "crowdNodeWithdrawalLimitsInfoShownKey"
 private let kOnlineAccountState = "сrowdNodeOnlineAccountStateKey"
 private let kOnlineAccountAddress = "crowdNodeOnlineAccountAddressKey"
+private let kCrowdNodeAccountAddress = "crowdNodeAccountAddressKey"
 private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
 
 extension CrowdNode {
@@ -32,47 +33,52 @@ extension CrowdNode {
         get { UserDefaults.standard.bool(forKey: kInfoShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kInfoShown) }
     }
-    
+
     static var lastKnownBalance: UInt64 {
         get { UserDefaults.standard.value(forKey: kLastKnownBalance) as? UInt64 ?? 0 }
         set(value) { UserDefaults.standard.set(value, forKey: kLastKnownBalance) }
     }
-    
+
     var crowdNodeWithdrawalLimitPerTx: UInt64 {
         get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerTx) as? UInt64 ?? 15 * kOneDash }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerTx) }
     }
-    
+
     var crowdNodeWithdrawalLimitPerHour: UInt64 {
         get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerHour) as? UInt64 ?? 30 * kOneDash }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerHour) }
     }
-    
+
     var crowdNodeWithdrawalLimitPerDay: UInt64 {
         get { UserDefaults.standard.value(forKey: kWithdrawalLimitPerDay) as? UInt64 ?? 60 * kOneDash }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerDay) }
     }
-    
+
     var withdrawalLimitsInfoShown: Bool {
         get { UserDefaults.standard.bool(forKey: kWithdrawalLimitsInfoShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kWithdrawalLimitsInfoShown) }
     }
-    
+
     var savedOnlineAccountState: OnlineAccountState {
         get { OnlineAccountState(rawValue: UserDefaults.standard.integer(forKey: kOnlineAccountState)) ?? .none }
         set(value) { UserDefaults.standard.set(value.rawValue, forKey: kOnlineAccountState) }
     }
-    
+
     var onlineAccountAddress: String? {
         get { UserDefaults.standard.value(forKey: kOnlineAccountAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kOnlineAccountAddress) }
     }
-    
+
+    var crowdNodeAccountAddress: String? {
+        get { UserDefaults.standard.value(forKey: kCrowdNodeAccountAddress) as? String }
+        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeAccountAddress) }
+    }
+
     var crowdNodePrimaryAddress: String? {
         get { UserDefaults.standard.value(forKey: kCrowdNodePrimaryAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodePrimaryAddress) }
     }
-    
+
     func resetUserDefaults() {
         infoShown = false
         CrowdNode.lastKnownBalance = 0

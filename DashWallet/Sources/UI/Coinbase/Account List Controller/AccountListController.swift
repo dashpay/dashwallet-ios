@@ -117,7 +117,7 @@ extension AccountListController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = model.items[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: AccountCell.dw_reuseIdentifier, for: indexPath) as! AccountCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: AccountCell.reuseIdentifier, for: indexPath) as! AccountCell
         cell.selectionStyle = .none
         cell.update(with: item)
 
@@ -197,7 +197,7 @@ final class ResultsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = result[indexPath.row]
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: AccountCell.dw_reuseIdentifier, for: indexPath) as! AccountCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: AccountCell.reuseIdentifier, for: indexPath) as! AccountCell
         cell.update(with: item)
         cell.selectionStyle = .none
         return cell

@@ -22,9 +22,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSOperationQueue.h"
 
 //MARK: DashWallet
-#import "DWTransactionListDataProviderProtocol.h"
 #import "DWActionButton.h"
-#import "DWTransactionListDataProvider.h"
 #import "DWDPBasicUserItem.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
@@ -33,6 +31,13 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
+#import "DWDateFormatter.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
+
 // -- CrowdNode
 #import "DWCheckbox.h"
 #import "DWBackupInfoViewController.h"
@@ -61,9 +66,9 @@ static const bool _SNAPSHOT = 0;
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
 #import "UIView+DWHUD.h"
+#import "UIView+DWAnimations.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
-#import "UIView+DWReuseHelper.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
