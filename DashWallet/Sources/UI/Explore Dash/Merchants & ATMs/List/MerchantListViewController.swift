@@ -30,6 +30,10 @@ enum MerchantsListSegment: Int {
         lhs.tag == rhs.rawValue
     }
 
+    static func !=(lhs: PointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
+        lhs.tag != rhs.rawValue
+    }
+
     var pointOfUseListSegment: PointOfUseListSegment {
         let dataProvider: PointOfUseDataProvider
         let showReversedLocation: Bool
@@ -123,13 +127,15 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         case .items:
             if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
                 let itemCell: MerchantListLocationOffCell = tableView
-                    .dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier,
+                    .dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.reuseIdentifier,
                                          for: indexPath) as! MerchantListLocationOffCell
                 cell = itemCell
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
                 locationOffCell = itemCell
             } else {
-                return super.tableView(tableView, cellForRowAt: indexPath)
+                let cell = super.tableView(tableView, cellForRowAt: indexPath) as! PointOfUseItemCell
+                cell.subLabel.isHidden = currentSegment == .online
+                return cell
             }
         default:
             return super.tableView(tableView, cellForRowAt: indexPath)
@@ -192,7 +198,13 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override func subtitleForFilterCell() -> String? {
-        if model.showMap && DWLocationManager.shared.isAuthorized {
+        if model.showMap &&
+            DWLocationManager.shared.isAuthorized &&
+            currentSegment != .all {
+            let physicalMerchants = items.filter { $0.isPhysical }
+
+            guard !physicalMerchants.isEmpty else { return nil }
+
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
@@ -228,7 +240,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
         super.configureHierarchy()
 
-        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.dw_reuseIdentifier)
+        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.reuseIdentifier)
     }
 
     override func viewDidLoad() {

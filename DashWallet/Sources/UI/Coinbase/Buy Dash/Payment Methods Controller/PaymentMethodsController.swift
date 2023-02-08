@@ -83,7 +83,7 @@ extension PaymentMethodsController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let paymentMethod = paymentMethods[indexPath.row]
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: PaymentMethodCell.dw_reuseIdentifier, for: indexPath) as! PaymentMethodCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: PaymentMethodCell.reuseIdentifier, for: indexPath) as! PaymentMethodCell
         cell.update(with: paymentMethod)
         cell.selectionStyle = .none
         return cell

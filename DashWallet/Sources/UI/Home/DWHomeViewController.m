@@ -30,7 +30,6 @@
 #import "DWShortcutAction.h"
 #import "DWSyncModel.h"
 #import "DWSyncingAlertViewController.h"
-#import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
@@ -126,6 +125,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentTransactionDetails:transaction];
 }
 
+- (void)homeView:(DWHomeView *)homeView showCrowdNodeTxs:(NSArray<DSTransaction *> *)transactions {
+    CNCreateAccountTxDetailsViewController *controller = [[CNCreateAccountTxDetailsViewController alloc] initWithTransactions:transactions];
+
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
+}
+
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
     [self performActionForShortcut:action sender:homeView];
@@ -211,9 +217,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
-    TXDetailViewController *controller = [TXDetailViewController controller];
-    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
-    [self presentViewController:controller animated:YES completion:nil];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
+    TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
+
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 - (void)checkCrowdNodeState {

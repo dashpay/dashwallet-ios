@@ -334,12 +334,12 @@ extension ExplorePointOfUseListViewController {
         tableView.estimatedSectionHeaderHeight = 0
         tableView.estimatedSectionFooterHeight = 0
         tableView.register(PointOfUseListSegmentedCell.self,
-                           forCellReuseIdentifier: PointOfUseListSegmentedCell.dw_reuseIdentifier)
-        tableView.register(PointOfUseListSearchCell.self, forCellReuseIdentifier: PointOfUseListSearchCell.dw_reuseIdentifier)
-        tableView.register(PointOfUseListFiltersCell.self, forCellReuseIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier)
+                           forCellReuseIdentifier: PointOfUseListSegmentedCell.reuseIdentifier)
+        tableView.register(PointOfUseListSearchCell.self, forCellReuseIdentifier: PointOfUseListSearchCell.reuseIdentifier)
+        tableView.register(PointOfUseListFiltersCell.self, forCellReuseIdentifier: PointOfUseListFiltersCell.reuseIdentifier)
         tableView.register(MerchantListLocationOffCell.self,
-                           forCellReuseIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier)
-        tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.dw_reuseIdentifier)
+                           forCellReuseIdentifier: MerchantListLocationOffCell.reuseIdentifier)
+        tableView.register(FetchingNextPageCell.self, forCellReuseIdentifier: FetchingNextPageCell.reuseIdentifier)
         stackView.addArrangedSubview(tableView)
 
         showMapButton = UIButton(type: .custom)
@@ -454,7 +454,6 @@ extension ExplorePointOfUseListViewController {
         let segment = model.segments[index]
         model.currentSegment = segment
 
-        searchCell?.stopSearching()
         refreshView()
     }
 }
@@ -507,7 +506,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         switch section {
         case .segments:
             let segmentsCell: PointOfUseListSegmentedCell = tableView
-                .dequeueReusableCell(withIdentifier: PointOfUseListSegmentedCell.dw_reuseIdentifier,
+                .dequeueReusableCell(withIdentifier: PointOfUseListSegmentedCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseListSegmentedCell
             segmentsCell.separatorInset = .init(top: 0, left: 2000, bottom: 0, right: 0);
             segmentsCell.segmentDidChangeBlock = { [weak self] index in
@@ -520,7 +519,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
                 return cell
             }
             let searchCell: PointOfUseListSearchCell = tableView
-                .dequeueReusableCell(withIdentifier: PointOfUseListSearchCell.dw_reuseIdentifier,
+                .dequeueReusableCell(withIdentifier: PointOfUseListSearchCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseListSearchCell
             searchCell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0);
             searchCell.delegate = self
@@ -528,7 +527,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             cell = searchCell
         case .filters:
             let filterCell: PointOfUseListFiltersCell = filterCell ?? tableView
-                .dequeueReusableCell(withIdentifier: PointOfUseListFiltersCell.dw_reuseIdentifier,
+                .dequeueReusableCell(withIdentifier: PointOfUseListFiltersCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseListFiltersCell
             filterCell.filterAction = { [weak self] in
                 self?.showFilters()
@@ -539,12 +538,12 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .items:
             let merchant = items[indexPath.row];
             let itemCell: PointOfUseItemCell = tableView
-                .dequeueReusableCell(withIdentifier: PointOfUseItemCell.dw_reuseIdentifier,
+                .dequeueReusableCell(withIdentifier: PointOfUseItemCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseItemCell
             itemCell.update(with: merchant)
             cell = itemCell;
         case .nextPage:
-            let cell = tableView.dequeueReusableCell(withIdentifier: FetchingNextPageCell.dw_reuseIdentifier,
+            let cell = tableView.dequeueReusableCell(withIdentifier: FetchingNextPageCell.reuseIdentifier,
                                                      for: indexPath) as! FetchingNextPageCell
             cell.contentView.backgroundColor = .dw_secondaryBackground()
             return cell
@@ -653,5 +652,6 @@ extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControll
     func refreshView() {
         refreshFilterCell()
         updateMapVisibility()
+        updateShowMapButtonVisibility()
     }
 }

@@ -21,6 +21,7 @@
 #import "DWDPOutgoingRequestNotificationObject.h"
 #import "DWDPTxObject.h"
 #import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -141,7 +142,7 @@ NS_ASSUME_NONNULL_END
             NSIndexPath *txIndexPath = [NSIndexPath indexPathForItem:item inSection:0];
             DSTxOutputEntity *txOutputEntity = [self.frc objectAtIndexPath:txIndexPath];
             DSTransaction *transaction = [txOutputEntity.transaction transaction];
-            NSDate *txDate = [self.txDataProvider dateForTransaction:transaction];
+            NSDate *txDate = transaction.date;
 
             DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
                                                                   dataProvider:self.txDataProvider

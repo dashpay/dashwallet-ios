@@ -18,14 +18,13 @@
 #import "DWCSVExporter.h"
 #import "DSTransaction+DashWallet.h"
 #import "DWEnvironment.h"
-#import "DWTransactionListDataProvider.h"
 #import "dashwallet-Swift.h"
 
 @interface DWCSVExporter ()
 
 + (NSString *)generateFileName;
 + (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions andUserInfos:(NSDictionary<NSData *, TxUserInfo *> *)userInfos;
-+ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider andUserInfo:(TxUserInfo *__nullable)userInfo;
++ (NSString *)csvRowForTransaction:(DSTransaction *)transaction andUserInfo:(TxUserInfo *__nullable)userInfo;
 + (NSArray<DSTransaction *> *)transactions;
 
 @end
@@ -76,7 +75,6 @@
 }
 
 + (NSString *)csvStringForTransactions:(NSArray<DSTransaction *> *)transactions andUserInfos:(NSDictionary<NSData *, TxUserInfo *> *)userInfos {
-    DWTransactionListDataProvider *dataProvider = [[DWTransactionListDataProvider alloc] init];
 
     NSMutableString *csv = [NSMutableString new];
 
@@ -85,21 +83,26 @@
 
     for (DSTransaction *tx in transactions) {
         TxUserInfo *userInfo = userInfos[[tx txHashData]];
-        [csv appendString:[DWCSVExporter csvRowForTransaction:tx usingDataProvider:dataProvider andUserInfo:userInfo]];
+        [csv appendString:[DWCSVExporter csvRowForTransaction:tx andUserInfo:userInfo]];
     }
 
     return [NSString stringWithString:csv];
 }
 
-+ (NSString *)csvRowForTransaction:(DSTransaction *)transaction usingDataProvider:(DWTransactionListDataProvider *)dataProvider andUserInfo:(TxUserInfo *__nullable)userInfo {
-    id<DWTransactionListDataItem> dataItem = [dataProvider transactionDataForTransaction:transaction];
++ (NSString *)csvRowForTransaction:(DSTransaction *)transaction andUserInfo:(TxUserInfo *__nullable)userInfo {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
+    DSAccount *account = [transaction.accounts containsObject:currentAccount] ? currentAccount : nil;
+
+    DSTransactionDirection transactionDirection = account ? [transaction direction] : DSTransactionDirection_NotAccountFunds;
 
     // Return empty string for internal transactions
-    if (dataItem.direction == DSTransactionDirection_Moved || dataItem.direction == DSTransactionDirection_NotAccountFunds) {
+    if (transactionDirection == DSTransactionDirection_Moved ||
+        transactionDirection == DSTransactionDirection_NotAccountFunds) {
         return @"";
     }
 
-    NSString *iso8601String = [dataProvider ISO8601StringForTransaction:transaction];
+    NSString *iso8601String = transaction.formattedISO8601TxDate;
     NSString *taxCategoryString = [transaction defaultTaxCategoryString];
 
     if (userInfo != nil) {
@@ -117,7 +120,8 @@
     NSString *receivedCurrency = [NSString new];
     NSString *receivingDestination = [NSString new];
 
-    uint64_t dashAmount = dataItem.dashAmount + (dataItem.direction == DSTransactionDirection_Sent ? [transaction feeUsed] : 0);
+    uint64_t fee = transactionDirection == DSTransactionDirection_Sent ? transaction.feeUsed : 0;
+    uint64_t dashAmount = transaction.dashAmount + fee;
 
     NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].csvDashFormat;
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
@@ -127,7 +131,7 @@
     NSData *txIdData = [NSData dataWithBytes:transaction.txHash.u8 length:sizeof(UInt256)].reverse;
     NSString *transactionId = [NSString hexWithData:txIdData];
 
-    switch (dataItem.direction) {
+    switch (transactionDirection) {
         case DSTransactionDirection_Sent: {
             transactionType = taxCategoryString;
             sentQuantity = formattedNumber;

@@ -34,27 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (NSDate *)dateForTransaction:(DSTransaction *)transaction {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
-    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
-
-    return txDate;
-}
-
-- (NSString *)formattedShortTxDate:(NSDate *)date {
-    return [[DWDateFormatter sharedInstance] shortStringFromDate:date];
-}
-
-- (NSString *)formattedLongTxDate:(NSDate *)date {
-    return [[DWDateFormatter sharedInstance] longStringFromDate:date];
-}
-
-- (NSString *)formattedISO8601TxDate:(NSDate *)date {
-    return [[DWDateFormatter sharedInstance] iso8601StringFromDate:date];
-}
-
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData {
     const uint64_t dashAmount = transactionData.dashAmount;
 

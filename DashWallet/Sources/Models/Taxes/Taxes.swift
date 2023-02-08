@@ -70,6 +70,10 @@ class Taxes: NSObject {
         return taxCategory
     }
 
+    func taxCategory(for tx: Transaction) -> TxUserInfoTaxCategory {
+        taxCategory(for: tx.tx)
+    }
+
     func taxCategory(for address: String) -> TxUserInfoTaxCategory? {
         addressesUserInfos.get(by: address)?.taxCategory
     }

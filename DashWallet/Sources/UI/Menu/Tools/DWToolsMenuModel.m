@@ -18,7 +18,6 @@
 #import "DWToolsMenuModel.h"
 #import "DWCSVExporter.h"
 #import "DWEnvironment.h"
-#import "DWTransactionListDataProvider.h"
 
 @interface DWToolsMenuModel ()
 @end
