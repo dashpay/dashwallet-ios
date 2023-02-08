@@ -248,7 +248,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="FFc-fd-cfG" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="Giz-2P-2if"/>
                                             <constraint firstAttribute="width" constant="65" id="mj4-By-5q2"/>
@@ -427,7 +427,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="wsW-1v-OUF" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="2hQ-7r-dOU"/>
                                             <constraint firstAttribute="width" constant="65" id="ww6-lj-WM0"/>
@@ -481,7 +481,7 @@
                                 <rect key="frame" x="20" y="300" width="350" height="164.00000000000006"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="RrR-Ij-X7B" userLabel="New Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="0.0" width="350" height="154"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="218"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.account.new" translatesAutoresizingMaskIntoConstraints="NO" id="oqB-km-Cfg" userLabel="image.crowdnode.account.new">
@@ -639,7 +639,7 @@
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" ambiguous="YES" id="ZQI-dO-W89" userLabel="Link Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="164" width="350" height="0.0"/>
+                                        <rect key="frame" x="0.0" y="228" width="350" height="0.0"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="image.crowdnode.account.link" translatesAutoresizingMaskIntoConstraints="NO" id="eAN-HF-8eJ" userLabel="image.crowdnode.account.new">
@@ -2134,11 +2134,25 @@
                                     </view>
                                 </subviews>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="H4o-wk-rfA" userLabel="Action Button" customClass="DWActionButton">
+                                <rect key="frame" x="20" y="744" width="350" height="46"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="QpN-4b-0a5"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                <connections>
+                                    <action selector="continueAction" destination="YMn-Sw-fHD" eventType="touchUpInside" id="A6M-lP-o95"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Qhp-jq-i6L"/>
                         <color key="backgroundColor" name="BackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="H4o-wk-rfA" firstAttribute="leading" secondItem="Qhp-jq-i6L" secondAttribute="leading" constant="20" id="980-dR-9gh"/>
+                            <constraint firstItem="Qhp-jq-i6L" firstAttribute="bottom" secondItem="H4o-wk-rfA" secondAttribute="bottom" constant="20" id="DF8-qr-VyQ"/>
                             <constraint firstItem="UD3-PA-cd9" firstAttribute="trailing" secondItem="Qhp-jq-i6L" secondAttribute="trailing" constant="-20" id="Qvc-Un-Dfd"/>
+                            <constraint firstItem="Qhp-jq-i6L" firstAttribute="trailing" secondItem="H4o-wk-rfA" secondAttribute="trailing" constant="20" id="R3Z-bO-ofb"/>
                             <constraint firstItem="UD3-PA-cd9" firstAttribute="top" secondItem="Qhp-jq-i6L" secondAttribute="top" constant="20" id="ZD6-EX-SqA"/>
                             <constraint firstItem="UD3-PA-cd9" firstAttribute="leading" secondItem="Qhp-jq-i6L" secondAttribute="leading" constant="20" id="oqT-m6-UHM"/>
                         </constraints>
@@ -2147,6 +2161,75 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t08-VZ-25Y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="5178" y="4"/>
+        </scene>
+        <!--Online Account Email Controller-->
+        <scene sceneID="tHB-9L-wOo">
+            <objects>
+                <viewController storyboardIdentifier="OnlineAccountEmailController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="YhO-Y4-2od" customClass="OnlineAccountEmailController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="w7C-KS-pVL">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="249" text="Create an online CrowdNode account" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lAI-2X-dMo" userLabel="Title Label">
+                                <rect key="frame" x="20" y="67" width="350" height="67"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jxB-3c-ktx">
+                                <rect key="frame" x="20" y="146" width="350" height="36.666666666666657"/>
+                                <attributedString key="attributedText">
+                                    <fragment content="Please note that the email is not saved by the Dash Wallet and is only sent to Crowdnode">
+                                        <attributes>
+                                            <color key="NSColor" name="SecondaryTextColor"/>
+                                            <font key="NSFont" metaFont="system" size="14"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" lineSpacing="3" tighteningFactorForTruncation="0.0"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oMa-zX-1hJ">
+                                <rect key="frame" x="20" y="207.66666666666666" width="350" height="57.999999999999972"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="58" id="Kta-te-Jqe"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Wq-XN-Ocw" userLabel="Action Button" customClass="DWActionButton">
+                                <rect key="frame" x="20" y="744" width="350" height="46"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="TEO-op-Btk"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="fNT-fg-f9Z"/>
+                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="oMa-zX-1hJ" firstAttribute="top" secondItem="jxB-3c-ktx" secondAttribute="bottom" constant="25" id="0cm-j7-NsM"/>
+                            <constraint firstItem="oMa-zX-1hJ" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="20" id="2aK-em-2Ox"/>
+                            <constraint firstItem="6Wq-XN-Ocw" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="20" id="9w0-2H-I6z"/>
+                            <constraint firstItem="lAI-2X-dMo" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="20" id="Bbs-Ix-lXC"/>
+                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="6Wq-XN-Ocw" secondAttribute="trailing" constant="20" id="CAX-Wu-2NA"/>
+                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="jxB-3c-ktx" secondAttribute="trailing" constant="20" id="F3S-Af-AT4"/>
+                            <constraint firstItem="lAI-2X-dMo" firstAttribute="top" secondItem="fNT-fg-f9Z" secondAttribute="top" constant="20" id="Ixa-Vd-udV"/>
+                            <constraint firstItem="jxB-3c-ktx" firstAttribute="top" secondItem="lAI-2X-dMo" secondAttribute="bottom" constant="12" id="bcv-uK-RzE"/>
+                            <constraint firstItem="jxB-3c-ktx" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="20" id="iXl-5w-Ic6"/>
+                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="bottom" secondItem="6Wq-XN-Ocw" secondAttribute="bottom" constant="20" id="lC0-j3-DDX"/>
+                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="lAI-2X-dMo" secondAttribute="trailing" constant="20" id="oS1-bB-f68"/>
+                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="oMa-zX-1hJ" secondAttribute="trailing" constant="20" id="oiD-uB-rf5"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="input" destination="oMa-zX-1hJ" id="07e-9t-awx"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="nfg-dp-elL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5888" y="4"/>
         </scene>
     </scenes>
     <resources>

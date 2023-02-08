@@ -20,4 +20,9 @@ final class OnlineAccountInfoController: UIViewController {
     static func controller() -> OnlineAccountInfoController {
         vc(OnlineAccountInfoController.self, from: sb("CrowdNode"))
     }
+    
+    @IBAction
+    func continueAction() {
+        navigationController?.pushViewController(OnlineAccountEmailController.controller(), animated: true)
+    }
 }

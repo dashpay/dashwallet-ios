@@ -62,6 +62,7 @@
 		1186092529759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */; };
 		118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118A1392291AA21B002641E4 /* AccountCreatingController.swift */; };
 		118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */; };
+		118C05B829928F7800717E65 /* OnlineAccountEmailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118C05B729928F7800717E65 /* OnlineAccountEmailController.swift */; };
 		1193FF3629602835004EA8D7 /* CrowdNodeTransferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */; };
 		1193FF3929606151004EA8D7 /* KeyboardHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3829606151004EA8D7 /* KeyboardHeader.swift */; };
 		1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3A2961960B004EA8D7 /* FromLabel.swift */; };
@@ -849,6 +850,7 @@
 		1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPIConfirmationTx.swift; sourceTree = "<group>"; };
 		118A1392291AA21B002641E4 /* AccountCreatingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatingController.swift; sourceTree = "<group>"; };
 		118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationTransactionQRController.swift; sourceTree = "<group>"; };
+		118C05B729928F7800717E65 /* OnlineAccountEmailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountEmailController.swift; sourceTree = "<group>"; };
 		1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeTransferModel.swift; sourceTree = "<group>"; };
 		1193FF3829606151004EA8D7 /* KeyboardHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeader.swift; sourceTree = "<group>"; };
 		1193FF3A2961960B004EA8D7 /* FromLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FromLabel.swift; sourceTree = "<group>"; };
@@ -2267,6 +2269,7 @@
 				114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */,
 				118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */,
 				110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */,
+				118C05B729928F7800717E65 /* OnlineAccountEmailController.swift */,
 			);
 			path = Online;
 			sourceTree = "<group>";
@@ -6643,6 +6646,7 @@
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				0F6EDFC428C896BD000427E7 /* CoinbaseUserAuthInformation.swift in Sources */,
 				2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */,
+				118C05B829928F7800717E65 /* OnlineAccountEmailController.swift in Sources */,
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				0F6EDFC828C896BD000427E7 /* CoinbasePaymentMethodsResponse.swift in Sources */,
