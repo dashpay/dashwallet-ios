@@ -51,10 +51,9 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             return true
         }
 
-        let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
-
         let crowdNodeTxFilters = [
-            signUpRequestFilter,
+            CrowdNodeRequest(requestCode: ApiCode.signUp),
+            CrowdNodeTopUpTx(address: CrowdNode.shared.accountAddress),
             CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
             CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
             CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
@@ -65,17 +64,6 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             matchedFilters.append(matchedFilter)
 
             return true
-        }
-
-        // Top-up transaction
-        // TODO: Probably there is a better solution
-        if tx.dashAmount == CrowdNode.requiredForSignup {
-            for address in tx.outputAddresses {
-                if let r = welcomeToApiResponse, (r.toAddress ?? "") == (address as! String) {
-                    transactions[tx.txHashData] = tx
-                    return true
-                }
-            }
         }
 
         return false
