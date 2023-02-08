@@ -44,7 +44,7 @@
 "1 hour" = "1 hodina";
 
 /* Explore Dash: Filters */
-"1 mile" = "1 mile";
+"1 mile" = "1 míle";
 
 /* Shorten version of minute */
 "1 min" = "1 min";
@@ -53,7 +53,7 @@
 "2 km" = "2 km";
 
 /* Explore Dash: Filters */
-"20 miles" = "20 miles";
+"20 miles" = "20 mil";
 
 /* No comment provided by engineer. */
 "24 hours" = "24 hodin";
@@ -62,13 +62,13 @@
 "32 km" = "32 km";
 
 /* Explore Dash: Filters */
-"5 miles" = "5 miles";
+"5 miles" = "5 mil";
 
 /* Shorten version of minutes */
 "5 min" = "5 min";
 
 /* Explore Dash: Filters */
-"50 miles" = "50 miles";
+"50 miles" = "50 mil";
 
 /* Explore Dash: Filters */
 "8 km" = "8 km";
@@ -104,13 +104,13 @@
 "Accepting terms of use…" = "Accepting terms of use…";
 
 /* No comment provided by engineer. */
-"Accepts DASH directly" = "Accepts DASH directly";
+"Accepts DASH directly" = "Přijímá DASH";
 
 /* No comment provided by engineer. */
 "Activity" = "Aktivita";
 
 /* No comment provided by engineer. */
-"Add" = "Add";
+"Add" = "Přidat";
 
 /* Add <username> as your contact... */
 "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Přidat %@ mezi kontakty pro platby pomocí uživatelského jména a uchovávání společné transakční historie.";
@@ -182,10 +182,10 @@
 "Are you sure?" = "Jste si tím jistí?";
 
 /* No comment provided by engineer. */
-"ATM search works better with Location Services turned on." = "ATM search works better with Location Services turned on.";
+"ATM search works better with Location Services turned on." = "ATM search works better with Location Services turned on";
 
 /* No comment provided by engineer. */
-"ATMs" = "ATMs";
+"ATMs" = "Bankomaty";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Autentizace není dostupná";
@@ -215,7 +215,7 @@
 "Bad recovery phrase" = "Špátná fráze pro obnovení";
 
 /* Send Screen: to address */
-"Balance" = "Balance";
+"Balance" = "Bilance";
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Skrytý zůstatek";
@@ -243,7 +243,7 @@
 
 /* Buy
    buy */
-"Buy" = "Buy";
+"Buy" = "Nákup";
 
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Nákup a prodej Dash";
@@ -252,10 +252,10 @@
 "Buy / Sell Dash" = "Koupit / Prodat Dash";
 
 /* Buy a Gift Card */
-"Buy a Gift Card" = "Buy a Gift Card";
+"Buy a Gift Card" = "Nákup dárkového poukazu";
 
 /* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Buy a gift card with Dash.";
+"Buy a gift card with Dash." = "Koupit dárkový poukaz za Dash.";
 
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
@@ -270,19 +270,19 @@
 "Buy Dash with Uphold account" = "Nakoupit Dash přes Uphold účet";
 
 /* No comment provided by engineer. */
-"Buy gift cards with your Dash" = "Buy gift cards with your Dash";
+"Buy gift cards with your Dash" = "Nákup dárkových poukazů za Dash";
 
 /* No comment provided by engineer. */
-"Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+"Buy gift cards with your Dash for the exact amount of your purchase." = "Kupte si dárkové poukazy za Dash za přesnou částku vašeho nákupu.";
 
 /* Buy/Sell */
-"Buy/Sell" = "Buy/Sell";
+"Buy/Sell" = "Nákup/Prodej";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Vymazáním přijdete o prostředky na tomto zařízení. Mělo by být provedeno, pouze pokud nemáte frázi pro obnovení a zapomněli jste také PIN kód.";
 
 /* Call */
-"Call" = "Call";
+"Call" = "Volání";
 
 /* No comment provided by engineer. */
 "Cancel" = "Zrušit";
@@ -352,7 +352,7 @@
 
 /* Buy Sell Portal
    Coinbase Entry Point */
-"Connected" = "Connected";
+"Connected" = "Připojeno";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Přípojených peerů: %d";
@@ -398,7 +398,7 @@
 "Could not automatically recover missing or incorrect words" = "Nelze automaticky obnovit chybějící nebo nesprávná slova";
 
 /* No comment provided by engineer. */
-"Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+"Could not connect to the Dash network, please check that you are connected to the internet." = "Nelze se připojit k síti Dash, zkontrolujte prosím, zda jste připojeni k internetu.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Platbu nelze provést";
@@ -415,11 +415,15 @@
 /* CrowdNode */
 "Create Account" = "Create Account";
 
-/* CrowdNode Portal */
+/* CrowdNode
+   CrowdNode Portal */
 "Create Online Account" = "Create Online Account";
 
 /* Coinbase/Payment Methods */
-"Credit Card" = "Credit Card";
+"Credit Card" = "Kreditní karta";
+
+/* Crowdnode */
+"CrowdNode Account" = "CrowdNode Account";
 
 /* No comment provided by engineer. */
 "CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
@@ -434,7 +438,7 @@
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
 
 /* No comment provided by engineer. */
-"CSV Export" = "CSV Export";
+"CSV Export" = "Expertovat jako CSV";
 
 /* Crowdnode */
 "Current APY = %@" = "Current APY = %@";
@@ -446,7 +450,7 @@
 "Current location" = "Current location";
 
 /* Explore Dash/Merchants/Filters */
-"Current Location Settings" = "Current Location Settings";
+"Current Location Settings" = "Nastavení aktuální polohy";
 
 /* No comment provided by engineer. */
 "Current user: %@" = "Aktuální uživatel: %@";
@@ -479,13 +483,17 @@
 "Default currency, shortcuts, about…" = "Výchozí měna, zkratky, o aplikaci";
 
 /* Location Service Status */
-"Denied" = "Denied";
+"Denied" = "Zakázáno";
 
-/* CrowdNode Portal */
+/* CrowdNode
+   CrowdNode Portal */
 "Deposit" = "Deposit";
 
 /* CrowdNode Portal */
 "Deposit %@ to start earning" = "Deposit %@ to start earning";
+
+/* CrowdNode */
+"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal";
 
 /* CrowdNode Portal */
 "Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
@@ -500,17 +508,17 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ZABEZPEČENÍ ZAŘÍZENÍ KOMPROMITOVÁNO\nJakákoliv ‚jailbreak‘ aplikace může přistupovat k datům jiné aplikace (a ukrást váš Dash). Vymažte tuto peněženku a prověďte obnovu na jiném zařízení.";
 
 /* Direction */
-"Direction" = "Direction";
+"Direction" = "Směr";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Disconnect Coinbase Account";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
-"Disconnected" = "Disconnected";
+"Disconnected" = "Odpojeno";
 
 /* Explore Dash: Filters */
-"Distance" = "Distance";
+"Distance" = "Vzdálenost";
 
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Nesnímejte obrazovku";
@@ -528,7 +536,7 @@
 "Earlier" = "Dřívější";
 
 /* No comment provided by engineer. */
-"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
+"Easily shop with your DASH at over 155,000 locations and online merchants" = "Nakupujte pomocí DASH snadno na více než 155 000 místech a u online obchodníků.";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
@@ -573,13 +581,13 @@
 "Expense" = "Expense";
 
 /* No comment provided by engineer. */
-"Explore" = "Explore";
+"Explore" = "Prozkoumat";
 
 /* No comment provided by engineer. */
-"Explore Dash" = "Explore Dash";
+"Explore Dash" = "Prozkoumejte Dash";
 
 /* No comment provided by engineer. */
-"Extended Public Keys" = "Extended Public Keys";
+"Extended Public Keys" = "Rozšířené veřejné klíče";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
@@ -605,6 +613,9 @@
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Poplatek bude odečten z požadované částky.";
 
+/* Coinbase/Fee info */
+"Fees in crypto purchases" = "Fees in crypto purchases";
+
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
 
@@ -615,22 +626,22 @@
 "Filter Transactions" = "Filtrovat transakce";
 
 /* Explore Dash/Merchants/Filters */
-"Filtered by:" = "Filtered by:";
+"Filtered by:" = "Filtrováno:";
 
 /* Explore Dash */
-"Filters" = "Filters";
+"Filters" = "Filtry";
 
 /* No comment provided by engineer. */
-"Find a merchant." = "Find a merchant.";
+"Find a merchant." = "Najít obchodníka.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Najdi uživatele na Dash Network";
 
 /* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
+"Find merchants who accept Dash as payment." = "Najděte obchodníky, kteří přijímají Dash.";
 
 /* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Find where to buy or sell DASH and other cryptocurrencies for cash.";
+"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Najděte, kde koupit nebo prodat DASH a další kryptoměny za hotovost.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "First deposit should be more than %@";
@@ -687,7 +698,7 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
-"Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
+"Grant GPS permissions so we can show you locations near you." = "Udělte GPS oprávnění, abychom mohli zobrazovat místa ve vašem okolí.";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "vás žádá o přidání mezi přátele";
@@ -711,7 +722,7 @@
 "History" = "Historie";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "How to Use a Gift Card";
+"How to Use a Gift Card" = "Jak použít dárkový poukaz";
 
 /* No comment provided by engineer. */
 "I Accept" = "Přijímám";
@@ -748,6 +759,9 @@
 
 /* No comment provided by engineer. */
 "Import private key, Export CSV…" = "Import private key, Export CSV…";
+
+/* Coinbase/Fee info */
+"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
 
 /* No comment provided by engineer. */
 "Income" = "Income";
@@ -817,7 +831,7 @@
 "Last server update" = "Last server update";
 
 /* No comment provided by engineer. */
-"Learn More" = "Learn More";
+"Learn More" = "Více informací";
 
 /* Info Screen */
 "Learn More..." = "Learn More...";
@@ -838,7 +852,7 @@
 "Link Uphold Account" = "Připojit účet Uphold";
 
 /* Dash Service Overview */
-"Link Uphold account" = "Link Uphold account";
+"Link Uphold account" = "Připojit účet Uphold";
 
 /* Buy Sell Portal */
 "Link your account" = "Link your account";
@@ -859,7 +873,7 @@
 "Local requested amount: %@" = "Požadovaná částka: %@";
 
 /* Explore Dash/Merchants/Filters */
-"Location" = "Location";
+"Location" = "Místo";
 
 /* No comment provided by engineer. */
 "Locked" = "Blokováno";
@@ -885,17 +899,20 @@
 /* Logout after 5 min */
 "Logout after" = "Odhlásit po";
 
+/* Leftover balance warning */
+"Looks like you are emptying your Dash Wallet" = "Looks like you are emptying your Dash Wallet";
+
 /* adjective, security level */
 "Low" = "Nízká";
 
 /* No comment provided by engineer. */
-"Manage GPS Permission" = "Manage GPS Permission";
+"Manage GPS Permission" = "Spravovat GPS oprávnění";
 
 /* No comment provided by engineer. */
 "Manage Trusted Node" = "Spravovat důvěryhodný node";
 
 /* Map */
-"Map" = "Map";
+"Map" = "Mapa";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "seznam masternodů #%1$d z %2$d";
@@ -919,7 +936,7 @@
 "Medium" = "Střední";
 
 /* No comment provided by engineer. */
-"Merchant search works better with Location Services turned on." = "Merchant search works better with Location Services turned on.";
+"Merchant search works better with Location Services turned on." = "Vyhledávání obchodníků funguje lépe se zapnutým určením polohy.";
 
 /* Validation rule */
 "Minimum 3 characters" = "Minimálně 3 znaky";
@@ -949,7 +966,7 @@
 "Name: from Z to A" = "Name: from Z to A";
 
 /* Nearby */
-"Nearby" = "Nearby";
+"Nearby" = "Nejbližší";
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Need help? ";
@@ -961,7 +978,7 @@
 "Network fee" = "Poplatek síti";
 
 /* Network Unavailable */
-"Network Unavailable" = "Network Unavailable";
+"Network Unavailable" = "Síť je nedostupná";
 
 /* (List of) New (notifications) */
 "New" = "Nový";
@@ -973,7 +990,7 @@
 "NFC device didn't transmit a valid Dash address" = "NFC zařízení neodeslalo platnou Dash adresu";
 
 /* No comment provided by engineer. */
-"No" = "No";
+"No" = "Ne";
 
 /* Coinbase */
 "No active user" = "No active user";
@@ -985,7 +1002,7 @@
 "No payment methods found" = "No payment methods found";
 
 /* Explore Dash/Merchants/Filters */
-"No Results Found" = "No Results Found";
+"No Results Found" = "Žádné výsledky";
 
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
@@ -1003,7 +1020,7 @@
 "Not a valid Dash address" = "Není platnou Dash adresou";
 
 /* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Ne všechny obchody přijímají přímo DASH, můžete si ale za Dash koupit dárkový poukaz.";
 
 /* Location Service Status */
 "Not Determined" = "Not Determined";
@@ -1054,13 +1071,13 @@
 "Pay with" = "Pay with";
 
 /* Pay with Dash */
-"Pay with Dash" = "Pay with Dash";
+"Pay with Dash" = "Platba pomocí Dash";
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Plať snadno";
 
 /* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
+"Pay with the DASH Wallet." = "Platby peněženkou DASH.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Placení";
@@ -1105,10 +1122,13 @@
 "Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
 
 /* Network Unavailable */
-"Please check your network connection" = "Please check your network connection";
+"Please check your network connection" = "Zkontrolujte připojení k síti";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pro aktualizaci peněženky zadejte PIN kód";
+
+/* Leftover balance warning */
+"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Přiložte váš telefon k zařízení NFC.";
@@ -1159,7 +1179,7 @@
 "Quorums validated: %d/%d" = "Validovaných kvór: %1$d/%2$d";
 
 /* Explore Dash/Merchants/Filters */
-"Radius" = "Radius";
+"Radius" = "Okruh";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Kurz: %1$@ = %2$@";
@@ -1207,7 +1227,7 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Fráze pro obnovení musí mít 12, 15, 18, 21 nebo 24 slov";
 
 /* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
+"Redeem your gift card online within seconds or at the cashier." = "Uplatněte dárkový poukaz online během několika sekund nebo u pokladny.";
 
 /* Button title, Register (username) */
 "Register" = "Registrovat";
@@ -1234,7 +1254,7 @@
 "Reset" = "Resetovat";
 
 /* Explore Dash: Filters */
-"Reset Filters" = "Reset Filters";
+"Reset Filters" = "Resetovat filtry";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Obnovit výchozí nastavení";
@@ -1330,10 +1350,10 @@
 "Select the coin" = "Select the coin";
 
 /* Sell */
-"Sell" = "Sell";
+"Sell" = "Prodej";
 
 /* Buy Dash */
-"Sell Dash" = "Sell Dash";
+"Sell Dash" = "Prodej Dash";
 
 /* No comment provided by engineer. */
 "Send" = "Odeslat";
@@ -1478,7 +1498,7 @@
 "Syncing" = "Synchronizace";
 
 /* No comment provided by engineer. */
-"Syncing Balance" = "Syncing Balance";
+"Syncing Balance" = "Synchronizace zůstatku";
 
 /* Explore Dash */
 "Syncing..." = "Syncing...";
@@ -1532,7 +1552,7 @@
 "This app is open source:" = "Aplikace má otevřený zdrojový kód:";
 
 /* This ATM is located in the */
-"This ATM is located in the" = "This ATM is located in the";
+"This ATM is located in the" = "Tento bankomat se nachází v";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
@@ -1612,7 +1632,7 @@
 "Unable to get new QR code" = "Nelze získat nový QR kód";
 
 /* No comment provided by engineer. */
-"Unknown" = "Unknown";
+"Unknown" = "Neznámý";
 
 /* Coinbase */
 "Unknown Balance" = "Unknown Balance";
@@ -1627,7 +1647,7 @@
 "Updated: %@" = "Aktualizováno: %@";
 
 /* Updating Price */
-"Updating Price" = "Updating Price";
+"Updating Price" = "Aktualizace ceny";
 
 /* No comment provided by engineer. */
 "Upgrade Fee" = "Upgrade poplatek";
@@ -1732,7 +1752,7 @@
 "We do not store this recovery phrase." = "Neuschováváme tuto frázi pro obnovení.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "We have 2 types of merchants";
+"We have 2 types of merchants" = "Máme 2 typy obchodníků";
 
 /* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Během migrace jsme zachytili pád aplikace Dash Wallet. Opětovné načtení blockchainu vyřeší tento problém nebo to můžete zkusit znovu. Načtení blockchainu by mělo být uskutočněno při připojení na Wi-Fi a může trvat až hodinu. Vaše prostředky budou k dispozici po dokončení synchronizačního procesu.";
@@ -1750,16 +1770,19 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Po potvrzení transakce bude druhá peněženka bezcenná, z bezpečnostních důvodů by neměla být znovu používána.";
 
 /* No comment provided by engineer. */
-"Where to Spend" = "Where to Spend";
+"Where to Spend" = "Kde nakupovat";
 
 /* No comment provided by engineer. */
-"Where to Spend?" = "Where to Spend?";
+"Where to Spend?" = "Kde nakupovat?";
+
+/* Crowdnode */
+"Why do I see all these transactions?" = "Why do I see all these transactions?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Proč bych neměl pořizovat snímek obrazovky?";
 
 /* No comment provided by engineer. */
-"WIF Private key" = "WIF Private key";
+"WIF Private key" = "Prívátní klíč WIFI";
 
 /* No comment provided by engineer. */
 "Wipe" = "Smazat";
@@ -1770,7 +1793,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "s Dash blockchainem";
 
-/* CrowdNode Portal */
+/* CrowdNode
+   CrowdNode Portal */
 "Withdraw" = "Withdraw";
 
 /* CrowdNode */
@@ -1827,6 +1851,9 @@
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Požadavek o přidání mezi kontakty odeslán %@";
 
+/* CrowdNode */
+"You should have a positive balance on Dash Wallet" = "You should have a positive balance on Dash Wallet";
+
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
 
@@ -1847,6 +1874,9 @@
 
 /* CrowdNode */
 "Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+
+/* Crowdnode */
+"Your CrowdNode account was created using these transactions. " = "Your CrowdNode account was created using these transactions. ";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "Your CrowdNode address has been confirmed.";
@@ -1882,4 +1912,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Peněženka je teď zabezpečena. Frázi pro obnovení můžete kdykoliv použít pro obnovení na jiném zařízení.";
 
 /* No comment provided by engineer. */
-"Сopied address or QR" = "Сopied address or QR";
+"Сopied address or QR" = "Zkopírovaná adresa nebo QR";

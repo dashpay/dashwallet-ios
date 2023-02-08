@@ -26,15 +26,15 @@ final class BasicInfoController: BaseViewController {
     private var titleLabel: UILabel!
     private var descriptionLabel: UILabel!
     private var actionButton: UIButton!
-    
+
     var mainAction: (() -> ())?
-    
+
     var icon: String! {
         didSet {
             iconView = UIImageView(image: UIImage(named: icon))
         }
     }
-    
+
     var headerText: String! {
         didSet {
             titleLabel?.text = headerText
@@ -46,10 +46,10 @@ final class BasicInfoController: BaseViewController {
             descriptionLabel?.text = descriptionText
         }
     }
-    
+
     var actionButtonText: String! {
         didSet {
-            actionButton?.setTitle(NSLocalizedString(actionButtonText, comment: "Basic Info Screen"), for: .normal)
+            actionButton?.setTitle(actionButtonText, for: .normal)
             actionButton?.isHidden = actionButtonText.isEmpty
         }
     }
@@ -114,7 +114,7 @@ extension BasicInfoController {
         descriptionLabel.textAlignment = .center
         descriptionLabel.text = descriptionText
         scrollView.addSubview(descriptionLabel)
-        
+
         if getLines(for: descriptionLabel) > 3 {
             descriptionLabel.textAlignment = .left
         }
@@ -166,11 +166,12 @@ extension BasicInfoController {
             actionButton.heightAnchor.constraint(equalToConstant: 58),
         ])
     }
-    
+
     private func getLines(for label: UILabel) -> Int {
         let labelSize = CGSize(width: label.frame.size.width, height: CGFloat(Float.infinity))
-        let size = (label.text ?? "").boundingRect(with: labelSize, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: label.font ?? .dw_font(forTextStyle: .body)], context: nil)
-        
+        let size = (label.text ?? "")
+            .boundingRect(with: labelSize, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: label.font ?? .dw_font(forTextStyle: .body)], context: nil)
+
         return Int(ceil(size.height / label.font.lineHeight))
     }
 }

@@ -124,6 +124,7 @@ public final class CrowdNode {
     init() {
         masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
         crowdnodeAPY = masternodeAPY * 0.85
+        accountAddress = crowdNodeAccountAddress ?? "" // Restore from user default
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
@@ -182,6 +183,7 @@ extension CrowdNode {
 
         if let address = getOnlineAccountAddress(state: onlineState) {
             accountAddress = address
+            crowdNodeAccountAddress = address
 
             if onlineState == .none {
                 onlineState = .linking
@@ -193,6 +195,8 @@ extension CrowdNode {
             } catch {
                 DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
+        } else {
+            DSLogger.log("CrowdNode: online account address isn't found")
         }
     }
 
@@ -231,7 +235,7 @@ extension CrowdNode {
     }
 
     private func setFinished(address: String) {
-        accountAddress = address
+        updateAccountAddress(address)
         DSLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
         refreshBalance(retries: 1)
@@ -239,21 +243,31 @@ extension CrowdNode {
     }
 
     private func setAcceptingTerms(address: String) {
-        accountAddress = address
+        updateAccountAddress(address)
         DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptingTerms
     }
 
     private func setAcceptTermsRequired(address: String) {
-        accountAddress = address
+        updateAccountAddress(address)
         DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptTermsRequired
     }
 
     private func setSigningUp(address: String) {
-        accountAddress = address
+        updateAccountAddress(address)
         DSLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
+    }
+
+    /// This function updates the `accountAddress` property with the given address value and stores it in the User Defaults.
+    ///
+    /// - Parameters:
+    ///   - address: A String value representing the new address to be set for the `accountAddress` property.
+    ///
+    private func updateAccountAddress(_ address: String) {
+        accountAddress = address
+        crowdNodeAccountAddress = address
     }
 
     private func reset() {
@@ -582,7 +596,7 @@ extension CrowdNode {
 extension CrowdNode {
     func trackLinkingAccount(address: String) {
         linkingApiAddress = address
-        onlineAccountAddress = address
+        crowdNodeAccountAddress = address
         changeOnlineState(to: .linking)
     }
 
@@ -726,7 +740,7 @@ extension CrowdNode {
                     changeOnlineState(to: .none)
                 } else {
                     accountAddress = address
-                    onlineAccountAddress = address
+                    crowdNodeAccountAddress = address
                     crowdNodePrimaryAddress = result.primaryAddress
                     // TODO: tax category
                     changeOnlineState(to: .validating)
@@ -781,17 +795,15 @@ extension CrowdNode {
     }
 
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
-        let savedAddress = onlineAccountAddress
+        let savedAddress = crowdNodeAccountAddress
 
         if savedAddress != nil && state != .none {
-            DSLogger.log("CrowdNode: found online account address \(savedAddress!)")
             return savedAddress
         } else if let confirmationTx = getApiAddressConfirmationTx() {
             let account = DWEnvironment.sharedInstance().currentAccount
 
             if let apiAddress = account.externalAddresses(of: confirmationTx).first {
-                DSLogger.log("CrowdNode: found apiAddress in confirmation tx \(apiAddress)")
-                onlineAccountAddress = apiAddress
+                crowdNodeAccountAddress = apiAddress
                 signUpState = .linkedOnline
                 savedOnlineAccountState = .linking
 
@@ -799,7 +811,6 @@ extension CrowdNode {
             }
         }
 
-        DSLogger.log("CrowdNode: online account address isn't found")
         return nil
     }
 
@@ -811,26 +822,19 @@ extension CrowdNode {
 
         for confirmationTx in wallet.allTransactions {
             if filter.matches(tx: confirmationTx) {
-                DSLogger.log("CrowdNode: found confirmation tx: \(confirmationTx.txHashHexString)")
                 let receivedTo = account.externalAddresses(of: confirmationTx).first
                 let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
                 // There might be several matching transactions. The real one will be forwarded to CrowdNode
                 let forwardedTx = wallet.allTransactions.first {
                     forwardedConfirmationFilter.matches(tx: $0)
                 }
-                
-                if forwardedTx != nil {
-                    DSLogger.log("CrowdNode: found forwarded tx")
-                }
 
                 if forwardedTx != nil && receivedTo != nil && forwardedConfirmationFilter.fromAddresses.contains(receivedTo!) {
-                    DSLogger.log("CrowdNode: returning confirmation tx")
                     return confirmationTx
                 }
             }
         }
 
-        DSLogger.log("CrowdNode: confirmation tx isn't found")
         return nil
     }
 }

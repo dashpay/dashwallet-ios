@@ -26,8 +26,8 @@
 #import "DWShortcutsModel.h"
 #import "DWSyncModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
-#import "DWTransactionListDataSource+DWProtected.h"
 #import "DWTransactionStub.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -162,8 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadTxDataSource {
     self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:self.stubTxs
-                                                                registrationStatus:[self.dashPayModel registrationStatus]
-                                                                      dataProvider:self.dataProvider];
+                                                                registrationStatus:[self.dashPayModel registrationStatus]];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
 }

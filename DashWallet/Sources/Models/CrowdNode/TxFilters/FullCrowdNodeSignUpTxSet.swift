@@ -44,38 +44,28 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
         }
     }
 
-    func tryInclude(tx: DSTransaction) {
+    @discardableResult
+    func tryInclude(tx: DSTransaction) -> Bool {
         if transactions[tx.txHashData] != nil {
-            // Already included
-            return
+            // Already included, return true
+            return true
         }
 
-        let signUpRequestFilter = CrowdNodeRequest(requestCode: ApiCode.signUp)
         let crowdNodeTxFilters = [
+            CrowdNodeRequest(requestCode: ApiCode.signUp),
+            CrowdNodeTopUpTx(address: CrowdNode.shared.accountAddress),
             CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
             CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
             CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
         ]
 
-        if signUpRequestFilter.matches(tx: tx) {
-            let chain = DWEnvironment.sharedInstance().currentChain
-            guard let possibleTopUpTx = chain.transaction(forHash: tx.inputs.first!.inputHash) else { return }
-            // TopUp transaction can only be matched if we know the account address
-            let topUpFilter = CrowdNodeTopUpTx(address: signUpRequestFilter.fromAddresses.first!)
-
-            if topUpFilter.matches(tx: possibleTopUpTx) {
-                transactions[possibleTopUpTx.txHashData] = possibleTopUpTx
-                transactions[tx.txHashData] = tx
-                matchedFilters.append(topUpFilter)
-                matchedFilters.append(signUpRequestFilter)
-            }
-
-            return
-        }
-
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
             transactions[tx.txHashData] = tx
             matchedFilters.append(matchedFilter)
+
+            return true
         }
+
+        return false
     }
 }

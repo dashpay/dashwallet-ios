@@ -72,7 +72,7 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         super.configureHierarchy()
 
         contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
-        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.dw_reuseIdentifier)
+        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.reuseIdentifier)
     }
 
 }

@@ -17,5 +17,5 @@
 
 protocol TransactionWrapper {
     var transactions: [Data: DSTransaction] { get }
-    func tryInclude(tx: DSTransaction)
+    func tryInclude(tx: DSTransaction) -> Bool
 }

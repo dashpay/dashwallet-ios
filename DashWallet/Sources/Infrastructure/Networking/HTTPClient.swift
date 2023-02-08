@@ -55,11 +55,14 @@ typealias AccessTokenProvider = () -> String?
 
 // MARK: - HTTPClient
 
-public class HTTPClient<Target: TargetType> {
-    private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api",
-                                             qos: .background,
-                                             attributes: .concurrent)
+private let apiWorkQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api",
+                                         attributes: .concurrent)
+private let eTagReaderQueue = DispatchQueue(label: "org.dashfoundation.dash.queue.api.etag",
+                                            target: apiWorkQueue)
 
+// MARK: - HTTPClient
+
+public class HTTPClient<Target: TargetType> {
     private var provider: MoyaProvider<Target>!
     private var etags: [String: String] = [:]
 
@@ -149,7 +152,7 @@ public class HTTPClient<Target: TargetType> {
 extension HTTPClient {
     @discardableResult
     private func _request(_ target: Target, completion: @escaping CompletionHandler) -> Cancellable {
-        provider.request(target) { [weak self] result in
+        provider.request(target, callbackQueue: apiWorkQueue) { [weak self] result in
             switch result {
             case .success(let response):
                 #if DEBUG
@@ -159,7 +162,7 @@ extension HTTPClient {
                 if acceptableCodes.contains(response.statusCode) {
                     if let etag = response.response?.value(forHTTPHeaderField: "Etag"),
                        let key = response.request?.url?.absoluteString {
-                        self?.apiWorkQueue.sync {
+                        eTagReaderQueue.sync {
                             self?.etags[key] = etag
                         }
                     }
@@ -259,7 +262,7 @@ public struct EtagPlugin: PluginType {
 
 extension HTTPClient {
     func eTag(for url: URL) -> String? {
-        apiWorkQueue.sync {
+        eTagReaderQueue.sync {
             self.etags[url.absoluteString]
         }
     }

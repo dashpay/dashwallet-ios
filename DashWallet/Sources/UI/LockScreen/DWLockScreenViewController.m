@@ -92,14 +92,12 @@ static CGFloat ActionButtonsHeight(void) {
 
 + (instancetype)lockScreenWithUnlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
                                 payModel:(id<DWPayModelProtocol>)payModel
-                            receiveModel:(id<DWReceiveModelProtocol>)receiveModel
-                            dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+                            receiveModel:(id<DWReceiveModelProtocol>)receiveModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];
     controller.unlockMode = unlockMode;
     controller.payModel = payModel;
     controller.receiveModel = receiveModel;
-    controller.dataProvider = dataProvider;
 
     return controller;
 }

@@ -66,9 +66,9 @@ enum ConvertCryptoOrderItem: PreviewOrderItem {
 
     var cellIdentifier: String {
         if self == .origin || self == .destination {
-            return ConvertCryptoOrderPreviewSourceCell.dw_reuseIdentifier
+            return ConvertCryptoOrderPreviewSourceCell.reuseIdentifier
         } else {
-            return ConfirmOrderGeneralInfoCell.dw_reuseIdentifier
+            return ConfirmOrderGeneralInfoCell.reuseIdentifier
         }
     }
 
@@ -102,7 +102,7 @@ final class ConvertCryptoOrderPreviewController: OrderPreviewViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        tableView.register(ConvertCryptoOrderPreviewSourceCell.self, forCellReuseIdentifier: ConvertCryptoOrderPreviewSourceCell.dw_reuseIdentifier)
+        tableView.register(ConvertCryptoOrderPreviewSourceCell.self, forCellReuseIdentifier: ConvertCryptoOrderPreviewSourceCell.reuseIdentifier)
     }
 
     override func viewDidLoad() {

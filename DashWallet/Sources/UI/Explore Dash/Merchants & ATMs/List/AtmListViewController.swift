@@ -118,7 +118,7 @@ class AtmListViewController: ExplorePointOfUseListViewController {
         title = NSLocalizedString("ATMs", comment: "");
 
         super.configureHierarchy()
-        tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.dw_reuseIdentifier)
+        tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.reuseIdentifier)
     }
 
 }
