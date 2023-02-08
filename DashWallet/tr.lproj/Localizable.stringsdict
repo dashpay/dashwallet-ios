@@ -22,11 +22,33 @@
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%@ içinde %d tüccarlar</string>
+			<key>other</key>
+			<string>%@ içinde %d satıcılar</string>
+		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d tüccarlar</string>
+			<key>other</key>
+			<string>%d satıcılar</string>
+		</dict>
 	</dict>
 </dict>
 </plist>

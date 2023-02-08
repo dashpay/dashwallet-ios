@@ -24,11 +24,37 @@
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d comercio en %@</string>
+			<key>many</key>
+			<string>%d comercios en %@</string>
+			<key>other</key>
+			<string>%d comercios en %@</string>
+		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d comercio</string>
+			<key>many</key>
+			<string>%d comercios</string>
+			<key>other</key>
+			<string>%d comercios</string>
+		</dict>
 	</dict>
 </dict>
 </plist>

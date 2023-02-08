@@ -490,6 +490,9 @@
 /* CrowdNode Portal */
 "Deposit %@ to start earning" = "Deposit %@ to start earning";
 
+/* CrowdNode */
+"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal";
+
 /* CrowdNode Portal */
 "Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
 
@@ -607,6 +610,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
+
+/* Coinbase/Fee info */
+"Fees in crypto purchases" = "Fees in crypto purchases";
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
@@ -752,6 +758,9 @@
 /* No comment provided by engineer. */
 "Import private key, Export CSV…" = "Import private key, Export CSV…";
 
+/* Coinbase/Fee info */
+"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
+
 /* No comment provided by engineer. */
 "Income" = "Income";
 
@@ -887,6 +896,9 @@
 
 /* Logout after 5 min */
 "Logout after" = "Logga ut efter";
+
+/* Leftover balance warning */
+"Looks like you are emptying your Dash Wallet" = "Looks like you are emptying your Dash Wallet";
 
 /* adjective, security level */
 "Low" = "Låg";
@@ -1112,6 +1124,9 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
+
+/* Leftover balance warning */
+"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -1832,6 +1847,9 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "You sent the contact request to %@";
+
+/* CrowdNode */
+"You should have a positive balance on Dash Wallet" = "You should have a positive balance on Dash Wallet";
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
