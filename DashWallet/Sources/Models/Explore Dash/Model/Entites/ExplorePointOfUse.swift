@@ -133,6 +133,17 @@ struct ExplorePointOfUse {
     let logoLocation: String?
     let coverImage: String?
     let source: String?
+
+    var isPhysical: Bool {
+        switch category {
+        case .merchant(let m):
+            return m.type != .online
+        case .atm:
+            return true
+        case .unknown:
+            return false
+        }
+    }
 }
 
 // MARK: RowDecodable
@@ -177,7 +188,7 @@ extension ExplorePointOfUse: RowDecodable {
         let latitude = row[ExplorePointOfUse.latitude]
         let longitude = row[ExplorePointOfUse.longitude]
         let website = row[ExplorePointOfUse.website]
-        let phone: String? = row[ExplorePointOfUse.phone]
+        let phone: String? = row[ExplorePointOfUse.phone]?.digits
         let logoLocation = row[ExplorePointOfUse.logoLocation]
         let coverImage: String? = row[ExplorePointOfUse.coverImage]
         let source: String? = row[ExplorePointOfUse.source]
