@@ -646,7 +646,7 @@
 		47C6E6E329196D48003FEDF2 /* TerritoriesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6E229196D48003FEDF2 /* TerritoriesListCell.swift */; };
 		47C6E6E5291A68B6003FEDF2 /* AppliedFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */; };
 		47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6E6291A90B2003FEDF2 /* ListHandlerView.swift */; };
-		47CDEEC72949DC38008AE06D /* CoinbaseFeeInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEEC62949DC38008AE06D /* CoinbaseFeeInfoController.swift */; };
+		47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEEC62949DC38008AE06D /* BasicInfoController.swift */; };
 		47CDEECC294A2BAD008AE06D /* UIViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */; };
 		47CDEECE294A3CF2008AE06D /* UIViewController+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */; };
 		47CF469F296540E40067B6EE /* AccountRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF469E296540E40067B6EE /* AccountRepository.swift */; };
@@ -1866,7 +1866,7 @@
 		47C6E6E229196D48003FEDF2 /* TerritoriesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerritoriesListCell.swift; sourceTree = "<group>"; };
 		47C6E6E4291A68B6003FEDF2 /* AppliedFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppliedFiltersView.swift; sourceTree = "<group>"; };
 		47C6E6E6291A90B2003FEDF2 /* ListHandlerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListHandlerView.swift; sourceTree = "<group>"; };
-		47CDEEC62949DC38008AE06D /* CoinbaseFeeInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseFeeInfoController.swift; sourceTree = "<group>"; };
+		47CDEEC62949DC38008AE06D /* BasicInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicInfoController.swift; sourceTree = "<group>"; };
 		47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Coinbase.swift"; sourceTree = "<group>"; };
 		47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+DashWallet.swift"; sourceTree = "<group>"; };
 		47CDEED0294B8230008AE06D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -2221,6 +2221,14 @@
 				110C679929227948006B580C /* NavigationControllerExtensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		110D1782298CF84D005BEB30 /* Basic Info */ = {
+			isa = PBXGroup;
+			children = (
+				47CDEEC62949DC38008AE06D /* BasicInfoController.swift */,
+			);
+			path = "Basic Info";
 			sourceTree = "<group>";
 		};
 		1141E4C0291BB0FC00ACDA9E /* Portal */ = {
@@ -2875,6 +2883,7 @@
 				2A9FFE462230FF4600956D5F /* Uphold */,
 				2A8B9E3822FC7F3B00FF8653 /* Payments */,
 				1193FF3C2962F147004EA8D7 /* Operation Status */,
+				110D1782298CF84D005BEB30 /* Basic Info */,
 				2A9CEBB622E1FA0000A50237 /* Home */,
 				2A9CEBA522E1D58B00A50237 /* Main */,
 				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
@@ -4950,7 +4959,6 @@
 		478C98242942DBF200FAA0F0 /* Buy Dash */ = {
 			isa = PBXGroup;
 			children = (
-				47CDEEC52949DC20008AE06D /* Fee Info Controller */,
 				47F4B6C5294842A500AED4C9 /* Confirm Transaction Controller */,
 				478C983029433C3C00FAA0F0 /* Payment Methods Controller */,
 				478C982A2942F02800FAA0F0 /* Views */,
@@ -5330,14 +5338,6 @@
 				47C6E6E229196D48003FEDF2 /* TerritoriesListCell.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		47CDEEC52949DC20008AE06D /* Fee Info Controller */ = {
-			isa = PBXGroup;
-			children = (
-				47CDEEC62949DC38008AE06D /* CoinbaseFeeInfoController.swift */,
-			);
-			path = "Fee Info Controller";
 			sourceTree = "<group>";
 		};
 		47CDEECA294A2B9F008AE06D /* Base */ = {
@@ -6409,7 +6409,7 @@
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				4751CAD5297024EA00F63AC4 /* OrderPreviewViewController.swift in Sources */,
 				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
-				47CDEEC72949DC38008AE06D /* CoinbaseFeeInfoController.swift in Sources */,
+				47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */,
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
