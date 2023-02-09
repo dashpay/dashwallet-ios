@@ -2189,13 +2189,13 @@
                                 </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oMa-zX-1hJ">
-                                <rect key="frame" x="20" y="207.66666666666666" width="350" height="57.999999999999972"/>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="oMa-zX-1hJ" customClass="OutlinedTextField" customModule="dashwallet" customModuleProvider="target">
+                                <rect key="frame" x="20" y="207.66666666666666" width="350" height="61.999999999999972"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="58" id="Kta-te-Jqe"/>
+                                    <constraint firstAttribute="height" constant="62" id="Kta-te-Jqe"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" keyboardType="emailAddress"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Wq-XN-Ocw" userLabel="Action Button" customClass="DWActionButton">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
@@ -2204,6 +2204,9 @@
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                <connections>
+                                    <action selector="onContinue" destination="YhO-Y4-2od" eventType="touchUpInside" id="zEr-re-EJo"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="fNT-fg-f9Z"/>
@@ -2215,15 +2218,16 @@
                             <constraint firstItem="lAI-2X-dMo" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="20" id="Bbs-Ix-lXC"/>
                             <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="6Wq-XN-Ocw" secondAttribute="trailing" constant="20" id="CAX-Wu-2NA"/>
                             <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="jxB-3c-ktx" secondAttribute="trailing" constant="20" id="F3S-Af-AT4"/>
+                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="bottom" secondItem="6Wq-XN-Ocw" secondAttribute="bottom" constant="20" id="HTz-tV-DIr"/>
                             <constraint firstItem="lAI-2X-dMo" firstAttribute="top" secondItem="fNT-fg-f9Z" secondAttribute="top" constant="20" id="Ixa-Vd-udV"/>
                             <constraint firstItem="jxB-3c-ktx" firstAttribute="top" secondItem="lAI-2X-dMo" secondAttribute="bottom" constant="12" id="bcv-uK-RzE"/>
                             <constraint firstItem="jxB-3c-ktx" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="20" id="iXl-5w-Ic6"/>
-                            <constraint firstItem="fNT-fg-f9Z" firstAttribute="bottom" secondItem="6Wq-XN-Ocw" secondAttribute="bottom" constant="20" id="lC0-j3-DDX"/>
                             <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="lAI-2X-dMo" secondAttribute="trailing" constant="20" id="oS1-bB-f68"/>
                             <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="oMa-zX-1hJ" secondAttribute="trailing" constant="20" id="oiD-uB-rf5"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="actionButtonBottomConstraint" destination="HTz-tV-DIr" id="JCZ-bj-pcV"/>
                         <outlet property="input" destination="oMa-zX-1hJ" id="07e-9t-awx"/>
                     </connections>
                 </viewController>

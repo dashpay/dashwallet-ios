@@ -18,8 +18,9 @@
 final class OnlineAccountEmailController: UIViewController {
     private let viewModel = CrowdNode.shared
 
-    @IBOutlet var input: UITextField!
-
+    @IBOutlet var input: OutlinedTextField!
+    @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
+    
     static func controller() -> OnlineAccountEmailController {
         vc(OnlineAccountEmailController.self, from: sb("CrowdNode"))
     }
@@ -29,26 +30,29 @@ final class OnlineAccountEmailController: UIViewController {
         configureHierarchy()
     }
     
+    @IBAction
+    func onContinue() {
+        self.view.endEditing(true)
+    }
+    
     private func configureHierarchy() {
-        let path = UIBezierPath(roundedRect: input.bounds, byRoundingCorners: [.topLeft, .bottomLeft, .topRight, .bottomRight], cornerRadii: CGSize(width: input.frame.size.height / 2, height: input.frame.size.height / 2))
-
-        var gradient = CALayer()
-        gradient.frame =  CGRect(origin: CGPoint.zero, size: input.frame.size)
-        gradient.backgroundColor = UIColor.red.cgColor
-        gradient.borderColor = UIColor.green.cgColor
-//        gradient.colors = [UIColor.green.cgColor, UIColor.red.cgColor]
-
-        let shape = CAShapeLayer()
-        shape.lineWidth = 10
-        shape.path = path.cgPath
-        shape.strokeColor = UIColor.black.cgColor
-        shape.fillColor = UIColor.clear.cgColor
-        gradient.mask = shape
-
-        input.layer.masksToBounds = true
-        input.layer.borderColor = UIColor.blue.cgColor
-        input.layer.borderWidth = 1.0
+        input.placeholder = NSLocalizedString("e.g. johndoe@mail.com", comment: "CrowdNode")
+        input.label = NSLocalizedString("Email", comment: "CrowdNode")
         
-        input.layer.addSublayer(gradient)
+        NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardShown(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardHidden(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc
+    private func onKeyboardShown(notification: NSNotification) {
+        if let offset = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height {
+            actionButtonBottomConstraint.constant = offset + 20
+        }
+    }
+
+    @objc
+    private func onKeyboardHidden(_: NSNotification) {
+        actionButtonBottomConstraint.constant = 20
     }
 }
