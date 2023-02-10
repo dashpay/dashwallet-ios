@@ -20,6 +20,7 @@
 #import <DashSync/DSTransaction.h>
 
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -95,7 +96,16 @@ static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> tr
     self.transactionData = [self.dataProvider transactionDataForTransaction:transaction];
 
     self.dateLabel.text = [self.dataProvider shortDateStringForTransaction:transaction];
-    self.fiatAmountLabel.text = self.transactionData.fiatAmount;
+
+    TxUserInfo *userInfo = [TxUserInfoDAOImpl.shared getBy:transaction.txHashData];
+
+    if (userInfo.fiatAmount) {
+        self.fiatAmountLabel.text = userInfo.fiatAmount;
+    }
+    else {
+        self.fiatAmountLabel.text = self.transactionData.fiatAmount;
+    }
+
     [self reloadAttributedData];
 }
 
