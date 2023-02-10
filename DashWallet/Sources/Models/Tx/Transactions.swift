@@ -37,7 +37,7 @@ final class Transaction: NSObject {
         }
 
         let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
-        let rate = (decimalRate*Decimal(pow(10, nf.maximumFractionDigits)) as NSDecimalNumber).intValue
+        let rate = (decimalRate*pow(10, nf.maximumFractionDigits) as NSDecimalNumber).intValue
 
         guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
             set(rate: rate, currency: App.fiatCurrency, for: transaction)
