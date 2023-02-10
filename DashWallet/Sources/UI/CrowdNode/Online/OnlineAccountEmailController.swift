@@ -19,6 +19,8 @@ final class OnlineAccountEmailController: UIViewController {
     private let viewModel = CrowdNode.shared
 
     @IBOutlet var input: OutlinedTextField!
+    @IBOutlet var continueButton: UIButton!
+    @IBOutlet var errorLabel: UILabel!
     @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
     
     static func controller() -> OnlineAccountEmailController {
@@ -30,14 +32,25 @@ final class OnlineAccountEmailController: UIViewController {
         configureHierarchy()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        input.becomeFirstResponder()
+    }
+    
     @IBAction
     func onContinue() {
-        self.view.endEditing(true)
+        if isEmail(text: input.text) {
+            input.isError = false
+            errorLabel.isHidden = true
+            self.view.endEditing(true)
+        } else {
+            input.isError = true
+            errorLabel.isHidden = false
+        }
     }
     
     private func configureHierarchy() {
-        input.placeholder = NSLocalizedString("e.g. johndoe@mail.com", comment: "CrowdNode")
-        input.label = NSLocalizedString("Email", comment: "CrowdNode")
+        configureEmailInput()
         
         NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardShown(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
 
@@ -47,12 +60,46 @@ final class OnlineAccountEmailController: UIViewController {
     @objc
     private func onKeyboardShown(notification: NSNotification) {
         if let offset = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height {
-            actionButtonBottomConstraint.constant = offset + 20
+            actionButtonBottomConstraint.constant = offset + 10
         }
     }
 
     @objc
     private func onKeyboardHidden(_: NSNotification) {
         actionButtonBottomConstraint.constant = 20
+    }
+}
+
+extension OnlineAccountEmailController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        onContinue()
+        return true
+    }
+    
+    private func configureEmailInput() {
+        input.label = NSLocalizedString("Email", comment: "CrowdNode")
+        input.placeholder = NSLocalizedString("e.g. johndoe@mail.com", comment: "CrowdNode")
+        input.textContentType = .emailAddress
+        input.keyboardType = .emailAddress
+        input.autocorrectionType = .no
+        input.autocapitalizationType = .none
+        input.spellCheckingType = .no
+        input.delegate = self
+        input.addTarget(self, action: #selector(onInputTextChanged), for: .editingChanged)
+    }
+    
+    @objc
+    private func onInputTextChanged() {
+        input.isError = false
+        errorLabel.isHidden = true
+        continueButton.isEnabled = isEmail(text: input.text)
+    }
+    
+    private func isEmail(text: String?) -> Bool {
+        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let predicate = NSPredicate(format:"SELF MATCHES %@", regex)
+        
+        return predicate.evaluate(with: trimmed)
     }
 }

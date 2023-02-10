@@ -17,12 +17,32 @@
 
 class OutlinedTextField: UITextField {
     private let padding = UIEdgeInsets(top: 15, left: 15, bottom: 0, right: 10);
+    private let borderColor = UIColor(red: 0.808, green: 0.824, blue: 0.835, alpha: 1)
     private let labelControl = UILabel(frame: CGRect.zero)
     private var outerBorder: CAShapeLayer!
     
     var label: String = "" {
         didSet {
             labelControl.text = label
+        }
+    }
+    
+    var isError: Bool = false {
+        didSet {
+            if isError {
+                self.layer.borderColor = UIColor.systemRed.cgColor
+                outerBorder.fillColor = UIColor.systemRed.withAlphaComponent(0.1).cgColor
+                outerBorder.strokeColor = UIColor.systemRed.withAlphaComponent(0.2).cgColor
+            } else {
+                outerBorder.fillColor = UIColor.clear.cgColor
+                outerBorder.strokeColor = UIColor.dw_dashBlue().withAlphaComponent(0.2).cgColor
+                
+                if isEditing {
+                    self.layer.borderColor = UIColor.dw_dashBlue().cgColor
+                } else {
+                    self.layer.borderColor = borderColor.cgColor
+                }
+            }
         }
     }
     
@@ -77,6 +97,6 @@ class OutlinedTextField: UITextField {
         
     @objc func onEditingEnd() {
         outerBorder.removeFromSuperlayer()
-        self.layer.borderColor = UIColor(red: 0.808, green: 0.824, blue: 0.835, alpha: 1).cgColor
+        self.layer.borderColor = borderColor.cgColor
     }
 }
