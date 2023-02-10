@@ -222,7 +222,6 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var verifyButton : UIButton!
 
     @IBOutlet var showInfoConstraint: NSLayoutConstraint!
-    @IBOutlet var collapseInfoConstraint: NSLayoutConstraint!
     @IBOutlet var infoBottomAnchorConstraint: NSLayoutConstraint!
 
     fileprivate func update(with item: CrowdNodePortalItem,
@@ -256,8 +255,7 @@ class CrowdNodeCell: UITableViewCell {
         }
 
         additionalInfo.isHidden = !showInfo
-        showInfoConstraint.isActive = showInfo
-        collapseInfoConstraint.isActive = !showInfo
+        showInfoConstraint.constant = showInfo ? 35 : 0
         infoBottomAnchorConstraint.isActive = showInfo
 
         if showInfo {

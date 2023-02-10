@@ -794,7 +794,7 @@
                                                     </userDefinedRuntimeAttributes>
                                                 </view>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="g9J-9G-5ju">
-                                                    <rect key="frame" x="64" y="34.666666666666664" width="253" height="5"/>
+                                                    <rect key="frame" x="64" y="36" width="253" height="2"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Deposit" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NDS-eh-hU1" userLabel="Title">
                                                             <rect key="frame" x="0.0" y="0.0" width="253" height="0.0"/>
@@ -803,7 +803,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashWallet -&gt; CrowdNode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Nk-fs-rra" userLabel="Subtitle">
-                                                            <rect key="frame" x="0.0" y="5" width="253" height="0.0"/>
+                                                            <rect key="frame" x="0.0" y="2" width="253" height="0.0"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                             <color key="textColor" name="SecondaryTextColor"/>
                                                             <nil key="highlightedColor"/>
@@ -816,29 +816,32 @@
                                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="medium"/>
                                                 </imageView>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EAT-EC-5JS" userLabel="Additional Info">
-                                                    <rect key="frame" x="15" y="54.666666666666664" width="320" height="20.333333333333336"/>
+                                                    <rect key="frame" x="15" y="53" width="320" height="22"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="A3h-Vc-pN2">
-                                                            <rect key="frame" x="0.0" y="0.0" width="320" height="20.333333333333332"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="320" height="22"/>
                                                             <subviews>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.warning" translatesAutoresizingMaskIntoConstraints="NO" id="kZc-FW-B6T" userLabel="Info Icon">
-                                                                    <rect key="frame" x="8" y="0.0" width="22" height="20.333333333333332"/>
+                                                                    <rect key="frame" x="8" y="0.0" width="22" height="22"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="22" id="dcF-6z-tJH"/>
                                                                         <constraint firstAttribute="height" constant="22" id="yMD-6d-8Tn"/>
                                                                     </constraints>
                                                                 </imageView>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tre-ab-1GV" userLabel="Additional Info Label">
-                                                                    <rect key="frame" x="38" y="0.0" width="282" height="20.333333333333332"/>
+                                                                    <rect key="frame" x="38" y="0.0" width="282" height="22"/>
                                                                     <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="13"/>
                                                                     <color key="textColor" name="DashBlueColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                             </subviews>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="35" id="YUD-gu-14I"/>
+                                                            </constraints>
                                                             <edgeInsets key="layoutMargins" top="0.0" left="8" bottom="0.0" right="0.0"/>
                                                         </stackView>
                                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VKL-Yb-Nfk">
-                                                            <rect key="frame" x="259.33333333333331" y="-2.3333333333333286" width="54.666666666666686" height="25"/>
+                                                            <rect key="frame" x="259.33333333333331" y="-1.3333333333333357" width="54.666666666666686" height="25"/>
                                                             <color key="backgroundColor" name="BackgroundColor"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="25" id="AKf-Ip-lzv"/>
@@ -873,7 +876,6 @@
                                                     <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstItem="A3h-Vc-pN2" firstAttribute="leading" secondItem="EAT-EC-5JS" secondAttribute="leading" id="7df-5c-ofN"/>
-                                                        <constraint firstAttribute="height" id="BqM-e5-4Xm"/>
                                                         <constraint firstAttribute="height" constant="35" id="Orc-ue-oSi"/>
                                                         <constraint firstItem="A3h-Vc-pN2" firstAttribute="height" secondItem="EAT-EC-5JS" secondAttribute="height" id="Zar-Ki-qhk"/>
                                                         <constraint firstAttribute="trailing" secondItem="VKL-Yb-Nfk" secondAttribute="trailing" constant="6" id="eSg-dr-7TA"/>
@@ -886,11 +888,6 @@
                                                             <integer key="value" value="8"/>
                                                         </userDefinedRuntimeAttribute>
                                                     </userDefinedRuntimeAttributes>
-                                                    <variation key="default">
-                                                        <mask key="constraints">
-                                                            <exclude reference="BqM-e5-4Xm"/>
-                                                        </mask>
-                                                    </variation>
                                                 </view>
                                             </subviews>
                                             <constraints>
@@ -918,7 +915,6 @@
                                             <outlet property="additionalInfo" destination="EAT-EC-5JS" id="NNL-n5-Uix"/>
                                             <outlet property="additionalInfoIcon" destination="kZc-FW-B6T" id="QlP-aP-Mgv"/>
                                             <outlet property="additionalInfoLabel" destination="Tre-ab-1GV" id="Pkz-Cz-BD7"/>
-                                            <outlet property="collapseInfoConstraint" destination="BqM-e5-4Xm" id="ZV8-aY-QPk"/>
                                             <outlet property="contentView" destination="avt-SW-tWA" id="Une-Z4-tde"/>
                                             <outlet property="icon" destination="FzY-IJ-27b" id="CW9-Pl-8ud"/>
                                             <outlet property="iconCircle" destination="ibq-b6-Z4B" id="sb1-YY-wiG"/>
