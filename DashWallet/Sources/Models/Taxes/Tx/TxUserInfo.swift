@@ -58,16 +58,29 @@ extension TxUserInfoTaxCategory {
     @objc var taxCategory: TxUserInfoTaxCategory = .unknown
 
     @objc
+    lazy var fiatAmount: String? = generateFiatAmount()
+
+    var rate: Int?
+    var rateCurrency: String?
+
+    @objc
     init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
         txHash = hash
-        self.taxCategory = taxCategory
     }
 
     init(row: Row) {
         txHash = row[TxUserInfo.txHashColumn]
         taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
+        rate = row[TxUserInfo.txRateColumn]
+        rateCurrency = row[TxUserInfo.txRateCurrencyCodeColumn]
 
         super.init()
+    }
+
+    func update(rate: Int, currency: String) {
+        self.rate = rate
+        rateCurrency = currency
+        fiatAmount = generateFiatAmount()
     }
 }
 
@@ -77,12 +90,26 @@ extension TxUserInfo {
     func taxCategoryString() -> String {
         taxCategory.stringValue
     }
+
+    private func generateFiatAmount() -> String? {
+        if let rate,
+           let rateCurrency {
+            let nf = NumberFormatter.fiatFormatter(currencyCode: rateCurrency)
+
+            var rateDecimal = Decimal(rate)/Decimal(pow(10, nf.maximumFractionDigits))
+            return nf.string(from: rateDecimal as NSNumber)
+        }
+
+        return nil
+    }
 }
 
 extension TxUserInfo {
     static var table: Table { Table("tx_userinfo") }
     static var txCategoryColumn: Expression<Int> { Expression<Int>("taxCategory") }
     static var txHashColumn: Expression<Data> { Expression<Data>("txHash") }
+    static var txRateColumn: Expression<Int?> { .init("rate") }
+    static var txRateCurrencyCodeColumn: Expression<String?> { .init("rateCurrencyCode") }
 }
 
 @objc
@@ -108,4 +135,10 @@ extension DSTransaction {
         let category = defaultTaxCategory()
         return category.stringValue
     }
+}
+
+func pow(_ base:Int, _ power:Int) -> Int {
+    var answer = 1
+    for _ in 0..<power { answer *= base }
+    return answer
 }

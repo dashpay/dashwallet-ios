@@ -38,8 +38,11 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     @objc
     func create(dto: TxUserInfo) {
         do {
-            let txUserInfo = TxUserInfo.table.insert(or: .replace, TxUserInfo.txHashColumn <- dto.txHash,
-                                                     TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
+            let txUserInfo = TxUserInfo.table.insert(or: .replace,
+                                                     TxUserInfo.txHashColumn <- dto.txHash,
+                                                     TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue,
+                                                     TxUserInfo.txRateColumn <- dto.rate,
+                                                     TxUserInfo.txRateCurrencyCodeColumn <- dto.rateCurrency)
             try db.run(txUserInfo)
 
         } catch {
