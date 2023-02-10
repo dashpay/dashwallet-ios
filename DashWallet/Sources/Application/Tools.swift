@@ -17,6 +17,8 @@
 
 import Foundation
 
+private var _cachedFormatters: [String: NumberFormatter] = [:]
+
 private var _decimalFormatter: NumberFormatter!
 private var _fiatFormatter: NumberFormatter!
 private var _dashFormatter: NumberFormatter = {
@@ -93,6 +95,10 @@ extension NumberFormatter {
     }
 
     static func cryptoFormatter(currencyCode: String, exponent: Int) -> NumberFormatter {
+        if let formatter = _cachedFormatters[currencyCode] {
+            return formatter
+        }
+
         let formatter = NumberFormatter()
         formatter.isLenient = true
         formatter.numberStyle = .currency
@@ -109,16 +115,23 @@ extension NumberFormatter {
 
         formatter.maximumFractionDigits = exponent
         formatter.minimumFractionDigits = 0
+        _cachedFormatters[currencyCode] = formatter
 
         return formatter
     }
 
     static func fiatFormatter(currencyCode: String) -> NumberFormatter {
+        if let formatter = _cachedFormatters[currencyCode] {
+            return formatter
+        }
+
         let formatter = NumberFormatter()
         formatter.isLenient = true
         formatter.numberStyle = .currency
         formatter.generatesDecimalNumbers = true
         formatter.currencyCode = currencyCode
+        _cachedFormatters[currencyCode] = formatter
+
         return formatter
     }
 }
