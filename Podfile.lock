@@ -589,12 +589,12 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.2.6)
+  - DashSharedCore (0.2.8)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 1.0.7)
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.2.6)
+    - DashSharedCore (= 0.2.8)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.4-alpha.2)
@@ -620,13 +620,13 @@ PODS:
   - FirebaseStorage (8.15.0):
     - FirebaseCore (~> 8.0)
     - GTMSessionFetcher/Core (~> 1.5)
-  - GoogleDataTransport (9.2.0):
+  - GoogleDataTransport (9.2.1):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Environment (7.10.0):
+  - GoogleUtilities/Environment (7.11.0):
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.10.0):
+  - GoogleUtilities/Logger (7.11.0):
     - GoogleUtilities/Environment
   - gRPC-Core (1.49.0):
     - gRPC-Core/Implementation (= 1.49.0)
@@ -807,8 +807,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: d0e67127a9614e34259994a1982e4e137eb36942
-  DashSync: 74e5f893f8d7b78d1d9b9d22b5047cd37b76694f
+  DashSharedCore: 79b38b97b4bff3d14467f4c997229225df4c5a83
+  DashSync: 076af723d7c44bd3e65daa7c8122dc607ad95edf
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
@@ -816,8 +816,8 @@ SPEC CHECKSUMS:
   FirebaseCoreDiagnostics: 92e07a649aeb66352b319d43bdd2ee3942af84cb
   FirebaseDynamicLinks: 1dc816ef789c5adac6fede0b46d11478175c70e4
   FirebaseStorage: 8019af461599b2c3bc61c6a5dbdfa3d2de66a4d9
-  GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
-  GoogleUtilities: bad72cb363809015b1f7f19beb1f1cd23c589f95
+  GoogleDataTransport: ea169759df570f4e37bdee1623ec32a7e64e67c4
+  GoogleUtilities: c2bdc4cf2ce786c4d2e6b3bcfd599a25ca78f06f
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
   gRPC-Core: 3a9fdb5967d42211e875826f3f6fc163ea02c2a1
   gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d

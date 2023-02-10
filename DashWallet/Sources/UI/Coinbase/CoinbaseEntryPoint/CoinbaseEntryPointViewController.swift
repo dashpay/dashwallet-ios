@@ -40,7 +40,8 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
 
     private var isNeedToShowSignOutError = true
 
-    @IBAction func signOutAction() {
+    @IBAction
+    func signOutAction() {
         isNeedToShowSignOutError = false
         model.signOut()
     }
@@ -89,7 +90,7 @@ extension CoinbaseEntryPointViewController {
         connectionStatusLabel.text = isOnline
             ? NSLocalizedString("Connected", comment: "Coinbase Entry Point")
             : NSLocalizedString("Disconnected", comment: "Coinbase Entry Point")
-        balanceView.balance = model.balance
+        balanceView.dataSource = model
     }
 
     private func configureHierarchy() {
@@ -111,9 +112,9 @@ extension CoinbaseEntryPointViewController {
         tableView.isScrollEnabled = false
         tableView.layer.cornerRadius = 10
         tableView.clipsToBounds = true
-        tableView.backgroundColor = .white
+        tableView.backgroundColor = .dw_background()
 
-        signOutButton.backgroundColor = .white
+        signOutButton.backgroundColor = .dw_background()
         signOutButton.titleLabel?.font = UIFont.dw_font(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
         signOutButton.layer.cornerRadius = 10
         signOutButton.setTitle(NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point"), for: .normal)
@@ -148,10 +149,11 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let isLastItem = indexPath.item == (model.items.count - 1)
+
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
         cell.update(with: model.items[indexPath.item])
-        cell.separatorInset = .init(top: 0, left: indexPath.item == (model.items.count - 1) ? 2000 : 63, bottom: 0, right: 0)
-
+        cell.separatorInset = .init(top: 0, left: isLastItem ? 2000 : 63, bottom: 0, right: 0)
         return cell
     }
 
@@ -176,8 +178,7 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         case .sellDash:
             vc = BuyDashViewController()
         case .convertCrypto:
-            showSuccessTransactionStatus(text: "Test text")
-            return
+            vc = CustodialSwapsViewController()
         case .transferDash:
             vc = TransferAmountViewController()
         }
@@ -198,5 +199,11 @@ final class ItemCell: UITableViewCell {
         iconView.image = .init(named: item.icon)
         nameLabel.text = item.title
         secondaryLabel.text = item.description
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        contentView.backgroundColor = .dw_background()
     }
 }

@@ -36,16 +36,20 @@ final class PortalViewController: UIViewController {
 
     @objc var showCloseButton = false
 
-    @IBAction func closeAction() {
+    @IBAction
+    func closeAction() {
         dismiss(animated: true)
     }
 
-    @objc func upholdAction() {
+    @objc
+    func upholdAction() {
         let vc = DWUpholdViewController()
+        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 
-    @objc func coinbaseAction() {
+    @objc
+    func coinbaseAction() {
         if Coinbase.shared.isAuthorized {
             let vc = CoinbaseEntryPointViewController.controller()
             vc.userSignedOutBlock = { [weak self] isNeedToShowSignOutError in
@@ -56,7 +60,7 @@ final class PortalViewController: UIViewController {
                 if isNeedToShowSignOutError {
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .milliseconds(500))) {
                         self.showAlert(with: NSLocalizedString("Error", comment: ""),
-                                       message: NSLocalizedString("You were signed out from Coinbase, please sign in again", comment: "Sign out from coinbase due to error"),
+                                       message: Coinbase.Error.userSessionRevoked.localizedDescription,
                                        presentingViewController: self)
                     }
                 }
@@ -96,7 +100,8 @@ final class PortalViewController: UIViewController {
         navigationController?.navigationBar.topItem?.backButtonDisplayMode = .minimal
     }
 
-    @objc class func controller() -> PortalViewController {
+    @objc
+    class func controller() -> PortalViewController {
         vc(PortalViewController.self, from: sb("Coinbase"))
     }
 }

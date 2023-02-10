@@ -18,47 +18,43 @@
 import SwiftUI
 import UIKit
 
-// MARK: - TransferAmountView
-
-struct TransferAmountView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> TransferAmountViewController {
-        TransferAmountViewController()
-    }
-
-    func updateUIViewController(_ viewController: TransferAmountViewController, context: Context) { }
-}
 
 // MARK: - TransferAmountViewController
 
-final class TransferAmountViewController: SendAmountViewController, NetworkReachabilityHandling {
-    /// Conform to NetworkReachabilityHandling
-    internal var networkStatusDidChange: ((NetworkStatus) -> ())?
-    internal var reachabilityObserver: Any!
-
+final class TransferAmountViewController: CoinbaseAmountViewController, ConverterViewDelegate {
     private var converterView: ConverterView!
     private var transferModel: TransferAmountModel { model as! TransferAmountModel }
     private var paymentController: PaymentController!
-
-    private var networkUnavailableView: UIView!
+    weak var codeConfirmationController: TwoFactorAuthViewController?
 
     override var amountInputStyle: AmountInputControl.Style { .basic }
-
-    internal weak var codeConfirmationController: TwoFactorAuthViewController?
 
     override var actionButtonTitle: String? {
         NSLocalizedString("Transfer", comment: "Coinbase")
     }
 
+    init() {
+        super.init(model: TransferAmountModel())
+    }
+
+    override init(model: BaseAmountModel) {
+        super.init(model: model)
+    }
+
     override func actionButtonAction(sender: UIView) {
-        DSLogger.log("Tranfer from coinbase: actionButtonAction")
         showActivityIndicator()
         transferModel.initializeTransfer()
     }
 
-    override func initializeModel() {
-        model = TransferAmountModel()
+    // MARK: ConverterViewDelegate
+
+    func didChangeDirection() {
+        transferModel.direction = transferModel.direction == .toWallet ? .toCoinbase : .toWallet
     }
 
+    func didTapOnFromView() { }
+
+    // MARK: Life Cycle
     override func configureModel() {
         super.configureModel()
         transferModel.delegate = self
@@ -67,45 +63,33 @@ final class TransferAmountViewController: SendAmountViewController, NetworkReach
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        converterView = ConverterView(direction: .toCoinbase)
-        converterView.delegate = self
-        converterView.dataSource = model
-        converterView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(converterView)
-
-        networkUnavailableView = NetworkUnavailableView(frame: .zero)
-        networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
-        networkUnavailableView.isHidden = true
-        contentView.addSubview(networkUnavailableView)
-
-        NSLayoutConstraint.activate([
-            converterView.topAnchor.constraint(equalTo: amountView.bottomAnchor, constant: 20),
-            converterView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            converterView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            converterView.heightAnchor.constraint(equalToConstant: 128),
-
-            networkUnavailableView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            networkUnavailableView.centerYAnchor.constraint(equalTo: numberKeyboard.centerYAnchor),
-        ])
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         navigationItem.title = NSLocalizedString("Transfer Dash", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 
-        networkStatusDidChange = { [weak self] _ in
-            self?.reloadView()
-        }
-        startNetworkMonitoring()
-    }
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 20
+        stackView.alignment = .fill
+        contentView.addSubview(stackView)
 
-    deinit {
-        stopNetworkMonitoring()
+        // Move amount view into stack view
+        stackView.addArrangedSubview(amountView)
+
+        converterView = ConverterView(frame: .zero)
+        converterView.delegate = self
+        converterView.dataSource = model as? ConverterViewDataSource
+        converterView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(converterView)
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
+        ])
     }
 }
 
@@ -124,32 +108,14 @@ extension TransferAmountViewController: TransferAmountModelDelegate {
     }
 }
 
-// MARK: ConverterViewDelegate
 
-extension TransferAmountViewController: ConverterViewDelegate {
-    func didChangeDirection(_ direction: ConverterViewDirection) {
-        transferModel.direction = direction == .toCoinbase ? .toCoinbase : .toWallet
-    }
-}
-
-// MARK: - BaseAmountModel + ConverterViewDataSource
-
-extension BaseAmountModel: ConverterViewDataSource {
-    var coinbaseBalanceFormatted: String {
-        guard let balance = Coinbase.shared.lastKnownBalance else {
-            return NSLocalizedString("Unknown Balance", comment: "Coinbase")
-        }
-
-        return balance.formattedDashAmount
-    }
-}
 
 extension TransferAmountViewController {
-    private func reloadView() {
+    @objc
+    override func reloadView() {
+        super.reloadView()
+
         let isOnline = networkStatus == .online
-        networkUnavailableView.isHidden = isOnline
-        keyboardContainer.isHidden = !isOnline
-        if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
         converterView.hasNetwork = isOnline
     }
 
@@ -158,7 +124,7 @@ extension TransferAmountViewController {
     }
 }
 
-// MARK: - TransferAmountViewController + PaymentControllerDelegate
+// MARK: PaymentControllerDelegate
 
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
@@ -169,9 +135,13 @@ extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
         hideActivityIndicator()
     }
+
+    func paymentControllerDidFailTransaction(_ controller: PaymentController) {
+        hideActivityIndicator()
+    }
 }
 
-// MARK: - TransferAmountViewController + PaymentControllerPresentationContextProviding
+// MARK: PaymentControllerPresentationContextProviding
 
 extension TransferAmountViewController: PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
@@ -179,7 +149,7 @@ extension TransferAmountViewController: PaymentControllerPresentationContextProv
     }
 }
 
-// MARK: - TransferAmountViewController + CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
+// MARK: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
 
 extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
     func codeConfirmationControllerDidContinue(with code: String) {
@@ -188,5 +158,21 @@ extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, Coin
 
     func codeConfirmationControllerDidCancel() {
         hideActivityIndicator()
+    }
+}
+
+extension TransferAmountViewController {
+    @objc
+    override func present(error: Error) {
+        if case Coinbase.Error.transactionFailed(let reason) = error, reason == .limitExceded {
+            amountView.showError(error.localizedDescription, textColor: .systemRed) { [weak self] in
+                let vc = CoinbaseInfoViewController.controller()
+                vc.modalPresentationStyle = .overCurrentContext
+                self?.present(vc, animated: true)
+            }
+            return
+        }
+
+        super.present(error: error)
     }
 }

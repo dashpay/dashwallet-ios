@@ -25,7 +25,8 @@ class CoinbaseInfoViewController: UIViewController {
     @IBOutlet var actionButton: UIButton!
     @IBOutlet var hairline: UIView!
 
-    @IBAction func gotItAction() {
+    @IBAction
+    func gotItAction() {
         dismiss(animated: true)
     }
 

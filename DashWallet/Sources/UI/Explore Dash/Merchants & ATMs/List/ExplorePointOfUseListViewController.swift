@@ -186,7 +186,8 @@ class ExplorePointOfUseListViewController: UIViewController {
 }
 
 extension ExplorePointOfUseListViewController {
-    @objc internal func configureModel() { }
+    @objc
+    internal func configureModel() { }
 }
 
 // MARK: DWLocationObserver
@@ -225,11 +226,13 @@ extension ExplorePointOfUseListViewController {
         }
     }
 
-    @objc internal func subtitleForFilterCell() -> String? {
+    @objc
+    internal func subtitleForFilterCell() -> String? {
         nil
     }
 
-    @objc internal func refreshFilterCell() {
+    @objc
+    internal func refreshFilterCell() {
         filterCell?.title = currentSegment.title
         filterCell?.subtitle = subtitleForFilterCell()
 
@@ -244,8 +247,9 @@ extension ExplorePointOfUseListViewController {
         }
     }
 
-    @objc internal func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+    @objc
+    internal func configureHierarchy() {
+        view.backgroundColor = .dw_secondaryBackground()
 
         let appliedFiltersStackView = UIStackView()
         appliedFiltersStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -281,7 +285,7 @@ extension ExplorePointOfUseListViewController {
 
         let standardAppearance = UIToolbarAppearance()
         standardAppearance.configureWithDefaultBackground()
-        standardAppearance.backgroundColor = .systemBackground
+        standardAppearance.backgroundColor = .dw_secondaryBackground()
         navigationController?.toolbar.standardAppearance = standardAppearance
         if #available(iOS 15.0, *) {
             navigationController?.toolbar.scrollEdgeAppearance = standardAppearance
@@ -294,7 +298,7 @@ extension ExplorePointOfUseListViewController {
         view.addSubview(mapView)
 
         contentView = UIView()
-        contentView.backgroundColor = .dw_background()
+        contentView.backgroundColor = .dw_secondaryBackground()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.clipsToBounds = false
         contentView.layer.masksToBounds = true
@@ -318,6 +322,7 @@ extension ExplorePointOfUseListViewController {
         handlerView.addGestureRecognizer(panRecognizer)
 
         tableView = UITableView()
+        tableView.backgroundColor = .dw_secondaryBackground()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.keyboardDismissMode = .onDrag
         tableView.showsVerticalScrollIndicator = false
@@ -406,11 +411,13 @@ extension ExplorePointOfUseListViewController {
         navigationController?.setToolbarHidden(isHidden, animated: false)
     }
 
-    @objc private func showMapAction() {
+    @objc
+    private func showMapAction() {
         showMap()
     }
 
-    @objc private func moveAction(sender: UIPanGestureRecognizer) {
+    @objc
+    private func moveAction(sender: UIPanGestureRecognizer) {
         let translatedPoint: CGPoint = sender.translation(in: view)
 
         contentViewTopLayoutConstraint.constant += translatedPoint.x
@@ -447,7 +454,6 @@ extension ExplorePointOfUseListViewController {
         let segment = model.segments[index]
         model.currentSegment = segment
 
-        searchCell?.stopSearching()
         refreshView()
     }
 }
@@ -539,15 +545,17 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .nextPage:
             let cell = tableView.dequeueReusableCell(withIdentifier: FetchingNextPageCell.dw_reuseIdentifier,
                                                      for: indexPath) as! FetchingNextPageCell
-
+            cell.contentView.backgroundColor = .dw_secondaryBackground()
             return cell
         }
 
+        cell.contentView.backgroundColor = .dw_secondaryBackground()
         cell.selectionStyle = .none
         return cell
     }
 
-    @objc func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    @objc
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let section = ExplorePointOfUseSections(rawValue: section) else {
             return 0
         }
@@ -644,5 +652,6 @@ extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControll
     func refreshView() {
         refreshFilterCell()
         updateMapVisibility()
+        updateShowMapButtonVisibility()
     }
 }

@@ -24,7 +24,8 @@ import SQLite
     @objc var address: String
     @objc var taxCategory: TxUserInfoTaxCategory = .unknown
 
-    @objc init(address: String, taxCategory: TxUserInfoTaxCategory) {
+    @objc
+    init(address: String, taxCategory: TxUserInfoTaxCategory) {
         self.address = address
         self.taxCategory = taxCategory
     }
@@ -39,7 +40,8 @@ import SQLite
 
 @objc
 extension AddressUserInfo {
-    @objc func taxCategoryString() -> String {
+    @objc
+    func taxCategoryString() -> String {
         taxCategory.stringValue
     }
 }

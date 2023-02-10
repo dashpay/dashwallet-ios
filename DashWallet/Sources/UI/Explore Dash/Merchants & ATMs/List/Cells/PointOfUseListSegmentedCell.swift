@@ -48,7 +48,8 @@ class PointOfUseListSegmentedCell: UITableViewCell {
         segmentedControl.selectedSegmentIndex = selectedIndex
     }
 
-    @objc func segmentedControlAction() {
+    @objc
+    func segmentedControlAction() {
         segmentDidChangeBlock?(segmentedControl.selectedSegmentIndex)
     }
 

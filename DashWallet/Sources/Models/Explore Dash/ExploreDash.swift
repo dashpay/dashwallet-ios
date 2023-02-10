@@ -48,7 +48,8 @@ public class ExploreDashObjcWrapper: NSObject {
         case error
     }
 
-    @objc public class func configure() {
+    @objc
+    public class func configure() {
         do {
             try ExploreDash.configure()
         } catch {
@@ -168,7 +169,7 @@ extension ExploreDash {
                                  sortDirection: sortDirection, territory: territory, offset: offset, completion: completion)
     }
 
-    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
     }

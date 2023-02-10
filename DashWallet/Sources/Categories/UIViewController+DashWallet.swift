@@ -19,7 +19,8 @@ import UIKit
 
 @objc
 extension UIViewController {
-    @objc func topController() -> UIViewController {
+    @objc
+    func topController() -> UIViewController {
         if let vc = self as? UITabBarController {
             if let vc = vc.selectedViewController {
                 return vc.topController()
@@ -39,7 +40,8 @@ extension UIViewController {
         return self
     }
 
-    @objc class func deviceSpecificBottomPadding() -> CGFloat {
+    @objc
+    class func deviceSpecificBottomPadding() -> CGFloat {
         if UIDevice.isIpad { // All iPads including ones with home indicator
             return 24.0;
         } else if UIDevice.hasHomeIndicator { // iPhone X-like, XS Max, X

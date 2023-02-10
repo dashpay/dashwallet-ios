@@ -27,7 +27,8 @@ class MerchantListLocationOffCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc func openSettingsAction() {
+    @objc
+    func openSettingsAction() {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             if UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)

@@ -20,11 +20,29 @@
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 다음 지역의 상인 %@</string>
+		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 상인</string>
+		</dict>
 	</dict>
 </dict>
 </plist>

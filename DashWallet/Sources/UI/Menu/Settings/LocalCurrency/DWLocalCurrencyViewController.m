@@ -24,7 +24,6 @@
 #import "DWLocalCurrencyTableViewCell.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
-#import "UINavigationBar+DWAppearance.h"
 #import "UIView+DWRecursiveSubview.h"
 
 NS_ASSUME_NONNULL_BEGIN

@@ -87,7 +87,8 @@ class TXDetailViewController: UIViewController {
 
     }
 
-    @IBAction func closeButtonAction(sender: UIButton) {
+    @IBAction
+    func closeButtonAction(sender: UIButton) {
         dismiss(animated: true)
     }
 
@@ -101,7 +102,8 @@ class TXDetailViewController: UIViewController {
         reloadDataSource()
     }
 
-    @objc class func controller() -> TXDetailViewController {
+    @objc
+    class func controller() -> TXDetailViewController {
         let storyboard = UIStoryboard(name: "Tx", bundle: nil)
         let vc = storyboard.instantiateInitialViewController() as! TXDetailViewController
         return vc
@@ -205,7 +207,8 @@ extension TXDetailViewController {
         dataSource.defaultRowAnimation = .none
     }
 
-    @objc func configureHierarchy() {
+    @objc
+    func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
         // Make sure we have 20pt padding on the sides
@@ -270,7 +273,8 @@ class SuccessTxDetailViewController: TXDetailViewController {
 
     @objc weak var delegate: SuccessTxDetailViewControllerDelegate?
 
-    @IBAction override func closeButtonAction(sender: UIButton) {
+    @IBAction
+    override func closeButtonAction(sender: UIButton) {
         dismiss(animated: true) { [weak self] in
             if let wSelf = self {
                 wSelf.delegate?.txDetailViewControllerDidFinish(controller: wSelf)
@@ -286,7 +290,8 @@ class SuccessTxDetailViewController: TXDetailViewController {
         closeButton.setTitle(NSLocalizedString("Close", comment: ""), for: .normal)
     }
 
-    @objc override static func controller() -> SuccessTxDetailViewController {
+    @objc
+    override static func controller() -> SuccessTxDetailViewController {
         let storyboard = UIStoryboard(name: "Tx", bundle: nil)
         let vc = storyboard
             .instantiateViewController(identifier: "SuccessTxDetailViewController") as! SuccessTxDetailViewController

@@ -85,6 +85,11 @@ NS_ASSUME_NONNULL_BEGIN
     return resultText;
 }
 
+- (nullable NSString *)validatedStringFromLastInputString:(nonnull NSString *)lastInputString range:(NSRange)range replacementString:(nonnull NSString *)string numberFormatter:(nonnull NSNumberFormatter *)numberFormatter {
+    return [self validatedStringFromLastInputString:lastInputString range:range replacementString:string];
+}
+
+
 @end
 
 NS_ASSUME_NONNULL_END

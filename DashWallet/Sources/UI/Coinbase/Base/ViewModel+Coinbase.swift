@@ -20,17 +20,17 @@ import Foundation
 // MARK: - CoinbaseTransactionDelegate
 
 protocol CoinbaseTransactionDelegate: AnyObject {
-    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error)
-    func transferFromCoinbaseToWalletDidFail(with reason: Coinbase.Error.TransactionFailureReason)
     func transferFromCoinbaseToWalletDidSucceed()
+    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error)
     func transferFromCoinbaseToWalletDidCancel()
 }
 
 // MARK: - CoinbaseTransactionSendable
 
 protocol CoinbaseTransactionSendable {
-    var plainAmount: UInt64 { get }
-    var transactionDelegate: CoinbaseTransactionDelegate? { get }
+    /// Amount to transfer in Dash
+    var amountToTransfer: UInt64 { get }
+    var transactionDelegate: CoinbaseTransactionDelegate? { set get }
 
     func transferFromCoinbase()
     func continueTransferFromCoinbase(with verificationCode: String)
@@ -42,7 +42,7 @@ extension CoinbaseTransactionSendable {
     }
 
     func transferFromCoinbase() {
-        let amount = plainAmount
+        let amount = amountToTransfer
 
         Task {
             try await transferFromCoinbase(amount: amount, with: nil)
@@ -50,7 +50,7 @@ extension CoinbaseTransactionSendable {
     }
 
     func continueTransferFromCoinbase(with verificationCode: String) {
-        let amount = plainAmount
+        let amount = amountToTransfer
 
         Task {
             try await transferFromCoinbase(amount: amount, with: verificationCode)
@@ -62,10 +62,6 @@ extension CoinbaseTransactionSendable {
             let tx = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, amount: amount)
             await MainActor.run {
                 self.transactionDelegate?.transferFromCoinbaseToWalletDidSucceed()
-            }
-        } catch Coinbase.Error.transactionFailed(let r) {
-            await MainActor.run {
-                self.transactionDelegate?.transferFromCoinbaseToWalletDidFail(with: r)
             }
         } catch {
             await MainActor.run {

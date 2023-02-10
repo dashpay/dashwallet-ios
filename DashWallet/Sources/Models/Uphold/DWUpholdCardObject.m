@@ -56,6 +56,18 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)mock {
+    _identifier = @"Mock Dash Account";
+    _label = @"Uphold Dash";
+    _available = [[NSDecimalNumber alloc] initWithFloat:3.14f];
+}
+
++ (instancetype)mock {
+    DWUpholdCardObject *obj = [DWUpholdCardObject new];
+    [obj mock];
+    return obj;
+}
+
 #pragma mark - Internal
 
 - (void)updateAddress:(NSString *)address {

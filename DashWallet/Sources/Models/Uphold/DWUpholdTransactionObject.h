@@ -39,6 +39,8 @@ typedef NS_ENUM(NSUInteger, DWUpholdTransactionObjectType) {
 
 - (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
 
++ (instancetype)mock;
+
 @end
 
 NS_ASSUME_NONNULL_END

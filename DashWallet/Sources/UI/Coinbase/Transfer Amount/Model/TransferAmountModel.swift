@@ -35,15 +35,36 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
         case toCoinbase
     }
 
-    weak var delegate: TransferAmountModelDelegate?
-    weak var transactionDelegate: CoinbaseTransactionDelegate? { delegate }
+    weak var delegate: TransferAmountModelDelegate? {
+        didSet {
+            transactionDelegate = delegate
+        }
+    }
+
+    weak var transactionDelegate: CoinbaseTransactionDelegate?
 
     public var address: String!
-    public var direction: TransferDirection = .toCoinbase
+    public var direction: TransferDirection = .toWallet
 
-    internal var plainAmount: UInt64 { UInt64(amount.plainAmount) }
+    internal var amountToTransfer: UInt64 { amount.plainAmount }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
+
+    override var isAllowedToContinue: Bool {
+        if direction == .toCoinbase {
+            return super.isAllowedToContinue
+        } else {
+            return isAmountValidForProceeding && !canShowInsufficientFunds
+        }
+    }
+
+    override var canShowInsufficientFunds: Bool {
+        if direction == .toCoinbase {
+            return super.canShowInsufficientFunds
+        } else {
+            return amountToTransfer > (Coinbase.shared.lastKnownBalance ?? 0)
+        }
+    }
 
     override init() {
         super.init()
@@ -55,13 +76,14 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
         }
     }
 
-    override func selectAllFunds(_ preparationHandler: () -> Void) {
+    override func selectAllFundsWithoutAuth() {
         if direction == .toCoinbase {
-            super.selectAllFunds(preparationHandler)
+            super.selectAllFundsWithoutAuth()
         } else {
             guard let balance = Coinbase.shared.lastKnownBalance else { return }
 
-            let maxAmount = AmountObject(plainAmount: Int64(balance), fiatCurrencyCode: localCurrencyCode,
+            let maxAmount = AmountObject(plainAmount: balance,
+                                         fiatCurrencyCode: localCurrencyCode,
                                          localFormatter: localFormatter)
             updateCurrentAmountObject(with: maxAmount)
         }
@@ -77,7 +99,7 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 
     private func transferToCoinbase() {
         // TODO: validate
-        let amount = UInt64(amount.plainAmount)
+        let amount = amount.plainAmount
 
         obtainNewAddress { [weak self] address in
             guard let address else {
@@ -114,4 +136,33 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
     }
 }
 
+// MARK: ConverterViewDataSource
 
+extension TransferAmountModel: ConverterViewDataSource {
+    var fromItem: SourceViewDataProvider? {
+        direction == .toCoinbase
+            ? ConverterViewSourceItem.dash(balanceFormatted: walletBalanceFormatted,
+                                           fiatBalanceFormatted: fiatWalletBalanceFormatted)
+            : ConverterViewSourceItem(image: .asset("Coinbase"),
+                                      title: "Coinbase",
+                                      balanceFormatted: Coinbase.shared.dashAccount?.info.balanceFormatted ?? "",
+                                      fiatBalanceFormatted: Coinbase.shared.dashAccount?.info.fiatBalanceFormatted ?? "")
+    }
+
+    var toItem: SourceViewDataProvider? {
+        direction == .toWallet
+            ? ConverterViewSourceItem.dash()
+            : ConverterViewSourceItem(image: .asset("Coinbase"),
+                                      title: "Coinbase",
+                                      balanceFormatted: "",
+                                      fiatBalanceFormatted: "")
+    }
+
+    var coinbaseBalanceFormatted: String {
+        guard let balance = Coinbase.shared.lastKnownBalance else {
+            return NSLocalizedString("Unknown Balance", comment: "Coinbase")
+        }
+
+        return balance.formattedDashAmount
+    }
+}

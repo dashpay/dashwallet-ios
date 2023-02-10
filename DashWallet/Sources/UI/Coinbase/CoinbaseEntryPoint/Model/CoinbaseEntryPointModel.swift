@@ -27,6 +27,8 @@ enum CoinbaseEntryPointItem: CaseIterable {
 }
 
 extension CoinbaseEntryPointItem {
+    static let supportedCases: [CoinbaseEntryPointItem] = [.buyDash, .convertCrypto, .transferDash]
+
     var title: String {
         switch self {
         case .buyDash:
@@ -47,9 +49,9 @@ extension CoinbaseEntryPointItem {
         case .sellDash:
             return NSLocalizedString("Receive directly into Coinbase", comment: "Coinbase Entry Point")
         case .convertCrypto:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
+            return NSLocalizedString("Between Dash Wallet and Coinbase.", comment: "Coinbase Entry Point")
         case .transferDash:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
+            return NSLocalizedString("Between Dash Wallet and Coinbase.", comment: "Coinbase Entry Point")
         }
     }
 
@@ -70,9 +72,9 @@ extension CoinbaseEntryPointItem {
 // MARK: - CoinbaseEntryPointModel
 
 final class CoinbaseEntryPointModel {
-    let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.allCases
+    let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.supportedCases
 
-    var hasPaymentMethods: Bool { !Coinbase.shared.paymentMethods.isEmpty }
+    var hasPaymentMethods = false
 
     var userDidSignOut: (() -> ())?
     var userDidChange: (() -> ())?
@@ -84,6 +86,7 @@ final class CoinbaseEntryPointModel {
     }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
+    private var accountDidChangeHandle: AnyObject?
 
     init() {
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
@@ -92,6 +95,15 @@ final class CoinbaseEntryPointModel {
             } else {
                 self?.userDidChange?()
             }
+        }
+
+        accountDidChangeHandle = NotificationCenter.default.addObserver(forName: .accountDidChangeNotification, object: nil, queue: .main, using: { [weak self] _ in
+            self?.userDidChange?()
+        })
+
+        Task {
+            let paymentMethods = try await Coinbase.shared.paymentMethods
+            hasPaymentMethods = !paymentMethods.isEmpty
         }
     }
 
@@ -102,6 +114,27 @@ final class CoinbaseEntryPointModel {
     }
 
     deinit {
+        NotificationCenter.default.removeObserver(accountDidChangeHandle!)
         Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
+    }
+}
+
+// MARK: BalanceViewDataSource
+
+extension CoinbaseEntryPointModel: BalanceViewDataSource {
+    var mainAmountString: String {
+        balance.formattedDashAmount
+    }
+
+    var supplementaryAmountString: String {
+        let fiat: String
+
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+        }
+
+        return fiat
     }
 }

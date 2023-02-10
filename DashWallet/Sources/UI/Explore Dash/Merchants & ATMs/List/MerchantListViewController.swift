@@ -30,6 +30,10 @@ enum MerchantsListSegment: Int {
         lhs.tag == rhs.rawValue
     }
 
+    static func !=(lhs: PointOfUseListSegment, rhs: MerchantsListSegment) -> Bool {
+        lhs.tag != rhs.rawValue
+    }
+
     var pointOfUseListSegment: PointOfUseListSegment {
         let dataProvider: PointOfUseDataProvider
         let showReversedLocation: Bool
@@ -129,7 +133,9 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
                 locationOffCell = itemCell
             } else {
-                return super.tableView(tableView, cellForRowAt: indexPath)
+                let cell = super.tableView(tableView, cellForRowAt: indexPath) as! PointOfUseItemCell
+                cell.subLabel.isHidden = currentSegment == .online
+                return cell
             }
         default:
             return super.tableView(tableView, cellForRowAt: indexPath)
@@ -192,7 +198,13 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override func subtitleForFilterCell() -> String? {
-        if model.showMap && DWLocationManager.shared.isAuthorized {
+        if model.showMap &&
+            DWLocationManager.shared.isAuthorized &&
+            currentSegment != .all {
+            let physicalMerchants = items.filter { $0.isPhysical }
+
+            guard !physicalMerchants.isEmpty else { return nil }
+
             if Locale.current.usesMetricSystem {
                 return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
@@ -222,6 +234,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         title = NSLocalizedString("Where to Spend", comment: "");
 
         let infoButton = UIButton(type: .infoLight)
+        infoButton.tintColor = .dw_label()
         infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
 
@@ -277,7 +290,8 @@ extension MerchantListViewController {
         present(vc, animated: true, completion: nil)
     }
 
-    @objc private func infoButtonAction() {
+    @objc
+    private func infoButtonAction() {
         showInfoViewController()
     }
 }

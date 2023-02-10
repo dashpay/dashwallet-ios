@@ -19,12 +19,14 @@ import UIKit
 
 class MerchantInfoViewController: PointOfUseInfoViewController {
 
-    @objc func learnMoreAction() {
+    @objc
+    func learnMoreAction() {
         let vc = GiftCardInfoViewController()
         present(vc, animated: true)
     }
 
-    @objc func continueButtonAction() {
+    @objc
+    func continueButtonAction() {
         dismiss(animated: true)
     }
 

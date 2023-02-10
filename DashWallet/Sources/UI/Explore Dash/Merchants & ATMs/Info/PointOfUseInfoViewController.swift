@@ -18,12 +18,13 @@
 import UIKit
 
 class PointOfUseInfoViewController: UIViewController {
-    @objc func closeButtonAction() {
+    @objc
+    func closeButtonAction() {
         dismiss(animated: true)
     }
 
     internal func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         let configuration = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
         let closeImage = UIImage(systemName: "xmark", withConfiguration: configuration)

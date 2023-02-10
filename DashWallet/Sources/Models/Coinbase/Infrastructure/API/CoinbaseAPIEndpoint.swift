@@ -16,7 +16,7 @@ let authBaseURL = URL(string: "https://coinbase.com")
 // MARK: - CoinbaseAPIError
 
 struct CoinbaseAPIError: Decodable {
-    struct Error: Decodable {
+    struct Error: Swift.Error, LocalizedError, Decodable {
         let id: ClientErrorID!
 
         /// Human readable message.
@@ -24,6 +24,10 @@ struct CoinbaseAPIError: Decodable {
 
         /// Link to the documentation.
         let url: URL?
+
+        var errorDescription: String? {
+            message
+        }
 
         /// List of available error codes.
         enum ClientErrorID: String, Decodable {
@@ -97,6 +101,11 @@ struct CoinbaseAPIError: Decodable {
             /// Status Code: `403`.
             case invalidScope = "invalid_scope"
 
+            /// The provided authorization grant is invalid, expired, revoked
+            ///
+            /// Status Code: `401`.
+            case invalidGrant = "invalid_grant"
+
             /// Resource not found.
             ///
             /// Status Code: `404`.
@@ -112,6 +121,8 @@ struct CoinbaseAPIError: Decodable {
             /// Status Code: `500`.
             case internalServerError = "internal_server_error"
         }
+
+
     }
 
     var errors: [Error]
@@ -120,7 +131,8 @@ struct CoinbaseAPIError: Decodable {
 // MARK: - CoinbaseEndpoint
 
 public enum CoinbaseEndpoint {
-    case userAccount
+    case account(String)
+    case accounts
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
@@ -136,6 +148,7 @@ public enum CoinbaseEndpoint {
     case revokeToken(token: String)
     case refreshToken(refreshToken: String)
     case signIn
+    case path(String)
 }
 
 // MARK: TargetType, AccessTokenAuthorizable
@@ -143,7 +156,7 @@ public enum CoinbaseEndpoint {
 extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     public var authorizationType: Moya.AuthorizationType? {
         switch self {
-        case .signIn, .getToken, .refreshToken:
+        case .signIn, .getToken, .refreshToken, .exchangeRates:
             return nil
         default:
             return .bearer
@@ -151,19 +164,26 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     }
 
     public var baseURL: URL {
-        kBaseURL
+        guard case .path(let string) = self else {
+            return kBaseURL
+        }
+
+        let path = string.removingPercentEncoding ?? string
+        let url = URL(string: "https://api.coinbase.com" + path)!
+        return url
     }
 
     public var path: String {
         switch self {
-        case .userAccount: return "/v2/accounts/DASH"
+        case .account(let name): return "/v2/accounts/\(name)"
+        case .accounts: return "/v2/accounts"
         case .userAuthInformation: return "/v2/user/auth"
-        case .exchangeRates(let currency): return "/v2/exchange-rates?currency=\(currency)"
+        case .exchangeRates: return "/v2/exchange-rates"
         case .activePaymentMethods: return "/v2/payment-methods"
         case .placeBuyOrder(let accountId, _): return "/v2/accounts/\(accountId)/buys"
         case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
-        case .getBaseIdForUSDModel(let baseCurrency): return "/v2//assets/prices?base=\(baseCurrency)&filter=holdable&resolution=latest"
+        case .getBaseIdForUSDModel: return "/v2/assets/prices"
         case .swapTrade: return "/v2/trades"
         case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
@@ -171,6 +191,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .getToken, .refreshToken: return "/oauth/token"
         case .revokeToken: return "/oauth/revoke"
         case .signIn: return "/oauth/authorize"
+        default:
+            return ""
         }
     }
 
@@ -223,6 +245,12 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(dto)
         case .placeBuyOrder(_, let dto):
             return .requestJSONEncodable(dto)
+        case .accounts:
+            return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)
+        case .getBaseIdForUSDModel(let base):
+            return .requestParameters(parameters: [base: base, "filter": "holdable", "resolution": "latest"], encoding: URLEncoding.default)
+        case .exchangeRates(let currency):
+            return .requestParameters(parameters: ["currency": currency], encoding: URLEncoding.default)
         default:
             return .requestPlain
         }

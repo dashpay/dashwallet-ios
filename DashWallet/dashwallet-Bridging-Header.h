@@ -11,11 +11,15 @@ static const bool _SNAPSHOT = 0;
 #endif /* SNAPSHOT */
 
 //MARK: DashSync
+#import <DashSync/DSLogger.h>
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
 #import "DSReachabilityManager.h"
 #import "DSCurrencyPriceObject.h"
+#import "DSPriceOperationProvider.h"
+#import "DSOperation.h"
+#import "DSOperationQueue.h"
 
 //MARK: DashWallet
 #import "DWTransactionListDataProviderProtocol.h"
@@ -29,11 +33,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
-#import "DWAmountObject.h"
-#import "DWUpholdViewController.h"
-#import "DWUpholdClient.h"
-#import "DWUpholdCardObject.h"
-#import "DWAmountModel.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
@@ -51,17 +50,28 @@ static const bool _SNAPSHOT = 0;
 #import "DWQRScanModel.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
-
 #import "UIView+DWHUD.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
 #import "UIView+DWReuseHelper.h"
-#import "DSTransaction+DashWallet.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
-#import <DashSync/DSLogger.h>
+#import "DSTransaction+DashWallet.h"
+#import "DWAlertController.h"
 
+//MARK: Uphold
+#import "DWUpholdTransactionObject.h"
+#import "DWUpholdViewController.h"
+#import "DWUpholdClient.h"
+#import "DWUpholdCardObject.h"
+#import "DWUpholdOTPViewController.h"
+#import "DWUpholdConfirmViewController.h"
+#import "DWUpholdConfirmTransferModel.h"
+#import "DWUpholdOTPProvider.h"
+#import "DWUpholdClientCancellationToken.h"
+
+//MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>

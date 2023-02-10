@@ -22,7 +22,6 @@
 #import "DWUIKit.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
-#import "DWUpholdTransferViewController.h"
 #import "dashwallet-Swift.h"
 #import <UIKit/UIKit.h>
 
@@ -133,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                            style:UIBarButtonItemStylePlain
                                                                           target:self
                                                                           action:@selector(logOutButtonAction:)];
+    rightBarButtonItem.tintColor = [UIColor dw_labelColor];
     [navigationItem setRightBarButtonItem:rightBarButtonItem animated:YES];
 
     [self.model fetch];
@@ -166,6 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)transferButtonAction:(id)sender {
     DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:self.model.dashCard];
     controller.delegate = self;
+    controller.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -187,7 +188,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
                   didSendTransaction:(DWUpholdTransactionObject *)transaction {
-    [self.navigationController popToRootViewControllerAnimated:YES];
+    [self.navigationController popViewControllerAnimated:YES];
 
     UIAlertController *alert =
         [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
@@ -209,7 +210,7 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:openAction];
     alert.preferredAction = openAction;
 
-    [self presentViewController:alert animated:YES completion:nil];
+    [self.navigationController presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Private

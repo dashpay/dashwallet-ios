@@ -63,6 +63,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
     internal var actionButtonDisabledTitle: String? { actionButtonTitle }
 
     internal var stackView: UIStackView!
+    internal var buttonContainer: UIView!
     private var button: DWActionButton!
     private var barButton: UIBarButtonItem!
     private var contentBottomConstraint: NSLayoutConstraint!
@@ -91,7 +92,8 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
         }
     }
 
-    @objc func actionButtonAction(sender: UIView) { }
+    @objc
+    func actionButtonAction(sender: UIView) { }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -122,7 +124,9 @@ extension ActionButtonViewController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
-        stackView = UIStackView()
+        let bottomPadding = deviceSpecificBottomPadding()
+
+        stackView = ActionButtonStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.alignment = .fill
@@ -138,14 +142,11 @@ extension ActionButtonViewController {
 
         let safeAreaGuide = view.safeAreaLayoutGuide
 
-        let bottomPadding = deviceSpecificBottomPadding()
-        contentBottomConstraint = safeAreaGuide.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: bottomPadding)
-
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: safeAreaGuide.topAnchor),
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            contentBottomConstraint,
+            stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
 
@@ -157,8 +158,8 @@ extension ActionButtonViewController {
             actionButton = barButton
         }
         else {
-            let buttonContainer = UIView()
-            buttonContainer.backgroundColor = .dw_background()
+            buttonContainer = UIView()
+            buttonContainer.backgroundColor = .dw_secondaryBackground()
             buttonContainer.translatesAutoresizingMaskIntoConstraints = false
             stackView.addArrangedSubview(buttonContainer)
 
@@ -179,7 +180,7 @@ extension ActionButtonViewController {
 
             NSLayoutConstraint.activate([
                 button.topAnchor.constraint(equalTo: buttonContainer.topAnchor, constant: 0),
-                button.bottomAnchor.constraint(equalTo: buttonContainer.bottomAnchor, constant: 0),
+                button.bottomAnchor.constraint(equalTo: buttonContainer.safeAreaLayoutGuide.bottomAnchor, constant: 0),
                 button.leadingAnchor.constraint(equalTo: marginsGuide.leadingAnchor),
                 button.trailingAnchor.constraint(equalTo: marginsGuide.trailingAnchor),
                 button.heightAnchor.constraint(equalToConstant: 46),
@@ -221,5 +222,22 @@ extension ActionButtonViewController {
         else {
             return 15
         }
+    }
+}
+
+// MARK: - ActionButtonStackView
+
+private final class ActionButtonStackView: UIStackView {
+
+    /// We need this in order to always have safeAreaInsets.bottom > 0.
+    /// When we are on device with home button, we use it as a bottom padding for the content
+    override var safeAreaInsets: UIEdgeInsets {
+        let defaultnsets = UIEdgeInsets(top: 0, left: 0, bottom: 15, right: 0)
+
+        guard let superview, superview.safeAreaInsets.bottom > 0 else {
+            return defaultnsets
+        }
+
+        return superview.safeAreaInsets
     }
 }
