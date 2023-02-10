@@ -39,7 +39,7 @@ final class CrowdNodePortalController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewModel.showNotificationOnResult = false
-        
+
         if cancellableBag.isEmpty {
             configureObservers()
         }
@@ -51,16 +51,24 @@ final class CrowdNodePortalController: UIViewController {
         viewModel.showNotificationOnResult = true
     }
 
-    @objc static func controller() -> CrowdNodePortalController {
+    @objc
+    static func controller() -> CrowdNodePortalController {
         vc(CrowdNodePortalController.self, from: sb("CrowdNode"))
     }
 
-    @objc func infoButtonAction() {
+    @objc
+    func infoButtonAction() {
         if viewModel.signUpState == .linkedOnline {
-            present(OnlineAccountInfoController.controller(), animated: true, completion: nil)
+            present(OnlineAccountDetailsController.controller(), animated: true)
         } else {
-            present(StakingInfoDialogController.controller(), animated: true, completion: nil)
+            present(StakingInfoDialogController.controller(), animated: true)
         }
+    }
+
+    @IBAction
+    func verifyButtonAction() {
+        let vc = OnlineAccountConfirmationController.controller()
+        present(vc, animated: true, completion: nil)
     }
 }
 
@@ -103,7 +111,7 @@ extension CrowdNodePortalController {
         viewModel.$crowdNodeBalance
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
-            .sink(receiveValue: { [weak self] balance in
+            .sink(receiveValue: { [weak self] _ in
                 self?.balanceView.dataSource = self
                 self?.tableView.reloadRows(at: [
                     IndexPath(item: 0, section: 0),
@@ -123,7 +131,7 @@ extension CrowdNodePortalController {
                 with: .none)
             })
             .store(in: &cancellableBag)
-        
+
         viewModel.$onlineAccountState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -131,6 +139,12 @@ extension CrowdNodePortalController {
                     IndexPath(item: 1, section: 0),
                 ],
                 with: .none)
+
+                if self?.viewModel.shouldShowConfirmationDialog == true {
+                    let vc = OnlineAccountConfirmationController.controller()
+                    self?.present(vc, animated: true, completion: nil)
+                    self?.viewModel.shouldShowConfirmationDialog = false
+                }
             }
             .store(in: &cancellableBag)
 
@@ -194,7 +208,7 @@ class CrowdNodeCell: UITableViewCell {
     @IBOutlet var additionalInfoLabel : UILabel!
     @IBOutlet var additionalInfoIcon : UIImageView!
     @IBOutlet var verifyButton : UIButton!
-    
+
     @IBOutlet var showInfoConstraint: NSLayoutConstraint!
     @IBOutlet var collapseInfoConstraint: NSLayoutConstraint!
     @IBOutlet var infoBottomAnchorConstraint: NSLayoutConstraint!
@@ -219,7 +233,7 @@ class CrowdNodeCell: UITableViewCell {
         }
 
         var showInfo: Bool
-        
+
         switch item {
         case .deposit:
             showInfo = crowdNodeBalance < CrowdNode.minimumDeposit && !onlineAccountState.isLinkingInProgress
@@ -228,12 +242,12 @@ class CrowdNodeCell: UITableViewCell {
         default:
             showInfo = false
         }
-        
+
         additionalInfo.isHidden = !showInfo
         showInfoConstraint.isActive = showInfo
         collapseInfoConstraint.isActive = !showInfo
         infoBottomAnchorConstraint.isActive = showInfo
-        
+
         if showInfo {
             additionalInfo.backgroundColor = item.infoBackgroundColor
             additionalInfoLabel.text = item.info(crowdNodeBalance, onlineAccountState)
@@ -351,7 +365,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
     }
 }
 
-// MARK: BalanceViewDataSource
+// MARK: - CrowdNodePortalController + BalanceViewDataSource
 
 extension CrowdNodePortalController: BalanceViewDataSource {
     var mainAmountString: String {

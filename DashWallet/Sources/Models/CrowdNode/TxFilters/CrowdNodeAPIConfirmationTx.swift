@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,9 +15,25 @@
 //  limitations under the License.
 //
 
+// MARK: - CrowdNodeAPIConfirmationTx
+
 final class CrowdNodeAPIConfirmationTx: CoinsToAddressTxFilter {
-    init(address: String?) {
-        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: address)
+    private var primaryAddress: String!
+
+    init(primaryAddress: String, apiAddress: String) {
+        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: apiAddress)
+        self.primaryAddress = primaryAddress
+    }
+
+    override func matches(tx: DSTransaction) -> Bool {
+        super.matches(tx: tx) && fromAddresses.contains(primaryAddress)
     }
 }
 
+// MARK: - CrowdNodeAPIConfirmationTxForwarded
+
+final class CrowdNodeAPIConfirmationTxForwarded: CoinsToAddressTxFilter {
+    init() {
+        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: CrowdNode.crowdNodeAddress, withFee: true)
+    }
+}

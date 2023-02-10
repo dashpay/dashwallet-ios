@@ -44,6 +44,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "DWSecureWalletDelegate.h"
+#import "UIImage+Utils.h"
 // -- end CrowdNode
 #import "DWUpholdViewController.h"
 #import "DWUpholdClient.h"

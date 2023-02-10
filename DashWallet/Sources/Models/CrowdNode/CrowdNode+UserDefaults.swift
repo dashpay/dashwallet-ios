@@ -27,6 +27,7 @@ private let kOnlineAccountState = "сrowdNodeOnlineAccountStateKey"
 private let kOnlineAccountAddress = "crowdNodeOnlineAccountAddressKey"
 private let kCrowdNodeAccountAddress = "crowdNodeAccountAddressKey"
 private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
+private let kConfirmationDialogShown = "crowdNodeConfirmationDialogShownKey"
 
 extension CrowdNode {
     var infoShown: Bool {
@@ -64,11 +65,6 @@ extension CrowdNode {
         set(value) { UserDefaults.standard.set(value.rawValue, forKey: kOnlineAccountState) }
     }
 
-    var onlineAccountAddress: String? {
-        get { UserDefaults.standard.value(forKey: kOnlineAccountAddress) as? String }
-        set(value) { UserDefaults.standard.set(value, forKey: kOnlineAccountAddress) }
-    }
-
     var crowdNodeAccountAddress: String? {
         get { UserDefaults.standard.value(forKey: kCrowdNodeAccountAddress) as? String }
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeAccountAddress) }
@@ -79,12 +75,18 @@ extension CrowdNode {
         set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodePrimaryAddress) }
     }
 
+    var confirmationDialogShown: Bool {
+        get { UserDefaults.standard.bool(forKey: kConfirmationDialogShown) }
+        set(value) { UserDefaults.standard.set(value, forKey: kConfirmationDialogShown) }
+    }
+
     func resetUserDefaults() {
         infoShown = false
         CrowdNode.lastKnownBalance = 0
         withdrawalLimitsInfoShown = false
         savedOnlineAccountState = .none
-        onlineAccountAddress = nil
+        crowdNodeAccountAddress = nil
         crowdNodePrimaryAddress = nil
+        confirmationDialogShown = false
     }
 }

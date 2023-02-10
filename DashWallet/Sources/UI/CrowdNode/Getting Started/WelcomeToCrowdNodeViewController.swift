@@ -25,7 +25,7 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
+        configureHierarchy()
         viewModel.didShowInfoScreen()
     }
 
@@ -34,11 +34,21 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
         cancellableBag.removeAll()
     }
 
-    @IBAction func continueAction() {
+    @IBAction
+    func continueAction() {
         navigationController?.replaceLast(with: GettingStartedViewController.controller())
     }
 
-    @objc static func controller() -> WelcomeToCrowdNodeViewController {
+    @objc
+    static func controller() -> WelcomeToCrowdNodeViewController {
         vc(WelcomeToCrowdNodeViewController.self, from: sb("CrowdNode"))
+    }
+
+    private func configureHierarchy() {
+        logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        navigationItem.standardAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
     }
 }

@@ -60,8 +60,8 @@ public class CrowdNodeObjcWrapper: NSObject {
     }
 }
 
-private let kConfirmedStatus = "confirmed"
 private let kValidStatus = "valid"
+private let kConfirmedStatus = "confirmed"
 
 // MARK: - CrowdNode
 
@@ -179,11 +179,11 @@ extension CrowdNode {
             return
         }
 
-        if let address = onlineAccountAddress {
+        var onlineState = savedOnlineAccountState
+
+        if let address = getOnlineAccountAddress(state: onlineState) {
             accountAddress = address
             crowdNodeAccountAddress = address
-
-            var onlineState = savedOnlineAccountState
 
             if onlineState == .none {
                 onlineState = .linking
@@ -195,6 +195,8 @@ extension CrowdNode {
             } catch {
                 DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
+        } else {
+            DSLogger.log("CrowdNode: online account address isn't found")
         }
     }
 
@@ -594,7 +596,7 @@ extension CrowdNode {
 extension CrowdNode {
     func trackLinkingAccount(address: String) {
         linkingApiAddress = address
-        onlineAccountAddress = address
+        crowdNodeAccountAddress = address
         changeOnlineState(to: .linking)
     }
 
@@ -678,13 +680,23 @@ extension CrowdNode {
     }
 
     private func startTrackingConfirmed(address: String, fireImmediately: Bool) {
+        let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            self?.checkAddressStatus(address: address)
+        }
+        timer.tolerance = 0.5
+        self.timer = timer
+
+        if fireImmediately {
+            timer.fire()
+        }
+
         Task {
             DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
 
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
-            let confirmationTx = await waitForApiAddressConfirmation(accountAddress: accountAddress)
-            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashData)")
+            let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
+            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashHexString)")
 
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
@@ -693,14 +705,26 @@ extension CrowdNode {
                 return
             }
 
-            let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
-                self?.checkIfAddressIsInUse(address: address)
-            }
-            timer.tolerance = 0.5
-            self.timer = timer
+            let account = DWEnvironment.sharedInstance().currentAccount
 
-            if fireImmediately {
-                timer.fire()
+            if account.transactionIsValid(confirmationTx) {
+                do {
+                    // TODO: authentication is temporary. Should be fixed in NMI-908
+                    var authenticated = DSAuthenticationManager.sharedInstance().didAuthenticate
+
+                    if !authenticated {
+                        authenticated = await authenticate(allowBiometric: false)
+                    }
+
+                    if authenticated {
+                        let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount,
+                                                                             inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address),
+                                                                             adjustAmountDownwards: true)
+                        DSLogger.log("CrowdNode: confirmation tx forwarded: \(forwarded.txHashHexString)")
+                    }
+                } catch {
+                    DSLogger.log("CrowdNode error during confirmation forwarding: \(error)")
+                }
             }
         }
     }
@@ -716,7 +740,7 @@ extension CrowdNode {
                     changeOnlineState(to: .none)
                 } else {
                     accountAddress = address
-                    onlineAccountAddress = address
+                    crowdNodeAccountAddress = address
                     crowdNodePrimaryAddress = result.primaryAddress
                     // TODO: tax category
                     changeOnlineState(to: .validating)
@@ -740,8 +764,8 @@ extension CrowdNode {
         }
     }
 
-    private func waitForApiAddressConfirmation(accountAddress: String) async -> DSTransaction {
-        let filter = CrowdNodeAPIConfirmationTx(address: accountAddress)
+    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> DSTransaction {
+        let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
         let wallet = DWEnvironment.sharedInstance().currentWallet
 
         if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
@@ -758,5 +782,59 @@ extension CrowdNode {
                                        accountAddress: accountAddress)
 
         return wallet.allTransactions.contains { filter.matches(tx: $0) }
+    }
+
+    // TODO: authentication is temporary. Should be fixed in NMI-908
+    @MainActor
+    private func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
+        let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+        return await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: message,
+                                                                           usingBiometricAuthentication: allowBiometric &&
+                                                                               biometricEnabled,
+                                                                           alertIfLockout: true).0
+    }
+
+    private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
+        let savedAddress = crowdNodeAccountAddress
+
+        if savedAddress != nil && state != .none {
+            return savedAddress
+        } else if let confirmationTx = getApiAddressConfirmationTx() {
+            let account = DWEnvironment.sharedInstance().currentAccount
+
+            if let apiAddress = account.externalAddresses(of: confirmationTx).first {
+                crowdNodeAccountAddress = apiAddress
+                signUpState = .linkedOnline
+                savedOnlineAccountState = .linking
+
+                return apiAddress
+            }
+        }
+
+        return nil
+    }
+
+    private func getApiAddressConfirmationTx() -> DSTransaction? {
+        let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
+
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let account = DWEnvironment.sharedInstance().currentAccount
+
+        for confirmationTx in wallet.allTransactions {
+            if filter.matches(tx: confirmationTx) {
+                let receivedTo = account.externalAddresses(of: confirmationTx).first
+                let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
+                // There might be several matching transactions. The real one will be forwarded to CrowdNode
+                let forwardedTx = wallet.allTransactions.first {
+                    forwardedConfirmationFilter.matches(tx: $0)
+                }
+
+                if forwardedTx != nil && receivedTo != nil && forwardedConfirmationFilter.fromAddresses.contains(receivedTo!) {
+                    return confirmationTx
+                }
+            }
+        }
+
+        return nil
     }
 }

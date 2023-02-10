@@ -40,11 +40,13 @@ final class AccountCreatingController: UIViewController {
         cancellableBag.removeAll()
     }
 
-    @objc static func controller() -> AccountCreatingController {
+    @objc
+    static func controller() -> AccountCreatingController {
         vc(AccountCreatingController.self, from: sb("CrowdNode"))
     }
 
-    @IBAction func closeAndNotify() {
+    @IBAction
+    func closeAndNotify() {
         dismiss(animated: true, completion: nil)
     }
 }
@@ -56,7 +58,7 @@ extension AccountCreatingController {
         navigationItem.standardAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
     }
-    
+
     private func configureObservers() {
         viewModel.$signUpState
             .receive(on: DispatchQueue.main)

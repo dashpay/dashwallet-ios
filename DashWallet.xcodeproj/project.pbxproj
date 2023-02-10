@@ -32,6 +32,7 @@
 		0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FC75A8E28F03E22000E4858 /* libDashSync.a */; };
 		110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
 		110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* NavigationControllerExtensions.swift */; };
+		110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */; };
 		111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */; };
 		111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */; };
 		111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */; };
@@ -44,7 +45,8 @@
 		1147687E294B789800FB1EEE /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */; };
 		114CFED0296469D9005F421B /* CrowdNodeDepositTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */; };
 		114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFED1296489CD005F421B /* MinimumDepositBanner.swift */; };
-		114D16B629812730009A124C /* OnlineAccountInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B529812730009A124C /* OnlineAccountInfoController.swift */; };
+		114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B529812730009A124C /* OnlineAccountDetailsController.swift */; };
+		114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */; };
 		11517C832949E6A3004FC7BF /* CrowdNodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */; };
 		11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */; };
 		11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
@@ -58,6 +60,7 @@
 		11860923297598B400279FCC /* AddressStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11860922297598B400279FCC /* AddressStatus.swift */; };
 		1186092529759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */; };
 		118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118A1392291AA21B002641E4 /* AccountCreatingController.swift */; };
+		118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */; };
 		1193FF3629602835004EA8D7 /* CrowdNodeTransferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */; };
 		1193FF3929606151004EA8D7 /* KeyboardHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3829606151004EA8D7 /* KeyboardHeader.swift */; };
 		1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3A2961960B004EA8D7 /* FromLabel.swift */; };
@@ -829,6 +832,7 @@
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
 		110C679929227948006B580C /* NavigationControllerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationControllerExtensions.swift; sourceTree = "<group>"; };
+		110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+CrowdNode.swift"; sourceTree = "<group>"; };
 		111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimitsController.swift; sourceTree = "<group>"; };
 		111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimit.swift; sourceTree = "<group>"; };
 		111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxWithinTimePeriod.swift; sourceTree = "<group>"; };
@@ -841,7 +845,8 @@
 		1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
 		114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeDepositTx.swift; sourceTree = "<group>"; };
 		114CFED1296489CD005F421B /* MinimumDepositBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimumDepositBanner.swift; sourceTree = "<group>"; };
-		114D16B529812730009A124C /* OnlineAccountInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountInfoController.swift; sourceTree = "<group>"; };
+		114D16B529812730009A124C /* OnlineAccountDetailsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountDetailsController.swift; sourceTree = "<group>"; };
+		114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountConfirmationController.swift; sourceTree = "<group>"; };
 		11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPI.swift; sourceTree = "<group>"; };
 		11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeEndpoint.swift; sourceTree = "<group>"; };
 		11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebService.swift; sourceTree = "<group>"; };
@@ -855,6 +860,7 @@
 		11860922297598B400279FCC /* AddressStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressStatus.swift; sourceTree = "<group>"; };
 		1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPIConfirmationTx.swift; sourceTree = "<group>"; };
 		118A1392291AA21B002641E4 /* AccountCreatingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatingController.swift; sourceTree = "<group>"; };
+		118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationTransactionQRController.swift; sourceTree = "<group>"; };
 		1193FF3529602835004EA8D7 /* CrowdNodeTransferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeTransferModel.swift; sourceTree = "<group>"; };
 		1193FF3829606151004EA8D7 /* KeyboardHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHeader.swift; sourceTree = "<group>"; };
 		1193FF3A2961960B004EA8D7 /* FromLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FromLabel.swift; sourceTree = "<group>"; };
@@ -2278,7 +2284,10 @@
 			isa = PBXGroup;
 			children = (
 				117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */,
-				114D16B529812730009A124C /* OnlineAccountInfoController.swift */,
+				114D16B529812730009A124C /* OnlineAccountDetailsController.swift */,
+				114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */,
+				118B7A3E29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift */,
+				110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */,
 			);
 			path = Online;
 			sourceTree = "<group>";
@@ -6495,6 +6504,7 @@
 				47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */,
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
+				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
@@ -6543,7 +6553,7 @@
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
-				114D16B629812730009A124C /* OnlineAccountInfoController.swift in Sources */,
+				114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */,
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
@@ -6580,6 +6590,7 @@
 				4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
+				118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
 				47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */,
@@ -6602,6 +6613,7 @@
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
+				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
 				47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				474C721A298A803200475CA6 /* TxListTableViewCell.swift in Sources */,

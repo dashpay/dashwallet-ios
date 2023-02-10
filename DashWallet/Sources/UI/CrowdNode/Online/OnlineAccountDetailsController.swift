@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-final class OnlineAccountInfoController: UIViewController {
+final class OnlineAccountDetailsController: UIViewController {
     private let viewModel = CrowdNode.shared
 
     @IBOutlet var primaryAddressLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
 
-    static func controller() -> OnlineAccountInfoController {
-        vc(OnlineAccountInfoController.self, from: sb("CrowdNode"))
+    static func controller() -> OnlineAccountDetailsController {
+        vc(OnlineAccountDetailsController.self, from: sb("CrowdNode"))
     }
 
     override func viewDidLoad() {
@@ -30,11 +30,13 @@ final class OnlineAccountInfoController: UIViewController {
         configureHierarchy()
     }
 
-    @IBAction func closeAction() {
+    @IBAction
+    func closeAction() {
         dismiss(animated: true)
     }
 
-    @IBAction func copyAddressAction() {
+    @IBAction
+    func copyAddressAction() {
         UIPasteboard.general.string = viewModel.accountAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }

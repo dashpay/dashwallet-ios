@@ -50,11 +50,12 @@ extension CrowdNode {
 
     static let notificationID = "CrowdNode"
 
-    static let fundsOpenUrl = baseUrl + "FundsOpen/"
+    static var fundsOpenUrl: String { baseUrl + "FundsOpen/" }
+    static var apiLinkUrl: String { baseUrl + "APILink/" }
     static let websiteUrl = "https://crowdnode.io/"
     static let termsOfUseUrl = "https://crowdnode.io/terms/"
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"
     static let supportUrl = "https://knowledge.crowdnode.io/"
     static let withdrawalLimitsUrl = "https://knowledge.crowdnode.io/en/articles/6387601-api-withdrawal-limits"
-    static let apiLinkUrl = baseUrl + "APILink/"
+    static let howToVerifyUrl = "https://knowledge.crowdnode.io/en/articles/6114502-how-to-confirm-your-api-dash-address"
 }

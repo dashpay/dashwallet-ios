@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+// MARK: - CrowdNode.Error
+
 extension CrowdNode {
     enum Error: Swift.Error, LocalizedError {
         case signUp
@@ -38,5 +40,13 @@ extension CrowdNode {
                 return ""
             }
         }
+    }
+}
+
+// MARK: - SendCoinsService.Error
+
+extension SendCoinsService {
+    enum Error: Swift.Error {
+        case notEnoughFunds(selected: UInt64, amount: UInt64, fee: UInt64)
     }
 }

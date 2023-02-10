@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,11 +15,13 @@
 //  limitations under the License.
 //
 
+// MARK: - WithdrawalLimit
+
 struct WithdrawalLimit: Codable {
     static let maxPerTxKey = "AmountApiWithdrawalMax"
     static let maxPer1hKey = "AmountApiWithdrawal1hMax"
     static let maxPer24hKey = "AmountApiWithdrawal24hMax"
-    
+
     let key: String
     let value: String
 
@@ -28,6 +30,8 @@ struct WithdrawalLimit: Codable {
         case value = "Value"
     }
 }
+
+// MARK: - WithdrawalLimitPeriod
 
 enum WithdrawalLimitPeriod: Int {
     case perTransaction = 0

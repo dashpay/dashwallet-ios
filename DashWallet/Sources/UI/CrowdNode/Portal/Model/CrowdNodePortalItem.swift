@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -14,6 +14,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+
+// MARK: - CrowdNodePortalItem
 
 enum CrowdNodePortalItem: CaseIterable {
     case deposit
@@ -108,16 +110,16 @@ extension CrowdNodePortalItem {
             return ""
         }
     }
-    
+
     var infoBackgroundColor: UIColor {
         switch self {
         case .deposit:
             return UIColor.dw_dashBlue().withAlphaComponent(0.08)
         default:
-            return UIColor(red: 0.949, green: 0.949, blue: 0.949, alpha: 1)
+            return UIColor.label.withAlphaComponent(0.06)
         }
     }
-    
+
     var infoTextColor: UIColor {
         switch self {
         case .deposit:
@@ -126,12 +128,12 @@ extension CrowdNodePortalItem {
             return UIColor.systemRed
         }
     }
-    
+
     func infoActionButton(for state: CrowdNode.OnlineAccountState) -> String {
         if self == .withdraw && state == .confirming {
             return NSLocalizedString("Verify", comment: "CrowdNode Portal")
         }
-        
+
         return ""
     }
 }
