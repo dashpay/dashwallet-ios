@@ -57,9 +57,6 @@ extension TxUserInfoTaxCategory {
     @objc var txHash: Data
     @objc var taxCategory: TxUserInfoTaxCategory = .unknown
 
-    @objc
-    lazy var fiatAmount: String? = generateFiatAmount()
-
     var rate: Int?
     var rateCurrency: String?
 
@@ -80,7 +77,6 @@ extension TxUserInfoTaxCategory {
     func update(rate: Int, currency: String) {
         self.rate = rate
         rateCurrency = currency
-        fiatAmount = generateFiatAmount()
     }
 }
 
@@ -91,16 +87,25 @@ extension TxUserInfo {
         taxCategory.stringValue
     }
 
-    private func generateFiatAmount() -> String? {
+    @objc
+    func fiatAmountString(from dashAmount: UInt64) -> String {
+        let notAvailableString = NSLocalizedString("Not available", comment: "Fiat amount");
+
         if let rate,
            let rateCurrency {
             let nf = NumberFormatter.fiatFormatter(currencyCode: rateCurrency)
 
-            var rateDecimal = Decimal(rate)/Decimal(pow(10, nf.maximumFractionDigits))
-            return nf.string(from: rateDecimal as NSNumber)
+            let rate = Decimal(rate)/Decimal(pow(10, nf.maximumFractionDigits))
+            let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount,
+                                                                       to: rateCurrency,
+                                                                       rate: rate)
+
+            if let fiatAmount {
+                return nf.string(from: fiatAmount as NSDecimalNumber) ?? notAvailableString
+            }
         }
 
-        return nil
+        return notAvailableString
     }
 }
 

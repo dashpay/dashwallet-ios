@@ -98,13 +98,13 @@ static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> tr
     self.dateLabel.text = [self.dataProvider shortDateStringForTransaction:transaction];
 
     TxUserInfo *userInfo = [TxUserInfoDAOImpl.shared getBy:transaction.txHashData];
-
-    if (userInfo.fiatAmount) {
-        self.fiatAmountLabel.text = userInfo.fiatAmount;
+    if (userInfo) {
+        self.fiatAmountLabel.text = [userInfo fiatAmountStringFrom:self.transactionData.dashAmount];
     }
     else {
-        self.fiatAmountLabel.text = self.transactionData.fiatAmount;
+        self.fiatAmountLabel.text = NSLocalizedString(@"Not available", "Fiat amount");
     }
+
 
     [self reloadAttributedData];
 }

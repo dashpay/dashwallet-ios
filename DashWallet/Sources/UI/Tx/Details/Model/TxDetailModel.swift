@@ -36,7 +36,7 @@ class TxDetailModel: NSObject {
     }
 
     var fiatAmountString: String {
-        userInfo?.fiatAmount ?? dataItem.fiatAmount;
+        userInfo?.fiatAmountString(from: dataItem.dashAmount) ?? NSLocalizedString("Not available", comment: "");
     }
 
     var userInfo: TxUserInfo?
