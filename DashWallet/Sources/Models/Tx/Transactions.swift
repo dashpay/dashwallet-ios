@@ -32,6 +32,11 @@ final class Transaction: NSObject {
 
     @objc
     func updateRateIfNeeded(for transaction: DSTransaction) {
+        guard let activationDate = DWGlobalOptions.sharedInstance().dateHistoricalRatesActivated,
+              transaction.date > activationDate else {
+            return
+        }
+
         guard let decimalRate = try? CurrencyExchanger.shared.rate(for: App.fiatCurrency) else {
             return
         }
@@ -44,7 +49,7 @@ final class Transaction: NSObject {
             return
         }
 
-        guard userInfo.fiatAmount != nil else {
+        guard userInfo.rate != nil else {
             set(rate: rate, currency: App.fiatCurrency, for: userInfo)
             return
         }

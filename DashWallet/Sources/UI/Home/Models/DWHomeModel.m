@@ -159,7 +159,10 @@ static BOOL IsJailbroken(void) {
                                  object:nil];
 
         [self reloadTxDataSource];
-        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:[NSDate new]];
+
+        NSDate *date = [NSDate new];
+        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:date];
+        [[DWGlobalOptions sharedInstance] setActivationDateForHistoricalRates:date];
     }
     return self;
 }
