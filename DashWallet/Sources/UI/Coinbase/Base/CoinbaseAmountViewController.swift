@@ -17,6 +17,14 @@
 
 import UIKit
 
+// MARK: - CoinbaseAmountModel
+
+class CoinbaseAmountModel: SendAmountModel {
+    override var currencyExchanger: CurrencyExchanger {
+        Coinbase.shared.currencyExchanger
+    }
+}
+
 // MARK: - CoinbaseAmountViewController
 
 class CoinbaseAmountViewController: SendAmountViewController, NetworkReachabilityHandling {

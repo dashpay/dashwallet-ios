@@ -33,7 +33,7 @@ enum BuyDashFailureReason {
 
 // MARK: - BuyDashModel
 
-final class BuyDashModel: SendAmountModel {
+final class BuyDashModel: CoinbaseAmountModel {
     weak var delegate: BuyDashModelDelegate?
 
     @Published var paymentMethods: [CoinbasePaymentMethod] = []
