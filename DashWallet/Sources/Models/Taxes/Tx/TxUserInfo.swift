@@ -59,6 +59,7 @@ extension TxUserInfoTaxCategory {
 
     var rate: Int?
     var rateCurrency: String?
+    var rateMaximumFractionDigits: Int?
 
     @objc
     init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
@@ -70,13 +71,14 @@ extension TxUserInfoTaxCategory {
         taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
         rate = row[TxUserInfo.txRateColumn]
         rateCurrency = row[TxUserInfo.txRateCurrencyCodeColumn]
-
+        rateMaximumFractionDigits = row[TxUserInfo.txRateMaximumFractionDigitsColumn]
         super.init()
     }
 
-    func update(rate: Int, currency: String) {
+    func update(rate: Int, currency: String, maximumFractionDigits: Int) {
         self.rate = rate
         rateCurrency = currency
+        rateMaximumFractionDigits = maximumFractionDigits
     }
 }
 
@@ -92,15 +94,15 @@ extension TxUserInfo {
         let notAvailableString = NSLocalizedString("Not available", comment: "Fiat amount");
 
         if let rate,
-           let rateCurrency {
-            let nf = NumberFormatter.fiatFormatter(currencyCode: rateCurrency)
-
-            let rate = Decimal(rate)/Decimal(pow(10, nf.maximumFractionDigits))
+           let rateCurrency,
+           let rateMaximumFractionDigits {
+            let rate = Decimal(rate)/Decimal(pow(10, rateMaximumFractionDigits))
             let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount,
                                                                        to: rateCurrency,
                                                                        rate: rate)
 
             if let fiatAmount {
+                let nf = NumberFormatter.fiatFormatter(currencyCode: rateCurrency)
                 return nf.string(from: fiatAmount as NSDecimalNumber) ?? notAvailableString
             }
         }
@@ -115,6 +117,7 @@ extension TxUserInfo {
     static var txHashColumn: Expression<Data> { Expression<Data>("txHash") }
     static var txRateColumn: Expression<Int?> { .init("rate") }
     static var txRateCurrencyCodeColumn: Expression<String?> { .init("rateCurrencyCode") }
+    static var txRateMaximumFractionDigitsColumn: Expression<Int?> { .init("rateMaximumFractionDigits") }
 }
 
 @objc

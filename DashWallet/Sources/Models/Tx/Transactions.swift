@@ -41,26 +41,26 @@ final class Transaction: NSObject {
             return
         }
 
-        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
-        let rate = (decimalRate*pow(10, nf.maximumFractionDigits) as NSDecimalNumber).intValue
+        let maximumFractionDigits = decimalRate.fractionDigits
+        let rate = (decimalRate*pow(10, maximumFractionDigits) as NSDecimalNumber).intValue
 
         guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
-            set(rate: rate, currency: App.fiatCurrency, for: transaction)
+            set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits, for: transaction)
             return
         }
 
         guard userInfo.rate != nil else {
-            set(rate: rate, currency: App.fiatCurrency, for: userInfo)
+            set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits, for: userInfo)
             return
         }
     }
 
-    private func set(rate: Int, currency: String, for transaction: DSTransaction) {
-        set(rate: rate, currency: currency, for: .init(hash: transaction.txHashData, taxCategory: transaction.defaultTaxCategory()))
+    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for transaction: DSTransaction) {
+        set(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits, for: .init(hash: transaction.txHashData, taxCategory: transaction.defaultTaxCategory()))
     }
 
-    private func set(rate: Int, currency: String, for userInfo: TxUserInfo) {
-        userInfo.update(rate: rate, currency: currency)
+    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for userInfo: TxUserInfo) {
+        userInfo.update(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits)
         txUserInfos.update(dto: userInfo)
     }
 
