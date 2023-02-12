@@ -248,7 +248,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="FFc-fd-cfG" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="Giz-2P-2if"/>
                                             <constraint firstAttribute="width" constant="65" id="mj4-By-5q2"/>
@@ -427,7 +427,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="wsW-1v-OUF" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="2hQ-7r-dOU"/>
                                             <constraint firstAttribute="width" constant="65" id="ww6-lj-WM0"/>
@@ -481,7 +481,7 @@
                                 <rect key="frame" x="20" y="300" width="350" height="164.00000000000006"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="RrR-Ij-X7B" userLabel="New Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="0.0" width="350" height="218"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="154"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.account.new" translatesAutoresizingMaskIntoConstraints="NO" id="oqB-km-Cfg" userLabel="image.crowdnode.account.new">
@@ -639,7 +639,7 @@
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" ambiguous="YES" id="ZQI-dO-W89" userLabel="Link Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="228" width="350" height="0.0"/>
+                                        <rect key="frame" x="0.0" y="164" width="350" height="0.0"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="image.crowdnode.account.link" translatesAutoresizingMaskIntoConstraints="NO" id="eAN-HF-8eJ" userLabel="image.crowdnode.account.new">
@@ -1319,10 +1319,8 @@
                                                             <constraint firstAttribute="height" constant="40" id="bhm-an-BVQ"/>
                                                             <constraint firstAttribute="width" constant="30" id="hYP-fG-nq9"/>
                                                         </constraints>
-                                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline">
-                                                            <color key="baseForegroundColor" systemColor="labelColor"/>
-                                                        </buttonConfiguration>
+                                                        <color key="tintColor" name="IconTintColor"/>
+                                                        <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
                                                         <connections>
                                                             <action selector="copyAddressAction" destination="LKe-aK-9qL" eventType="touchUpInside" id="435-jv-wgH"/>
                                                         </connections>

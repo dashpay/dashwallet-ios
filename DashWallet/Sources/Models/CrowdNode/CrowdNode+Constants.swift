@@ -52,6 +52,7 @@ extension CrowdNode {
 
     static var fundsOpenUrl: String { baseUrl + "FundsOpen/" }
     static var apiLinkUrl: String { baseUrl + "APILink/" }
+    static var profileUrl: String { baseUrl + "Profile" }
     static let websiteUrl = "https://crowdnode.io/"
     static let termsOfUseUrl = "https://crowdnode.io/terms/"
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"

@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Andrei Ashikhmin
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
 //  limitations under the License.
 //
 
-extension UINavigationController {
-    func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
-        var viewControllers = viewControllers
-        viewControllers.removeLast(n)
-        viewControllers.append(controller)
-        setViewControllers(viewControllers, animated: animated)
+struct MessageStatus: Codable {
+    let id: Int
+    let messageStatus: String
+    let result: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "Id"
+        case messageStatus = "MessageStatus"
+        case result = "Result"
     }
 }

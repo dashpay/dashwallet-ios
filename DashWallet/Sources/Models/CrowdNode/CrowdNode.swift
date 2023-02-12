@@ -62,6 +62,8 @@ public class CrowdNodeObjcWrapper: NSObject {
 
 private let kValidStatus = "valid"
 private let kConfirmedStatus = "confirmed"
+private let kMessageReceivedStatus = "received"
+private let kMessageFailedStatus = "failed"
 
 // MARK: - CrowdNode
 
@@ -108,7 +110,7 @@ public final class CrowdNode {
     @Published private(set) var onlineAccountState = OnlineAccountState.none
     @Published private(set) var balance: UInt64 = 0
     @Published private(set) var isBalanceLoading = false
-    @Published private(set) var apiError: Swift.Error? = nil
+    @Published var apiError: Swift.Error? = nil
 
     private(set) var accountAddress = ""
     private(set) var primaryAddress: String? = nil
@@ -149,6 +151,8 @@ public final class CrowdNode {
                     wSelf.startTrackingValidated(address: wSelf.accountAddress, fireImmediately: fireImmediately)
                 case .confirming:
                     wSelf.startTrackingConfirmed(address: wSelf.accountAddress, fireImmediately: fireImmediately)
+                case .creating:
+                    wSelf.startTrackingCreating(address: wSelf.accountAddress, fireImmediately: fireImmediately)
                 default:
                     break
                 }
@@ -176,6 +180,7 @@ extension CrowdNode {
 
         if tryRestoreSignUp() {
             refreshWithdrawalLimits()
+            restoreCreatedOnlineAccount(accountAddress)
             return
         }
 
@@ -525,8 +530,6 @@ extension CrowdNode {
                         break
                     }
                 }
-            } catch {
-                DSLogger.log("CrowdNode balance error: \((error as! HTTPClientError).localizedDescription)")
             }
 
             balance = currentBalance
@@ -612,6 +615,23 @@ extension CrowdNode {
                     checkIfAddressIsInUse(address: address)
                 }
             }
+        }
+    }
+    
+    func registerEmailForAccount(email: String, signature: String) async throws {
+        guard !accountAddress.isEmpty else { return }
+        
+        DSLogger.log("CrowdNode: sending signed email message")
+        let result = try await webService.sendSignedMessage(address: accountAddress, message: email, signature: signature)
+        print("CrowdNode: \(result)")
+        
+        if result.messageStatus.lowercased() == kMessageReceivedStatus {
+            DSLogger.log("CrowdNode: signed email sent successfully")
+            signedEmailMessageId = result.id
+            changeOnlineState(to: .creating)
+        } else {
+            DSLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
+            apiError = CrowdNode.Error.messageStatus(error: result.result ?? "")
         }
     }
 
@@ -728,6 +748,19 @@ extension CrowdNode {
             }
         }
     }
+    
+    private func startTrackingCreating(address: String, fireImmediately: Bool) {
+        DSLogger.log("CrowdNode: startTrackingCreating, account: \(address)")
+        let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            self?.checkIfEmailRegistered(address: address)
+        }
+        timer.tolerance = 0.5
+        self.timer = timer
+        
+        if fireImmediately {
+            timer.fire()
+        }
+    }
 
     private func checkIfAddressIsInUse(address: String) {
         Task {
@@ -760,6 +793,30 @@ extension CrowdNode {
                 changeOnlineState(to: .done)
                 notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
                 refreshBalance()
+            }
+        }
+    }
+    
+    private func checkIfEmailRegistered(address: String) {
+        Task {
+            let isDefaultEmail = await webService.isDefaultEmail(address: address)
+            
+            if isDefaultEmail {
+                // Check the message status in case there is an error
+                let messageId = signedEmailMessageId
+                
+                if messageId != -1 {
+                    let message = await webService.checkMessageStatus(id: messageId, address: address)
+                    
+                    if message?.messageStatus.lowercased() == kMessageFailedStatus {
+                        apiError = CrowdNode.Error.messageStatus(error: message?.result ?? "")
+                        signedEmailMessageId = -1
+                        changeOnlineState(to: .none)
+                    }
+                }
+            } else {
+                // Good to go
+                changeOnlineState(to: .signingUp)
             }
         }
     }
@@ -836,5 +893,18 @@ extension CrowdNode {
         }
 
         return nil
+    }
+    
+    private func restoreCreatedOnlineAccount(_ address: String) {
+        let state = savedOnlineAccountState
+        
+        switch state {
+        case .none:
+            checkIfEmailRegistered(address: address)
+        case .creating, .signingUp, .done:
+            changeOnlineState(to: state, save: false)
+        default:
+            break
+        }
     }
 }

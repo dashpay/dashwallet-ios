@@ -15,14 +15,10 @@
 //  limitations under the License.
 //
 
-final class OnlineAccountInfoController: UIViewController {
-    @objc
-    static func controller() -> OnlineAccountInfoController {
-        vc(OnlineAccountInfoController.self, from: sb("CrowdNode"))
-    }
-    
-    @IBAction
-    func continueAction() {
-        navigationController?.replaceLast(1, with: OnlineAccountEmailController.controller())
+struct IsDefaultEmail: Codable {
+    let isDefault: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case isDefault = "value"
     }
 }

@@ -29,6 +29,7 @@ private let kCrowdNodeAccountAddress = "crowdNodeAccountAddressKey"
 private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
 private let kConfirmationDialogShown = "crowdNodeConfirmationDialogShownKey"
 private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
+private let kSignedEmailMessageId = "crowdNodeSignedEmailMessageId"
 
 extension CrowdNode {
     var infoShown: Bool {
@@ -85,6 +86,12 @@ extension CrowdNode {
         get { UserDefaults.standard.bool(forKey: kOnlineInfoShown) }
         set(value) { UserDefaults.standard.set(value, forKey: kOnlineInfoShown) }
     }
+    
+    var signedEmailMessageId: Int {
+        get { UserDefaults.standard.value(forKey: kSignedEmailMessageId) as? Int ?? -1 }
+        set(value) { UserDefaults.standard.set(value, forKey: kSignedEmailMessageId) }
+    }
+    
 
     func resetUserDefaults() {
         infoShown = false

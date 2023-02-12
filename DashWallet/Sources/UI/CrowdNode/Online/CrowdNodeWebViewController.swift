@@ -24,11 +24,13 @@ class CrowdNodeWebViewController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
     private var url: URL!
+    private var email: String? = nil
 
     @objc
-    static func controller(url: URL) -> CrowdNodeWebViewController {
+    static func controller(url: URL, email: String? = nil) -> CrowdNodeWebViewController {
         let vc = CrowdNodeWebViewController()
         vc.url = url
+        vc.email = email
         return vc
     }
 
@@ -39,6 +41,7 @@ class CrowdNodeWebViewController: UIViewController {
     override func loadView() {
         super.loadView()
         webView = WKWebView(frame: .zero)
+        webView.navigationDelegate = self
         view = webView
     }
     
@@ -65,5 +68,12 @@ class CrowdNodeWebViewController: UIViewController {
                 }
             }
             .store(in: &cancellableBag)
+    }
+}
+
+extension CrowdNodeWebViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences) async -> (WKNavigationActionPolicy, WKWebpagePreferences) {
+        print("CrowdNodeWebView decidePolicyFor: \(String(describing: navigationAction.request.url))")
+        return (WKNavigationActionPolicy.allow, preferences)
     }
 }

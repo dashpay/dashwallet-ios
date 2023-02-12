@@ -15,13 +15,28 @@
 //  limitations under the License.
 //
 
+import Combine
+
 final class OnlineAccountEmailController: UIViewController {
-    private let viewModel = CrowdNode.shared
+    private var cancellableBag = Set<AnyCancellable>()
+    private let viewModel = CrowdNodeModel.shared
 
     @IBOutlet var input: OutlinedTextField!
-    @IBOutlet var continueButton: UIButton!
+    @IBOutlet var continueButton: DWActionButton!
     @IBOutlet var errorLabel: UILabel!
     @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
+    
+    private var isInProgress: Bool = false {
+        didSet {
+            if isInProgress {
+                continueButton.showActivityIndicator()
+                input.isEnabled = false
+            } else {
+                continueButton.hideActivityIndicator()
+                input.isEnabled = true
+            }
+        }
+    }
     
     static func controller() -> OnlineAccountEmailController {
         vc(OnlineAccountEmailController.self, from: sb("CrowdNode"))
@@ -30,23 +45,20 @@ final class OnlineAccountEmailController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
+        configureObservers()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        input.becomeFirstResponder()
+        
+        if viewModel.onlineAccountState != .creating {
+            input.becomeFirstResponder()
+        }
     }
     
     @IBAction
     func onContinue() {
-        if isEmail(text: input.text) {
-            input.isError = false
-            errorLabel.isHidden = true
-            self.view.endEditing(true)
-        } else {
-            input.isError = true
-            errorLabel.isHidden = false
-        }
+        validateAndSign()
     }
     
     private func configureHierarchy() {
@@ -68,16 +80,37 @@ final class OnlineAccountEmailController: UIViewController {
     private func onKeyboardHidden(_: NSNotification) {
         actionButtonBottomConstraint.constant = 20
     }
+    
+    private func configureObservers() {
+        viewModel.$onlineAccountState
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.transitionSignUpState(state)
+            }
+            .store(in: &cancellableBag)
+        
+        viewModel.$error
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                if error is CrowdNode.Error {
+                    self?.viewModel.clearError()
+                    self?.navigationController?.toErrorScreen(error: error as! CrowdNode.Error)
+                }
+            }
+            .store(in: &cancellableBag)
+    }
 }
 
 extension OnlineAccountEmailController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        onContinue()
+        validateAndSign()
         return true
     }
     
     private func configureEmailInput() {
         input.label = NSLocalizedString("Email", comment: "CrowdNode")
+        input.text = viewModel.emailForAccount
         input.placeholder = NSLocalizedString("e.g. johndoe@mail.com", comment: "CrowdNode")
         input.textContentType = .emailAddress
         input.keyboardType = .emailAddress
@@ -101,5 +134,47 @@ extension OnlineAccountEmailController: UITextFieldDelegate {
         let predicate = NSPredicate(format:"SELF MATCHES %@", regex)
         
         return predicate.evaluate(with: trimmed)
+    }
+}
+
+extension OnlineAccountEmailController {
+    private func validateAndSign() {
+        if isEmail(text: input.text) {
+            isInProgress = true
+            input.isError = false
+            errorLabel.isHidden = true
+            
+            Task {
+                do {
+                    let isSent = try await viewModel.signAndSendEmail(email: input.text!.trimmingCharacters(in: .whitespacesAndNewlines))
+                    
+                    if !isSent {
+                        isInProgress = false
+                    }
+                } catch {
+                    isInProgress = false
+                    errorLabel.isHidden = false
+                    errorLabel.text = error.localizedDescription
+                }
+            }
+        } else {
+            input.isError = true
+            errorLabel.isHidden = false
+            errorLabel.text = NSLocalizedString("Invalid Email", comment: "CrowdNode Online")
+        }
+    }
+    
+    private func transitionSignUpState(_ state: CrowdNode.OnlineAccountState) {
+        switch state {
+        case .creating:
+            self.view.endEditing(true)
+            isInProgress = true
+        case .signingUp:
+            let profileUrl = CrowdNode.profileUrl
+            navigationController?.replaceLast(with: CrowdNodeWebViewController.controller(url: URL(string: profileUrl)!, email: viewModel.emailForAccount))
+            isInProgress = false
+        default:
+            isInProgress = false
+        }
     }
 }

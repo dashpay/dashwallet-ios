@@ -31,7 +31,7 @@
 		0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */; };
 		0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FC75A8E28F03E22000E4858 /* libDashSync.a */; };
 		110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
-		110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* NavigationControllerExtensions.swift */; };
+		110C679A29227948006B580C /* UINavigationController+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* UINavigationController+CrowdNode.swift */; };
 		110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */; };
 		110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */; };
 		111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */; };
@@ -74,6 +74,8 @@
 		119E8D0C2907C61400D406C1 /* CrowdNodeTopUpTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0B2907C61400D406C1 /* CrowdNodeTopUpTx.swift */; };
 		119E8D10290949B900D406C1 /* CrowdNodeErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0F290949B900D406C1 /* CrowdNodeErrorResponse.swift */; };
 		119E8D122909513F00D406C1 /* CrowdNodeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D112909513F00D406C1 /* CrowdNodeError.swift */; };
+		11AE3DD62997AA36000856EE /* MessageStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE3DD52997AA36000856EE /* MessageStatus.swift */; };
+		11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE3DD72997C599000856EE /* IsDefaultEmail.swift */; };
 		11B8449428F27C470082770C /* ApiCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449328F27C460082770C /* ApiCode.swift */; };
 		11B8449628F5B9F80082770C /* CrowdNodeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449528F5B9F80082770C /* CrowdNodeResponse.swift */; };
 		11B8449A28F6D5480082770C /* SingleInputAddressSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449928F6D5480082770C /* SingleInputAddressSelector.swift */; };
@@ -834,7 +836,7 @@
 		0FC75A8E28F03E22000E4858 /* libDashSync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDashSync.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
-		110C679929227948006B580C /* NavigationControllerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationControllerExtensions.swift; sourceTree = "<group>"; };
+		110C679929227948006B580C /* UINavigationController+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+CrowdNode.swift"; sourceTree = "<group>"; };
 		110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+CrowdNode.swift"; sourceTree = "<group>"; };
 		110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountInfoController.swift; sourceTree = "<group>"; };
 		111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimitsController.swift; sourceTree = "<group>"; };
@@ -877,6 +879,8 @@
 		119E8D0B2907C61400D406C1 /* CrowdNodeTopUpTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeTopUpTx.swift; sourceTree = "<group>"; };
 		119E8D0F290949B900D406C1 /* CrowdNodeErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeErrorResponse.swift; sourceTree = "<group>"; };
 		119E8D112909513F00D406C1 /* CrowdNodeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeError.swift; sourceTree = "<group>"; };
+		11AE3DD52997AA36000856EE /* MessageStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageStatus.swift; sourceTree = "<group>"; };
+		11AE3DD72997C599000856EE /* IsDefaultEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsDefaultEmail.swift; sourceTree = "<group>"; };
 		11B8449328F27C460082770C /* ApiCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiCode.swift; sourceTree = "<group>"; };
 		11B8449528F5B9F80082770C /* CrowdNodeResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeResponse.swift; sourceTree = "<group>"; };
 		11B8449928F6D5480082770C /* SingleInputAddressSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInputAddressSelector.swift; sourceTree = "<group>"; };
@@ -2231,7 +2235,7 @@
 			isa = PBXGroup;
 			children = (
 				110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */,
-				110C679929227948006B580C /* NavigationControllerExtensions.swift */,
+				110C679929227948006B580C /* UINavigationController+CrowdNode.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2283,6 +2287,8 @@
 				111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */,
 				1186092029758B2F00279FCC /* IsAddressInUse.swift */,
 				11860922297598B400279FCC /* AddressStatus.swift */,
+				11AE3DD52997AA36000856EE /* MessageStatus.swift */,
+				11AE3DD72997C599000856EE /* IsDefaultEmail.swift */,
 			);
 			path = DTOs;
 			sourceTree = "<group>";
@@ -6405,6 +6411,7 @@
 				2A7A7BDD2348DC0A00451078 /* DWToolsMenuModel.m in Sources */,
 				C3CA202C247E4AF300158074 /* DWNotificationsViewController.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
+				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
 				2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,
 				2AEC5CB52493D87D00F4A689 /* DWNotificationsProvider.m in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
@@ -6431,7 +6438,7 @@
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */,
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
-				110C679A29227948006B580C /* NavigationControllerExtensions.swift in Sources */,
+				110C679A29227948006B580C /* UINavigationController+CrowdNode.swift in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
 				119E8D0A2905413F00D406C1 /* TransactionWrapper.swift in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
@@ -6755,6 +6762,7 @@
 				11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */,
 				47F006022971B1FF0029EB10 /* CurrencyExchanger.swift in Sources */,
 				2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */,
+				11AE3DD62997AA36000856EE /* MessageStatus.swift in Sources */,
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,

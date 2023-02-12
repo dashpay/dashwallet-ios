@@ -55,6 +55,7 @@ final class CrowdNodeModel {
     private var cancellableBag = Set<AnyCancellable>()
     private let crowdNode = CrowdNode.shared
     private var signUpTaskId: UIBackgroundTaskIdentifier = .invalid
+    private(set) var emailForAccount = ""
 
     public static let shared: CrowdNodeModel = .init()
 
@@ -171,6 +172,10 @@ final class CrowdNodeModel {
             signUpTaskId = UIBackgroundTaskIdentifier.invalid
         }
     }
+    
+    func clearError() {
+        crowdNode.apiError = nil
+    }
 
     private func observeState() {
         crowdNode.$signUpState
@@ -283,5 +288,26 @@ extension CrowdNodeModel {
     func cancelLinkingOnlineAccount() {
         crowdNode.stopTrackingLinked()
         WKWebView.cleanCrowdNodeCache()
+    }
+    
+    func signAndSendEmail(email: String) async throws -> Bool {
+        guard !crowdNode.accountAddress.isEmpty else { return false }
+        emailForAccount = email
+        
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let result = await wallet.seed(withPrompt: NSLocalizedString("Sign the message", comment: "CrowdNode"), forAmount: 1)
+            
+        if !result.1 {
+            let key = wallet.privateKey(forAddress: crowdNode.accountAddress, fromSeed: result.0!)
+            let signResult = await key?.signMessageDigest(email.magicDigest())
+                
+            if signResult?.0 == true {
+                let signature = (signResult!.1 as NSData).base64String()
+                try await crowdNode.registerEmailForAccount(email: email, signature: signature)
+                return true
+            }
+        }
+        
+        return false
     }
 }

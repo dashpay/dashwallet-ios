@@ -181,31 +181,11 @@ extension CrowdNodePortalController {
             .filter { error in error != nil }
             .sink(receiveValue: { [weak self] error in
                 if error is CrowdNode.Error {
-                    self?.navigateToErrorScreen(error as! CrowdNode.Error)
+                    self?.viewModel.clearError()
+                    self?.navigationController?.toErrorScreen(error: error as! CrowdNode.Error)
                 }
             })
             .store(in: &cancellableBag)
-    }
-
-    private func navigateToErrorScreen(_ error: CrowdNode.Error) {
-        viewModel.error = nil
-
-        let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
-        vc.headerText = NSLocalizedString("Transfer Error", comment: "CrowdNode")
-        vc.descriptionText = error.errorDescription
-        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
-        let backHandler: (() -> ()) = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
-        }
-        vc.retryHandler = backHandler
-        vc.cancelHandler = backHandler
-        vc.supportHandler = {
-            let url = DWAboutModel.supportURL()
-            let safariViewController = SFSafariViewController.dw_controller(with: url)
-            self.present(safariViewController, animated: true)
-        }
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -344,8 +324,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
             case .none, .creating:
                 showOnlineInfoOrEnterEmail()
             case .signingUp:
-//                viewModel.initiateOnlineSignUp()
-                break
+                showSignUpWebView()
             case .done:
                 UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
             default:
@@ -404,6 +383,8 @@ extension CrowdNodePortalController: BalanceViewDataSource {
     }
 }
 
+// MARK: - Online
+
 extension CrowdNodePortalController {
     private func showOnlineInfoOrEnterEmail() {
 //        if viewModel.shouldShowOnlineInfo {
@@ -412,5 +393,10 @@ extension CrowdNodePortalController {
 //        } else {
 //            navigationController?.pushViewController(OnlineAccountInfoController.controller(), animated: true)
 //        }
+    }
+    
+    private func showSignUpWebView() {
+        let profileUrl = CrowdNode.profileUrl
+        navigationController?.pushViewController(CrowdNodeWebViewController.controller(url: URL(string: profileUrl)!, email: viewModel.emailForAccount), animated: true)
     }
 }
