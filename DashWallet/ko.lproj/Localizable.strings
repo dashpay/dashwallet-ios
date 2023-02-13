@@ -1361,6 +1361,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "이 개인 키에서 %1$@(%2$@)를 당신의 지갑으로 전송하시겠습니까? 대시 네트워크에 %3$@(%4$@)의 수수료가 지급됩니다.";
 
+/* CrowdNode Confirm */
+"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
+
 /* Send by (scanning QR code) */
 "Send by" = "다음에서 전송하였습니다";
 
@@ -1559,6 +1562,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "당신이 어플을 언락하실 때마다 이 PIN이 필요합니다.";
+
+/* CrowdNode Confirm */
+"This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "이 지갑 내에서 자금에 접근하기 위해서는 이 복원 문구가 필요합니다";
