@@ -57,17 +57,28 @@ extension TxUserInfoTaxCategory {
     @objc var txHash: Data
     @objc var taxCategory: TxUserInfoTaxCategory = .unknown
 
+    var rate: Int?
+    var rateCurrency: String?
+    var rateMaximumFractionDigits: Int?
+
     @objc
     init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
         txHash = hash
-        self.taxCategory = taxCategory
     }
 
     init(row: Row) {
         txHash = row[TxUserInfo.txHashColumn]
         taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
-
+        rate = row[TxUserInfo.txRateColumn]
+        rateCurrency = row[TxUserInfo.txRateCurrencyCodeColumn]
+        rateMaximumFractionDigits = row[TxUserInfo.txRateMaximumFractionDigitsColumn]
         super.init()
+    }
+
+    func update(rate: Int, currency: String, maximumFractionDigits: Int) {
+        self.rate = rate
+        rateCurrency = currency
+        rateMaximumFractionDigits = maximumFractionDigits
     }
 }
 
@@ -77,12 +88,36 @@ extension TxUserInfo {
     func taxCategoryString() -> String {
         taxCategory.stringValue
     }
+
+    @objc
+    func fiatAmountString(from dashAmount: UInt64) -> String {
+        let notAvailableString = NSLocalizedString("Not available", comment: "Fiat amount");
+
+        if let rate,
+           let rateCurrency,
+           let rateMaximumFractionDigits {
+            let rate = Decimal(rate)/Decimal(pow(10, rateMaximumFractionDigits))
+            let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount,
+                                                                       to: rateCurrency,
+                                                                       rate: rate)
+
+            if let fiatAmount {
+                let nf = NumberFormatter.fiatFormatter(currencyCode: rateCurrency)
+                return nf.string(from: fiatAmount as NSDecimalNumber) ?? notAvailableString
+            }
+        }
+
+        return notAvailableString
+    }
 }
 
 extension TxUserInfo {
     static var table: Table { Table("tx_userinfo") }
     static var txCategoryColumn: Expression<Int> { Expression<Int>("taxCategory") }
     static var txHashColumn: Expression<Data> { Expression<Data>("txHash") }
+    static var txRateColumn: Expression<Int?> { .init("rate") }
+    static var txRateCurrencyCodeColumn: Expression<String?> { .init("rateCurrencyCode") }
+    static var txRateMaximumFractionDigitsColumn: Expression<Int?> { .init("rateMaximumFractionDigits") }
 }
 
 @objc
@@ -108,4 +143,10 @@ extension DSTransaction {
         let category = defaultTaxCategory()
         return category.stringValue
     }
+}
+
+func pow(_ base:Int, _ power:Int) -> Int {
+    var answer = 1
+    for _ in 0..<power { answer *= base }
+    return answer
 }

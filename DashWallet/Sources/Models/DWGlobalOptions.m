@@ -44,6 +44,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic selectedPaymentCurrency;
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
 @dynamic dateReclassifyYourTransactionsFlowActivated;
+@dynamic dateHistoricalRatesActivated;
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
 
@@ -120,6 +121,12 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     }
 }
 
+- (void)setActivationDateForHistoricalRates:(NSDate *)date {
+    if (self.dateHistoricalRatesActivated == nil) {
+        self.dateHistoricalRatesActivated = date;
+    }
+}
+
 #pragma mark - Methods
 
 - (void)restoreToDefaults {
@@ -137,6 +144,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
     self.dateReclassifyYourTransactionsFlowActivated = nil;
+    self.dateHistoricalRatesActivated = nil;
     self.exploreDashMerchantsInfoShown = NO;
     self.coinbaseInfoShown = NO;
 }

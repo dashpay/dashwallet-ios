@@ -906,6 +906,9 @@
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
 
+/* Fiat amount */
+"Not available" = "Not available";
+
 /* Location Service Status */
 "Not Determined" = "Not Determined";
 

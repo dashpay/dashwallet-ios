@@ -105,6 +105,10 @@ class BaseAmountModel {
         localFormatter
     }
 
+    internal var currencyExchanger: CurrencyExchanger {
+        CurrencyExchanger.shared
+    }
+
     init() {
         localCurrencyCode = App.fiatCurrency
         localFormatter = NumberFormatter.fiatFormatter(currencyCode: localCurrencyCode)
@@ -132,7 +136,8 @@ class BaseAmountModel {
             } else if currentAmount.fiatCurrencyCode != supplementaryCurrencyCode {
                 let mainAmount = AmountObject(plainAmount: currentAmount.plainAmount,
                                               fiatCurrencyCode: supplementaryCurrencyCode,
-                                              localFormatter: supplementaryNumberFormatter)
+                                              localFormatter: supplementaryNumberFormatter,
+                                              currencyExchanger: currencyExchanger)
                 supplementaryAmount = mainAmount.localAmount
             }
         } else {
@@ -170,11 +175,13 @@ class BaseAmountModel {
         if activeAmountType == .main {
             mainAmount = AmountObject(dashAmountString: inputString,
                                       fiatCurrencyCode: supplementaryCurrencyCode,
-                                      localFormatter: supplementaryNumberFormatter)
+                                      localFormatter: supplementaryNumberFormatter,
+                                      currencyExchanger: currencyExchanger)
             supplementaryAmount = nil
         } else if let amount = AmountObject(localAmountString: inputString,
                                             fiatCurrencyCode: supplementaryCurrencyCode,
-                                            localFormatter: supplementaryNumberFormatter) {
+                                            localFormatter: supplementaryNumberFormatter,
+                                            currencyExchanger: currencyExchanger) {
             supplementaryAmount = amount
             mainAmount = nil
         }
@@ -185,7 +192,8 @@ class BaseAmountModel {
     internal func updateCurrentAmountObject(with amount: UInt64) {
         let amountObject = AmountObject(plainAmount: amount,
                                         fiatCurrencyCode: supplementaryCurrencyCode,
-                                        localFormatter: supplementaryNumberFormatter)
+                                        localFormatter: supplementaryNumberFormatter,
+                                        currencyExchanger: currencyExchanger)
         updateCurrentAmountObject(with: amountObject)
     }
 

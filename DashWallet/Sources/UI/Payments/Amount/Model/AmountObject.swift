@@ -30,7 +30,7 @@ struct AmountObject {
     let localFormatter: NumberFormatter
     let fiatCurrencyCode: String
 
-    init(dashAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
+    init(dashAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter, currencyExchanger: CurrencyExchanger) {
         var dashAmountString = dashAmountString
 
         if dashAmountString.isEmpty {
@@ -54,7 +54,7 @@ struct AmountObject {
 
         if plainAmount == 0 {
             supplementaryFormatted = localFormatter.string(from: 0.0)!
-        } else if let localAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: dashNumber, to: fiatCurrencyCode),
+        } else if let localAmount = try? currencyExchanger.convertDash(amount: dashNumber, to: fiatCurrencyCode),
                   let str = localFormatter.string(from: localAmount as NSNumber) {
             supplementaryFormatted = str
         } else {
@@ -62,7 +62,7 @@ struct AmountObject {
         }
     }
 
-    init?(localAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
+    init?(localAmountString: String, fiatCurrencyCode: String, localFormatter: NumberFormatter, currencyExchanger: CurrencyExchanger) {
         var localAmountString = localAmountString
 
         if localAmountString.isEmpty {
@@ -81,7 +81,7 @@ struct AmountObject {
         if localNumber.isZero {
             plainAmount = 0
             mainFormatted = NumberFormatter.dashFormatter.string(from: 0)!
-        } else if let dashAmount = try? Coinbase.shared.currencyExchanger.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
+        } else if let dashAmount = try? currencyExchanger.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
                   let str = NumberFormatter.dashFormatter.string(from: dashAmount as NSNumber) {
             plainAmount = dashAmount.plainDashAmount
             mainFormatted = str
@@ -91,13 +91,13 @@ struct AmountObject {
         }
     }
 
-    init(plainAmount: UInt64, fiatCurrencyCode: String, localFormatter: NumberFormatter) {
+    init(plainAmount: UInt64, fiatCurrencyCode: String, localFormatter: NumberFormatter, currencyExchanger: CurrencyExchanger) {
         let plainNumber = Decimal(plainAmount)
         let duffsNumber = Decimal(DUFFS)
         let dashNumber = plainNumber/duffsNumber
         let dashAmounString = NSDecimalNumber(decimal: dashNumber).description(withLocale: Locale.current)
 
-        self.init(dashAmountString: dashAmounString, fiatCurrencyCode: fiatCurrencyCode, localFormatter: localFormatter)
+        self.init(dashAmountString: dashAmounString, fiatCurrencyCode: fiatCurrencyCode, localFormatter: localFormatter, currencyExchanger: currencyExchanger)
     }
 }
 

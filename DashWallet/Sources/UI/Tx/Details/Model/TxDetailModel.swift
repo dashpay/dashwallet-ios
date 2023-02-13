@@ -36,9 +36,10 @@ class TxDetailModel: NSObject {
     }
 
     var fiatAmountString: String {
-        dataItem.fiatAmount;
+        userInfo?.fiatAmountString(from: dataItem.dashAmount) ?? NSLocalizedString("Not available", comment: "");
     }
 
+    var userInfo: TxUserInfo?
 
     @objc
     init(transaction: DSTransaction, dataProvider: DWTransactionListDataProviderProtocol) {
@@ -46,6 +47,7 @@ class TxDetailModel: NSObject {
         self.transaction = transaction
         self.dataProvider = dataProvider
         dataItem = dataProvider.transactionData(for: transaction)
+        userInfo = TxUserInfoDAOImpl.shared.get(by: transaction.txHashData)
         txTaxCategory = Taxes.shared.taxCategory(for: transaction)
     }
 
