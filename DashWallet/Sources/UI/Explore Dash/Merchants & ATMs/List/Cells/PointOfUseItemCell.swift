@@ -18,6 +18,8 @@
 import CoreLocation
 import UIKit
 
+private let kReuseIdentifier = "PointOfUseItemCell"
+
 // MARK: - PointOfUseItemCell
 
 class PointOfUseItemCell: UITableViewCell {
@@ -25,8 +27,6 @@ class PointOfUseItemCell: UITableViewCell {
     private var nameLabel: UILabel!
     var subLabel: UILabel!
     var mainStackView: UIStackView!
-
-    override class var dw_reuseIdentifier: String { "ExplorePointOfUseItemCell" }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -46,6 +46,10 @@ class PointOfUseItemCell: UITableViewCell {
         } else {
             logoImageView.image = UIImage(named:"image.explore.dash.wts.item.logo.empty")
         }
+    }
+
+    override class var reuseIdentifier: String {
+        kReuseIdentifier
     }
 }
 
