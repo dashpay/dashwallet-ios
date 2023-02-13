@@ -310,4 +310,8 @@ extension CrowdNodeModel {
         
         return false
     }
+    
+    func finishSignUpToOnlineAccount() {
+        crowdNode.setOnlineAccountCreated()
+    }
 }

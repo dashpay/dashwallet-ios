@@ -28,6 +28,16 @@ extension CrowdNode {
         }
     }
 
+    static let minimumRequiredDash: UInt64 = 1_000_000
+    static let requiredForSignup = minimumRequiredDash - 100_000
+    static let requiredForAcceptTerms: UInt64 = 100_000
+    static let apiOffset: UInt64 = 20000
+    static let minimumDeposit = UInt64(kOneDash / 2)
+    static let minimumLeftoverBalance: UInt64 = 30_000
+    static let apiConfirmationDashAmount: UInt64 = 54321
+
+    static let notificationID = "CrowdNode"
+    
     private static let mainnetBaseUrl = "https://app.crowdnode.io/"
     private static let testnetBaseUrl = "https://test.crowdnode.io/"
 
@@ -40,19 +50,22 @@ extension CrowdNode {
         }
     }
 
-    static let minimumRequiredDash: UInt64 = 1_000_000
-    static let requiredForSignup = minimumRequiredDash - 100_000
-    static let requiredForAcceptTerms: UInt64 = 100_000
-    static let apiOffset: UInt64 = 20000
-    static let minimumDeposit = UInt64(kOneDash / 2)
-    static let minimumLeftoverBalance: UInt64 = 30_000
-    static let apiConfirmationDashAmount: UInt64 = 54321
-
-    static let notificationID = "CrowdNode"
-
     static var fundsOpenUrl: String { baseUrl + "FundsOpen/" }
     static var apiLinkUrl: String { baseUrl + "APILink/" }
     static var profileUrl: String { baseUrl + "Profile" }
+    
+    private static let mainnetLoginUrl = "https://login.crowdnode.io"
+    private static let testnetLoginUrl = "https://logintest.crowdnode.io"
+    
+    static var loginUrl: String {
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+            return mainnetLoginUrl
+        }
+        else {
+            return testnetLoginUrl
+        }
+    }
+    
     static let websiteUrl = "https://crowdnode.io/"
     static let termsOfUseUrl = "https://crowdnode.io/terms/"
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"

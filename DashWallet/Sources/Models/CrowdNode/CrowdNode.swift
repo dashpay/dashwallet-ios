@@ -634,6 +634,10 @@ extension CrowdNode {
             apiError = CrowdNode.Error.messageStatus(error: result.result ?? "")
         }
     }
+    
+    func setOnlineAccountCreated() {
+        changeOnlineState(to: .done)
+    }
 
     private func changeOnlineState(to: OnlineAccountState, save: Bool = true) {
         if signUpState != .finished {
@@ -799,16 +803,17 @@ extension CrowdNode {
     
     private func checkIfEmailRegistered(address: String) {
         Task {
-            let isDefaultEmail = await webService.isDefaultEmail(address: address)
+            let usingDummyEmail = await webService.isDefaultEmail(address: address)
             
-            if isDefaultEmail {
-                // Check the message status in case there is an error
+            if usingDummyEmail {
+                // User email isn't set yet. Check the message status in case there is an error
                 let messageId = signedEmailMessageId
                 
                 if messageId != -1 {
                     let message = await webService.checkMessageStatus(id: messageId, address: address)
                     
                     if message?.messageStatus.lowercased() == kMessageFailedStatus {
+                        // Operation failed
                         apiError = CrowdNode.Error.messageStatus(error: message?.result ?? "")
                         signedEmailMessageId = -1
                         changeOnlineState(to: .none)

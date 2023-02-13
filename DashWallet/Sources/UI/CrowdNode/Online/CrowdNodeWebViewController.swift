@@ -19,12 +19,20 @@ import Combine
 import UIKit
 import WebKit
 
+private let kSignupSuffix = "&view=signup-only"
+private let kCallbackSuffix = "callback"
+
 class CrowdNodeWebViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
     private var url: URL!
+    
+    // MARK: New Online Account
     private var email: String? = nil
+    private let loginPrefix = CrowdNode.loginUrl
+    private let accountPrefix = CrowdNode.baseUrl
+    private var previousUrl = ""
 
     @objc
     static func controller(url: URL, email: String? = nil) -> CrowdNodeWebViewController {
@@ -68,12 +76,51 @@ class CrowdNodeWebViewController: UIViewController {
                 }
             }
             .store(in: &cancellableBag)
+        
+        viewModel.$onlineAccountState
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                if state == .done {
+                    // TODO: check
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            }
+            .store(in: &cancellableBag)
+        
+        viewModel.$error
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                if error != nil {
+                    // TODO: check
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            }
+            .store(in: &cancellableBag)
     }
 }
 
 extension CrowdNodeWebViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences) async -> (WKNavigationActionPolicy, WKWebpagePreferences) {
-        print("CrowdNodeWebView decidePolicyFor: \(String(describing: navigationAction.request.url))")
+
+        if let email = email, let url = navigationAction.request.url?.absoluteString {
+            let fullSuffix = "\(kSignupSuffix)&loginHint=\(email)"
+            
+            if (url.hasPrefix(loginPrefix) && !url.hasSuffix(fullSuffix) && !url.hasSuffix(kCallbackSuffix)) {
+                let redirectUrl = "\(url)\(fullSuffix)"
+                let urlRequest = URLRequest(url: URL(string: redirectUrl)!)
+                webView.load(urlRequest)
+                previousUrl = url
+                
+                return (WKNavigationActionPolicy.cancel, preferences)
+            } else if (previousUrl.hasPrefix(loginPrefix) && url.hasPrefix(accountPrefix)) {
+                // Successful signup
+                viewModel.finishSignUpToOnlineAccount()
+            }
+            
+            previousUrl = url
+        }
+        
         return (WKNavigationActionPolicy.allow, preferences)
     }
 }

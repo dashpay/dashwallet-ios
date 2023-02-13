@@ -170,8 +170,8 @@ extension OnlineAccountEmailController {
             self.view.endEditing(true)
             isInProgress = true
         case .signingUp:
-            let profileUrl = CrowdNode.profileUrl
-            navigationController?.replaceLast(with: CrowdNodeWebViewController.controller(url: URL(string: profileUrl)!, email: viewModel.emailForAccount))
+            let signupUrl = CrowdNode.profileUrl
+            navigationController?.replaceLast(with: CrowdNodeWebViewController.controller(url: URL(string: signupUrl)!, email: viewModel.emailForAccount))
             isInProgress = false
         default:
             isInProgress = false
