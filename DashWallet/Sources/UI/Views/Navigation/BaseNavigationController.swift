@@ -147,7 +147,7 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         viewController.navigationItem.hidesBackButton = true
 
         if let vc = viewController as? NavigationBarAppearanceCustomizable {
-            animated ? vc.animateNavigationBarAppearance() : vc.setNavigationBarAppearance()
+            vc.setNavigationBarAppearance()
         }
 
         navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)

@@ -19,7 +19,7 @@ import Combine
 
 // MARK: - OnlineAccountConfirmationController
 
-final class OnlineAccountConfirmationController: UIViewController {
+final class OnlineAccountConfirmationController: BaseViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNode.shared
     private var paymentRequest: DSPaymentRequest {
@@ -85,6 +85,8 @@ final class OnlineAccountConfirmationController: UIViewController {
 
 extension OnlineAccountConfirmationController {
     private func configureHierarchy() {
+        view.backgroundColor = .dw_secondaryBackground()
+
         primaryAddressLabel.text = viewModel.primaryAddress
         addressLabel.text = viewModel.accountAddress
         qrButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 13)

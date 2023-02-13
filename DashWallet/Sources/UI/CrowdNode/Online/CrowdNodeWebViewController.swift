@@ -19,7 +19,7 @@ import Combine
 import UIKit
 import WebKit
 
-class CrowdNodeWebViewController: UIViewController {
+class CrowdNodeWebViewController: BaseViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
@@ -41,16 +41,18 @@ class CrowdNodeWebViewController: UIViewController {
         webView = WKWebView(frame: .zero)
         view = webView
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
+        view.backgroundColor = .dw_secondaryBackground()
+
         navigationItem.title = NSLocalizedString("Log in to CrowdNode", comment: "CrowdNode WebView")
         let urlRequest = URLRequest(url: url)
         webView.load(urlRequest)
         configureObservers()
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         WKWebView.cleanCrowdNodeCache()
     }

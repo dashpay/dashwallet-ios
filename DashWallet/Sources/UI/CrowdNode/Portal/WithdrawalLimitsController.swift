@@ -61,7 +61,7 @@ final class WithdrawalLimitsController: BaseViewController {
 // MARK: Life cycle
 extension WithdrawalLimitsController {
     private func configureHierarchy() {
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
 
         let action = UIAction { [weak self] _ in
             self?.closeAction()

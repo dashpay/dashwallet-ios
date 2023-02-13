@@ -53,7 +53,8 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .dw_background()
+        view.backgroundColor = .dw_secondaryBackground()
+
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 
@@ -112,7 +113,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     private func handleDeposit(amount: UInt64) {
         checkLeftoverBalance(isCrowdNodeTransfer: true) { [weak self] canContinue in
             guard canContinue, let wSelf = self else { self?.hideActivityIndicator(); return }
-            
+
             Task {
                 do {
                     if try await wSelf.viewModel.deposit(amount: amount) {
@@ -121,7 +122,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
                 } catch {
                     wSelf.showErrorStatus(err: error)
                 }
-                
+
                 wSelf.hideActivityIndicator()
             }
         }
@@ -138,7 +139,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             } catch {
                 showErrorStatus(err: error)
             }
-            
+
             hideActivityIndicator()
         }
     }

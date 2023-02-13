@@ -53,10 +53,7 @@ final class AccountCreatingController: UIViewController {
 
 extension AccountCreatingController {
     private func configureHierarchy() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        navigationItem.standardAppearance = appearance
-        navigationItem.scrollEdgeAppearance = appearance
+        view.backgroundColor = .dw_secondaryBackground()
     }
 
     private func configureObservers() {
