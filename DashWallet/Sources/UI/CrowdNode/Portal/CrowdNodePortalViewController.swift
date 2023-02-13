@@ -149,6 +149,7 @@ extension CrowdNodePortalController {
             .sink { [weak self] _ in
                 self?.tableView.reloadRows(at: [
                     IndexPath(item: 1, section: 0),
+                    IndexPath(item: 0, section: 1),
                 ],
                 with: .none)
 
@@ -387,12 +388,12 @@ extension CrowdNodePortalController: BalanceViewDataSource {
 
 extension CrowdNodePortalController {
     private func showOnlineInfoOrEnterEmail() {
-//        if viewModel.shouldShowOnlineInfo {
+        if viewModel.shouldShowOnlineInfo {
             navigationController?.pushViewController(OnlineAccountInfoController.controller(), animated: true)
-//            viewModel.shouldShowOnlineInfo = false
-//        } else {
-//            navigationController?.pushViewController(OnlineAccountInfoController.controller(), animated: true)
-//        }
+            viewModel.shouldShowOnlineInfo = false
+        } else {
+            navigationController?.pushViewController(OnlineAccountEmailController.controller(), animated: true)
+        }
     }
     
     private func showSignUpWebView() {
