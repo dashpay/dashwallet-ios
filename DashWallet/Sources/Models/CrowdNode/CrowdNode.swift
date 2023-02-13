@@ -623,7 +623,6 @@ extension CrowdNode {
         
         DSLogger.log("CrowdNode: sending signed email message")
         let result = try await webService.sendSignedMessage(address: accountAddress, message: email, signature: signature)
-        print("CrowdNode: \(result)")
         
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
             DSLogger.log("CrowdNode: signed email sent successfully")
@@ -719,13 +718,19 @@ extension CrowdNode {
 
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
-            let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
+            let (confirmationTx, didWait) = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
             DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashHexString)")
 
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
                 changeOnlineState(to: .done)
-                notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+                
+                if didWait {
+                    // Only show notification if had to wait for the confirmation tx.
+                    // Otherwise user has probably already seen it.
+                    notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+                }
+                
                 return
             }
 
@@ -826,15 +831,15 @@ extension CrowdNode {
         }
     }
 
-    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> DSTransaction {
+    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> (tx: DSTransaction, didWait: Bool) {
         let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
         let wallet = DWEnvironment.sharedInstance().currentWallet
 
         if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
-            return tx
+            return (tx, false)
         }
         else {
-            return await txObserver.first(filters: filter)
+            return (await txObserver.first(filters: filter), true)
         }
     }
 
