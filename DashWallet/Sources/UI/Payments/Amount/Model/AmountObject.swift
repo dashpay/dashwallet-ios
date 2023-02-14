@@ -22,9 +22,11 @@ import Foundation
 struct AmountObject {
     let amountType: AmountType
     let amountInternalRepresentation: String
-    let plainAmount: UInt64
 
+    let plainAmount: UInt64
     let mainFormatted: String
+
+    let supplementaryAmount: Decimal
     let supplementaryFormatted: String
 
     let localFormatter: NumberFormatter
@@ -53,11 +55,14 @@ struct AmountObject {
             NSLocalizedString("Invalid Input", comment: "Invalid Amount Input")
 
         if plainAmount == 0 {
+            supplementaryAmount = 0
             supplementaryFormatted = localFormatter.string(from: 0.0)!
         } else if let localAmount = try? currencyExchanger.convertDash(amount: dashNumber, to: fiatCurrencyCode),
                   let str = localFormatter.string(from: localAmount as NSNumber) {
+            supplementaryAmount = localAmount
             supplementaryFormatted = str
         } else {
+            supplementaryAmount = 0
             supplementaryFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
         }
     }
@@ -77,6 +82,7 @@ struct AmountObject {
         let localNumber = Decimal(string: localAmountString, locale: .current)!
         let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString)!
         supplementaryFormatted = localCurrencyFormatted
+        supplementaryAmount = localNumber
 
         if localNumber.isZero {
             plainAmount = 0
@@ -105,35 +111,41 @@ extension AmountObject {
     var dashAmount: AmountObject {
         if amountType == .main { return self }
 
-        let dashAmount = NumberFormatter.dashFormatter.number(from: mainFormatted)!
-        let amountInternalRepresentation = NumberFormatter.dashDecimalFormatter.string(from: dashAmount)!
-
-        return object(with: amountInternalRepresentation)
+        let amountInternalRepresentation = plainAmount.formattedDashAmountWithoutCurrencySymbol
+        return object(with: amountInternalRepresentation, amountType: .main)
     }
 
     var localAmount: AmountObject {
         if amountType == .supplementary { return self }
 
-        let localAmount = localFormatter.number(from: supplementaryFormatted)!
-        let amountInternalRepresentation = NumberFormatter.decimalFormatter.string(from: localAmount)!
+        let numberFormatter = localFormatter.copy() as! NumberFormatter
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.minimumFractionDigits = localFormatter.minimumFractionDigits
+        numberFormatter.maximumFractionDigits = localFormatter.maximumFractionDigits
 
-        return object(with: amountInternalRepresentation)
+        guard let amountInternalRepresentation = numberFormatter.string(from: supplementaryAmount as NSDecimalNumber) else {
+            fatalError("Can't convert dash amount: \(plainAmount.formattedDashAmount) to local amount. Supplementary Amount = \(String(describing: supplementaryAmount))")
+        }
+
+        return object(with: amountInternalRepresentation, amountType: .supplementary)
     }
 
-    private func object(with internalRepresentation: String) -> AmountObject {
+    private func object(with internalRepresentation: String, amountType: AmountType) -> AmountObject {
         AmountObject(amountInternalRepresentation: internalRepresentation,
                      plainAmount: plainAmount,
-                     amountType: .supplementary,
+                     supplementaryAmount: supplementaryAmount,
+                     amountType: amountType,
                      mainFormatted: mainFormatted,
                      supplementaryFormatted: supplementaryFormatted,
                      localFormatter: localFormatter,
                      fiatCurrencyCode: fiatCurrencyCode)
     }
 
-    init(amountInternalRepresentation: String, plainAmount: UInt64, amountType: AmountType, mainFormatted: String,
+    init(amountInternalRepresentation: String, plainAmount: UInt64, supplementaryAmount: Decimal, amountType: AmountType, mainFormatted: String,
          supplementaryFormatted: String, localFormatter: NumberFormatter, fiatCurrencyCode: String) {
         self.amountInternalRepresentation = amountInternalRepresentation
         self.plainAmount = plainAmount
+        self.supplementaryAmount = supplementaryAmount
         self.amountType = amountType
         self.mainFormatted = mainFormatted
         self.supplementaryFormatted = supplementaryFormatted
