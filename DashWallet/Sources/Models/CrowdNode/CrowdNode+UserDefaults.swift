@@ -30,6 +30,7 @@ private let kCrowdNodePrimaryAddress = "crowdNodePrimaryAddressKey"
 private let kConfirmationDialogShown = "crowdNodeConfirmationDialogShownKey"
 private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
 private let kSignedEmailMessageId = "crowdNodeSignedEmailMessageId"
+private let kShouldShowConfirmedNotification = "shouldShowConfirmedNotification"
 
 class CrowdNodeDefaults {
     public static let shared: CrowdNodeDefaults = .init()
@@ -129,6 +130,15 @@ class CrowdNodeDefaults {
         }
     }
     
+    private var _shouldShowConfirmedNotification: Bool? = nil
+    var shouldShowConfirmedNotification: Bool {
+        get { _shouldShowConfirmedNotification ?? UserDefaults.standard.bool(forKey: kShouldShowConfirmedNotification) }
+        set(value) {
+            _shouldShowConfirmedNotification = value
+            UserDefaults.standard.set(value, forKey: kShouldShowConfirmedNotification)
+        }
+    }
+    
     private var _signedEmailMessageId: Int? = nil
     var signedEmailMessageId: Int {
         get { _signedEmailMessageId ?? UserDefaults.standard.value(forKey: kSignedEmailMessageId) as? Int ?? -1 }
@@ -149,5 +159,6 @@ class CrowdNodeDefaults {
         confirmationDialogShown = false
         onlineInfoShown = false
         signedEmailMessageId = -1
+        
     }
 }

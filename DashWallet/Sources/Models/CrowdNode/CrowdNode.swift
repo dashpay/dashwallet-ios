@@ -718,16 +718,15 @@ extension CrowdNode {
 
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
-            let (confirmationTx, didWait) = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
+            let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
             DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashHexString)")
 
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
                 changeOnlineState(to: .done)
                 
-                if didWait {
-                    // Only show notification if had to wait for the confirmation tx.
-                    // Otherwise user has probably already seen it.
+                if prefs.shouldShowConfirmedNotification {
+                    prefs.shouldShowConfirmedNotification = false
                     notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
                 }
                 
@@ -746,6 +745,7 @@ extension CrowdNode {
                     }
 
                     if authenticated {
+                        prefs.shouldShowConfirmedNotification = true
                         let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount,
                                                                              inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address),
                                                                              adjustAmountDownwards: true)
@@ -800,7 +800,11 @@ extension CrowdNode {
                 notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been validated, but verification is required.", comment: "CrowdNode"))
             } else if status.lowercased() == kConfirmedStatus {
                 changeOnlineState(to: .done)
-                notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+                
+                if prefs.shouldShowConfirmedNotification {
+                    prefs.shouldShowConfirmedNotification = false
+                    notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
+                }
                 refreshBalance()
             }
         }
@@ -831,15 +835,15 @@ extension CrowdNode {
         }
     }
 
-    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> (tx: DSTransaction, didWait: Bool) {
+    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> DSTransaction {
         let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
         let wallet = DWEnvironment.sharedInstance().currentWallet
 
         if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
-            return (tx, false)
+            return tx
         }
         else {
-            return (await txObserver.first(filters: filter), true)
+            return await txObserver.first(filters: filter)
         }
     }
 
