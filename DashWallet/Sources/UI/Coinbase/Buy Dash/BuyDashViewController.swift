@@ -23,7 +23,7 @@ import UIKit
 final class BuyDashViewController: CoinbaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
-    override var amountInputStyle: AmountInputControl.Style { .basic }
+    override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
     internal var buyDashModel: BuyDashModel {
         model as! BuyDashModel
