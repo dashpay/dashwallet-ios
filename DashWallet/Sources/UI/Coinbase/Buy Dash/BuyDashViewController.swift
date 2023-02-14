@@ -32,6 +32,8 @@ final class BuyDashViewController: CoinbaseAmountViewController {
     private var activePaymentMethodView: ActivePaymentMethodView!
     internal var cancellables = Set<AnyCancellable>()
 
+    override var isMaxButtonHidden: Bool { true }
+
     init() {
         super.init(model: BuyDashModel())
     }
