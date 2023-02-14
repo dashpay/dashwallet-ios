@@ -88,6 +88,6 @@ final class CrowdNodeCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        contentView.backgroundColor = .dw_background()
+        backgroundColor = .dw_background()
     }
 }

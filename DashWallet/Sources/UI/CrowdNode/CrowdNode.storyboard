@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_0" orientation="portrait" appearance="dark"/>
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
@@ -91,7 +91,7 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <color key="backgroundColor" name="QuaternaryFillColor"/>
                                 <constraints>
                                     <constraint firstItem="C7C-3J-thP" firstAttribute="top" secondItem="Nxj-pM-Pl9" secondAttribute="top" constant="9" id="4aB-8e-POb"/>
                                     <constraint firstAttribute="bottom" secondItem="lPE-iA-urR" secondAttribute="bottom" constant="9" id="65c-Fy-qwM"/>
@@ -178,7 +178,7 @@
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DgD-Ua-Noy" userLabel="Action Button">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
-                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <color key="backgroundColor" name="QuaternaryFillColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="9Hl-se-PhK"/>
                                 </constraints>
@@ -893,6 +893,7 @@
                                                     </variation>
                                                 </view>
                                             </subviews>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <constraints>
                                                 <constraint firstItem="EAT-EC-5JS" firstAttribute="leading" secondItem="avt-SW-tWA" secondAttribute="leading" constant="15" id="0eL-6D-tq8"/>
                                                 <constraint firstItem="ibq-b6-Z4B" firstAttribute="leading" secondItem="avt-SW-tWA" secondAttribute="leading" constant="15" id="1yO-iG-cs5"/>
@@ -964,7 +965,7 @@
             <objects>
                 <viewController storyboardIdentifier="StakingInfoDialogController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="LKe-aK-9qL" customClass="StakingInfoDialogController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="pzv-8w-q33">
-                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="1844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mVa-jz-nDF" userLabel="Close Button">
@@ -984,7 +985,7 @@
                                 </connections>
                             </button>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HPd-OG-OZR">
-                                <rect key="frame" x="0.0" y="92" width="390" height="718"/>
+                                <rect key="frame" x="0.0" y="92" width="390" height="1718"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jA3-H3-Rzo" userLabel="ScrollView Content">
                                         <rect key="frame" x="0.0" y="0.0" width="390" height="1500"/>
@@ -1332,7 +1333,7 @@
                                                         </connections>
                                                     </button>
                                                 </subviews>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <color key="backgroundColor" name="QuaternaryFillColor"/>
                                                 <constraints>
                                                     <constraint firstItem="nVx-b6-kCA" firstAttribute="top" secondItem="fCN-iz-6Qh" secondAttribute="top" constant="9" id="2pZ-Nm-pgz"/>
                                                     <constraint firstAttribute="trailing" secondItem="sVZ-aB-1rg" secondAttribute="trailing" constant="55" id="7CO-cF-Dxj"/>
@@ -1407,6 +1408,7 @@
                             <constraint firstItem="Vdr-cQ-gJ6" firstAttribute="bottom" secondItem="HPd-OG-OZR" secondAttribute="bottom" id="qHs-Ji-MQr"/>
                         </constraints>
                     </view>
+                    <size key="freeformSize" width="390" height="1844"/>
                     <connections>
                         <outlet property="addressLabel" destination="sVZ-aB-1rg" id="XA6-3M-wgl"/>
                         <outlet property="crowdnodeApyLabel" destination="Xt1-ez-god" id="XGF-X2-9qd"/>
@@ -1497,7 +1499,7 @@
                                                 </connections>
                                             </button>
                                         </subviews>
-                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <color key="backgroundColor" name="QuaternaryFillColor"/>
                                         <constraints>
                                             <constraint firstItem="SjH-ef-F2Y" firstAttribute="top" secondItem="euk-KI-SlX" secondAttribute="bottom" constant="5" id="3Pw-tH-ID5"/>
                                             <constraint firstAttribute="trailing" secondItem="EvD-MB-RvZ" secondAttribute="trailing" constant="10" id="5ts-r3-9QS"/>
@@ -1554,7 +1556,7 @@
                                                 </connections>
                                             </button>
                                         </subviews>
-                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <color key="backgroundColor" name="QuaternaryFillColor"/>
                                         <constraints>
                                             <constraint firstItem="swv-lX-d1y" firstAttribute="top" secondItem="qbb-x8-ATB" secondAttribute="top" constant="17" id="9RQ-Qs-UUM"/>
                                             <constraint firstItem="swv-lX-d1y" firstAttribute="centerY" secondItem="qbb-x8-ATB" secondAttribute="centerY" id="OXD-6G-lKH"/>
@@ -1695,7 +1697,7 @@
                                                         </connections>
                                                     </button>
                                                 </subviews>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <color key="backgroundColor" name="QuaternaryFillColor"/>
                                                 <constraints>
                                                     <constraint firstItem="lRM-Zd-c7j" firstAttribute="leading" secondItem="Kje-8u-k7B" secondAttribute="leading" constant="15" id="8l0-fQ-E2B"/>
                                                     <constraint firstItem="kMH-4N-PIl" firstAttribute="leading" secondItem="Kje-8u-k7B" secondAttribute="leading" constant="15" id="AJ8-Dh-IaJ"/>
@@ -1752,7 +1754,7 @@
                                                         </connections>
                                                     </button>
                                                 </subviews>
-                                                <color key="backgroundColor" name="BackgroundColor"/>
+                                                <color key="backgroundColor" name="QuaternaryFillColor"/>
                                                 <constraints>
                                                     <constraint firstItem="rfl-yd-KCc" firstAttribute="leading" secondItem="coH-1M-l64" secondAttribute="leading" constant="15" id="HEu-nr-hqh"/>
                                                     <constraint firstAttribute="trailing" secondItem="8Kq-Ko-IdS" secondAttribute="trailing" constant="10" id="JkT-YK-pOI"/>
@@ -2017,6 +2019,9 @@
         </namedColor>
         <namedColor name="Label">
             <color red="0.097999997437000275" green="0.10999999940395355" blue="0.12200000137090683" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="QuaternaryFillColor">
+            <color red="0.4392156862745098" green="0.4392156862745098" blue="0.44705882352941179" alpha="0.070000005662441259" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

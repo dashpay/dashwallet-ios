@@ -214,8 +214,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CrowdNodeCell",
-                                                 for: indexPath) as! CrowdNodeCell
+        let cell = tableView.dequeueReusableCell(type: CrowdNodeCell.self, for: indexPath)
 
         let item = viewModel.portalItems[(indexPath.section * 2) + indexPath.item]
         cell.update(with: item, viewModel.crowdNodeBalance, viewModel.walletBalance, viewModel.onlineAccountState)
@@ -253,6 +252,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .deposit:
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.deposit), animated: true)
         case .withdraw:
+            // TODO: Move this to model
             let account = DWEnvironment.sharedInstance().currentAccount
             let allAvailableFunds = account.maxOutputAmount
 
@@ -276,7 +276,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         vc.headerText = NSLocalizedString("You should have a positive balance on Dash Wallet", comment: "CrowdNode")
         vc.descriptionText = String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal", comment: "CrowdNode"),
                                                               CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
-
+        // TODO: Move this to model
         if DWEnvironment.sharedInstance().currentChain.isMainnet() {
             vc.actionButtonText = NSLocalizedString("Buy Dash", comment: "CrowdNode")
         } else {
