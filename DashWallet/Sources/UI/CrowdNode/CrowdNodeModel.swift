@@ -38,7 +38,7 @@ public class CrowdNodeModelObjcWrapper: NSObject {
             return NewAccountViewController.controller(online: false)
 
         default:
-            if CrowdNode.shared.infoShown {
+            if CrowdNodeDefaults.shared.infoShown {
                 return GettingStartedViewController.controller()
             }
             else {
@@ -56,6 +56,7 @@ final class CrowdNodeModel {
     private let crowdNode = CrowdNode.shared
     private var signUpTaskId: UIBackgroundTaskIdentifier = .invalid
     private(set) var emailForAccount = ""
+    private let prefs = CrowdNodeDefaults.shared
 
     public static let shared: CrowdNodeModel = .init()
 
@@ -80,18 +81,18 @@ final class CrowdNodeModel {
     }
 
     var shouldShowWithdrawalLimitsDialog: Bool {
-        get { !crowdNode.withdrawalLimitsInfoShown }
-        set(value) { crowdNode.withdrawalLimitsInfoShown = !value }
+        get { !prefs.withdrawalLimitsInfoShown }
+        set(value) { prefs.withdrawalLimitsInfoShown = !value }
     }
 
     var shouldShowConfirmationDialog: Bool {
-        get { onlineAccountState == .confirming && !crowdNode.confirmationDialogShown }
-        set(value) { crowdNode.confirmationDialogShown = !value }
+        get { onlineAccountState == .confirming && !prefs.confirmationDialogShown }
+        set(value) { prefs.confirmationDialogShown = !value }
     }
     
     var shouldShowOnlineInfo: Bool {
-        get { signUpState != .linkedOnline && !crowdNode.onlineInfoShown }
-        set(value) { crowdNode.onlineInfoShown = !value }
+        get { signUpState != .linkedOnline && !prefs.onlineInfoShown }
+        set(value) { prefs.onlineInfoShown = !value }
     }
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
@@ -102,9 +103,9 @@ final class CrowdNodeModel {
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
     var withdrawalLimits: [Int] { [
-        Int(crowdNode.crowdNodeWithdrawalLimitPerTx / kOneDash),
-        Int(crowdNode.crowdNodeWithdrawalLimitPerHour / kOneDash),
-        Int(crowdNode.crowdNodeWithdrawalLimitPerDay / kOneDash),
+        Int(prefs.crowdNodeWithdrawalLimitPerTx / kOneDash),
+        Int(prefs.crowdNodeWithdrawalLimitPerHour / kOneDash),
+        Int(prefs.crowdNodeWithdrawalLimitPerDay / kOneDash),
     ] }
 
     init() {
@@ -154,7 +155,7 @@ final class CrowdNodeModel {
     }
 
     func didShowInfoScreen() {
-        crowdNode.infoShown = true
+        prefs.infoShown = true
     }
 
     private func persistentSignUp(accountAddress: String) async {

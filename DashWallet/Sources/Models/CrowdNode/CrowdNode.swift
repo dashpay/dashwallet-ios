@@ -104,6 +104,7 @@ public final class CrowdNode {
     private lazy var sendCoinsService = SendCoinsService()
     private lazy var txObserver = TransactionObserver()
     private lazy var webService = CrowdNodeService()
+    private let prefs = CrowdNodeDefaults.shared
     private var timer: Timer? = nil
 
     @Published private(set) var signUpState = SignUpState.notInitiated
@@ -126,7 +127,7 @@ public final class CrowdNode {
     init() {
         masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
         crowdnodeAPY = masternodeAPY * 0.85
-        accountAddress = crowdNodeAccountAddress ?? "" // Restore from user default
+        accountAddress = prefs.crowdNodeAccountAddress ?? "" // Restore from user default
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
@@ -184,11 +185,10 @@ extension CrowdNode {
             return
         }
 
-        var onlineState = savedOnlineAccountState
+        var onlineState = prefs.savedOnlineAccountState
 
         if let address = getOnlineAccountAddress(state: onlineState) {
-            accountAddress = address
-            crowdNodeAccountAddress = address
+            updateAccountAddress(address)
 
             if onlineState == .none {
                 onlineState = .linking
@@ -272,7 +272,7 @@ extension CrowdNode {
     ///
     private func updateAccountAddress(_ address: String) {
         accountAddress = address
-        crowdNodeAccountAddress = address
+        prefs.crowdNodeAccountAddress = address
     }
 
     private func reset() {
@@ -284,7 +284,7 @@ extension CrowdNode {
         primaryAddress = nil
         apiError = nil
         balance = 0
-        resetUserDefaults()
+        prefs.resetUserDefaults()
     }
 }
 
@@ -500,7 +500,7 @@ extension CrowdNode {
         guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
 
         Task {
-            let lastBalance = CrowdNode.lastKnownBalance
+            let lastBalance = prefs.lastKnownBalance
             var currentBalance = lastBalance
             balance = currentBalance
             isBalanceLoading = true
@@ -517,7 +517,7 @@ extension CrowdNode {
                     let duffsNumber = Decimal(DUFFS)
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
-                    CrowdNode.lastKnownBalance = currentBalance
+                    prefs.lastKnownBalance = currentBalance
 
                     var breakDifference: UInt64 = 0
 
@@ -567,15 +567,15 @@ extension CrowdNode {
                 let limits = try await webService.getWithdrawalLimits(address: accountAddress)
 
                 if let value = limits[WithdrawalLimitPeriod.perTransaction], let perTx = value {
-                    crowdNodeWithdrawalLimitPerTx = perTx
+                    prefs.crowdNodeWithdrawalLimitPerTx = perTx
                 }
 
                 if let value = limits[WithdrawalLimitPeriod.perHour], let perHour = value {
-                    crowdNodeWithdrawalLimitPerHour = perHour
+                    prefs.crowdNodeWithdrawalLimitPerHour = perHour
                 }
 
                 if let value = limits[WithdrawalLimitPeriod.perDay], let perDay = value {
-                    crowdNodeWithdrawalLimitPerDay = perDay
+                    prefs.crowdNodeWithdrawalLimitPerDay = perDay
                 }
             } catch {
                 DSLogger.log("CrowdNode refreshWithdrawalLimits error: \(error.localizedDescription)")
@@ -586,11 +586,11 @@ extension CrowdNode {
     private func getWithdrawalLimit(_ period: WithdrawalLimitPeriod) -> UInt64 {
         switch period {
         case .perTransaction:
-            return crowdNodeWithdrawalLimitPerTx
+            return prefs.crowdNodeWithdrawalLimitPerTx
         case .perHour:
-            return crowdNodeWithdrawalLimitPerHour
+            return prefs.crowdNodeWithdrawalLimitPerHour
         case .perDay:
-            return crowdNodeWithdrawalLimitPerDay
+            return prefs.crowdNodeWithdrawalLimitPerDay
         }
     }
 }
@@ -599,7 +599,7 @@ extension CrowdNode {
 extension CrowdNode {
     func trackLinkingAccount(address: String) {
         linkingApiAddress = address
-        crowdNodeAccountAddress = address
+        prefs.crowdNodeAccountAddress = address
         changeOnlineState(to: .linking)
     }
 
@@ -626,7 +626,7 @@ extension CrowdNode {
         
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
             DSLogger.log("CrowdNode: signed email sent successfully")
-            signedEmailMessageId = result.id
+            prefs.signedEmailMessageId = result.id
             changeOnlineState(to: .creating)
         } else {
             DSLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
@@ -654,13 +654,13 @@ extension CrowdNode {
         onlineAccountState = to
 
         if save {
-            savedOnlineAccountState = to
+            prefs.savedOnlineAccountState = to
         }
     }
 
 
     private func tryRestoreLinkedOnlineAccount(state: OnlineAccountState, address: String) throws {
-        if let address = crowdNodePrimaryAddress {
+        if let address = prefs.crowdNodePrimaryAddress {
             primaryAddress = address
         }
 
@@ -782,8 +782,8 @@ extension CrowdNode {
                     changeOnlineState(to: .none)
                 } else {
                     accountAddress = address
-                    crowdNodeAccountAddress = address
-                    crowdNodePrimaryAddress = result.primaryAddress
+                    prefs.crowdNodeAccountAddress = address
+                    prefs.crowdNodePrimaryAddress = result.primaryAddress
                     // TODO: tax category
                     changeOnlineState(to: .validating)
                 }
@@ -812,7 +812,7 @@ extension CrowdNode {
             
             if usingDummyEmail {
                 // User email isn't set yet. Check the message status in case there is an error
-                let messageId = signedEmailMessageId
+                let messageId = prefs.signedEmailMessageId
                 
                 if messageId != -1 {
                     let message = await webService.checkMessageStatus(id: messageId, address: address)
@@ -820,7 +820,7 @@ extension CrowdNode {
                     if message?.messageStatus.lowercased() == kMessageFailedStatus {
                         // Operation failed
                         apiError = CrowdNode.Error.messageStatus(error: message?.result ?? "")
-                        signedEmailMessageId = -1
+                        prefs.signedEmailMessageId = -1
                         changeOnlineState(to: .none)
                     }
                 }
@@ -862,7 +862,7 @@ extension CrowdNode {
     }
 
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
-        let savedAddress = crowdNodeAccountAddress
+        let savedAddress = prefs.crowdNodeAccountAddress
 
         if savedAddress != nil && state != .none {
             return savedAddress
@@ -870,9 +870,9 @@ extension CrowdNode {
             let account = DWEnvironment.sharedInstance().currentAccount
 
             if let apiAddress = account.externalAddresses(of: confirmationTx).first {
-                crowdNodeAccountAddress = apiAddress
+                prefs.crowdNodeAccountAddress = apiAddress
                 signUpState = .linkedOnline
-                savedOnlineAccountState = .linking
+                prefs.savedOnlineAccountState = .linking
 
                 return apiAddress
             }
@@ -906,7 +906,7 @@ extension CrowdNode {
     }
     
     private func restoreCreatedOnlineAccount(_ address: String) {
-        let state = savedOnlineAccountState
+        let state = prefs.savedOnlineAccountState
         
         switch state {
         case .none:
