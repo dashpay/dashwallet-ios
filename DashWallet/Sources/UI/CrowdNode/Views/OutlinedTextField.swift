@@ -66,14 +66,22 @@ class OutlinedTextField: UITextField {
         labelControl.topAnchor.constraint(equalTo: self.topAnchor, constant: 10).isActive = true
         labelControl.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 15).isActive = true
 
-        let shape = CAShapeLayer()
-        shape.lineWidth = 4
-        shape.strokeColor = UIColor.dw_dashBlue().withAlphaComponent(0.2).cgColor
-        shape.fillColor = UIColor.clear.cgColor
-        outerBorder = shape
+        outerBorder = CAShapeLayer()
+        outerBorder.lineWidth = 4
+        outerBorder.strokeColor = UIColor.dw_dashBlue().withAlphaComponent(0.2).cgColor
+        outerBorder.fillColor = UIColor.clear.cgColor
+        outerBorder.opacity = 0
+        self.layer.addSublayer(outerBorder)
         
         self.addTarget(self, action: #selector(self.onEditingBegin), for: .editingDidBegin)
         self.addTarget(self, action: #selector(self.onEditingEnd), for: .editingDidEnd)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let path = UIBezierPath(roundedRect: bounds.inset(by: UIEdgeInsets(top: -2, left: -2, bottom: -2, right: -2)), cornerRadius: 14)
+        outerBorder.path = path.cgPath
     }
 
     override func textRect(forBounds bounds: CGRect) -> CGRect {
@@ -89,14 +97,12 @@ class OutlinedTextField: UITextField {
     }
     
     @objc func onEditingBegin() {
-        let path = UIBezierPath(roundedRect: self.layer.bounds.inset(by: UIEdgeInsets(top: -2, left: -2, bottom: -2, right: -2)), cornerRadius: 14)
-        outerBorder.path = path.cgPath
-        self.layer.addSublayer(outerBorder)
+        outerBorder.opacity = 1
         self.layer.borderColor = UIColor.dw_dashBlue().cgColor
     }
         
     @objc func onEditingEnd() {
-        outerBorder.removeFromSuperlayer()
+        outerBorder.opacity = 0
         self.layer.borderColor = borderColor.cgColor
     }
 }
