@@ -46,6 +46,10 @@ final class BuyDashModel: CoinbaseAmountModel {
         isAmountValidForProceeding
     }
 
+    override var canShowInsufficientFunds: Bool {
+        false
+    }
+
     var dashPriceDisplayString: String {
         guard let rate = try? Coinbase.shared.currencyExchanger.rate(for: App.fiatCurrency),
               let fiatBalanceFormatted = localFormatter.string(from: rate as NSNumber) else {
