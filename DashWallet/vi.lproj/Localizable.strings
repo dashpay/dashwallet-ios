@@ -1361,6 +1361,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Gửi %1$@ (%2$@) từ khoá riêng này đến ví của bạn? Mạng lưới Dash sẽ nhận một khoản phí là %3$@ (%4$@).";
 
+/* CrowdNode Confirm */
+"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
+
 /* Send by (scanning QR code) */
 "Send by" = "Gửi bởi";
 
@@ -1559,6 +1562,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Mã PIN này sẽ được hỏi để mở ứng dụng của bạn mỗi khi bạn sử dụng nó.";
+
+/* CrowdNode Confirm */
+"This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "Cụm từ phục hồi này là quyền truy cập của bạn đến số tiền trong ví này.";

@@ -1361,6 +1361,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
 
+/* CrowdNode Confirm */
+"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
+
 /* Send by (scanning QR code) */
 "Send by" = "Send by";
 
@@ -1559,6 +1562,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "This PIN will be required to unlock your app every time when you use it.";
+
+/* CrowdNode Confirm */
+"This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";

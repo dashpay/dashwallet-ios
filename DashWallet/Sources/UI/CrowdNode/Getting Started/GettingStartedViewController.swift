@@ -19,7 +19,7 @@ import Combine
 
 // MARK: - GettingStartedViewController
 
-final class GettingStartedViewController: UIViewController {
+final class GettingStartedViewController: BaseViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
@@ -79,16 +79,16 @@ final class GettingStartedViewController: UIViewController {
                                       message: String.localizedStringWithFormat(NSLocalizedString("You should have at least %@ to proceed with the CrowdNode verification.",
                                                                                                   comment: ""), minimumDash),
                                       preferredStyle: UIAlertController.Style.alert)
-        
-        
-        if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
+
+
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
             alert
                 .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
                                          handler: { [weak self] _ in
                                              self?.buyDash()
                                          }))
         }
-        
+
         alert
             .addAction(UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: UIAlertAction.Style.cancel,
                                      handler: nil))
@@ -105,10 +105,6 @@ extension GettingStartedViewController {
     private func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        navigationItem.standardAppearance = appearance
-        navigationItem.scrollEdgeAppearance = appearance
 
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)

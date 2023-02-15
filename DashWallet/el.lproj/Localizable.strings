@@ -1361,6 +1361,9 @@
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Θα στείλετε %1$@ (%2$@) από το ιδιωτικό κλειδί σας στο πορτοφόλι σας; Το δίκτυο Dash θα λάβει ένα τέλος %3$@ (%4$@).";
 
+/* CrowdNode Confirm */
+"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
+
 /* Send by (scanning QR code) */
 "Send by" = "Εστάλη από";
 
@@ -1559,6 +1562,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Αυτός ο κωδικός PIN θα χρειαστεί να ξεκλειδώσετε την εφαρμογή σας κάθε φορά που την χρησιμοποιείτε.";
+
+/* CrowdNode Confirm */
+"This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "Αυτή η φράση ανάκτησης σας δίνει πρόσβασή στα χρήματα αυτού του πορτοφολιού.";

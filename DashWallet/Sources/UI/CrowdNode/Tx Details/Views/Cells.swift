@@ -42,6 +42,8 @@ final class CNCreateAccountTxDetailsTxItemCell: UITableViewCell {
         txItemView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(txItemView)
 
+        contentView.backgroundColor = .dw_background()
+
         NSLayoutConstraint.activate([
             txItemView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 11),
             txItemView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
@@ -71,6 +73,8 @@ final class CNCreateAccountTxDetailsInfoCell: UITableViewCell {
     }
 
     private func configureHierarchy() {
+        contentView.backgroundColor = .dw_background()
+
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
