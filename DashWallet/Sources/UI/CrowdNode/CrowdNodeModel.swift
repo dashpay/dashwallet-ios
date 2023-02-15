@@ -38,7 +38,7 @@ public class CrowdNodeModelObjcWrapper: NSObject {
             return NewAccountViewController.controller(online: false)
 
         default:
-            if CrowdNode.shared.infoShown {
+            if CrowdNodeDefaults.shared.infoShown {
                 return GettingStartedViewController.controller()
             }
             else {
@@ -55,6 +55,8 @@ final class CrowdNodeModel {
     private var cancellableBag = Set<AnyCancellable>()
     private let crowdNode = CrowdNode.shared
     private var signUpTaskId: UIBackgroundTaskIdentifier = .invalid
+    private(set) var emailForAccount = ""
+    private let prefs = CrowdNodeDefaults.shared
 
     public static let shared: CrowdNodeModel = .init()
 
@@ -79,13 +81,18 @@ final class CrowdNodeModel {
     }
 
     var shouldShowWithdrawalLimitsDialog: Bool {
-        get { !crowdNode.withdrawalLimitsInfoShown }
-        set(value) { crowdNode.withdrawalLimitsInfoShown = !value }
+        get { !prefs.withdrawalLimitsInfoShown }
+        set(value) { prefs.withdrawalLimitsInfoShown = !value }
     }
 
     var shouldShowConfirmationDialog: Bool {
-        get { onlineAccountState == .confirming && !crowdNode.confirmationDialogShown }
-        set(value) { crowdNode.confirmationDialogShown = !value }
+        get { onlineAccountState == .confirming && !prefs.confirmationDialogShown }
+        set(value) { prefs.confirmationDialogShown = !value }
+    }
+    
+    var shouldShowOnlineInfo: Bool {
+        get { signUpState != .linkedOnline && !prefs.onlineInfoShown }
+        set(value) { prefs.onlineInfoShown = !value }
     }
 
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
@@ -96,9 +103,9 @@ final class CrowdNodeModel {
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
     var withdrawalLimits: [Int] { [
-        Int(crowdNode.crowdNodeWithdrawalLimitPerTx / kOneDash),
-        Int(crowdNode.crowdNodeWithdrawalLimitPerHour / kOneDash),
-        Int(crowdNode.crowdNodeWithdrawalLimitPerDay / kOneDash),
+        Int(prefs.crowdNodeWithdrawalLimitPerTx / kOneDash),
+        Int(prefs.crowdNodeWithdrawalLimitPerHour / kOneDash),
+        Int(prefs.crowdNodeWithdrawalLimitPerDay / kOneDash),
     ] }
 
     init() {
@@ -148,7 +155,7 @@ final class CrowdNodeModel {
     }
 
     func didShowInfoScreen() {
-        crowdNode.infoShown = true
+        prefs.infoShown = true
     }
 
     private func persistentSignUp(accountAddress: String) async {
@@ -165,6 +172,10 @@ final class CrowdNodeModel {
             UIApplication.shared.endBackgroundTask(signUpTaskId)
             signUpTaskId = UIBackgroundTaskIdentifier.invalid
         }
+    }
+    
+    func clearError() {
+        crowdNode.apiError = nil
     }
 
     private func observeState() {
@@ -278,5 +289,30 @@ extension CrowdNodeModel {
     func cancelLinkingOnlineAccount() {
         crowdNode.stopTrackingLinked()
         WKWebView.cleanCrowdNodeCache()
+    }
+    
+    func signAndSendEmail(email: String) async throws -> Bool {
+        guard !crowdNode.accountAddress.isEmpty else { return false }
+        emailForAccount = email
+        
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let result = await wallet.seed(withPrompt: NSLocalizedString("Sign the message", comment: "CrowdNode"), forAmount: 1)
+            
+        if !result.1 {
+            let key = wallet.privateKey(forAddress: crowdNode.accountAddress, fromSeed: result.0!)
+            let signResult = await key?.signMessageDigest(email.magicDigest())
+                
+            if signResult?.0 == true {
+                let signature = (signResult!.1 as NSData).base64String()
+                try await crowdNode.registerEmailForAccount(email: email, signature: signature)
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    func finishSignUpToOnlineAccount() {
+        crowdNode.setOnlineAccountCreated()
     }
 }

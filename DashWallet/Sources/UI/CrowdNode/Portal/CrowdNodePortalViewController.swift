@@ -57,6 +57,11 @@ final class CrowdNodePortalController: UIViewController {
     }
 
     @objc
+    func backButtonAction() {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    @objc
     func infoButtonAction() {
         if viewModel.signUpState == .linkedOnline {
             present(OnlineAccountDetailsController.controller(), animated: true)
@@ -98,6 +103,15 @@ extension CrowdNodePortalController {
     private func configureNavBar() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
+        
+        let backButton = UIButton(type: .custom)
+        backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
+        backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
+        backButton.tintColor = .white
+        backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+        backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)
+
         navigationItem.standardAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
 
@@ -137,6 +151,7 @@ extension CrowdNodePortalController {
             .sink { [weak self] _ in
                 self?.tableView.reloadRows(at: [
                     IndexPath(item: 1, section: 0),
+                    IndexPath(item: 0, section: 1),
                 ],
                 with: .none)
 
@@ -169,34 +184,13 @@ extension CrowdNodePortalController {
             .filter { error in error != nil }
             .sink(receiveValue: { [weak self] error in
                 if error is CrowdNode.Error {
-                    self?.navigateToErrorScreen(error as! CrowdNode.Error)
+                    self?.viewModel.clearError()
+                    self?.navigationController?.toErrorScreen(error: error as! CrowdNode.Error)
                 }
             })
             .store(in: &cancellableBag)
     }
-
-    private func navigateToErrorScreen(_ error: CrowdNode.Error) {
-        viewModel.error = nil
-
-        let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
-        vc.headerText = NSLocalizedString("Transfer Error", comment: "CrowdNode")
-        vc.descriptionText = error.errorDescription
-        vc.supportButtonText = NSLocalizedString("Send Report", comment: "Coinbase")
-        let backHandler: (() -> ()) = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
-        }
-        vc.retryHandler = backHandler
-        vc.cancelHandler = backHandler
-        vc.supportHandler = {
-            let url = DWAboutModel.supportURL()
-            let safariViewController = SFSafariViewController.dw_controller(with: url)
-            self.present(safariViewController, animated: true)
-        }
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
-    }
 }
-
 
 // MARK: UITableViewDelegate, UITableViewDataSource
 
@@ -262,9 +256,17 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
                 showMinimumBalanceError()
             }
         case .onlineAccount:
-            if !viewModel.onlineAccountState.isLinkingInProgress {
+            switch viewModel.onlineAccountState {
+            case .none, .creating:
+                showOnlineInfoOrEnterEmail()
+            case .signingUp:
+                showSignUpWebView()
+            case .done:
                 UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
+            default:
+                break
             }
+            
         case .support:
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
@@ -315,5 +317,23 @@ extension CrowdNodePortalController: BalanceViewDataSource {
         }
 
         return fiat
+    }
+}
+
+// MARK: - Online
+
+extension CrowdNodePortalController {
+    private func showOnlineInfoOrEnterEmail() {
+        if viewModel.shouldShowOnlineInfo {
+            navigationController?.pushViewController(OnlineAccountInfoController.controller(), animated: true)
+            viewModel.shouldShowOnlineInfo = false
+        } else {
+            navigationController?.pushViewController(OnlineAccountEmailController.controller(), animated: true)
+        }
+    }
+    
+    private func showSignUpWebView() {
+        let profileUrl = CrowdNode.profileUrl
+        navigationController?.pushViewController(CrowdNodeWebViewController.controller(url: URL(string: profileUrl)!, email: viewModel.emailForAccount), animated: true)
     }
 }

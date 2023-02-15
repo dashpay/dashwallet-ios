@@ -38,14 +38,16 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPRegistrationStatusTableViewCell.h"
 #import "DWDPRegistrationErrorRetryDelegate.h"
 
-// -- CrowdNode
+//MARK: CrowdNode
 #import "DWCheckbox.h"
 #import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "DWSecureWalletDelegate.h"
 #import "UIImage+Utils.h"
-// -- end CrowdNode
+#import "NSData+Dash.h"
+// end CrowdNode
+
 #import "DWUpholdViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdCardObject.h"
