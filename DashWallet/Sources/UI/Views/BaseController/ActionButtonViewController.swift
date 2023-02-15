@@ -124,8 +124,6 @@ extension ActionButtonViewController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
-        let bottomPadding = deviceSpecificBottomPadding()
-
         stackView = ActionButtonStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical

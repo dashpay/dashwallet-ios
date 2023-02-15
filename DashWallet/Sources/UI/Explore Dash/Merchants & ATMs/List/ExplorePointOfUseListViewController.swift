@@ -271,7 +271,6 @@ extension ExplorePointOfUseListViewController {
         appliedFiltersStackView.addArrangedSubview(appliedFiltersLabel)
 
         let appliedFilters = UIBarButtonItem(customView: appliedFiltersStackView)
-        let empty = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: self, action: nil)
         let filter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
                                      target: self, action: nil)
         filter.tintColor = .dw_dashBlue()

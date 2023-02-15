@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_END
         [mainButton addTarget:self action:@selector(secondaryButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _secondaryButton = secondaryButton;
 
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_dashBlueColor];
         activityIndicatorView.hidesWhenStopped = NO;

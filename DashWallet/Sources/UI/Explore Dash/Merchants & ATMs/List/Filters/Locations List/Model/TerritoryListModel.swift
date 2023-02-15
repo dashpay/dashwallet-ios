@@ -46,7 +46,7 @@ final class TerritoriesListModel {
                 DispatchQueue.main.async {
                     self?.territoriesDidChange?()
                 }
-            case .failure(let error):
+            case .failure:
                 break
             }
         }

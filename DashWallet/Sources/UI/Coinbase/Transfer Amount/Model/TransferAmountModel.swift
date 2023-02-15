@@ -70,7 +70,7 @@ final class TransferAmountModel: CoinbaseAmountModel, CoinbaseTransactionSendabl
         super.init()
 
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
-            if let user {
+            if user != nil {
                 self?.delegate?.coinbaseUserDidChange()
             }
         }

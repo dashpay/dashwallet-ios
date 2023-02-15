@@ -66,7 +66,6 @@ extension BalanceView {
         let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!
 
         let balanceColor = UIColor.label
-        let font = UIFont.dw_font(forTextStyle: .title1)
         let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: balanceColor)
         dashBalanceLabel.attributedText = balanceString
         fiatBalanceLabel.text = supplementaryAmountString
