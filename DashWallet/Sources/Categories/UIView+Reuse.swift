@@ -18,7 +18,8 @@
 import Foundation
 
 extension UIView {
-    static var reuseIdentifier: String {
+    @objc
+    class var reuseIdentifier: String {
         String(String(describing: type(of: Self.self)).split(separator: ".").first!)
     }
 }

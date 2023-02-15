@@ -35,8 +35,8 @@ final class ConfirmationTransactionQRController: UIViewController {
         if #available(iOS 16.0, *) {
             if let sheet = vc.sheetPresentationController {
                 let fitId = UISheetPresentationController.Detent.Identifier("fit")
-                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { context in
-                    return 420
+                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { _ in
+                    420
                 }
                 sheet.detents = [fitDetent]
             }
@@ -53,6 +53,8 @@ final class ConfirmationTransactionQRController: UIViewController {
 
 extension ConfirmationTransactionQRController {
     private func configureHierarchy() {
+        view.backgroundColor = .dw_secondaryBackground()
+
         let confirmationAmount = CrowdNode.apiConfirmationDashAmount.formattedDashAmount
         messageLabel.text = String.localizedStringWithFormat(NSLocalizedString("This QR already contains the payment request for %@", comment: "CrowdNode Confirm"),
                                                              confirmationAmount)

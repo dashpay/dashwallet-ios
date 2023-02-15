@@ -23,7 +23,7 @@ import UIKit
 final class BuyDashViewController: CoinbaseAmountViewController {
     override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
 
-    override var amountInputStyle: AmountInputControl.Style { .basic }
+    override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
     internal var buyDashModel: BuyDashModel {
         model as! BuyDashModel
@@ -31,6 +31,8 @@ final class BuyDashViewController: CoinbaseAmountViewController {
 
     private var activePaymentMethodView: ActivePaymentMethodView!
     internal var cancellables = Set<AnyCancellable>()
+
+    override var isMaxButtonHidden: Bool { true }
 
     init() {
         super.init(model: BuyDashModel())

@@ -79,6 +79,8 @@ final class CrowdNodePortalController: UIViewController {
 
 extension CrowdNodePortalController {
     private func configureHierarchy() {
+        view.backgroundColor = .dw_secondaryBackground()
+
         balanceView.tint = .white
         balanceView.dataSource = self
 
@@ -190,74 +192,7 @@ extension CrowdNodePortalController {
     }
 }
 
-// MARK: - CrowdNodeCell
-
-class CrowdNodeCell: UITableViewCell {
-    @IBOutlet var title : UILabel!
-    @IBOutlet var subtitle : UILabel!
-    @IBOutlet var icon : UIImageView!
-    @IBOutlet var iconCircle : UIView!
-    @IBOutlet var additionalInfo: UIView!
-    @IBOutlet var additionalInfoLabel : UILabel!
-    @IBOutlet var additionalInfoIcon : UIImageView!
-    @IBOutlet var verifyButton : UIButton!
-
-    @IBOutlet var showInfoConstraint: NSLayoutConstraint!
-    @IBOutlet var infoBottomAnchorConstraint: NSLayoutConstraint!
-
-    fileprivate func update(with item: CrowdNodePortalItem,
-                            _ crowdNodeBalance: UInt64,
-                            _ walletBalance: UInt64,
-                            _ onlineAccountState: CrowdNode.OnlineAccountState) {
-        title.text = item.title(onlineState: onlineAccountState)
-        subtitle.text = item.subtitle(onlineState: onlineAccountState)
-        icon.image = UIImage(named: item.icon)
-
-        if item.isDisabled(crowdNodeBalance, walletBalance, onlineAccountState.isLinkingInProgress) {
-            let grayColor = UIColor(red: 176/255.0, green: 182/255.0, blue: 188/255.0, alpha: 1.0)
-            iconCircle.backgroundColor = grayColor
-            title.textColor = .dw_secondaryText()
-            selectionStyle = .none
-        } else {
-            iconCircle.backgroundColor = item.iconCircleColor
-            title.textColor = .label
-            selectionStyle = .default
-        }
-
-        var showInfo: Bool
-
-        switch item {
-        case .deposit:
-            showInfo = crowdNodeBalance < CrowdNode.minimumDeposit && !onlineAccountState.isLinkingInProgress
-        case .withdraw:
-            showInfo = onlineAccountState.isLinkingInProgress
-        default:
-            showInfo = false
-        }
-
-        additionalInfo.isHidden = !showInfo
-        showInfoConstraint.constant = showInfo ? 35 : 0
-        infoBottomAnchorConstraint.isActive = showInfo
-
-        if showInfo {
-            additionalInfo.backgroundColor = item.infoBackgroundColor
-            additionalInfoLabel.text = item.info(crowdNodeBalance, onlineAccountState)
-            additionalInfoLabel.textColor = item.infoTextColor
-
-            if !item.infoActionButton(for: onlineAccountState).isEmpty {
-                additionalInfoLabel.textAlignment = .left
-                additionalInfoIcon.isHidden = false
-                verifyButton.isHidden = false
-            } else {
-                additionalInfoLabel.textAlignment = .center
-                additionalInfoIcon.isHidden = true
-                verifyButton.isHidden = true
-            }
-        }
-    }
-}
-
-// MARK: - CrowdNodePortalController + UITableViewDelegate, UITableViewDataSource
+// MARK: UITableViewDelegate, UITableViewDataSource
 
 extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -273,8 +208,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CrowdNodeCell",
-                                                 for: indexPath) as! CrowdNodeCell
+        let cell = tableView.dequeueReusableCell(type: CrowdNodeCell.self, for: indexPath)
 
         let item = viewModel.portalItems[(indexPath.section * 2) + indexPath.item]
         cell.update(with: item, viewModel.crowdNodeBalance, viewModel.walletBalance, viewModel.onlineAccountState)
@@ -312,9 +246,10 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .deposit:
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.deposit), animated: true)
         case .withdraw:
+            // TODO: Move this to model
             let account = DWEnvironment.sharedInstance().currentAccount
             let allAvailableFunds = account.maxOutputAmount
-            
+
             if allAvailableFunds >= CrowdNode.minimumLeftoverBalance {
                 navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
             } else {
@@ -336,21 +271,22 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
     }
-    
+
     private func showMinimumBalanceError() {
         let vc = BasicInfoController()
         vc.icon = "image.crowdnode.error"
         vc.headerText = NSLocalizedString("You should have a positive balance on Dash Wallet", comment: "CrowdNode")
-        vc.descriptionText = String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal", comment: "CrowdNode"), CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
-        
-        if (DWEnvironment.sharedInstance().currentChain.isMainnet()) {
+        vc.descriptionText = String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal", comment: "CrowdNode"),
+                                                              CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
+        // TODO: Move this to model
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
             vc.actionButtonText = NSLocalizedString("Buy Dash", comment: "CrowdNode")
         } else {
             vc.actionButtonText = ""
         }
-        
+
         let nvc = BaseNavigationController(rootViewController: vc)
-        
+
         vc.mainAction = {
             Task {
                 if await self.viewModel.authenticate() {
@@ -359,12 +295,12 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
                 }
             }
         }
-        
+
         present(nvc, animated: true)
     }
 }
 
-// MARK: - CrowdNodePortalController + BalanceViewDataSource
+// MARK: BalanceViewDataSource
 
 extension CrowdNodePortalController: BalanceViewDataSource {
     var mainAmountString: String {

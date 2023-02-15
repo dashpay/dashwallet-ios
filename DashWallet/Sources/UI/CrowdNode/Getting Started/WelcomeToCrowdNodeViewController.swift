@@ -17,7 +17,7 @@
 
 import Combine
 
-final class WelcomeToCrowdNodeViewController: UIViewController {
+final class WelcomeToCrowdNodeViewController: BaseViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
@@ -46,9 +46,6 @@ final class WelcomeToCrowdNodeViewController: UIViewController {
 
     private func configureHierarchy() {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        navigationItem.standardAppearance = appearance
-        navigationItem.scrollEdgeAppearance = appearance
+        view.backgroundColor = .dw_secondaryBackground()
     }
 }

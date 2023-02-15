@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-final class OnlineAccountDetailsController: UIViewController {
+final class OnlineAccountDetailsController: BaseViewController {
     private let viewModel = CrowdNode.shared
 
     @IBOutlet var primaryAddressLabel: UILabel!
@@ -42,6 +42,8 @@ final class OnlineAccountDetailsController: UIViewController {
     }
 
     private func configureHierarchy() {
+        view.backgroundColor = .dw_secondaryBackground()
+
         primaryAddressLabel.text = viewModel.primaryAddress
         addressLabel.text = viewModel.accountAddress
     }
