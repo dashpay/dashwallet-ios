@@ -120,7 +120,7 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
 extension TxUserInfoDAOImpl {
     @objc
     func dictionaryOfAllItems() -> [Data: TxUserInfo] {
-        all()
+        _ = all()
         return cache
     }
 }

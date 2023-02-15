@@ -197,8 +197,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         UIMenuController *menu = [UIMenuController sharedMenuController];
-        [menu setTargetRect:self.textField.bounds inView:self.textField];
-        [menu setMenuVisible:YES animated:YES];
+        [menu showMenuFromView:self.textField rect:self.textField.bounds];
     });
 }
 

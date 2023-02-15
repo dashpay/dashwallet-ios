@@ -116,7 +116,7 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
 extension AddressUserInfoDAOImpl {
     @objc
     func dictionaryOfAllItems() -> [String: AddressUserInfo] {
-        all()
+        _ = all()
         return cache
     }
 }
