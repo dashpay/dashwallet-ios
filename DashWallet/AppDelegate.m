@@ -315,8 +315,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler {
 
     if ([response.notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
-        [_window.rootViewController presentViewController:vc animated:YES completion:nil];
+        if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
+            UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
+            [_window.rootViewController presentViewController:vc animated:YES completion:nil];
+        }
         completionHandler();
     }
 }

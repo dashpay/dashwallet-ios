@@ -25,6 +25,7 @@ extension CrowdNode {
         case withdrawLimit(amount: UInt64, period: WithdrawalLimitPeriod)
         case restoreLinked(state: OnlineAccountState)
         case missingPrimary
+        case messageStatus(error: String)
 
         var errorDescription: String {
             switch self {
@@ -36,6 +37,8 @@ extension CrowdNode {
                 return NSLocalizedString("We couldn’t withdraw from your CrowdNode account.", comment: "CrowdNode")
             case .restoreLinked(let state):
                 return "Invalid state found in tryRestoreLinkedOnlineAccount: \(state)"
+            case .messageStatus(let error):
+                return error
             default:
                 return ""
             }

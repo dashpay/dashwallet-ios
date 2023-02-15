@@ -25,29 +25,42 @@ enum CrowdNodePortalItem: CaseIterable {
 }
 
 extension CrowdNodePortalItem {
-    var title: String {
+    func title(onlineState: CrowdNode.OnlineAccountState) -> String {
         switch self {
         case .deposit:
             return NSLocalizedString("Deposit", comment: "CrowdNode Portal")
         case .withdraw:
             return NSLocalizedString("Withdraw", comment: "CrowdNode Portal")
-        case .onlineAccount:
-            return NSLocalizedString("Create Online Account", comment: "CrowdNode Portal")
         case .support:
             return NSLocalizedString("CrowdNode Support", comment: "CrowdNode Portal")
+        case .onlineAccount:
+            if onlineState == .none {
+                return NSLocalizedString("Create Online Account", comment: "CrowdNode Portal")
+            } else {
+                return NSLocalizedString("Online Account", comment: "CrowdNode Portal")
+            }
         }
     }
 
-    var subtitle: String {
+    func subtitle(onlineState: CrowdNode.OnlineAccountState) -> String {
         switch self {
         case .deposit:
             return NSLocalizedString("DashWallet ➝ CrowdNode", comment: "CrowdNode Portal")
         case .withdraw:
             return NSLocalizedString("CrowdNode ➝ DashWallet", comment: "CrowdNode Portal")
-        case .onlineAccount:
-            return NSLocalizedString("Protect your savings", comment: "CrowdNode Portal")
         case .support:
             return ""
+        case .onlineAccount:
+            switch onlineState {
+            case .done:
+                return NSLocalizedString("Synced with current Dash Wallet", comment: "CrowdNode Portal")
+            case .none:
+                return NSLocalizedString("Protect your savings", comment: "CrowdNode Portal")
+            case .signingUp:
+                return NSLocalizedString("Sign up to finish setting up account", comment: "CrowdNode Portal")
+            default:
+                return NSLocalizedString("In process…", comment: "CrowdNode Portal")
+            }
         }
     }
 
