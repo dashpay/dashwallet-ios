@@ -532,6 +532,9 @@
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
 
+/* CrowdNode */
+"e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
+
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
 
@@ -543,6 +546,9 @@
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "예시: 홍길동";
+
+/* CrowdNode */
+"Email" = "Email";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "페이스 ID 활성화";
@@ -763,6 +769,9 @@
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
 
+/* CrowdNode Portal */
+"In process…" = "In process…";
+
 /* No comment provided by engineer. */
 "Income" = "수입";
 
@@ -783,6 +792,9 @@
 
 /* Invalid transaction */
 "Invalid" = "유효하지 않음";
+
+/* CrowdNode Online */
+"Invalid Email" = "Invalid Email";
 
 /* Invalid Amount Input */
 "Invalid Input" = "Invalid Input";
@@ -1042,6 +1054,9 @@
 
 /* Online */
 "Online" = "온라인";
+
+/* CrowdNode Portal */
+"Online Account" = "Online Account";
 
 /* Online Merchant */
 "Online Merchant" = "온라인 판매자";
@@ -1441,7 +1456,16 @@
 "Show Recovery Phrase" = "복원 문구 확인하기";
 
 /* CrowdNode */
+"Sign the message" = "Sign the message";
+
+/* CrowdNode */
+"Sign up error" = "Sign up error";
+
+/* CrowdNode */
 "Sign up to CrowdNode" = "Sign up to CrowdNode";
+
+/* CrowdNode Portal */
+"Sign up to finish setting up account" = "Sign up to finish setting up account";
 
 /* No comment provided by engineer. */
 "Skip" = "건너뛰기";
@@ -1496,6 +1520,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "지금 동기화합니다";
+
+/* CrowdNode Portal */
+"Synced with current Dash Wallet" = "Synced with current Dash Wallet";
 
 /* No comment provided by engineer. */
 "Syncing" = "동기화 중";

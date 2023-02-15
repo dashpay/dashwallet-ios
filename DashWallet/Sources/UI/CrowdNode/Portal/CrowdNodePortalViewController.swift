@@ -58,9 +58,9 @@ final class CrowdNodePortalController: UIViewController {
 
     @objc
     func backButtonAction() {
-        self.navigationController?.popViewController(animated: true)
+        navigationController?.popViewController(animated: true)
     }
-    
+
     @objc
     func infoButtonAction() {
         if viewModel.signUpState == .linkedOnline {
@@ -88,6 +88,7 @@ extension CrowdNodePortalController {
         tableView.clipsToBounds = true
         tableView.isScrollEnabled = false
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.separatorColor = .dw_separatorLine()
 
         let colorStart = UIColor(red: 31 / 255.0, green: 134 / 255.0, blue: 201 / 255.0, alpha: 1.0).cgColor
         let colorEnd = UIColor(red: 99 / 255.0, green: 181 / 255.0, blue: 237 / 255.0, alpha: 1.0).cgColor
@@ -103,7 +104,7 @@ extension CrowdNodePortalController {
     private func configureNavBar() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
-        
+
         let backButton = UIButton(type: .custom)
         backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
         backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
@@ -266,7 +267,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
             default:
                 break
             }
-            
+
         case .support:
             UIApplication.shared.open(URL(string: CrowdNode.supportUrl)!)
         }
@@ -331,7 +332,7 @@ extension CrowdNodePortalController {
             navigationController?.pushViewController(OnlineAccountEmailController.controller(), animated: true)
         }
     }
-    
+
     private func showSignUpWebView() {
         let profileUrl = CrowdNode.profileUrl
         navigationController?.pushViewController(CrowdNodeWebViewController.controller(url: URL(string: profileUrl)!, email: viewModel.emailForAccount), animated: true)
