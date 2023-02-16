@@ -150,3 +150,15 @@ extension CurrencyExchanger {
         case invalidAmount
     }
 }
+
+// MARK: Helper methods
+
+extension CurrencyExchanger {
+    func fiatAmountString(for dashAmount: Decimal) -> String {
+        guard let amount = try? convertDash(amount: dashAmount, to: App.fiatCurrency) else {
+            return "Invalid amount"
+        }
+
+        return amount.formattedFiatAmount
+    }
+}

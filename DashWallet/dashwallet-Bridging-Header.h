@@ -93,3 +93,5 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
+
+#import "DWPhoneWCSessionManager.h"

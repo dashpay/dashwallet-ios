@@ -30,7 +30,6 @@
 #import "DWStartModel.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
-#import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 #import "DWEnvironment.h"
 #import "dashwallet-Swift.h"
