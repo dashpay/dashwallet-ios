@@ -17,10 +17,10 @@
 
 #import "DWRequestAmountContentView.h"
 
-#import "DWAmountPreviewView.h"
 #import "DWReceiveContentView.h"
 #import "DWReceiveModelProtocol.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

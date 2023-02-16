@@ -423,7 +423,6 @@
 		2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */; };
 		2ACCD86323193C1E00A96B62 /* DWReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */; };
 		2ACCD865231959CD00A96B62 /* DWAmountPreviewView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2ACCD864231959CD00A96B62 /* DWAmountPreviewView.xib */; };
-		2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86723195A3600A96B62 /* DWAmountPreviewView.m */; };
 		2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */; };
 		2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8D0231D33EA00A96B62 /* DWAnimatedShapeLayer.m */; };
 		2ACCD8E2231E507900A96B62 /* DWPinInputStepView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8E1231E507900A96B62 /* DWPinInputStepView.m */; };
@@ -519,6 +518,7 @@
 		472D13DF299DF5C6006903F1 /* TaxReportGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */; };
 		472D13E1299E1F2F006903F1 /* CSVBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E0299E1F2F006903F1 /* CSVBuilder.swift */; };
 		472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E2299E23B7006903F1 /* BalanceNotifier.swift */; };
+		472D13E6299E3C82006903F1 /* AmountPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E5299E3C81006903F1 /* AmountPreviewView.swift */; };
 		4730586E295AB3BE004641DA /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		47305870295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
@@ -1576,8 +1576,6 @@
 		2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveContentView.m; sourceTree = "<group>"; };
 		2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWReceiveContentView.xib; sourceTree = "<group>"; };
 		2ACCD864231959CD00A96B62 /* DWAmountPreviewView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWAmountPreviewView.xib; sourceTree = "<group>"; };
-		2ACCD86623195A3600A96B62 /* DWAmountPreviewView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountPreviewView.h; sourceTree = "<group>"; };
-		2ACCD86723195A3600A96B62 /* DWAmountPreviewView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountPreviewView.m; sourceTree = "<group>"; };
 		2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWShareReceiveInfo.h"; sourceTree = "<group>"; };
 		2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+DWShareReceiveInfo.m"; sourceTree = "<group>"; };
 		2ACCD8CF231D33EA00A96B62 /* DWAnimatedShapeLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAnimatedShapeLayer.h; sourceTree = "<group>"; };
@@ -1740,6 +1738,7 @@
 		472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxReportGenerator.swift; sourceTree = "<group>"; };
 		472D13E0299E1F2F006903F1 /* CSVBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVBuilder.swift; sourceTree = "<group>"; };
 		472D13E2299E23B7006903F1 /* BalanceNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceNotifier.swift; sourceTree = "<group>"; };
+		472D13E5299E3C81006903F1 /* AmountPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountPreviewView.swift; sourceTree = "<group>"; };
 		4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDevice+Compatibility.swift"; sourceTree = "<group>"; };
 		4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarAppearanceCustomizable.swift; sourceTree = "<group>"; };
 		47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+AlertPresenting.swift"; sourceTree = "<group>"; };
@@ -2522,8 +2521,7 @@
 		2A0C69EC2316B7E2001B8C90 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2ACCD86623195A3600A96B62 /* DWAmountPreviewView.h */,
-				2ACCD86723195A3600A96B62 /* DWAmountPreviewView.m */,
+				472D13E5299E3C81006903F1 /* AmountPreviewView.swift */,
 				2ACCD864231959CD00A96B62 /* DWAmountPreviewView.xib */,
 				2A0C69ED2316B7F5001B8C90 /* DWConfirmPaymentContentView.h */,
 				2A0C69EE2316B7F5001B8C90 /* DWConfirmPaymentContentView.m */,
@@ -6656,7 +6654,6 @@
 				2A7AF378248270A4001D74F9 /* DWDPEstablishedContactNotificationObject.m in Sources */,
 				2A0C69C623142AA4001B8C90 /* DWModalPresentationController.m in Sources */,
 				47AE8C1128C5430300490F5E /* PointOfUseInfoViewController.swift in Sources */,
-				2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */,
 				47C661B428FDCF7800028A8D /* ActionButtonViewController.swift in Sources */,
 				4774DCE528F4668B008CF87D /* PortalServiceItemCell.swift in Sources */,
 				2A7AF35624824F97001D74F9 /* DWDPImageStatusCell.m in Sources */,
@@ -6855,6 +6852,7 @@
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
 				11EA863A29952E9800ABD7B4 /* OutlinedTextField.swift in Sources */,
+				472D13E6299E3C82006903F1 /* AmountPreviewView.swift in Sources */,
 				4759D514292FEFFC002F20DC /* ModalNavigationController.swift in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
 				47A50F3B2913BC0900C70123 /* TransferAmountModel.swift in Sources */,
