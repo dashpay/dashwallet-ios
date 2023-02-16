@@ -27,6 +27,13 @@ class CurrencyExchangerObjcWrapper: NSObject {
     static func startExchangeRateFetching() {
         wrapped.startExchangeRateFetching()
     }
+
+    @objc
+    static func localCurrencyStringForDashAmount(_ amount: UInt64) -> String {
+        wrapped.fiatAmountString(for: amount.dashAmount)
+    }
+
+    static let sharedInstance = CurrencyExchangerObjcWrapper()
 }
 
 // MARK: - CurrencyExchanger
@@ -154,11 +161,20 @@ extension CurrencyExchanger {
 // MARK: Helper methods
 
 extension CurrencyExchanger {
-    func fiatAmountString(for dashAmount: Decimal) -> String {
-        guard let amount = try? convertDash(amount: dashAmount, to: App.fiatCurrency) else {
-            return "Invalid amount"
+    func fiatAmountString(in currency: String, for dashAmount: Decimal) -> String {
+        do {
+            let amount = try convertDash(amount: dashAmount, to: currency)
+            return amount.formattedFiatAmount
+        } catch CurrencyExchanger.Error.ratesAreFetching {
+            return NSLocalizedString("Syncing...", comment: "Balance")
+        } catch CurrencyExchanger.Error.ratesNotAvailable {
+            return NSLocalizedString("Syncing...", comment: "Balance")
+        } catch {
+            return NSLocalizedString("Invalid amount", comment: "Balance")
         }
+    }
 
-        return amount.formattedFiatAmount
+    func fiatAmountString(for dashAmount: Decimal) -> String {
+        fiatAmountString(in: App.fiatCurrency, for: dashAmount)
     }
 }

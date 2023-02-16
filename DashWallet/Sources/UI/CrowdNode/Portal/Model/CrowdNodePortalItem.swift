@@ -104,7 +104,7 @@ extension CrowdNodePortalItem {
         switch self {
         case .deposit:
             let negligibleAmount = CrowdNode.minimumDeposit / 50
-            let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
+            let minimumDeposit = CrowdNode.minimumDeposit.formattedDashAmount
 
             if crowdNodeBalance < negligibleAmount {
                 return String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ to start earning", comment: "CrowdNode Portal"), minimumDeposit)

@@ -49,7 +49,7 @@ final class StakingInfoDialogController: UIViewController {
         view.backgroundColor = .dw_secondaryBackground()
 
         addressLabel.text = viewModel.accountAddress
-        let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
+        let minimumDeposit = CrowdNode.minimumDeposit.formattedDashAmount
         minimumDepositLabel.text = String.localizedStringWithFormat(NSLocalizedString("You only need %@ to join the pool.", comment: "CrowdNode"), minimumDeposit)
 
         let formatter = NumberFormatter()

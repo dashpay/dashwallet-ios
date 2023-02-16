@@ -74,7 +74,7 @@ final class GettingStartedViewController: BaseViewController {
 
     @IBAction
     func buyDashAction() {
-        let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
+        let minimumDash = CrowdNode.minimumRequiredDash.formattedDashAmount
         let alert = UIAlertController(title: NSLocalizedString("You have insufficient funds to proceed", comment: ""),
                                       message: String.localizedStringWithFormat(NSLocalizedString("You should have at least %@ to proceed with the CrowdNode verification.",
                                                                                                   comment: ""), minimumDash),
@@ -110,7 +110,7 @@ extension GettingStartedViewController {
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
 
-        let minimumDash = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumRequiredDash))!
+        let minimumDash = CrowdNode.minimumRequiredDash.formattedDashAmount
         minimumBalanceLable.text = String.localizedStringWithFormat(NSLocalizedString("You need at least %@ on your Dash Wallet", comment: "CrowdNode"), minimumDash)
 
         refreshCreateAccountButton()

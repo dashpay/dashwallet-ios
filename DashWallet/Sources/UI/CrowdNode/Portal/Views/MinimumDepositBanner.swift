@@ -42,7 +42,7 @@ final class MinimumDepositBanner: UIView {
         let message = UILabel()
         message.font = .dw_regularFont(ofSize: 12)
         message.textColor = .white
-        let minimumDeposit = DSPriceManager.sharedInstance().string(forDashAmount: Int64(CrowdNode.minimumDeposit))!
+        let minimumDeposit = CrowdNode.minimumDeposit.formattedDashAmount
         message.text = String.localizedStringWithFormat(NSLocalizedString("First deposit should be more than %@", comment: "CrowdNode"), minimumDeposit)
         messageStack.addArrangedSubview(message)
 

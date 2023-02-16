@@ -327,11 +327,10 @@ extension CrowdNodeTransferController {
 
     private func updateBalanceLabel() {
         let amount = mode == .deposit ? viewModel.walletBalance : viewModel.crowdNodeBalance
-        let priceManager = DSPriceManager.sharedInstance()
         let formatted = model.activeAmountType == .main
-            ? priceManager.string(forDashAmount: Int64(amount))
-            : priceManager.fiatCurrencyString(model.localCurrencyCode, forDashAmount: Int64(amount))
-        fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + (formatted ?? NSLocalizedString("Syncing", comment: "CrowdNode"))
+            ? amount.formattedDashAmount
+            : CurrencyExchanger.shared.fiatAmountString(in: model.localCurrencyCode, for: amount.dashAmount)
+        fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + formatted
     }
 }
 
