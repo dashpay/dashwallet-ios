@@ -24,7 +24,6 @@
 
 #import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
-#import "DWBalanceModel.h"
 #import "DWDashPayConstants.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDashPayModel.h"
@@ -536,7 +535,7 @@ static BOOL IsJailbroken(void) {
         [[UIDevice currentDevice] dw_playCoinSound];
     }
 
-    self.balanceModel = [[DWBalanceModel alloc] initWithValue:balanceValue];
+    self.balanceModel = [[DWBalanceModel alloc] initWith:balanceValue];
 
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
     if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
