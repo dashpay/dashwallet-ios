@@ -127,7 +127,6 @@ public final class CrowdNode {
     init() {
         masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
         crowdnodeAPY = masternodeAPY * 0.85
-        accountAddress = prefs.crowdNodeAccountAddress ?? "" // Restore from user default
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
@@ -412,12 +411,10 @@ extension CrowdNode {
 
         try checkWithdrawalLimits(amount)
 
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let maxPermil = ApiCode.withdrawAll.rawValue
-        let permil = UInt64(round(Double(amount * maxPermil) / Double(balance)))
-        let requestPermil = min(permil, maxPermil)
+        let requestPermil = calculateWithdrawalPermil(forAmount: amount)
         let requestValue = CrowdNode.apiOffset + UInt64(requestPermil)
         let requiredTopUp = requestValue + TX_FEE_PER_INPUT
+        let account = DWEnvironment.sharedInstance().currentAccount
         let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
 
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
@@ -445,6 +442,15 @@ extension CrowdNode {
                 refreshBalance(afterWithdrawal: true)
             }
         }
+    }
+    
+    func calculateWithdrawalPermil(forAmount: UInt64) -> UInt64 {
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let maxPermil = ApiCode.withdrawAll.rawValue
+        let permil = UInt64(round(Double(forAmount * maxPermil) / Double(balance)))
+        let requestPermil = min(permil, maxPermil)
+        
+        return requestPermil
     }
 
     func hasAnyDeposits() -> Bool {
