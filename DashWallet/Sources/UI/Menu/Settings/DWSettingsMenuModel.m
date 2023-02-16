@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)localCurrencyCode {
-    return [DSPriceManager sharedInstance].localCurrencyCode;
+    return CurrencyExchangerObjcWrapper.localCurrencyCode;
 }
 
 - (BOOL)notificationsEnabled {

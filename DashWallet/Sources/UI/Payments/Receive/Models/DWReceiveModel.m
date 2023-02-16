@@ -23,6 +23,7 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "UIImage+Utils.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -88,12 +89,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSString *)requestAmountReceivedInfoIfReceived {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
     DSPaymentRequest *request = self.paymentRequest;
     uint64_t total = 0;
-    const uint64_t fuzz = [priceManager amountForLocalCurrencyString:[priceManager localCurrencyStringForDashAmount:1]] * 2;
+    const uint64_t fuzz = [CurrencyExchangerObjcWrapper amountForLocalCurrency: [CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:1].decimalValue] * 2;
 
     if (![wallet addressIsUsed:request.paymentAddress]) {
         return nil;
@@ -117,8 +117,8 @@ NS_ASSUME_NONNULL_BEGIN
             // (`total` is not calculated properly for very small amounts like 0.000257)
 
             NSString *info = [NSString stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil),
-                                                        [priceManager stringForDashAmount:self.amount],
-                                                        [priceManager localCurrencyStringForDashAmount:self.amount]];
+                                                        [CurrencyExchangerObjcWrapper stringForDashAmount:self.amount],
+                                                        [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:self.amount]];
 
             return info;
         }
@@ -155,12 +155,11 @@ NS_ASSUME_NONNULL_BEGIN
         if (hasAmount) {
             paymentRequest.amount = amount;
 
-            DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-            NSNumber *number = [priceManager localCurrencyNumberForDashAmount:amount];
+            NSNumber *number = [CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:amount];
             if (number) {
                 paymentRequest.requestedFiatCurrencyAmount = number.floatValue;
             }
-            paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
+            paymentRequest.requestedFiatCurrencyCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
         }
 
         paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;

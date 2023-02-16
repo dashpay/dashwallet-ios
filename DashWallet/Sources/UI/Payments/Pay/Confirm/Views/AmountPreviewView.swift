@@ -63,9 +63,9 @@ final class AmountPreviewView: UIView {
     }
 
     private func mainAmountAttributedString(forAmount amount: UInt64) -> NSAttributedString {
-        NSAttributedString.dw_dashAttributedString(forAmount: amount,
-                                                   tintColor: UIColor.dw_darkTitle(),
-                                                   symbolSize: kDashSymbolMainSize)
+        NSAttributedString.dashAttributedString(for: amount,
+                                                tintColor: UIColor.dw_darkTitle(),
+                                                symbolSize: kDashSymbolMainSize)
     }
 
     private func supplementaryAmountString(forAmount amount: UInt64) -> String {

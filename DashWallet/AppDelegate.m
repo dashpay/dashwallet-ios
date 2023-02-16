@@ -115,10 +115,6 @@ NS_ASSUME_NONNULL_BEGIN
     
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
-        // start updating prices earlier than migration to update `secureTime`
-        // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
-        [[DSPriceManager sharedInstance] startExchangeRateFetching];
-        
         [self performDeferredStartWithLaunchOptions:launchOptions];
     }
     else {

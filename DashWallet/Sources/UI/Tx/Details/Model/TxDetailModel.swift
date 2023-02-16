@@ -69,7 +69,9 @@ class TxDetailModel: NSObject {
 
 extension TxDetailModel {
     func dashAmountString(with font: UIFont) -> NSAttributedString {
-        NSAttributedString.dw_dashAttributedString(forFormattedAmount: transaction.formattedDashAmountWithDirectionalSymbol, tintColor: transaction.dashAmountTintColor, font: font)
+        NSAttributedString.dashAttributedString(for: transaction.formattedDashAmountWithDirectionalSymbol,
+                                                tintColor: transaction.dashAmountTintColor,
+                                                font: font)
     }
 
     var explorerURL: URL? {
@@ -137,7 +139,7 @@ extension TxDetailModel {
 
         let firstAddress = addresses.first
         for address in addresses {
-            let detail = NSAttributedString.dw_dashAddressAttributedString(address, with: font, showingLogo: false)
+            let detail = NSAttributedString.dashAddressAttributedString(address, with: font, showingLogo: false)
             let hasTitle = address == firstAddress
 
             let model = DWTitleDetailCellModel(style: .truncatedSingleLine, title: hasTitle ? title : "",
@@ -156,7 +158,7 @@ extension TxDetailModel {
 
         let firstAddress = addresses.first
         for address in addresses {
-            let detail = NSAttributedString.dw_dashAddressAttributedString(address, with: font, showingLogo: false)
+            let detail = NSAttributedString.dashAddressAttributedString(address, with: font, showingLogo: false)
             let hasTitle = address == firstAddress
 
             let model = DWTitleDetailCellModel(style: .truncatedSingleLine, title: hasTitle ? title : "",
@@ -246,7 +248,7 @@ extension TxDetailModel {
         guard let addresses = transaction.specialInfoAddresses else { return [] }
 
         for address in addresses.keys {
-            let detail = NSAttributedString.dw_dashAddressAttributedString(address, with: font)
+            let detail = NSAttributedString.dashAddressAttributedString(address, with: font)
             let type = addresses[address]
             var title: String;
             switch type {
@@ -272,7 +274,7 @@ extension TxDetailModel {
 
         let title = NSLocalizedString("Network fee", comment: "")
         let feeValue = transaction.feeUsed
-        let detail = NSAttributedString.dw_dashAttributedString(forAmount: feeValue, tintColor: tintColor, font: font)
+        let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
     }

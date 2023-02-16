@@ -33,6 +33,7 @@
 #import "DWAppGroupConstants.h"
 #import "DWEnvironment.h"
 #import "UIImage+Utils.h"
+#import "dashwallet-Swift.h"
 
 static CGSize const QR_SIZE = {240.0, 240.0};
 static CGSize const HOLE_SIZE = {58.0, 58.0};
@@ -218,16 +219,15 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
 - (BRAppleWatchData *)applicationContextData {
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSArray *transactions = account.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
 
-    appleWatchData.balance = [priceManager stringForDashAmount:account.balance];
-    appleWatchData.balanceInLocalCurrency = [priceManager localCurrencyStringForDashAmount:account.balance];
+    appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:account.balance];
+    appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:account.balance];
 #if SNAPSHOT
-    appleWatchData.balance = [priceManager stringForDashAmount:42980000];
-    appleWatchData.balanceInLocalCurrency = [priceManager localCurrencyStringForDashAmount:42980000];
+    appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:42980000];
+    appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:42980000];
 #endif
     appleWatchData.receiveMoneyAddress = account.receiveAddress;
     appleWatchData.transactions = [self recentTransactionListFromTransactions:transactions];

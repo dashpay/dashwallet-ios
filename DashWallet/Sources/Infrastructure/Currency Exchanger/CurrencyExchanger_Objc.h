@@ -1,4 +1,4 @@
-//
+//  
 //  Created by tkhp
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,27 +15,15 @@
 //  limitations under the License.
 //
 
-import Foundation
+#import <Foundation/Foundation.h>
 
-@objc(DWBalanceModel)
-final class BalanceModel: NSObject {
-    @objc
-    let value: UInt64
+NS_ASSUME_NONNULL_BEGIN
 
-    @objc
-    init(with value: UInt64) {
-        self.value = value
+@interface CurrencyExchanger_Objc : NSObject
 
-        super.init()
-    }
++ (NSString *)stringForDashAmount:(int64_t)amount;
++ (NSString *)localCurrencyStringForDashAmount:(int64_t)amount;
 
-    @objc
-    func dashAmountStringWithFont(_ font: UIFont, tintColor: UIColor) -> NSAttributedString {
-        NSAttributedString.dashAttributedString(for: value, tintColor: tintColor, font: font)
-    }
+@end
 
-    @objc
-    func fiatAmountString() -> String {
-        CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
-    }
-}
+NS_ASSUME_NONNULL_END

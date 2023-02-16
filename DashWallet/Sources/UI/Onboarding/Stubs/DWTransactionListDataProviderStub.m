@@ -39,12 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
     dataItem.direction = transaction.direction;
     dataItem.dashAmount = transaction.dashAmount;
-    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
+    dataItem.fiatAmount = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:dataItem.dashAmount];
 
     return dataItem;
 }

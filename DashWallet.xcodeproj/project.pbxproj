@@ -129,7 +129,6 @@
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
 		2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */; };
 		2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
-		2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */; };
 		2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */; };
 		2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */; };
 		2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */; };
@@ -519,6 +518,8 @@
 		472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E2299E23B7006903F1 /* BalanceNotifier.swift */; };
 		472D13E6299E3C82006903F1 /* AmountPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E5299E3C81006903F1 /* AmountPreviewView.swift */; };
 		472D13E8299E4EE7006903F1 /* BalanceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E7299E4EE7006903F1 /* BalanceModel.swift */; };
+		472D13EA299E5396006903F1 /* NSAttributedString+Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */; };
+		472D13ED299E6579006903F1 /* CurrencyExchanger_Objc.m in Sources */ = {isa = PBXBuildFile; fileRef = 472D13EC299E6579006903F1 /* CurrencyExchanger_Objc.m */; };
 		4730586E295AB3BE004641DA /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		47305870295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
@@ -973,8 +974,6 @@
 		2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPopupPresentationController.m; sourceTree = "<group>"; };
 		2A1B7DA62323AF4300BA8C6A /* DWModalPopupTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupTransition.h; sourceTree = "<group>"; };
 		2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPopupTransition.m; sourceTree = "<group>"; };
-		2A1B7DB223244CD700BA8C6A /* NSAttributedString+DWBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+DWBuilder.h"; sourceTree = "<group>"; };
-		2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+DWBuilder.m"; sourceTree = "<group>"; };
 		2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupAppearanceStyle.h; sourceTree = "<group>"; };
 		2A1B7DBE232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "DWHomeViewController+DWBackupReminder.h"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.h"; sourceTree = SOURCE_ROOT; };
 		2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "DWHomeViewController+DWBackupReminder.m"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.m"; sourceTree = SOURCE_ROOT; };
@@ -1738,6 +1737,9 @@
 		472D13E2299E23B7006903F1 /* BalanceNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceNotifier.swift; sourceTree = "<group>"; };
 		472D13E5299E3C81006903F1 /* AmountPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountPreviewView.swift; sourceTree = "<group>"; };
 		472D13E7299E4EE7006903F1 /* BalanceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceModel.swift; sourceTree = "<group>"; };
+		472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+Builder.swift"; sourceTree = "<group>"; };
+		472D13EB299E6579006903F1 /* CurrencyExchanger_Objc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CurrencyExchanger_Objc.h; sourceTree = "<group>"; };
+		472D13EC299E6579006903F1 /* CurrencyExchanger_Objc.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CurrencyExchanger_Objc.m; sourceTree = "<group>"; };
 		4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDevice+Compatibility.swift"; sourceTree = "<group>"; };
 		4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarAppearanceCustomizable.swift; sourceTree = "<group>"; };
 		47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+AlertPresenting.swift"; sourceTree = "<group>"; };
@@ -2779,8 +2781,6 @@
 				2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */,
 				2A0C69AA23125074001B8C90 /* UIView+DWHUD.h */,
 				2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */,
-				2A1B7DB223244CD700BA8C6A /* NSAttributedString+DWBuilder.h */,
-				2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */,
 				2ACCD8CF231D33EA00A96B62 /* DWAnimatedShapeLayer.h */,
 				2ACCD8D0231D33EA00A96B62 /* DWAnimatedShapeLayer.m */,
 				2A9FFDF02230FF1A00956D5F /* SFSafariViewController+DashWallet.h */,
@@ -4326,6 +4326,7 @@
 				47F005FE297164600029EB10 /* UITableView+DashWallet.swift */,
 				47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */,
 				474C7210298A1A9500475CA6 /* UIView+Reuse.swift */,
+				472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -5456,6 +5457,8 @@
 			children = (
 				47A2E3A72972B14B0032A63B /* Data Provider */,
 				47F006012971B1FE0029EB10 /* CurrencyExchanger.swift */,
+				472D13EB299E6579006903F1 /* CurrencyExchanger_Objc.h */,
+				472D13EC299E6579006903F1 /* CurrencyExchanger_Objc.m */,
 			);
 			path = "Currency Exchanger";
 			sourceTree = "<group>";
@@ -6451,6 +6454,7 @@
 				2A7AF3182480E35A001D74F9 /* DWContactsFetchedDataSource.m in Sources */,
 				47AE8BFE28C1306000490F5E /* AtmListViewController.swift in Sources */,
 				47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */,
+				472D13EA299E5396006903F1 /* NSAttributedString+Builder.swift in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
 				47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */,
@@ -6680,6 +6684,7 @@
 				47C6E6E02919578C003FEDF2 /* TerritoryListModel.swift in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
+				472D13ED299E6579006903F1 /* CurrencyExchanger_Objc.m in Sources */,
 				47AE8C0E28C540C100490F5E /* GiftCardInfoViewController.swift in Sources */,
 				471DD1B8290A92CD00E030C8 /* Tools.swift in Sources */,
 				478A2C7128DC554200AD1420 /* PortalModel.swift in Sources */,
@@ -6908,7 +6913,6 @@
 				119E8D122909513F00D406C1 /* CrowdNodeError.swift in Sources */,
 				111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
-				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
 				2A885FC82449B66500B9F679 /* DWSearchStateViewController.m in Sources */,
 				2ACCA3A824BE0C7D00DB32DE /* DWDPTxListCell.m in Sources */,
 				47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */,

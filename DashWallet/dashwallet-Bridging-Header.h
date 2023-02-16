@@ -72,7 +72,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIView+DWAnimations.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
-#import "NSAttributedString+DWBuilder.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
