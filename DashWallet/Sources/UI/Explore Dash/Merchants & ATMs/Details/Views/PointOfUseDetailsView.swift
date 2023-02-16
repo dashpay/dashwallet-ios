@@ -116,6 +116,12 @@ class PointOfUseDetailsView: UIView {
         configureActionBlock()
         configureBottomButton()
     }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        containerView.setNeedsLayout()
+    }
 }
 
 extension PointOfUseDetailsView {
@@ -281,12 +287,24 @@ class VerticalButton: DWTintedButton {
         super.init(frame: frame)
 
         imageView?.contentMode = .scaleAspectFit;
-        layer.cornerRadius = 9
         titleLabel?.font = .dw_mediumFont(ofSize: 11)
+
+        layer.cornerRadius = 9
+        centerVertically(padding: 3)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func resetAppearance() {
+        super.resetAppearance()
+
+        imageView?.contentMode = .scaleAspectFit;
+        titleLabel?.font = .dw_mediumFont(ofSize: 11)
+
+        layer.cornerRadius = 9
+        centerVertically(padding: 3)
     }
 
     override func awakeFromNib() {
