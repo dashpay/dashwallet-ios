@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by tkhp
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "CurrencyExchanger_Objc.h"
+#import "dashwallet-Swift.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation CurrencyExchanger_Objc
 
-@interface DWAmountPreviewView : UIView
++ (NSString *)stringForDashAmount:(int64_t)amount {
+    return [CurrencyExchangerObjcWrapper stringForDashAmount:amount];
+}
 
-- (void)setAmount:(uint64_t)amount;
++ (NSString *)localCurrencyStringForDashAmount:(int64_t)amount {
+    return [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:amount];
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

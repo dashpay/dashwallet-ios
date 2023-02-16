@@ -20,7 +20,7 @@
 #import "DWDateFormatter.h"
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItem.h"
-#import "NSAttributedString+DWBuilder.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData {
     const uint64_t dashAmount = transactionData.dashAmount;
 
-    NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
+    NSNumberFormatter *numberFormatter = DWApp.dashFormatter;
 
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
         decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];

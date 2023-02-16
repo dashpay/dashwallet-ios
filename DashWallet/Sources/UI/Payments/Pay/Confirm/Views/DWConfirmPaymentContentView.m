@@ -17,10 +17,10 @@
 
 #import "DWConfirmPaymentContentView.h"
 
-#import "DWAmountPreviewView.h"
 #import "DWTitleDetailCellView.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

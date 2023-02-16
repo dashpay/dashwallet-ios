@@ -63,8 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSAccount *account = [transaction.accounts containsObject:currentAccount] ? currentAccount : nil;
@@ -136,7 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
         // Don't show input addresses for coinbase
         dataItem.inputSendAddresses = [NSArray array];
     }
-    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
+    dataItem.fiatAmount = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:dataItem.dashAmount];
 
     const uint32_t blockHeight = [self blockHeight];
     const BOOL instantSendReceived = transaction.instantSendReceived;

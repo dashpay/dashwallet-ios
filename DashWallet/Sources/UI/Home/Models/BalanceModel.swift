@@ -17,29 +17,25 @@
 
 import Foundation
 
-// MARK: - AppObjcWrapper
-
-@objc(DWApp)
-class AppObjcWrapper: NSObject {
+@objc(DWBalanceModel)
+final class BalanceModel: NSObject {
     @objc
-    static var dashFormatter: NumberFormatter {
-        NumberFormatter.dashFormatter
+    let value: UInt64
+
+    @objc
+    init(with value: UInt64) {
+        self.value = value
+
+        super.init()
     }
 
-    @objc static var localCurrencyCode: String {
-        get {
-            App.fiatCurrency
-        }
-        set {
-            App.shared.fiatCurrency = newValue
-        }
+    @objc
+    func dashAmountStringWithFont(_ font: UIFont, tintColor: UIColor) -> NSAttributedString {
+        NSAttributedString.dashAttributedString(for: value, tintColor: tintColor, font: font)
     }
-}
 
-// MARK: - App
-
-class App {
-    static func initialize() { }
-
-    static let shared = App()
+    @objc
+    func fiatAmountString() -> String {
+        CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
+    }
 }

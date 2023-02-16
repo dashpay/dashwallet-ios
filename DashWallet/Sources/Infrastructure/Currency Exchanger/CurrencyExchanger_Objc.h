@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by tkhp
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,19 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class UIFont;
-@class UIColor;
+@interface CurrencyExchanger_Objc : NSObject
 
-@interface DWBalanceModel : NSObject
-
-@property (readonly, nonatomic, assign) uint64_t value;
-
-- (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
-- (NSString *)fiatAmountString;
-
-- (instancetype)initWithValue:(uint64_t)value;
-
-- (instancetype)init NS_UNAVAILABLE;
++ (NSString *)stringForDashAmount:(int64_t)amount;
++ (NSString *)localCurrencyStringForDashAmount:(int64_t)amount;
 
 @end
 

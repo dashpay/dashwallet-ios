@@ -791,6 +791,9 @@
 /* Invalid transaction */
 "Invalid" = "Invalid";
 
+/* Balance */
+"Invalid amount" = "Invalid amount";
+
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
 
@@ -1160,6 +1163,9 @@
 
 /* No comment provided by engineer. */
 "Please wait" = "Please wait";
+
+/* No comment provided by engineer. */
+"Please wait until the wallet is fully synced before exporting your transaction history" = "Please wait until the wallet is fully synced before exporting your transaction history";
 
 /* No comment provided by engineer. */
 "Please write it down" = "Please write it down";

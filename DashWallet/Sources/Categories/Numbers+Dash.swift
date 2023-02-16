@@ -18,6 +18,7 @@
 import Foundation
 
 extension UInt64 {
+    // TODO: Find a better name, or just replace it with function toDecimal()
     var dashAmount: Decimal {
         Decimal(self)/Decimal(DUFFS)
     }

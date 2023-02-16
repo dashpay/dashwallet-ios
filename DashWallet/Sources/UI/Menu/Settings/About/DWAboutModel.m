@@ -137,15 +137,14 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
     DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
     DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
 
     NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
-                                                      [priceManager localCurrencyStringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
-                                                      [priceManager stringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue]];
+                                                      [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
+                                                      [CurrencyExchangerObjcWrapper stringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
     NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
                                                          [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
     NSString *blockString = [NSString stringWithFormat:NSLocalizedString(@"Block #%d of %d", nil),
@@ -170,11 +169,6 @@ NS_ASSUME_NONNULL_BEGIN
     return [statusLines componentsJoinedByString:@"\n"];
 }
 
-- (nullable NSString *)currentPriceSourcing {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    return priceManager.lastPriceSourceInfo;
-}
-
 - (NSArray<NSURL *> *)logFiles {
     return [[DSLogger sharedInstance] logFiles];
 }
@@ -195,9 +189,6 @@ NS_ASSUME_NONNULL_BEGIN
                 addr.u32[2] = CFSwapInt32HostToBig(0xffff);
                 addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
             }
-            //                else if (p->ai_family == AF_INET6) {
-            //                    addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-            //                }
             else {
                 continue;
             }
