@@ -16,11 +16,10 @@
 //
 
 #import "DWSettingsMenuModel.h"
-#import "DWCSVExporter.h"
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
-
+#import "dashwallet-Swift.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSettingsMenuModel
@@ -134,8 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler {
-
-    return [DWCSVExporter generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
+    return [TaxReportGenerator generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
 }
 @end
 

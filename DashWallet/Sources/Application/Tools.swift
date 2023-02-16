@@ -41,6 +41,26 @@ private var _dashDecimalFormatter: NumberFormatter = {
     return formatter
 }()
 
+private var _csvDashFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.isLenient = true
+    formatter.numberStyle = .currency
+    formatter.generatesDecimalNumbers = true
+    if let range = formatter.positiveFormat.range(of: "#") {
+        formatter.negativeFormat = formatter.positiveFormat.replacingCharacters(in: range, with: "-#")
+    }
+
+    formatter.maximumFractionDigits = 8
+    formatter.minimumFractionDigits = 0
+
+    formatter.currencyCode = "";
+    formatter.currencySymbol = "";
+    formatter.decimalSeparator = "."
+    formatter.currencyDecimalSeparator = "."
+
+    return formatter
+}()
+
 extension NumberFormatter {
 
     static var decimalFormatter: NumberFormatter {
@@ -82,6 +102,10 @@ extension NumberFormatter {
 
     static var dashFormatter: NumberFormatter {
         _dashFormatter
+    }
+
+    static var csvDashFormatter: NumberFormatter {
+        _csvDashFormatter
     }
 
     /// Returns `NumberFormatter` that formats a number into dash format, but without currency symbol
