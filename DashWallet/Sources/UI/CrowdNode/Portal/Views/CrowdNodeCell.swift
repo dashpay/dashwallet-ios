@@ -37,8 +37,8 @@ final class CrowdNodeCell: UITableViewCell {
                 _ crowdNodeBalance: UInt64,
                 _ walletBalance: UInt64,
                 _ onlineAccountState: CrowdNode.OnlineAccountState) {
-        title.text = item.title
-        subtitle.text = item.subtitle
+        title.text = item.title(onlineState: onlineAccountState)
+        subtitle.text = item.subtitle(onlineState: onlineAccountState)
         icon.image = UIImage(named: item.icon)
 
         if item.isDisabled(crowdNodeBalance, walletBalance, onlineAccountState.isLinkingInProgress) {
@@ -64,8 +64,7 @@ final class CrowdNodeCell: UITableViewCell {
         }
 
         additionalInfo.isHidden = !showInfo
-        showInfoConstraint.isActive = showInfo
-        collapseInfoConstraint.isActive = !showInfo
+        showInfoConstraint.constant = showInfo ? 35 : 0
         infoBottomAnchorConstraint.isActive = showInfo
 
         if showInfo {

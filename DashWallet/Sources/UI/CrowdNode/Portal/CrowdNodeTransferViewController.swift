@@ -93,9 +93,8 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
             return
         }
 
-        showActivityIndicator()
-
         if mode == .deposit {
+            showActivityIndicator()
             handleDeposit(amount: amount)
         } else {
             handleWithdraw(amount: amount)
@@ -129,19 +128,22 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     private func handleWithdraw(amount: UInt64) {
-        Task {
-            do {
-                if try await viewModel.withdraw(amount: amount) {
-                    showSuccessfulStatus()
-                }
-            } catch CrowdNode.Error.withdrawLimit(_, let period) {
-                showWithdrawalLimitsError(period: period)
-            } catch {
-                showErrorStatus(err: error)
-            }
-
-            hideActivityIndicator()
-        }
+        let vc = WithdrawalConfirmationController.controller()
+        present(vc, animated: true, completion: nil)
+        
+//        Task {
+//            do {
+//                if try await viewModel.withdraw(amount: amount) {
+//                    showSuccessfulStatus()
+//                }
+//            } catch CrowdNode.Error.withdrawLimit(_, let period) {
+//                showWithdrawalLimitsError(period: period)
+//            } catch {
+//                showErrorStatus(err: error)
+//            }
+//
+//            hideActivityIndicator()
+//        }
     }
 
     deinit {

@@ -34,6 +34,7 @@
 		110C679A29227948006B580C /* UINavigationController+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C679929227948006B580C /* UINavigationController+CrowdNode.swift */; };
 		110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */; };
 		110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */; };
+		111B8C00299BD973004A4129 /* WithdrawalConfirmationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111B8BFF299BD973004A4129 /* WithdrawalConfirmationController.swift */; };
 		111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */; };
 		111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */; };
 		111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */; };
@@ -840,6 +841,7 @@
 		110C679929227948006B580C /* UINavigationController+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+CrowdNode.swift"; sourceTree = "<group>"; };
 		110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+CrowdNode.swift"; sourceTree = "<group>"; };
 		110D1783298E68A8005BEB30 /* OnlineAccountInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountInfoController.swift; sourceTree = "<group>"; };
+		111B8BFF299BD973004A4129 /* WithdrawalConfirmationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalConfirmationController.swift; sourceTree = "<group>"; };
 		111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimitsController.swift; sourceTree = "<group>"; };
 		111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawalLimit.swift; sourceTree = "<group>"; };
 		111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxWithinTimePeriod.swift; sourceTree = "<group>"; };
@@ -2259,6 +2261,7 @@
 				1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */,
 				111C3C4B296C51B500788E18 /* WithdrawalLimitsController.swift */,
 				11ED906A29681773003784F9 /* StakingInfoDialogController.swift */,
+				111B8BFF299BD973004A4129 /* WithdrawalConfirmationController.swift */,
 			);
 			path = Portal;
 			sourceTree = "<group>";
@@ -6654,6 +6657,7 @@
 				47C661B428FDCF7800028A8D /* ActionButtonViewController.swift in Sources */,
 				4774DCE528F4668B008CF87D /* PortalServiceItemCell.swift in Sources */,
 				2A7AF35624824F97001D74F9 /* DWDPImageStatusCell.m in Sources */,
+				111B8C00299BD973004A4129 /* WithdrawalConfirmationController.swift in Sources */,
 				2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */,
 				4751CAC7296FAEBB00F63AC4 /* AccountCell.swift in Sources */,
 				2A307CB622E7006600A18347 /* DWBalanceView.m in Sources */,
