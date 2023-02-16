@@ -17,6 +17,7 @@
 
 #import "DWPaymentProcessor.h"
 
+#import "CurrencyExchanger_Objc.h"
 #import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -24,7 +25,6 @@
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
-#import "CurrencyExchanger_Objc.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

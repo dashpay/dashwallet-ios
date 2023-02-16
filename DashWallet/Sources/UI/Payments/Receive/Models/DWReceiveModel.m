@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
     DSPaymentRequest *request = self.paymentRequest;
     uint64_t total = 0;
-    const uint64_t fuzz = [CurrencyExchangerObjcWrapper amountForLocalCurrency: [CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:1].decimalValue] * 2;
+    const uint64_t fuzz = [CurrencyExchangerObjcWrapper amountForLocalCurrency:[CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:1].decimalValue] * 2;
 
     if (![wallet addressIsUsed:request.paymentAddress]) {
         return nil;

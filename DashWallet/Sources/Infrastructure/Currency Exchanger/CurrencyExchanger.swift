@@ -33,6 +33,11 @@ class CurrencyExchangerObjcWrapper: NSObject {
     }
 
     @objc
+    static var prices: [DSCurrencyPriceObject] {
+        wrapped.currencies.compactMap { .init(code: $0.code, name: $0.name, price: $0.price as NSNumber) }
+    }
+
+    @objc
     static var localFormat: NumberFormatter {
         NumberFormatter.fiatFormatter
     }
