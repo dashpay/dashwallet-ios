@@ -30,7 +30,6 @@ final class CrowdNodeCell: UITableViewCell {
     @IBOutlet var verifyButton : UIButton!
 
     @IBOutlet var showInfoConstraint: NSLayoutConstraint!
-    @IBOutlet var collapseInfoConstraint: NSLayoutConstraint!
     @IBOutlet var infoBottomAnchorConstraint: NSLayoutConstraint!
 
     func update(with item: CrowdNodePortalItem,

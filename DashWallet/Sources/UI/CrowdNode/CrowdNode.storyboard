@@ -916,7 +916,6 @@
                                             <outlet property="additionalInfo" destination="EAT-EC-5JS" id="NNL-n5-Uix"/>
                                             <outlet property="additionalInfoIcon" destination="kZc-FW-B6T" id="QlP-aP-Mgv"/>
                                             <outlet property="additionalInfoLabel" destination="Tre-ab-1GV" id="Pkz-Cz-BD7"/>
-                                            <outlet property="contentView" destination="avt-SW-tWA" id="Une-Z4-tde"/>
                                             <outlet property="icon" destination="FzY-IJ-27b" id="CW9-Pl-8ud"/>
                                             <outlet property="iconCircle" destination="ibq-b6-Z4B" id="sb1-YY-wiG"/>
                                             <outlet property="infoBottomAnchorConstraint" destination="7zM-hE-34w" id="zzc-cB-hcj"/>
