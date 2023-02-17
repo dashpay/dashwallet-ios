@@ -162,12 +162,13 @@ class BaseAmountModel {
     func setupCurrencyCode(_ code: String) {
         guard let price = try? CurrencyExchanger.shared.rate(for: code) else { return }
 
-        localFormatter.currencyCode = code
+        localFormatter = NumberFormatter.fiatFormatter(currencyCode: code)
         localCurrencyCode = code
 
-        currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : .app
+        let newInputItem = AmountInputItem.custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode)
+        currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : newInputItem
         inputItems = [
-            .custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
+            newInputItem,
             .dash,
         ]
 
