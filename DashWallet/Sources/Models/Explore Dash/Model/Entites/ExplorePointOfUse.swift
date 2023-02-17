@@ -188,7 +188,7 @@ extension ExplorePointOfUse: RowDecodable {
         let latitude = row[ExplorePointOfUse.latitude]
         let longitude = row[ExplorePointOfUse.longitude]
         var website = row[ExplorePointOfUse.website]
-        if !website.isEmpty, !website.hasPrefix("http") {
+        if !website.hasPrefix("http") {
             website = "https://" + website
         }
         let phone: String? = row[ExplorePointOfUse.phone]?.digits
