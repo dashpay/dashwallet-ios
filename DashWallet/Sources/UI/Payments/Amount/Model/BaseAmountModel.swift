@@ -33,7 +33,13 @@ struct AmountInputItem: Equatable {
     var isMain: Bool { currencyCode == kDashCurrency }
 
     static let dash = AmountInputItem(currencyName: kDashCurrency, currencyCode: kDashCurrency)
-    static var app: AmountInputItem { .init(currencyName: App.fiatCurrency, currencyCode: App.fiatCurrency) }
+    static var app: AmountInputItem {
+        .init(currencyName: App.fiatCurrency, currencyCode: App.fiatCurrency)
+    }
+
+    static func custom(currencyName: String, currencyCode: String) -> AmountInputItem {
+        .init(currencyName: currencyName, currencyCode: currencyCode)
+    }
 }
 
 // MARK: - BaseAmountModel
@@ -115,7 +121,7 @@ class BaseAmountModel {
 
         currentInputItem = .dash
         inputItems = [
-            .app,
+            .custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
             .dash,
         ]
 
@@ -161,7 +167,7 @@ class BaseAmountModel {
 
         currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : .app
         inputItems = [
-            .app,
+            .custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
             .dash,
         ]
 
