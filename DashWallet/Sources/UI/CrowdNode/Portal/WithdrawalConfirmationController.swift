@@ -140,6 +140,21 @@ extension WithdrawalConfirmationController {
         moreInfoButton.isHidden = !didAdjust
         adjustedTopLabel.isHidden = !didAdjust
         adjustedBottomLabel.isHidden = !didAdjust
+        
+        if didAdjust {
+            let difference = UInt64(abs(Int64(requestedAmount) - Int64(adjustedAmount)))
+            var adjustedText = difference.formattedDashAmount
+            
+            if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: difference.dashAmount, to: currencyCode) {
+                let fiat = NumberFormatter.fiatFormatter(currencyCode: currencyCode).string(from: fiatAmount as NSNumber)!
+                
+                if !fiat.isEmpty {
+                    adjustedText += " ~ \(fiat)"
+                }
+            }
+            
+            adjustedBottomLabel.text = adjustedText
+        }
     }
     
     private func configureObservers() {
@@ -148,6 +163,7 @@ extension WithdrawalConfirmationController {
             .removeDuplicates()
             .sink(receiveValue: { [weak self] _ in
                 self?.configureHierarchy()
+                
                 if #available(iOS 16.0, *) {
                     self?.adjustCollapsedSheet()
                 }
