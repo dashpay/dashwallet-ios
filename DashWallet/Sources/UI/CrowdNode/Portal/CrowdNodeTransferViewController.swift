@@ -94,7 +94,6 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
 
         if mode == .deposit {
-            showActivityIndicator()
             handleDeposit(amount: amount)
         } else {
             handleWithdraw(amount: amount)
@@ -110,6 +109,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     private func handleDeposit(amount: UInt64) {
+        showActivityIndicator()
         checkLeftoverBalance(isCrowdNodeTransfer: true) { [weak self] canContinue in
             guard canContinue, let wSelf = self else { self?.hideActivityIndicator(); return }
 
@@ -128,22 +128,27 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     private func handleWithdraw(amount: UInt64) {
-        let vc = WithdrawalConfirmationController.controller()
+        let vc = WithdrawalConfirmationController.controller(amount: amount, currency: model.localCurrencyCode)
+        vc.confirmedHandler = {  [weak self] in
+            guard let wSelf = self else { return }
+            
+            Task {
+                wSelf.showActivityIndicator()
+                
+                do {
+                    if try await wSelf.viewModel.withdraw(amount: amount) {
+                        wSelf.showSuccessfulStatus()
+                    }
+                } catch CrowdNode.Error.withdrawLimit(_, let period) {
+                    wSelf.showWithdrawalLimitsError(period: period)
+                } catch {
+                    wSelf.showErrorStatus(err: error)
+                }
+
+                wSelf.hideActivityIndicator()
+            }
+        }
         present(vc, animated: true, completion: nil)
-        
-//        Task {
-//            do {
-//                if try await viewModel.withdraw(amount: amount) {
-//                    showSuccessfulStatus()
-//                }
-//            } catch CrowdNode.Error.withdrawLimit(_, let period) {
-//                showWithdrawalLimitsError(period: period)
-//            } catch {
-//                showErrorStatus(err: error)
-//            }
-//
-//            hideActivityIndicator()
-//        }
     }
 
     deinit {

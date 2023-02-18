@@ -15,33 +15,66 @@
 //  limitations under the License.
 //
 
+import Combine
+
 final class WithdrawalConfirmationController: UIViewController {
+    private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
+    
     @IBOutlet var balanceView: BalanceView!
     @IBOutlet var moreInfoView: UIView!
     @IBOutlet var moreInfoButton: UIButton!
+    @IBOutlet var adjustedTopLabel: UILabel!
+    @IBOutlet var adjustedBottomLabel: UILabel!
     @IBOutlet var showMoreHeightConstraint: NSLayoutConstraint!
+    
+    private var requestedAmount: UInt64!
+    private var currencyCode: String!
+    private var adjustedAmount: UInt64!
+    
+    var confirmedHandler: (() -> ())?
 
-    static func controller() -> WithdrawalConfirmationController {
+    static func controller(amount: UInt64, currency: String) -> WithdrawalConfirmationController {
         let vc = vc(WithdrawalConfirmationController.self, from: sb("CrowdNode"))
         vc.modalPresentationStyle = .pageSheet
+        vc.requestedAmount = amount
+        vc.currencyCode = currency
 
         if #available(iOS 16.0, *) {
-            if let sheet = vc.sheetPresentationController {
-                let fitId = UISheetPresentationController.Detent.Identifier("fit")
-                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { context in
-                    return 310
-                }
-                sheet.detents = [fitDetent]
-            }
+            setSheetHeight(vc)
         }
 
         return vc
+    }
+    
+    @available(iOS 16.0, *)
+    static func setSheetHeight(_ vc: WithdrawalConfirmationController) {
+        if let sheet = vc.sheetPresentationController {
+            vc.adjustedAmount = CrowdNodeModel.shared.adjustedWithdrawalAmount(requestedAmount: vc.requestedAmount)
+            let collapsedDetent: UISheetPresentationController.Detent
+            
+            if vc.adjustedAmount == vc.requestedAmount {
+                // If the adjusted amount the same as requested,
+                // we hide the additional info and only show confirm/cancel buttons
+                let smallId = UISheetPresentationController.Detent.Identifier("small")
+                collapsedDetent = UISheetPresentationController.Detent.custom(identifier: smallId) { context in
+                    return 230
+                }
+            } else {
+                let fitId = UISheetPresentationController.Detent.Identifier("fit")
+                collapsedDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { context in
+                    return 310
+                }
+            }
+            
+            sheet.detents = [collapsedDetent]
+        }
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         configureHierarchy()
+        configureObservers()
     }
     
     @IBAction
@@ -51,15 +84,22 @@ final class WithdrawalConfirmationController: UIViewController {
     
     @IBAction
     func onContinue() {
-        print("CrowdNode: onContinue")
+        confirmedHandler?()
+        dismiss(animated: true)
     }
     
     @IBAction
     func onShowMore() {
+        expandMoreInfoView()
+    }
+}
+
+extension WithdrawalConfirmationController {
+    private func expandMoreInfoView() {
         moreInfoView.alpha = 0
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             if #available(iOS 16.0, *) {
-                self.animateSheet()
+                self.expandSheet()
             }
             
             self.moreInfoView.alpha = 1
@@ -70,7 +110,16 @@ final class WithdrawalConfirmationController: UIViewController {
     }
     
     @available(iOS 16.0, *)
-    private func animateSheet() {
+    private func adjustCollapsedSheet() {
+        if let sheet = sheetPresentationController {
+            sheet.animateChanges {
+                WithdrawalConfirmationController.setSheetHeight(self)
+            }
+        }
+    }
+    
+    @available(iOS 16.0, *)
+    private func expandSheet() {
         if let sheet = sheetPresentationController {
             let expandedId = UISheetPresentationController.Detent.Identifier("expanded")
             let expandedDetent = UISheetPresentationController.Detent.custom(identifier: expandedId) { context in
@@ -84,7 +133,26 @@ final class WithdrawalConfirmationController: UIViewController {
     }
     
     private func configureHierarchy() {
+        adjustedAmount = viewModel.adjustedWithdrawalAmount(requestedAmount: requestedAmount)
         balanceView.dataSource = self
+        
+        let didAdjust = adjustedAmount != requestedAmount
+        moreInfoButton.isHidden = !didAdjust
+        adjustedTopLabel.isHidden = !didAdjust
+        adjustedBottomLabel.isHidden = !didAdjust
+    }
+    
+    private func configureObservers() {
+        viewModel.$crowdNodeBalance
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                self?.configureHierarchy()
+                if #available(iOS 16.0, *) {
+                    self?.adjustCollapsedSheet()
+                }
+            })
+            .store(in: &cancellableBag)
     }
 }
 
@@ -92,14 +160,14 @@ final class WithdrawalConfirmationController: UIViewController {
 
 extension WithdrawalConfirmationController: BalanceViewDataSource {
     var mainAmountString: String {
-        viewModel.crowdNodeBalance.formattedDashAmount
+        adjustedAmount.formattedDashAmount
     }
 
     var supplementaryAmountString: String {
         let fiat: String
-
-        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: viewModel.crowdNodeBalance.dashAmount, to: App.fiatCurrency) {
-            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: adjustedAmount.dashAmount, to: currencyCode) {
+            fiat = NumberFormatter.fiatFormatter(currencyCode: currencyCode).string(from: fiatAmount as NSNumber)!
         } else {
             fiat = NSLocalizedString("Syncing…", comment: "Balance")
         }

@@ -159,6 +159,5 @@ class CrowdNodeDefaults {
         confirmationDialogShown = false
         onlineInfoShown = false
         signedEmailMessageId = -1
-        
     }
 }

@@ -2274,7 +2274,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zWW-bR-xMz">
-                                <rect key="frame" x="20" y="230" width="350" height="28.666666666666686"/>
+                                <rect key="frame" x="20" y="230" width="350" height="29.666666666666686"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain">
                                     <attributedString key="attributedTitle">
@@ -2409,6 +2409,8 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="adjustedBottomLabel" destination="3wb-Aq-wtT" id="J6k-Xj-QmH"/>
+                        <outlet property="adjustedTopLabel" destination="R4T-Iq-SXC" id="bPb-pt-pKH"/>
                         <outlet property="balanceView" destination="CwU-nM-aq3" id="b3L-Jc-1D8"/>
                         <outlet property="moreInfoButton" destination="zWW-bR-xMz" id="yVi-WR-xgl"/>
                         <outlet property="moreInfoView" destination="SH3-uT-8wK" id="abI-Vh-shK"/>
