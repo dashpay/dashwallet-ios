@@ -166,7 +166,7 @@ class BaseAmountModel {
         localCurrencyCode = code
 
         let newInputItem = AmountInputItem.custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode)
-        currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : newInputItem
+        currentInputItem = currentInputItem.isMain ? .dash : newInputItem
         inputItems = [
             newInputItem,
             .dash,
