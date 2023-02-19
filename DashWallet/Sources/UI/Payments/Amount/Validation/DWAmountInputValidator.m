@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
     nf.numberStyle = NSNumberFormatterNoStyle;
     nf.roundingMode = NSNumberFormatterRoundDown;
     nf.minimumIntegerDigits = 1;
-    nf.maximumFractionDigits = 0;
+    nf.minimumFractionDigits = 0;
     nf.maximumFractionDigits = numberFormatter.maximumFractionDigits;
 
     NSNumber *number = [nf numberFromString:validNumberString];
