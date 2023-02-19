@@ -93,7 +93,7 @@ struct AmountObject {
             mainFormatted = str
         } else {
             plainAmount = 0
-            mainFormatted = "Error"
+            mainFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
         }
     }
 

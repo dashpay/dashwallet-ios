@@ -304,7 +304,6 @@ extension BaseAmountModel {
     }
 
     func amountInputControlDidSwapInputs() {
-        assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
         assert(inputItems.count == 2, "Swap only if we have two input types")
 
         let inputItem = inputItems[0] == currentInputItem ? inputItems[1] : inputItems[0]
