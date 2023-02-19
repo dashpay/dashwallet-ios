@@ -311,31 +311,23 @@ extension BaseAmountModel {
     }
 
     func pasteFromClipboard() {
-        guard var string = UIPasteboard.general.string else { return }
-        string = string.localizedAmount()
+        guard let string = UIPasteboard.general.string else { return }
 
-        guard let decimal = Decimal(string: string, locale: .current) else { return }
-        let decimalNumber = NSDecimalNumber(decimal: decimal)
+        let originalFormatter = currentInputItem.isMain
+            ? NumberFormatter.dashFormatter
+            : localFormatter
+        let formatter = originalFormatter.copy() as! NumberFormatter
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
 
-        let formattedString: String?
+        guard let number = formatter.number(from: string) else { return }
 
-        var formatter: NumberFormatter
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
 
-        if activeAmountType == .main {
-            formatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
-            formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = NumberFormatter.dashFormatter.minimumFractionDigits
-            formatter.maximumFractionDigits = NumberFormatter.dashFormatter.maximumFractionDigits
-            formattedString = formatter.string(from: decimalNumber)
-        } else {
-            formatter = localFormatter.copy() as! NumberFormatter
-            formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = localFormatter.minimumFractionDigits
-            formatter.maximumFractionDigits = localFormatter.maximumFractionDigits
-            formattedString = formatter.string(from: decimalNumber)
-        }
-
-        guard let string = formattedString else { return }
+        guard let string = formatter.string(from: number) else { return }
 
         updateAmountObjects(with: string)
     }
