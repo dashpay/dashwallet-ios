@@ -87,7 +87,7 @@ public final class CrowdNode {
         case linking = 1
         case validating = 2
         case confirming = 3
-        case creating = 4 // TODO: NMI-917
+        case creating = 4
         case signingUp = 5
         case done = 6
 

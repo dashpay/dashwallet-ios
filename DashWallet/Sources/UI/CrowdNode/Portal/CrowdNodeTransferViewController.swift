@@ -283,7 +283,8 @@ extension CrowdNodeTransferController {
             if isOnlineAccountDone {
                 UIApplication.shared.open(URL(string: CrowdNode.withdrawalLimitsUrl)!)
             } else {
-                // TODO create online account
+                vc.dismiss(animated: true)
+                self.navigationController?.pushViewController(OnlineAccountEmailController.controller(), animated: true)
             }
         }
 
