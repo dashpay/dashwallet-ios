@@ -73,8 +73,10 @@ class Taxes: NSObject {
             if let address = outputAddress as? String, let txCategory = self.taxCategory(for: address) {
                 // Some transactions might have output that returns change
                 // to the input same address, so need to check that directions match.
-                if (tx.direction() == .sent && txCategory.isOutgoing) ||
-                    (tx.direction() == .received && txCategory.isIncoming) {
+                let txDirection = tx.direction
+                
+                if (txDirection == .sent && txCategory.isOutgoing) ||
+                    (txDirection == .received && txCategory.isIncoming) {
                     taxCategory = txCategory
                     break
                 }
