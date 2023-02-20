@@ -244,7 +244,7 @@ extension CrowdNode {
         DSLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
         refreshBalance(retries: 1)
-        // TODO: tax category
+        setTaxCategories()
     }
 
     private func setAcceptingTerms(address: String) {
@@ -784,7 +784,7 @@ extension CrowdNode {
                     accountAddress = address
                     prefs.crowdNodeAccountAddress = address
                     prefs.crowdNodePrimaryAddress = result.primaryAddress
-                    // TODO: tax category
+                    setTaxCategories()
                     changeOnlineState(to: .validating)
                 }
             }
@@ -920,5 +920,12 @@ extension CrowdNode {
         default:
             break
         }
+    }
+}
+
+extension CrowdNode {
+    private func setTaxCategories() {
+        Taxes.shared.mark(address: accountAddress, with: .transferIn)
+        Taxes.shared.mark(address: CrowdNode.crowdNodeAddress, with: .transferOut)
     }
 }
