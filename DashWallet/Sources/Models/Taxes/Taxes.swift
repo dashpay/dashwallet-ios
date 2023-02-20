@@ -35,6 +35,14 @@ enum TxUserInfoTaxCategory: Int {
 
     /// Expense
     case expense
+    
+    var isIncoming: Bool  {
+        self == .income || self == .transferIn
+    }
+    
+    var isOutgoing: Bool  {
+        self == .expense || self == .transferOut
+    }
 }
 
 // MARK: - Taxes
@@ -61,8 +69,16 @@ class Taxes: NSObject {
     func taxCategory(for tx: DSTransaction) -> TxUserInfoTaxCategory {
         var taxCategory: TxUserInfoTaxCategory = tx.defaultTaxCategory()
 
-        if let inputAddress = tx.inputAddresses.first as? String, let txCategory = self.taxCategory(for: inputAddress) {
-            taxCategory = txCategory
+        for outputAddress in tx.outputAddresses {
+            if let address = outputAddress as? String, let txCategory = self.taxCategory(for: address) {
+                // Some transactions might have output that returns change
+                // to the input same address, so need to check that directions match.
+                if (tx.direction() == .sent && txCategory.isOutgoing) ||
+                    (tx.direction() == .received && txCategory.isIncoming) {
+                    taxCategory = txCategory
+                    break
+                }
+            }
         }
 
         taxCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory ?? taxCategory
