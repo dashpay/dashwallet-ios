@@ -65,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
             case DWAmountInputValidatorTypeLocalCurrency: {
                 numberFormatter.maximumFractionDigits = 2;
-
                 break;
             }
         }
@@ -107,6 +106,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSNumberFormatter *nf = [numberFormatter copy];
     nf.numberStyle = NSNumberFormatterNoStyle;
+    nf.roundingMode = NSNumberFormatterRoundDown;
+    nf.minimumIntegerDigits = 1;
+    nf.minimumFractionDigits = 0;
+    nf.maximumFractionDigits = numberFormatter.maximumFractionDigits;
 
     NSNumber *number = [nf numberFromString:validNumberString];
     if (number == nil) {
@@ -126,8 +129,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSString *fractionPart = [validNumberString substringFromIndex:separatorIndex + 1];
-    if (fractionPart.length > numberFormatter.maximumFractionDigits ||
-        (fractionPart.length == numberFormatter.maximumFractionDigits && fractionPart.integerValue == 0)) {
+    if (fractionPart.length > nf.maximumFractionDigits ||
+        (fractionPart.length == nf.maximumFractionDigits && fractionPart.integerValue == 0)) {
         return nil;
     }
 

@@ -93,7 +93,7 @@ struct AmountObject {
             mainFormatted = str
         } else {
             plainAmount = 0
-            mainFormatted = "Error"
+            mainFormatted = NSLocalizedString("Updating Price", comment: "Updating Price")
         }
     }
 
@@ -119,8 +119,9 @@ extension AmountObject {
         if amountType == .supplementary { return self }
 
         let numberFormatter = localFormatter.copy() as! NumberFormatter
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.minimumFractionDigits = localFormatter.minimumFractionDigits
+        numberFormatter.numberStyle = .none
+        numberFormatter.minimumIntegerDigits = 1
+        numberFormatter.minimumFractionDigits = 0
         numberFormatter.maximumFractionDigits = localFormatter.maximumFractionDigits
 
         guard let amountInternalRepresentation = numberFormatter.string(from: supplementaryAmount as NSDecimalNumber) else {
