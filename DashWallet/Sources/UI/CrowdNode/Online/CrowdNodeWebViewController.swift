@@ -84,7 +84,6 @@ class CrowdNodeWebViewController: BaseViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 if state == .done {
-                    // TODO: check
                     self?.navigationController?.popViewController(animated: true)
                 }
             }
@@ -94,7 +93,6 @@ class CrowdNodeWebViewController: BaseViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
                 if error != nil {
-                    // TODO: check
                     self?.navigationController?.popViewController(animated: true)
                 }
             }
