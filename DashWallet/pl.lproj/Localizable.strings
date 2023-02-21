@@ -392,7 +392,7 @@
 "Copy Logs" = "Kopiuj Logi";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Prawa autorskie © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Nie jest możliwe automatyczne odzyskanie brakujących lub niewłaściwych słów";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Nie wszystkie sklepy akceptują Dash bezpośrednio, ale zawsze możesz użyć Dash aby kupić kartę podarunkową.";
+
+/* Fiat amount */
+"Not available" = "Niedostępne";
 
 /* Location Service Status */
 "Not Determined" = "Nieustalony";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Walidacja nazwy użytkownika...";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

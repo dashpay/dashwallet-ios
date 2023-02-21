@@ -26,6 +26,7 @@ protocol AddressUserInfoDAO {
     func get(by address: String) -> AddressUserInfo?
     func update(dto: AddressUserInfo)
     func delete(dto: AddressUserInfo)
+    func deleteAll()
 }
 
 // MARK: - AddressUserInfoDAOImpl
@@ -99,13 +100,23 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
         cache[dto.address] = nil
     }
 
+    @objc
+    func deleteAll() {
+        do {
+            try db.run(AddressUserInfo.table.delete())
+            cache = [:]
+        } catch {
+            print(error)
+        }
+    }
+
     @objc static let shared = AddressUserInfoDAOImpl()
 }
 
 extension AddressUserInfoDAOImpl {
     @objc
     func dictionaryOfAllItems() -> [String: AddressUserInfo] {
-        all()
+        _ = all()
         return cache
     }
 }

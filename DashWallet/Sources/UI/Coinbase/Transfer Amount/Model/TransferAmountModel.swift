@@ -29,7 +29,7 @@ protocol TransferAmountModelDelegate: CoinbaseTransactionDelegate {
 // MARK: - TransferAmountModel
 
 
-final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
+final class TransferAmountModel: CoinbaseAmountModel, CoinbaseTransactionSendable {
     enum TransferDirection {
         case toWallet
         case toCoinbase
@@ -70,7 +70,7 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
         super.init()
 
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
-            if let user {
+            if user != nil {
                 self?.delegate?.coinbaseUserDidChange()
             }
         }
@@ -84,7 +84,7 @@ final class TransferAmountModel: SendAmountModel, CoinbaseTransactionSendable {
 
             let maxAmount = AmountObject(plainAmount: balance,
                                          fiatCurrencyCode: localCurrencyCode,
-                                         localFormatter: localFormatter)
+                                         localFormatter: localFormatter, currencyExchanger: currencyExchanger)
             updateCurrentAmountObject(with: maxAmount)
         }
     }

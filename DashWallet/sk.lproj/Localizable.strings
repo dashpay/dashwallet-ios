@@ -392,7 +392,7 @@
 "Copy Logs" = "Skopírovať Záznamy";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Autorské práva © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Chýbajúce alebo nesprávne slová sa nepodarilo automaticky obnoviť.";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Nie všetky obchody akceptujú priamo DASH, ale môžete si kúpiť darčekovú kartu s Dashom.";
+
+/* Fiat amount */
+"Not available" = "Nie je k dispozícií";
 
 /* Location Service Status */
 "Not Determined" = "Neurčené";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Overuje sa používateľské meno…";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

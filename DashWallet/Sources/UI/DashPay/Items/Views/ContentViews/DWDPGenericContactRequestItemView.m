@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_END
     [self.accessoryView addSubview:declineButton];
     _declineButton = declineButton;
 
-    UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
     activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
     activityIndicatorView.color = [UIColor dw_tertiaryTextColor];
     [self.accessoryView addSubview:activityIndicatorView];

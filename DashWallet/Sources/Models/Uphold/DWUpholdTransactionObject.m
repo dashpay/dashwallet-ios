@@ -79,8 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)mock {
     _identifier = @"Mock Dash Account";
     _type = DWUpholdTransactionObjectTypeWithdrawal;
-    _amount = [NSDecimalNumber numberWithFloat:3.14];
-    _fee = [NSDecimalNumber numberWithFloat:0.000123];
+    _amount = [[NSDecimalNumber alloc] initWithString:@"3.14"];
+    _fee = [[NSDecimalNumber alloc] initWithString:@"0.01"];
     _total = [_amount decimalNumberByAdding:_fee];
     _currency = @"DASH";
 }

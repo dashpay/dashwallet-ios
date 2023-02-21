@@ -227,19 +227,19 @@ extension PointOfUseListFiltersViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if let filterCell = cell as? FilterItemSelectableCell,
+        if cell is FilterItemSelectableCell,
            let item = dataSource.itemIdentifier(for: indexPath) {
             selectedCells[item] = nil
         }
 
-        if let cell = cell as? FilterItemResetCell {
+        if cell is FilterItemResetCell {
             resetCell = nil
             return
         }
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        if let filterCell = tableView.cellForRow(at: indexPath) as? FilterItemSelectableCell,
+        if tableView.cellForRow(at: indexPath) is FilterItemSelectableCell,
            let item = dataSource.itemIdentifier(for: indexPath) {
             let deselected = model.toggle(filter: item)
             if !deselected {

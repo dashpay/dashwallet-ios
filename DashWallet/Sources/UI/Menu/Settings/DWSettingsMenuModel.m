@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #endif
     [actionSheet addAction:cancelAction];
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         actionSheet.popoverPresentationController.sourceView = sourceView;
         actionSheet.popoverPresentationController.sourceRect = sourceRect;
     }

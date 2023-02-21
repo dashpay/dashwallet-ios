@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) NSData *txHashData;
 @property (readonly) NSString *txHashHexString;
+@property (readonly) NSDate *date;
 
 + (uint64_t)txMinOutputAmount;
 

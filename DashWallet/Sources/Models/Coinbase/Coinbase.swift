@@ -61,10 +61,13 @@ class Coinbase {
         paymentMethodsService = PaymentMethods(authInterop: auth)
         currencyExchanger.startExchangeRateFetching()
 
-        // Pre-fetch data
+        prefetchData()
+    }
+
+    private func prefetchData() {
         Task {
             try await accountService.refreshAccount(kDashAccount)
-            try await paymentMethodsService.fetchPaymentMethods()
+            _ = try await paymentMethodsService.fetchPaymentMethods()
         }
     }
 

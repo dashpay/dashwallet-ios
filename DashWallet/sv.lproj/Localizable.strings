@@ -392,7 +392,7 @@
 "Copy Logs" = "Kopiera Loggar";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
@@ -415,13 +415,14 @@
 /* CrowdNode */
 "Create Account" = "Create Account";
 
-/* CrowdNode Portal */
+/* CrowdNode
+   CrowdNode Portal */
 "Create Online Account" = "Create Online Account";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
 
-/* No comment provided by engineer. */
+/* Crowdnode */
 "CrowdNode Account" = "CrowdNode Account";
 
 /* No comment provided by engineer. */
@@ -484,7 +485,8 @@
 /* Location Service Status */
 "Denied" = "Denied";
 
-/* CrowdNode Portal */
+/* CrowdNode
+   CrowdNode Portal */
 "Deposit" = "Deposit";
 
 /* CrowdNode Portal */
@@ -1034,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
+
+/* Fiat amount */
+"Not available" = "Not available";
 
 /* Location Service Status */
 "Not Determined" = "Not Determined";
@@ -1719,9 +1724,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "Validating username…";
 
-/* Coinbase */
-"Verfiy" = "Verfiy";
-
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";
 
@@ -1830,7 +1832,8 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "with Dash blockchain";
 
-/* CrowdNode Portal */
+/* CrowdNode
+   CrowdNode Portal */
 "Withdraw" = "Withdraw";
 
 /* CrowdNode */

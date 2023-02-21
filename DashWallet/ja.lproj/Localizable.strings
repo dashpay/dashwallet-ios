@@ -392,7 +392,7 @@
 "Copy Logs" = "ログをコピーする";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "見落としまたは間違った言葉を自動回復できませんでした";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "全ての店舗でDASHが直接使えるとは限りませんが、Dashでギフトカードが購入できます。";
+
+/* Fiat amount */
+"Not available" = "ご利用できません";
 
 /* Location Service Status */
 "Not Determined" = "未定";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "ユーザー名の有効化中...";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

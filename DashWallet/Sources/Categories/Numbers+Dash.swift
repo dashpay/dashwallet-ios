@@ -63,6 +63,10 @@ extension Decimal {
         rounded(sign == .minus ? .up : .down)
     }
 
+    var fractionDigits: Int {
+        max(-exponent, 0)
+    }
+
     /// Converts `Decimal` to plain dash amount in duffs
     ///
     /// - Returns: Plain dash amount in duffs
