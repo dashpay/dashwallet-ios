@@ -2413,6 +2413,9 @@
                         <outlet property="adjustedTopLabel" destination="R4T-Iq-SXC" id="bPb-pt-pKH"/>
                         <outlet property="balanceView" destination="CwU-nM-aq3" id="b3L-Jc-1D8"/>
                         <outlet property="moreInfoButton" destination="zWW-bR-xMz" id="yVi-WR-xgl"/>
+                        <outlet property="moreInfoFirstRow" destination="Qne-Vx-uHR" id="Lys-RO-ReM"/>
+                        <outlet property="moreInfoSecondRow" destination="cVP-Q1-jgp" id="QO7-ee-kI4"/>
+                        <outlet property="moreInfoThirdRow" destination="ruk-XV-XlP" id="Q00-9K-l20"/>
                         <outlet property="moreInfoView" destination="SH3-uT-8wK" id="abI-Vh-shK"/>
                         <outlet property="showMoreHeightConstraint" destination="KH8-fu-FOf" id="P1Z-p0-Yss"/>
                     </connections>

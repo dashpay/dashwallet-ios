@@ -22,10 +22,16 @@ final class WithdrawalConfirmationController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
     
     @IBOutlet var balanceView: BalanceView!
-    @IBOutlet var moreInfoView: UIView!
-    @IBOutlet var moreInfoButton: UIButton!
     @IBOutlet var adjustedTopLabel: UILabel!
     @IBOutlet var adjustedBottomLabel: UILabel!
+    
+    private static let smallSheetHeight: CGFloat = 230
+    private static let fitSheetHeight: CGFloat = 310
+    @IBOutlet var moreInfoView: UIView!
+    @IBOutlet var moreInfoButton: UIButton!
+    @IBOutlet var moreInfoFirstRow: UILabel!
+    @IBOutlet var moreInfoSecondRow: UILabel!
+    @IBOutlet var moreInfoThirdRow: UILabel!
     @IBOutlet var showMoreHeightConstraint: NSLayoutConstraint!
     
     private var requestedAmount: UInt64!
@@ -58,12 +64,12 @@ final class WithdrawalConfirmationController: UIViewController {
                 // we hide the additional info and only show confirm/cancel buttons
                 let smallId = UISheetPresentationController.Detent.Identifier("small")
                 collapsedDetent = UISheetPresentationController.Detent.custom(identifier: smallId) { context in
-                    return 230
+                    return smallSheetHeight
                 }
             } else {
                 let fitId = UISheetPresentationController.Detent.Identifier("fit")
                 collapsedDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { context in
-                    return 310
+                    return fitSheetHeight
                 }
             }
             
@@ -96,17 +102,25 @@ final class WithdrawalConfirmationController: UIViewController {
 
 extension WithdrawalConfirmationController {
     private func expandMoreInfoView() {
+        let textHeight = calculateMoreInfoTextHeight()
+        let sheetHeight = WithdrawalConfirmationController.fitSheetHeight + textHeight - 20
         moreInfoView.alpha = 0
+        
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
             if #available(iOS 16.0, *) {
-                self.expandSheet()
+                self.expandSheet(height: sheetHeight)
             }
             
             self.moreInfoView.alpha = 1
             self.moreInfoButton.isHidden = true
-            self.showMoreHeightConstraint.constant = 150
+            self.showMoreHeightConstraint.constant = textHeight
             self.view.layoutIfNeeded()
         }
+    }
+    
+    private func calculateMoreInfoTextHeight() -> CGFloat {
+        return moreInfoFirstRow.frame.height + moreInfoSecondRow.frame.height +
+            moreInfoThirdRow.frame.height + 15
     }
     
     @available(iOS 16.0, *)
@@ -119,11 +133,11 @@ extension WithdrawalConfirmationController {
     }
     
     @available(iOS 16.0, *)
-    private func expandSheet() {
+    private func expandSheet(height: CGFloat) {
         if let sheet = sheetPresentationController {
             let expandedId = UISheetPresentationController.Detent.Identifier("expanded")
             let expandedDetent = UISheetPresentationController.Detent.custom(identifier: expandedId) { context in
-                return 440
+                return height
             }
             sheet.detents = [expandedDetent]
             sheet.animateChanges {
