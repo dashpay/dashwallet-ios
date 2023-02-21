@@ -51,13 +51,16 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             return true
         }
 
-        let crowdNodeTxFilters = [
+        var crowdNodeTxFilters = [
             CrowdNodeRequest(requestCode: ApiCode.signUp),
-            CrowdNodeTopUpTx(address: CrowdNode.shared.accountAddress),
             CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
             CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
             CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
         ]
+        
+        if let accountAddress = CrowdNodeDefaults.shared.crowdNodeAccountAddress {
+            crowdNodeTxFilters.append(CrowdNodeTopUpTx(address: accountAddress))
+        }
 
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
             transactions[tx.txHashData] = tx

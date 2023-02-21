@@ -63,7 +63,6 @@ final class CrowdNodeCell: UITableViewCell {
         }
 
         additionalInfo.isHidden = !showInfo
-        showInfoConstraint.isActive = showInfo
         showInfoConstraint.constant = showInfo ? 35 : 0
         infoBottomAnchorConstraint.isActive = showInfo
 
