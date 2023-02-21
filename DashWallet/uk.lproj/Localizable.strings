@@ -392,7 +392,7 @@
 "Copy Logs" = "Копіювати логи";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Всі права захищено © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Не вдалося автоматично відновити пропущені або неправильні слова";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Не всі магазини приймають DASH напряму, але ви можете купити подарункову картку за допомогою Dash.";
+
+/* Fiat amount */
+"Not available" = "Недоступний";
 
 /* Location Service Status */
 "Not Determined" = "Not Determined";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Валідація імені користувача";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

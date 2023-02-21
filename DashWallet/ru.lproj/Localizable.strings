@@ -173,10 +173,10 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложение %@ хочет получить Ваш основной публичный ключ. Это может быть использовано для отслеживания Вашего кошелька, но не для отправки Ваших Dash.";
 
 /* Coinbase/Buy Dash/Cancel Order     */
-"Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
+"Are you sure you want to cancel this order?" = "Вы уверены, что хотите отменить этот ордер?";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+"Are you sure you want to cancel this transaction?" = "Вы уверены, что хотите отменить транзакцию?";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Вы уверены?";
@@ -224,10 +224,10 @@
 "Balance: " = "Balance: ";
 
 /* Coinbase/Payment Methods */
-"Bank Account" = "Bank Account";
+"Bank Account" = "Расчётный счёт";
 
 /* Coinbase/Payment Methods */
-"Bank Wire" = "Bank Wire";
+"Bank Wire" = "Банковский перевод";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase." = "Между Dash Wallet и Coinbase.";
@@ -288,7 +288,7 @@
 "Cancel" = "Отмена";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Отмена транзакции не повлияет на торговый ордер. Вскоре DASH поступит на ваш счёт в Coinbase.";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Изменить";
@@ -336,10 +336,10 @@
 "Confirm & Pay" = "Подтвердить и оплатить";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Confirm (%@)";
+"Confirm (%@)" = "Подтвердить (%@)";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%d%@)" = "Confirm (%1$d%2$@)";
+"Confirm (%d%@)" = "Подтвердить (%1$d%2$@)";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Подтвердите PIN";
@@ -392,7 +392,7 @@
 "Copy Logs" = "Копировать логи";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Все права защищены © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Не удалось автоматически восстановить отсутствующие или неправильные слова";
@@ -459,7 +459,7 @@
 "Dash" = "Dash";
 
 /* Coinbase Entry Point */
-"Dash balance on Coinbase" = "Dash balance on Coinbase";
+"Dash balance on Coinbase" = "Баланс Dash на Coinbase";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Платежи Dash не могут быть меньше, чем %@";
@@ -599,10 +599,10 @@
 "Face ID limit" = "Лимит Face ID";
 
 /* Coinbase */
-"Failed to start auth session" = "Failed to start auth session";
+"Failed to start auth session" = "Не удалось запустить сеанс авторизации";
 
 /* Buy Sell Portal */
-"Failed to sync" = "Failed to sync";
+"Failed to sync" = "Не удалось синхронизироваться";
 
 /* Explore Dash */
 "Failed to sync on" = "Не удалось синхронизироваться";
@@ -626,7 +626,7 @@
 "Fetching Info" = "Получение данных";
 
 /* Coinbase/Payment Methods */
-"Fiat Account" = "Fiat Account";
+"Fiat Account" = "Фиатный счёт";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Показать транзакции";
@@ -653,7 +653,7 @@
 "First deposit should be more than %@" = "First deposit should be more than %@";
 
 /* Coinbase */
-"For your security, you have been signed out." = "For your security, you have been signed out.";
+"For your security, you have been signed out." = "В целях безопасности был совершён выход из учётной записи.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Забыли PIN?";
@@ -677,7 +677,7 @@
 "From Uphold to your Dash Wallet" = "С Uphold на ваш кошелёк Dash Wallet";
 
 /* Coinbase */
-"from your Coinbase account" = "from your Coinbase account";
+"from your Coinbase account" = "с аккаунта Coinbase";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Создать расширенный публичный ключ?";
@@ -767,7 +767,7 @@
 "Import private key, Export CSV…" = "Импортировать приватный ключ, Выгрузить CSV…";
 
 /* Coinbase/Fee info */
-"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
+"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Помимо отображённой комиссии Coinbase, мы учитываем небольшой разброс цены. При работе в режиме Продвинутой Торговли разброс цены не учитывается, потому что вы работаете напрямую с портфелем заказов. \n\nКриптовалютным рынкам свойственна волатильность, и таким образом мы временно замораживаем цену для совершения сделки. ";
 
 /* CrowdNode Portal */
 "In process…" = "In process…";
@@ -776,7 +776,7 @@
 "Income" = "Доходы";
 
 /* Buy Sell Portal */
-"Initializing" = "Initializing";
+"Initializing" = "Инициализация";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Недостаточно средств";
@@ -800,7 +800,7 @@
 "Invalid Email" = "Invalid Email";
 
 /* Invalid Amount Input */
-"Invalid Input" = "Invalid Input";
+"Invalid Input" = "Ошибка ввода";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Некорректный платёжный запрос";
@@ -818,7 +818,7 @@
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "Это может быть SMS-код. Или код из приложения для аутентификации.";
 
 /* Coinbase */
-"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Перевод Dash с Coinbase на Dash Wallet на этом устройстве может занять до 10 минут.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Кажется, вы пытаетесь восстановить свой кошелёк с помощью фразы восстановления из 12 слов. Однако, вы ввели только 10 слов. Хотите автоматически восстановить пропущенные слова? Это займёт примерно час. Рекомендуем подключить ваш гаджет к зарядному устройству.";
@@ -849,7 +849,7 @@
 "Learn More" = "Узнать больше";
 
 /* Info Screen */
-"Learn More..." = "Learn More...";
+"Learn More..." = "Узнать больше";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Сообщить, когда будет готово";
@@ -870,7 +870,7 @@
 "Link Uphold account" = "Привязать Uphold аккаунт ";
 
 /* Buy Sell Portal */
-"Link your account" = "Link your account";
+"Link your account" = "Привязать аккаунт";
 
 /* Dash Service Overview */
 "Link your Coinbase account" = "Привяжите ваш аккаунт Coinbase";
@@ -984,7 +984,7 @@
 "Nearby" = "Рядом";
 
 /* Coinbase Two Factor Auth */
-"Need help? " = "Need help? ";
+"Need help? " = "Нужна помощь?";
 
 /* No comment provided by engineer. */
 "Network" = "Сеть";
@@ -1008,13 +1008,13 @@
 "No" = "Нет";
 
 /* Coinbase */
-"No active user" = "No active user";
+"No active user" = "Отсутствует активный пользователь";
 
 /* Coinbase/Buy Dash */
-"No payment methods" = "No payment methods";
+"No payment methods" = "Отсутствуют способы оплаты";
 
 /* Coinbase/Buy Dash */
-"No payment methods found" = "No payment methods found";
+"No payment methods found" = "Не указаны способы оплаты";
 
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "Результатов не найдено";
@@ -1037,6 +1037,9 @@
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Не все магазины принимают DASH напрямую, но вы можете купить подарочную карту с помощью Dash.";
 
+/* Fiat amount */
+"Not available" = "Недоступно";
+
 /* Location Service Status */
 "Not Determined" = "Не определён";
 
@@ -1047,7 +1050,7 @@
 "Notifications" = "Уведомления";
 
 /* Coinbase */
-"oAuth failed" = "oAuth failed";
+"oAuth failed" = "Ошибка авторизации";
 
 /* No comment provided by engineer. */
 "OK" = "ОК";
@@ -1137,7 +1140,7 @@
 "PIN is always required to make a payment" = "Всегда требовать PIN для совершения платежа";
 
 /* Coinbase/Buy Dash */
-"Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
+"Please add a payment method on Coinbase" = "Добавьте способ оплаты на Coinbase";
 
 /* Network Unavailable */
 "Please check your network connection" = "Пожалуйста, проверьте ваше подключение к сети";
@@ -1212,10 +1215,10 @@
 "Receive" = "Получить";
 
 /* Coinbase Entry Point */
-"Receive directly into Coinbase" = "Receive directly into Coinbase";
+"Receive directly into Coinbase" = "Получать напрямую на Coinbase";
 
 /* Coinbase Entry Point */
-"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
+"Receive directly into Dash Wallet" = "Получать напрямую на Dash Wallet.";
 
 /* Received transaction */
 "Received" = "Получено";
@@ -1365,7 +1368,7 @@
 "Select a coin" = "Выбрать монету";
 
 /* Buy Sell Dash */
-"Select a service" = "Select a service";
+"Select a service" = "Выбрать сервис";
 
 /* Coinbase */
 "Select the coin" = "Выбрать монету";
@@ -1417,7 +1420,7 @@
 "Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
 
 /* Buy Dash */
-"Sending to:" = "Sending to:";
+"Sending to:" = "Отправка:";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Отправка.";
@@ -1561,10 +1564,10 @@
 "The code is incorrect. Please check and try again!" = "Неверный код. Попробуйте ещё раз!";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
+"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash был успешно зачислен на ваш аккаунт Coinbase. Но при переводе его на Dash Wallet на этом устройстве произошла проблема.";
 
 /* Coinbase */
-"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+"The minimum amount you can send is %@" = "Минимальная сумма для отправки составляет %@";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "У вас нет новых уведомлений";
@@ -1579,10 +1582,10 @@
 "There are no users that match with the name %@ in your contacts" = "Пользователей, чьё имя совпадает с %@, в вашем списке контактов не найдено";
 
 /* Coinbase */
-"There was an error while obtaining new address" = "There was an error while obtaining new address";
+"There was an error while obtaining new address" = "При получении нового адреса произошла ошибка";
 
 /* Coinbase */
-"There was an error, please try again later" = "There was an error, please try again later";
+"There was an error, please try again later" = "Произошла ошибка. Пожалуйста, попробуйте ещё раз позже";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Это приложение с открытым исходным кодом:";
@@ -1612,7 +1615,7 @@
 "to" = "на";
 
 /* Coinbase */
-"to Dash Wallet on this device" = "to Dash Wallet on this device";
+"to Dash Wallet on this device" = "на Dash Wallet на этом устройстве";
 
 /* No comment provided by engineer. */
 "Tools" = "Инструменты";
@@ -1662,7 +1665,7 @@
 "Turn device passcode on" = "Включить код-пароль";
 
 /* Coinbase */
-"Two factor auth required" = "Two factor auth required";
+"Two factor auth required" = "Необходима двухфакторная аутентификация";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Не удалось подключиться";
@@ -1674,7 +1677,7 @@
 "Unknown" = "Неизвестный";
 
 /* Coinbase */
-"Unknown Balance" = "Unknown Balance";
+"Unknown Balance" = "Баланс неизвестен";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Неподдерживаемый или повреждённый документ";
@@ -1721,9 +1724,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "Подтверждение имени пользователя...";
 
-/* Coinbase */
-"Verfiy" = "Verfiy";
-
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";
 
@@ -1761,7 +1761,7 @@
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
 
 /* Send screen */
-"Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
+"Wait until wallet is synced to complete the transaction" = "Для завершения транзакции дождитесь синхронизации кошелька";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Кошелёк отключён";
@@ -1879,13 +1879,13 @@
 "You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
 /* Coinbase */
-"You receive" = "You receive";
+"You receive" = "Вы получите";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Вы получили Dash! Если Вы потеряете это устройство, то Вы потеряете доступ к Вашим средствам. Сохраните Вашу фразу восстановления, чтобы иметь возможность восстановить кошелек на другом устройстве.";
 
 /* Coinbase */
-"You send" = "You send";
+"You send" = "Вы отправляете";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Вы отправили %@ запрос на добавление в контакты.";
@@ -1906,7 +1906,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Вам понадобится эта фраза восстановления для доступа к Вашим средствам, если это устройство будет утеряно, повреждено или приложение Dash Wallet будет случайно удалено.";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
+"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Вы получите %@Dash на Dash Wallet на этом устройстве. Пожалуйста, обратите внимание, что перевод займёт 2-3 минуты.";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";

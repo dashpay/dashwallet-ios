@@ -176,7 +176,7 @@
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+"Are you sure you want to cancel this transaction?" = "Bist du sicher, dass du die Transaktion abbrechen möchtest?";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Sind Sie sicher?";
@@ -224,7 +224,7 @@
 "Balance: " = "Balance: ";
 
 /* Coinbase/Payment Methods */
-"Bank Account" = "Bank Account";
+"Bank Account" = "Bankkonto";
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Bank Wire";
@@ -392,7 +392,7 @@
 "Copy Logs" = "Log kopieren";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Konnte fehlende / falsche Wörter nicht automatisch wiederherstellen";
@@ -459,7 +459,7 @@
 "Dash" = "Dash";
 
 /* Coinbase Entry Point */
-"Dash balance on Coinbase" = "Dash balance on Coinbase";
+"Dash balance on Coinbase" = "Dash Guthaben auf Coinbase";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash-Zahlungen können nicht kleiner als %@ sein";
@@ -626,7 +626,7 @@
 "Fetching Info" = "Informationen abrufen";
 
 /* Coinbase/Payment Methods */
-"Fiat Account" = "Fiat Account";
+"Fiat Account" = "Fiat Konto";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Transaktionen filtern";
@@ -653,7 +653,7 @@
 "First deposit should be more than %@" = "First deposit should be more than %@";
 
 /* Coinbase */
-"For your security, you have been signed out." = "For your security, you have been signed out.";
+"For your security, you have been signed out." = "Du wurdest zu deiner Sicherheit abgemeldet.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PIN vergessen?";
@@ -677,7 +677,7 @@
 "From Uphold to your Dash Wallet" = "Von Uphold auf deine Dash Wallet";
 
 /* Coinbase */
-"from your Coinbase account" = "from your Coinbase account";
+"from your Coinbase account" = "von deinem Coinbase Konto";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Erweiterten öffentlichen Schlüssel generieren?";
@@ -849,7 +849,7 @@
 "Learn More" = "Mehr erfahren";
 
 /* Info Screen */
-"Learn More..." = "Learn More...";
+"Learn More..." = "Mehr erfahren...";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Benachrichtige mich, wenn dies abgeschlossen ist";
@@ -984,7 +984,7 @@
 "Nearby" = "In der Nähe";
 
 /* Coinbase Two Factor Auth */
-"Need help? " = "Need help? ";
+"Need help? " = "Benötigst du Hilfe?";
 
 /* No comment provided by engineer. */
 "Network" = "Netzwerk";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Nicht alle Geschäfte akzeptieren DASH direkt, aber du kannst mit deinen Dash auch einen Gutschein kaufen.";
+
+/* Fiat amount */
+"Not available" = "Nicht verfügbar";
 
 /* Location Service Status */
 "Not Determined" = "Nicht festgelegt";
@@ -1137,7 +1140,7 @@
 "PIN is always required to make a payment" = "PIN ist für jede Zahlung notwendig";
 
 /* Coinbase/Buy Dash */
-"Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
+"Please add a payment method on Coinbase" = "Bitte hinterlege eine Zahlungsmethode auf Coinbase.";
 
 /* Network Unavailable */
 "Please check your network connection" = "Bitte überprüfe deine Netzwerksverbindung";
@@ -1365,7 +1368,7 @@
 "Select a coin" = "Wähle einen Coin aus";
 
 /* Buy Sell Dash */
-"Select a service" = "Select a service";
+"Select a service" = "Dienst auswählen";
 
 /* Coinbase */
 "Select the coin" = "Wähle einen Coin aus";
@@ -1582,7 +1585,7 @@
 "There was an error while obtaining new address" = "There was an error while obtaining new address";
 
 /* Coinbase */
-"There was an error, please try again later" = "There was an error, please try again later";
+"There was an error, please try again later" = "Es ist ein Fehler aufgetreten. Bitte versuche es später noch einmal.";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Diese App ist Open-Source:";
@@ -1662,7 +1665,7 @@
 "Turn device passcode on" = "Gerätecode aktivieren";
 
 /* Coinbase */
-"Two factor auth required" = "Two factor auth required";
+"Two factor auth required" = "Zwei-Faktor-Authentifizierung erforderlich";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Verbindung fehlgeschlagen";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Validiere Benutzernamen...";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";
@@ -1879,13 +1879,13 @@
 "You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
 /* Coinbase */
-"You receive" = "You receive";
+"You receive" = "Du erhältst";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Du hast Dash erhalten! Wenn Du dieses Gerät verlierst, verlierst Du dein Geld. Sicher Deine Wiederherstellungsphrase, damit Du Deine Wallet auf einem anderen Gerät wiederherstellen kannst.";
 
 /* Coinbase */
-"You send" = "You send";
+"You send" = "Du sendest";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Du hast eine Kontaktanfrage an %@ geschickt";

@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_END
         [bottomContentView addSubview:actionButton];
         _actionButton = actionButton;
 
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_dashBlueColor];
         [bottomContentView addSubview:activityIndicatorView];

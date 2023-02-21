@@ -392,7 +392,7 @@
 "Copy Logs" = "Salin Log";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Hak Cipta © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Tidak dapat secara otomatis memulihkan kata yang hilang atau salah";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Tidak semua toko menerima DASH secara langsung, tetapi Anda dapat membeli kartu hadiah dengan Dash.";
+
+/* Fiat amount */
+"Not available" = "Tak tersedia";
 
 /* Location Service Status */
 "Not Determined" = "Tidak ditentukan";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Memvalidasi nama pengguna…";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

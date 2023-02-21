@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_END
         [self addSubview:iconImageView];
         _iconImageView = iconImageView;
 
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_darkTitleColor];
         [self addSubview:activityIndicatorView];

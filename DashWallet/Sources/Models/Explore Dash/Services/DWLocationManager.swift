@@ -117,7 +117,7 @@ class DWLocationManager: NSObject {
                 let loc = [placemark.country, placemark.administrativeArea, placemark.locality].compactMap { $0 }
                     .joined(separator: ", ")
                 completion(loc)
-            } else if let error {
+            } else if error != nil {
                 completion("Location couldn't determined")
             }
         }

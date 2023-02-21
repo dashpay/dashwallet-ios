@@ -221,7 +221,7 @@ extension PointOfUseListModel {
                         self?.itemsDidChange?()
                     }
                     break
-                case .failure(let error):
+                case .failure:
                     self?.isFetching = false
                     break // TODO: handler failure
                 }
@@ -243,7 +243,7 @@ extension PointOfUseListModel {
                     self?.nextPageDidLoaded?(offset, count)
                 }
                 break
-            case .failure(let error):
+            case .failure:
                 break // TODO: handler failure
             }
         }

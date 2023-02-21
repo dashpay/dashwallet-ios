@@ -43,7 +43,6 @@ class AtmDAO: PointOfUseDAO {
             let latitude = Expression<Float64>("latitude")
             let longitude = Expression<Float64>("longitude")
             let manufacturer = Expression<String>("manufacturer")
-            let source = ExplorePointOfUse.source
             let offset = offset ?? 0
             var queryFilter = Expression<Bool>(value: true)
 

@@ -66,7 +66,8 @@ final class UpholdAmountModel: BaseAmountModel {
         if allAvailableFunds > 0 {
             let maxAmount = AmountObject(plainAmount: allAvailableFunds,
                                          fiatCurrencyCode: supplementaryCurrencyCode,
-                                         localFormatter: supplementaryNumberFormatter)
+                                         localFormatter: supplementaryNumberFormatter,
+                                         currencyExchanger: currencyExchanger)
             updateCurrentAmountObject(with: maxAmount)
         }
     }

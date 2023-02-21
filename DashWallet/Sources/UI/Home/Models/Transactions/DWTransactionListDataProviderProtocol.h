@@ -30,9 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData;
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
                                         font:(UIFont *)font;
-- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
-                                   tintColor:(UIColor *)color
-                                        font:(UIFont *)font;
 
 @end
 
