@@ -21,7 +21,6 @@ import Combine
 
 final class ConfirmationTransactionQRController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
-    private let viewModel = CrowdNode.shared
 
     @IBOutlet var qrImage: UIImageView!
     @IBOutlet var messageLabel: UILabel!

@@ -247,6 +247,8 @@ extension CrowdNodeModel {
     }
 }
 
+// MARK: deposit / withdraw
+
 extension CrowdNodeModel {
     func deposit(amount: UInt64) async throws -> Bool {
         guard amount > 0 else { return false }
@@ -274,6 +276,23 @@ extension CrowdNodeModel {
 
         try await crowdNode.withdraw(amount: amount)
         return true
+    }
+    
+    func adjustedWithdrawalAmount(requestedAmount: UInt64) -> UInt64 {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        
+        let requestPermil = crowdNode.calculateWithdrawalPermil(forAmount: requestedAmount)
+        let requestValue = CrowdNode.apiOffset + UInt64(requestPermil)
+        
+        let inQueueResponse = CrowdNode.apiOffset + ApiCode.withdrawalQueue.rawValue
+        let inQueueResponseFee = chain.fee(forTxSize: 372) // Average size of the response tx.
+        let withdrawalTxFee = chain.fee(forTxSize: 225)    // Average size of the withdrawal tx.
+        
+        // CrowdNode gets the withdrawal request, adds it to the balance,
+        // sends the InQueue response and then calculates withdrawal amount from what's left.
+        let adjustedResult = (crowdNodeBalance + requestValue - inQueueResponse - inQueueResponseFee) * requestPermil / ApiCode.withdrawAll.rawValue - withdrawalTxFee
+        
+        return min(crowdNodeBalance, adjustedResult)
     }
 }
 
