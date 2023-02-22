@@ -392,7 +392,7 @@
 "Copy Logs" = "로그 복사하기";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Copyright © 2022 대시 코어";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "입력되지 않거나 잘못 입력된 단어를 자동을 복구할 수 없었습니다.";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "모든 상점에서 직접 대시를 받는 것은 아니지만, 대시를 통해 기프트 카드를 구매할 수 있습니다.";
+
+/* Fiat amount */
+"Not available" = "이용할 수 없음";
 
 /* Location Service Status */
 "Not Determined" = "결정되지 않음";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "사용자 이름 인증 중...";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

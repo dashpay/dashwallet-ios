@@ -701,8 +701,8 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
-  - PromisesObjC (2.1.1)
-  - Protobuf (3.21.12)
+  - PromisesObjC (2.2.0)
+  - Protobuf (3.22.0)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -828,8 +828,8 @@ SPEC CHECKSUMS:
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
-  PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  Protobuf: 120350fc38646e2dedc26f49ecba778184ea1de2
+  PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
+  Protobuf: 5e6cbc143d02fe08585d86b0098f8b755d2caaab
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   secp256k1_dash: bd60e467aa853e145cf680dd0f8b196df20f0a62
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
@@ -839,6 +839,6 @@ SPEC CHECKSUMS:
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 1e9bad5d64d9e6ab80e1f2595e0d7b8335c13b2e
+PODFILE CHECKSUM: 19fe9bc31d24b0d40487253e9fac9118c1d53fa8
 
 COCOAPODS: 1.11.2

@@ -173,10 +173,10 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "De applicatie %@ wil je openbare hoofdsleutel inzien. Dit kan worden gebruikt om je portemonnee in de gaten te houden; het kan niet worden gebruikt om je Dash te verplaatsen.";
 
 /* Coinbase/Buy Dash/Cancel Order     */
-"Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
+"Are you sure you want to cancel this order?" = "Weet je zeker dat je deze bestelling wilt annuleren?";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+"Are you sure you want to cancel this transaction?" = "Weet jezeker dat je deze transactie wilt annuleren?";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Weet je het zeker?";
@@ -224,10 +224,10 @@
 "Balance: " = "Balance: ";
 
 /* Coinbase/Payment Methods */
-"Bank Account" = "Bank Account";
+"Bank Account" = "Bankrekening";
 
 /* Coinbase/Payment Methods */
-"Bank Wire" = "Bank Wire";
+"Bank Wire" = "Bankoverschrijving";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase." = "Tussen Dash portemonnee en Coinbase.";
@@ -288,7 +288,7 @@
 "Cancel" = "Annuleer";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Het annuleren van deze transactie annuleert de handelsorder niet. Je ontvangt binnenkort DASH op je Coinbase account.";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Wissel";
@@ -336,10 +336,10 @@
 "Confirm & Pay" = "Bevestig en betaal";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Confirm (%@)";
+"Confirm (%@)" = "Bevestig (%@)";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%d%@)" = "Confirm (%1$d%2$@)";
+"Confirm (%d%@)" = "Bevestig (%1$d%2$@)";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Bevestig pin";
@@ -392,7 +392,7 @@
 "Copy Logs" = "Kopieer logs";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Kon niet automatisch ontbrekende of incorrecte woorden herstellen";
@@ -459,7 +459,7 @@
 "Dash" = "Dash";
 
 /* Coinbase Entry Point */
-"Dash balance on Coinbase" = "Dash balance on Coinbase";
+"Dash balance on Coinbase" = "Dash saldo op Coinbase";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash-betalingen mogen niet kleiner zijn dan %@";
@@ -599,10 +599,10 @@
 "Face ID limit" = "Face ID limiet";
 
 /* Coinbase */
-"Failed to start auth session" = "Failed to start auth session";
+"Failed to start auth session" = "Kan authenticatiesessie niet starten";
 
 /* Buy Sell Portal */
-"Failed to sync" = "Failed to sync";
+"Failed to sync" = "Synchroniseren mislukt";
 
 /* Explore Dash */
 "Failed to sync on" = "Mislukt te synchroniseren op";
@@ -626,7 +626,7 @@
 "Fetching Info" = "Info ophalen";
 
 /* Coinbase/Payment Methods */
-"Fiat Account" = "Fiat Account";
+"Fiat Account" = "Fiat rekening";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Transacties filteren";
@@ -653,7 +653,7 @@
 "First deposit should be more than %@" = "First deposit should be more than %@";
 
 /* Coinbase */
-"For your security, you have been signed out." = "For your security, you have been signed out.";
+"For your security, you have been signed out." = "Voor de veiligheid ben je afgemeld.";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PIN vergeten?";
@@ -677,7 +677,7 @@
 "From Uphold to your Dash Wallet" = "Van Uphold naar je Dash Portemonnee";
 
 /* Coinbase */
-"from your Coinbase account" = "from your Coinbase account";
+"from your Coinbase account" = "vanaf je Coinbase account";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Genereer uitgebreide publieke sleutels?";
@@ -767,7 +767,7 @@
 "Import private key, Export CSV…" = "Privésleutel importeren, CSV exporteren...";
 
 /* Coinbase/Fee info */
-"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
+"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Naast de getoonde Coinbase fee, nemen we een spread mee in de prijs. Bij gebruik van Advanced Trade optie is er geen spread inbegrepen omdat je rechtstreeks met het orderboek communiceert.\n\nCryptocurrency-markten zijn volatiel en dit stelt ons in staat om tijdelijk een prijs vast te leggen voor de uitvoering van transacties.";
 
 /* CrowdNode Portal */
 "In process…" = "In process…";
@@ -776,7 +776,7 @@
 "Income" = "Inkomen";
 
 /* Buy Sell Portal */
-"Initializing" = "Initializing";
+"Initializing" = "Initialiseren";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Ontoereikende fondsen";
@@ -800,7 +800,7 @@
 "Invalid Email" = "Invalid Email";
 
 /* Invalid Amount Input */
-"Invalid Input" = "Invalid Input";
+"Invalid Input" = "Ongeldige invoer";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Ongeldig betalingsverzoek";
@@ -818,7 +818,7 @@
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "Het kan de code van de SMS op je telefoon zijn. Zo niet, voer dan de code van de authenticatie app in.";
 
 /* Coinbase */
-"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Het kan tot 10 minuten duren om Dash over te maken van Coinbase naar de Dash portemonnee op dit apparaat.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Het ziet er naar uit dat je probeert een portemonnee te herstellen met een herstelzin van 12 woorden, maar je hebt maar 10 woorden ingevoerd, wil je automatisch de ontbrekende woorden herstellen? Dit kan ongeveer een uur duren. We raden aan je apparaat aan de lader te hangen.";
@@ -849,7 +849,7 @@
 "Learn More" = "Lees verder";
 
 /* Info Screen */
-"Learn More..." = "Learn More...";
+"Learn More..." = "Kom meer te weten...";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Laat me weten wanneer het klaar is";
@@ -870,7 +870,7 @@
 "Link Uphold account" = "Koppel Uphold-rekening";
 
 /* Buy Sell Portal */
-"Link your account" = "Link your account";
+"Link your account" = "Koppel je rekening";
 
 /* Dash Service Overview */
 "Link your Coinbase account" = "Koppel je Coinbase account";
@@ -984,7 +984,7 @@
 "Nearby" = "Dichtbij";
 
 /* Coinbase Two Factor Auth */
-"Need help? " = "Need help? ";
+"Need help? " = "Hulp nodig?";
 
 /* No comment provided by engineer. */
 "Network" = "Netwerk";
@@ -1008,13 +1008,13 @@
 "No" = "Nee";
 
 /* Coinbase */
-"No active user" = "No active user";
+"No active user" = "Geen actieve gebruiker";
 
 /* Coinbase/Buy Dash */
-"No payment methods" = "No payment methods";
+"No payment methods" = "Geen betalingsmethodes";
 
 /* Coinbase/Buy Dash */
-"No payment methods found" = "No payment methods found";
+"No payment methods found" = "Geen betalingsmethodes gevonden";
 
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "Geen resultaten gevonden";
@@ -1037,6 +1037,9 @@
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Niet alle winkels accepteren direct DASH, maar je kan een geschenkbon kopen met je Dash.";
 
+/* Fiat amount */
+"Not available" = "Niet beschikbaar";
+
 /* Location Service Status */
 "Not Determined" = "Niet bepaald";
 
@@ -1047,7 +1050,7 @@
 "Notifications" = "Notificaties";
 
 /* Coinbase */
-"oAuth failed" = "oAuth failed";
+"oAuth failed" = "oAuth mislukt";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -1137,7 +1140,7 @@
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
 
 /* Coinbase/Buy Dash */
-"Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
+"Please add a payment method on Coinbase" = "Voeg een betaalmethode toe op Coinbase";
 
 /* Network Unavailable */
 "Please check your network connection" = "Controleer de netwerkverbinding";
@@ -1212,10 +1215,10 @@
 "Receive" = "Ontvangen";
 
 /* Coinbase Entry Point */
-"Receive directly into Coinbase" = "Receive directly into Coinbase";
+"Receive directly into Coinbase" = "Ontvang het direct op Coinbase";
 
 /* Coinbase Entry Point */
-"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
+"Receive directly into Dash Wallet" = "Ontvang het direct in de Dash portemonnee.";
 
 /* Received transaction */
 "Received" = "Ontvangen";
@@ -1365,7 +1368,7 @@
 "Select a coin" = "Selecteer een munt";
 
 /* Buy Sell Dash */
-"Select a service" = "Select a service";
+"Select a service" = "Kies een dienst";
 
 /* Coinbase */
 "Select the coin" = "Selecteer de munt";
@@ -1417,7 +1420,7 @@
 "Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
 
 /* Buy Dash */
-"Sending to:" = "Sending to:";
+"Sending to:" = "Verzenden naar:";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "Bezig met verzenden.";
@@ -1561,10 +1564,10 @@
 "The code is incorrect. Please check and try again!" = "De code is onjuist. Controleer en probeer het opnieuw.";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
+"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "De Dash is succesvol gestort op je Coinbase account. Maar er was een probleem bij het overzetten hiervan naar de Dash portemonnee op dit apparaat.";
 
 /* Coinbase */
-"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+"The minimum amount you can send is %@" = "Het minimumbedrag dat je kan verzenden is %@";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Er zijn geen nieuwe meldingen";
@@ -1579,10 +1582,10 @@
 "There are no users that match with the name %@ in your contacts" = "Er zijn geen gebruikers die overeenkomen met de naam %@ in uw contacten";
 
 /* Coinbase */
-"There was an error while obtaining new address" = "There was an error while obtaining new address";
+"There was an error while obtaining new address" = "Er is een fout opgetreden bij het verkrijgen van een nieuw adres";
 
 /* Coinbase */
-"There was an error, please try again later" = "There was an error, please try again later";
+"There was an error, please try again later" = "Er is een fout opgetreden, probeer het later opnieuw";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Deze app is open source:";
@@ -1612,7 +1615,7 @@
 "to" = "naar";
 
 /* Coinbase */
-"to Dash Wallet on this device" = "to Dash Wallet on this device";
+"to Dash Wallet on this device" = "naar Dash portemonnee op dit apparaat";
 
 /* No comment provided by engineer. */
 "Tools" = "Gereedschap";
@@ -1662,7 +1665,7 @@
 "Turn device passcode on" = "Zet apparaat-toegangscode aan";
 
 /* Coinbase */
-"Two factor auth required" = "Two factor auth required";
+"Two factor auth required" = "Twee-factor-authenticatie vereist";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Kan geen verbinding maken";
@@ -1674,7 +1677,7 @@
 "Unknown" = "Onbekend";
 
 /* Coinbase */
-"Unknown Balance" = "Unknown Balance";
+"Unknown Balance" = "Onbekend saldo";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Niet-ondersteund of corrupt document";
@@ -1721,9 +1724,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "Gebruikersnaam valideren…";
 
-/* Coinbase */
-"Verfiy" = "Verfiy";
-
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";
 
@@ -1761,7 +1761,7 @@
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
 
 /* Send screen */
-"Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
+"Wait until wallet is synced to complete the transaction" = "Wacht tot de portemonnee is gesynchroniseerd om de transactie te voltooien";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Portemonnee is uitgeschakeld";
@@ -1879,13 +1879,13 @@
 "You only need %@ to join the pool." = "You only need %@ to join the pool.";
 
 /* Coinbase */
-"You receive" = "You receive";
+"You receive" = "Je ontvangt";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Je hebt Dash ontvangen! Als u dit apparaat verliest, verliest u uw Dash. Download de herstelzin zodat u uw portemonnee op een ander apparaat kunt herstellen.";
 
 /* Coinbase */
-"You send" = "You send";
+"You send" = "je verstuurt";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "U heeft het contactverzoek gestuurd naar %@";
@@ -1906,7 +1906,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "U hebt deze herstelzin nodig om toegang te krijgen tot uw saldo als dit apparaat is verloren of beschadigd, of als Dash Wallet ooit per ongeluk van dit apparaat wordt verwijderd.";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
+"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Je ontvangt %@ Dash in je Dash portemonnee op dit apparaat. Houd er rekening mee dat het tot 2-3 minuten kan duren om een overdracht te voltooien.";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";

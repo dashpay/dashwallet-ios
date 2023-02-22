@@ -392,7 +392,7 @@
 "Copy Logs" = "คัดลอกข้อมูลจากกการบันทึก";
 
 /* No comment provided by engineer. */
-"Copyright © 2022 Dash Core" = "Copyright © 2022 Dash Core";
+"Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "ไม่สามารถกู้คืนคำที่หายไปหรือไม่ถูกต้อง";
@@ -1036,6 +1036,9 @@
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "ไม่ใช่ร้านค้าทั้งหมดที่ยอมรับ Dash โดยตรง แต่คุณสามารถซื้อบัตรของขวัญด้วย Dash ของคุณ";
+
+/* Fiat amount */
+"Not available" = "ไม่สามารถใช้ได้";
 
 /* Location Service Status */
 "Not Determined" = "ไม่ได้กำหนด";
@@ -1720,9 +1723,6 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "ตรวจสอบชื่อผู้ใช้...";
-
-/* Coinbase */
-"Verfiy" = "Verfiy";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

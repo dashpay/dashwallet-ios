@@ -55,7 +55,7 @@ final class ConfirmOrderModel: OrderPreviewModel {
 
         Task { [weak self] in
             do {
-                let order = try await Coinbase.shared.commitCoinbaseBuyOrder(orderID: orderId)
+                let _ = try await Coinbase.shared.commitCoinbaseBuyOrder(orderID: orderId)
                 try await self?.transferFromCoinbase(amount: amount, with: nil)
             } catch {
                 await MainActor.run { [weak self] in

@@ -20,6 +20,15 @@
 
 @implementation DSTransaction (DashWallet)
 
+- (NSDate *)date {
+    DSChain *chain = self.chain;
+    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
+    NSTimeInterval txTime = (self.timestamp > 1) ? self.timestamp : now;
+    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
+
+    return txDate;
+}
+
 - (NSData *)txHashData {
     return [NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)];
 }

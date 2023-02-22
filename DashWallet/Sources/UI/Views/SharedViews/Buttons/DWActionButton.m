@@ -50,8 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
     [super traitCollectionDidChange:previousTraitCollection];
-
-    [self resetAppearance];
+    if ((self.traitCollection.verticalSizeClass != previousTraitCollection.verticalSizeClass) || (self.traitCollection.horizontalSizeClass != previousTraitCollection.horizontalSizeClass)) {
+        [self resetAppearance];
+    }
 }
 
 - (void)setUsedOnDarkBackground:(BOOL)usedOnDarkBackground {
@@ -146,6 +147,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL dark = self.usedOnDarkBackground;
     BOOL inverted = self.inverted;
+
+    self.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, 14.0);
 }
 
 - (void)resetAppearance {
@@ -193,7 +196,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self setBorderColor:color forState:UIControlStateDisabled];
 
     self.tintColor = self.accentColor;
-    self.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, 14.0);
 }
 
 #pragma mark - Styles

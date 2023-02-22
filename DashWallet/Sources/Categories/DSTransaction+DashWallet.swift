@@ -43,7 +43,7 @@ extension DSTransaction {
         case .moved:
             amount = account!.amountReceivedFromTransaction(onExternalAddresses: self)
         case .sent:
-            amount = chain.amountSent(by: self) - chain.amountReceived(from: self) - feeUsed
+            amount = chain.amountSent(by: self) - chain.amountReceived(from: self) - (feeUsed == UInt64.max ? 0 : feeUsed)
         case .received:
             amount = account!.amountReceived(from: self)
         case .notAccountFunds:
@@ -194,7 +194,7 @@ extension DSTransactionDirection {
     }
 
     private func systemImage(_ name: String) -> UIImage {
-        let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
+        let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .large)
         return UIImage(systemName: name, withConfiguration: iconConfig)!
     }
 
