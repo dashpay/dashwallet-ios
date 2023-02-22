@@ -194,7 +194,7 @@ extension DSTransactionDirection {
     }
 
     private func systemImage(_ name: String) -> UIImage {
-        let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
+        let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .large)
         return UIImage(systemName: name, withConfiguration: iconConfig)!
     }
 

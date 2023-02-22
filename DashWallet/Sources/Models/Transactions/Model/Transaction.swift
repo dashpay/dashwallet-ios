@@ -60,9 +60,12 @@ class Transaction: TransactionDataItem {
     private lazy var _dashAmount: UInt64 = tx.dashAmount
 
     var fiatAmount: String {
-        (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
-            NSLocalizedString("Updating Price", comment: "Updating Price")
+        storedFiatAmount
     }
+
+    lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
+
+    lazy var userInfo: TxUserInfo? = TxUserInfoDAOImpl.shared.get(by: tx.txHashData)
 
     var transactionType: `Type` { _transactionType }
     private lazy var _transactionType: `Type` = tx.type
