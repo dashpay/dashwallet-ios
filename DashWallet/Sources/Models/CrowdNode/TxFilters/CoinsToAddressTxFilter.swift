@@ -38,10 +38,11 @@ public class CoinsToAddressTxFilter: TransactionFilter {
 
         // TODO: if CrowdNode inputs aren't from our own transaction, the fee might not be present.
         // Need another way to detect an error response in this case.
-        let withFee = tx.feeUsed == UINT64_MAX ? false : withFee
+        let feeUsed = tx.feeUsed
+        let withFee = feeUsed == UInt64.max ? false : withFee
 
         let output = tx.outputs.first(where: { output in
-            let amountToMatch = withFee ? output.amount + tx.feeUsed : output.amount
+            let amountToMatch = withFee ? output.amount + feeUsed : output.amount
             return amountToMatch == coins &&
                 (matchingAddress == nil || output.address == matchingAddress)
         })
