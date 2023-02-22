@@ -35,12 +35,12 @@ enum TxUserInfoTaxCategory: Int {
 
     /// Expense
     case expense
-    
-    var isIncoming: Bool  {
+
+    var isIncoming: Bool {
         self == .income || self == .transferIn
     }
-    
-    var isOutgoing: Bool  {
+
+    var isOutgoing: Bool {
         self == .expense || self == .transferOut
     }
 }
@@ -51,7 +51,7 @@ enum TxUserInfoTaxCategory: Int {
 class Taxes: NSObject {
 
     var addressesUserInfos: AddressUserInfoDAO = AddressUserInfoDAOImpl()
-    var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl()
+    var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl.shared
 
     @objc
     func initialize() {
@@ -74,7 +74,7 @@ class Taxes: NSObject {
                 // Some transactions might have output that returns change
                 // to the input same address, so need to check that directions match.
                 let txDirection = tx.direction
-                
+
                 if (txDirection == .sent && txCategory.isOutgoing) ||
                     (txDirection == .received && txCategory.isIncoming) {
                     taxCategory = txCategory

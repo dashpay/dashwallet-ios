@@ -80,7 +80,8 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
             items.sort(by: { $0.date > $1.date })
         }
 
-        _items = items
+        _items = items.sorted(by: { $0.date > $1.date })
+
         self.crowdNodeTxSet = crowdNodeTxSet
         self.registrationStatus = registrationStatus
     }
