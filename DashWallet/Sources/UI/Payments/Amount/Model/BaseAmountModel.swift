@@ -33,7 +33,13 @@ struct AmountInputItem: Equatable {
     var isMain: Bool { currencyCode == kDashCurrency }
 
     static let dash = AmountInputItem(currencyName: kDashCurrency, currencyCode: kDashCurrency)
-    static var app: AmountInputItem { .init(currencyName: App.fiatCurrency, currencyCode: App.fiatCurrency) }
+    static var app: AmountInputItem {
+        .init(currencyName: App.fiatCurrency, currencyCode: App.fiatCurrency)
+    }
+
+    static func custom(currencyName: String, currencyCode: String) -> AmountInputItem {
+        .init(currencyName: currencyName, currencyCode: currencyCode)
+    }
 }
 
 // MARK: - BaseAmountModel
@@ -105,13 +111,17 @@ class BaseAmountModel {
         localFormatter
     }
 
+    internal var currencyExchanger: CurrencyExchanger {
+        CurrencyExchanger.shared
+    }
+
     init() {
         localCurrencyCode = App.fiatCurrency
         localFormatter = NumberFormatter.fiatFormatter(currencyCode: localCurrencyCode)
 
         currentInputItem = .dash
         inputItems = [
-            .app,
+            .custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
             .dash,
         ]
 
@@ -132,7 +142,8 @@ class BaseAmountModel {
             } else if currentAmount.fiatCurrencyCode != supplementaryCurrencyCode {
                 let mainAmount = AmountObject(plainAmount: currentAmount.plainAmount,
                                               fiatCurrencyCode: supplementaryCurrencyCode,
-                                              localFormatter: supplementaryNumberFormatter)
+                                              localFormatter: supplementaryNumberFormatter,
+                                              currencyExchanger: currencyExchanger)
                 supplementaryAmount = mainAmount.localAmount
             }
         } else {
@@ -151,12 +162,13 @@ class BaseAmountModel {
     func setupCurrencyCode(_ code: String) {
         guard let price = try? CurrencyExchanger.shared.rate(for: code) else { return }
 
-        localFormatter.currencyCode = code
+        localFormatter = NumberFormatter.fiatFormatter(currencyCode: code)
         localCurrencyCode = code
 
-        currentInputItem = currentInputItem.currencyCode == kDashCurrency ? .dash : .app
+        let newInputItem = AmountInputItem.custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode)
+        currentInputItem = currentInputItem.isMain ? .dash : newInputItem
         inputItems = [
-            .app,
+            newInputItem,
             .dash,
         ]
 
@@ -170,11 +182,13 @@ class BaseAmountModel {
         if activeAmountType == .main {
             mainAmount = AmountObject(dashAmountString: inputString,
                                       fiatCurrencyCode: supplementaryCurrencyCode,
-                                      localFormatter: supplementaryNumberFormatter)
+                                      localFormatter: supplementaryNumberFormatter,
+                                      currencyExchanger: currencyExchanger)
             supplementaryAmount = nil
         } else if let amount = AmountObject(localAmountString: inputString,
                                             fiatCurrencyCode: supplementaryCurrencyCode,
-                                            localFormatter: supplementaryNumberFormatter) {
+                                            localFormatter: supplementaryNumberFormatter,
+                                            currencyExchanger: currencyExchanger) {
             supplementaryAmount = amount
             mainAmount = nil
         }
@@ -185,7 +199,8 @@ class BaseAmountModel {
     internal func updateCurrentAmountObject(with amount: UInt64) {
         let amountObject = AmountObject(plainAmount: amount,
                                         fiatCurrencyCode: supplementaryCurrencyCode,
-                                        localFormatter: supplementaryNumberFormatter)
+                                        localFormatter: supplementaryNumberFormatter,
+                                        currencyExchanger: currencyExchanger)
         updateCurrentAmountObject(with: amountObject)
     }
 
@@ -289,7 +304,6 @@ extension BaseAmountModel {
     }
 
     func amountInputControlDidSwapInputs() {
-        assert(isSwapToLocalCurrencyAllowed, "Switching until price is not fetched is not allowed")
         assert(inputItems.count == 2, "Swap only if we have two input types")
 
         let inputItem = inputItems[0] == currentInputItem ? inputItems[1] : inputItems[0]
@@ -297,31 +311,23 @@ extension BaseAmountModel {
     }
 
     func pasteFromClipboard() {
-        guard var string = UIPasteboard.general.string else { return }
-        string = string.localizedAmount()
+        guard let string = UIPasteboard.general.string else { return }
 
-        guard let decimal = Decimal(string: string, locale: .current) else { return }
-        let decimalNumber = NSDecimalNumber(decimal: decimal)
+        let originalFormatter = currentInputItem.isMain
+            ? NumberFormatter.dashFormatter
+            : localFormatter
+        let formatter = originalFormatter.copy() as! NumberFormatter
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
 
-        let formattedString: String?
+        guard let number = formatter.number(from: string) else { return }
 
-        var formatter: NumberFormatter
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
 
-        if activeAmountType == .main {
-            formatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
-            formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = NumberFormatter.dashFormatter.minimumFractionDigits
-            formatter.maximumFractionDigits = NumberFormatter.dashFormatter.maximumFractionDigits
-            formattedString = formatter.string(from: decimalNumber)
-        } else {
-            formatter = localFormatter.copy() as! NumberFormatter
-            formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = localFormatter.minimumFractionDigits
-            formatter.maximumFractionDigits = localFormatter.maximumFractionDigits
-            formattedString = formatter.string(from: decimalNumber)
-        }
-
-        guard let string = formattedString else { return }
+        guard let string = formatter.string(from: number) else { return }
 
         updateAmountObjects(with: string)
     }

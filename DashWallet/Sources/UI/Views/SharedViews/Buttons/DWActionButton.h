@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showActivityIndicator;
 - (void)hideActivityIndicator;
 
+// NOTE: Internal usage only!
+- (void)resetAppearance;
+
 @end
 
 @interface DWTintedButton : DWActionButton

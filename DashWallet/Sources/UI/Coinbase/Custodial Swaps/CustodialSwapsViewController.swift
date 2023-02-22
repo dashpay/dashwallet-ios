@@ -25,6 +25,8 @@ final class CustodialSwapsViewController: CoinbaseAmountViewController {
         NSLocalizedString("Get Quote", comment: "Coinbase/Convert Crypto")
     }
 
+    override var amountInputStyle: AmountInputControl.Style { .basic }
+
     private var custodialSwapsModel: CustodialSwapsModel { model as! CustodialSwapsModel }
     private var converterView: ConverterView!
 

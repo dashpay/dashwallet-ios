@@ -214,8 +214,6 @@ extension BaseAmountViewController {
 extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
     func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
         model.setupCurrencyCode(currencyCode)
-        amountView.amountInputControl.reloadData()
-        amountView.inputTypeSwitcher.reloadData()
 
         controller.dismiss(animated: true)
     }

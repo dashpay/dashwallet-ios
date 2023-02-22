@@ -112,7 +112,7 @@ class SendAmountModel: BaseAmountModel {
         else {
             authManager.authenticate(withPrompt: nil,
                                      usingBiometricAuthentication: true,
-                                     alertIfLockout: true) { [weak self] authenticatedOrSuccess, _, _ in
+                                     alertIfLockout: true) { authenticatedOrSuccess, _, _ in
                 completionBlock(authenticatedOrSuccess)
             }
         }

@@ -26,6 +26,7 @@ protocol TxUserInfoDAO {
     func all() -> [TxUserInfo]
     func update(dto: TxUserInfo)
     func delete(dto: TxUserInfo)
+    func deleteAll()
 }
 
 // MARK: - TxUserInfoDAOImpl
@@ -38,8 +39,12 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     @objc
     func create(dto: TxUserInfo) {
         do {
-            let txUserInfo = TxUserInfo.table.insert(or: .replace, TxUserInfo.txHashColumn <- dto.txHash,
-                                                     TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
+            let txUserInfo = TxUserInfo.table.insert(or: .replace,
+                                                     TxUserInfo.txHashColumn <- dto.txHash,
+                                                     TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue,
+                                                     TxUserInfo.txRateColumn <- dto.rate,
+                                                     TxUserInfo.txRateCurrencyCodeColumn <- dto.rateCurrency,
+                                                     TxUserInfo.txRateMaximumFractionDigitsColumn <- dto.rateMaximumFractionDigits)
             try db.run(txUserInfo)
 
         } catch {
@@ -99,13 +104,23 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         cache[dto.txHash] = nil
     }
 
+    @objc
+    func deleteAll() {
+        do {
+            try db.run(TxUserInfo.table.delete())
+            cache = [:]
+        } catch {
+            print(error)
+        }
+    }
+
     @objc static let shared = TxUserInfoDAOImpl()
 }
 
 extension TxUserInfoDAOImpl {
     @objc
     func dictionaryOfAllItems() -> [Data: TxUserInfo] {
-        all()
+        _ = all()
         return cache
     }
 }

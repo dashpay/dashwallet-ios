@@ -25,7 +25,7 @@ protocol CustodialSwapsModelDelegate: AnyObject {
 
 // MARK: - CustodialSwapsModel
 
-class CustodialSwapsModel: SendAmountModel {
+class CustodialSwapsModel: CoinbaseAmountModel {
     public var hasAccount: Bool {
         selectedAccount != nil
     }
@@ -113,7 +113,8 @@ class CustodialSwapsModel: SendAmountModel {
 
         let max = AmountObject(localAmountString: selectedAccount.info.balance.amount,
                                fiatCurrencyCode: selectedAccount.info.balance.currency,
-                               localFormatter: supplementaryNumberFormatter)
+                               localFormatter: supplementaryNumberFormatter,
+                               currencyExchanger: currencyExchanger)
         supplementaryAmount = max
         mainAmount = supplementaryAmount.dashAmount
         amountDidChange()

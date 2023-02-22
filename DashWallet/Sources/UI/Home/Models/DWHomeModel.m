@@ -38,6 +38,7 @@
 #import "DWTransactionListDataSource+DWProtected.h"
 #import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -158,7 +159,10 @@ static BOOL IsJailbroken(void) {
                                  object:nil];
 
         [self reloadTxDataSource];
-        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:[NSDate new]];
+
+        NSDate *date = [NSDate new];
+        [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:date];
+        [[DWGlobalOptions sharedInstance] setActivationDateForHistoricalRates:date];
     }
     return self;
 }
@@ -482,7 +486,7 @@ static BOOL IsJailbroken(void) {
         BOOL allowedToShowReclassifyYourTransactions = NO;
         BOOL shouldAnimate = YES;
 
-        DSTransaction *prevTransaction = self.dataSource.items.firstObject;
+        DSTransaction *prevTransaction = self.allDataSource.items.firstObject;
         DSTransaction *newTransaction = transactions.firstObject;
 
         if (!prevTransaction || prevTransaction == newTransaction) {
@@ -494,6 +498,10 @@ static BOOL IsJailbroken(void) {
 
             NSDate *dateReclassifyYourTransactionsFlowActivated = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated;
             allowedToShowReclassifyYourTransactions = [newTransaction.transactionDate compare:dateReclassifyYourTransactionsFlowActivated] == NSOrderedDescending;
+        }
+
+        for (DSTransaction *tx in transactions) {
+            [Transaction.shared updateRateIfNeededFor:tx];
         }
 
         self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions

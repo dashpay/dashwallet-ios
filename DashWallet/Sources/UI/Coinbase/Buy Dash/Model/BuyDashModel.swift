@@ -33,7 +33,7 @@ enum BuyDashFailureReason {
 
 // MARK: - BuyDashModel
 
-final class BuyDashModel: SendAmountModel {
+final class BuyDashModel: CoinbaseAmountModel {
     weak var delegate: BuyDashModelDelegate?
 
     @Published var paymentMethods: [CoinbasePaymentMethod] = []
@@ -44,6 +44,10 @@ final class BuyDashModel: SendAmountModel {
 
     override var isAllowedToContinue: Bool {
         isAmountValidForProceeding
+    }
+
+    override var canShowInsufficientFunds: Bool {
+        false
     }
 
     var dashPriceDisplayString: String {

@@ -1,37 +1,38 @@
 [main]
 host = https://www.transifex.com
 
-[dash-mobile-wallets.app-localizable-strings]
-file_filter = DashWallet/<lang>.lproj/Localizable.strings
+[o:dash:p:dash-mobile-wallets:r:app-localizable-strings]
+file_filter  = DashWallet/<lang>.lproj/Localizable.strings
+source_file  = DashWallet/en.lproj/Localizable.strings
+source_lang  = en
+type         = STRINGS
 minimum_perc = 0
-source_file = DashWallet/en.lproj/Localizable.strings
-source_lang = en
-type = STRINGS
 
-[dash-mobile-wallets.app-localizable-strings-dict]
-file_filter = DashWallet/<lang>.lproj/Localizable.stringsdict
+[o:dash:p:dash-mobile-wallets:r:app-localizable-strings-dict]
+file_filter  = DashWallet/<lang>.lproj/Localizable.stringsdict
+source_file  = DashWallet/en.lproj/Localizable.stringsdict
+source_lang  = en
+type         = STRINGSDICT
 minimum_perc = 0
-source_file = DashWallet/en.lproj/Localizable.stringsdict
-source_lang = en
-type = STRINGSDICT
 
-[dash-mobile-wallets.watch-interface-strings]
-file_filter = WatchApp/<lang>.lproj/Interface.strings
+[o:dash:p:dash-mobile-wallets:r:appstore-description]
+file_filter  = fastlane/metadata/<lang>/description.txt
+source_file  = fastlane/metadata/en-US/description.txt
+source_lang  = en
+type         = TXT
 minimum_perc = 0
-source_file = WatchApp/en.lproj/Interface.strings
-source_lang = en
-type = STRINGS
 
-[dash-mobile-wallets.appstore-description]
-file_filter = fastlane/metadata/<lang>/description.txt
+[o:dash:p:dash-mobile-wallets:r:appstore-release_notes]
+file_filter  = fastlane/metadata/<lang>/release_notes.txt
+source_file  = fastlane/metadata/en-US/release_notes.txt
+source_lang  = en
+type         = TXT
 minimum_perc = 0
-source_file = fastlane/metadata/en-US/description.txt
-source_lang = en
-type = TXT
 
-[dash-mobile-wallets.appstore-release_notes]
-file_filter = fastlane/metadata/<lang>/release_notes.txt
+[o:dash:p:dash-mobile-wallets:r:watch-interface-strings]
+file_filter  = WatchApp/<lang>.lproj/Interface.strings
+source_file  = WatchApp/en.lproj/Interface.strings
+source_lang  = en
+type         = STRINGS
 minimum_perc = 0
-source_file = fastlane/metadata/en-US/release_notes.txt
-source_lang = en
-type = TXT
+

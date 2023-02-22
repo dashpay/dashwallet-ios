@@ -67,6 +67,12 @@ public final class CurrencyExchanger {
         if amount.isZero { return 0 }
 
         let rate = try rate(for: currency)
+        return try convertDash(amount: amount, to: currency, rate: rate)
+    }
+
+    public func convertDash(amount: Decimal, to currency: String, rate: Decimal) throws -> Decimal {
+        if amount.isZero { return 0 }
+
         let result = rate*amount
 
         let formatter = NumberFormatter.fiatFormatter(currencyCode: currency)
@@ -83,6 +89,12 @@ public final class CurrencyExchanger {
         if amount.isZero { return 0 }
 
         let rate = try rate(for: currency)
+        return try convertToDash(amount: amount, currency: currency, rate: rate)
+    }
+
+    public func convertToDash(amount: Decimal, currency: String, rate: Decimal) throws -> Decimal {
+        if amount.isZero { return 0 }
+
         return amount/rate
     }
 
@@ -90,14 +102,14 @@ public final class CurrencyExchanger {
         if amount.isZero { return 0 }
 
         if amountCurrency == kDashCurrency {
-            let rate = try rate(for: currency)
-            return amount/rate
+            return try convertToDash(amount: amount, currency: currency)
         }
 
         let dashAmount = try convertToDash(amount: amount, currency: amountCurrency)
         let result = try convertDash(amount: dashAmount, to: currency)
         return result
     }
+
 
     static let shared = CurrencyExchanger(dataProvider: RatesProviderFactory.base)
 }

@@ -20,6 +20,7 @@
 #import "DWAppGroupOptions.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -79,6 +80,8 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 - (void)wipeWallet {
+    [[TxUserInfoDAOImpl shared] deleteAll];
+    [[AddressUserInfoDAOImpl shared] deleteAll];
     [[DWEnvironment sharedInstance] clearAllWallets];
 
     [[DWGlobalOptions sharedInstance] restoreToDefaults];

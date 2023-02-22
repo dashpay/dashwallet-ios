@@ -260,7 +260,7 @@ NS_ASSUME_NONNULL_BEGIN
     [actionSheet addAction:testnet];
     //    [actionSheet addAction:evonet];
     [actionSheet addAction:cancel];
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         actionSheet.popoverPresentationController.sourceView = sourceView;
         actionSheet.popoverPresentationController.sourceRect = sourceRect;
     }

@@ -178,7 +178,6 @@ extension MerchantDAO {
 
             let merchantTable = Table("merchant")
             let merchantIdColumn = ExplorePointOfUse.merchantId
-            let name = ExplorePointOfUse.name
 
             var queryFilter = Expression<Bool>(value: true)
 
@@ -186,7 +185,7 @@ extension MerchantDAO {
 
 
             if let bounds {
-                var boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
+                let boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
                     Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)") &&
                     Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)") &&
                     Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")

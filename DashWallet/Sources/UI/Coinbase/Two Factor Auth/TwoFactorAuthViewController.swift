@@ -89,7 +89,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     override var actionButtonTitle: String? {
-        NSLocalizedString("Verfiy", comment: "Coinbase")
+        NSLocalizedString("Verify", comment: "Coinbase")
     }
 
     override func actionButtonAction(sender: UIView) {

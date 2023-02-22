@@ -17,6 +17,7 @@
 
 #import "DWBaseTransactionListDataProvider.h"
 
+#import "DSTransaction+DashWallet.h"
 #import "DWDateFormatter.h"
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItem.h"
@@ -35,12 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSDate *)dateForTransaction:(DSTransaction *)transaction {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
-    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
-
-    return txDate;
+    return transaction.date;
 }
 
 - (NSString *)formattedShortTxDate:(NSDate *)date {

@@ -43,7 +43,7 @@ enum TxUserInfoTaxCategory: Int {
 class Taxes: NSObject {
 
     var addressesUserInfos: AddressUserInfoDAO = AddressUserInfoDAOImpl()
-    var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl()
+    var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl.shared
 
     @objc
     func initialize() {
@@ -61,11 +61,12 @@ class Taxes: NSObject {
     func taxCategory(for tx: DSTransaction) -> TxUserInfoTaxCategory {
         var taxCategory: TxUserInfoTaxCategory = tx.defaultTaxCategory()
 
-        if let inputAddress = tx.inputAddresses.first as? String, let txCategory = self.taxCategory(for: inputAddress) {
+        if let txCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory {
+            taxCategory = txCategory
+        } else if let inputAddress = tx.inputAddresses.first as? String,
+                  let txCategory = self.taxCategory(for: inputAddress) {
             taxCategory = txCategory
         }
-
-        taxCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory ?? taxCategory
 
         return taxCategory
     }

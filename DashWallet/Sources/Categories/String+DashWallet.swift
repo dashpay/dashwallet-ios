@@ -116,7 +116,6 @@ extension String {
         }
 
         let isCurrencySymbolAtTheBeginning = currencySymbolRange.lowerBound == format.startIndex
-        let isCurrencySymbolAtTheEnd = currencySymbolRange.upperBound == format.endIndex
 
         // special case to deal with RTL languages
         if format.hasPrefix("\u{0000200e}") || format.hasPrefix("\u{0000200f}") {
