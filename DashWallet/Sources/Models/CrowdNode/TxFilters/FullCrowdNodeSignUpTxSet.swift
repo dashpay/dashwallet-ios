@@ -46,7 +46,9 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
 
     @discardableResult
     func tryInclude(tx: DSTransaction) -> Bool {
-        if transactions[tx.txHashData] != nil {
+        let txHashData = tx.txHashData
+
+        if transactions[txHashData] != nil {
             // Already included, return true
             return true
         }
@@ -57,13 +59,13 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
             CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
         ]
-        
+
         if let accountAddress = CrowdNodeDefaults.shared.crowdNodeAccountAddress {
             crowdNodeTxFilters.append(CrowdNodeTopUpTx(address: accountAddress))
         }
 
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
-            transactions[tx.txHashData] = tx
+            transactions[txHashData] = tx
             matchedFilters.append(matchedFilter)
 
             return true
