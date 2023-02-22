@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - Transaction
 
-struct Transaction: TransactionDataItem {
+class Transaction: TransactionDataItem {
     enum State {
         case ok
         case invalid
@@ -38,22 +38,87 @@ struct Transaction: TransactionDataItem {
     }
 
     let tx: DSTransaction
-    var direction: DSTransactionDirection
+    var direction: DSTransactionDirection { _direction }
+    private lazy var _direction: DSTransactionDirection = tx.direction
 
-    var outputReceiveAddresses: [String]
-    var inputSendAddresses: [String]
+    var outputReceiveAddresses: [String] { _outputReceiveAddresses }
+    private lazy var _outputReceiveAddresses: [String] = tx.outputReceiveAddresses
+
+    var inputSendAddresses: [String] { _inputSendAddresses }
+    private lazy var _inputSendAddresses: [String] = {
+        if tx is DSCoinbaseTransaction {
+            // Don't show input addresses for coinbase
+            return []
+        } else {
+            return Array(Set(tx.inputAddresses.compactMap { $0 as? String }))
+        }
+    }()
+
     var specialInfoAddresses: [String: Int]?
-    var dashAmount: UInt64
+
+    var dashAmount: UInt64 { _dashAmount }
+    private lazy var _dashAmount: UInt64 = tx.dashAmount
 
     var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
             NSLocalizedString("Updating Price", comment: "Updating Price")
     }
 
-    var transactionType: `Type`
-    var state: State!
+    var transactionType: `Type` { _transactionType }
+    private lazy var _transactionType: `Type` = tx.type
+
+    var state: State! { _state }
+    private lazy var _state: State! = {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
+        let account = tx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
+
+        let blockHeight = chain.lastTerminalBlockHeight
+        let instantSendReceived = tx.instantSendReceived
+        let processingInstantSend = tx.hasUnverifiedInstantSendLock
+        let confirmed = tx.confirmed
+        let confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1
+
+        if (direction == .sent || direction == .moved)
+            && confirms == 0
+            && !account!.transactionIsValid(tx) {
+            return .invalid
+        } else if direction == .received {
+            if !instantSendReceived && confirms == 0 && account!.transactionIsPending(tx) {
+                // should be very hard to get here, a miner would have to include a non standard transaction into a block
+                return .locked;
+            } else if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(tx) {
+                return .processing;
+            }
+            else if account!.transactionOutputsAreLocked(tx) {
+                return .locked;
+            }
+            else if !instantSendReceived && !confirmed {
+                let transactionAge = NSDate().timeIntervalSince1970 - tx
+                    .timestamp // we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
+                if confirms == 0 && (processingInstantSend || transactionAge < 1.0) {
+                    return .processing
+                } else {
+                    return .confirming
+                }
+            }
+        } else if direction != .notAccountFunds {
+            if !instantSendReceived
+                && confirms == 0
+                && !account!.transactionIsVerified(tx) {
+                return .processing;
+            }
+        }
+
+        return .ok
+    }()
+
     var date: Date
-    var shortDateString: String
+    var shortDateString: String {
+        _shortDateString
+    }
+
+    private lazy var _shortDateString: String = tx.formattedShortTxDate
 
     var stateTitle: String {
         switch transactionType {
@@ -88,62 +153,7 @@ struct Transaction: TransactionDataItem {
 
     init(transaction: DSTransaction) {
         tx = transaction
-
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
-        let account = transaction.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
-
-        dashAmount = transaction.dashAmount
-        direction = transaction.direction
-        outputReceiveAddresses = transaction.outputReceiveAddresses
-        specialInfoAddresses = transaction.specialInfoAddresses
-        transactionType = transaction.type
         date = transaction.date
-
-        if transaction is DSCoinbaseTransaction {
-            // Don't show input addresses for coinbase
-            inputSendAddresses = []
-        } else {
-            inputSendAddresses = Array(Set(transaction.inputAddresses.compactMap { $0 as? String }))
-        }
-
-        let blockHeight = chain.lastTerminalBlockHeight
-        let instantSendReceived = transaction.instantSendReceived
-        let processingInstantSend = transaction.hasUnverifiedInstantSendLock
-        let confirmed = transaction.confirmed
-        let confirms = (transaction.blockHeight > blockHeight) ? 0 : (blockHeight - transaction.blockHeight) + 1
-
-        if (direction == .sent || direction == .moved) &&
-            confirms == 0 &&
-            !account!.transactionIsValid(transaction) {
-            state = .invalid
-        } else if direction == .received {
-            if !instantSendReceived && confirms == 0 && account!.transactionIsPending(transaction) {
-                // should be very hard to get here, a miner would have to include a non standard transaction into a block
-                state = .locked;
-            } else if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(transaction) {
-                state = .processing;
-            }
-            else if account!.transactionOutputsAreLocked(transaction) {
-                state = .locked;
-            }
-            else if !instantSendReceived && !confirmed {
-                let transactionAge = NSDate().timeIntervalSince1970 - transaction
-                    .timestamp // we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
-                if confirms == 0 && (processingInstantSend || transactionAge < 1.0) {
-                    state = .processing
-                } else {
-                    state = .confirming
-                }
-            }
-        }
-        else if direction != .notAccountFunds {
-            if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(transaction) {
-                state = .processing;
-            }
-        }
-
-        shortDateString = transaction.formattedShortTxDate
     }
 }
 
@@ -155,8 +165,6 @@ extension Transaction {
     var dashAmountTintColor: UIColor {
         direction.dashAmountTintColor
     }
-
-
 
     var txHashHexString: String {
         tx.txHashHexString
