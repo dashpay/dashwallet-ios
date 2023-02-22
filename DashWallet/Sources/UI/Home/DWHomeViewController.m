@@ -229,16 +229,8 @@ NS_ASSUME_NONNULL_BEGIN
         [CrowdNodeObjcWrapper restoreState];
 
         if ([CrowdNodeObjcWrapper isInterrupted]) {
-            // Re-authenticate to continue signup
-            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-            [authManager authenticateWithPrompt:NSLocalizedString(@"CrowdNode sign up was interrupted. Continue?", nil)
-                   usingBiometricAuthentication:YES
-                                 alertIfLockout:NO
-                                     completion:^(BOOL success, BOOL usedBiometrics, BOOL cancelled) {
-                                         if (success) {
-                                             [CrowdNodeObjcWrapper continueInterrupted];
-                                         }
-                                     }];
+            // Continue signup
+            [CrowdNodeObjcWrapper continueInterrupted];
         }
     }
     else {

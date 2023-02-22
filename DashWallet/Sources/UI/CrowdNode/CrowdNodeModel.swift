@@ -264,16 +264,6 @@ extension CrowdNodeModel {
 
     func withdraw(amount: UInt64) async throws -> Bool {
         guard amount > 0 && walletBalance >= CrowdNode.minimumLeftoverBalance else { return false }
-
-        if !DSAuthenticationManager.sharedInstance().didAuthenticate {
-            let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: amount)
-            let authenticated = await authenticate(allowBiometric: usingBiometric)
-
-            if !authenticated {
-                return false
-            }
-        }
-
         try await crowdNode.withdraw(amount: amount)
         return true
     }
