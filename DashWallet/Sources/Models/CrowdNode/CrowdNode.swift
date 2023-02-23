@@ -23,6 +23,11 @@ import Combine
 @objc
 public class CrowdNodeObjcWrapper: NSObject {
     @objc
+    public class func start() {
+        let _ = CrowdNode.shared
+    }
+    
+    @objc
     public class func restoreState() {
         CrowdNode.shared.restoreState()
     }
@@ -445,7 +450,6 @@ extension CrowdNode {
     }
     
     func calculateWithdrawalPermil(forAmount: UInt64) -> UInt64 {
-        let account = DWEnvironment.sharedInstance().currentAccount
         let maxPermil = ApiCode.withdrawAll.rawValue
         let permil = UInt64(round(Double(forAmount * maxPermil) / Double(balance)))
         let requestPermil = min(permil, maxPermil)

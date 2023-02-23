@@ -96,6 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
+    [CrowdNodeObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
