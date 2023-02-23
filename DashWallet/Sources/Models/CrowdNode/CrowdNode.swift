@@ -23,6 +23,11 @@ import Combine
 @objc
 public class CrowdNodeObjcWrapper: NSObject {
     @objc
+    public class func start() {
+        let _ = CrowdNode.shared
+    }
+    
+    @objc
     public class func restoreState() {
         CrowdNode.shared.restoreState()
     }
@@ -445,7 +450,6 @@ extension CrowdNode {
     }
     
     func calculateWithdrawalPermil(forAmount: UInt64) -> UInt64 {
-        let account = DWEnvironment.sharedInstance().currentAccount
         let maxPermil = ApiCode.withdrawAll.rawValue
         let permil = UInt64(round(Double(forAmount * maxPermil) / Double(balance)))
         let requestPermil = min(permil, maxPermil)
@@ -743,20 +747,11 @@ extension CrowdNode {
 
             if account.transactionIsValid(confirmationTx) {
                 do {
-                    // TODO: authentication is temporary. Should be fixed in NMI-908
-                    var authenticated = DSAuthenticationManager.sharedInstance().didAuthenticate
-
-                    if !authenticated {
-                        authenticated = await authenticate(allowBiometric: false)
-                    }
-
-                    if authenticated {
-                        prefs.shouldShowConfirmedNotification = true
-                        let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount,
-                                                                             inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address),
-                                                                             adjustAmountDownwards: true)
-                        DSLogger.log("CrowdNode: confirmation tx forwarded: \(forwarded.txHashHexString)")
-                    }
+                    prefs.shouldShowConfirmedNotification = true
+                    let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount,
+                                                                         inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address),
+                                                                         adjustAmountDownwards: true)
+                    DSLogger.log("CrowdNode: confirmation tx forwarded: \(forwarded.txHashHexString)")
                 } catch {
                     DSLogger.log("CrowdNode error during confirmation forwarding: \(error)")
                 }
@@ -859,16 +854,6 @@ extension CrowdNode {
                                        accountAddress: accountAddress)
 
         return wallet.allTransactions.contains { filter.matches(tx: $0) }
-    }
-
-    // TODO: authentication is temporary. Should be fixed in NMI-908
-    @MainActor
-    private func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
-        let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
-        return await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: message,
-                                                                           usingBiometricAuthentication: allowBiometric &&
-                                                                               biometricEnabled,
-                                                                           alertIfLockout: true).0
     }
 
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
