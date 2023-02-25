@@ -24,8 +24,84 @@ class CurrencyExchangerObjcWrapper: NSObject {
     private static var wrapped = CurrencyExchanger.shared
 
     @objc
+    static var localCurrencyDashPrice: NSDecimalNumber? {
+        do {
+            return try wrapped.rate(for: App.fiatCurrency) as NSDecimalNumber
+        } catch {
+            return nil
+        }
+    }
+
+    @objc
+    static var prices: [DSCurrencyPriceObject] {
+        wrapped.currencies.compactMap { .init(code: $0.code, name: $0.name, price: $0.price as NSNumber) }
+    }
+
+    @objc
+    static var localFormat: NumberFormatter {
+        NumberFormatter.fiatFormatter
+    }
+
+    @objc
     static func startExchangeRateFetching() {
         wrapped.startExchangeRateFetching()
+    }
+
+    @objc
+    static func localCurrencyStringForDashAmount(_ amount: UInt64) -> String {
+        wrapped.fiatAmountString(for: amount.dashAmount)
+    }
+
+    @objc
+    static func localCurrencyNumberForDashAmount(_ amount: UInt64) -> NSNumber? {
+        if amount == 0 {
+            return .init(integerLiteral: 0)
+        }
+
+        guard let local = localCurrencyDashPrice else {
+            return nil
+        }
+
+        var n = local
+            .multiplying(by: NSDecimalNumber(value: llabs(Int64(amount))))
+            .dividing(by: NSDecimalNumber(value: DUFFS))
+        let min = NSDecimalNumber(value: 1)
+            .multiplying(byPowerOf10: -Int16(localFormat.maximumFractionDigits))
+
+        // if the amount is too small to be represented in local currency (but is != 0) then return a string like "$0.01"
+        if n.compare(min) == .orderedAscending {
+            n = min
+        }
+
+        if amount < 0 {
+            n = n.multiplying(by: NSDecimalNumber(value: -1))
+        }
+
+        return n
+    }
+
+    @objc(stringForDashAmount:)
+    static func string(for dashAmount: UInt64) -> String {
+        dashAmount.formattedDashAmount
+    }
+
+    @objc(fiatCurrencyString:forDashAmount:)
+    static func fiatCurrencyString(_ currency: String, dashAmount: UInt64) -> String {
+        wrapped.fiatAmountString(in: currency, for: dashAmount.dashAmount)
+    }
+
+    @objc(amountForLocalCurrency:)
+    static func amount(for fiatAmount: Decimal) -> UInt64 {
+        do {
+            return try wrapped.convertToDash(amount: fiatAmount, currency: App.fiatCurrency).plainDashAmount
+        } catch {
+            return 0
+        }
+    }
+
+    @objc
+    static var localCurrencyCode: String {
+        App.fiatCurrency
     }
 }
 
@@ -38,11 +114,11 @@ public final class CurrencyExchanger {
     /// - Returns: Array of `DSCurrencyPriceObject`
     ///
     ///
-    var currencies: [DSCurrencyPriceObject] = []
+    var currencies: [RateObject] = []
 
     private let dataProvider: RatesProvider
-    private var pricesByCode: [String: DSCurrencyPriceObject]!
-    private var plainPricesByCode: [String: NSNumber]!
+    private var pricesByCode: [String: RateObject]!
+    private var plainPricesByCode: [String: Decimal]!
 
     init(dataProvider: RatesProvider) {
         self.dataProvider = dataProvider
@@ -60,7 +136,7 @@ public final class CurrencyExchanger {
         guard !currencies.isEmpty else { throw CurrencyExchanger.Error.ratesAreFetching }
         guard let rate = plainPricesByCode[currency] else { throw CurrencyExchanger.Error.ratesNotAvailable }
 
-        return rate.decimalValue
+        return rate
     }
 
     public func convertDash(amount: Decimal, to currency: String) throws -> Decimal {
@@ -123,8 +199,8 @@ extension CurrencyExchanger {
         dataProvider.updateHandler = { [weak self] prices in
             guard let self else { return }
 
-            var pricesByCode: [String: DSCurrencyPriceObject] = [:]
-            var plainPricesByCode: [String: NSNumber] = [:]
+            var pricesByCode: [String: RateObject] = [:]
+            var plainPricesByCode: [String: Decimal] = [:]
 
             for rate in prices {
                 pricesByCode[rate.code] = rate
@@ -160,5 +236,26 @@ extension CurrencyExchanger {
         case ratesNotAvailable
         case ratesAreFetching
         case invalidAmount
+    }
+}
+
+// MARK: Helper methods
+
+extension CurrencyExchanger {
+    func fiatAmountString(in currency: String, for dashAmount: Decimal) -> String {
+        do {
+            let amount = try convertDash(amount: dashAmount, to: currency)
+            return amount.formattedFiatAmount
+        } catch CurrencyExchanger.Error.ratesAreFetching {
+            return NSLocalizedString("Syncing...", comment: "Balance")
+        } catch CurrencyExchanger.Error.ratesNotAvailable {
+            return NSLocalizedString("Syncing...", comment: "Balance")
+        } catch {
+            return NSLocalizedString("Invalid amount", comment: "Balance")
+        }
+    }
+
+    func fiatAmountString(for dashAmount: Decimal) -> String {
+        fiatAmountString(in: App.fiatCurrency, for: dashAmount)
     }
 }

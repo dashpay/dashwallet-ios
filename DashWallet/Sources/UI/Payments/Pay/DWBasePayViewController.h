@@ -22,7 +22,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPaymentProcessor;
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
 @protocol DWDPBasicUserItem;

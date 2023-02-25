@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
+#import <UserNotifications/UserNotifications.h>
 
 @import Firebase;
 
@@ -29,7 +30,6 @@
 #import "DWStartModel.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
-#import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 #import "DWEnvironment.h"
 #import "dashwallet-Swift.h"
@@ -57,7 +57,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate () <DWStartViewControllerDelegate>
+@interface AppDelegate () <DWStartViewControllerDelegate, UNUserNotificationCenterDelegate>
 
 @property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
 
@@ -96,6 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
+    [CrowdNodeObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
@@ -115,10 +116,6 @@ NS_ASSUME_NONNULL_BEGIN
     
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
-        // start updating prices earlier than migration to update `secureTime`
-        // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
-        [[DSPriceManager sharedInstance] startExchangeRateFetching];
-        
         [self performDeferredStartWithLaunchOptions:launchOptions];
     }
     else {
@@ -297,6 +294,29 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
     self.balanceNotifier = [[DWBalanceNotifier alloc] init];
     [self.balanceNotifier setupNotifications];
+
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    center.delegate = self;
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
+    
+    if ([notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
+        completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
+    }
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler {
+
+    if ([response.notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
+        if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
+            UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
+            [_window.rootViewController presentViewController:vc animated:YES completion:nil];
+        }
+        completionHandler();
+    }
 }
 
 #pragma mark - DWStartViewControllerDelegate

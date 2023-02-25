@@ -24,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction;
 
-- (NSDate *)dateForTransaction:(DSTransaction *)transaction;
 - (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction;
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction;

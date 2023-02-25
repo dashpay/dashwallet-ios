@@ -45,8 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
         return dateString;
     }
 
-    NSDate *date = [self dateForTransaction:transaction];
-    dateString = [self formattedShortTxDate:date];
+    dateString = transaction.formattedShortTxDate;
 
     if (transaction.blockHeight != TX_UNCONFIRMED) {
         self.txDates[uint256_obj(transaction.txHash)] = dateString;
@@ -56,24 +55,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction {
-    NSDate *date = [self dateForTransaction:transaction];
-    return [self formattedLongTxDate:date];
+    return transaction.formattedLongTxDate;
 }
 
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction {
-    NSDate *date = [self dateForTransaction:transaction];
-    return [self formattedISO8601TxDate:date];
+    return transaction.formattedISO8601TxDate;
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSAccount *account = [transaction.accounts containsObject:currentAccount] ? currentAccount : nil;
 
     DSTransactionDirection transactionDirection = account ? [transaction direction] : DSTransactionDirection_NotAccountFunds;
-    uint64_t dashAmount;
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
 
@@ -140,7 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
         // Don't show input addresses for coinbase
         dataItem.inputSendAddresses = [NSArray array];
     }
-    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
+    dataItem.fiatAmount = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:dataItem.dashAmount];
 
     const uint32_t blockHeight = [self blockHeight];
     const BOOL instantSendReceived = transaction.instantSendReceived;
@@ -179,6 +173,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     return dataItem;
 }
+
 
 #pragma mark - Private
 

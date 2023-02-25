@@ -17,6 +17,7 @@
 
 #import "DWPaymentProcessor.h"
 
+#import "CurrencyExchanger_Objc.h"
 #import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -599,7 +600,6 @@ static NSString *sanitizeString(NSString *s) {
                       error:(nullable NSError *)error
                         fee:(uint64_t)fee
                     request:(DSPaymentRequest *)request {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
 
     if (error) {
@@ -615,14 +615,14 @@ static NSString *sanitizeString(NSString *s) {
         NSString *format =
             NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@).", nil);
         NSString *message = [NSString stringWithFormat:format,
-                                                       [priceManager stringForDashAmount:amount],
-                                                       [priceManager localCurrencyStringForDashAmount:amount],
-                                                       [priceManager stringForDashAmount:fee],
-                                                       [priceManager localCurrencyStringForDashAmount:fee]];
+                                                       [CurrencyExchanger_Objc stringForDashAmount:amount],
+                                                       [CurrencyExchanger_Objc localCurrencyStringForDashAmount:amount],
+                                                       [CurrencyExchanger_Objc stringForDashAmount:fee],
+                                                       [CurrencyExchanger_Objc localCurrencyStringForDashAmount:fee]];
 
         NSString *actionTitle = [NSString stringWithFormat:@"%@ (%@)",
-                                                           [priceManager stringForDashAmount:amount],
-                                                           [priceManager localCurrencyStringForDashAmount:amount]];
+                                                           [CurrencyExchanger_Objc stringForDashAmount:amount],
+                                                           [CurrencyExchanger_Objc localCurrencyStringForDashAmount:amount]];
 
         [self
             requestUserActionTitle:nil

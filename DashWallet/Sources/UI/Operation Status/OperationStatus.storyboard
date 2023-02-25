@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Failed Operation Status View Controller-->
+        <scene sceneID="Gnl-Pr-Dxl">
+            <objects>
+                <viewController storyboardIdentifier="FailedOperationStatusViewController" id="Dcf-6l-o92" customClass="FailedOperationStatusViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="uoA-rJ-2by">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="elb-oN-sq4">
+                                <rect key="frame" x="30" y="159" width="333" height="232"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="coinbase.failure.operation.status" translatesAutoresizingMaskIntoConstraints="NO" id="UtR-ml-9LD">
+                                        <rect key="frame" x="116.66666666666666" y="0.0" width="100" height="100"/>
+                                    </imageView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="PEY-yp-ScN">
+                                        <rect key="frame" x="133.33333333333334" y="120" width="66.333333333333343" height="62"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZIP-Hh-AQq">
+                                                <rect key="frame" x="0.0" y="0.0" width="66.333333333333329" height="33.666666666666664"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                                <color key="textColor" red="0.67532879109999999" green="0.31916391849999998" blue="0.25879368190000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A3S-dy-dXy">
+                                                <rect key="frame" x="12.666666666666661" y="41.666666666666686" width="41.333333333333343" height="20.333333333333329"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="q7w-bQ-jAN">
+                                        <rect key="frame" x="49" y="202" width="235" height="30"/>
+                                        <color key="backgroundColor" red="0.24137887359999999" green="0.54293322560000001" blue="0.86670547720000002" alpha="0.099948043" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="1pv-V9-iCh"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                                        <inset key="contentEdgeInsets" minX="17" minY="0.0" maxX="12" maxY="0.0"/>
+                                        <inset key="imageEdgeInsets" minX="-7" minY="1" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" title="Contact Coinbase Support" image="coinbase.contact.support">
+                                            <color key="titleColor" red="0.24137887359999999" green="0.54293322560000001" blue="0.86670547720000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="supportAction" destination="Dcf-6l-o92" eventType="touchUpInside" id="1vl-sX-xV7"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="KBH-Uw-gdf">
+                                <rect key="frame" x="15" y="757" width="363" height="46"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-ja-EZi">
+                                        <rect key="frame" x="0.0" y="0.0" width="178.66666666666666" height="46"/>
+                                        <color key="tintColor" name="DashBlueColor"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" title="Cancel">
+                                            <color key="titleColor" name="DashBlueColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="cancelAction" destination="Dcf-6l-o92" eventType="touchUpInside" id="03y-90-0gN"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Qj-t7-E2f" customClass="DWActionButton">
+                                        <rect key="frame" x="184.66666666666663" y="0.0" width="178.33333333333337" height="46"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                        <connections>
+                                            <action selector="retryAction" destination="Dcf-6l-o92" eventType="touchUpInside" id="aSf-om-9DY"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="Sbs-aD-ooC"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="mTR-Kd-WaK"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="KBH-Uw-gdf" firstAttribute="leading" secondItem="mTR-Kd-WaK" secondAttribute="leading" constant="15" id="Cd0-gn-ymZ"/>
+                            <constraint firstItem="mTR-Kd-WaK" firstAttribute="trailing" secondItem="KBH-Uw-gdf" secondAttribute="trailing" constant="15" id="ViJ-iP-QqN"/>
+                            <constraint firstItem="mTR-Kd-WaK" firstAttribute="bottom" secondItem="KBH-Uw-gdf" secondAttribute="bottom" constant="15" id="Wbo-Jy-xvh"/>
+                            <constraint firstItem="mTR-Kd-WaK" firstAttribute="trailing" secondItem="elb-oN-sq4" secondAttribute="trailing" constant="30" id="Xyv-81-nAI"/>
+                            <constraint firstItem="elb-oN-sq4" firstAttribute="top" secondItem="mTR-Kd-WaK" secondAttribute="top" constant="100" id="blt-Sl-vO6"/>
+                            <constraint firstItem="elb-oN-sq4" firstAttribute="leading" secondItem="mTR-Kd-WaK" secondAttribute="leading" constant="30" id="fup-3x-WHB"/>
+                        </constraints>
+                        <edgeInsets key="layoutMargins" top="0.0" left="15" bottom="0.0" right="15"/>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="YW7-ja-EZi" id="Xoy-Ug-p0I"/>
+                        <outlet property="contactSupportButton" destination="q7w-bQ-jAN" id="G3W-Ja-xb9"/>
+                        <outlet property="descriptionLabel" destination="A3S-dy-dXy" id="vEl-fx-3zi"/>
+                        <outlet property="retryButton" destination="9Qj-t7-E2f" id="s4y-6l-kI7"/>
+                        <outlet property="titleLabel" destination="ZIP-Hh-AQq" id="ntG-3q-0dQ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CKJ-HF-fGj" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2682.608695652174" y="72.991071428571431"/>
+        </scene>
+        <!--Successful Operation Status View Controller-->
+        <scene sceneID="xR6-X1-bVj">
+            <objects>
+                <viewController storyboardIdentifier="SuccessfulOperationStatusViewController" id="7Ui-jn-i3E" customClass="SuccessfulOperationStatusViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="5TY-vi-Txj">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="f6x-fM-eho"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <connections>
+                        <outlet property="contentView" destination="Lfb-lm-7rp" id="qcm-YN-VEY"/>
+                        <outlet property="descriptionLabel" destination="t1h-PU-3oz" id="Ca6-Hr-Yfs"/>
+                        <outlet property="titleLabel" destination="wEA-yU-6GH" id="7yN-B0-eNO"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="D69-H2-c29" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <view contentMode="scaleToFill" id="Lfb-lm-7rp">
+                    <rect key="frame" x="0.0" y="0.0" width="414" height="400"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Tr8-ko-OgY">
+                            <rect key="frame" x="30" y="100" width="354" height="300"/>
+                            <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="coinbase.success.operation.status" translatesAutoresizingMaskIntoConstraints="NO" id="f35-4k-nRV">
+                                    <rect key="frame" x="127" y="0.0" width="100" height="100"/>
+                                </imageView>
+                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="TVL-kS-9DU">
+                                    <rect key="frame" x="144" y="120" width="66.333333333333314" height="62"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wEA-yU-6GH">
+                                            <rect key="frame" x="0.0" y="0.0" width="66.333333333333329" height="33.666666666666664"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                            <color key="textColor" red="0.23529411759999999" green="0.72156862749999995" blue="0.47058823529999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t1h-PU-3oz">
+                                            <rect key="frame" x="12.333333333333346" y="41.666666666666686" width="41.333333333333343" height="20.333333333333329"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </stackView>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zeU-Fa-Amw">
+                                    <rect key="frame" x="57" y="202" width="240" height="98"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </view>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <viewLayoutGuide key="safeArea" id="ZgG-nj-XZs"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="Tr8-ko-OgY" secondAttribute="bottom" id="NkX-wf-3WH"/>
+                        <constraint firstItem="Tr8-ko-OgY" firstAttribute="leading" secondItem="Lfb-lm-7rp" secondAttribute="leading" constant="30" id="PS7-KC-QLv"/>
+                        <constraint firstAttribute="trailing" secondItem="Tr8-ko-OgY" secondAttribute="trailing" constant="30" id="fDF-aY-gKH"/>
+                        <constraint firstItem="Tr8-ko-OgY" firstAttribute="top" secondItem="Lfb-lm-7rp" secondAttribute="top" constant="100" id="inS-HG-DDu"/>
+                    </constraints>
+                </view>
+            </objects>
+            <point key="canvasLocation" x="1963.7681159420292" y="72.991071428571431"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="coinbase.contact.support" width="16" height="16"/>
+        <image name="coinbase.failure.operation.status" width="100" height="100"/>
+        <image name="coinbase.success.operation.status" width="100" height="100"/>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

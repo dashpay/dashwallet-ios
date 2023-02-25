@@ -16,6 +16,7 @@
 //
 
 #import "DWEnvironment.h"
+#import "DSChain+DashWallet.h"
 
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
@@ -213,6 +214,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
                                                             object:nil];
         completion(YES);
     }
+}
+
+- (NSNumber *)apy {
+    return self.currentChain.apy;
 }
 
 @end

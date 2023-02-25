@@ -60,7 +60,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         }
     }
 
-    public var state: State = .unknown {
+    @objc public var state: State = .unknown {
         didSet {
             guard state != oldValue else { return }
 

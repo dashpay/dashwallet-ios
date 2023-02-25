@@ -16,9 +16,8 @@
 //
 
 #import "DWToolsMenuModel.h"
-#import "DWCSVExporter.h"
 #import "DWEnvironment.h"
-#import "DWTransactionListDataProvider.h"
+#import "dashwallet-Swift.h"
 
 @interface DWToolsMenuModel ()
 @end
@@ -33,8 +32,7 @@
 }
 
 - (void)generateCSVReportWithCompletionHandler:(void (^)(NSString *fileName, NSURL *file))completionHandler errorHandler:(void (^)(NSError *error))errorHandler {
-
-    return [DWCSVExporter generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
+    return [TaxReportGenerator generateCSVReportWithCompletionHandler:completionHandler errorHandler:errorHandler];
 }
 
 @end

@@ -53,6 +53,50 @@
     [self.navigationController pushViewController:vc animated:YES];
 }
 
+- (void)showStakingIfSynced {
+    if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
+        UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    else {
+        [self notifyChainSyncing];
+    }
+}
+
+- (void)notifyChainSyncing {
+    NSString *title = NSLocalizedString(@"The chain is syncing…", nil);
+    NSString *message = NSLocalizedString(@"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.", nil);
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:message
+                  preferredStyle:UIAlertControllerStyleAlert];
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Go to CrowdNode website", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        [[UIApplication sharedApplication] openURL:[CrowdNodeObjcWrapper crowdNodeWebsiteUrl]
+                                                           options:@{}
+                                                 completionHandler:^(BOOL success){
+                                                 }];
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Close", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:action];
+    }
+
+    [self presentViewController:alert
+                       animated:YES
+                     completion:nil];
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -77,6 +121,9 @@
     };
     contentsView.atmHandler = ^{
         [weakSelf showAtms];
+    };
+    contentsView.stakingHandler = ^{
+        [weakSelf showStakingIfSynced];
     };
 
     contentsView.translatesAutoresizingMaskIntoConstraints = NO;

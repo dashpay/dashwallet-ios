@@ -22,12 +22,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWExploreTestnetContentsView : UIView
 @property (nonatomic, copy) void (^whereToSpendHandler)(void);
 @property (nonatomic, copy) void (^atmHandler)(void);
+@property (nonatomic, copy) void (^stakingHandler)(void);
 @end
 
 @interface DWExploreTestnetContentsViewCell : UITableViewCell
 @property (nullable, nonatomic, strong) UIImage *image;
 @property (nullable, nonatomic, copy) NSString *title;
 @property (nullable, nonatomic, copy) NSString *subtitle;
+@end
+
+@interface DWExploreCrowdNodeContentsViewCell : DWExploreTestnetContentsViewCell
 @end
 
 NS_ASSUME_NONNULL_END

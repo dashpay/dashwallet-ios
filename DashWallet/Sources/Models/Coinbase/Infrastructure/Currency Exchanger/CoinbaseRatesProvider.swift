@@ -22,13 +22,13 @@ import Foundation
 final class CoinbaseRatesProvider: RatesProvider {
     private let kRefreshTimeInterval: TimeInterval = 60
 
-    var updateHandler: (([DSCurrencyPriceObject]) -> Void)?
+    var updateHandler: (([RateObject]) -> Void)?
 
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
 
     private var lastPriceSourceInfo: String!
     private var pricesByCode: [String: DSCurrencyPriceObject]!
-    private var plainPricesByCode: [String: NSNumber]!
+    private var plainPricesByCode: [String: Decimal]!
 
     func startExchangeRateFetching() {
         updateRates()
@@ -49,13 +49,13 @@ extension CoinbaseRatesProvider {
             let response: BaseDataResponse<CoinbaseExchangeRate> = try await httpClient.request(.exchangeRates(kDashCurrency))
             guard let rates = response.data.rates else { return }
 
-            var array: [DSCurrencyPriceObject] = []
+            var array: [RateObject] = []
             array.reserveCapacity(rates.count)
 
             for rate in rates {
                 let key = rate.key
-                let price = Decimal(string: rate.value)! as NSNumber
-                array.append(DSCurrencyPriceObject(code: key, name: key, price: price)!)
+                let price = Decimal(string: rate.value)!
+                array.append(.init(code: key, name: key, price: price))
             }
 
             self.updateHandler?(array)

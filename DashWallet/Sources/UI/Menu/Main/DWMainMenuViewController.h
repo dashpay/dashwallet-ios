@@ -18,6 +18,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWPaymentsViewController.h"
+#import "DWSyncProtocol.h"
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN

@@ -20,7 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWBalanceDisplayOptions;
-@class DWCSVExporter;
+
 @interface DWSettingsMenuModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *networkName;

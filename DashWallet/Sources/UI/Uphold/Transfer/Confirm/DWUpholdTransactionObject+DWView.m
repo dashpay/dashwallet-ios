@@ -20,7 +20,7 @@
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
-#import "NSAttributedString+DWBuilder.h"
+#import "dashwallet-Swift.h"
 
 @implementation DWUpholdTransactionObject (DWView)
 

@@ -22,7 +22,7 @@
 
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
-#import "NSAttributedString+DWBuilder.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -159,9 +159,8 @@ static NSString *sanitizeString(NSString *s) {
         hasInfo = YES;
     }
 
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    if (self.localCurrency && ![self.localCurrency isEqualToString:priceManager.localCurrencyCode]) {
-        NSString *requestedAmount = [[DSPriceManager sharedInstance] fiatCurrencyString:self.localCurrency forDashAmount:self.amount];
+    if (self.localCurrency && ![self.localCurrency isEqualToString:DWApp.localCurrencyCode]) {
+        NSString *requestedAmount = [CurrencyExchangerObjcWrapper fiatCurrencyString:self.localCurrency forDashAmount:self.amount];
         if (info.length > 0) {
             info = [info stringByAppendingString:@"\n"];
         }

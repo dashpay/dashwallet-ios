@@ -28,8 +28,8 @@
 #import "DWModalUserProfileViewController.h"
 #import "DWNotificationsViewController.h"
 #import "DWShortcutAction.h"
+#import "DWSyncModel.h"
 #import "DWSyncingAlertViewController.h"
-#import "DWTransactionListDataSource.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
+@property (nullable, nonatomic, strong) id syncStateObserver;
 
 @end
 
@@ -50,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dealloc {
     DSLog(@"☠️ %@", NSStringFromClass(self.class));
+
+    if (self.syncStateObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
+    }
 }
 
 - (void)loadView {
@@ -89,8 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self.model registerForPushNotifications];
-
     [self showReclassifyYourTransactionsIfPossibleWithTransaction:self.model.allDataSource.items.firstObject];
+    [self checkCrowdNodeState];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -118,6 +123,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
     [self presentTransactionDetails:transaction];
+}
+
+- (void)homeView:(DWHomeView *)homeView showCrowdNodeTxs:(NSArray<DSTransaction *> *)transactions {
+    CNCreateAccountTxDetailsViewController *controller = [[CNCreateAccountTxDetailsViewController alloc] initWithTransactions:transactions];
+
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
@@ -205,10 +217,43 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
-    TXDetailViewController *controller = [TXDetailViewController controller];
-    controller.model = [[TxDetailModel alloc] initWithTransaction:transaction dataProvider:self.dataProvider];
-    [self presentViewController:controller animated:YES completion:nil];
+    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
+    TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
+
+    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
+
+- (void)checkCrowdNodeState {
+    if (self.model.syncModel.state == DWSyncModelState_SyncDone) {
+        [CrowdNodeObjcWrapper restoreState];
+
+        if ([CrowdNodeObjcWrapper isInterrupted]) {
+            // Continue signup
+            [CrowdNodeObjcWrapper continueInterrupted];
+        }
+    }
+    else {
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        self.syncStateObserver = [notificationCenter addObserverForName:DWSyncStateChangedNotification
+                                                                 object:nil
+                                                                  queue:nil
+                                                             usingBlock:^(NSNotification *note) {
+                                                                 BOOL isSynced = self.model.syncModel.state == DWSyncModelState_SyncDone;
+
+                                                                 if (isSynced) {
+                                                                     if (self.syncStateObserver) {
+                                                                         // Only need to observe once
+                                                                         [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
+                                                                         self.syncStateObserver = nil;
+                                                                     }
+
+                                                                     [self checkCrowdNodeState];
+                                                                 }
+                                                             }];
+    }
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

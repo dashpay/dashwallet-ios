@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "UIImage+Utils.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -73,12 +74,11 @@ NS_ASSUME_NONNULL_BEGIN
         if (hasAmount) {
             paymentRequest.amount = amount;
 
-            DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-            NSNumber *number = [priceManager localCurrencyNumberForDashAmount:amount];
+            NSNumber *number = [CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:amount];
             if (number) {
                 paymentRequest.requestedFiatCurrencyAmount = number.floatValue;
             }
-            paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
+            paymentRequest.requestedFiatCurrencyCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
         }
         self.paymentRequest = paymentRequest;
 

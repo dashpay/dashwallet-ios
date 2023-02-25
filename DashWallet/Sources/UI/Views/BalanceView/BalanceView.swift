@@ -38,6 +38,12 @@ final class BalanceView: UIView {
             reloadView()
         }
     }
+    
+    public var tint: UIColor? {
+        didSet {
+            reloadView()
+        }
+    }
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: BalanceView.noIntrinsicMetric, height: 52.0)
@@ -66,9 +72,11 @@ extension BalanceView {
         let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!
 
         let balanceColor = UIColor.label
-        let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: balanceColor)
+        let font = UIFont.dw_font(forTextStyle: .title1)
+        let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: tint ?? balanceColor)
         dashBalanceLabel.attributedText = balanceString
         fiatBalanceLabel.text = supplementaryAmountString
+        fiatBalanceLabel.textColor = tint ?? balanceColor
     }
 
     private func configureHierarchy() {
@@ -88,7 +96,6 @@ extension BalanceView {
         fiatBalanceLabel = UILabel()
         fiatBalanceLabel.translatesAutoresizingMaskIntoConstraints = false
         fiatBalanceLabel.font = .dw_font(forTextStyle: .callout)
-        fiatBalanceLabel.textColor = .dw_secondaryText()
         fiatBalanceLabel.textAlignment = .center
         container.addArrangedSubview(fiatBalanceLabel)
 

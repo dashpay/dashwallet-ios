@@ -18,7 +18,6 @@
 #import "DWHomeModelStub.h"
 
 #import "DWBalanceDisplayOptionsStub.h"
-#import "DWBalanceModel.h"
 #import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
@@ -26,8 +25,8 @@
 #import "DWShortcutsModel.h"
 #import "DWSyncModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
-#import "DWTransactionListDataSource+DWProtected.h"
 #import "DWTransactionStub.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -157,13 +156,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateBalance {
-    self.balanceModel = [[DWBalanceModel alloc] initWithValue:42 * DUFFS];
+    self.balanceModel = [[DWBalanceModel alloc] initWith:42 * DUFFS];
 }
 
 - (void)reloadTxDataSource {
     self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:self.stubTxs
-                                                                registrationStatus:[self.dashPayModel registrationStatus]
-                                                                      dataProvider:self.dataProvider];
+                                                                registrationStatus:[self.dashPayModel registrationStatus]];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
 }
