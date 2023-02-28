@@ -16,7 +16,7 @@
 //
 
 final class OnlineAccountDetailsController: BaseViewController {
-    private let viewModel = CrowdNode.shared
+    private let viewModel = CrowdNodeModel.shared
 
     @IBOutlet var primaryAddressLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
@@ -38,6 +38,12 @@ final class OnlineAccountDetailsController: BaseViewController {
     @IBAction
     func copyAddressAction() {
         UIPasteboard.general.string = viewModel.accountAddress
+        view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+    }
+    
+    @IBAction
+    func copyPrimaryAddressAction() {
+        UIPasteboard.general.string = viewModel.primaryAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
 
