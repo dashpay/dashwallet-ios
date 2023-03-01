@@ -93,7 +93,7 @@ extension CrowdNodePortalController {
         let colorStart = UIColor(red: 31 / 255.0, green: 134 / 255.0, blue: 201 / 255.0, alpha: 1.0).cgColor
         let colorEnd = UIColor(red: 99 / 255.0, green: 181 / 255.0, blue: 237 / 255.0, alpha: 1.0).cgColor
         let gradientMaskLayer = CAGradientLayer()
-        gradientMaskLayer.frame = gradientHeader.bounds
+        gradientMaskLayer.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: gradientHeader.bounds.height)
         gradientMaskLayer.colors = [colorStart, colorEnd]
         gradientMaskLayer.locations = [0, 1]
         gradientMaskLayer.startPoint = CGPoint(x: 0, y: 0.5)
