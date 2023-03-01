@@ -127,6 +127,7 @@ final class CrowdNodeModel {
     init() {
         signUpState = crowdNode.signUpState
         onlineAccountState = crowdNode.onlineAccountState
+        accountAddress = crowdNode.accountAddress
         observeState()
         observeBalances()
     }
