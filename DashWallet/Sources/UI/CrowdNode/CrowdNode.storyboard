@@ -427,7 +427,7 @@
                                 <rect key="frame" x="145" y="62" width="100" height="100"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.logo" translatesAutoresizingMaskIntoConstraints="NO" id="wsW-1v-OUF" userLabel="CrowdNode logo">
-                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="65"/>
+                                        <rect key="frame" x="17.666666666666657" y="17.666666666666671" width="65" height="64.999999999999986"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="65" id="2hQ-7r-dOU"/>
                                             <constraint firstAttribute="width" constant="65" id="ww6-lj-WM0"/>
@@ -481,7 +481,7 @@
                                 <rect key="frame" x="20" y="300" width="350" height="164.00000000000006"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="RrR-Ij-X7B" userLabel="New Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="0.0" width="350" height="154"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="218"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.crowdnode.account.new" translatesAutoresizingMaskIntoConstraints="NO" id="oqB-km-Cfg" userLabel="image.crowdnode.account.new">
@@ -639,7 +639,7 @@
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" ambiguous="YES" id="ZQI-dO-W89" userLabel="Link Account" customClass="UIControl">
-                                        <rect key="frame" x="0.0" y="164" width="350" height="0.0"/>
+                                        <rect key="frame" x="0.0" y="228" width="350" height="0.0"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="image.crowdnode.account.link" translatesAutoresizingMaskIntoConstraints="NO" id="eAN-HF-8eJ" userLabel="image.crowdnode.account.new">
@@ -1488,7 +1488,7 @@
                                                 <color key="tintColor" name="IconTintColor"/>
                                                 <buttonConfiguration key="configuration" style="plain" image="icon_copy_outline"/>
                                                 <connections>
-                                                    <action selector="copyAddressAction" destination="4RZ-lQ-w8S" eventType="touchUpInside" id="U5y-GE-wX0"/>
+                                                    <action selector="copyPrimaryAddressAction" destination="4RZ-lQ-w8S" eventType="touchUpInside" id="0X2-mx-JQP"/>
                                                 </connections>
                                             </button>
                                         </subviews>

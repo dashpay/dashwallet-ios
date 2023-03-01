@@ -102,25 +102,25 @@ class CrowdNodeWebViewController: BaseViewController {
 
 extension CrowdNodeWebViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences) async -> (WKNavigationActionPolicy, WKWebpagePreferences) {
-
+        
         if let email = email, let url = navigationAction.request.url?.absoluteString {
             let fullSuffix = "\(kSignupSuffix)&loginHint=\(email)"
-            
-            if (url.hasPrefix(loginPrefix) && !url.hasSuffix(fullSuffix) && !url.hasSuffix(kCallbackSuffix)) {
+
+            if (url.hasPrefix(loginPrefix + "/login") && !url.hasSuffix(fullSuffix) && !url.hasSuffix(kCallbackSuffix)) {
                 let redirectUrl = "\(url)\(fullSuffix)"
                 let urlRequest = URLRequest(url: URL(string: redirectUrl)!)
                 webView.load(urlRequest)
                 previousUrl = url
-                
+
                 return (WKNavigationActionPolicy.cancel, preferences)
             } else if (previousUrl.hasPrefix(loginPrefix) && url.hasPrefix(accountPrefix)) {
                 // Successful signup
                 viewModel.finishSignUpToOnlineAccount()
             }
-            
+
             previousUrl = url
         }
-        
+
         return (WKNavigationActionPolicy.allow, preferences)
     }
 }

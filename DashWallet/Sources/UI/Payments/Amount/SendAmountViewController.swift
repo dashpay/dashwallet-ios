@@ -57,7 +57,7 @@ class SendAmountViewController: BaseAmountViewController {
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
         
-        if model.amount.plainAmount > allAvailableFunds - CrowdNode.minimumLeftoverBalance {
+        if model.amount.plainAmount + CrowdNode.minimumLeftoverBalance > allAvailableFunds {
             let title = NSLocalizedString("Looks like you are emptying your Dash Wallet", comment: "Leftover balance warning")
             let message = String.localizedStringWithFormat(NSLocalizedString("Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.", comment: "Leftover balance warning"), CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)

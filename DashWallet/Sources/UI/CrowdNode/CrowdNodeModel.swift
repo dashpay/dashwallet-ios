@@ -100,6 +100,22 @@ final class CrowdNodeModel {
     var shouldShowFirstDepositBanner: Bool {
         !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
     }
+    
+    var canWithdraw: Bool {
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let allAvailableFunds = account.maxOutputAmount
+        return allAvailableFunds >= CrowdNode.minimumLeftoverBalance
+    }
+    
+    var buyDashButtonText: String {
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+             return NSLocalizedString("Buy Dash", comment: "CrowdNode")
+        } else {
+            return ""
+        }
+    }
+    
+    var primaryAddress: String? { crowdNode.primaryAddress }
 
     let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
     var withdrawalLimits: [Int] { [
@@ -111,6 +127,7 @@ final class CrowdNodeModel {
     init() {
         signUpState = crowdNode.signUpState
         onlineAccountState = crowdNode.onlineAccountState
+        accountAddress = crowdNode.accountAddress
         observeState()
         observeBalances()
     }
@@ -181,6 +198,7 @@ final class CrowdNodeModel {
     private func observeState() {
         crowdNode.$signUpState
             .sink { [weak self] state in
+                guard let wSelf = self else { return }
                 var signUpEnabled = false
                 var outputMessage = ""
 
@@ -188,7 +206,8 @@ final class CrowdNodeModel {
                 case .notInitiated, .notStarted:
                     signUpEnabled = true
                     WKWebView.cleanCrowdNodeCache()
-                    self?.getAccountAddress()
+                    wSelf.emailForAccount = ""
+                    wSelf.getAccountAddress()
 
                 case .acceptTermsRequired, .error:
                     signUpEnabled = true
@@ -198,14 +217,17 @@ final class CrowdNodeModel {
 
                 case .acceptingTerms:
                     outputMessage = NSLocalizedString("Accepting terms of use…", comment: "CrowdNode")
+                    
+                case .linkedOnline:
+                    wSelf.accountAddress = wSelf.crowdNode.accountAddress
 
                 default:
                     break
                 }
 
-                self?.signUpState = state
-                self?.signUpEnabled = signUpEnabled
-                self?.outputMessage = outputMessage
+                wSelf.signUpState = state
+                wSelf.signUpEnabled = signUpEnabled
+                wSelf.outputMessage = outputMessage
             }
             .store(in: &cancellableBag)
 

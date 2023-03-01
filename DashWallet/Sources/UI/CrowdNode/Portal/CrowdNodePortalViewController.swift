@@ -247,11 +247,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         case .deposit:
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.deposit), animated: true)
         case .withdraw:
-            // TODO: Move this to model
-            let account = DWEnvironment.sharedInstance().currentAccount
-            let allAvailableFunds = account.maxOutputAmount
-
-            if allAvailableFunds >= CrowdNode.minimumLeftoverBalance {
+            if viewModel.canWithdraw {
                 navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.withdraw), animated: true)
             } else {
                 showMinimumBalanceError()
@@ -263,7 +259,8 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
             case .signingUp:
                 showSignUpWebView()
             case .done:
-                UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + viewModel.accountAddress)!)
+                let accountAddress = viewModel.primaryAddress ?? viewModel.accountAddress
+                UIApplication.shared.open(URL(string: CrowdNode.fundsOpenUrl + accountAddress)!)
             default:
                 break
             }
@@ -279,13 +276,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         vc.headerText = NSLocalizedString("You should have a positive balance on Dash Wallet", comment: "CrowdNode")
         vc.descriptionText = String.localizedStringWithFormat(NSLocalizedString("Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal", comment: "CrowdNode"),
                                                               CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
-        // TODO: Move this to model
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-            vc.actionButtonText = NSLocalizedString("Buy Dash", comment: "CrowdNode")
-        } else {
-            vc.actionButtonText = ""
-        }
-
+        vc.actionButtonText = viewModel.buyDashButtonText
         let nvc = BaseNavigationController(rootViewController: vc)
 
         vc.mainAction = {
