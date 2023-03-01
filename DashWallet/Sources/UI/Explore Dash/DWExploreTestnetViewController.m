@@ -102,20 +102,19 @@
 
     self.view.backgroundColor = [UIColor dw_darkBlueColor];
 
-    UIView *contentView = [[UIView alloc] init];
-    contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:contentView];
-
     // Contents
     DWExploreHeaderView *headerView = [[DWExploreHeaderView alloc] init];
     headerView.translatesAutoresizingMaskIntoConstraints = NO;
     headerView.image = [UIImage imageNamed:@"image.explore.dash.wallet"];
     headerView.title = NSLocalizedString(@"Explore Dash", nil);
     headerView.subtitle = NSLocalizedString(@"Easily shop with your DASH at over 155,000 locations and online merchants", nil);
+    [headerView setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
 
     DWExploreTestnetViewController *__weak weakSelf = self;
 
     DWExploreTestnetContentsView *contentsView = [[DWExploreTestnetContentsView alloc] init];
+    contentsView.translatesAutoresizingMaskIntoConstraints = NO;
+    [headerView setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
     contentsView.whereToSpendHandler = ^{
         [weakSelf showWhereToSpendViewController];
     };
@@ -125,8 +124,6 @@
     contentsView.stakingHandler = ^{
         [weakSelf showStakingIfSynced];
     };
-
-    contentsView.translatesAutoresizingMaskIntoConstraints = NO;
 
     UIStackView *parentView = [[UIStackView alloc] init];
     parentView.translatesAutoresizingMaskIntoConstraints = NO;

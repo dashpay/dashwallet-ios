@@ -57,6 +57,7 @@ CGFloat const kExploreHeaderViewHeight = 351.0f;
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.numberOfLines = 0;
         titleLabel.minimumScaleFactor = 0.4;
+        titleLabel.adjustsFontSizeToFitWidth = YES;
         [self addArrangedSubview:titleLabel];
         _titleLabel = titleLabel;
 
