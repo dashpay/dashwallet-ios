@@ -150,7 +150,7 @@ struct ExplorePointOfUse {
 
 extension ExplorePointOfUse: RowDecodable {
     static let name = Expression<String>("name")
-    static let deeplink = Expression<String>("deeplink")
+    static let deeplink = Expression<String?>("deeplink")
     static let plusCode = Expression<String?>("plusCode")
     static let paymentMethod = Expression<String>("paymentMethod")
     static let merchantId = Expression<Int64>("merchantId")
@@ -164,7 +164,7 @@ extension ExplorePointOfUse: RowDecodable {
     static let address4 = Expression<String?>("address4")
     static let latitude = Expression<Float64?>("latitude")
     static let longitude = Expression<Float64?>("longitude")
-    static let website = Expression<String>("website")
+    static let website = Expression<String?>("website")
     static let phone = Expression<String?>("phone")
     static let logoLocation = Expression<String>("logoLocation")
     static let coverImage = Expression<String?>("coverImage")
@@ -187,10 +187,16 @@ extension ExplorePointOfUse: RowDecodable {
         let address4 = row[ExplorePointOfUse.address4]
         let latitude = row[ExplorePointOfUse.latitude]
         let longitude = row[ExplorePointOfUse.longitude]
-        var website = row[ExplorePointOfUse.website]
-        if !website.hasPrefix("http") {
-            website = "https://" + website
+        var website: String?
+
+        if var value = row[ExplorePointOfUse.website], !value.isEmpty {
+            if !value.hasPrefix("http") {
+                website = "https://" + value
+            } else {
+                website = value
+            }
         }
+
         let phone: String? = row[ExplorePointOfUse.phone]?.digits
         let logoLocation = row[ExplorePointOfUse.logoLocation]
         let coverImage: String? = row[ExplorePointOfUse.coverImage]
