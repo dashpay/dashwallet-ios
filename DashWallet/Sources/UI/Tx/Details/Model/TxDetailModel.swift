@@ -76,9 +76,9 @@ extension TxDetailModel {
 
     var explorerURL: URL? {
         if DWEnvironment.sharedInstance().currentChain.isTestnet() {
-            return URL(string: "https://testnet-insight.dashevo.org/insight/tx/\(transactionId)")
+            return URL(string: "https://insight.testnet.networks.dash.org:3002/insight/tx/\(transactionId)")
         } else if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-            return URL(string: "https://insight.dashevo.org/insight/tx/\(transactionId)")
+            return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
         }
 
         return nil;
