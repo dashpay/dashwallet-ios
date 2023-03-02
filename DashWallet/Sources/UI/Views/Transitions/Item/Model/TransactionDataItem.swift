@@ -33,6 +33,10 @@ protocol TransactionDataItem {
 
 extension TransactionDataItem {
     var formattedDashAmountWithDirectionalSymbol: String {
+        guard dashAmount != UInt64.max else {
+            return NSLocalizedString("Syncing...", comment: "Transaction/Amount")
+        }
+
         let formatted = dashAmount.formattedDashAmount
 
         if formatted.isCurrencySymbolAtTheBeginning {
@@ -43,6 +47,10 @@ extension TransactionDataItem {
     }
 
     func attributedDashAmount(with font: UIFont, color: UIColor = .dw_label()) -> NSAttributedString {
+        guard dashAmount != UInt64.max else {
+            return NSAttributedString(string: NSLocalizedString("Syncing...", comment: "Transaction/Amount"))
+        }
+
         var formatted = formattedDashAmountWithDirectionalSymbol
         return formatted.attributedAmountStringWithDashSymbol(tintColor: color, dashSymbolColor: color, font: font)
     }

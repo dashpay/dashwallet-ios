@@ -43,7 +43,16 @@ extension DSTransaction {
         case .moved:
             amount = account!.amountReceivedFromTransaction(onExternalAddresses: self)
         case .sent:
-            amount = chain.amountSent(by: self) - chain.amountReceived(from: self) - (feeUsed == UInt64.max ? 0 : feeUsed)
+            let amountSent = chain.amountSent(by: self)
+            let amountReceived = chain.amountReceived(from: self)
+
+            // NOTE: During the sync we may get an incorectly amount from DashSync.
+            if amountReceived > amountSent {
+                return UInt64.max
+            }
+
+            let fee = feeUsed == UInt64.max ? 0 : feeUsed
+            amount = amountSent - amountReceived - fee
         case .received:
             amount = account!.amountReceived(from: self)
         case .notAccountFunds:

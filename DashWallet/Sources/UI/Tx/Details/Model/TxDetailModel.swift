@@ -273,7 +273,10 @@ extension TxDetailModel {
         guard hasFee else { return nil }
 
         let title = NSLocalizedString("Network fee", comment: "")
-        let feeValue = transaction.feeUsed
+
+        var feeValue = transaction.feeUsed
+        feeValue = feeValue == UInt64.max ? 0 : feeValue
+
         let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
