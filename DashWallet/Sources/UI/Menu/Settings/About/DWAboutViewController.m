@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.appVersionLabel.text = [self.model appVersion];
     self.dashSyncVersionLabel.text = [self.model dashSyncVersion];
     self.descriptionLabel.text = NSLocalizedString(@"This app is open source:", nil);
-    [self.repositoryURLButton setTitle:@"https://github.com/dashevo/dashwallet-ios" forState:UIControlStateNormal];
+    [self.repositoryURLButton setTitle:@"https://github.com/dashpay/dashwallet-ios" forState:UIControlStateNormal];
     self.rateReviewLabel.text = NSLocalizedString(@"Help us improve your experience", nil);
     [self.rateReviewButton setTitle:NSLocalizedString(@"Review & Rate the app", nil) forState:UIControlStateNormal];
     [self.contactSupportButton setTitle:NSLocalizedString(@"Contact Support", nil) forState:UIControlStateNormal];
@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Actions
 
 - (IBAction)respositoryURLAction:(id)sender {
-    NSURL *url = [NSURL URLWithString:@"https://github.com/dashevo/dashwallet-ios?files=1"];
+    NSURL *url = [NSURL URLWithString:@"https://github.com/dashpay/dashwallet-ios?files=1"];
     [self displaySafariControllerWithURL:url];
 }
 
