@@ -425,9 +425,6 @@
 /* Crowdnode */
 "CrowdNode Account" = "CrowdNode Account";
 
-/* No comment provided by engineer. */
-"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
-
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode Support";
 
@@ -542,7 +539,7 @@
 "Easily shop with your DASH at over 155,000 locations and online merchants" = "Nakupujte pomocí DASH snadno na více než 155 000 místech a u online obchodníků.";
 
 /* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
+"Easily stake Dash and earn passive income with a few simple clicks." = "Jednoduše Dash úročte a získejte pasivní příjem pomocí několika kliknutí.";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "např.: johndoe";
@@ -794,7 +791,7 @@
 "Invalid" = "Neplatná";
 
 /* Balance */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Neplatná částka";
 
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
@@ -1510,7 +1507,7 @@
 "Spending Confirmation" = "Potvrzení";
 
 /* No comment provided by engineer. */
-"Staking" = "Staking";
+"Staking" = "Úročení";
 
 /* No comment provided by engineer. */
 "Support" = "Podpora";

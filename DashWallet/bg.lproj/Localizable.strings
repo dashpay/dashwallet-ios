@@ -425,9 +425,6 @@
 /* Crowdnode */
 "CrowdNode Account" = "CrowdNode Account";
 
-/* No comment provided by engineer. */
-"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
-
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode Support";
 
@@ -794,7 +791,7 @@
 "Invalid" = "Невалиден";
 
 /* Balance */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Невалидна сума";
 
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";

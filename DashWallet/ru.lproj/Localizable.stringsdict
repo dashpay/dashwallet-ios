@@ -62,5 +62,25 @@
 			<string>%d продавцы</string>
 		</dict>
 	</dict>
+    <key>%d transaction(s)</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@transactions@</string>
+        <key>transactions</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>one</key>
+            <string>%d транзакция</string>
+            <key>few</key>
+            <string>%d транзакций</string>
+            <key>many</key>
+            <string>%d транзакций</string>
+            <key>other</key>
+            <string>%d транзакций</string>
+        </dict>
+    </dict>
 </dict>
 </plist>

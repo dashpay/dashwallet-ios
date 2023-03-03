@@ -2,10 +2,10 @@
 " " = " ";
 
 /* CrowdNode */
-" Privacy Policy " = " Privacy Policy ";
+" Privacy Policy " = "Privacybeleid";
 
 /* CrowdNode */
-" Terms of Use " = " Terms of Use ";
+" Terms of Use " = "Gebruiksvoorwaarden";
 
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ heeft je contactverzoek geaccepteerd";
@@ -89,7 +89,7 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Een toegangscode is nog om je portemonnee te beschermen. Ga naar de instellingen en zet de toegangscode aan om door te gaan.";
 
 /* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
+"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "Een Masternode benodigd 1000 Dash als onderpanden wordt momenteel met ongeveer %@ per jaar beloond.";
 
 /* No comment provided by engineer. */
 "About" = "Over";
@@ -98,10 +98,10 @@
 "Accept" = "Accepteren";
 
 /* CrowdNode */
-"Accept Terms Of Use" = "Accept Terms Of Use";
+"Accept Terms Of Use" = "Accepteer gebruiksvoorwaarden";
 
 /* CrowdNode */
-"Accepting terms of use…" = "Accepting terms of use…";
+"Accepting terms of use…" = "Gebruiksvoorwaarden accepteren...";
 
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Accepteert DASH direct";
@@ -134,7 +134,7 @@
 "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Alle betalingen worden beschouwd als 'kosten' en alle inkomende transacties worden 'inkomsten'. De eigenaar van deze portemonnee is verantwoordelijk voor het maken van eventuele kostenbasis aanpassingen in het door hem gekozen belastingaangiftesysteem.";
 
 /* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.";
+"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Alle overboekingen van en naar CrowdNode vanaf dit apparaat worden uitgevoerd met het onderstaande Dash adres.";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Camera toegang in Instellingen toestaan";
@@ -158,7 +158,7 @@
 "An intuitive and familiar experience across all your devices" = "Een intuïtieve en vertrouwde ervaring op al je apparaten";
 
 /* CrowdNode */
-"and" = "and";
+"and" = " en ";
 
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
@@ -203,13 +203,13 @@
 "Available balance" = "Beschikbaar saldo";
 
 /* No comment provided by engineer. */
-"Backup Passphrase" = "Backup Passphrase";
+"Backup Passphrase" = "Back-up wachtwoordzin";
 
 /* A noun. Used as a title. */
 "Backup Wallet" = "Backup portemonnee";
 
 /* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "Backup your passphrase to create a CrowdNode account";
+"Backup your passphrase to create a CrowdNode account" = "Maak een back-up van je wachtwoordzin om een CrowdNode account aan te maken";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Incorrecte herstelzin";
@@ -221,7 +221,7 @@
 "Balance hidden" = "Saldo verborgen";
 
 /* CrowdNode */
-"Balance: " = "Balance: ";
+"Balance: " = "Saldo:";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bankrekening";
@@ -413,26 +413,23 @@
 "Create a New Wallet" = "Maak een nieuwe portemonnee aan";
 
 /* CrowdNode */
-"Create Account" = "Create Account";
+"Create Account" = "Maak account aan";
 
 /* CrowdNode
    CrowdNode Portal */
-"Create Online Account" = "Create Online Account";
+"Create Online Account" = "Maak online account aan";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credticard";
 
 /* Crowdnode */
-"CrowdNode Account" = "CrowdNode Account";
-
-/* No comment provided by engineer. */
-"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
+"CrowdNode Account" = "CrowdNode account ";
 
 /* CrowdNode Portal */
-"CrowdNode Support" = "CrowdNode Support";
+"CrowdNode Support" = "CrowdNode ondersteuning";
 
 /* CrowdNode */
-"CrowdNode withdrawal limits" = "CrowdNode withdrawal limits";
+"CrowdNode withdrawal limits" = "CrowdNode opname limiet";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
@@ -441,10 +438,10 @@
 "CSV Export" = "CSV exporteren";
 
 /* Crowdnode */
-"Current APY = %@" = "Current APY = %@";
+"Current APY = %@" = "Huidige jaarlijks rendement = %@";
 
 /* CrowdNode */
-"Current APY is %@" = "Current APY is %@";
+"Current APY is %@" = "Huidig jaarlijks rendement is %@";
 
 /* Explore Dash: Filters */
 "Current location" = "Huidige locatie";
@@ -474,7 +471,7 @@
 "DashPay Upgrade Fee" = "DashPay upgrade vergoeding";
 
 /* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
+"DashWallet ➝ CrowdNode" = "Dashportemonnee ➝ CrowdNode";
 
 /* No comment provided by engineer. */
 "Date" = "Datum";
@@ -487,19 +484,19 @@
 
 /* CrowdNode
    CrowdNode Portal */
-"Deposit" = "Deposit";
+"Deposit" = "Stort";
 
 /* CrowdNode Portal */
-"Deposit %@ to start earning" = "Deposit %@ to start earning";
+"Deposit %@ to start earning" = "Stort %@ om te beginnen met verdienen";
 
 /* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal";
+"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Stort minimaal %@ Dash in je Dash portemonnee om een opname te voltooien";
 
 /* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
+"Deposit at least %@ to start earning" = "Stort ten minste %@ om te beginnen met verdienen";
 
 /* CrowdNode */
-"Deposit sent" = "Deposit sent";
+"Deposit sent" = "Storting is verzonden";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen).";
@@ -530,10 +527,10 @@
 "Download peer: %@" = "Download peer: %@";
 
 /* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
+"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Vanwege de servicevoorwaarden van CrowdNode kunnen gebruikers niet meer opnemen dan:";
 
 /* CrowdNode */
-"e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
+"e.g. johndoe@mail.com" = "bijvoorbeeld jan@mail.com";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Eerder";
@@ -542,13 +539,13 @@
 "Easily shop with your DASH at over 155,000 locations and online merchants" = "Winkel eenvoudig met je DASH bij meer dan 155.000 locaties en online acceptanten";
 
 /* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
+"Easily stake Dash and earn passive income with a few simple clicks." = "Stake makkelijk Dash en verdien passief inkomen met een paar eenvoudige kliks.";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "bv: johndoe";
 
 /* CrowdNode */
-"Email" = "Email";
+"Email" = "E-mail";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Gezichtsherkenning inschakelen";
@@ -650,7 +647,7 @@
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "Vind waar je DASH en andere cryptovaluta's kan kopen of verkopen voor cash.";
 
 /* CrowdNode */
-"First deposit should be more than %@" = "First deposit should be more than %@";
+"First deposit should be more than %@" = "Eerste storting moet meer zijn dan %@";
 
 /* Coinbase */
 "For your security, you have been signed out." = "Voor de veiligheid ben je afgemeld.";
@@ -668,10 +665,10 @@
 "Found potential missing words:\n%@" = "Mogelijkerwijs ontbrekende woorden zijn gevonden:\n%@";
 
 /* from CrowdNode */
-"from CrowdNode" = "from CrowdNode";
+"from CrowdNode" = "van CrowdNode";
 
 /* from Dash Wallet */
-"from Dash Wallet" = "from Dash Wallet";
+"from Dash Wallet" = "van Dash portemonnee";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Van Uphold naar je Dash Portemonnee";
@@ -695,7 +692,7 @@
 "Gift Card" = "Cadeaukaart";
 
 /* No comment provided by engineer. */
-"Go to CrowdNode website" = "Go to CrowdNode website";
+"Go to CrowdNode website" = "Ga naar de website van CrowdNode";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Ga naar website";
@@ -737,7 +734,7 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
 
 /* CrowdNode */
-"I agree to CrowdNode" = "I agree to CrowdNode";
+"I agree to CrowdNode" = "Ik ga akkoord met CrowdNode";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "ik heb het opgeschreven";
@@ -746,7 +743,7 @@
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Als u dit apparaat verliest, verliest  je jouw Dash. Download de herstelzin zodat je jouw portemonnee op een ander apparaat kunt herstellen.";
 
 /* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.";
+"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Als je de wachtwoordzin voor deze portemonnee verliest, dit apparaat verliest of de Dash portemonnee app verwijdert, verliest je de toegang tot je geld op CrowdNode en ook het geld in deze portemonnee.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Als je het nog steeds wilt wissen, voer a.u.b. in: \"%@\"";
@@ -770,7 +767,7 @@
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Naast de getoonde Coinbase fee, nemen we een spread mee in de prijs. Bij gebruik van Advanced Trade optie is er geen spread inbegrepen omdat je rechtstreeks met het orderboek communiceert.\n\nCryptocurrency-markten zijn volatiel en dit stelt ons in staat om tijdelijk een prijs vast te leggen voor de uitvoering van transacties.";
 
 /* CrowdNode Portal */
-"In process…" = "In process…";
+"In process…" = "Bezig....";
 
 /* No comment provided by engineer. */
 "Income" = "Inkomen";
@@ -794,10 +791,10 @@
 "Invalid" = "Ongeldig";
 
 /* Balance */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Ongeldig bedrag";
 
 /* CrowdNode Online */
-"Invalid Email" = "Invalid Email";
+"Invalid Email" = "Ongeldig emailadres";
 
 /* Invalid Amount Input */
 "Invalid Input" = "Ongeldige invoer";
@@ -809,10 +806,10 @@
 "Invalid QR Code" = "Ongeldige QR-code";
 
 /* CrowdNode */
-"It can take a minute for your balance to be updated." = "It can take a minute for your balance to be updated.";
+"It can take a minute for your balance to be updated." = "Het kan even duren voordat je saldo is bijgewerkt.";
 
 /* CrowdNode */
-"It can take a minute for your funds to arrive." = "It can take a minute for your funds to arrive.";
+"It can take a minute for your funds to arrive." = "Het kan even duren voordat de fondsen binnen komen.";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "Het kan de code van de SMS op je telefoon zijn. Zo niet, voer dan de code van de authenticatie app in.";
@@ -861,7 +858,7 @@
 "Link Coinbase Account" = "Koppel Coinbase account";
 
 /* CrowdNode */
-"Link Existing CrowdNode Account" = "Link Existing CrowdNode Account";
+"Link Existing CrowdNode Account" = "Link bestaand account CrowdNode";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Koppel Uphold account";
@@ -894,7 +891,7 @@
 "Locked" = "Vergrendeld";
 
 /* CrowdNode WebView */
-"Log in to CrowdNode" = "Log in to CrowdNode";
+"Log in to CrowdNode" = "Log in op CrowdNode";
 
 /* No comment provided by engineer. */
 "Log Out" = "Uitloggen";
@@ -915,7 +912,7 @@
 "Logout after" = "Uitloggen na";
 
 /* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "Looks like you are emptying your Dash Wallet";
+"Looks like you are emptying your Dash Wallet" = "Het ziet er naar uit dat je je Dashportemonee leeg aan het maken bent";
 
 /* adjective, security level */
 "Low" = "Laag";
@@ -1062,7 +1059,7 @@
 "Online" = "Online";
 
 /* CrowdNode Portal */
-"Online Account" = "Online Account";
+"Online Account" = "Online account";
 
 /* Online Merchant */
 "Online Merchant" = "Online winkelier";
@@ -1128,13 +1125,13 @@
 "Pending" = "Wachtende";
 
 /* CrowdNode */
-"per 24 hours" = "per 24 hours";
+"per 24 hours" = "per 24 uur";
 
 /* CrowdNode */
-"per hour" = "per hour";
+"per hour" = "per uur";
 
 /* CrowdNode */
-"per transaction" = "per transaction";
+"per transaction" = "per transactie";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
@@ -1149,7 +1146,7 @@
 "Please enter PIN to upgrade wallet" = "Voer a.u.b. PIN in om de portemonnee bij te werken";
 
 /* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.";
+"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Let op, je zal geen geld kunnen opnemen van CrowdNode naar deze portemonnee totdat je je saldo verhoogt naar %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Houd a.u.b. je  telefoon bij een NFC-apparaat";
@@ -1170,7 +1167,7 @@
 "Please wait" = "Even wachten a.u.b.";
 
 /* No comment provided by engineer. */
-"Please wait until the wallet is fully synced before exporting your transaction history" = "Please wait until the wallet is fully synced before exporting your transaction history";
+"Please wait until the wallet is fully synced before exporting your transaction history" = "Wacht tot de portemonnee volledig is gesynchroniseerd alvorens je transactiegeschiedenis je exporteren.";
 
 /* No comment provided by engineer. */
 "Please write it down" = "Schrijf het a.u.b. op";
@@ -1185,7 +1182,7 @@
 "Processing" = "Verwerken";
 
 /* CrowdNode Portal */
-"Protect your savings" = "Protect your savings";
+"Protect your savings" = "Bescherm uw spaargeld";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider adres";
@@ -1209,7 +1206,7 @@
 "Rate: %@ = %@" = "Tarief: %1$@ = %2$@";
 
 /* CrowdNode */
-"Read Withdrawal Policy" = "Read Withdrawal Policy";
+"Read Withdrawal Policy" = "Lees het uitbetalingsbeleid";
 
 /* No comment provided by engineer. */
 "Receive" = "Ontvangen";
@@ -1386,7 +1383,7 @@
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) versturen van deze persoonlijke sleutel naar jouw portemonnee? Het Dash-netwerk zal een vergoeding krijgen van %3$@ (%4$@).";
 
 /* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
+"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Stuur %@ vanaf het primaire Dash adres dat je momenteel gebruikt voor je CrowdNode account";
 
 /* Send by (scanning QR code) */
 "Send by" = "Verstuurd door";
@@ -1396,7 +1393,7 @@
 
 /* Coinbase
    CrowdNode */
-"Send Report" = "Send Report";
+"Send Report" = "Verstuur rapport";
 
 /* No comment provided by engineer. */
 "Send to" = "Verstuur naar";
@@ -1414,10 +1411,10 @@
 "Sending to" = "Verzenden naar";
 
 /* CrowdNode */
-"Sending to CrowdNode account" = "Sending to CrowdNode account";
+"Sending to CrowdNode account" = "Wordt verzonden naar CrowdNode account";
 
 /* CrowdNode */
-"Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
+"Sending to Dash Wallet on this device" = "Verzenden naar Dash portemonnee op dit apparaat";
 
 /* Buy Dash */
 "Sending to:" = "Verzenden naar:";
@@ -1465,16 +1462,16 @@
 "Show Recovery Phrase" = "Toon herstelzin";
 
 /* CrowdNode */
-"Sign the message" = "Sign the message";
+"Sign the message" = "Onderteken het bericht";
 
 /* CrowdNode */
-"Sign up error" = "Sign up error";
+"Sign up error" = "Fout bij aanmelden";
 
 /* CrowdNode */
-"Sign up to CrowdNode" = "Sign up to CrowdNode";
+"Sign up to CrowdNode" = "Aanmelden bij CrowdNode";
 
 /* CrowdNode Portal */
-"Sign up to finish setting up account" = "Sign up to finish setting up account";
+"Sign up to finish setting up account" = "Meld je aan om het instellen van je account te voltooien";
 
 /* No comment provided by engineer. */
 "Skip" = "Overslaan";
@@ -1531,7 +1528,7 @@
 "Sync Now" = "Nu synchroniseren";
 
 /* CrowdNode Portal */
-"Synced with current Dash Wallet" = "Synced with current Dash Wallet";
+"Synced with current Dash Wallet" = "Gesynchroniseerd met huidige Dash portemonnee";
 
 /* No comment provided by engineer. */
 "Syncing" = "synchroniseren";
@@ -1543,7 +1540,7 @@
 "Syncing..." = "synchroniseren...";
 
 /* Balance */
-"Syncing…" = "Syncing…";
+"Syncing…" = "Synchroniseren...";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "Tik";
@@ -1558,7 +1555,7 @@
 "Tax Category" = "Belastingcategorie";
 
 /* No comment provided by engineer. */
-"The chain is syncing…" = "The chain is syncing…";
+"The chain is syncing…" = "De blockchain wordt gesynchroniseerd...";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "De code is onjuist. Controleer en probeer het opnieuw.";
@@ -1600,7 +1597,7 @@
 "This PIN will be required to unlock your app every time when you use it." = "Deze PIN is vereist om uw app elke keer te ontgrendelen wanneer u deze gebruikt.";
 
 /* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
+"This QR already contains the payment request for %@" = "Deze QR bevat al het betalingsverzoek voor %@";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "Deze herstelzin is uw toegang tot het saldo in deze portemonnee.";
@@ -1641,7 +1638,7 @@
 "Transfer Dash from your Uphold account to this wallet" = "Verstuur Dash van je Uphold account naar deze portemonnee";
 
 /* CrowdNode */
-"Transfer Error" = "Transfer Error";
+"Transfer Error" = "Overdrachtsfout";
 
 /* Coinbase */
 "Transfer Failed" = "Overdracht mislukt";
@@ -1713,7 +1710,7 @@
 "Username taken" = "Gebruikersnaam al in gebruik";
 
 /* CrowdNode Portal */
-"Validating address…" = "Validating address…";
+"Validating address…" = "Adres valideren…";
 
 /* No comment provided by engineer. */
 "Validating username done" = "Validatie van gebruikersnaam voltooid";
@@ -1725,7 +1722,7 @@
 "Validating username…" = "Gebruikersnaam valideren…";
 
 /* CrowdNode Portal */
-"Verification Required" = "Verification Required";
+"Verification Required" = "Verificatie vereist";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Succesvol geverifieerd";
@@ -1758,7 +1755,7 @@
 "Voting Keys" = "Stem sleutels";
 
 /* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
+"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wacht tot de blockchain volledig is gesynchroniseerd, zodat we de transactiegeschiedenis kunnen bekijken. Bezoek de CrowdNode website om in te loggen of aan te melden.";
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wacht tot de portemonnee is gesynchroniseerd om de transactie te voltooien";
@@ -1779,13 +1776,13 @@
 "We are about to show you the secret key to your wallet." = "We gaan u de geheime sleutel van uw portemonnee laten zien.";
 
 /* CrowdNode */
-"We couldn’t create your CrowdNode account." = "We couldn’t create your CrowdNode account.";
+"We couldn’t create your CrowdNode account." = "We kunnen je CrowdNode account niet aanmaken.";
 
 /* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "We couldn’t make a deposit to your CrowdNode account.";
+"We couldn’t make a deposit to your CrowdNode account." = "We konden geen storting doen op je CrowdNode account.";
 
 /* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "We couldn’t withdraw from your CrowdNode account.";
+"We couldn’t withdraw from your CrowdNode account." = "We konden niet opnemen uit je CrowdNode account.";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "We slaan deze herstelzin niet op.";
@@ -1815,7 +1812,7 @@
 "Where to Spend?" = "Waar uit te geven?";
 
 /* Crowdnode */
-"Why do I see all these transactions?" = "Why do I see all these transactions?";
+"Why do I see all these transactions?" = "Waarom zie ik al deze transacties?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Waarom moet ik geen screenshot maken?";
@@ -1834,13 +1831,13 @@
 
 /* CrowdNode
    CrowdNode Portal */
-"Withdraw" = "Withdraw";
+"Withdraw" = "Neem op";
 
 /* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "Withdraw without limits with an online account on CrowdNode website.";
+"Withdraw without limits with an online account on CrowdNode website." = "Neem onbeperkt geld op met een online account via de CrowdNode website.";
 
 /* CrowdNode */
-"Withdrawal requested" = "Withdrawal requested";
+"Withdrawal requested" = "Opname is aangevraagd";
 
 /* No comment provided by engineer. */
 "Yes" = "Ja";
@@ -1867,16 +1864,16 @@
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "U heeft \"%@\" gekozen als gebruikersnaam. Uw gebruikersnaam kan na registratie niet meer worden gewijzigd.";
 
 /* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "You have insufficient funds to proceed";
+"You have insufficient funds to proceed" = "Je hebt onvoldoende saldo om door te gaan";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "PIN invoeren om in de Dash portemonnee te komen";
 
 /* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
+"You need at least %@ on your Dash Wallet" = "Je hebt minimaal %@ nodig in je Dash portemonnee";
 
 /* CrowdNode */
-"You only need %@ to join the pool." = "You only need %@ to join the pool.";
+"You only need %@ to join the pool." = "Je hebt maar %@ nodig om deel te nemen aan een pool.";
 
 /* Coinbase */
 "You receive" = "Je ontvangt";
@@ -1891,10 +1888,10 @@
 "You sent the contact request to %@" = "U heeft het contactverzoek gestuurd naar %@";
 
 /* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "You should have a positive balance on Dash Wallet";
+"You should have a positive balance on Dash Wallet" = "Je zou een positief saldo moeten hebben in de Dash portemonnee";
 
 /* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
+"You should have at least %@ to proceed with the CrowdNode verification." = "je hebt minimaal %@ nodig om door te gaan met de CrowdNode verificatie.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Je dient ook nog uit te loggen bij Uphold website in je webbrowser.";
@@ -1909,25 +1906,25 @@
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Je ontvangt %@ Dash in je Dash portemonnee op dit apparaat. Houd er rekening mee dat het tot 2-3 minuten kan duren om een overdracht te voltooien.";
 
 /* CrowdNode */
-"Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";
+"Your CrowdNode account is creating…" = "Je CrowdNode account wordt aanmaakt...";
 
 /* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+"Your CrowdNode account is set up and ready to use!" = "Je CrowdNode account is ingesteld en klaar voor gebruik!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "Your CrowdNode account was created using these transactions. ";
+"Your CrowdNode account was created using these transactions. " = "Je CrowdNode account is aangemaakt met behulp van deze transacties.";
 
 /* CrowdNode */
-"Your CrowdNode address has been confirmed." = "Your CrowdNode address has been confirmed.";
+"Your CrowdNode address has been confirmed." = "Je CrowdNode adres is bevestigd.";
 
 /* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "Your CrowdNode address has been validated, but verification is required.";
+"Your CrowdNode address has been validated, but verification is required." = "Je CrowdNode adres is gevalideerd, maar verificatie is vereist.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Uw DashPay gebruikersnaam is klaar voor gebruik";
 
 /* CrowdNode */
-"Your deposit to CrowdNode is received." = "Your deposit to CrowdNode is received.";
+"Your deposit to CrowdNode is received." = "Je storting op CrowdNode is ontvangen.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Je locatie wordt gebruikt om je positie op de kaart te tonen, geldautomaten in de geselecteerde straal te tonen, en om zoekresultaten te verbeteren.";
