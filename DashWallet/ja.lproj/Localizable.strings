@@ -2,10 +2,10 @@
 " " = " ";
 
 /* CrowdNode */
-" Privacy Policy " = " Privacy Policy ";
+" Privacy Policy " = "プライバシーポリシー";
 
 /* CrowdNode */
-" Terms of Use " = " Terms of Use ";
+" Terms of Use " = "利用規約";
 
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ 連絡先リクエストを承認しました";
@@ -89,7 +89,7 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから次に進んでください。";
 
 /* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
+"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "マスターノードには1000Dashの担保が必要であり、各マスターノードには現在年に約%@回ほど報酬が支払われます。";
 
 /* No comment provided by engineer. */
 "About" = "このアプリについて";
@@ -98,10 +98,10 @@
 "Accept" = "承認";
 
 /* CrowdNode */
-"Accept Terms Of Use" = "Accept Terms Of Use";
+"Accept Terms Of Use" = "利用規約に同意する";
 
 /* CrowdNode */
-"Accepting terms of use…" = "Accepting terms of use…";
+"Accepting terms of use…" = "利用規約に同意しています";
 
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "DASHを直接承認する";
@@ -134,7 +134,7 @@
 "All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "全ての支払いは支出とみなされ、全ての入金取引は収入とみなされます。このウォレットの所有者は、選択した税務報告システムでコストベースの調整を行なう義務があります。";
 
 /* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.";
+"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "このデバイスからCrowdNodeへの全ての金銭取引は、同デバイスから下記のDashアドレスで行われることになります。";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "端末設定でカメラへのアクセスを許可する";
@@ -158,7 +158,7 @@
 "An intuitive and familiar experience across all your devices" = "全てのデバイスで直感的かつ使いやすい使用感";
 
 /* CrowdNode */
-"and" = "and";
+"and" = "および";
 
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
@@ -173,10 +173,10 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = " %@ というアプリがあなたのマスターパブリックキーを要求しています。これはあなたのウォレットの記録を取るために使用されます。あなたのDashが他へ送金されることはありません。";
 
 /* Coinbase/Buy Dash/Cancel Order     */
-"Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
+"Are you sure you want to cancel this order?" = "この注文のキャンセルをしてもよろしいですか。";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
+"Are you sure you want to cancel this transaction?" = "この取引のキャンセルをしてもよろしいですか。";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "本当によろしいですか？";
@@ -203,13 +203,13 @@
 "Available balance" = "ご利用可能な残高";
 
 /* No comment provided by engineer. */
-"Backup Passphrase" = "Backup Passphrase";
+"Backup Passphrase" = "バックアップのパスフレーズ";
 
 /* A noun. Used as a title. */
 "Backup Wallet" = "ウォレットをバックアップする";
 
 /* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "Backup your passphrase to create a CrowdNode account";
+"Backup your passphrase to create a CrowdNode account" = "CrowdNodeのアカウントを作成するためのパスフレーズをバックアップします";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "正しくない復元フレーズ";
@@ -221,13 +221,13 @@
 "Balance hidden" = "非表示にされた残高";
 
 /* CrowdNode */
-"Balance: " = "Balance: ";
+"Balance: " = "残高:";
 
 /* Coinbase/Payment Methods */
-"Bank Account" = "Bank Account";
+"Bank Account" = "銀行口座";
 
 /* Coinbase/Payment Methods */
-"Bank Wire" = "Bank Wire";
+"Bank Wire" = "銀行振込";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase." = "DashウォレットとCoinbase間で行います。";
@@ -288,7 +288,7 @@
 "Cancel" = "キャンセルする";
 
 /* Coinbase/Buy Dash/Cancel Order */
-"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
+"Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "この取引をキャンセルしても、トレードの注文はキャンセルされません。CoinbaseのアカウントにまもなくDASHが入金されます。";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "変更する";
@@ -336,10 +336,10 @@
 "Confirm & Pay" = "確認 & 支払い";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Confirm (%@)";
+"Confirm (%@)" = "確認する (%@)";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%d%@)" = "Confirm (%1$d%2$@)";
+"Confirm (%d%@)" = "確認する (%1$d%2$@)";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "PINを確認する";
@@ -413,38 +413,35 @@
 "Create a New Wallet" = "新しいウォレットを作成する";
 
 /* CrowdNode */
-"Create Account" = "Create Account";
+"Create Account" = "アカウントの作成";
 
 /* CrowdNode
    CrowdNode Portal */
-"Create Online Account" = "Create Online Account";
+"Create Online Account" = "オンラインアカウントを作成";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "クレジットカード";
 
 /* Crowdnode */
-"CrowdNode Account" = "CrowdNode Account";
-
-/* No comment provided by engineer. */
-"CrowdNode sign up was interrupted. Continue?" = "CrowdNode sign up was interrupted. Continue?";
+"CrowdNode Account" = "CrowdNodeアカウント";
 
 /* CrowdNode Portal */
-"CrowdNode Support" = "CrowdNode Support";
+"CrowdNode Support" = "CrowdNodeのサポート";
 
 /* CrowdNode */
-"CrowdNode withdrawal limits" = "CrowdNode withdrawal limits";
+"CrowdNode withdrawal limits" = "CrowdNodeの出金限度額";
 
 /* CrowdNode Portal */
-"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
+"CrowdNode ➝ DashWallet" = "CrowdNodeからDashWalletへ";
 
 /* No comment provided by engineer. */
 "CSV Export" = "CSVのエクスポート";
 
 /* Crowdnode */
-"Current APY = %@" = "Current APY = %@";
+"Current APY = %@" = "現在のAPY = %@";
 
 /* CrowdNode */
-"Current APY is %@" = "Current APY is %@";
+"Current APY is %@" = "現在のAPY: %@";
 
 /* Explore Dash: Filters */
 "Current location" = "現在地";
@@ -459,7 +456,7 @@
 "Dash" = "Dash";
 
 /* Coinbase Entry Point */
-"Dash balance on Coinbase" = "Dash balance on Coinbase";
+"Dash balance on Coinbase" = "CoinbaseでのDashの残高";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
@@ -474,7 +471,7 @@
 "DashPay Upgrade Fee" = "DashPayのアップグレード料金";
 
 /* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
+"DashWallet ➝ CrowdNode" = "DashWalletからCrowdNodeへ";
 
 /* No comment provided by engineer. */
 "Date" = "日付け";
@@ -487,19 +484,19 @@
 
 /* CrowdNode
    CrowdNode Portal */
-"Deposit" = "Deposit";
+"Deposit" = "入金";
 
 /* CrowdNode Portal */
-"Deposit %@ to start earning" = "Deposit %@ to start earning";
+"Deposit %@ to start earning" = "%@を入金して、収入を獲得し始める";
 
 /* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal";
+"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "出金するには、Dashウォレットに%@Dash以上の入金が必要です。";
 
 /* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "Deposit at least %@ to start earning";
+"Deposit at least %@ to start earning" = "収入の獲得を開始するには、%@以上必要です";
 
 /* CrowdNode */
-"Deposit sent" = "Deposit sent";
+"Deposit sent" = "入金額が送金されました";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "端末が危険な状態です！！！\nどの脱獄アプリからでも、他のあらゆるアプリのキーチェーンのデータへアクセスが可能です（そしてあなたのDashを簡単に盗めます）。";
@@ -527,13 +524,13 @@
 "Done" = "完了";
 
 /* ex., Download peer: 127.0.0.1:9999 */
-"Download peer: %@" = " %@:ピアをダウンロードする";
+"Download peer: %@" = " %@: ピアをダウンロードする";
 
 /* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
+"Due to CrowdNode’s terms of service users can withdraw no more than:" = "CrowdNodeの利用規約により、ユーザーはこれ以上出金できません。";
 
 /* CrowdNode */
-"e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
+"e.g. johndoe@mail.com" = "例：johndoe@mail.com";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "以前";
@@ -542,13 +539,13 @@
 "Easily shop with your DASH at over 155,000 locations and online merchants" = "155,000以上の店舗やオンライン加盟店で、DASHを使って簡単にお買い物ができます。";
 
 /* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
+"Easily stake Dash and earn passive income with a few simple clicks." = "簡単にDashをステークし、数回のクリックでパッシブ収入を得ます。";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "例: johndoe";
 
 /* CrowdNode */
-"Email" = "Email";
+"Email" = "Eメール";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Face IDを有効にする";
@@ -599,10 +596,10 @@
 "Face ID limit" = "Face IDの送金可能額";
 
 /* Coinbase */
-"Failed to start auth session" = "Failed to start auth session";
+"Failed to start auth session" = "認証セッションの開始に失敗しました";
 
 /* Buy Sell Portal */
-"Failed to sync" = "Failed to sync";
+"Failed to sync" = "同期に失敗しました";
 
 /* Explore Dash */
 "Failed to sync on" = "同期に失敗しました";
@@ -626,7 +623,7 @@
 "Fetching Info" = "情報の取得";
 
 /* Coinbase/Payment Methods */
-"Fiat Account" = "Fiat Account";
+"Fiat Account" = "フィアットアカウント";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "取引をフィルタリングする";
@@ -650,10 +647,10 @@
 "Find where to buy or sell DASH and other cryptocurrencies for cash." = "DASHやその他の仮想通貨を現金で売買できる場所を探します。";
 
 /* CrowdNode */
-"First deposit should be more than %@" = "First deposit should be more than %@";
+"First deposit should be more than %@" = "初回入金額は、%@以上必要です。";
 
 /* Coinbase */
-"For your security, you have been signed out." = "For your security, you have been signed out.";
+"For your security, you have been signed out." = "セキュリティのため、サインアウトされました。";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "PINを忘れましたか?";
@@ -668,16 +665,16 @@
 "Found potential missing words:\n%@" = "可能性のある不足している語句を発見しました:\n%@";
 
 /* from CrowdNode */
-"from CrowdNode" = "from CrowdNode";
+"from CrowdNode" = "CrowdNodeから";
 
 /* from Dash Wallet */
-"from Dash Wallet" = "from Dash Wallet";
+"from Dash Wallet" = "Dash Walletから";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "UpholdからDashウォレットへ";
 
 /* Coinbase */
-"from your Coinbase account" = "from your Coinbase account";
+"from your Coinbase account" = "Coinbaseアカウントから";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "拡張されたパブリックキーを作成しますか。";
@@ -695,7 +692,7 @@
 "Gift Card" = "ギフトカード";
 
 /* No comment provided by engineer. */
-"Go to CrowdNode website" = "Go to CrowdNode website";
+"Go to CrowdNode website" = "CrowdNodeのウェブサイトへ移動";
 
 /* No comment provided by engineer. */
 "Go to Website" = "ウェブサイトへ行く";
@@ -737,7 +734,7 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "もし復元フレーズを無くしたら、自分のコインが失われることに同意します";
 
 /* CrowdNode */
-"I agree to CrowdNode" = "I agree to CrowdNode";
+"I agree to CrowdNode" = "CrowdNodeに同意します";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "紙に書き留めました";
@@ -746,10 +743,10 @@
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "もしこの端末を紛失すると、あなたの資金も失われてしまいます。\n他のデバイスでも自分のウォレットを復元できるように復元フレーズを\n取得してください";
 
 /* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet.";
+"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "このウォレットのパスフレーズを紛失したり、このデバイスをなくしたり、Dash Walletをアンインストールすると、CrowdNode上の資金とこのウォレット内の資金にアクセスできなくなります。";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "もしまだ消去したければ、次の文をご入力ください： \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "もしまだ消去したければ、次の文をご入力ください: \"%@\"";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "手動で再分類した取引を保存したい場合は、CSV取引ファイルをエクスポートする必要があります。";
@@ -767,22 +764,22 @@
 "Import private key, Export CSV…" = "プライベートキーのインポート、CSVのエクスポート...";
 
 /* Coinbase/Fee info */
-"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
+"In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "表示されているCoinbaseの手数料に加え、スプレッドも価格に含まれています。アドバンスドトレードを利用する場合、注文帳簿と直接連動をするため、スプレッドは含まれません。\n\n仮想通貨市場は変動が激しいため、取引執行時の価格を一時的に固定できます。";
 
 /* CrowdNode Portal */
-"In process…" = "In process…";
+"In process…" = "処理中";
 
 /* No comment provided by engineer. */
 "Income" = "収入";
 
 /* Buy Sell Portal */
-"Initializing" = "Initializing";
+"Initializing" = "初期化中";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "資金不足";
 
 /* Coinbase/Payment Methods */
-"Interac" = "Interac";
+"Interac" = "インタラック";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "内部の送金";
@@ -794,13 +791,13 @@
 "Invalid" = "無効";
 
 /* Balance */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "無効な金額";
 
 /* CrowdNode Online */
-"Invalid Email" = "Invalid Email";
+"Invalid Email" = "無効なEメール";
 
 /* Invalid Amount Input */
-"Invalid Input" = "Invalid Input";
+"Invalid Input" = "無効な入力";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "無効な支払のリクエスト";
@@ -809,16 +806,16 @@
 "Invalid QR Code" = "無効なQRコード";
 
 /* CrowdNode */
-"It can take a minute for your balance to be updated." = "It can take a minute for your balance to be updated.";
+"It can take a minute for your balance to be updated." = "お客様の残高が更新されるまで、1分ほどかかる場合があります。";
 
 /* CrowdNode */
-"It can take a minute for your funds to arrive." = "It can take a minute for your funds to arrive.";
+"It can take a minute for your funds to arrive." = "お客様の資金が着金するまで、1分ほどかかることがあります。";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "これは、お使いの携帯電話のSMSに記載されたコードだと思われます。該当しない場合は、認証アプリからコードを入力してください。";
 
 /* Coinbase */
-"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
+"It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "このデバイスでは、CoinbaseからDashウォレットにDashを送金するのに最大10分かかる場合があります。";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "12個の語句からなるリカバリーフレーズを使用してウォレットを復元しようとしているようですが、10個の語句しか入力されていません。これには1時間程度かかる場合があります。デバイスをプラグに接続するのを推奨します。";
@@ -849,7 +846,7 @@
 "Learn More" = "詳細はこちら";
 
 /* Info Screen */
-"Learn More..." = "Learn More...";
+"Learn More..." = "詳細はこちら...";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完了したらお知らせください";
@@ -861,7 +858,7 @@
 "Link Coinbase Account" = "Coinbaseアカウントをリンク";
 
 /* CrowdNode */
-"Link Existing CrowdNode Account" = "Link Existing CrowdNode Account";
+"Link Existing CrowdNode Account" = "既存のCrowdNodeアカウントへのリンク";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Upholdアカウントをリンクさせる";
@@ -870,7 +867,7 @@
 "Link Uphold account" = "Upholdアカウントへのリンク";
 
 /* Buy Sell Portal */
-"Link your account" = "Link your account";
+"Link your account" = "お客様のアカウントをリンク";
 
 /* Dash Service Overview */
 "Link your Coinbase account" = "Coinbaseアカウントをリンクする";
@@ -894,7 +891,7 @@
 "Locked" = "ロック済み";
 
 /* CrowdNode WebView */
-"Log in to CrowdNode" = "Log in to CrowdNode";
+"Log in to CrowdNode" = "CrowdNodeにログイン";
 
 /* No comment provided by engineer. */
 "Log Out" = "ログアウトする";
@@ -915,7 +912,7 @@
 "Logout after" = "の後にログアウト";
 
 /* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "Looks like you are emptying your Dash Wallet";
+"Looks like you are emptying your Dash Wallet" = "お客様のDash Walletに資金がありません";
 
 /* adjective, security level */
 "Low" = "低";
@@ -975,16 +972,16 @@
 "Name" = "名前";
 
 /* Explore Dash: Filters */
-"Name: from A to Z" = "名前：A～Z";
+"Name: from A to Z" = "名前: A～Z";
 
 /* Explore Dash: Filters */
-"Name: from Z to A" = "名前：Z～A";
+"Name: from Z to A" = "名前: Z～A";
 
 /* Nearby */
 "Nearby" = "周辺環境";
 
 /* Coinbase Two Factor Auth */
-"Need help? " = "Need help? ";
+"Need help? " = "お困りですか。";
 
 /* No comment provided by engineer. */
 "Network" = "ネットワーク";
@@ -1008,13 +1005,13 @@
 "No" = "No.";
 
 /* Coinbase */
-"No active user" = "No active user";
+"No active user" = "アクティブなユーザーがいません";
 
 /* Coinbase/Buy Dash */
-"No payment methods" = "No payment methods";
+"No payment methods" = "支払い方法がありません";
 
 /* Coinbase/Buy Dash */
-"No payment methods found" = "No payment methods found";
+"No payment methods found" = "支払い方法が見つかりませんでした";
 
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "検索結果が見つかりませんでした";
@@ -1050,7 +1047,7 @@
 "Notifications" = "通知";
 
 /* Coinbase */
-"oAuth failed" = "oAuth failed";
+"oAuth failed" = "認証に失敗しました";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -1062,7 +1059,7 @@
 "Online" = "オンライン";
 
 /* CrowdNode Portal */
-"Online Account" = "Online Account";
+"Online Account" = "オンラインアカウント";
 
 /* Online Merchant */
 "Online Merchant" = "オンライン加盟店";
@@ -1128,19 +1125,19 @@
 "Pending" = "保留中";
 
 /* CrowdNode */
-"per 24 hours" = "per 24 hours";
+"per 24 hours" = "24時間あたり";
 
 /* CrowdNode */
-"per hour" = "per hour";
+"per hour" = "1時間あたり";
 
 /* CrowdNode */
-"per transaction" = "per transaction";
+"per transaction" = "1取引あたり";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "お支払いにはPINが必要です";
 
 /* Coinbase/Buy Dash */
-"Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
+"Please add a payment method on Coinbase" = "Coinbaseで支払い方法を追加してください";
 
 /* Network Unavailable */
 "Please check your network connection" = "ネットワーク接続を確認してください";
@@ -1149,7 +1146,7 @@
 "Please enter PIN to upgrade wallet" = "ウォレットをアップグレードするためPINを入力してください";
 
 /* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.";
+"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "残高を%@Dashに増加させない限り、CrowdNodeからこのウォレットに資金を引き出すことはできませんので、ご注意ください。";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "あなたの携帯電話をNFCデバイスに近づけてください";
@@ -1170,7 +1167,7 @@
 "Please wait" = "お待ちください";
 
 /* No comment provided by engineer. */
-"Please wait until the wallet is fully synced before exporting your transaction history" = "Please wait until the wallet is fully synced before exporting your transaction history";
+"Please wait until the wallet is fully synced before exporting your transaction history" = "取引履歴をエクスポートする前に、ウォレットが完全に同期されるまでお待ちください";
 
 /* No comment provided by engineer. */
 "Please write it down" = "紙に書き留めて下さい";
@@ -1185,7 +1182,7 @@
 "Processing" = "処理中";
 
 /* CrowdNode Portal */
-"Protect your savings" = "Protect your savings";
+"Protect your savings" = "貯蓄の保護";
 
 /* No comment provided by engineer. */
 "Provider Address" = "プロバイダーアドレス";
@@ -1200,7 +1197,7 @@
 "Quick Receive" = "クイック入金";
 
 /* No comment provided by engineer. */
-"Quorums validated: %d/%d" = "検証済みのクォーラム :%1$d/%2$d";
+"Quorums validated: %d/%d" = "検証済みのクォーラム: %1$d/%2$d";
 
 /* Explore Dash/Merchants/Filters */
 "Radius" = "Radius";
@@ -1209,16 +1206,16 @@
 "Rate: %@ = %@" = "レート: %1$@ = %2$@";
 
 /* CrowdNode */
-"Read Withdrawal Policy" = "Read Withdrawal Policy";
+"Read Withdrawal Policy" = "出金ポリシーを読む";
 
 /* No comment provided by engineer. */
 "Receive" = "入金";
 
 /* Coinbase Entry Point */
-"Receive directly into Coinbase" = "Receive directly into Coinbase";
+"Receive directly into Coinbase" = "Coinbaseに直接入金する";
 
 /* Coinbase Entry Point */
-"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
+"Receive directly into Dash Wallet" = "Dashウォレットに直接入金する";
 
 /* Received transaction */
 "Received" = "受取済み";
@@ -1368,7 +1365,7 @@
 "Select a coin" = "通貨を選ぶ";
 
 /* Buy Sell Dash */
-"Select a service" = "Select a service";
+"Select a service" = "サービスを選択する";
 
 /* Coinbase */
 "Select the coin" = "通貨を選ぶ";
@@ -1386,7 +1383,7 @@
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "スキャンしたプライベートキーの全残高%1$@ （%2$@） をあなたのウォレット宛に送金してもよろしいですか？Dashネットワークへの手数料が %3$@ （%4$@） です。";
 
 /* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
+"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "現在CrowdNodeアカウントで使用しているメインのDashアドレスから%@を送金します。";
 
 /* Send by (scanning QR code) */
 "Send by" = "で送金する";
@@ -1396,7 +1393,7 @@
 
 /* Coinbase
    CrowdNode */
-"Send Report" = "Send Report";
+"Send Report" = "レポートを送信";
 
 /* No comment provided by engineer. */
 "Send to" = "に送信する";
@@ -1414,13 +1411,13 @@
 "Sending to" = "に送信";
 
 /* CrowdNode */
-"Sending to CrowdNode account" = "Sending to CrowdNode account";
+"Sending to CrowdNode account" = "CrowdNodeアカウントへの送金";
 
 /* CrowdNode */
-"Sending to Dash Wallet on this device" = "Sending to Dash Wallet on this device";
+"Sending to Dash Wallet on this device" = "このデバイスでDash Walletに送金する";
 
 /* Buy Dash */
-"Sending to:" = "Sending to:";
+"Sending to:" = "送金先:";
 
 /* 2 out of 4 in the Sending Animation */
 "Sending." = "送金中.";
@@ -1432,7 +1429,7 @@
 "Sending..." = "送金中...";
 
 /* Sent transaction */
-"Sent" = "送信済み";
+"Sent" = "送金済み";
 
 /* No comment provided by engineer. */
 "Sent from" = "から送金済み";
@@ -1465,16 +1462,16 @@
 "Show Recovery Phrase" = "復元フレーズを表示する";
 
 /* CrowdNode */
-"Sign the message" = "Sign the message";
+"Sign the message" = "メッセージに署名する";
 
 /* CrowdNode */
-"Sign up error" = "Sign up error";
+"Sign up error" = "サインアップエラー";
 
 /* CrowdNode */
-"Sign up to CrowdNode" = "Sign up to CrowdNode";
+"Sign up to CrowdNode" = "CrowdNodeにサインアップ";
 
 /* CrowdNode Portal */
-"Sign up to finish setting up account" = "Sign up to finish setting up account";
+"Sign up to finish setting up account" = "サインアップしてアカウント設定を完了する";
 
 /* No comment provided by engineer. */
 "Skip" = "スキップする";
@@ -1498,10 +1495,10 @@
 "Sorted by name" = "名前順で並べ替え";
 
 /* Explore Dash/Filters */
-"Sorting: A to Z" = "並べ替え：A～Z";
+"Sorting: A to Z" = "並べ替え: A～Z";
 
 /* Explore Dash/Filters */
-"Sorting: Z to A" = "並べ替え：Z～A";
+"Sorting: Z to A" = "並べ替え: Z～A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "金額を指定する";
@@ -1510,7 +1507,7 @@
 "Spending Confirmation" = "支出の確認";
 
 /* No comment provided by engineer. */
-"Staking" = "Staking";
+"Staking" = "ステーキング";
 
 /* No comment provided by engineer. */
 "Support" = "サポート";
@@ -1531,7 +1528,7 @@
 "Sync Now" = "すぐに同期する";
 
 /* CrowdNode Portal */
-"Synced with current Dash Wallet" = "Synced with current Dash Wallet";
+"Synced with current Dash Wallet" = "現在使用しているDash Walletと同期";
 
 /* No comment provided by engineer. */
 "Syncing" = "同期中";
@@ -1543,7 +1540,7 @@
 "Syncing..." = "同期中…";
 
 /* Balance */
-"Syncing…" = "Syncing…";
+"Syncing…" = "同期中…";
 
 /* Pay using NFC (should be as short as possible) */
 "Tap" = "タップする";
@@ -1558,16 +1555,16 @@
 "Tax Category" = "税金の区分";
 
 /* No comment provided by engineer. */
-"The chain is syncing…" = "The chain is syncing…";
+"The chain is syncing…" = "チェーンを同期中";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "コードが正しくありません。ご確認の上、再度ご入力ください。";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
+"The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "このDashはお客様のCoinbaseアカウントに正常に入金されました。しかし、この端末でDashウォレットに送金する際に問題が発生しました。";
 
 /* Coinbase */
-"The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+"The minimum amount you can send is %@" = "送金可能な最小金額は、%@です";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "新しい通知はありません。";
@@ -1582,10 +1579,10 @@
 "There are no users that match with the name %@ in your contacts" = "あなたの連絡先に名前%@に一致するユーザーはいません。";
 
 /* Coinbase */
-"There was an error while obtaining new address" = "There was an error while obtaining new address";
+"There was an error while obtaining new address" = "新しいアドレスの取得中にエラーが発生しました";
 
 /* Coinbase */
-"There was an error, please try again later" = "There was an error, please try again later";
+"There was an error, please try again later" = "エラーが発生しました。後でもう一度お試しください。";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "このアプリはオープンソースです: ";
@@ -1600,7 +1597,7 @@
 "This PIN will be required to unlock your app every time when you use it." = "このアプリをアンロックして使用するときは必ずこのPINが必要となります";
 
 /* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
+"This QR already contains the payment request for %@" = "このQRには、すでに%@の支払い請求が含まれています。";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "この復元フレーズがあれば、このウォレットの中の資金へのアクセスできます";
@@ -1615,7 +1612,7 @@
 "to" = "へ";
 
 /* Coinbase */
-"to Dash Wallet on this device" = "to Dash Wallet on this device";
+"to Dash Wallet on this device" = "この端末のDashウォレットに";
 
 /* No comment provided by engineer. */
 "Tools" = "ツール";
@@ -1641,7 +1638,7 @@
 "Transfer Dash from your Uphold account to this wallet" = "あなたのUpholdアカウントからこのウォレットにDashを送金する";
 
 /* CrowdNode */
-"Transfer Error" = "Transfer Error";
+"Transfer Error" = "送金エラー";
 
 /* Coinbase */
 "Transfer Failed" = "取引に失敗しました";
@@ -1665,7 +1662,7 @@
 "Turn device passcode on" = "端末のパスコードを有効に";
 
 /* Coinbase */
-"Two factor auth required" = "Two factor auth required";
+"Two factor auth required" = "2段階認証が必要です";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "接続できません";
@@ -1677,7 +1674,7 @@
 "Unknown" = "未知の";
 
 /* Coinbase */
-"Unknown Balance" = "Unknown Balance";
+"Unknown Balance" = "不明な残高";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "サポートされていないか破損しているドキュメント";
@@ -1713,7 +1710,7 @@
 "Username taken" = "ユーザー名を取得しました";
 
 /* CrowdNode Portal */
-"Validating address…" = "Validating address…";
+"Validating address…" = "アドレスを有効化中";
 
 /* No comment provided by engineer. */
 "Validating username done" = "ユーザー名の有効化完了";
@@ -1725,7 +1722,7 @@
 "Validating username…" = "ユーザー名の有効化中...";
 
 /* CrowdNode Portal */
-"Verification Required" = "Verification Required";
+"Verification Required" = "認証が必要です";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "無事に検証されました";
@@ -1758,10 +1755,10 @@
 "Voting Keys" = "投票の諸々のキー";
 
 /* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
+"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "チェーンが完全に同期されるまで待ち、お客様の取引履歴を確認できるようにします。CrowdNodeのウェブサイトにアクセスし、ログインまたはサインアップしてください。";
 
 /* Send screen */
-"Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
+"Wait until wallet is synced to complete the transaction" = "ウォレットが同期されるまで待ち、取引を完了させます。";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "ウォレットは機能停止しています";
@@ -1779,13 +1776,13 @@
 "We are about to show you the secret key to your wallet." = "これからあなたのウォレットの秘密鍵を表示します";
 
 /* CrowdNode */
-"We couldn’t create your CrowdNode account." = "We couldn’t create your CrowdNode account.";
+"We couldn’t create your CrowdNode account." = "お客様のCrowdNodeアカウントを作成できませんでした。";
 
 /* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "We couldn’t make a deposit to your CrowdNode account.";
+"We couldn’t make a deposit to your CrowdNode account." = "お客様のCrowdNodeアカウントに入金できませんでした。";
 
 /* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "We couldn’t withdraw from your CrowdNode account.";
+"We couldn’t withdraw from your CrowdNode account." = "お客様のCrowdNodeアカウントから出金できませんでした。";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "この復元フレーズは保存されません";
@@ -1815,7 +1812,7 @@
 "Where to Spend?" = "どこで使えますか。";
 
 /* Crowdnode */
-"Why do I see all these transactions?" = "Why do I see all these transactions?";
+"Why do I see all these transactions?" = "なぜこのような取引があるのですか。";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "なぜスクリーンショットを撮ってはいけませんか。";
@@ -1834,13 +1831,13 @@
 
 /* CrowdNode
    CrowdNode Portal */
-"Withdraw" = "Withdraw";
+"Withdraw" = "出金";
 
 /* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "Withdraw without limits with an online account on CrowdNode website.";
+"Withdraw without limits with an online account on CrowdNode website." = "CrowdNodeのウェブサイトからオンラインアカウントで無制限に出金することができます。";
 
 /* CrowdNode */
-"Withdrawal requested" = "Withdrawal requested";
+"Withdrawal requested" = "出金がリクエストされました";
 
 /* No comment provided by engineer. */
 "Yes" = "はい";
@@ -1867,34 +1864,34 @@
 "You have chosen \"%@\" as your username. Your username cannot be changed once registered." = "「%@」をあなたのユーザー名として選択しました。あなたのユーザー名は一度登録すると変更はできません。";
 
 /* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "You have insufficient funds to proceed";
+"You have insufficient funds to proceed" = "手続きするのに資金が不足しています";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "DashウォレットにアクセスするにはPINの入力が必要です";
 
 /* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
+"You need at least %@ on your Dash Wallet" = "CrowdNodeの認証を進めるには、%@以上必要です。";
 
 /* CrowdNode */
-"You only need %@ to join the pool." = "You only need %@ to join the pool.";
+"You only need %@ to join the pool." = "%@だけでプールに参加できます。";
 
 /* Coinbase */
-"You receive" = "You receive";
+"You receive" = "入金する";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Dashが入金されました! もしこの端末を紛失すると、あなたの資金も\n失われてしまいます。他のデバイスでも自分のウォレットを復元できる\nように復元フレーズを取得してください";
 
 /* Coinbase */
-"You send" = "You send";
+"You send" = "送信する";
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "%@に連絡先リクエストを送信しました";
 
 /* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "You should have a positive balance on Dash Wallet";
+"You should have a positive balance on Dash Wallet" = "Dash Walletに残高が残っている状態にする必要があります。";
 
 /* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
+"You should have at least %@ to proceed with the CrowdNode verification." = "CrowdNodeの認証を進めるには、%@以上必要です。 ";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "またブラウザーを使ってUpholdのウェブサイトからログアウトする必要もあります";
@@ -1906,28 +1903,28 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "この端末を紛失したり故障した場合やこの端末からDashウォレットを\n誤まってアンインストールしてしまった場合に、あなたの資金にアクセス\nするためには、この復元フレーズが必要となります。";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
+"You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "この端末のDashウォレットで%@Dashを受け取ります。送金完了まで最長2-3分かかることがあります。 ";
 
 /* CrowdNode */
-"Your CrowdNode account is creating…" = "Your CrowdNode account is creating…";
+"Your CrowdNode account is creating…" = "お客様のCrowdNodeアカウントを作成中...";
 
 /* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "Your CrowdNode account is set up and ready to use!";
+"Your CrowdNode account is set up and ready to use!" = "お客様のCrowdNodeアカウントが設定され、ご利用いただけるようになりました。";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "Your CrowdNode account was created using these transactions. ";
+"Your CrowdNode account was created using these transactions. " = "お客様のCrowdNodeアカウントは、これらの取引を利用して作成されました。";
 
 /* CrowdNode */
-"Your CrowdNode address has been confirmed." = "Your CrowdNode address has been confirmed.";
+"Your CrowdNode address has been confirmed." = "お客様のCrowdNodeアドレスが確認されました。";
 
 /* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "Your CrowdNode address has been validated, but verification is required.";
+"Your CrowdNode address has been validated, but verification is required." = "お客様のCrowdNodeアドレスが有効化されていますが、認証が必要です。";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "あなたのDashPayのユーザー名は使用可能です";
 
 /* CrowdNode */
-"Your deposit to CrowdNode is received." = "Your deposit to CrowdNode is received.";
+"Your deposit to CrowdNode is received." = "お客様のCrowdNodeへの入金が完了しました。";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "お客様の位置情報は、地図上のお客様の位置、選択した圏内にあるATMの表示、検索結果の改善に使用されます。";
