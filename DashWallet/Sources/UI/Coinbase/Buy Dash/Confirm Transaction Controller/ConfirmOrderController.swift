@@ -64,9 +64,9 @@ enum ConfirmOrderItem: PreviewOrderItem {
 
     var cellIdentifier: String {
         if self == .amountInDash {
-            return ConfirmOrderAmountInDashCell.dw_reuseIdentifier
+            return ConfirmOrderAmountInDashCell.reuseIdentifier
         } else {
-            return ConfirmOrderGeneralInfoCell.dw_reuseIdentifier
+            return ConfirmOrderGeneralInfoCell.reuseIdentifier
         }
     }
 
@@ -111,7 +111,7 @@ final class ConfirmOrderController: OrderPreviewViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        tableView.register(ConfirmOrderAmountInDashCell.self, forCellReuseIdentifier: ConfirmOrderAmountInDashCell.dw_reuseIdentifier)
+        tableView.register(ConfirmOrderAmountInDashCell.self, forCellReuseIdentifier: ConfirmOrderAmountInDashCell.reuseIdentifier)
     }
 
     override func viewDidLoad() {

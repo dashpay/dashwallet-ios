@@ -17,6 +17,17 @@
 
 import UIKit
 
+// MARK: - TxDetailHeaderCellDataProvider
+
+protocol TxDetailHeaderCellDataProvider {
+    var title: String { get }
+    var fiatAmount: String { get }
+    var icon: UIImage { get }
+    var tintColor: UIColor { get }
+
+    func dashAmountString(with font: UIFont) -> NSAttributedString
+}
+
 // MARK: - TxDetailHeaderCell
 
 class TxDetailHeaderCell: UITableViewCell {
@@ -26,60 +37,14 @@ class TxDetailHeaderCell: UITableViewCell {
 
     @IBOutlet var iconImageView: UIImageView!
 
-    var model: TxDetailModel! {
-        didSet {
-            updateView()
-        }
-    }
+    func updateView(with data: TxDetailHeaderCellDataProvider) {
+        let font = UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
+        dashAmountLabel.attributedText = data.dashAmountString(with: font)
+        fiatAmountLabel.text = data.fiatAmount;
 
-    private func updateView() {
-        var title: String!
-        var iconTintColor: UIColor!
-        var iconName: String!
-
-        switch model.direction {
-        case .moved:
-            iconName = "arrow.up.circle.fill"
-            title = NSLocalizedString("Moved to Address", comment: "");
-            iconTintColor = UIColor.dw_iconTint()
-        case .sent:
-            iconName = "arrow.up.circle.fill"
-            title = NSLocalizedString("Amount Sent", comment: "");
-            iconTintColor = UIColor.dw_dashBlue() // Black or White (in Dark Mode)
-        case .received:
-            iconName = "arrow.down.circle.fill"
-            title = NSLocalizedString("Amount received", comment: "");
-            iconTintColor = UIColor.dw_green()
-        case .notAccountFunds:
-            iconName = "arrow.down.circle.fill"
-            title = NSLocalizedString("Registered Masternode", comment: "");
-            iconTintColor = UIColor.dw_iconTint() // Black or White (in Dark Mode)
-        default:
-            break
-        }
-
-        if model.direction == .notAccountFunds {
-            fiatAmountLabel.text = "";
-            dashAmountLabel.text = "";
-        }
-        else {
-            fiatAmountLabel.text = model.fiatAmountString;
-            dashAmountLabel.attributedText = model
-                .dashAmountString(with: UIFont.preferredFont(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue),
-                                  tintColor: .label)
-        }
-
-        titleLabel.text = title
-        titleLabel.textColor = iconTintColor
-
-        if let name = iconName {
-            let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .unspecified)
-
-            let image = UIImage(systemName: name, withConfiguration: iconConfig)
-
-            iconImageView.image = image
-            iconImageView.tintColor = iconTintColor
-        }
+        titleLabel.text = data.title
+        iconImageView.image = data.icon
+        iconImageView.tintColor = data.tintColor
     }
 
     override func awakeFromNib() {
@@ -89,9 +54,10 @@ class TxDetailHeaderCell: UITableViewCell {
         titleLabel.font = UIFont.dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.medium.rawValue)
         dashAmountLabel.font = UIFont.dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.medium.rawValue)
         fiatAmountLabel.font = UIFont.dw_font(forTextStyle: .footnote)
-    }
 
-    override class var dw_reuseIdentifier: String { "TxDetailHeaderCell" }
+        titleLabel.textColor = .dw_label()
+        dashAmountLabel.textColor = .dw_label()
+    }
 }
 
 // MARK: - TxDetailActionCell
@@ -101,8 +67,6 @@ class TxDetailActionCell: TxDetailTitleCell {
         super.awakeFromNib()
         titleLabel.textColor = .dw_label()
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailActionCell" }
 }
 
 // MARK: - TxDetailInfoCell
@@ -160,8 +124,6 @@ class TxDetailInfoCell: TxDetailTitleDetailsCell {
             view.removeFromSuperview()
         }
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailInfoCell" }
 }
 
 // MARK: - TxDetailTaxCategoryCell
@@ -184,8 +146,6 @@ class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
 
         categoryLabel?.font = UIFont.dw_font(forTextStyle: .footnote)
     }
-
-    override class var dw_reuseIdentifier: String { "TxDetailTaxCategoryCell" }
 }
 
 // MARK: - TxDetailTitleDetailsCell

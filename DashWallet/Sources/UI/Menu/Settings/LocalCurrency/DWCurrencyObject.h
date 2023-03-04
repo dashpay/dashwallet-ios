@@ -19,7 +19,8 @@
 
 #import "DWCurrencyItem.h"
 #import "DWCurrencyItemPriceProvider.h"
-#import <DashSync/DSCurrencyPriceObject.h>
+
+@class DSCurrencyPriceObject;
 
 NS_ASSUME_NONNULL_BEGIN
 

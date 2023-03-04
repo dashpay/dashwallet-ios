@@ -62,5 +62,25 @@
 			<string>%d handlowcy</string>
 		</dict>
 	</dict>
+    <key>%d transaction(s)</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@transactions@</string>
+        <key>transactions</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>one</key>
+            <string>%d transakcja</string>
+            <key>few</key>
+            <string>%d transakcje</string>
+            <key>many</key>
+            <string>%d transakcji</string>
+            <key>other</key>
+            <string>%d transakcji</string>
+        </dict>
+    </dict>
 </dict>
 </plist>

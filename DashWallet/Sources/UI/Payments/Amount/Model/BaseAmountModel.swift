@@ -66,7 +66,12 @@ class BaseAmountModel {
         }
     }
 
-    var currentInputItem: AmountInputItem
+    var currentInputItem: AmountInputItem {
+        didSet {
+            inputsSwappedHandler?(activeAmountType)
+        }
+    }
+
     var inputItems: [AmountInputItem] = [] {
         didSet {
             amountInputItemsChangeHandler?()
@@ -75,6 +80,8 @@ class BaseAmountModel {
 
     public var errorHandler: ((Error) -> Void)?
     public var amountChangeHandler: ((AmountObject) -> Void)?
+    public var presentCurrencyPickerHandler: (() -> Void)?
+    public var inputsSwappedHandler: ((AmountType) -> Void)?
     public var amountInputItemsChangeHandler: (() -> Void)?
 
     public var isAllowedToContinue: Bool {

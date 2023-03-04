@@ -43,7 +43,16 @@ final class TransferAmountViewController: CoinbaseAmountViewController, Converte
 
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
-        transferModel.initializeTransfer()
+        
+        if transferModel.direction == .toCoinbase {
+            checkLeftoverBalance { [weak self] canContinue in
+                guard canContinue, let wSelf = self else { self?.hideActivityIndicator(); return }
+                wSelf.transferModel.initializeTransfer()
+            }
+        }
+        else {
+            transferModel.initializeTransfer()
+        }
     }
 
     // MARK: ConverterViewDelegate

@@ -59,7 +59,6 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-
     UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
     self.navigationItem.rightBarButtonItem = barButton;
 
@@ -210,7 +209,7 @@ static CGFloat const SECTION_SPACING = 10.0;
     priceSourceLabel.numberOfLines = 0;
     priceSourceLabel.lineBreakMode = NSLineBreakByWordWrapping;
     priceSourceLabel.textAlignment = NSTextAlignmentCenter;
-    [self.tableView addSubview:priceSourceLabel];
+    //[self.tableView addSubview:priceSourceLabel];
     self.priceSourceLabel = priceSourceLabel;
     [self walletBalanceDidChangeNotification:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -220,9 +219,6 @@ static CGFloat const SECTION_SPACING = 10.0;
 }
 
 - (void)walletBalanceDidChangeNotification:(nullable NSNotification *)sender {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    self.priceSourceLabel.text = [NSString stringWithFormat:@"📈 %@",
-                                                            priceManager.lastPriceSourceInfo ?: @"?"];
 }
 
 @end

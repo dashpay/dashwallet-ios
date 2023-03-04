@@ -17,6 +17,27 @@
 
 import Foundation
 
+// MARK: - AppObjcWrapper
+
+@objc(DWApp)
+class AppObjcWrapper: NSObject {
+    @objc
+    static var dashFormatter: NumberFormatter {
+        NumberFormatter.dashFormatter
+    }
+
+    @objc static var localCurrencyCode: String {
+        get {
+            App.fiatCurrency
+        }
+        set {
+            App.shared.fiatCurrency = newValue
+        }
+    }
+}
+
+// MARK: - App
+
 class App {
     static func initialize() { }
 

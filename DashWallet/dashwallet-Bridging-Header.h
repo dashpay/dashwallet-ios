@@ -22,9 +22,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSOperationQueue.h"
 
 //MARK: DashWallet
-#import "DWTransactionListDataProviderProtocol.h"
 #import "DWActionButton.h"
-#import "DWTransactionListDataProvider.h"
 #import "DWDPBasicUserItem.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
@@ -33,6 +31,26 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
+#import "DWDateFormatter.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
+
+//MARK: CrowdNode
+#import "DWCheckbox.h"
+#import "DWBackupInfoViewController.h"
+#import "DWPreviewSeedPhraseModel.h"
+#import "DWSeedPhraseModel.h"
+#import "DWSecureWalletDelegate.h"
+#import "UIImage+Utils.h"
+#import "NSData+Dash.h"
+// end CrowdNode
+
+#import "DWUpholdViewController.h"
+#import "DWUpholdClient.h"
+#import "DWUpholdCardObject.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
@@ -51,10 +69,9 @@ static const bool _SNAPSHOT = 0;
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
 #import "UIView+DWHUD.h"
+#import "UIView+DWAnimations.h"
 #import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
-#import "UIView+DWReuseHelper.h"
-#import "NSAttributedString+DWBuilder.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
@@ -75,3 +92,5 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
+
+#import "DWPhoneWCSessionManager.h"

@@ -44,5 +44,19 @@
 			<string>%d 加盟店</string>
 		</dict>
 	</dict>
+    <key>%d transaction(s)</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@transactions@</string>
+        <key>transactions</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>other</key>
+            <string>%d 件</string>
+        </dict>
+    </dict>
 </dict>
 </plist>

@@ -17,11 +17,10 @@
 
 #import "DWBaseTransactionListDataProvider.h"
 
-#import "DSTransaction+DashWallet.h"
 #import "DWDateFormatter.h"
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItem.h"
-#import "NSAttributedString+DWBuilder.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,26 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (NSDate *)dateForTransaction:(DSTransaction *)transaction {
-    return transaction.date;
-}
-
-- (NSString *)formattedShortTxDate:(NSDate *)date {
-    return [[DWDateFormatter sharedInstance] shortStringFromDate:date];
-}
-
-- (NSString *)formattedLongTxDate:(NSDate *)date {
-    return [[DWDateFormatter sharedInstance] longStringFromDate:date];
-}
-
-- (NSString *)formattedISO8601TxDate:(NSDate *)date {
-    return [[DWDateFormatter sharedInstance] iso8601StringFromDate:date];
-}
-
 - (NSString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData {
     const uint64_t dashAmount = transactionData.dashAmount;
 
-    NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
+    NSNumberFormatter *numberFormatter = DWApp.dashFormatter;
 
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
         decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];

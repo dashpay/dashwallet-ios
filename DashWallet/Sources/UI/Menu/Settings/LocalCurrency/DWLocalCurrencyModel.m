@@ -24,6 +24,7 @@
 #import "DWCurrencyItemPriceProvider.h"
 #import "DWCurrencyObject.h"
 #import "NSPredicate+DWFullTextSearch.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,17 +53,21 @@ NS_ASSUME_NONNULL_BEGIN
         numberFormatter.minimumFractionDigits = 2;
         _numberFormatter = numberFormatter;
 
-        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-        DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:currencyCode ?: priceManager.localCurrencyCode];
-        _selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;
+        NSString *selectedCurrencyCode = currencyCode ?: DWApp.localCurrencyCode;
+        NSArray<DSCurrencyPriceObject *> *prices = [CurrencyExchangerObjcWrapper prices];
 
         NSMutableArray<DWCurrencyObject *> *allItems = [NSMutableArray array];
-        for (DSCurrencyPriceObject *priceObject in priceManager.prices) {
+        for (size_t i = 0; i < prices.count; i++) {
+            DSCurrencyPriceObject *priceObject = prices[i];
+
             DWCurrencyObject *object =
                 [[DWCurrencyObject alloc] initWithPriceObject:priceObject
                                                      flagName:self.flagByCode[priceObject.code]
                                                      provider:self];
             [allItems addObject:object];
+
+            if (selectedCurrencyCode == priceObject.code)
+                _selectedIndex = i;
         }
         _allItems = allItems;
     }
@@ -80,13 +85,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)selectItem:(id<DWCurrencyItem>)item shouldChangeGlobalSettings:(BOOL)shouldChangeGlobalSettings {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     if (shouldChangeGlobalSettings) {
-        priceManager.localCurrencyCode = item.code;
+        DWApp.localCurrencyCode = item.code;
     }
 
-    DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
-    self.selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;
+    NSArray<DSCurrencyPriceObject *> *prices = [CurrencyExchangerObjcWrapper prices];
+
+    for (size_t i = 0; i < prices.count; i++) {
+        DSCurrencyPriceObject *priceObject = prices[i];
+        if ([priceObject.code isEqualToString:item.code]) {
+            self.selectedIndex = i;
+            return;
+        }
+    }
 }
 
 - (void)filterItemsWithSearchQuery:(NSString *)query {

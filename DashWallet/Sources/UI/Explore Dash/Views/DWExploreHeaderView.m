@@ -41,10 +41,11 @@ CGFloat const kExploreHeaderViewHeight = 351.0f;
         self.backgroundColor = [UIColor dw_darkBlueColor];
         self.spacing = 4;
         self.axis = UILayoutConstraintAxisVertical;
+        self.distribution = UIStackViewDistributionFillProportionally;
 
         UIImageView *iconImageView = [[UIImageView alloc] init];
         iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
-        iconImageView.contentMode = UIViewContentModeCenter;
+        iconImageView.contentMode = UIViewContentModeScaleAspectFit;
         [self addArrangedSubview:iconImageView];
 
         _iconImageView = iconImageView;
@@ -55,6 +56,8 @@ CGFloat const kExploreHeaderViewHeight = 351.0f;
         titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleLargeTitle];
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.numberOfLines = 0;
+        titleLabel.minimumScaleFactor = 0.4;
+        titleLabel.adjustsFontSizeToFitWidth = YES;
         [self addArrangedSubview:titleLabel];
         _titleLabel = titleLabel;
 
@@ -64,14 +67,17 @@ CGFloat const kExploreHeaderViewHeight = 351.0f;
         descLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
         descLabel.textAlignment = NSTextAlignmentCenter;
         descLabel.numberOfLines = 0;
+        descLabel.adjustsFontSizeToFitWidth = YES;
+        descLabel.minimumScaleFactor = 0.4;
         [self addArrangedSubview:descLabel];
         _descLabel = descLabel;
 
         [iconImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
-        [titleLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
-        [descLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+        [titleLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
+        [descLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
 
         [NSLayoutConstraint activateConstraints:@[
+            [iconImageView.heightAnchor constraintLessThanOrEqualToConstant:250.0],
             [descLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
                                                     constant:15.0],
             [descLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor

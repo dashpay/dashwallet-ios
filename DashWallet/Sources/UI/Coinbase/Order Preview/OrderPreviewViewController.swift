@@ -70,7 +70,17 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
 
     @objc
     func feeInfoAction() {
-        let nvc = BaseNavigationController(rootViewController: CoinbaseFeeInfoController())
+        let vc = BasicInfoController()
+        vc.mainAction = { UIApplication.shared.open(kCoinbaseFeeInfoURL) }
+        vc.icon = "coinbase.fee.info"
+        vc.headerText = NSLocalizedString("Fees in crypto purchases", comment: "Coinbase/Buy Dash/Fee Info")
+        vc.descriptionText = NSLocalizedString("""
+            In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n
+            Cryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.
+            """, comment: "Coinbase/Buy Dash/Fee Info")
+        vc.actionButtonText = NSLocalizedString("Learn More...", comment: "Coinbase")
+        
+        let nvc = BaseNavigationController(rootViewController: vc)
         present(nvc, animated: true)
     }
 
@@ -177,7 +187,7 @@ extension OrderPreviewViewController {
         tableView.dataSource = self
         tableView.layoutMargins = .init(top: 0.0, left: 15, bottom: 0.0, right: 0)
         tableView.separatorInset = tableView.layoutMargins
-        tableView.register(ConfirmOrderGeneralInfoCell.self, forCellReuseIdentifier: ConfirmOrderGeneralInfoCell.dw_reuseIdentifier)
+        tableView.register(ConfirmOrderGeneralInfoCell.self, forCellReuseIdentifier: ConfirmOrderGeneralInfoCell.reuseIdentifier)
         view.addSubview(tableView)
 
         buttonsStackView = UIStackView()

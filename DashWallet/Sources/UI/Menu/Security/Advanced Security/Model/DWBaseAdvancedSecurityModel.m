@@ -19,8 +19,8 @@
 
 #import <DashSync/DashSync.h>
 
-#import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

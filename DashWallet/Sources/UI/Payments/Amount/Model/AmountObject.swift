@@ -112,7 +112,15 @@ extension AmountObject {
         if amountType == .main { return self }
 
         let amountInternalRepresentation = plainAmount.formattedDashAmountWithoutCurrencySymbol
-        return object(with: amountInternalRepresentation, amountType: .main)
+
+        return AmountObject(amountInternalRepresentation: amountInternalRepresentation,
+                            plainAmount: plainAmount,
+                            supplementaryAmount: supplementaryAmount,
+                            amountType: .main,
+                            mainFormatted: mainFormatted,
+                            supplementaryFormatted: supplementaryFormatted,
+                            localFormatter: localFormatter,
+                            fiatCurrencyCode: fiatCurrencyCode)
     }
 
     var localAmount: AmountObject {
@@ -128,18 +136,18 @@ extension AmountObject {
             fatalError("Can't convert dash amount: \(plainAmount.formattedDashAmount) to local amount. Supplementary Amount = \(String(describing: supplementaryAmount))")
         }
 
-        return object(with: amountInternalRepresentation, amountType: .supplementary)
-    }
+        guard let formatterAmount = localFormatter.inputString(from: supplementaryAmount as NSNumber, and: amountInternalRepresentation) else {
+            fatalError("Can't convert dash amount: \(plainAmount.formattedDashAmount) to local amount. Supplementary Amount = \(String(describing: supplementaryAmount))")
+        }
 
-    private func object(with internalRepresentation: String, amountType: AmountType) -> AmountObject {
-        AmountObject(amountInternalRepresentation: internalRepresentation,
-                     plainAmount: plainAmount,
-                     supplementaryAmount: supplementaryAmount,
-                     amountType: amountType,
-                     mainFormatted: mainFormatted,
-                     supplementaryFormatted: supplementaryFormatted,
-                     localFormatter: localFormatter,
-                     fiatCurrencyCode: fiatCurrencyCode)
+        return AmountObject(amountInternalRepresentation: amountInternalRepresentation,
+                            plainAmount: plainAmount,
+                            supplementaryAmount: supplementaryAmount,
+                            amountType: .supplementary,
+                            mainFormatted: mainFormatted,
+                            supplementaryFormatted: formatterAmount,
+                            localFormatter: localFormatter,
+                            fiatCurrencyCode: fiatCurrencyCode)
     }
 
     init(amountInternalRepresentation: String, plainAmount: UInt64, supplementaryAmount: Decimal, amountType: AmountType, mainFormatted: String,

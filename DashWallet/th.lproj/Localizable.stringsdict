@@ -44,5 +44,19 @@
 			<string>%d ร้านค้า</string>
 		</dict>
 	</dict>
+    <key>%d transaction(s)</key>
+    <dict>
+        <key>NSStringLocalizedFormatKey</key>
+        <string>%#@transactions@</string>
+        <key>transactions</key>
+        <dict>
+            <key>NSStringFormatSpecTypeKey</key>
+            <string>NSStringPluralRuleType</string>
+            <key>NSStringFormatValueTypeKey</key>
+            <string>d</string>
+            <key>other</key>
+            <string>%d ธุรกรรม</string>
+        </dict>
+    </dict>
 </dict>
 </plist>

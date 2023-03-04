@@ -127,7 +127,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         case .items:
             if currentSegment == .nearby && DWLocationManager.shared.isPermissionDenied {
                 let itemCell: MerchantListLocationOffCell = tableView
-                    .dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.dw_reuseIdentifier,
+                    .dequeueReusableCell(withIdentifier: MerchantListLocationOffCell.reuseIdentifier,
                                          for: indexPath) as! MerchantListLocationOffCell
                 cell = itemCell
                 cell.separatorInset = UIEdgeInsets(top: 0, left: 2000, bottom: 0, right: 0)
@@ -240,7 +240,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
         super.configureHierarchy()
 
-        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.dw_reuseIdentifier)
+        tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.reuseIdentifier)
     }
 
     override func viewDidLoad() {

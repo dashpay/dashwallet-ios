@@ -19,10 +19,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWCheckBoxStyle) {
+    DWCheckBoxStyle_Round,
+    DWCheckBoxStyle_Square,
+};
+
 @interface DWCheckbox : UIControl
 
 @property (nullable, nonatomic, copy) IBInspectable NSString *title;
 @property (nonatomic, assign, getter=isOn) IBInspectable BOOL on;
+@property (nonatomic, assign, getter=style) IBInspectable DWCheckBoxStyle style;
 
 @end
 

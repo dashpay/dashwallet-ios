@@ -109,7 +109,9 @@ extension Coinbase {
 
     public func createNewCoinbaseDashAddress() async throws -> String {
         do {
-            return try await accountService.retrieveAddress(for: kDashAccount)
+            let address = try await accountService.retrieveAddress(for: kDashAccount)
+            Taxes.shared.mark(address: address, with: .transferOut)
+            return address
         } catch Coinbase.Error.userSessionRevoked {
             try await auth.signOut()
             throw Coinbase.Error.userSessionRevoked
@@ -132,7 +134,12 @@ extension Coinbase {
     public func transferFromCoinbaseToDashWallet(verificationCode: String?,
                                                  amount: UInt64) async throws -> CoinbaseTransaction {
         do {
-            return try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode)
+            let tx = try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode)
+            
+            if let address = tx.to?.address {
+                Taxes.shared.mark(address: address, with: .transferIn)
+            }
+            return tx
         } catch Coinbase.Error.userSessionRevoked {
             try await auth.signOut()
             throw Coinbase.Error.userSessionRevoked

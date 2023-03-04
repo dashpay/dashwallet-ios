@@ -17,10 +17,43 @@
 
 import Foundation
 
+// MARK: - RateObject
+
+struct RateObject {
+    let code: String
+    let name: String
+    let price: Decimal
+}
+
+// MARK: Equatable
+
+extension RateObject: Equatable {
+    static func == (rhs: RateObject, lhs: RateObject) -> Bool {
+        let haveEqualCodeObjects = rhs.code == lhs.code
+
+        if !haveEqualCodeObjects {
+            return false
+        }
+
+        let haveEqualNameObjects = rhs.name == lhs.name
+        if !haveEqualNameObjects {
+            return false
+        }
+
+        let haveEqualPriceObjects = rhs.price == lhs.price
+
+        if !haveEqualPriceObjects {
+            return false
+        }
+
+        return true
+    }
+}
+
 // MARK: - RatesProvider
 
 protocol RatesProvider: AnyObject {
-    var updateHandler: (([DSCurrencyPriceObject]) -> Void)? { get set }
+    var updateHandler: (([RateObject]) -> Void)? { get set }
 
     func startExchangeRateFetching()
 }
@@ -36,10 +69,10 @@ enum RatesProviderFactory {
 final class BaseRatesProvider: NSObject, RatesProvider {
     private let kRefreshTimeInterval: TimeInterval = 60
     private let kPriceByCodeKey = "DS_PRICEMANAGER_PRICESBYCODE"
-    var updateHandler: (([DSCurrencyPriceObject]) -> Void)?
+
+    var updateHandler: (([RateObject]) -> Void)?
 
     private var lastPriceSourceInfo: String!
-
 
     private let operationQueue: DSOperationQueue
 
@@ -72,7 +105,7 @@ final class BaseRatesProvider: NSObject, RatesProvider {
             UserDefaults.standard.set(plainPricesByCode, forKey: self.kPriceByCodeKey)
 
             self.lastPriceSourceInfo = priceSource
-            self.updateHandler?(prices)
+            self.updateHandler?(prices.map { .init(code: $0.code, name: $0.name, price: $0.price.decimalValue) })
         }
 
         operationQueue.addOperation(priceOperation)

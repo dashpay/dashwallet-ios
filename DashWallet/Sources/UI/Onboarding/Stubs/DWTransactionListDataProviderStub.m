@@ -27,27 +27,22 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWTransactionListDataProviderStub
 
 - (NSString *)shortDateStringForTransaction:(DWTransactionStub *)transaction {
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
-    return [self formattedShortTxDate:date];
+    return transaction.formattedShortTxDate;
 }
 
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction {
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
-    return [self formattedLongTxDate:date];
+    return transaction.formattedLongTxDate;
 }
 
 - (NSString *)ISO8601StringForTransaction:(DSTransaction *)transaction {
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
-    return [self formattedISO8601TxDate:date];
+    return transaction.formattedISO8601TxDate;
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
     dataItem.direction = transaction.direction;
     dataItem.dashAmount = transaction.dashAmount;
-    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
+    dataItem.fiatAmount = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:dataItem.dashAmount];
 
     return dataItem;
 }

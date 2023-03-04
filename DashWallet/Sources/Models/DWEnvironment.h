@@ -31,7 +31,7 @@ extern NSNotificationName const DWWillWipeWalletNotification;
 @property (nonatomic, readonly) NSArray *allWallets;
 @property (nonatomic, readonly) DSAccount *currentAccount;
 @property (nonatomic, strong) DSChainManager *currentChainManager;
-
+@property (nonatomic, strong, readonly) NSNumber *apy;
 + (instancetype)sharedInstance;
 
 - (void)clearAllWallets;

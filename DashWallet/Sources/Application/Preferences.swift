@@ -22,15 +22,21 @@ private let kFiatCurrencyCodeKey = "LOCAL_CURRENCY_CODE"
 
 extension App {
     var fiatCurrency: String {
-        guard let currency = UserDefaults.standard.value(forKey: kFiatCurrencyCodeKey) as? String else {
-            if #available(iOS 16, *) {
-                return Locale.current.currency?.identifier ?? kDefaultCurrencyCode
-            } else {
-                return NSLocale.current.currencyCode ?? kDefaultCurrencyCode
+        get {
+            guard let currency = UserDefaults.standard.value(forKey: kFiatCurrencyCodeKey) as? String else {
+                if #available(iOS 16, *) {
+                    return Locale.current.currency?.identifier ?? kDefaultCurrencyCode
+                } else {
+                    return NSLocale.current.currencyCode ?? kDefaultCurrencyCode
+                }
             }
+
+            return currency
         }
 
-        return currency
+        set {
+            UserDefaults.standard.set(newValue, forKey: kFiatCurrencyCodeKey)
+        }
     }
 }
 

@@ -17,14 +17,14 @@
 
 import Foundation
 
-// MARK: - Transaction
+// MARK: - Tx
 
 /// This class should be used from UI to obtain transactions. In the future most of the logic from DWHomeModel will migrate here.
 /// 'Transactions' object will provade an interface to fetch and monitor transactions
 ///
 @objc
-final class Transaction: NSObject {
-    public var all: Transaction.Transactions {
+final class Tx: NSObject {
+    public var all: Tx.Transactions {
         .init()
     }
 
@@ -65,12 +65,12 @@ final class Transaction: NSObject {
     }
 
     @objc
-    static let shared = Transaction()
+    static let shared = Tx()
 }
 
-// MARK: Transaction.Transactions
+// MARK: Tx.Transactions
 
-extension Transaction {
+extension Tx {
     struct Transactions: AsyncSequence, AsyncIteratorProtocol {
         // Obtain all transactions here and monitor for the new ones
 
