@@ -57,7 +57,6 @@
 		117ECC7E29742A42003D798E /* CrowdNodeWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */; };
 		117ED4A128EC86E0006E3EE4 /* TransactionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */; };
 		117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */; };
-		117ED4AA28ED6766006E3EE4 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */; };
 		1186092129758B2F00279FCC /* IsAddressInUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092029758B2F00279FCC /* IsAddressInUse.swift */; };
 		11860923297598B400279FCC /* AddressStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11860922297598B400279FCC /* AddressStatus.swift */; };
 		1186092529759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */; };
@@ -867,7 +866,6 @@
 		117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebViewController.swift; sourceTree = "<group>"; };
 		117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionObserver.swift; sourceTree = "<group>"; };
 		117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFilter.swift; sourceTree = "<group>"; };
-		117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
 		1186092029758B2F00279FCC /* IsAddressInUse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsAddressInUse.swift; sourceTree = "<group>"; };
 		11860922297598B400279FCC /* AddressStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressStatus.swift; sourceTree = "<group>"; };
 		1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPIConfirmationTx.swift; sourceTree = "<group>"; };
@@ -2327,7 +2325,6 @@
 				114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */,
 				119E8D072905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift */,
 				11B8449928F6D5480082770C /* SingleInputAddressSelector.swift */,
-				117ED4A928ED6765006E3EE4 /* SpendableTransaction.swift */,
 				111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */,
 				111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */,
 				1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */,
@@ -6609,7 +6606,6 @@
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */,
 				47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */,
-				117ED4AA28ED6766006E3EE4 /* SpendableTransaction.swift in Sources */,
 				2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */,
 				119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */,
 				0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */,

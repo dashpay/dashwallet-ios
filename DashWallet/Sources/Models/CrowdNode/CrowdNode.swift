@@ -166,9 +166,7 @@ public final class CrowdNode {
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
-        let topUpTx = try await sendCoinsService.sendCoins(address: accountAddress,
-                                                           amount: amount)
-        return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
+        return try await sendCoinsService.sendCoins(address: accountAddress, amount: amount)
     }
 }
 
