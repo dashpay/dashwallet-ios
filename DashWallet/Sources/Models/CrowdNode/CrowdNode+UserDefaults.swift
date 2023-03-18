@@ -35,16 +35,20 @@ private let kShouldShowConfirmedNotification = "shouldShowConfirmedNotification"
 class CrowdNodeDefaults {
     public static let shared: CrowdNodeDefaults = .init()
     
-    var crowdNodeAccountAddress: String? {
-        get { UserDefaults.standard.value(forKey: kCrowdNodeAccountAddress) as? String }
-        set(value) { UserDefaults.standard.set(value, forKey: kCrowdNodeAccountAddress) }
+    private var _accountAddress: String? = nil
+    var accountAddress: String? {
+        get { _accountAddress ?? UserDefaults.standard.value(forKey: kCrowdNodeAccountAddress) as? String }
+        set(value) {
+            _accountAddress = value
+            UserDefaults.standard.set(value, forKey: kCrowdNodeAccountAddress)
+        }
     }
     
     private var _infoShown: Bool? = nil
     var infoShown: Bool {
         get { _infoShown ?? UserDefaults.standard.bool(forKey: kInfoShown) }
         set(value) {
-            _infoShown = value;
+            _infoShown = value
             UserDefaults.standard.set(value, forKey: kInfoShown)
         }
     }
@@ -154,7 +158,7 @@ class CrowdNodeDefaults {
         lastKnownBalance = 0
         withdrawalLimitsInfoShown = false
         savedOnlineAccountState = .none
-        crowdNodeAccountAddress = nil
+        accountAddress = nil
         crowdNodePrimaryAddress = nil
         confirmationDialogShown = false
         onlineInfoShown = false
