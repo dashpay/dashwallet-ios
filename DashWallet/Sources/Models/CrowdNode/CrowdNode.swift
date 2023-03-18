@@ -118,7 +118,7 @@ public final class CrowdNode {
     @Published private(set) var isBalanceLoading = false
     @Published var apiError: Swift.Error? = nil
 
-    private(set) var accountAddress = ""
+    var accountAddress: String { prefs.accountAddress ?? "" }
     private(set) var primaryAddress: String? = nil
     private(set) var linkingApiAddress: String? = nil
     private(set) var isOnlineStateRestored = false
@@ -190,7 +190,7 @@ extension CrowdNode {
         var onlineState = prefs.savedOnlineAccountState
 
         if let address = getOnlineAccountAddress(state: onlineState) {
-            updateAccountAddress(address)
+            prefs.accountAddress = address
 
             if onlineState == .none {
                 onlineState = .linking
@@ -242,7 +242,7 @@ extension CrowdNode {
     }
 
     private func setFinished(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
         refreshBalance(retries: 1)
@@ -250,38 +250,27 @@ extension CrowdNode {
     }
 
     private func setAcceptingTerms(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptingTerms
     }
 
     private func setAcceptTermsRequired(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptTermsRequired
     }
 
     private func setSigningUp(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
-    }
-
-    /// This function updates the `accountAddress` property with the given address value and stores it in the User Defaults.
-    ///
-    /// - Parameters:
-    ///   - address: A String value representing the new address to be set for the `accountAddress` property.
-    ///
-    private func updateAccountAddress(_ address: String) {
-        accountAddress = address
-        prefs.crowdNodeAccountAddress = address
     }
 
     private func reset() {
         DSLogger.log("CrowdNode reset triggered")
         signUpState = .notStarted
         onlineAccountState = .none
-        accountAddress = ""
         linkingApiAddress = nil
         primaryAddress = nil
         apiError = nil
@@ -293,7 +282,7 @@ extension CrowdNode {
 // MARK: Signup
 extension CrowdNode {
     func signUp(accountAddress: String) async {
-        self.accountAddress = accountAddress
+        prefs.accountAddress = accountAddress
 
         do {
             if signUpState < SignUpState.acceptTermsRequired {
@@ -607,7 +596,7 @@ extension CrowdNode {
 extension CrowdNode {
     func trackLinkingAccount(address: String) {
         linkingApiAddress = address
-        prefs.crowdNodeAccountAddress = address
+        prefs.accountAddress = address
         changeOnlineState(to: .linking)
     }
 
@@ -780,8 +769,7 @@ extension CrowdNode {
                     apiError = CrowdNode.Error.missingPrimary
                     changeOnlineState(to: .none)
                 } else {
-                    accountAddress = address
-                    prefs.crowdNodeAccountAddress = address
+                    prefs.accountAddress = address
                     prefs.crowdNodePrimaryAddress = result.primaryAddress
                     setTaxCategories()
                     changeOnlineState(to: .validating)
@@ -855,7 +843,7 @@ extension CrowdNode {
     }
 
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
-        let savedAddress = prefs.crowdNodeAccountAddress
+        let savedAddress = prefs.accountAddress
 
         if savedAddress != nil && state != .none {
             return savedAddress
@@ -863,7 +851,7 @@ extension CrowdNode {
             let account = DWEnvironment.sharedInstance().currentAccount
 
             if let apiAddress = account.externalAddresses(of: confirmationTx).first {
-                prefs.crowdNodeAccountAddress = apiAddress
+                prefs.accountAddress = apiAddress
                 signUpState = .linkedOnline
                 prefs.savedOnlineAccountState = .linking
 
