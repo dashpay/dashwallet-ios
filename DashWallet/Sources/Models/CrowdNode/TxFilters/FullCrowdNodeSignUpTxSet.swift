@@ -16,6 +16,7 @@
 //
 
 final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
+    private let januaryFirst2022 = 1640995200.0 // Safe to assume there weren't any CrowdNode accounts before this point
     private var matchedFilters: [CoinsToAddressTxFilter] = []
 
     var transactions: [Data: DSTransaction] = [:]
@@ -46,6 +47,10 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
 
     @discardableResult
     func tryInclude(tx: DSTransaction) -> Bool {
+        if tx.timestamp < januaryFirst2022 {
+            return false
+        }
+        
         let txHashData = tx.txHashData
 
         if transactions[txHashData] != nil {
