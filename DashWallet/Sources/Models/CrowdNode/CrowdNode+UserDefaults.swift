@@ -32,9 +32,11 @@ private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
 private let kSignedEmailMessageId = "crowdNodeSignedEmailMessageId"
 private let kShouldShowConfirmedNotification = "shouldShowConfirmedNotification"
 
+// MARK: - CrowdNodeDefaults
+
 class CrowdNodeDefaults {
     public static let shared: CrowdNodeDefaults = .init()
-    
+
     private var _accountAddress: String? = nil
     var accountAddress: String? {
         get { _accountAddress ?? UserDefaults.standard.value(forKey: kCrowdNodeAccountAddress) as? String }
@@ -43,7 +45,7 @@ class CrowdNodeDefaults {
             UserDefaults.standard.set(value, forKey: kCrowdNodeAccountAddress)
         }
     }
-    
+
     private var _infoShown: Bool? = nil
     var infoShown: Bool {
         get { _infoShown ?? UserDefaults.standard.bool(forKey: kInfoShown) }
@@ -124,7 +126,7 @@ class CrowdNodeDefaults {
             UserDefaults.standard.set(value, forKey: kConfirmationDialogShown)
         }
     }
-    
+
     private var _onlineInfoShown: Bool? = nil
     var onlineInfoShown: Bool {
         get { _onlineInfoShown ?? UserDefaults.standard.bool(forKey: kOnlineInfoShown) }
@@ -133,7 +135,7 @@ class CrowdNodeDefaults {
             UserDefaults.standard.set(value, forKey: kOnlineInfoShown)
         }
     }
-    
+
     private var _shouldShowConfirmedNotification: Bool? = nil
     var shouldShowConfirmedNotification: Bool {
         get { _shouldShowConfirmedNotification ?? UserDefaults.standard.bool(forKey: kShouldShowConfirmedNotification) }
@@ -142,7 +144,7 @@ class CrowdNodeDefaults {
             UserDefaults.standard.set(value, forKey: kShouldShowConfirmedNotification)
         }
     }
-    
+
     private var _signedEmailMessageId: Int? = nil
     var signedEmailMessageId: Int {
         get { _signedEmailMessageId ?? UserDefaults.standard.value(forKey: kSignedEmailMessageId) as? Int ?? -1 }
@@ -151,7 +153,7 @@ class CrowdNodeDefaults {
             UserDefaults.standard.set(value, forKey: kSignedEmailMessageId)
         }
     }
-    
+
 
     func resetUserDefaults() {
         infoShown = false

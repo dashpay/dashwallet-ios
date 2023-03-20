@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -20,14 +20,14 @@ import WebKit
 extension WKWebView {
     class func cleanCrowdNodeCache() {
         let cookies = HTTPCookieStorage.shared.cookies(for: URL(string: CrowdNode.baseUrl)!)
-        cookies?.forEach({ cookie in
+        cookies?.forEach { cookie in
             HTTPCookieStorage.shared.deleteCookie(cookie)
-        })
-        
+        }
+
         WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
             records.forEach { record in
                 if record.displayName == "crowdnode.io" {
-                    WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+                    WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: { })
                 }
             }
         }

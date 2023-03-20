@@ -51,7 +51,7 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
         if tx.timestamp < januaryFirst2022 {
             return false
         }
-        
+
         let txHashData = tx.txHashData
 
         if transactions[txHashData] != nil {

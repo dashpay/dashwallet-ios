@@ -37,7 +37,7 @@ extension CrowdNode {
     static let apiConfirmationDashAmount: UInt64 = 54321
 
     static let notificationID = "CrowdNode"
-    
+
     private static let mainnetBaseUrl = "https://app.crowdnode.io/"
     private static let testnetBaseUrl = "https://test.crowdnode.io/"
 
@@ -53,10 +53,10 @@ extension CrowdNode {
     static var fundsOpenUrl: String { baseUrl + "FundsOpen/" }
     static var apiLinkUrl: String { baseUrl + "APILink/" }
     static var profileUrl: String { baseUrl + "Profile" }
-    
+
     private static let mainnetLoginUrl = "https://login.crowdnode.io"
     private static let testnetLoginUrl = "https://logintest.crowdnode.io"
-    
+
     static var loginUrl: String {
         if DWEnvironment.sharedInstance().currentChain.isMainnet() {
             return mainnetLoginUrl
@@ -65,7 +65,7 @@ extension CrowdNode {
             return testnetLoginUrl
         }
     }
-    
+
     static let websiteUrl = "https://crowdnode.io/"
     static let termsOfUseUrl = "https://crowdnode.io/terms/"
     static let privacyPolicyUrl = "https://crowdnode.io/privacy/"

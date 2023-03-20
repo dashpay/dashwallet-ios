@@ -30,13 +30,13 @@ public class CoinsToAddressTxFilter: TransactionFilter {
 
     func matches(tx: DSTransaction) -> Bool {
         fromAddresses.removeAll()
-        
+
         // TODO: if CrowdNode inputs aren't from our own transaction, the fee might not be present.
         // Need another way to detect an error response in this case.
         var feeUsed = UInt64(0)
-        
+
         if withFee {
-            let fee = tx.feeUsed  // Warning: expensive operation
+            let fee = tx.feeUsed // Warning: expensive operation
             feeUsed = fee == UInt64.max ? 0 : fee
         }
 
@@ -48,7 +48,7 @@ public class CoinsToAddressTxFilter: TransactionFilter {
 
         toAddress = output?.address ?? toAddress
         let doesMatch = output != nil
-        
+
         if doesMatch {
             tx.inputAddresses.forEach {
                 if let address = $0 as? String {
@@ -56,7 +56,7 @@ public class CoinsToAddressTxFilter: TransactionFilter {
                 }
             }
         }
-        
+
         return doesMatch
     }
 }
