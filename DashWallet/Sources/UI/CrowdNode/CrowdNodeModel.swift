@@ -127,9 +127,11 @@ final class CrowdNodeModel {
     init() {
         signUpState = crowdNode.signUpState
         onlineAccountState = crowdNode.onlineAccountState
-        accountAddress = crowdNode.accountAddress
         observeState()
         observeBalances()
+        
+        crowdNode.restoreState()
+        accountAddress = crowdNode.accountAddress
     }
 
     func getAccountAddress() {
@@ -153,8 +155,6 @@ final class CrowdNodeModel {
             }
 
             if !accountAddress.isEmpty {
-                self.accountAddress = accountAddress
-
                 if await authenticate(message: promptMessage) {
                     signUpEnabled = false
                     await persistentSignUp(accountAddress: accountAddress)
@@ -238,8 +238,6 @@ final class CrowdNodeModel {
         crowdNode.$onlineAccountState
             .sink { [weak self] state in self?.onlineAccountState = state }
             .store(in: &cancellableBag)
-
-        crowdNode.restoreState()
     }
 }
 
