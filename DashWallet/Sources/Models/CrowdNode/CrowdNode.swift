@@ -26,7 +26,7 @@ public class CrowdNodeObjcWrapper: NSObject {
     public class func start() {
         let _ = CrowdNode.shared
     }
-    
+
     @objc
     public class func restoreState() {
         CrowdNode.shared.restoreState()
@@ -118,7 +118,7 @@ public final class CrowdNode {
     @Published private(set) var isBalanceLoading = false
     @Published var apiError: Swift.Error? = nil
 
-    private(set) var accountAddress = ""
+    var accountAddress: String { prefs.accountAddress ?? "" }
     private(set) var primaryAddress: String? = nil
     private(set) var linkingApiAddress: String? = nil
     private(set) var isOnlineStateRestored = false
@@ -166,9 +166,7 @@ public final class CrowdNode {
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
-        let topUpTx = try await sendCoinsService.sendCoins(address: accountAddress,
-                                                           amount: amount)
-        return await txObserver.first(filters: SpendableTransaction(txHashData: topUpTx.txHashData))
+        try await sendCoinsService.sendCoins(address: accountAddress, amount: amount)
     }
 }
 
@@ -192,7 +190,7 @@ extension CrowdNode {
         var onlineState = prefs.savedOnlineAccountState
 
         if let address = getOnlineAccountAddress(state: onlineState) {
-            updateAccountAddress(address)
+            prefs.accountAddress = address
 
             if onlineState == .none {
                 onlineState = .linking
@@ -244,7 +242,7 @@ extension CrowdNode {
     }
 
     private func setFinished(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
         refreshBalance(retries: 1)
@@ -252,38 +250,27 @@ extension CrowdNode {
     }
 
     private func setAcceptingTerms(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptingTerms
     }
 
     private func setAcceptTermsRequired(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptTermsRequired
     }
 
     private func setSigningUp(address: String) {
-        updateAccountAddress(address)
+        prefs.accountAddress = address
         DSLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
-    }
-
-    /// This function updates the `accountAddress` property with the given address value and stores it in the User Defaults.
-    ///
-    /// - Parameters:
-    ///   - address: A String value representing the new address to be set for the `accountAddress` property.
-    ///
-    private func updateAccountAddress(_ address: String) {
-        accountAddress = address
-        prefs.crowdNodeAccountAddress = address
     }
 
     private func reset() {
         DSLogger.log("CrowdNode reset triggered")
         signUpState = .notStarted
         onlineAccountState = .none
-        accountAddress = ""
         linkingApiAddress = nil
         primaryAddress = nil
         apiError = nil
@@ -295,7 +282,7 @@ extension CrowdNode {
 // MARK: Signup
 extension CrowdNode {
     func signUp(accountAddress: String) async {
-        self.accountAddress = accountAddress
+        prefs.accountAddress = accountAddress
 
         do {
             if signUpState < SignUpState.acceptTermsRequired {
@@ -448,12 +435,12 @@ extension CrowdNode {
             }
         }
     }
-    
+
     func calculateWithdrawalPermil(forAmount: UInt64) -> UInt64 {
         let maxPermil = ApiCode.withdrawAll.rawValue
         let permil = UInt64(round(Double(forAmount * maxPermil) / Double(balance)))
         let requestPermil = min(permil, maxPermil)
-        
+
         return requestPermil
     }
 
@@ -609,7 +596,7 @@ extension CrowdNode {
 extension CrowdNode {
     func trackLinkingAccount(address: String) {
         linkingApiAddress = address
-        prefs.crowdNodeAccountAddress = address
+        prefs.accountAddress = address
         changeOnlineState(to: .linking)
     }
 
@@ -627,13 +614,13 @@ extension CrowdNode {
             }
         }
     }
-    
+
     func registerEmailForAccount(email: String, signature: String) async throws {
         guard !accountAddress.isEmpty else { return }
-        
+
         DSLogger.log("CrowdNode: sending signed email message")
         let result = try await webService.sendSignedMessage(address: accountAddress, message: email, signature: signature)
-        
+
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
             DSLogger.log("CrowdNode: signed email sent successfully")
             prefs.signedEmailMessageId = result.id
@@ -643,7 +630,7 @@ extension CrowdNode {
             apiError = CrowdNode.Error.messageStatus(error: result.result ?? "")
         }
     }
-    
+
     func setOnlineAccountCreated() {
         changeOnlineState(to: .done)
     }
@@ -734,12 +721,12 @@ extension CrowdNode {
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
                 changeOnlineState(to: .done)
-                
+
                 if prefs.shouldShowConfirmedNotification {
                     prefs.shouldShowConfirmedNotification = false
                     notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
                 }
-                
+
                 return
             }
 
@@ -758,7 +745,7 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func startTrackingCreating(address: String, fireImmediately: Bool) {
         DSLogger.log("CrowdNode: startTrackingCreating, account: \(address)")
         let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
@@ -766,7 +753,7 @@ extension CrowdNode {
         }
         timer.tolerance = 0.5
         self.timer = timer
-        
+
         if fireImmediately {
             timer.fire()
         }
@@ -782,8 +769,7 @@ extension CrowdNode {
                     apiError = CrowdNode.Error.missingPrimary
                     changeOnlineState(to: .none)
                 } else {
-                    accountAddress = address
-                    prefs.crowdNodeAccountAddress = address
+                    prefs.accountAddress = address
                     prefs.crowdNodePrimaryAddress = result.primaryAddress
                     setTaxCategories()
                     changeOnlineState(to: .validating)
@@ -801,7 +787,7 @@ extension CrowdNode {
                 notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been validated, but verification is required.", comment: "CrowdNode"))
             } else if status.lowercased() == kConfirmedStatus {
                 changeOnlineState(to: .done)
-                
+
                 if prefs.shouldShowConfirmedNotification {
                     prefs.shouldShowConfirmedNotification = false
                     notifyIfNeeded(message: NSLocalizedString("Your CrowdNode address has been confirmed.", comment: "CrowdNode"))
@@ -810,18 +796,18 @@ extension CrowdNode {
             }
         }
     }
-    
+
     private func checkIfEmailRegistered(address: String) {
         Task {
             let usingDummyEmail = await webService.isDefaultEmail(address: address)
-            
+
             if usingDummyEmail {
                 // User email isn't set yet. Check the message status in case there is an error
                 let messageId = prefs.signedEmailMessageId
-                
+
                 if messageId != -1 {
                     let message = await webService.checkMessageStatus(id: messageId, address: address)
-                    
+
                     if message?.messageStatus.lowercased() == kMessageFailedStatus {
                         // Operation failed
                         apiError = CrowdNode.Error.messageStatus(error: message?.result ?? "")
@@ -857,7 +843,7 @@ extension CrowdNode {
     }
 
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
-        let savedAddress = prefs.crowdNodeAccountAddress
+        let savedAddress = prefs.accountAddress
 
         if savedAddress != nil && state != .none {
             return savedAddress
@@ -865,7 +851,7 @@ extension CrowdNode {
             let account = DWEnvironment.sharedInstance().currentAccount
 
             if let apiAddress = account.externalAddresses(of: confirmationTx).first {
-                prefs.crowdNodeAccountAddress = apiAddress
+                prefs.accountAddress = apiAddress
                 signUpState = .linkedOnline
                 prefs.savedOnlineAccountState = .linking
 
@@ -899,10 +885,10 @@ extension CrowdNode {
 
         return nil
     }
-    
+
     private func restoreCreatedOnlineAccount(_ address: String) {
         let state = prefs.savedOnlineAccountState
-        
+
         switch state {
         case .none:
             checkIfEmailRegistered(address: address)

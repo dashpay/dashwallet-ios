@@ -22,12 +22,14 @@ import WebKit
 private let kSignupSuffix = "&view=signup-only"
 private let kCallbackSuffix = "callback"
 
+// MARK: - CrowdNodeWebViewController
+
 class CrowdNodeWebViewController: BaseViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
     private var webView: WKWebView!
     private var url: URL!
-    
+
     // MARK: New Online Account
     private var email: String? = nil
     private let loginPrefix = CrowdNode.loginUrl
@@ -78,7 +80,7 @@ class CrowdNodeWebViewController: BaseViewController {
                 }
             }
             .store(in: &cancellableBag)
-        
+
         viewModel.$onlineAccountState
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
@@ -88,7 +90,7 @@ class CrowdNodeWebViewController: BaseViewController {
                 }
             }
             .store(in: &cancellableBag)
-        
+
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
@@ -100,20 +102,22 @@ class CrowdNodeWebViewController: BaseViewController {
     }
 }
 
+// MARK: WKNavigationDelegate
+
 extension CrowdNodeWebViewController: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences) async -> (WKNavigationActionPolicy, WKWebpagePreferences) {
-        
-        if let email = email, let url = navigationAction.request.url?.absoluteString {
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                 preferences: WKWebpagePreferences) async -> (WKNavigationActionPolicy, WKWebpagePreferences) {
+        if let email, let url = navigationAction.request.url?.absoluteString {
             let fullSuffix = "\(kSignupSuffix)&loginHint=\(email)"
 
-            if (url.hasPrefix(loginPrefix + "/login") && !url.hasSuffix(fullSuffix) && !url.hasSuffix(kCallbackSuffix)) {
+            if url.hasPrefix(loginPrefix + "/login") && !url.hasSuffix(fullSuffix) && !url.hasSuffix(kCallbackSuffix) {
                 let redirectUrl = "\(url)\(fullSuffix)"
                 let urlRequest = URLRequest(url: URL(string: redirectUrl)!)
                 webView.load(urlRequest)
                 previousUrl = url
 
                 return (WKNavigationActionPolicy.cancel, preferences)
-            } else if (previousUrl.hasPrefix(loginPrefix) && url.hasPrefix(accountPrefix)) {
+            } else if previousUrl.hasPrefix(loginPrefix) && url.hasPrefix(accountPrefix) {
                 // Successful signup
                 viewModel.finishSignUpToOnlineAccount()
             }

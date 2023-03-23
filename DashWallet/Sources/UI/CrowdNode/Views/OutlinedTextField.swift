@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -20,14 +20,14 @@ class OutlinedTextField: UITextField {
     private let borderColor = UIColor(red: 0.808, green: 0.824, blue: 0.835, alpha: 1)
     private let labelControl = UILabel(frame: CGRect.zero)
     private var outerBorder: CAShapeLayer!
-    
-    var label: String = "" {
+
+    var label = "" {
         didSet {
             labelControl.text = label
         }
     }
-    
-    var isError: Bool = false {
+
+    var isError = false {
         didSet {
             if isError {
                 self.layer.borderColor = UIColor.systemRed.cgColor
@@ -36,7 +36,7 @@ class OutlinedTextField: UITextField {
             } else {
                 outerBorder.fillColor = UIColor.clear.cgColor
                 outerBorder.strokeColor = UIColor.dw_dashBlue().withAlphaComponent(0.2).cgColor
-                
+
                 if isEditing {
                     self.layer.borderColor = UIColor.dw_dashBlue().cgColor
                 } else {
@@ -45,38 +45,38 @@ class OutlinedTextField: UITextField {
             }
         }
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        
-        self.borderStyle = .none
-        self.layer.borderColor = UIColor.lightGray.cgColor
-        self.layer.borderWidth = 1
-        self.layer.cornerRadius = 12
-        
+
+        borderStyle = .none
+        layer.borderColor = UIColor.lightGray.cgColor
+        layer.borderWidth = 1
+        layer.cornerRadius = 12
+
         labelControl.textColor = .dw_secondaryText()
         labelControl.font = .dw_regularFont(ofSize: 12)
         labelControl.text = label
         labelControl.translatesAutoresizingMaskIntoConstraints = false
         labelControl.clipsToBounds = true
-        labelControl.frame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: 18)
-        
-        self.addSubview(labelControl)
-              
-        labelControl.topAnchor.constraint(equalTo: self.topAnchor, constant: 10).isActive = true
-        labelControl.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 15).isActive = true
+        labelControl.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: 18)
+
+        addSubview(labelControl)
+
+        labelControl.topAnchor.constraint(equalTo: topAnchor, constant: 10).isActive = true
+        labelControl.leftAnchor.constraint(equalTo: leftAnchor, constant: 15).isActive = true
 
         outerBorder = CAShapeLayer()
         outerBorder.lineWidth = 4
         outerBorder.strokeColor = UIColor.dw_dashBlue().withAlphaComponent(0.2).cgColor
         outerBorder.fillColor = UIColor.clear.cgColor
         outerBorder.opacity = 0
-        self.layer.addSublayer(outerBorder)
-        
-        self.addTarget(self, action: #selector(self.onEditingBegin), for: .editingDidBegin)
-        self.addTarget(self, action: #selector(self.onEditingEnd), for: .editingDidEnd)
+        layer.addSublayer(outerBorder)
+
+        addTarget(self, action: #selector(onEditingBegin), for: .editingDidBegin)
+        addTarget(self, action: #selector(onEditingEnd), for: .editingDidEnd)
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
@@ -85,24 +85,26 @@ class OutlinedTextField: UITextField {
     }
 
     override func textRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
+        bounds.inset(by: padding)
     }
 
     override func placeholderRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
+        bounds.inset(by: padding)
     }
 
     override func editingRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
+        bounds.inset(by: padding)
     }
-    
-    @objc func onEditingBegin() {
+
+    @objc
+    func onEditingBegin() {
         outerBorder.opacity = 1
-        self.layer.borderColor = UIColor.dw_dashBlue().cgColor
+        layer.borderColor = UIColor.dw_dashBlue().cgColor
     }
-        
-    @objc func onEditingEnd() {
+
+    @objc
+    func onEditingEnd() {
         outerBorder.opacity = 0
-        self.layer.borderColor = borderColor.cgColor
+        layer.borderColor = borderColor.cgColor
     }
 }
