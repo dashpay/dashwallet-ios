@@ -180,6 +180,7 @@ extension CrowdNode {
 
         DSLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
+        validatePrefs()
 
         if tryRestoreSignUp() {
             refreshWithdrawalLimits()
@@ -203,7 +204,7 @@ extension CrowdNode {
                 DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
         } else {
-            DSLogger.log("CrowdNode: online account address isn't found")
+            DSLogger.log("CrowdNode: account not found")
         }
     }
 
@@ -265,6 +266,17 @@ extension CrowdNode {
         prefs.accountAddress = address
         DSLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
+    }
+    
+    private func validatePrefs() {
+        if let accountAddress = prefs.accountAddress {
+            let wallet = DWEnvironment.sharedInstance().currentWallet
+            
+            if !wallet.containsAddress(accountAddress) {
+                DSLogger.log("Found alien address in CrowdNode prefs")
+                reset()
+            }
+        }
     }
 
     private func reset() {
