@@ -131,7 +131,7 @@ final class CrowdNodeModel {
         observeBalances()
         
         crowdNode.restoreState()
-        accountAddress = crowdNode.accountAddress
+        getAccountAddress()
     }
 
     func getAccountAddress() {
