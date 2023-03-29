@@ -60,7 +60,6 @@ protocol ShortcutsActionDelegate: AnyObject {
 @objc(DWShortcutsViewDelegate)
 protocol ShortcutsViewDelegate: AnyObject {
     func shortcutsViewDidUpdateContentSize(_ shortcutsView: ShortcutsView)
-    func shortcutsView(_ shortcutsView: ShortcutsView, didSelectAction action: ShortcutAction, sender: UICollectionViewCell)
 }
 
 @objc
@@ -182,7 +181,7 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
         guard action.enabled else { return }
         guard let cell = collectionView.cellForItem(at: indexPath) else { return }
         
-        delegate?.shortcutsView(self, didSelectAction: action, sender: cell)
+        actionDelegate?.shortcutsView(self, didSelectAction: action, sender: cell)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {

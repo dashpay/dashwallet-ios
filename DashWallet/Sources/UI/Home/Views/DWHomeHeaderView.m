@@ -59,7 +59,6 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
         ShortcutsView *shortcutsView = [[ShortcutsView alloc] initWithFrame:CGRectZero];
         shortcutsView.translatesAutoresizingMaskIntoConstraints = NO;
-        shortcutsView.delegate = self;
         _shortcutsView = shortcutsView;
 
         NSArray<UIView *> *views = @[ profileView, balanceView, shortcutsView, syncView ];
@@ -173,15 +172,16 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
 - (void)hideSyncView {
     self.syncView.hidden = YES;
-
+    
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 
 - (void)showSyncView {
     self.syncView.hidden = NO;
-
+    
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
+
 
 @end
 
