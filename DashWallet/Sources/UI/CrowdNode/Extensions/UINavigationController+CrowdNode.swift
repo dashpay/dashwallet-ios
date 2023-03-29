@@ -22,19 +22,19 @@ extension UINavigationController {
         viewControllers.append(controller)
         setViewControllers(viewControllers, animated: animated)
     }
-    
+
     func toErrorScreen(error: CrowdNode.Error) {
         var headerText = ""
-        
+
         switch error {
         case .deposit, .withdraw:
             headerText = NSLocalizedString("Transfer Error", comment: "CrowdNode")
-        case .signUp, .messageStatus(_):
+        case .signUp, .messageStatus:
             headerText = NSLocalizedString("Sign up error", comment: "CrowdNode")
         default:
             headerText = NSLocalizedString("Error", comment: "")
         }
-        
+
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.headerText = headerText
         let errorDescription = error.errorDescription

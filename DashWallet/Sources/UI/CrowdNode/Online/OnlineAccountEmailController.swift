@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,6 +17,8 @@
 
 import Combine
 
+// MARK: - OnlineAccountEmailController
+
 final class OnlineAccountEmailController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
@@ -25,8 +27,8 @@ final class OnlineAccountEmailController: UIViewController {
     @IBOutlet var continueButton: DWActionButton!
     @IBOutlet var errorLabel: UILabel!
     @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
-    
-    private var isInProgress: Bool = false {
+
+    private var isInProgress = false {
         didSet {
             if isInProgress {
                 continueButton.showActivityIndicator()
@@ -37,7 +39,7 @@ final class OnlineAccountEmailController: UIViewController {
             }
         }
     }
-    
+
     static func controller() -> OnlineAccountEmailController {
         vc(OnlineAccountEmailController.self, from: sb("CrowdNode"))
     }
@@ -47,28 +49,28 @@ final class OnlineAccountEmailController: UIViewController {
         configureHierarchy()
         configureObservers()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         if viewModel.onlineAccountState != .creating {
             input.becomeFirstResponder()
         }
     }
-    
+
     @IBAction
     func onContinue() {
         validateAndSign()
     }
-    
+
     private func configureHierarchy() {
         configureEmailInput()
-        
+
         NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardShown(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardHidden(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-    
+
     @objc
     private func onKeyboardShown(notification: NSNotification) {
         if let offset = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height {
@@ -80,7 +82,7 @@ final class OnlineAccountEmailController: UIViewController {
     private func onKeyboardHidden(_: NSNotification) {
         actionButtonBottomConstraint.constant = 20
     }
-    
+
     private func configureObservers() {
         viewModel.$onlineAccountState
             .removeDuplicates()
@@ -89,7 +91,7 @@ final class OnlineAccountEmailController: UIViewController {
                 self?.transitionSignUpState(state)
             }
             .store(in: &cancellableBag)
-        
+
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
@@ -102,12 +104,14 @@ final class OnlineAccountEmailController: UIViewController {
     }
 }
 
+// MARK: UITextFieldDelegate
+
 extension OnlineAccountEmailController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         validateAndSign()
         return true
     }
-    
+
     private func configureEmailInput() {
         input.label = NSLocalizedString("Email", comment: "CrowdNode")
         input.text = viewModel.emailForAccount
@@ -120,19 +124,19 @@ extension OnlineAccountEmailController: UITextFieldDelegate {
         input.delegate = self
         input.addTarget(self, action: #selector(onInputTextChanged), for: .editingChanged)
     }
-    
+
     @objc
     private func onInputTextChanged() {
         input.isError = false
         errorLabel.isHidden = true
         continueButton.isEnabled = isEmail(text: input.text)
     }
-    
+
     private func isEmail(text: String?) -> Bool {
         let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let predicate = NSPredicate(format:"SELF MATCHES %@", regex)
-        
+
         return predicate.evaluate(with: trimmed)
     }
 }
@@ -143,11 +147,11 @@ extension OnlineAccountEmailController {
             isInProgress = true
             input.isError = false
             errorLabel.isHidden = true
-            
+
             Task {
                 do {
                     let isSent = try await viewModel.signAndSendEmail(email: input.text!.trimmingCharacters(in: .whitespacesAndNewlines))
-                    
+
                     if !isSent {
                         isInProgress = false
                     }
@@ -163,11 +167,11 @@ extension OnlineAccountEmailController {
             errorLabel.text = NSLocalizedString("Invalid Email", comment: "CrowdNode Online")
         }
     }
-    
+
     private func transitionSignUpState(_ state: CrowdNode.OnlineAccountState) {
         switch state {
         case .creating:
-            self.view.endEditing(true)
+            view.endEditing(true)
             isInProgress = true
         case .signingUp:
             let signupUrl = CrowdNode.profileUrl

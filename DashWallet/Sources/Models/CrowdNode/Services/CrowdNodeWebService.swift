@@ -66,12 +66,12 @@ extension CrowdNodeService {
             return ""
         }
     }
-    
+
     func sendSignedMessage(address: String, message: String, signature: String) async throws -> MessageStatus {
         let encodedSignature = signature.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         return try await httpClient.request(.sendSignedMessage(address: address, message: message, signature: encodedSignature!))
     }
-    
+
     func isDefaultEmail(address: String) async -> Bool {
         do {
             let response: IsDefaultEmail = try await httpClient.request(.hasDefaultEmail(address))
@@ -80,12 +80,12 @@ extension CrowdNodeService {
             return true
         }
     }
-    
+
     func checkMessageStatus(id: Int, address: String) async -> MessageStatus? {
         do {
             let messages: [MessageStatus] = try await httpClient.request(.getMessages(address))
             let message = messages.first { $0.id == id }
-            
+
             if message == nil {
                 DSLogger.log("CrowdNode: got \(messages.count) messages, none with id \(id)")
                 return nil

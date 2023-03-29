@@ -40,7 +40,7 @@ final class OnlineAccountDetailsController: BaseViewController {
         UIPasteboard.general.string = viewModel.accountAddress
         view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
-    
+
     @IBAction
     func copyPrimaryAddressAction() {
         UIPasteboard.general.string = viewModel.primaryAddress

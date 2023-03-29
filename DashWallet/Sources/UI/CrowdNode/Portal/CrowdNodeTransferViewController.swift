@@ -129,12 +129,12 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
 
     private func handleWithdraw(amount: UInt64) {
         let vc = WithdrawalConfirmationController.controller(amount: amount, currency: model.localCurrencyCode)
-        vc.confirmedHandler = {  [weak self] in
+        vc.confirmedHandler = { [weak self] in
             guard let wSelf = self else { return }
-            
+
             Task {
                 wSelf.showActivityIndicator()
-                
+
                 do {
                     if try await wSelf.viewModel.withdraw(amount: amount) {
                         wSelf.showSuccessfulStatus()
