@@ -73,7 +73,10 @@ class ShortcutsModel: NSObject {
             } else {
                 mutableItems.append(ShortcutAction(type: .explore))
                 mutableItems.append(ShortcutAction(type: .receive))
-                mutableItems.append(ShortcutAction(type: .buySellDash))
+                
+                if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+                    mutableItems.append(ShortcutAction(type: .buySellDash))
+                }
             }
         } else {
             if userHasBalance {
@@ -84,7 +87,10 @@ class ShortcutsModel: NSObject {
             } else {
                 mutableItems.append(ShortcutAction(type: .explore))
                 mutableItems.append(ShortcutAction(type: .receive))
-                mutableItems.append(ShortcutAction(type: .buySellDash))
+                
+                if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+                    mutableItems.append(ShortcutAction(type: .buySellDash))
+                }
             }
         }
         
