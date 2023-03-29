@@ -79,6 +79,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
 
+
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"
 #import "DWUpholdViewController.h"

@@ -27,7 +27,6 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWNotificationsViewController.h"
-#import "DWShortcutAction.h"
 #import "DWSyncModel.h"
 #import "DWSyncingAlertViewController.h"
 #import "DWWindow.h"
@@ -133,7 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeViewShowDashPayRegistrationFlow:(DWHomeView *)homeView {
-    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_CreateUsername];
+    DWShortcutAction *action = [DWShortcutAction actionWithType:DWShortcutActionTypeCreateUsername];
     [self performActionForShortcut:action sender:homeView];
 }
 

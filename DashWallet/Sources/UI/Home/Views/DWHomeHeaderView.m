@@ -20,9 +20,8 @@
 #import "DWBalanceView.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDashPayProfileView.h"
-#import "DWShortcutAction.h"
-#import "DWShortcutsView.h"
 #import "DWSyncView.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,7 +34,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 @property (readonly, nonatomic, strong) DWDashPayProfileView *profileView;
 @property (readonly, nonatomic, strong) DWBalanceView *balanceView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
-@property (readonly, nonatomic, strong) DWShortcutsView *shortcutsView;
+@property (readonly, nonatomic, strong) ShortcutsView *shortcutsView;
 @property (readonly, nonatomic, strong) UIStackView *stackView;
 
 @end
@@ -58,7 +57,8 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         syncView.delegate = self;
         _syncView = syncView;
 
-        DWShortcutsView *shortcutsView = [[DWShortcutsView alloc] initWithFrame:CGRectZero];
+        ShortcutsView *shortcutsView = [[ShortcutsView alloc] initWithFrame:CGRectZero];
+        shortcutsView.translatesAutoresizingMaskIntoConstraints = NO;
         shortcutsView.delegate = self;
         _shortcutsView = shortcutsView;
 
@@ -136,15 +136,13 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 #pragma mark - DWBalanceViewDelegate
 
 - (void)balanceView:(DWBalanceView *)view balanceLongPressAction:(UIControl *)sender {
-    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
-    [self.shortcutsDelegate shortcutsView:self.balanceView
-                          didSelectAction:action
-                                   sender:sender];
+    DWShortcutAction *action = [DWShortcutAction actionWithType:DWShortcutActionTypeLocalCurrency];
+    [self.shortcutsDelegate shortcutsView:self.balanceView didSelectAction:action sender:sender];
 }
 
 #pragma mark - DWShortcutsViewDelegate
 
-- (void)shortcutsViewDidUpdateContentSize:(DWShortcutsView *)view {
+- (void)shortcutsViewDidUpdateContentSize:(ShortcutsView *)view {
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 

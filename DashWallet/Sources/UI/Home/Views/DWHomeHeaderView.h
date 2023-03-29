@@ -18,11 +18,12 @@
 #import <KVO-MVVM/KVOUIView.h>
 
 #import "DWHomeProtocol.h"
-#import "DWShortcutsActionDelegate.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeHeaderView;
+@protocol DWShortcutsActionDelegate;
 
 @protocol DWHomeHeaderViewDelegate <NSObject>
 

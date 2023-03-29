@@ -18,7 +18,7 @@
 #import <KVO-MVVM/KVOUIView.h>
 
 #import "DWHomeProtocol.h"
-#import "DWShortcutsActionDelegate.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
