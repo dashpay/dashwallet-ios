@@ -30,7 +30,6 @@
 #import "DWPaymentsViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
-#import "DWShortcutAction.h"
 #import "DWUpholdViewController.h"
 #import "dashwallet-Swift.h"
 NS_ASSUME_NONNULL_BEGIN
@@ -44,69 +43,66 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performActionForShortcut:(DWShortcutAction *)action sender:(UIView *)sender {
     const DWShortcutActionType type = action.type;
     switch (type) {
-        case DWShortcutActionType_SecureWallet: {
+        case DWShortcutActionTypeSecureWallet: {
             [self secureWalletAction];
             break;
         }
-        case DWShortcutActionType_ScanToPay: {
+        case DWShortcutActionTypeScanToPay: {
             [self performScanQRCodeAction];
             break;
         }
-        case DWShortcutActionType_PayToAddress: {
+        case DWShortcutActionTypePayToAddress: {
             [self payToAddressAction:sender];
             break;
         }
-        case DWShortcutActionType_BuySellDash: {
+        case DWShortcutActionTypeBuySellDash: {
             [self buySellDashAction];
             break;
         }
-        case DWShortcutActionType_SyncNow: {
+        case DWShortcutActionTypeSyncNow: {
             [DWSettingsMenuModel rescanBlockchainActionFromController:self
                                                            sourceView:sender
                                                            sourceRect:sender.bounds
                                                            completion:nil];
             break;
         }
-        case DWShortcutActionType_PayWithNFC: {
+        case DWShortcutActionTypePayWithNFC: {
             [self performNFCReadingAction];
             break;
         }
-        case DWShortcutActionType_LocalCurrency: {
+        case DWShortcutActionTypeLocalCurrency: {
             [self showLocalCurrencyAction];
             break;
         }
-        case DWShortcutActionType_ImportPrivateKey: {
+        case DWShortcutActionTypeImportPrivateKey: {
             [self showImportPrivateKey];
             break;
         }
-        case DWShortcutActionType_SwitchToTestnet: {
+        case DWShortcutActionTypeSwitchToTestnet: {
             [DWSettingsMenuModel switchToTestnetWithCompletion:^(BOOL success){
                 // NOP
             }];
             break;
         }
-        case DWShortcutActionType_SwitchToMainnet: {
+        case DWShortcutActionTypeSwitchToMainnet: {
             [DWSettingsMenuModel switchToMainnetWithCompletion:^(BOOL success){
                 // NOP
             }];
             break;
         }
-        case DWShortcutActionType_ReportAnIssue: {
+        case DWShortcutActionTypeReportAnIssue: {
             break;
         }
-        case DWShortcutActionType_CreateUsername: {
+        case DWShortcutActionTypeCreateUsername: {
             [self showCreateUsername];
             break;
         }
-        case DWShortcutActionType_Receive: {
+        case DWShortcutActionTypeReceive: {
             [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
             break;
         }
-        case DWShortcutActionType_Explore: {
+        case DWShortcutActionTypeExplore: {
             [self showExploreDash];
-            break;
-        }
-        case DWShortcutActionType_AddShortcut: {
             break;
         }
     }
