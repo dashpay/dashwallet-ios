@@ -109,6 +109,7 @@ public final class CrowdNode {
     private lazy var sendCoinsService = SendCoinsService()
     private lazy var txObserver = TransactionObserver()
     private lazy var webService = CrowdNodeService()
+    private lazy var transactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
     private let prefs = CrowdNodeDefaults.shared
     private var timer: Timer? = nil
 
@@ -166,7 +167,15 @@ public final class CrowdNode {
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
-        try await sendCoinsService.sendCoins(address: accountAddress, amount: amount)
+        let topUpTx = try await sendCoinsService.sendCoins(address: accountAddress,
+                                                           amount: amount)
+        let filter = SpendableTransaction(transactionManager: transactionManager, txHashData: topUpTx.txHashData)
+        
+        if filter.matches(tx: topUpTx) {
+            return topUpTx
+        } else {
+            return await txObserver.first(filters: filter)
+        }
     }
 }
 
