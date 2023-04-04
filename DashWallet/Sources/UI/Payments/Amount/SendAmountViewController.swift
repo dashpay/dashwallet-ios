@@ -49,6 +49,7 @@ class SendAmountViewController: BaseAmountViewController {
         if CrowdNodeDefaults.shared.lastKnownBalance <= 0 && !isCrowdNodeTransfer {
             // If CrowdNode balance is 0, then there is no need to check the leftover balance
             completion(true)
+            return
         }
         
         // If CrowdNode balance isn't empty and the user sends DASH somewhere,
