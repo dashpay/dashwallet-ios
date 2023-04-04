@@ -306,7 +306,6 @@
 		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
 		2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */; };
 		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */; };
-		2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */; };
 		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
 		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
 		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
@@ -411,7 +410,6 @@
 		2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD84C23180E7E00A96B62 /* DWPaymentOutput.m */; };
 		2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8582319399100A96B62 /* DWRequestAmountViewController.m */; };
 		2ACCD85D231939FE00A96B62 /* DWRequestAmountContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD85C231939FE00A96B62 /* DWRequestAmountContentView.m */; };
-		2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */; };
 		2ACCD86323193C1E00A96B62 /* DWReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */; };
 		2ACCD865231959CD00A96B62 /* AmountPreviewView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2ACCD864231959CD00A96B62 /* AmountPreviewView.xib */; };
 		2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */; };
@@ -1328,8 +1326,6 @@
 		2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentInputBuilder.m; sourceTree = "<group>"; };
 		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressExtractor.m; sourceTree = "<group>"; };
 		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressExtractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressExtractor.h; sourceTree = "<group>"; };
-		2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
-		2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveViewController.m; sourceTree = "<group>"; };
 		2A8B9E782302E67400FF8653 /* DWReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModel.h; sourceTree = "<group>"; };
 		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
 		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
@@ -1561,8 +1557,6 @@
 		2ACCD8582319399100A96B62 /* DWRequestAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestAmountViewController.m; sourceTree = "<group>"; };
 		2ACCD85B231939FE00A96B62 /* DWRequestAmountContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRequestAmountContentView.h; sourceTree = "<group>"; };
 		2ACCD85C231939FE00A96B62 /* DWRequestAmountContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestAmountContentView.m; sourceTree = "<group>"; };
-		2ACCD85F23193BE300A96B62 /* DWReceiveContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveContentView.h; sourceTree = "<group>"; };
-		2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveContentView.m; sourceTree = "<group>"; };
 		2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWReceiveContentView.xib; sourceTree = "<group>"; };
 		2ACCD864231959CD00A96B62 /* AmountPreviewView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AmountPreviewView.xib; sourceTree = "<group>"; };
 		2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWShareReceiveInfo.h"; sourceTree = "<group>"; };
@@ -3559,8 +3553,6 @@
 				2ACCD8562319395000A96B62 /* RequestAmount */,
 				2A8B9E772302E66100FF8653 /* Models */,
 				2ACCD85E23193BC200A96B62 /* Views */,
-				2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */,
-				2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */,
 				C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */,
 				2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */,
 				2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */,
@@ -4240,8 +4232,6 @@
 		2ACCD85E23193BC200A96B62 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2ACCD85F23193BE300A96B62 /* DWReceiveContentView.h */,
-				2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */,
 				2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */,
 				C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */,
 				C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */,
@@ -6510,7 +6500,6 @@
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
 				111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */,
-				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */,
 				2A7AF3152480DA51001D74F9 /* DWIncomingFetchedDataSource.m in Sources */,
 				4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */,
@@ -6540,7 +6529,6 @@
 				4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */,
 				C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */,
 				47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */,
-				2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */,
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
 				4759D512292FD6F3002F20DC /* DWBasePayViewController.m in Sources */,
 				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,

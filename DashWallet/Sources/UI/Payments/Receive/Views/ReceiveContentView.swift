@@ -17,7 +17,7 @@
 
 import UIKit
 
-@objc
+@objc(DWReceiveContentView)
 final class ReceiveContentView: UIView {
     @IBOutlet var qrCodeButton: UIButton!
     @IBOutlet var actionButtonsStackView: UIStackView!
@@ -28,9 +28,15 @@ final class ReceiveContentView: UIView {
     private var model: DWReceiveModelProtocol!
     private var feedbackGenerator: UINotificationFeedbackGenerator = UINotificationFeedbackGenerator()
     
+    @objc
     public var viewType: ReceiveViewType = .default
+    
     public var specifyAmountHandler: (() -> Void)?
+    
+    @objc
     public var shareHandler: ((UIButton) -> Void)?
+    
+    @objc
     public var exitHandler: (() -> Void)?
     
     @IBAction func addressButtonAction() {
@@ -55,6 +61,17 @@ final class ReceiveContentView: UIView {
         }
     }
 
+    @objc
+    func setSpecifyAmountButtonHidden(_ hidden: Bool) {
+        specifyAmountButton.isHidden = hidden
+    }
+    
+    @objc
+    func setSecondButtonHidden(_ hidden: Bool) {
+        secondButton.isHidden = hidden
+    }
+    
+    @objc
     static func view(with model: DWReceiveModelProtocol) -> ReceiveContentView {
         let view = UINib.view(Self.self)
         view.model = model
