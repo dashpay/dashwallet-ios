@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    _options = [options copy];
+    _options = options;
 }
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
