@@ -168,6 +168,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 #pragma mark - DWPaymentsViewControllerDelegate
 
+- (void)paymentsViewControllerWantsToImportPrivateKey:(DWPaymentsViewController *)controller {
+    [self performScanQRCodeAction];
+}
+
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller {
     [self tabBarViewDidClosePayments:self.tabBarView];
 }
@@ -316,7 +320,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
-
+    navigationController.modalInPresentation = YES;
+    
     if (self.demoMode) {
         [self.demoDelegate presentModalController:navigationController sender:self];
     }

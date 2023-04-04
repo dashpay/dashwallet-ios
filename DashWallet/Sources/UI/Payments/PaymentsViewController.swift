@@ -31,14 +31,16 @@ enum PaymentsViewControllerState: Int {
 
 @objc(DWPaymentsViewControllerDelegate)
 protocol PaymentsViewControllerDelegate: AnyObject {
+    func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController)
     func paymentsViewControllerDidCancel(_ controller: PaymentsViewController)
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentController, contact: DWDPBasicUserItem?)
+    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, contact: DWDPBasicUserItem?)
 }
 
 @objc(DWPaymentsViewController)
-class PaymentsViewController: UIViewController {
+class PaymentsViewController: BaseViewController {
     @IBOutlet var segmentedControl: UISegmentedControl!
     @IBOutlet var containerView: UIView!
+    @IBOutlet var closeButton: UIButton!
     
     @objc
     weak var delegate: PaymentsViewControllerDelegate?
@@ -52,7 +54,14 @@ class PaymentsViewController: UIViewController {
     @objc
     var currentState: PaymentsViewControllerState = .pay {
         didSet {
-            pageController?.selectedIndex = currentState.rawValue
+            if currentState == .none {
+                currentState = PaymentsViewControllerState(rawValue: DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab)!
+            }
+            
+            let idx = currentState.rawValue
+            
+            segmentedControl?.selectedSegmentIndex = idx
+            pageController?.selectedIndex = idx
         }
     }
     
@@ -61,19 +70,29 @@ class PaymentsViewController: UIViewController {
     private var dataProvider: DWTransactionListDataProviderProtocol?
     
     private var payViewController: PayViewController!
-    private var receiveViewController: DWReceiveViewController!
+    private var receiveViewController: ReceiveViewController!
     
     private var pageController: SendReceivePageController!
     
     @IBAction func segmentedControlAction() {
         let idx = segmentedControl.selectedSegmentIndex
         pageController.setSelectedIndex(idx, animated: true)
+        
+        DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab = idx
+    }
+    
+    @IBAction func closeButtonAction() {
+        delegate?.paymentsViewControllerDidCancel(self)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configureHierarchy()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
     }
     
     @objc
@@ -94,11 +113,13 @@ extension PaymentsViewController {
         
         segmentedControl.setTitle(NSLocalizedString("Receive", comment: "Receive/Send"), forSegmentAt: 0)
         segmentedControl.setTitle(NSLocalizedString("Send", comment: "Receive/Send"), forSegmentAt: 1)
+        segmentedControl.selectedSegmentIndex = currentState.rawValue
         
         payViewController = PayViewController.controller(with: payModel)
+        payViewController.delegate = self
         
-        receiveViewController = DWReceiveViewController()
-        receiveViewController.model = receiveModel
+        receiveViewController = ReceiveViewController(model: receiveModel)
+        receiveViewController.delegate = self
         
         pageController = SendReceivePageController()
         pageController.helperDelegate = self
@@ -108,6 +129,8 @@ extension PaymentsViewController {
         pageController.didMove(toParent: self)
         pageController.controllers = [receiveViewController, payViewController]
         pageController.selectedIndex = currentState.rawValue
+        
+        closeButton.layer.cornerRadius = 24
         
         NSLayoutConstraint.activate([
             pageController.view.topAnchor.constraint(equalTo: containerView.topAnchor),
@@ -125,5 +148,23 @@ extension PaymentsViewController: NavigationBarDisplayable {
 extension PaymentsViewController: SendReceivePageControllerDelegate {
     func sendReceivePageControllerWillChangeSelectedIndex(to index: Int) {
         segmentedControl.selectedSegmentIndex = index
+        
+        DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab = index
+    }
+}
+
+extension PaymentsViewController: PayViewControllerDelegate {
+    func payViewControllerDidFinishPayment(_ controller: PayViewController, contact: DWDPBasicUserItem?) {
+        delegate?.paymentsViewControllerDidFinishPayment(self, contact: contact)
+    }
+}
+
+extension PaymentsViewController: ReceiveViewControllerDelegate {
+    func receiveViewControllerExitButtonAction(_ controller: ReceiveViewController) {
+        //NOP
+    }
+    
+    func importPrivateKeyButtonAction(_ controller: ReceiveViewController) {
+        delegate?.paymentsViewControllerWantsToImportPrivateKey(self)
     }
 }

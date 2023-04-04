@@ -37,7 +37,7 @@ static CGFloat TopPadding(void) {
     }
 }
 
-@interface DWReceiveViewController () <DWReceiveContentViewDelegate,
+@interface DWReceiveViewControllerOld () <DWReceiveContentViewDelegate,
                                        DWSpecifyAmountViewControllerDelegate,
                                        DWRequestAmountViewControllerDelegate>
 
@@ -47,12 +47,11 @@ static CGFloat TopPadding(void) {
 
 @end
 
-@implementation DWReceiveViewController
+@implementation DWReceiveViewControllerOld
 
 + (instancetype)controllerWithModel:(id<DWReceiveModelProtocol>)receiveModel {
-    DWReceiveViewController *controller = [[DWReceiveViewController alloc] init];
-    controller.model = receiveModel;
-
+    DWReceiveViewController *controller = [[DWReceiveViewController alloc] initWithModel:receiveModel];
+    
     return controller;
 }
 

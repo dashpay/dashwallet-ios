@@ -31,6 +31,7 @@
 #import "DWSettingsMenuModel.h"
 #import "DWUpholdViewController.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate>

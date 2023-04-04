@@ -88,7 +88,7 @@ static CGFloat ActionButtonsTopPadding(void) {
                           self.addressButton.hidden = !hasValue;
                           self.specifyAmountButton.enabled = hasValue;
 
-                          if (self.viewType == DWReceiveViewType_Default) {
+                          if (self.viewType == 0) {
                               self.secondButton.enabled = hasValue;
                           }
                       }];
@@ -102,18 +102,18 @@ static CGFloat ActionButtonsTopPadding(void) {
     return self;
 }
 
-- (void)setViewType:(DWReceiveViewType)viewType {
+- (void)setViewType:(NSUInteger)viewType {
     _viewType = viewType;
 
     NSString *title = nil;
     UIColor *backgroundColor = [UIColor clearColor];
     switch (viewType) {
-        case DWReceiveViewType_Default: {
+        case 0: {
             title = NSLocalizedString(@"Share", nil);
 
             break;
         }
-        case DWReceiveViewType_QuickReceive: {
+        case 1: {
             title = NSLocalizedString(@"Exit", nil);
 
             break;

@@ -31,8 +31,35 @@
                                 </connections>
                             </segmentedControl>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DHy-xc-dvj">
-                                <rect key="frame" x="0.0" y="94" width="375" height="708"/>
+                                <rect key="frame" x="0.0" y="94" width="375" height="659"/>
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Yyj-gi-qiJ">
+                                <rect key="frame" x="0.0" y="753" width="375" height="49"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pHJ-Nm-6Ql">
+                                        <rect key="frame" x="163.66666666666666" y="0.66666666666662877" width="48" height="48"/>
+                                        <color key="backgroundColor" name="DashBlueColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="48" id="Qce-La-MHY"/>
+                                            <constraint firstAttribute="width" constant="48" id="s4E-df-8lc"/>
+                                        </constraints>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" image="xmark" catalog="system">
+                                            <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="medium" weight="semibold"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="closeButtonAction" destination="hUC-OE-0Vm" eventType="touchUpInside" id="A4y-8F-ah7"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="49" id="9lx-MF-ucW"/>
+                                    <constraint firstItem="pHJ-Nm-6Ql" firstAttribute="centerY" secondItem="Yyj-gi-qiJ" secondAttribute="centerY" id="N4y-iW-AFU"/>
+                                    <constraint firstItem="pHJ-Nm-6Ql" firstAttribute="centerX" secondItem="Yyj-gi-qiJ" secondAttribute="centerX" id="heX-ZN-uBa"/>
+                                </constraints>
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Clx-Yn-fBF"/>
@@ -40,16 +67,20 @@
                         <constraints>
                             <constraint firstItem="Clx-Yn-fBF" firstAttribute="trailing" secondItem="nbU-dQ-Jv5" secondAttribute="trailing" constant="15" id="AKx-8F-FEK"/>
                             <constraint firstItem="nbU-dQ-Jv5" firstAttribute="top" secondItem="bjR-Pg-dF7" secondAttribute="top" constant="30" id="G63-sd-UsW"/>
+                            <constraint firstItem="Yyj-gi-qiJ" firstAttribute="top" secondItem="DHy-xc-dvj" secondAttribute="bottom" id="Lpq-OX-Gcp"/>
+                            <constraint firstItem="Yyj-gi-qiJ" firstAttribute="trailing" secondItem="Clx-Yn-fBF" secondAttribute="trailing" id="MQA-Rh-X8J"/>
                             <constraint firstItem="DHy-xc-dvj" firstAttribute="leading" secondItem="bjR-Pg-dF7" secondAttribute="leading" id="Tye-D4-tWW"/>
-                            <constraint firstItem="Clx-Yn-fBF" firstAttribute="bottom" secondItem="DHy-xc-dvj" secondAttribute="bottom" id="V3n-r5-s9a"/>
                             <constraint firstItem="nbU-dQ-Jv5" firstAttribute="leading" secondItem="Clx-Yn-fBF" secondAttribute="leading" constant="15" id="Vxh-tg-xug"/>
                             <constraint firstItem="DHy-xc-dvj" firstAttribute="trailing" secondItem="Clx-Yn-fBF" secondAttribute="trailing" id="Xt3-PE-pIy"/>
+                            <constraint firstItem="Clx-Yn-fBF" firstAttribute="bottom" secondItem="Yyj-gi-qiJ" secondAttribute="bottom" id="cci-jt-X08"/>
                             <constraint firstItem="DHy-xc-dvj" firstAttribute="top" secondItem="nbU-dQ-Jv5" secondAttribute="bottom" constant="30" id="fAS-bE-3D6"/>
+                            <constraint firstItem="Yyj-gi-qiJ" firstAttribute="leading" secondItem="bjR-Pg-dF7" secondAttribute="leading" id="tvI-Wm-amw"/>
                         </constraints>
                     </view>
                     <modalPageSheetSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="375" height="812"/>
                     <connections>
+                        <outlet property="closeButton" destination="pHJ-Nm-6Ql" id="k4W-AL-Arh"/>
                         <outlet property="containerView" destination="DHy-xc-dvj" id="raO-gS-myt"/>
                         <outlet property="segmentedControl" destination="nbU-dQ-Jv5" id="vVN-U4-Nko"/>
                     </connections>
@@ -60,6 +91,10 @@
         </scene>
     </scenes>
     <resources>
+        <image name="xmark" catalog="system" width="128" height="113"/>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

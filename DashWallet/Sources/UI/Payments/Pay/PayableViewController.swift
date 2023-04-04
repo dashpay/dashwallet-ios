@@ -44,7 +44,7 @@ extension PayableViewController where Self: UIViewController {
     }
     
     func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
-        if presentedViewController?.isKind(of: DWQRScanViewController.self) ?? false {
+        if let vc = presentedViewController, vc is DWQRScanViewController {
             return;
         }
         

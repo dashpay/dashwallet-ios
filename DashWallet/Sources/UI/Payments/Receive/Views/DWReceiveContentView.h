@@ -17,8 +17,6 @@
 
 #import <KVO-MVVM/KVOUIView.h>
 
-#import "DWReceiveViewType.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWReceiveModelProtocol;
@@ -33,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWReceiveContentView : KVOUIView
 
-@property (nonatomic, assign) DWReceiveViewType viewType;
+@property (nonatomic, assign) NSUInteger viewType;
 @property (nullable, nonatomic, weak) id<DWReceiveContentViewDelegate> delegate;
 
 - (void)viewDidAppear;

@@ -718,6 +718,11 @@
 		C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
 		C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */; };
 		C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */; };
+		C9F42FA629DC092B001BC549 /* ReceiveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */; };
+		C9F42FA929DC09CF001BC549 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA829DC09CF001BC549 /* Style.swift */; };
+		C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */; };
+		C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */; };
+		C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyView.swift */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
@@ -1329,7 +1334,6 @@
 		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
 		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
 		2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppGroupOptions.m; sourceTree = "<group>"; };
-		2A8C24B02333659100000D43 /* DWReceiveViewType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewType.h; sourceTree = "<group>"; };
 		2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQuickReceiveViewController.h; sourceTree = "<group>"; };
 		2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQuickReceiveViewController.m; sourceTree = "<group>"; };
 		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
@@ -2003,6 +2007,11 @@
 		C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayableViewController.swift; sourceTree = "<group>"; };
 		C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayTableViewCell.swift; sourceTree = "<group>"; };
 		C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsViewController.swift; sourceTree = "<group>"; };
+		C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveViewController.swift; sourceTree = "<group>"; };
+		C9F42FA829DC09CF001BC549 /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
+		C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveContentView.swift; sourceTree = "<group>"; };
+		C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReceiveContentView.xib; sourceTree = "<group>"; };
+		C9F42FAF29DC27F4001BC549 /* EmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyView.swift; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2782,6 +2791,7 @@
 				2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */,
 				2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */,
 				47AE8C1428C6378E00490F5E /* HairlineView.swift */,
+				C9F42FAF29DC27F4001BC549 /* EmptyView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2884,6 +2894,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				C9F42FA729DC09C6001BC549 /* Style */,
 				11C5F51128E5D0C500F6F135 /* CrowdNode */,
 				47A50F362912D9A800C70123 /* Payment Controller */,
 				4751137228DAF27300223B77 /* Assembly */,
@@ -3475,8 +3486,8 @@
 				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
 				C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */,
-				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
 				C917023E29D44E0B008C034D /* SendReceivePageController.swift */,
+				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
 			);
 			path = Payments;
 			sourceTree = "<group>";
@@ -3550,9 +3561,9 @@
 				2ACCD85E23193BC200A96B62 /* Views */,
 				2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */,
 				2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */,
+				C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */,
 				2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */,
 				2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */,
-				2A8C24B02333659100000D43 /* DWReceiveViewType.h */,
 			);
 			path = Receive;
 			sourceTree = "<group>";
@@ -4232,6 +4243,8 @@
 				2ACCD85F23193BE300A96B62 /* DWReceiveContentView.h */,
 				2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */,
 				2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */,
+				C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */,
+				C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5729,6 +5742,14 @@
 			path = Base;
 			sourceTree = "<group>";
 		};
+		C9F42FA729DC09C6001BC549 /* Style */ = {
+			isa = PBXGroup;
+			children = (
+				C9F42FA829DC09CF001BC549 /* Style.swift */,
+			);
+			path = Style;
+			sourceTree = "<group>";
+		};
 		EBFC2EA47915CD4F5BA81564 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -6051,6 +6072,7 @@
 				2A307CB822E7006F00A18347 /* DWBalanceView.xib in Resources */,
 				C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */,
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
+				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
 				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
@@ -6516,6 +6538,7 @@
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
 				4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */,
+				C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */,
 				47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */,
 				2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */,
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
@@ -6535,6 +6558,7 @@
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
+				C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
@@ -6620,6 +6644,7 @@
 				4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
+				C9F42FA629DC092B001BC549 /* ReceiveViewController.swift in Sources */,
 				118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
@@ -6873,6 +6898,7 @@
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */,
 				2A7AF34C24823315001D74F9 /* DWDPGenericStatusItemView.m in Sources */,
+				C9F42FA929DC09CF001BC549 /* Style.swift in Sources */,
 				C917024129D462C6008C034D /* PayViewController.swift in Sources */,
 				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,

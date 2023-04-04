@@ -82,11 +82,15 @@ static const bool _SNAPSHOT = 0;
 #import "DWPayOptionModel.h"
 #import "DWPayModelProtocol.h"
 #import "DWReceiveModelProtocol.h"
+#import "DWReceiveModel.h"
 #import "DWReceiveViewController.h"
 #import "DWTransactionListDataProviderProtocol.h"
 #import "DWQuickReceiveViewController.h"
 #import "DWQRScanViewController.h"
 #import "DWQRScanModel.h"
+#import "DWRequestAmountViewController.h"
+#import "UIViewController+DWShareReceiveInfo.h"
+#import "DWImportWalletInfoViewController.h"
 
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"

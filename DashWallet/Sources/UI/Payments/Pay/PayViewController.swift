@@ -81,7 +81,11 @@ private extension PayViewController {
         tableView.rowHeight = 59
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.tableFooterView = UIView()
+        tableView.tableFooterView = EmptyView()
+        tableView.tableHeaderView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 0.0, height: CGFloat.leastNormalMagnitude))
+        tableView.isScrollEnabled = false
+        tableView.separatorStyle = .none
+        tableView.sectionHeaderHeight = CGFloat.leastNonzeroMagnitude
     }
 }
 
