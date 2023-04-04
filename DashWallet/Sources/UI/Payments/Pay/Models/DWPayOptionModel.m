@@ -22,26 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 static NSString *TitleForOptionType(DWPayOptionModelType type) {
     switch (type) {
         case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Send by", @"Send by (scanning QR code)");
+            return NSLocalizedString(@"Scan QR code", @"(Send by) Scanning QR code");
         case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"Send to", nil);
+            return NSLocalizedString(@"Send to copied address or QR code", nil);
         case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"Send to", nil);
-    }
-}
-
-static UIColor *DescriptionColor(DWPayOptionModelType type) {
-    return [UIColor dw_darkTitleColor];
-}
-
-static NSString *ActionTitleForOptionType(DWPayOptionModelType type) {
-    switch (type) {
-        case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Scan", @"should be as short as possible");
-        case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"Send", nil);
-        case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"Tap", @"Pay using NFC (should be as short as possible)");
+            return NSLocalizedString(@"NFC device", nil);
     }
 }
 
@@ -63,17 +48,6 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
     return image;
 }
 
-static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
-    switch (type) {
-        case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Scanning QR code", @"(Send by) Scanning QR code");
-        case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"Сopied address or QR", nil);
-        case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"NFC device", nil);
-    }
-}
-
 @implementation DWPayOptionModel
 
 - (instancetype)initWithType:(DWPayOptionModelType)type {
@@ -84,15 +58,6 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
     return self;
 }
 
-- (NSString *)details {
-    if (_details != nil) {
-        return _details;
-    }
-    else {
-        return DescriptionForOptionType(_type);
-    }
-}
-
 - (UIImage *)icon {
     return IconForOptionType(_type);
 }
@@ -101,13 +66,7 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
     return TitleForOptionType(_type);
 }
 
-- (NSString *)actionTitle {
-    return ActionTitleForOptionType(_type);
-}
 
-- (UIColor *)descriptionColor {
-    return DescriptionColor(_type);
-}
 @end
 
 NS_ASSUME_NONNULL_END
