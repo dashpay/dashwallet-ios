@@ -30,3 +30,8 @@ func viewController<T>(_ name: T.Type, from storyBoard: UIStoryboard) -> T {
     return storyBoard.instantiateViewController(withIdentifier: identifier) as! T
 }
 
+extension UIStoryboard {
+    func vc<T>(_ name: T.Type) -> T {
+        viewController(name, from: self)
+    }
+}
