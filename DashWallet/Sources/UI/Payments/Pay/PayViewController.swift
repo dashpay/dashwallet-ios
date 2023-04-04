@@ -67,6 +67,24 @@ class PayViewController: BaseViewController, PayableViewController {
     }
 }
 
+private extension PayViewController {
+    func configurePaymentController() {
+        paymentController = PaymentController()
+        paymentController.delegate = self
+        paymentController.presentationContextProvider = self
+    }
+    
+    func configureHierarchy() {
+        let cellId = PayTableViewCell.reuseIdentifier
+        let nib = UINib(nibName: cellId, bundle: nil)
+        tableView.register(nib, forCellReuseIdentifier: cellId)
+        tableView.rowHeight = 59
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.tableFooterView = UIView()
+    }
+}
+
 extension PayViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -97,31 +115,13 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-private extension PayViewController {
-    func configurePaymentController() {
-        paymentController = PaymentController()
-        paymentController.delegate = self
-        paymentController.presentationContextProvider = self
-    }
-    
-    func configureHierarchy() {
-        let cellId = PayTableViewCell.reuseIdentifier
-        let nib = UINib(nibName: cellId, bundle: nil)
-        tableView.register(nib, forCellReuseIdentifier: cellId)
-        tableView.rowHeight = 59
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.tableFooterView = UIView()
-    }
 
-}
 
 extension PayViewController: DWQRScanModelDelegate {
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             self?.paymentController.performPayment(with: paymentInput)
         }
-        
     }
     
     func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {

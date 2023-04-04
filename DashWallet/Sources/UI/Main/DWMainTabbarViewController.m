@@ -21,10 +21,10 @@
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
@@ -305,17 +305,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     id<DWReceiveModelProtocol> receiveModel = homeModel.receiveModel;
     id<DWPayModelProtocol> payModel = homeModel.payModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
+
     DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
                                                                                        payModel:payModel
                                                                                    dataProvider:dataProvider];
     controller.delegate = self;
-    controller.currentIndex = pageIndex;
+    controller.currentState = pageIndex;
     controller.demoMode = self.demoMode;
     controller.demoDelegate = self.demoDelegate;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
-    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
 
     if (self.demoMode) {
         [self.demoDelegate presentModalController:navigationController sender:self];

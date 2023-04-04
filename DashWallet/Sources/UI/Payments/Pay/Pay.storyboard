@@ -6,38 +6,38 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Pay View Controller-->
         <scene sceneID="oX0-8k-mSo">
             <objects>
-                <viewController id="BNa-mF-PJH" customClass="PayViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BNa-mF-PJH" customClass="DWPayViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ow4-5C-AVU">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="2Eh-yg-y22">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="TeT-OP-Qz9">
                                 <rect key="frame" x="0.0" y="48" width="414" height="814"/>
-                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <connections>
-                                    <outlet property="dataSource" destination="BNa-mF-PJH" id="CpY-qp-qA4"/>
-                                    <outlet property="delegate" destination="BNa-mF-PJH" id="3qN-Ty-Ohq"/>
+                                    <outlet property="dataSource" destination="BNa-mF-PJH" id="E1e-gK-gnw"/>
+                                    <outlet property="delegate" destination="BNa-mF-PJH" id="XOX-5z-1ON"/>
                                 </connections>
                             </tableView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="f3d-1B-R3c"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="f3d-1B-R3c" firstAttribute="trailing" secondItem="2Eh-yg-y22" secondAttribute="trailing" id="FEL-0B-V5T"/>
-                            <constraint firstItem="2Eh-yg-y22" firstAttribute="top" secondItem="f3d-1B-R3c" secondAttribute="top" id="JAF-Ig-oJc"/>
-                            <constraint firstItem="2Eh-yg-y22" firstAttribute="leading" secondItem="f3d-1B-R3c" secondAttribute="leading" id="rKU-Th-CMw"/>
-                            <constraint firstItem="2Eh-yg-y22" firstAttribute="bottom" secondItem="f3d-1B-R3c" secondAttribute="bottom" id="vEg-hJ-7v5"/>
+                            <constraint firstItem="TeT-OP-Qz9" firstAttribute="leading" secondItem="f3d-1B-R3c" secondAttribute="leading" id="JWN-Ok-ug6"/>
+                            <constraint firstItem="f3d-1B-R3c" firstAttribute="bottom" secondItem="TeT-OP-Qz9" secondAttribute="bottom" id="QWi-QL-gOn"/>
+                            <constraint firstItem="TeT-OP-Qz9" firstAttribute="top" secondItem="f3d-1B-R3c" secondAttribute="top" id="b4A-ju-woM"/>
+                            <constraint firstItem="f3d-1B-R3c" firstAttribute="trailing" secondItem="TeT-OP-Qz9" secondAttribute="trailing" id="nwn-dz-UHc"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="tableView" destination="2Eh-yg-y22" id="QgQ-s2-GcO"/>
+                        <outlet property="tableView" destination="TeT-OP-Qz9" id="seX-TO-W3G"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="WHI-0K-GKx" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -49,5 +49,8 @@
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

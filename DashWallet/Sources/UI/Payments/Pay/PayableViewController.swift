@@ -32,8 +32,9 @@ extension PayableViewController where Self: UIViewController {
             if success {
                 strongSelf.performPayToPasteboardAction()
             } else {
-                let message = NSLocalizedString("Clipboard doesn't contain a valid Dash address", comment: "")
-                let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+                let title = NSLocalizedString("Clipboard doesn't contain a valid Dash address", comment: "")
+                let message = NSLocalizedString("Please copy the Dash address first and try again", comment: "");
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil)
                 alert.addAction(okAction)
 
@@ -43,10 +44,10 @@ extension PayableViewController where Self: UIViewController {
     }
     
     func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
-        guard presentedViewController?.isKind(of: DWQRScanViewController.self) == false else { return }
-
-        assert(presentedViewController == nil, "Attempt to present on VC which is already presenting \(String(describing: presentedViewController))")
-
+        if presentedViewController?.isKind(of: DWQRScanViewController.self) ?? false {
+            return;
+        }
+        
         let controller = DWQRScanViewController()
         controller.model.delegate = delegate
         present(controller, animated: true, completion: nil)

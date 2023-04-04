@@ -295,16 +295,13 @@
 		2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCF2449F37A00B9F679 /* DWUserSearchModel.m */; };
 		2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
-		2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */; };
 		2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */; };
 		2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */; };
 		2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */; };
 		2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */; };
 		2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
-		2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */; };
 		2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */; };
-		2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */; };
-		2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */; };
+		2A8B9E6222FF712000FF8653 /* PayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6022FF712000FF8653 /* PayTableViewCell.xib */; };
 		2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6422FFE43500FF8653 /* DWPayModel.m */; };
 		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
 		2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */; };
@@ -711,11 +708,16 @@
 		C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CB24757A210001624F /* DWContactsSearchDataSourceObject.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */; };
+		C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
+		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
 		C94F5E8E29D404850034FD57 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C94F5E9029D4060A0034FD57 /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */; };
+		C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
+		C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */; };
+		C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
@@ -1301,8 +1303,6 @@
 		2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWFindConstraints.m"; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
-		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
-		2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentsViewController.m; sourceTree = "<group>"; };
 		2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Payments.storyboard; sourceTree = "<group>"; };
 		2A8B9E3E22FD75C000FF8653 /* DWSegmentedControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentedControl.h; sourceTree = "<group>"; };
 		2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentedControl.m; sourceTree = "<group>"; };
@@ -1313,12 +1313,8 @@
 		2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWOverlapControl.m; sourceTree = "<group>"; };
 		2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWControllerCollectionView.h; sourceTree = "<group>"; };
 		2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWControllerCollectionView.m; sourceTree = "<group>"; };
-		2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayViewController.h; sourceTree = "<group>"; };
-		2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayViewController.m; sourceTree = "<group>"; };
 		2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Pay.storyboard; sourceTree = "<group>"; };
-		2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayTableViewCell.h; sourceTree = "<group>"; };
-		2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayTableViewCell.m; sourceTree = "<group>"; };
-		2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWPayTableViewCell.xib; sourceTree = "<group>"; };
+		2A8B9E6022FF712000FF8653 /* PayTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PayTableViewCell.xib; sourceTree = "<group>"; };
 		2A8B9E6322FFE43500FF8653 /* DWPayModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayModel.h; sourceTree = "<group>"; };
 		2A8B9E6422FFE43500FF8653 /* DWPayModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayModel.m; sourceTree = "<group>"; };
 		2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayOptionModel.h; sourceTree = "<group>"; };
@@ -1996,12 +1992,17 @@
 		C3DAD2D32476886D0001624F /* DWContactsSearchInfoHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchInfoHeaderView.h; sourceTree = "<group>"; };
 		C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchInfoHeaderView.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C917023E29D44E0B008C034D /* SendReceivePageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendReceivePageController.swift; sourceTree = "<group>"; };
+		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
 		C94F5E8D29D404850034FD57 /* ShortcutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCell.swift; sourceTree = "<group>"; };
 		C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsView.swift; sourceTree = "<group>"; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
+		C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayableViewController.swift; sourceTree = "<group>"; };
+		C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayTableViewCell.swift; sourceTree = "<group>"; };
+		C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsViewController.swift; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -3473,9 +3474,9 @@
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
-				2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */,
-				2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */,
+				C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */,
 				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
+				C917023E29D44E0B008C034D /* SendReceivePageController.swift */,
 			);
 			path = Payments;
 			sourceTree = "<group>";
@@ -3511,9 +3512,9 @@
 				2A8B9E5D22FF710A00FF8653 /* Cells */,
 				2ACCD85323191C8500A96B62 /* DWBasePayViewController.h */,
 				2ACCD85423191C8500A96B62 /* DWBasePayViewController.m */,
-				2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */,
-				2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */,
 				2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */,
+				C917024029D462C6008C034D /* PayViewController.swift */,
+				C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */,
 			);
 			path = Pay;
 			sourceTree = "<group>";
@@ -3521,9 +3522,8 @@
 		2A8B9E5D22FF710A00FF8653 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */,
-				2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */,
-				2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */,
+				2A8B9E6022FF712000FF8653 /* PayTableViewCell.xib */,
+				C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -6038,7 +6038,7 @@
 				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
-				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
+				2A8B9E6222FF712000FF8653 /* PayTableViewCell.xib in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
@@ -6413,6 +6413,7 @@
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
 				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
 				2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */,
+				C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				4751136C28D9A3DB00223B77 /* PortalViewController.swift in Sources */,
@@ -6653,7 +6654,6 @@
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				47E94B97296D7D5B000FE68E /* CustodialSwapsViewController.swift in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
-				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
@@ -6750,6 +6750,7 @@
 				47A2A2EC293E618600938DB7 /* CBUser.swift in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				47A2A2EE293E622700938DB7 /* CBSecureTokenService.swift in Sources */,
+				C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */,
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
@@ -6780,6 +6781,7 @@
 				11AE3DD62997AA36000856EE /* MessageStatus.swift in Sources */,
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
+				C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */,
 				478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */,
@@ -6811,7 +6813,6 @@
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
-				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				0F6EDFC728C896BD000427E7 /* CoinbaseSwapeTradeResponse.swift in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				4774DCDF28F43AB4008CF87D /* ServiceItem.swift in Sources */,
@@ -6872,6 +6873,7 @@
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */,
 				2A7AF34C24823315001D74F9 /* DWDPGenericStatusItemView.m in Sources */,
+				C917024129D462C6008C034D /* PayViewController.swift in Sources */,
 				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
@@ -6924,7 +6926,6 @@
 				47E4F7C7297596D9006BEA68 /* DSChain+DashWallet.m in Sources */,
 				1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */,
 				2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */,
-				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				11B8449A28F6D5480082770C /* SingleInputAddressSelector.swift in Sources */,
 				0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
@@ -6948,6 +6949,7 @@
 				47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */,
 				2A7AF37B2482756D001D74F9 /* DWDPPendingRequestObject.m in Sources */,
 				2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */,
+				C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
 				4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
@@ -7418,7 +7420,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -7444,7 +7446,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -7467,7 +7469,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -7502,7 +7504,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -7582,12 +7584,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -7604,12 +7606,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -7624,13 +7626,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -7647,13 +7649,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -7671,7 +7673,7 @@
 			baseConfigurationReference = 206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7681,7 +7683,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7696,7 +7698,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7706,7 +7708,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7788,7 +7790,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -7823,7 +7825,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -7841,7 +7843,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -7851,7 +7853,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7898,12 +7900,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -7918,13 +7920,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -8015,7 +8017,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -8040,7 +8042,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -8057,7 +8059,7 @@
 			baseConfigurationReference = 8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -8067,7 +8069,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -8113,12 +8115,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -8133,13 +8135,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = YES;
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 6.3.1;
+				MARKETING_VERSION = 6.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;

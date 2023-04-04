@@ -27,7 +27,6 @@
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWPayModelProtocol.h"
-#import "DWPaymentsViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
 #import "DWUpholdViewController.h"

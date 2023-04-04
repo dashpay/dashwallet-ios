@@ -64,8 +64,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWLocalCurrencyViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWDemoDelegate.h"
-#import "DWQRScanViewController.h"
-#import "DWQRScanModel.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
 #import "UIView+DWHUD.h"
@@ -79,6 +77,16 @@ static const bool _SNAPSHOT = 0;
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
 
+//MARK: Payment flow
+#import "DWQRScanModel.h"
+#import "DWPayOptionModel.h"
+#import "DWPayModelProtocol.h"
+#import "DWReceiveModelProtocol.h"
+#import "DWReceiveViewController.h"
+#import "DWTransactionListDataProviderProtocol.h"
+#import "DWQuickReceiveViewController.h"
+#import "DWQRScanViewController.h"
+#import "DWQRScanModel.h"
 
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"
@@ -93,5 +101,7 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
-
 #import "DWPhoneWCSessionManager.h"
+
+//MARK: Platform
+#import "DWDPBasicUserItem.h"

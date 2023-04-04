@@ -43,7 +43,7 @@ static CGFloat TopPadding(void) {
 
 @property (nonatomic, strong) DWReceiveContentView *contentView;
 
-@property (nonatomic, strong) id<DWReceiveModelProtocol> model;
+
 
 @end
 
