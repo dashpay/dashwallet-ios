@@ -19,11 +19,11 @@
 
 #import <DWAlertController/DWAlertController.h>
 
-#import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWScreenshotWarningViewController.h"
 #import "DWSeedPhraseModel.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -148,7 +148,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)previewSeedPhraseContentViewShowScreenshotDescription:(DWPreviewSeedPhraseContentView *)view {
-    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWithoutAction];
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith:DWSecureWalletInfoType_Setup];
+    controller.isAllActionHidden = true;
     controller.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:controller animated:YES];
 }

@@ -23,7 +23,6 @@
 #import "DWMainTabbarViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWRecoverViewController.h"
-#import "DWSecureWalletInfoViewController.h"
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
 #import "dashwallet-Swift.h"
@@ -149,10 +148,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self completeSetup];
 }
 
-- (void)secureWalletInfoViewControllerDidFinish:(DWSecureWalletInfoViewController *)controller {
-    [self.navigationController popViewControllerAnimated:NO];
-}
-
 #pragma mark - DWRecoverViewControllerDelegate
 
 - (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
@@ -211,10 +206,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (UIViewController *)secureWalletInfoController {
-    DWSecureWalletInfoViewController *controller = [DWSecureWalletInfoViewController controller];
-    controller.type = DWSecureWalletInfoType_Setup;
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith:DWSecureWalletInfoType_Setup];
     controller.delegate = self;
-
+    controller.isCloseButtonHidden = true;
+    controller.isSkipButtonHidden = false;
     return controller;
 }
 

@@ -30,3 +30,18 @@ func viewController<T>(_ name: T.Type, from storyBoard: UIStoryboard) -> T {
     return storyBoard.instantiateViewController(withIdentifier: identifier) as! T
 }
 
+extension UINib {
+    static func view<T: UIView>(_ name: T.Type) -> T {
+        guard let view = UINib(nibName: name.reuseIdentifier, bundle: nil).instantiate(withOwner: nil).first else {
+            fatalError("Expect view")
+        }
+        
+        return view as! T
+    }
+}
+
+extension UIView {
+    static func view() -> Self {
+        UINib.view(Self.self)
+    }
+}

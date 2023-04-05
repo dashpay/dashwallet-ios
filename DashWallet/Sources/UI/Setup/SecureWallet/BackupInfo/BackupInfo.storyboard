@@ -1,120 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="D70-fc-SOh">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Backup Info View Controller-->
-        <scene sceneID="XMA-Td-Jcb">
+        <scene sceneID="Jqf-H0-T3s">
             <objects>
-                <viewController id="D70-fc-SOh" customClass="DWBackupInfoViewController" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="O8x-wa-1SN">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                <viewController storyboardIdentifier="BackupInfoViewController" id="3GU-qr-r9Q" customClass="BackupInfoViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="mc3-7F-Yiu">
+                        <rect key="frame" x="0.0" y="0.0" width="428" height="926"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="3CN-PX-rs2" customClass="DWCenteredTableView">
-                                <rect key="frame" x="20" y="0.0" width="560" height="526"/>
-                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                <view key="tableHeaderView" contentMode="scaleToFill" id="0lS-1H-I4I" customClass="DWBackupInfoHeaderView">
-                                    <rect key="frame" x="0.0" y="0.0" width="560" height="214"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <subviews>
-                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" placeholderIntrinsicWidth="infinite" placeholderIntrinsicHeight="infinite" image="icon_secure_wallet" translatesAutoresizingMaskIntoConstraints="NO" id="Y9N-uX-n9A" userLabel="Icon Image View">
-                                            <rect key="frame" x="256.5" y="16" width="47" height="60"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="47" id="Vbe-j8-C6W"/>
-                                                <constraint firstAttribute="height" constant="60" id="h2M-nd-diI"/>
-                                            </constraints>
-                                        </imageView>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HkO-bU-tgj" userLabel="Title Label">
-                                            <rect key="frame" x="0.0" y="102" width="560" height="26.5"/>
-                                            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                            <color key="textColor" name="DarkTitleColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="999" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4C9-zM-xFP" userLabel="Description Label">
-                                            <rect key="frame" x="0.0" y="138.5" width="560" height="19.5"/>
-                                            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                            <color key="textColor" name="SecondaryTextColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                    <color key="backgroundColor" name="SecondaryBackgroundColor"/>
-                                    <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="HkO-bU-tgj" secondAttribute="trailing" id="4sr-GQ-JSB"/>
-                                        <constraint firstItem="4C9-zM-xFP" firstAttribute="top" secondItem="HkO-bU-tgj" secondAttribute="bottom" constant="10" id="5Rg-IR-PUK"/>
-                                        <constraint firstItem="Y9N-uX-n9A" firstAttribute="centerX" secondItem="0lS-1H-I4I" secondAttribute="centerX" id="HXI-i3-sqL"/>
-                                        <constraint firstAttribute="trailing" secondItem="4C9-zM-xFP" secondAttribute="trailing" id="J8Y-7u-msx"/>
-                                        <constraint firstItem="HkO-bU-tgj" firstAttribute="top" secondItem="Y9N-uX-n9A" secondAttribute="bottom" constant="26" id="JPt-IL-PEz"/>
-                                        <constraint firstAttribute="bottom" secondItem="4C9-zM-xFP" secondAttribute="bottom" constant="56" id="QqT-80-bfh"/>
-                                        <constraint firstItem="4C9-zM-xFP" firstAttribute="leading" secondItem="0lS-1H-I4I" secondAttribute="leading" id="SXu-j7-AfY"/>
-                                        <constraint firstItem="Y9N-uX-n9A" firstAttribute="top" secondItem="0lS-1H-I4I" secondAttribute="top" constant="16" id="rbl-bC-KAQ"/>
-                                        <constraint firstItem="HkO-bU-tgj" firstAttribute="leading" secondItem="0lS-1H-I4I" secondAttribute="leading" id="sxa-hI-la1"/>
-                                    </constraints>
-                                    <connections>
-                                        <outlet property="descriptionBottomPadding" destination="QqT-80-bfh" id="bc8-3L-KLu"/>
-                                        <outlet property="descriptionLabel" destination="4C9-zM-xFP" id="eah-lj-X7N"/>
-                                        <outlet property="titleLabel" destination="HkO-bU-tgj" id="2cp-pg-ZOf"/>
-                                    </connections>
-                                </view>
-                                <sections/>
-                                <connections>
-                                    <outlet property="dataSource" destination="D70-fc-SOh" id="89R-pJ-zRu"/>
-                                    <outlet property="delegate" destination="D70-fc-SOh" id="SK9-WH-cVQ"/>
-                                </connections>
-                            </tableView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J0k-fo-yHY" userLabel="Show Recovery Button" customClass="DWActionButton">
-                                <rect key="frame" x="20" y="542" width="560" height="54"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="backup-icon" translatesAutoresizingMaskIntoConstraints="NO" id="d0g-KM-KQP">
+                                <rect key="frame" x="174" y="91" width="80" height="80"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="54" id="D0R-Cv-7bx"/>
+                                    <constraint firstAttribute="height" constant="80" id="4zg-aG-Bjf"/>
+                                    <constraint firstAttribute="width" constant="80" id="f68-Ox-Q5d"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="showRecoveryPhraseButtonAction:" destination="D70-fc-SOh" eventType="touchUpInside" id="plZ-j1-74o"/>
-                                </connections>
-                            </view>
+                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="8oN-bk-3MU">
+                                <rect key="frame" x="20" y="191" width="388" height="49.333333333333343"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JuD-qH-lE2">
+                                        <rect key="frame" x="0.0" y="0.0" width="388" height="26.333333333333332"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PyH-o7-mV0">
+                                        <rect key="frame" x="0.0" y="31.333333333333343" width="388" height="18"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="Aj4-Tx-tWa">
+                                <rect key="frame" x="28" y="286" width="372" height="200"/>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="bQK-tL-fgR">
+                                <rect key="frame" x="15" y="772" width="398" height="116"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UmV-EH-WTh" userLabel="Show Recovery Button" customClass="DWActionButton">
+                                        <rect key="frame" x="0.0" y="0.0" width="398" height="54"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="54" id="fqS-w8-Z3Z"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="backupButtonAction" destination="3GU-qr-r9Q" eventType="touchUpInside" id="qqy-vP-TIl"/>
+                                        </connections>
+                                    </view>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mJ5-eS-z4U">
+                                        <rect key="frame" x="0.0" y="62" width="398" height="54"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="54" id="4Hw-PF-hc1"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" title="Skip">
+                                            <color key="titleColor" name="DashBlueColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="skipButtonAction" destination="3GU-qr-r9Q" eventType="touchUpInside" id="kjP-IM-G2T"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="M5t-3u-mCx"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="3CN-PX-rs2" firstAttribute="leading" secondItem="O8x-wa-1SN" secondAttribute="leadingMargin" id="1De-Et-rCc"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="3CN-PX-rs2" secondAttribute="trailing" id="46g-ir-tMx"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="J0k-fo-yHY" secondAttribute="bottom" constant="4" id="5U5-Rg-Pz0"/>
-                            <constraint firstItem="J0k-fo-yHY" firstAttribute="leading" secondItem="O8x-wa-1SN" secondAttribute="leadingMargin" id="8RS-fr-Xbs"/>
-                            <constraint firstItem="J0k-fo-yHY" firstAttribute="trailing" secondItem="O8x-wa-1SN" secondAttribute="trailingMargin" id="DBZ-WD-1Vt"/>
-                            <constraint firstItem="3CN-PX-rs2" firstAttribute="top" secondItem="GYD-3W-Voi" secondAttribute="top" id="L0f-bB-EoM"/>
-                            <constraint firstItem="J0k-fo-yHY" firstAttribute="top" secondItem="3CN-PX-rs2" secondAttribute="bottom" constant="16" id="dTV-DK-VNB"/>
+                            <constraint firstItem="M5t-3u-mCx" firstAttribute="bottom" secondItem="bQK-tL-fgR" secondAttribute="bottom" constant="4" id="12v-9C-TZj"/>
+                            <constraint firstItem="8oN-bk-3MU" firstAttribute="leading" secondItem="M5t-3u-mCx" secondAttribute="leading" constant="20" id="8kW-Uy-jnX"/>
+                            <constraint firstItem="d0g-KM-KQP" firstAttribute="centerX" secondItem="mc3-7F-Yiu" secondAttribute="centerX" id="AMG-aU-FDH"/>
+                            <constraint firstItem="bQK-tL-fgR" firstAttribute="leading" secondItem="M5t-3u-mCx" secondAttribute="leading" constant="15" id="Ab1-6y-5Hp"/>
+                            <constraint firstItem="Aj4-Tx-tWa" firstAttribute="leading" secondItem="M5t-3u-mCx" secondAttribute="leading" constant="28" id="WWB-N1-y7V"/>
+                            <constraint firstItem="M5t-3u-mCx" firstAttribute="trailing" secondItem="Aj4-Tx-tWa" secondAttribute="trailing" constant="28" id="acO-CP-1WH"/>
+                            <constraint firstItem="Aj4-Tx-tWa" firstAttribute="top" secondItem="8oN-bk-3MU" secondAttribute="bottom" constant="20" id="gh5-JX-5ik"/>
+                            <constraint firstItem="M5t-3u-mCx" firstAttribute="trailing" secondItem="bQK-tL-fgR" secondAttribute="trailing" constant="15" id="h1V-oQ-m1x"/>
+                            <constraint firstItem="d0g-KM-KQP" firstAttribute="top" secondItem="M5t-3u-mCx" secondAttribute="top" id="kQt-wD-0sE"/>
+                            <constraint firstItem="8oN-bk-3MU" firstAttribute="top" secondItem="d0g-KM-KQP" secondAttribute="bottom" constant="20" id="l7I-5Y-zjR"/>
+                            <constraint firstItem="M5t-3u-mCx" firstAttribute="trailing" secondItem="8oN-bk-3MU" secondAttribute="trailing" constant="20" id="sgp-zC-HOE"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="GYD-3W-Voi"/>
                     </view>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
-                        <outlet property="contentBottomConstraint" destination="5U5-Rg-Pz0" id="B7s-Vx-bGs"/>
-                        <outlet property="showRecoveryPhraseButton" destination="J0k-fo-yHY" id="a2t-Du-HTW"/>
-                        <outlet property="tableView" destination="3CN-PX-rs2" id="Hb0-Or-jnT"/>
+                        <outlet property="contentView" destination="Aj4-Tx-tWa" id="lHx-O7-c86"/>
+                        <outlet property="showRecoveryPhraseButton" destination="UmV-EH-WTh" id="Nkh-pF-xUv"/>
+                        <outlet property="skipButton" destination="mJ5-eS-z4U" id="8WW-iJ-99P"/>
+                        <outlet property="subtitleLabel" destination="PyH-o7-mV0" id="rK3-eA-a8N"/>
+                        <outlet property="titleLabel" destination="JuD-qH-lE2" id="4zr-ub-7Ew"/>
                     </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="KTx-qF-ndL" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="B1H-rB-HDX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-436" y="48"/>
+            <point key="canvasLocation" x="298" y="48"/>
         </scene>
     </scenes>
     <resources>
-        <image name="icon_secure_wallet" width="75" height="96"/>
-        <namedColor name="DarkTitleColor">
-            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <image name="backup-icon" width="80.333335876464844" height="80"/>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="SecondaryTextColor">
-            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>
