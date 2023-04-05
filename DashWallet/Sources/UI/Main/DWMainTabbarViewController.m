@@ -147,16 +147,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 /// helper
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
+    [tabBarView setPaymentsButtonOpened:NO];
+    
     if (![self.currentController.topController isKindOfClass:[DWPaymentsViewController class]]) {
+        self.tabBarView.userInteractionEnabled = YES;
+        
         if (completion)
             completion();
         return;
     }
 
-
     tabBarView.userInteractionEnabled = NO;
-    [tabBarView setPaymentsButtonOpened:NO];
-
+    
     [self.currentController.topController dismissViewControllerAnimated:YES
                                                              completion:^{
                                                                  self.tabBarView.userInteractionEnabled = YES;
@@ -169,7 +171,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWPaymentsViewControllerDelegate
 
 - (void)paymentsViewControllerWantsToImportPrivateKey:(DWPaymentsViewController *)controller {
-    [self performScanQRCodeAction];
+    // Make sure we enable tabbar before showing the scanner
+    _tabBarView.userInteractionEnabled = YES;
+    [_tabBarView setPaymentsButtonOpened:NO];
+    
+    [controller dismissViewControllerAnimated:YES completion:^{
+        [self performScanQRCodeAction];
+    }];
 }
 
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller {

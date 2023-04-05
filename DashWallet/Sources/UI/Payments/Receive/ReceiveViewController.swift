@@ -167,6 +167,9 @@ extension ReceiveViewController: DWRequestAmountViewControllerDelegate {
 
 extension ReceiveViewController: DWImportWalletInfoViewControllerDelegate {
     func importWalletInfoViewControllerScanPrivateKeyAction(_ controller: DWImportWalletInfoViewController) {
-        delegate?.importPrivateKeyButtonAction(self)
+        controller.dismiss(animated: true) {
+            self.delegate?.importPrivateKeyButtonAction(self)
+        }
+        
     }
 }
