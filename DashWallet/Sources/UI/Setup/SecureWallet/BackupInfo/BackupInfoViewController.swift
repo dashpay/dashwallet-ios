@@ -69,6 +69,7 @@ final class BackupInfoViewController: BaseViewController {
     @IBOutlet private var skipButton: UIButton!
    
     private var closeButton: UIBarButtonItem!
+    private var seedPhraseModel: DWPreviewSeedPhraseModel!
     
     @objc
     public weak var delegate: BackupInfoViewControllerDelegate?
@@ -112,10 +113,7 @@ final class BackupInfoViewController: BaseViewController {
     }
     
     @IBAction func backupButtonAction() {
-        let model = DWPreviewSeedPhraseModel()
-        model.getOrCreateNewWallet()
-        
-        let controller = DWBackupSeedPhraseViewController(model: model)
+        let controller = DWBackupSeedPhraseViewController(model: seedPhraseModel)
         controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
         controller.delegate = delegate
         navigationController?.pushViewController(controller, animated: true)
@@ -127,6 +125,13 @@ final class BackupInfoViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if type == .setup {
+            // Create wallet entry point
+            self.seedPhraseModel = DWPreviewSeedPhraseModel()
+            seedPhraseModel.getOrCreateNewWallet()
+        }
+
         
         configureHierarchy()
     }
