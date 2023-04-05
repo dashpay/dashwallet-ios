@@ -717,6 +717,9 @@
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
 		C94F5E8E29D404850034FD57 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C94F5E9029D4060A0034FD57 /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */; };
+		C9F42FB229DD5141001BC549 /* BackupInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */; };
+		C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */; };
+		C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
@@ -2004,6 +2007,9 @@
 		C94F5E8D29D404850034FD57 /* ShortcutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCell.swift; sourceTree = "<group>"; };
 		C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsView.swift; sourceTree = "<group>"; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
+		C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoViewController.swift; sourceTree = "<group>"; };
+		C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoItemView.swift; sourceTree = "<group>"; };
+		C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BackupInfoItemView.xib; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2967,6 +2973,7 @@
 				2A4431C922D52776009BAF7F /* Views */,
 				2A4431C122D4CAEA009BAF7F /* DWBackupInfoViewController.h */,
 				2A4431C222D4CAEA009BAF7F /* DWBackupInfoViewController.m */,
+				C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */,
 				2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */,
 			);
 			path = BackupInfo;
@@ -2977,6 +2984,8 @@
 			children = (
 				2A4431CA22D5279A009BAF7F /* DWBackupInfoHeaderView.h */,
 				2A4431CB22D5279A009BAF7F /* DWBackupInfoHeaderView.m */,
+				C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */,
+				C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6047,6 +6056,7 @@
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
 				2A4E531A22EA382B00E5168A /* DWSyncView.xib in Resources */,
 				2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */,
+				C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */,
 				47AE8BB028BFF28700490F5E /* explore.db in Resources */,
 				2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */,
 				0F36937F2919A70B007F4E91 /* Coinbase.storyboard in Resources */,
@@ -6468,6 +6478,7 @@
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A7AF38924829AF2001D74F9 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				119E8D0C2907C61400D406C1 /* CrowdNodeTopUpTx.swift in Sources */,
+				C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */,
 				C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */,
 				118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
@@ -6854,6 +6865,7 @@
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,
 				0F6EDFC928C896BD000427E7 /* CoinbaseTokenResponse.swift in Sources */,
+				C9F42FB229DD5141001BC549 /* BackupInfoViewController.swift in Sources */,
 				2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */,
 				47C6E6E5291A68B6003FEDF2 /* AppliedFiltersView.swift in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
