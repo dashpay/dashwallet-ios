@@ -170,12 +170,8 @@
 		2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */; };
 		2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */; };
 		2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */; };
-		2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431BB22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m */; };
-		2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431BD22D4ACDB009BAF7F /* SecureWalletInfo.storyboard */; };
-		2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431C222D4CAEA009BAF7F /* DWBackupInfoViewController.m */; };
 		2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */; };
 		2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */; };
-		2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431CB22D5279A009BAF7F /* DWBackupInfoHeaderView.m */; };
 		2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431D322D52F67009BAF7F /* DWInfoTextCell.m */; };
 		2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431D422D52F67009BAF7F /* DWInfoTextCell.xib */; };
 		2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */; };
@@ -1057,16 +1053,9 @@
 		2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BiometricAuth.storyboard; sourceTree = "<group>"; };
 		2A44314A22CF8801009BAF7F /* DWBiometricAuthModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBiometricAuthModel.h; sourceTree = "<group>"; };
 		2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBiometricAuthModel.m; sourceTree = "<group>"; };
-		2A4431BA22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletInfoViewController.h; sourceTree = "<group>"; };
-		2A4431BB22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSecureWalletInfoViewController.m; sourceTree = "<group>"; };
-		2A4431BD22D4ACDB009BAF7F /* SecureWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SecureWalletInfo.storyboard; sourceTree = "<group>"; };
-		2A4431C122D4CAEA009BAF7F /* DWBackupInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBackupInfoViewController.h; sourceTree = "<group>"; };
-		2A4431C222D4CAEA009BAF7F /* DWBackupInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBackupInfoViewController.m; sourceTree = "<group>"; };
 		2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BackupInfo.storyboard; sourceTree = "<group>"; };
 		2A4431C622D4D92A009BAF7F /* DWCenteredTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCenteredTableView.h; sourceTree = "<group>"; };
 		2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCenteredTableView.m; sourceTree = "<group>"; };
-		2A4431CA22D5279A009BAF7F /* DWBackupInfoHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBackupInfoHeaderView.h; sourceTree = "<group>"; };
-		2A4431CB22D5279A009BAF7F /* DWBackupInfoHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBackupInfoHeaderView.m; sourceTree = "<group>"; };
 		2A4431D222D52F67009BAF7F /* DWInfoTextCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInfoTextCell.h; sourceTree = "<group>"; };
 		2A4431D322D52F67009BAF7F /* DWInfoTextCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInfoTextCell.m; sourceTree = "<group>"; };
 		2A4431D422D52F67009BAF7F /* DWInfoTextCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWInfoTextCell.xib; sourceTree = "<group>"; };
@@ -2957,22 +2946,10 @@
 			path = BiometricAuth;
 			sourceTree = "<group>";
 		};
-		2A4431B922D4ACAC009BAF7F /* SecureWalletInfo */ = {
-			isa = PBXGroup;
-			children = (
-				2A4431BA22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.h */,
-				2A4431BB22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m */,
-				2A4431BD22D4ACDB009BAF7F /* SecureWalletInfo.storyboard */,
-			);
-			path = SecureWalletInfo;
-			sourceTree = "<group>";
-		};
 		2A4431C022D4CAC6009BAF7F /* BackupInfo */ = {
 			isa = PBXGroup;
 			children = (
 				2A4431C922D52776009BAF7F /* Views */,
-				2A4431C122D4CAEA009BAF7F /* DWBackupInfoViewController.h */,
-				2A4431C222D4CAEA009BAF7F /* DWBackupInfoViewController.m */,
 				C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */,
 				2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */,
 			);
@@ -2982,8 +2959,6 @@
 		2A4431C922D52776009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2A4431CA22D5279A009BAF7F /* DWBackupInfoHeaderView.h */,
-				2A4431CB22D5279A009BAF7F /* DWBackupInfoHeaderView.m */,
 				C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */,
 				C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */,
 			);
@@ -3751,7 +3726,6 @@
 			isa = PBXGroup;
 			children = (
 				2A4431C022D4CAC6009BAF7F /* BackupInfo */,
-				2A4431B922D4ACAC009BAF7F /* SecureWalletInfo */,
 				2A4431D822D67592009BAF7F /* Seed */,
 				2AD1CE9A22DFBA0900C99324 /* VerifiedSuccessfully */,
 				2AD1CE8122DC9B3900C99324 /* Verify */,
@@ -6087,7 +6061,6 @@
 				2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */,
 				2ACCD865231959CD00A96B62 /* AmountPreviewView.xib in Resources */,
 				474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */,
-				2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */,
 				47083B3829893F4B0010AF71 /* CNCreateAccountCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6440,7 +6413,6 @@
 				2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,
 				2AEC5CB52493D87D00F4A689 /* DWNotificationsProvider.m in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
-				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				4751137528DAF28800223B77 /* UIAssembly.swift in Sources */,
 				47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */,
@@ -6741,7 +6713,6 @@
 				2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */,
 				47AE8BA628BFADD900490F5E /* AtmDAO.swift in Sources */,
 				475AE2B92974348F009A1055 /* App.swift in Sources */,
-				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
 				114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */,
@@ -6771,7 +6742,6 @@
 				47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
-				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
 				47081199298CF57D003FCA3D /* TransactionListDataSource.swift in Sources */,
 				2A5BD5952451DCAF00688A8D /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
