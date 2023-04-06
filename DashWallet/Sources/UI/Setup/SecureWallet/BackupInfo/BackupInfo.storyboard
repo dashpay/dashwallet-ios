@@ -12,7 +12,7 @@
         <!--Backup Info View Controller-->
         <scene sceneID="Jqf-H0-T3s">
             <objects>
-                <viewController storyboardIdentifier="BackupInfoViewController" id="3GU-qr-r9Q" customClass="BackupInfoViewController" customModule="dashwallet" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BackupInfoViewController" id="3GU-qr-r9Q" customClass="DWBackupInfoViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="mc3-7F-Yiu">
                         <rect key="frame" x="0.0" y="0.0" width="428" height="926"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -95,6 +95,7 @@
                     </view>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
+                        <outlet property="bottomButtonStack" destination="bQK-tL-fgR" id="Waj-yq-nIt"/>
                         <outlet property="contentView" destination="Aj4-Tx-tWa" id="lHx-O7-c86"/>
                         <outlet property="showRecoveryPhraseButton" destination="UmV-EH-WTh" id="Nkh-pF-xUv"/>
                         <outlet property="skipButton" destination="mJ5-eS-z4U" id="8WW-iJ-99P"/>

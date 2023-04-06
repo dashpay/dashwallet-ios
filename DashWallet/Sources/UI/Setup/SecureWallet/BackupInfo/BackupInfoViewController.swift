@@ -65,6 +65,7 @@ final class BackupInfoViewController: BaseViewController {
     
     @IBOutlet private var contentView: UIStackView!
     
+    @IBOutlet private var bottomButtonStack: UIStackView!
     @IBOutlet private var showRecoveryPhraseButton: UIButton!
     @IBOutlet private var skipButton: UIButton!
    
@@ -156,15 +157,16 @@ extension BackupInfoViewController {
         
         skipButton.isHidden = isSkipButtonHidden
         reloadCloseButton()
+        reloadView()
     }
     
     private func reloadView() {
         if isAllActionHidden {
             hideCloseButton()
-            contentView.isHidden = true
+            bottomButtonStack.isHidden = true
         }else{
             showCloseButtonIfNeeded()
-            contentView.isHidden = false
+            bottomButtonStack.isHidden = false
         }
     }
     
@@ -215,5 +217,5 @@ extension BackupInfoViewController {
 }
 
 extension BackupInfoViewController: NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { true }
+    var isBackButtonHidden: Bool { isAllActionHidden == false }
 }
