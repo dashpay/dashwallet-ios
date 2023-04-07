@@ -40,7 +40,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"
-#import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "DWSecureWalletDelegate.h"
@@ -48,11 +47,8 @@ static const bool _SNAPSHOT = 0;
 #import "NSData+Dash.h"
 // end CrowdNode
 
-#import "DWUpholdViewController.h"
-#import "DWUpholdClient.h"
-#import "DWUpholdCardObject.h"
+
 #import "DWBaseActionButtonViewController.h"
-#import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
@@ -77,6 +73,11 @@ static const bool _SNAPSHOT = 0;
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
 
+
+//MARK: Backup Wallet
+#import "DWBackupSeedPhraseViewController.h"
+#import "DWSecureWalletDelegate.h"
+
 //MARK: Payment flow
 #import "DWQRScanModel.h"
 #import "DWPayOptionModel.h"
@@ -90,6 +91,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWRequestAmountViewController.h"
 #import "UIViewController+DWShareReceiveInfo.h"
 #import "DWImportWalletInfoViewController.h"
+
 
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"

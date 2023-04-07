@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import UIKit
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWBackupInfoHeaderView : UIView
-
-@property (nonatomic, assign) BOOL descriptionIsHidden;
-
-@end
-
-NS_ASSUME_NONNULL_END
+final class BackupInfoItemView: UIView {
+    @IBOutlet var iconView: UIImageView!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var descriptionLabel: UILabel!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        titleLabel.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.semibold.rawValue)
+    }
+}

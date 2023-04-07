@@ -45,3 +45,10 @@ extension UINib {
         return view as! T
     }
 }
+
+extension UIView {
+    static func view() -> Self {
+        UINib.view(Self.self)
+    }
+}
+

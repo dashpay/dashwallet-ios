@@ -18,7 +18,6 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
-#import "DWSecureWalletInfoViewController.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DWSecureWalletInfoViewController *controller = [DWSecureWalletInfoViewController controller];
-    controller.type = DWSecureWalletInfoType_Reminder;
+    
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith:DWSecureWalletInfoType_Reminder];
     controller.delegate = self;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
@@ -41,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
                          if ([self.presentedViewController isKindOfClass:UINavigationController.class]) {
                              UIViewController *controller =
                                  [(UINavigationController *)self.presentedViewController topViewController];
-                             if ([controller isKindOfClass:DWSecureWalletInfoViewController.class]) {
+                             if ([controller isKindOfClass:DWBackupInfoViewController.class]) {
                                  [self.model walletBackupReminderWasShown];
                              }
                          }
