@@ -69,6 +69,16 @@ class BaseNavigationController: UINavigationController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    @IBAction func cancelButtonAction() {
+        dismiss(animated: true)
+    }
+    
+    @objc
+    public func setCancelButtonHidden(_ hidden: Bool) {
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonAction))
+        topViewController?.navigationItem.rightBarButtonItem = cancelButton
+    }
+    
     override func responds(to aSelector: Selector!) -> Bool {
         super.responds(to: aSelector) || (_delegate?.responds(to: aSelector!) ?? false)
     }

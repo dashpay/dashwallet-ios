@@ -75,4 +75,5 @@ post_install do |installer|
   # update info about current DashSync version
   # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
   system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
+
 end

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -26,7 +26,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <button opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="244" placeholderIntrinsicHeight="244" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CFm-0T-X0h" userLabel="QR Image Button">
-                    <rect key="frame" x="65.5" y="0.0" width="244" height="244"/>
+                    <rect key="frame" x="70" y="0.0" width="235" height="235"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="CFm-0T-X0h" secondAttribute="height" id="giw-Or-VGJ"/>
@@ -36,31 +36,31 @@
                     </connections>
                 </button>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="dVz-mV-rGM">
-                    <rect key="frame" x="0.0" y="244" width="375" height="148"/>
+                    <rect key="frame" x="0.0" y="235" width="375" height="123"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4g6-NM-jLC">
-                            <rect key="frame" x="0.0" y="0.0" width="375" height="20.5"/>
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.0"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TFY-uF-WZE" userLabel="Spacer 2">
-                            <rect key="frame" x="0.0" y="32.5" width="375" height="5.5"/>
+                            <rect key="frame" x="0.0" y="12" width="375" height="1"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="1" id="QYV-jb-A0N"/>
                             </constraints>
                         </view>
                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="CV1-lw-AkU">
-                            <rect key="frame" x="0.0" y="50" width="375" height="44"/>
+                            <rect key="frame" x="0.0" y="25" width="375" height="44"/>
                             <subviews>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="p3g-zW-TmS" userLabel="Specify Amount Button" customClass="DWActionButton">
                                     <rect key="frame" x="0.0" y="0.0" width="183.5" height="44"/>
+                                    <viewLayoutGuide key="safeArea" id="CF7-eO-IBW"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="44" id="OUI-Pe-6PC"/>
                                     </constraints>
-                                    <viewLayoutGuide key="safeArea" id="CF7-eO-IBW"/>
                                     <userDefinedRuntimeAttributes>
                                         <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="NO"/>
                                         <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
@@ -71,11 +71,11 @@
                                 </view>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gvl-JP-3Ne" userLabel="Second Button" customClass="DWActionButton">
                                     <rect key="frame" x="191.5" y="0.0" width="183.5" height="44"/>
+                                    <viewLayoutGuide key="safeArea" id="nli-sl-H9E"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="44" id="rnu-t8-kgV"/>
                                     </constraints>
-                                    <viewLayoutGuide key="safeArea" id="nli-sl-H9E"/>
                                     <userDefinedRuntimeAttributes>
                                         <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="NO"/>
                                         <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
@@ -86,14 +86,14 @@
                                 </view>
                             </subviews>
                         </stackView>
-                        <button opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nPN-d1-Jpj" customClass="DWButton">
-                            <rect key="frame" x="0.0" y="106" width="375" height="42"/>
+                        <button opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nPN-d1-Jpj" customClass="DWButton">
+                            <rect key="frame" x="0.0" y="81" width="375" height="42"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="42" id="96N-48-lEb"/>
                             </constraints>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
                             <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="-8" maxY="0.0"/>
-                            <state key="normal" image="icon_copy">
+                            <state key="normal" title="sdfds" image="icon_copy">
                                 <color key="titleColor" name="TertiaryTextColor"/>
                             </state>
                             <connections>
@@ -103,6 +103,7 @@
                     </subviews>
                 </stackView>
             </subviews>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstItem="dVz-mV-rGM" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="BLV-Xk-BQ6"/>
@@ -115,14 +116,13 @@
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <point key="canvasLocation" x="-87.681159420289859" y="-178.125"/>
         </view>
     </objects>
     <resources>
         <image name="icon_copy" width="14" height="14"/>
         <namedColor name="TertiaryTextColor">
-            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.45882352941176469" green="0.50196078431372548" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

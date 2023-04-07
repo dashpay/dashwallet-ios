@@ -32,8 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWRequestAmountContentViewDelegate> delegate;
 
-- (void)viewDidAppear;
-
 - (instancetype)initWithModel:(id<DWReceiveModelProtocol>)model;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;

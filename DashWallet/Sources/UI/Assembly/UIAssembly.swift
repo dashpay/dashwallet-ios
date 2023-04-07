@@ -21,13 +21,19 @@ func sb(_ name: String) -> UIStoryboard {
     UIStoryboard(name: name, bundle: .main)
 }
 
-func vc<T>(_ name: T.Type, from storyboard: UIStoryboard) -> T {
+func vc<T: UIViewController>(_ name: T.Type, from storyboard: UIStoryboard) -> T {
     viewController(name, from: storyboard)
 }
 
-func viewController<T>(_ name: T.Type, from storyBoard: UIStoryboard) -> T {
+func viewController<T: UIViewController>(_ name: T.Type, from storyBoard: UIStoryboard) -> T {
     let identifier = String(String(describing: type(of: name)).split(separator: ".").first!)
     return storyBoard.instantiateViewController(withIdentifier: identifier) as! T
+}
+
+extension UIStoryboard {
+    func vc<T: UIViewController>(_ name: T.Type) -> T {
+        viewController(name, from: self)
+    }
 }
 
 extension UINib {
@@ -45,3 +51,4 @@ extension UIView {
         UINib.view(Self.self)
     }
 }
+

@@ -17,13 +17,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "dashwallet-Swift.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWReceiveModelProtocol;
 
-@interface DWQuickReceiveViewController : UIViewController <DWNavigationFullscreenable>
+@interface DWQuickReceiveViewController : UIViewController
 
 + (UIViewController *)controllerWithModel:(id<DWReceiveModelProtocol>)receiveModel;
 

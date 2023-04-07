@@ -45,7 +45,6 @@
 		1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */; };
 		114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */; };
 		1147687E294B789800FB1EEE /* CrowdNodePortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */; };
-		1148CED529D57E0200D0C136 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1148CED429D57E0200D0C136 /* SpendableTransaction.swift */; };
 		114CFED0296469D9005F421B /* CrowdNodeDepositTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */; };
 		114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFED1296489CD005F421B /* MinimumDepositBanner.swift */; };
 		114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B529812730009A124C /* OnlineAccountDetailsController.swift */; };
@@ -292,21 +291,17 @@
 		2A885FD02449F37A00B9F679 /* DWUserSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FCF2449F37A00B9F679 /* DWUserSearchModel.m */; };
 		2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
-		2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */; };
 		2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */; };
 		2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */; };
 		2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */; };
 		2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */; };
 		2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
-		2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */; };
 		2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */; };
-		2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */; };
-		2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */; };
+		2A8B9E6222FF712000FF8653 /* PayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6022FF712000FF8653 /* PayTableViewCell.xib */; };
 		2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6422FFE43500FF8653 /* DWPayModel.m */; };
 		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
 		2A8B9E6C23029D2B00FF8653 /* DWPaymentInputBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */; };
 		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */; };
-		2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */; };
 		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
 		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
 		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
@@ -411,7 +406,6 @@
 		2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD84C23180E7E00A96B62 /* DWPaymentOutput.m */; };
 		2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8582319399100A96B62 /* DWRequestAmountViewController.m */; };
 		2ACCD85D231939FE00A96B62 /* DWRequestAmountContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD85C231939FE00A96B62 /* DWRequestAmountContentView.m */; };
-		2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */; };
 		2ACCD86323193C1E00A96B62 /* DWReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */; };
 		2ACCD865231959CD00A96B62 /* AmountPreviewView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2ACCD864231959CD00A96B62 /* AmountPreviewView.xib */; };
 		2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */; };
@@ -708,11 +702,22 @@
 		C3DAD2CC24757A210001624F /* DWContactsSearchDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CB24757A210001624F /* DWContactsSearchDataSourceObject.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C3DAD2D52476886D0001624F /* DWContactsSearchInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */; };
+		C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
+		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
 		C94F5E8E29D404850034FD57 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C94F5E9029D4060A0034FD57 /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */; };
+		C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
+		C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */; };
+		C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */; };
+		C9F42FA629DC092B001BC549 /* ReceiveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */; };
+		C9F42FA929DC09CF001BC549 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA829DC09CF001BC549 /* Style.swift */; };
+		C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */; };
+		C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */; };
+		C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyView.swift */; };
+		C9F42FB829DFC507001BC549 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB729DFC506001BC549 /* SpendableTransaction.swift */; };
 		C9F42FB229DD5141001BC549 /* BackupInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */; };
 		C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */; };
 		C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
@@ -854,7 +859,6 @@
 		1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToCrowdNodeViewController.swift; sourceTree = "<group>"; };
 		114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiedSuccessfullyViewController.swift; sourceTree = "<group>"; };
 		1147687D294B789800FB1EEE /* CrowdNodePortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalViewController.swift; sourceTree = "<group>"; };
-		1148CED429D57E0200D0C136 /* SpendableTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
 		114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeDepositTx.swift; sourceTree = "<group>"; };
 		114CFED1296489CD005F421B /* MinimumDepositBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimumDepositBanner.swift; sourceTree = "<group>"; };
 		114D16B529812730009A124C /* OnlineAccountDetailsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountDetailsController.swift; sourceTree = "<group>"; };
@@ -1295,8 +1299,6 @@
 		2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWFindConstraints.m"; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
-		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
-		2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentsViewController.m; sourceTree = "<group>"; };
 		2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Payments.storyboard; sourceTree = "<group>"; };
 		2A8B9E3E22FD75C000FF8653 /* DWSegmentedControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentedControl.h; sourceTree = "<group>"; };
 		2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentedControl.m; sourceTree = "<group>"; };
@@ -1307,12 +1309,8 @@
 		2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWOverlapControl.m; sourceTree = "<group>"; };
 		2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWControllerCollectionView.h; sourceTree = "<group>"; };
 		2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWControllerCollectionView.m; sourceTree = "<group>"; };
-		2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayViewController.h; sourceTree = "<group>"; };
-		2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayViewController.m; sourceTree = "<group>"; };
 		2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Pay.storyboard; sourceTree = "<group>"; };
-		2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayTableViewCell.h; sourceTree = "<group>"; };
-		2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayTableViewCell.m; sourceTree = "<group>"; };
-		2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWPayTableViewCell.xib; sourceTree = "<group>"; };
+		2A8B9E6022FF712000FF8653 /* PayTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PayTableViewCell.xib; sourceTree = "<group>"; };
 		2A8B9E6322FFE43500FF8653 /* DWPayModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayModel.h; sourceTree = "<group>"; };
 		2A8B9E6422FFE43500FF8653 /* DWPayModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayModel.m; sourceTree = "<group>"; };
 		2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayOptionModel.h; sourceTree = "<group>"; };
@@ -1321,13 +1319,10 @@
 		2A8B9E6B23029D2B00FF8653 /* DWPaymentInputBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentInputBuilder.m; sourceTree = "<group>"; };
 		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressExtractor.m; sourceTree = "<group>"; };
 		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressExtractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressExtractor.h; sourceTree = "<group>"; };
-		2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
-		2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveViewController.m; sourceTree = "<group>"; };
 		2A8B9E782302E67400FF8653 /* DWReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModel.h; sourceTree = "<group>"; };
 		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
 		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
 		2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppGroupOptions.m; sourceTree = "<group>"; };
-		2A8C24B02333659100000D43 /* DWReceiveViewType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewType.h; sourceTree = "<group>"; };
 		2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQuickReceiveViewController.h; sourceTree = "<group>"; };
 		2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQuickReceiveViewController.m; sourceTree = "<group>"; };
 		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
@@ -1555,8 +1550,6 @@
 		2ACCD8582319399100A96B62 /* DWRequestAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestAmountViewController.m; sourceTree = "<group>"; };
 		2ACCD85B231939FE00A96B62 /* DWRequestAmountContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRequestAmountContentView.h; sourceTree = "<group>"; };
 		2ACCD85C231939FE00A96B62 /* DWRequestAmountContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestAmountContentView.m; sourceTree = "<group>"; };
-		2ACCD85F23193BE300A96B62 /* DWReceiveContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveContentView.h; sourceTree = "<group>"; };
-		2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveContentView.m; sourceTree = "<group>"; };
 		2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWReceiveContentView.xib; sourceTree = "<group>"; };
 		2ACCD864231959CD00A96B62 /* AmountPreviewView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AmountPreviewView.xib; sourceTree = "<group>"; };
 		2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWShareReceiveInfo.h"; sourceTree = "<group>"; };
@@ -1990,12 +1983,23 @@
 		C3DAD2D32476886D0001624F /* DWContactsSearchInfoHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchInfoHeaderView.h; sourceTree = "<group>"; };
 		C3DAD2D42476886D0001624F /* DWContactsSearchInfoHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchInfoHeaderView.m; sourceTree = "<group>"; };
 		C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C917023E29D44E0B008C034D /* SendReceivePageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendReceivePageController.swift; sourceTree = "<group>"; };
+		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
 		C94F5E8D29D404850034FD57 /* ShortcutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCell.swift; sourceTree = "<group>"; };
 		C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsView.swift; sourceTree = "<group>"; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
+		C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayableViewController.swift; sourceTree = "<group>"; };
+		C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayTableViewCell.swift; sourceTree = "<group>"; };
+		C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsViewController.swift; sourceTree = "<group>"; };
+		C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveViewController.swift; sourceTree = "<group>"; };
+		C9F42FA829DC09CF001BC549 /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
+		C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveContentView.swift; sourceTree = "<group>"; };
+		C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReceiveContentView.xib; sourceTree = "<group>"; };
+		C9F42FAF29DC27F4001BC549 /* EmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyView.swift; sourceTree = "<group>"; };
+		C9F42FB729DFC506001BC549 /* SpendableTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
 		C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoViewController.swift; sourceTree = "<group>"; };
 		C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoItemView.swift; sourceTree = "<group>"; };
 		C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BackupInfoItemView.xib; sourceTree = "<group>"; };
@@ -2307,6 +2311,7 @@
 		117ED4A628ED66A2006E3EE4 /* TxFilters */ = {
 			isa = PBXGroup;
 			children = (
+				C9F42FB729DFC506001BC549 /* SpendableTransaction.swift */,
 				117ED4A728ED66F9006E3EE4 /* TransactionFilter.swift */,
 				119E8D092905413F00D406C1 /* TransactionWrapper.swift */,
 				119E8D052905200300D406C1 /* CoinsToAddressTxFilter.swift */,
@@ -2320,7 +2325,6 @@
 				111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */,
 				111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */,
 				1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */,
-				1148CED429D57E0200D0C136 /* SpendableTransaction.swift */,
 			);
 			path = TxFilters;
 			sourceTree = "<group>";
@@ -2779,6 +2783,7 @@
 				2ADC9D1A24603C4F001D7C0D /* UISearchBar+DWAdditions.h */,
 				2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */,
 				47AE8C1428C6378E00490F5E /* HairlineView.swift */,
+				C9F42FAF29DC27F4001BC549 /* EmptyView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2881,6 +2886,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				C9F42FA729DC09C6001BC549 /* Style */,
 				11C5F51128E5D0C500F6F135 /* CrowdNode */,
 				47A50F362912D9A800C70123 /* Payment Controller */,
 				4751137228DAF27300223B77 /* Assembly */,
@@ -3460,8 +3466,8 @@
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
-				2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */,
-				2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */,
+				C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */,
+				C917023E29D44E0B008C034D /* SendReceivePageController.swift */,
 				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
 			);
 			path = Payments;
@@ -3498,9 +3504,9 @@
 				2A8B9E5D22FF710A00FF8653 /* Cells */,
 				2ACCD85323191C8500A96B62 /* DWBasePayViewController.h */,
 				2ACCD85423191C8500A96B62 /* DWBasePayViewController.m */,
-				2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */,
-				2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */,
 				2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */,
+				C917024029D462C6008C034D /* PayViewController.swift */,
+				C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */,
 			);
 			path = Pay;
 			sourceTree = "<group>";
@@ -3508,9 +3514,8 @@
 		2A8B9E5D22FF710A00FF8653 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */,
-				2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */,
-				2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */,
+				2A8B9E6022FF712000FF8653 /* PayTableViewCell.xib */,
+				C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -3535,11 +3540,9 @@
 				2ACCD8562319395000A96B62 /* RequestAmount */,
 				2A8B9E772302E66100FF8653 /* Models */,
 				2ACCD85E23193BC200A96B62 /* Views */,
-				2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */,
-				2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */,
+				C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */,
 				2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */,
 				2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */,
-				2A8C24B02333659100000D43 /* DWReceiveViewType.h */,
 			);
 			path = Receive;
 			sourceTree = "<group>";
@@ -4215,9 +4218,9 @@
 		2ACCD85E23193BC200A96B62 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2ACCD85F23193BE300A96B62 /* DWReceiveContentView.h */,
-				2ACCD86023193BE300A96B62 /* DWReceiveContentView.m */,
 				2ACCD86223193C1E00A96B62 /* DWReceiveContentView.xib */,
+				C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */,
+				C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5715,6 +5718,14 @@
 			path = Base;
 			sourceTree = "<group>";
 		};
+		C9F42FA729DC09C6001BC549 /* Style */ = {
+			isa = PBXGroup;
+			children = (
+				C9F42FA829DC09CF001BC549 /* Style.swift */,
+			);
+			path = Style;
+			sourceTree = "<group>";
+		};
 		EBFC2EA47915CD4F5BA81564 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -6024,7 +6035,7 @@
 				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
-				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
+				2A8B9E6222FF712000FF8653 /* PayTableViewCell.xib in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
@@ -6038,6 +6049,7 @@
 				2A307CB822E7006F00A18347 /* DWBalanceView.xib in Resources */,
 				C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */,
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
+				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
 				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
@@ -6399,6 +6411,7 @@
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
 				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
 				2AE8B66423CF09000016F221 /* DWConfirmUsernameViewController.m in Sources */,
+				C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				4751136C28D9A3DB00223B77 /* PortalViewController.swift in Sources */,
@@ -6473,7 +6486,6 @@
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
 				111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */,
-				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */,
 				2A7AF3152480DA51001D74F9 /* DWIncomingFetchedDataSource.m in Sources */,
 				4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */,
@@ -6501,8 +6513,8 @@
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
 				4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */,
+				C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */,
 				47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */,
-				2ACCD86123193BE300A96B62 /* DWReceiveContentView.m in Sources */,
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
 				4759D512292FD6F3002F20DC /* DWBasePayViewController.m in Sources */,
 				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
@@ -6520,6 +6532,7 @@
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
+				C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
@@ -6605,6 +6618,7 @@
 				4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
+				C9F42FA629DC092B001BC549 /* ReceiveViewController.swift in Sources */,
 				118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */,
 				2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */,
 				2AEC5CBE24940EC200F4A689 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
@@ -6639,7 +6653,6 @@
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				47E94B97296D7D5B000FE68E /* CustodialSwapsViewController.swift in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
-				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
@@ -6735,6 +6748,7 @@
 				47A2A2EC293E618600938DB7 /* CBUser.swift in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				47A2A2EE293E622700938DB7 /* CBSecureTokenService.swift in Sources */,
+				C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */,
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
@@ -6764,6 +6778,7 @@
 				11AE3DD62997AA36000856EE /* MessageStatus.swift in Sources */,
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
+				C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				2A80F3D924DC55CD003E3B1E /* DWUserProfileSendRequestCell.m in Sources */,
 				478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */,
@@ -6795,7 +6810,6 @@
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A5BD5982451DD0700688A8D /* DWMaxLengthUsernameValidationRule.m in Sources */,
-				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				0F6EDFC728C896BD000427E7 /* CoinbaseSwapeTradeResponse.swift in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				4774DCDF28F43AB4008CF87D /* ServiceItem.swift in Sources */,
@@ -6857,6 +6871,8 @@
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				2A885FCC2449F08700B9F679 /* DWUserSearchResultViewController.m in Sources */,
 				2A7AF34C24823315001D74F9 /* DWDPGenericStatusItemView.m in Sources */,
+				C9F42FA929DC09CF001BC549 /* Style.swift in Sources */,
+				C917024129D462C6008C034D /* PayViewController.swift in Sources */,
 				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
@@ -6909,7 +6925,6 @@
 				47E4F7C7297596D9006BEA68 /* DSChain+DashWallet.m in Sources */,
 				1193FF3B2961960B004EA8D7 /* FromLabel.swift in Sources */,
 				2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */,
-				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				11B8449A28F6D5480082770C /* SingleInputAddressSelector.swift in Sources */,
 				0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
@@ -6933,11 +6948,13 @@
 				47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */,
 				2A7AF37B2482756D001D74F9 /* DWDPPendingRequestObject.m in Sources */,
 				2A80F39524D86201003E3B1E /* DWModalUserProfileViewController.m in Sources */,
+				C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
 				4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
+				C9F42FB829DFC507001BC549 /* SpendableTransaction.swift in Sources */,
 				11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */,
 				2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */,
 				0F36937E2919A5DB007F4E91 /* TwoFactorAuthViewController.swift in Sources */,
@@ -6958,7 +6975,6 @@
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				47AE8BF828C1306000490F5E /* AtmDataProvider.swift in Sources */,
 				110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */,
-				1148CED529D57E0200D0C136 /* SpendableTransaction.swift in Sources */,
 				477A963E292CD27D0013605B /* NetworkUnavailableView.swift in Sources */,
 				2A8DBAAF2630CC2D009094BD /* DWDerivationPathKeysItemObject.m in Sources */,
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
