@@ -27,11 +27,11 @@
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWPayModelProtocol.h"
-#import "DWPaymentsViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
 #import "DWUpholdViewController.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate>

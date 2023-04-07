@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWBaseReceiveModel.h"
-#import "DWReceiveModelProtocol.h"
+import UIKit
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWReceiveModel : DWBaseReceiveModel <DWReceiveModelProtocol>
-@property (nonatomic, weak) id<DWReceiveModelDelegate> delegate; //NOTE: Temp solution to avoid using mvvm
-@end
-
-NS_ASSUME_NONNULL_END
+final class EmptyView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        backgroundColor = .clear
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        
+        backgroundColor = .clear
+    }
+}

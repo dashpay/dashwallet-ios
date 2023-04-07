@@ -202,6 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
             self.paymentRequest = paymentRequest;
             self.qrCodeImage = qrCodeImage;
             self.paymentAddress = paymentAddress;
+            [self.delegate receivingInfoDidUpdate];
         });
     });
 }
