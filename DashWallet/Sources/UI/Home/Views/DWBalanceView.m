@@ -23,15 +23,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const BalanceButtonMinHeight(void) {
-    if (IS_IPHONE_5_OR_LESS) {
-        return 80.0;
-    }
-    else {
-        return 120.0;
-    }
-}
-
 static NSTimeInterval const ANIMATION_DURATION = 0.3;
 
 @interface DWBalanceView ()
@@ -93,7 +84,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
     self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    self.balanceViewHeightContraint.constant = BalanceButtonMinHeight();
+    self.balanceViewHeightContraint.constant = 120.0;
 
     UILongPressGestureRecognizer *recognizer =
         [[UILongPressGestureRecognizer alloc] initWithTarget:self

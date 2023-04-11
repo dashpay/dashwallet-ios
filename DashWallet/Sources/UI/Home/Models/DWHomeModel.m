@@ -56,7 +56,7 @@ static BOOL IsJailbroken(void) {
     return jailbroken;
 }
 
-@interface DWHomeModel () <DWShortcutsModelDataSource>
+@interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
@@ -578,6 +578,18 @@ static BOOL IsJailbroken(void) {
     }
 
     return [mutableTransactions copy];
+}
+
+- (NSString *)supplementaryAmountString {
+    return [self.balanceModel fiatAmountString];
+}
+
+- (NSString *)mainAmountString {
+    return [self.balanceModel mainAmountString];
+}
+
+- (BOOL)isBalanceHidden {
+    return self.balanceDisplayOptions.balanceHidden;
 }
 
 @end

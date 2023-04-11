@@ -27,12 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
-@interface DWHomeHeaderView () <DWBalanceViewDelegate,
+@interface DWHomeHeaderView () <DWHomeBalanceViewDelegate,
                                 DWShortcutsViewDelegate,
                                 DWSyncViewDelegate>
 
 @property (readonly, nonatomic, strong) DWDashPayProfileView *profileView;
-@property (readonly, nonatomic, strong) DWBalanceView *balanceView;
+@property (readonly, nonatomic, strong) DWHomeBalanceView *balanceView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
 @property (readonly, nonatomic, strong) ShortcutsView *shortcutsView;
 @property (readonly, nonatomic, strong) UIStackView *stackView;
@@ -49,7 +49,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
         [profileView addTarget:self action:@selector(profileViewAction:) forControlEvents:UIControlEventTouchUpInside];
         _profileView = profileView;
 
-        DWBalanceView *balanceView = [[DWBalanceView alloc] initWithFrame:CGRectZero];
+        DWHomeBalanceView *balanceView = [[DWHomeBalanceView alloc] initWithFrame:CGRectZero];
         balanceView.delegate = self;
         _balanceView = balanceView;
 
@@ -77,6 +77,16 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
         // KVO
 
+        [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
+                      with:^(typeof(self) self, id value) {
+                        [self.balanceView reloadData];
+                      }];
+        
+        [self mvvm_observe:DW_KEYPATH(self, model.balanceDisplayOptions.balanceHidden)
+                      with:^(typeof(self) self, NSNumber *value) {
+                        [self.balanceView hideBalance: self.model.balanceDisplayOptions.balanceHidden];
+                      }];
+
         [self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
                       with:^(typeof(self) self, NSNumber *value) {
                           if (!value) {
@@ -85,6 +95,8 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
                           const DWSyncModelState state = self.model.syncModel.state;
 
+                          self.balanceView.state = state == DWSyncModelState_Syncing ? DWHomeBalanceViewState_Syncing : DWHomeBalanceViewState_Default;
+            
                           [self.syncView setSyncState:state];
 
                           if (state == DWSyncModelState_SyncFailed || state == DWSyncModelState_NoConnection) {
@@ -116,9 +128,10 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 - (void)setModel:(nullable id<DWHomeProtocol>)model {
     _model = model;
 
-    self.balanceView.model = model;
     self.shortcutsView.model = model.shortcutsModel;
     [self updateProfileView];
+    
+    self.balanceView.dataSource = model;
 }
 
 - (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
@@ -138,6 +151,12 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
     DWShortcutAction *action = [DWShortcutAction actionWithType:DWShortcutActionTypeLocalCurrency];
     [self.shortcutsDelegate shortcutsView:self.balanceView didSelectAction:action sender:sender];
 }
+
+- (void)balanceViewDidToggleBalanceVisibility:(DWHomeBalanceView *)view {
+    id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions = self.model.balanceDisplayOptions;
+    balanceDisplayOptions.balanceHidden = !balanceDisplayOptions.balanceHidden;
+}
+
 
 #pragma mark - DWShortcutsViewDelegate
 
