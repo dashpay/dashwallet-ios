@@ -17,7 +17,6 @@
 
 #import "DWHomeHeaderView.h"
 
-#import "DWBalanceView.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDashPayProfileView.h"
 #import "DWSyncView.h"
@@ -147,7 +146,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
 #pragma mark - DWBalanceViewDelegate
 
-- (void)balanceView:(DWBalanceView *)view balanceLongPressAction:(UIControl *)sender {
+- (void)balanceView:(DWHomeBalanceView *)view balanceLongPressAction:(UIControl *)sender {
     DWShortcutAction *action = [DWShortcutAction actionWithType:DWShortcutActionTypeLocalCurrency];
     [self.shortcutsDelegate shortcutsView:self.balanceView didSelectAction:action sender:sender];
 }
