@@ -85,6 +85,18 @@ final class HomeBalanceView: UIView {
         
         if !isBalanceHidden && state == .syncing {
             titleString = NSLocalizedString("Syncing Balance", comment: "")
+            
+            titleLabel.alpha = 0.8
+            titleLabel.layer.removeAllAnimations()
+            
+            UIView.animate(withDuration: 0.8,
+                           delay:0.0,
+                           options:[.allowUserInteraction, .curveEaseInOut, .autoreverse, .repeat],
+                           animations: { self.titleLabel.alpha = 0.3 },
+                           completion: nil)
+            
+        }else{
+            titleLabel.layer.removeAllAnimations()
         }
         
         self.titleLabel.text = titleString
@@ -111,17 +123,15 @@ final class HomeBalanceView: UIView {
         backgroundColor = UIColor.dw_background()
         
         titleLabel.font = UIFont.dw_font(forTextStyle: .caption1)
-        titleLabel.textColor = UIColor.white.withAlphaComponent(0.5)
+        titleLabel.textColor = UIColor.white.withAlphaComponent(0.7)
+        titleLabel.alpha = 0.8
         
         eyeSlashImageView.tintColor = UIColor.dw_darkBlue()
         
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapToUnhideLabelTapAction(_:)))
-        
+    
         tapToUnhideLabel.titleLabel?.font = UIFont.dw_font(forTextStyle: .caption1)
         tapToUnhideLabel.setTitle(NSLocalizedString("Tap to hide balance", comment: ""), for: .normal)
         tapToUnhideLabel.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
-        //tapToUnhideLabel.isUserInteractionEnabled = false
-        //tapToUnhideLabel.addGestureRecognizer(tapRecognizer)
         
         let recognizer = UILongPressGestureRecognizer(target: self, action: #selector(balanceLongPressAction(_:)))
         balanceButton.addGestureRecognizer(recognizer)
@@ -139,11 +149,6 @@ final class HomeBalanceView: UIView {
     
     @IBAction
     private func balanceButtonAction(_ sender: UIControl) {
-        delegate?.balanceViewDidToggleBalanceVisibility(self)
-    }
-    
-    @objc
-    private func tapToUnhideLabelTapAction(_ sender: UIControl) {
         delegate?.balanceViewDidToggleBalanceVisibility(self)
     }
     
