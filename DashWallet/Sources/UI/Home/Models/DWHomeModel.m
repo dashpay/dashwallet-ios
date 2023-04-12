@@ -31,7 +31,6 @@
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
-#import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWVersionManager.h"
@@ -115,6 +114,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
+        
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];

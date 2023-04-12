@@ -22,7 +22,6 @@
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
-#import "DWShortcutsModel.h"
 #import "DWSyncModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
 #import "DWTransactionStub.h"
