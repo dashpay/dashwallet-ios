@@ -19,3 +19,4 @@ import Foundation
 
 let stackSpacing: CGFloat = 15.0
 let radius: CGFloat = 12
+let kAnimationDuration: TimeInterval = 0.35

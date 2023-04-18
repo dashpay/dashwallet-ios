@@ -31,12 +31,10 @@ protocol TxUserInfoDAO {
 
 // MARK: - TxUserInfoDAOImpl
 
-@objc
 class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [Data: TxUserInfo] = [:]
 
-    @objc
     func create(dto: TxUserInfo) {
         do {
             let txUserInfo = TxUserInfo.table.insert(or: .replace,
@@ -54,7 +52,6 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         cache[dto.txHash] = dto
     }
 
-    @objc
     func all() -> [TxUserInfo] {
         let txUserInfos = TxUserInfo.table
 
@@ -73,7 +70,6 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return userInfos
     }
 
-    @objc
     func get(by hash: Data) -> TxUserInfo? {
         if let cached = cache[hash] {
             return cached
@@ -94,17 +90,14 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return nil
     }
 
-    @objc
     func update(dto: TxUserInfo) {
         create(dto: dto)
     }
 
-    @objc
     func delete(dto: TxUserInfo) {
         cache[dto.txHash] = nil
     }
 
-    @objc
     func deleteAll() {
         do {
             try db.run(TxUserInfo.table.delete())
@@ -114,11 +107,10 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         }
     }
 
-    @objc static let shared = TxUserInfoDAOImpl()
+    static let shared = TxUserInfoDAOImpl()
 }
 
 extension TxUserInfoDAOImpl {
-    @objc
     func dictionaryOfAllItems() -> [Data: TxUserInfo] {
         _ = all()
         return cache

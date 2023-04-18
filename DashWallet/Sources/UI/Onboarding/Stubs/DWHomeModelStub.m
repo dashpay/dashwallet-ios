@@ -29,7 +29,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub () <DWShortcutsModelDataSource>
+@interface DWHomeModelStub () <DWShortcutsModelDataSource, DWBalanceViewDataSource>
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 
@@ -163,6 +163,18 @@ NS_ASSUME_NONNULL_BEGIN
                                                                 registrationStatus:[self.dashPayModel registrationStatus]];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
+}
+
+- (NSString *)supplementaryAmountString {
+    return [self.balanceModel fiatAmountString];
+}
+
+- (NSString *)mainAmountString {
+    return [self.balanceModel mainAmountString];
+}
+
+- (BOOL)isBalanceHidden {
+    return self.balanceDisplayOptions.balanceHidden;
 }
 
 @end

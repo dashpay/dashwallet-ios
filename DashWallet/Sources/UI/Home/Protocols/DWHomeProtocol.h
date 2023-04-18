@@ -22,6 +22,7 @@
 #import "DWShortcutsProtocol.h"
 #import "DWSyncContainerProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol, DWShortcutsProtocol>
+@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol, DWShortcutsProtocol, DWHomeBalanceViewDataSource>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
