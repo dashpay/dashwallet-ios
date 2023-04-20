@@ -69,8 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
             @autoreleasepool {
                 NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
                                                                       withPassphrase:nil];
-                DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
-                item.detail = key.secretKeyString;
+                NSString *key = [DSKeyManager secretKeyHexString:[self.derivationPath privateKeyAtIndex:index fromSeed:seed]];
+                item.detail = key;
             }
 
             break;
@@ -80,8 +80,8 @@ NS_ASSUME_NONNULL_BEGIN
             @autoreleasepool {
                 NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
                                                                       withPassphrase:nil];
-                DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
-                item.detail = [key serializedPrivateKeyForChain:wallet.chain];
+                NSString *key = [DSKeyManager serializedPrivateKey:[self.derivationPath privateKeyAtIndex:index fromSeed:seed] chainType:wallet.chain.chainType];
+                item.detail = key;
             }
 
             break;
