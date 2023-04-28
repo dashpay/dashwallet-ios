@@ -18,13 +18,17 @@
 import Foundation
 
 struct DerivationPathKeysItem {
-    let info: DerivationPathInfo
+    let title: String
     let value: String
-}
-
-extension DerivationPathKeysItem {
-    var title: String {
-        info.title
+    
+    init(title: String, value: String) {
+        self.title = title
+        self.value = value
+    }
+    
+    init(info: DerivationPathInfo, value: String) {
+        self.title = info.title
+        self.value = value
     }
 }
 

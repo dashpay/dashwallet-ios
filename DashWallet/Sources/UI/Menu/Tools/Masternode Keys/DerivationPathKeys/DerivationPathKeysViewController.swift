@@ -66,6 +66,13 @@ extension DerivationPathKeysViewController: UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        guard let cell = tableView.cellForRow(at: indexPath) as? DerivationPathKeysCell, !cell.item.value.isEmpty else {
+            return
+        }
+        
+        UIPasteboard.general.string = cell.item.value
+        view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {

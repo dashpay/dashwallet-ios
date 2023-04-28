@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,4 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWDerivationPathKeysItem.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@class DSFundsDerivationPath;
-@class DSDerivationPath;
-
-@interface DWExtendedPublicKeysModel : NSObject
-
-@property (readonly, nonatomic, copy) NSArray<DSFundsDerivationPath *> *derivationPaths;
-
-- (id<DWDerivationPathKeysItem>)itemFor:(DSDerivationPath *)derivationPath;
-
-@end
-
-NS_ASSUME_NONNULL_END
+import Foundation

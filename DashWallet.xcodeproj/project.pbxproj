@@ -305,8 +305,6 @@
 		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
 		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
 		2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
-		2A8DBA702630A609009094BD /* DWExtendedPublicKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */; };
-		2A8DBA7A2630A6D6009094BD /* DWExtendedPublicKeysModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8DBA792630A6D6009094BD /* DWExtendedPublicKeysModel.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
@@ -705,6 +703,8 @@
 		C909615B29F6535300002D82 /* DerivationPathKeysHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615A29F6535300002D82 /* DerivationPathKeysHeaderView.swift */; };
 		C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
 		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
+		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
+		C91E919929FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919829FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
@@ -1324,10 +1324,6 @@
 		2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQuickReceiveViewController.h; sourceTree = "<group>"; };
 		2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQuickReceiveViewController.m; sourceTree = "<group>"; };
 		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
-		2A8DBA6E2630A609009094BD /* DWExtendedPublicKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedPublicKeysViewController.h; sourceTree = "<group>"; };
-		2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedPublicKeysViewController.m; sourceTree = "<group>"; };
-		2A8DBA782630A6D6009094BD /* DWExtendedPublicKeysModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedPublicKeysModel.h; sourceTree = "<group>"; };
-		2A8DBA792630A6D6009094BD /* DWExtendedPublicKeysModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedPublicKeysModel.m; sourceTree = "<group>"; };
 		2A8E79B9240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = sk; path = sk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2A8E79BA240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A8E79BB2406772900AA7C3D /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -1981,6 +1977,8 @@
 		C909615A29F6535300002D82 /* DerivationPathKeysHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathKeysHeaderView.swift; sourceTree = "<group>"; };
 		C917023E29D44E0B008C034D /* SendReceivePageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendReceivePageController.swift; sourceTree = "<group>"; };
 		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
+		C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysModel.swift; sourceTree = "<group>"; };
+		C91E919829FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExtendedPublicKeysViewController\U0003.swift"; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
@@ -3565,10 +3563,8 @@
 		2A8DBA772630A6BE009094BD /* ExtendedKeys */ = {
 			isa = PBXGroup;
 			children = (
-				2A8DBA6E2630A609009094BD /* DWExtendedPublicKeysViewController.h */,
-				2A8DBA6F2630A609009094BD /* DWExtendedPublicKeysViewController.m */,
-				2A8DBA782630A6D6009094BD /* DWExtendedPublicKeysModel.h */,
-				2A8DBA792630A6D6009094BD /* DWExtendedPublicKeysModel.m */,
+				C91E919829FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift */,
+				C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */,
 			);
 			path = ExtendedKeys;
 			sourceTree = "<group>";
@@ -6442,6 +6438,7 @@
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
+				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
 				4751CAD5297024EA00F63AC4 /* OrderPreviewViewController.swift in Sources */,
 				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
 				47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */,
@@ -6483,7 +6480,6 @@
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				475AE2BB297434CF009A1055 /* Preferences.swift in Sources */,
 				47083B3629893E700010AF71 /* CNCreateAccountCell.swift in Sources */,
-				2A8DBA7A2630A6D6009094BD /* DWExtendedPublicKeysModel.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
 				111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */,
@@ -6833,7 +6829,6 @@
 				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2AD6E54D2487CE0100B52F14 /* DWContactsDataSourceObject.m in Sources */,
-				2A8DBA702630A609009094BD /* DWExtendedPublicKeysViewController.m in Sources */,
 				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
 				474C7218298A422500475CA6 /* TransactionItemView.swift in Sources */,
 				474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */,
@@ -6906,6 +6901,7 @@
 				47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
+				C91E919929FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */,

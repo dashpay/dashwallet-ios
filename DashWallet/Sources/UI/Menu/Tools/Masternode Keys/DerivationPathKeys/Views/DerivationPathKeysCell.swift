@@ -22,6 +22,8 @@ final class DerivationPathKeysCell: UITableViewCell {
     private var valueLabel: UILabel!
     private var copyButton: UIButton!
     
+    private(set) var item: DerivationPathKeysItem!
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
@@ -34,6 +36,8 @@ final class DerivationPathKeysCell: UITableViewCell {
 
     
     func update(with item: DerivationPathKeysItem) {
+        self.item = item
+        
         nameLabel.text = item.title
         valueLabel.text = item.value
     }
@@ -63,7 +67,7 @@ final class DerivationPathKeysCell: UITableViewCell {
         copyButton.setImage(UIImage(named: "icon_copy_outline"), for: .normal)
         copyButton.translatesAutoresizingMaskIntoConstraints = false
         copyButton.tintColor = .dw_label()
-        
+        copyButton.isUserInteractionEnabled = false
         contentView.addSubview(copyButton)
         
         NSLayoutConstraint.activate([

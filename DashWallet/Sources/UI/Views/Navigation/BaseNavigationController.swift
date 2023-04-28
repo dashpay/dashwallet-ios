@@ -152,10 +152,12 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         var hideNavigationBar = false
         var backButtonTintColor = UIColor.dw_label()
         var prefersLargeTitles = false
+        var largeTitleDisplayMode = UINavigationItem.LargeTitleDisplayMode.automatic;
         
         if let viewController = viewController as? NavigationBarDisplayable {
             hideBackButton = viewController.isBackButtonHidden
             hideNavigationBar = viewController.isNavigationBarHidden
+            
         } else if let vc = viewController as? NavigationFullscreenable {
             hideNavigationBar = vc.requiresNoNavigationBar
         }
@@ -163,6 +165,7 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         if let viewController = viewController as? NavigationBarStyleable {
             backButtonTintColor = viewController.backButtonTintColor
             prefersLargeTitles = viewController.prefersLargeTitles
+            largeTitleDisplayMode = viewController.largeTitleDisplayMode
         }
         
         delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
@@ -186,8 +189,10 @@ extension BaseNavigationController: UINavigationControllerDelegate {
             vc.setNavigationBarAppearance()
         }
 
-        navigationController.navigationBar.prefersLargeTitles = prefersLargeTitles
         navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)
+        navigationController.navigationBar.prefersLargeTitles = prefersLargeTitles
+        
+        viewController.navigationItem.largeTitleDisplayMode = largeTitleDisplayMode
     }
 
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {

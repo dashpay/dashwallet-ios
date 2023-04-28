@@ -19,7 +19,6 @@
 
 #import "BigIntTypes.h"
 #import "DWEnvironment.h"
-#import "DWExtendedPublicKeysViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
 #import "DWToolsMenuModel.h"
@@ -170,6 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showExtendedPublicKeys {
     DWExtendedPublicKeysViewController *controller = [[DWExtendedPublicKeysViewController alloc] init];
+    controller.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
