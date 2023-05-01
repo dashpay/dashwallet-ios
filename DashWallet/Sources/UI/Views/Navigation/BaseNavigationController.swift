@@ -23,6 +23,25 @@ protocol NavigationStackControllable: UIViewController {
     func shouldPopViewController() -> Bool
 }
 
+extension NavigationStackControllable {
+    func shouldPopViewController() -> Bool { true }
+}
+
+// MARK: - NavigationBarDisplayable
+
+protocol NavigationBarStyleable: UIViewController {
+    var backButtonTintColor: UIColor { get }
+    var prefersLargeTitles: Bool { get }
+    var largeTitleDisplayMode: UINavigationItem.LargeTitleDisplayMode { get }
+}
+
+extension NavigationBarStyleable {
+    var backButtonTintColor: UIColor { .dw_label() }
+    var prefersLargeTitles: Bool { false }
+    var largeTitleDisplayMode: UINavigationItem.LargeTitleDisplayMode { .automatic }
+}
+
+
 // MARK: - NavigationBarDisplayable
 
 protocol NavigationBarDisplayable: UIViewController {
@@ -131,21 +150,31 @@ extension BaseNavigationController: UINavigationControllerDelegate {
                               animated: Bool) {
         var hideBackButton = viewController == navigationController.viewControllers.first
         var hideNavigationBar = false
-
+        var backButtonTintColor = UIColor.dw_label()
+        var prefersLargeTitles = false
+        var largeTitleDisplayMode = UINavigationItem.LargeTitleDisplayMode.automatic;
+        
         if let viewController = viewController as? NavigationBarDisplayable {
             hideBackButton = viewController.isBackButtonHidden
             hideNavigationBar = viewController.isNavigationBarHidden
+            
         } else if let vc = viewController as? NavigationFullscreenable {
             hideNavigationBar = vc.requiresNoNavigationBar
         }
 
+        if let viewController = viewController as? NavigationBarStyleable {
+            backButtonTintColor = viewController.backButtonTintColor
+            prefersLargeTitles = viewController.prefersLargeTitles
+            largeTitleDisplayMode = viewController.largeTitleDisplayMode
+        }
+        
         delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
 
         if !hideBackButton && viewController.navigationItem.leftBarButtonItem == nil {
             let backButton = UIButton(type: .custom)
             backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
             backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
-            backButton.tintColor = .dw_label()
+            backButton.tintColor = backButtonTintColor
             backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
             backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
             let item = UIBarButtonItem(customView: backButton)
@@ -155,12 +184,15 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         }
 
         viewController.navigationItem.hidesBackButton = true
-
+        
         if let vc = viewController as? NavigationBarAppearanceCustomizable {
             vc.setNavigationBarAppearance()
         }
 
         navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)
+        navigationController.navigationBar.prefersLargeTitles = prefersLargeTitles
+        
+        viewController.navigationItem.largeTitleDisplayMode = largeTitleDisplayMode
     }
 
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {

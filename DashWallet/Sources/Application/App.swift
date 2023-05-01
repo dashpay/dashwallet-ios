@@ -34,7 +34,7 @@ class AppObjcWrapper: NSObject {
             App.shared.fiatCurrency = newValue
         }
     }
-    
+
     @objc
     class func cleanUp() {
         App.shared.cleanUp()
@@ -47,7 +47,7 @@ class App {
     static func initialize() { }
 
     static let shared = App()
-    
+
     func cleanUp() {
         TxUserInfoDAOImpl.shared.deleteAll()
         AddressUserInfoDAOImpl.shared.deleteAll()

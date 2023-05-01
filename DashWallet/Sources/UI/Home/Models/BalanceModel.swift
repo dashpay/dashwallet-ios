@@ -38,7 +38,7 @@ final class BalanceModel: NSObject {
     func mainAmountString() -> String {
         value.formattedDashAmount
     }
-    
+
     @objc
     func fiatAmountString() -> String {
         CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)

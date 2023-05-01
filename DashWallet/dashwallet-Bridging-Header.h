@@ -20,6 +20,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSPriceOperationProvider.h"
 #import "DSOperation.h"
 #import "DSOperationQueue.h"
+#import "DSDerivationPathFactory.h"
 
 //MARK: DashWallet
 #import "DWActionButton.h"
