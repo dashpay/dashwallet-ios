@@ -154,7 +154,11 @@ static BOOL IsJailbroken(void) {
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
                                  object:nil];
-
+        [notificationCenter addObserver:self
+                               selector:@selector(fiatCurrencyDidChangeNotification)
+                                   name:DWApp.fiatCurrencyDidChangeNotification
+                                 object:nil];
+        
         [self reloadTxDataSource];
 
         NSDate *date = [NSDate new];
@@ -367,6 +371,11 @@ static BOOL IsJailbroken(void) {
 - (void)applicationWillEnterForegroundNotification {
     [self startSyncIfNeeded];
     [self.balanceDisplayOptions hideBalanceIfNeeded];
+}
+
+- (void)fiatCurrencyDidChangeNotification {
+    [self updateBalance];
+    [self reloadTxDataSource];
 }
 
 - (void)syncStateChangedNotification {

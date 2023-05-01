@@ -526,7 +526,6 @@
 		4759D514292FEFFC002F20DC /* ModalNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D513292FEFFB002F20DC /* ModalNavigationController.swift */; };
 		4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D51629300212002F20DC /* ProvideAmountViewController.swift */; };
 		475AE2B92974348F009A1055 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AE2B82974348F009A1055 /* App.swift */; };
-		475AE2BB297434CF009A1055 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AE2BA297434CF009A1055 /* Preferences.swift */; };
 		4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDA28F3FA9C008CF87D /* Coinbase.swift */; };
 		4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */; };
 		4774DCDF28F43AB4008CF87D /* ServiceItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDE28F43AB4008CF87D /* ServiceItem.swift */; };
@@ -1729,7 +1728,6 @@
 		4759D513292FEFFB002F20DC /* ModalNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalNavigationController.swift; sourceTree = "<group>"; };
 		4759D51629300212002F20DC /* ProvideAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvideAmountViewController.swift; sourceTree = "<group>"; };
 		475AE2B82974348F009A1055 /* App.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		475AE2BA297434CF009A1055 /* Preferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		4774DCDA28F3FA9C008CF87D /* Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coinbase.swift; sourceTree = "<group>"; };
 		4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataSource.swift; sourceTree = "<group>"; };
@@ -5312,7 +5310,6 @@
 				471DD1B7290A92CD00E030C8 /* Tools.swift */,
 				478C983B2945801D00FAA0F0 /* Constants.swift */,
 				475AE2B82974348F009A1055 /* App.swift */,
-				475AE2BA297434CF009A1055 /* Preferences.swift */,
 			);
 			path = Application;
 			sourceTree = "<group>";
@@ -6042,7 +6039,6 @@
 				47AE8BB028BFF28700490F5E /* explore.db in Resources */,
 				2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */,
 				0F36937F2919A70B007F4E91 /* Coinbase.storyboard in Resources */,
-				2ACCD86323193C1E00A96B62 /* DWReceiveContentView.xib in Resources */,
 				C3DAD2C9247538AA0001624F /* DWTitleActionHeaderView.xib in Resources */,
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
@@ -6478,7 +6474,6 @@
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				2A7AF36324825A0C001D74F9 /* DWDPUserObject.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
-				475AE2BB297434CF009A1055 /* Preferences.swift in Sources */,
 				47083B3629893E700010AF71 /* CNCreateAccountCell.swift in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
