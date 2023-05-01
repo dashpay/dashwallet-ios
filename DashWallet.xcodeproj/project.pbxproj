@@ -704,7 +704,7 @@
 		C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
 		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
-		C91E919929FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919829FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift */; };
+		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
@@ -1978,7 +1978,7 @@
 		C917023E29D44E0B008C034D /* SendReceivePageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendReceivePageController.swift; sourceTree = "<group>"; };
 		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
 		C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysModel.swift; sourceTree = "<group>"; };
-		C91E919829FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExtendedPublicKeysViewController\U0003.swift"; sourceTree = "<group>"; };
+		C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysViewController.swift; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
@@ -3563,8 +3563,8 @@
 		2A8DBA772630A6BE009094BD /* ExtendedKeys */ = {
 			isa = PBXGroup;
 			children = (
-				C91E919829FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift */,
 				C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */,
+				C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */,
 			);
 			path = ExtendedKeys;
 			sourceTree = "<group>";
@@ -6451,6 +6451,7 @@
 				479DBDDD2995168C00F30AF1 /* Transactions.swift in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
 				4709C315287EA11900B4BD48 /* TxUserInfo.swift in Sources */,
+				C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */,
 				2A7AF3182480E35A001D74F9 /* DWContactsFetchedDataSource.m in Sources */,
 				47AE8BFE28C1306000490F5E /* AtmListViewController.swift in Sources */,
 				47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */,
@@ -6901,7 +6902,6 @@
 				47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
-				C91E919929FBC0BE003E7883 /* ExtendedPublicKeysViewController.swift in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */,
