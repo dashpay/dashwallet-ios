@@ -19,6 +19,7 @@ import UIKit
 
 // MARK: - BalanceViewDataSource
 
+@objc(DWBalanceViewDataSource)
 protocol BalanceViewDataSource: AnyObject {
     var mainAmountString: String { get }
     var supplementaryAmountString: String { get }
@@ -38,7 +39,7 @@ final class BalanceView: UIView {
             reloadView()
         }
     }
-    
+
     public var tint: UIColor? {
         didSet {
             reloadView()
@@ -67,12 +68,15 @@ final class BalanceView: UIView {
 }
 
 extension BalanceView {
+    public func reloadData() {
+        reloadView()
+    }
+
     private func reloadView() {
         let mainAmountString = dataSource?.mainAmountString ?? NumberFormatter.dashFormatter.string(from: 0)!
         let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!
 
         let balanceColor = UIColor.label
-        let font = UIFont.dw_font(forTextStyle: .title1)
         let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: tint ?? balanceColor)
         dashBalanceLabel.attributedText = balanceString
         fiatBalanceLabel.text = supplementaryAmountString
