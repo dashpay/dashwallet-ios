@@ -66,11 +66,11 @@
 			<string>%d transactions</string>
 		</dict>
 	</dict>
-	<key>%d key(s) </key>
+	<key>%d key(s)</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@keys@</string>
-		<key>merchants</key>
+		<key>keys</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
