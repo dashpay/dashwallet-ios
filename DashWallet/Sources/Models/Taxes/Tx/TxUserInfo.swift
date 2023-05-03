@@ -53,17 +53,17 @@ extension TxUserInfoTaxCategory {
 
 // MARK: - TxUserInfo
 
-@objc class TxUserInfo: NSObject {
-    @objc var txHash: Data
-    @objc var taxCategory: TxUserInfoTaxCategory = .unknown
+struct TxUserInfo {
+    var txHash: Data
+    var taxCategory: TxUserInfoTaxCategory = .unknown
 
     var rate: Int?
     var rateCurrency: String?
     var rateMaximumFractionDigits: Int?
 
-    @objc
-    init(hash: Data, taxCategory: TxUserInfoTaxCategory) {
-        txHash = hash
+    init(txHash: Data, taxCategory: TxUserInfoTaxCategory) {
+        self.txHash = txHash
+        self.taxCategory = taxCategory
     }
 
     init(row: Row) {
@@ -72,24 +72,20 @@ extension TxUserInfoTaxCategory {
         rate = row[TxUserInfo.txRateColumn]
         rateCurrency = row[TxUserInfo.txRateCurrencyCodeColumn]
         rateMaximumFractionDigits = row[TxUserInfo.txRateMaximumFractionDigitsColumn]
-        super.init()
     }
 
-    func update(rate: Int, currency: String, maximumFractionDigits: Int) {
+    mutating func update(rate: Int, currency: String, maximumFractionDigits: Int) {
         self.rate = rate
         rateCurrency = currency
         rateMaximumFractionDigits = maximumFractionDigits
     }
 }
 
-@objc
 extension TxUserInfo {
-    @objc
     func taxCategoryString() -> String {
         taxCategory.stringValue
     }
 
-    @objc
     func fiatAmountString(from dashAmount: UInt64) -> String {
         let notAvailableString = NSLocalizedString("Not available", comment: "Fiat amount");
 

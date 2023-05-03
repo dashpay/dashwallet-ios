@@ -56,10 +56,11 @@ final class Tx: NSObject {
     }
 
     private func set(rate: Int, currency: String, maximumFractionDigits: Int, for transaction: DSTransaction) {
-        set(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits, for: .init(hash: transaction.txHashData, taxCategory: transaction.defaultTaxCategory()))
+        set(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits, for: .init(txHash: transaction.txHashData, taxCategory: transaction.defaultTaxCategory()))
     }
 
     private func set(rate: Int, currency: String, maximumFractionDigits: Int, for userInfo: TxUserInfo) {
+        var userInfo = userInfo
         userInfo.update(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits)
         txUserInfos.update(dto: userInfo)
     }
