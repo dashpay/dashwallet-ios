@@ -77,7 +77,10 @@ final class WalletKeysOverviewModel {
 
     func keyCount(for type: MNKey) -> Int {
         let derivationPath = derivationPath(for: type)
-        return derivationPath.allAddresses.count
+        let firstUnusedIndex = derivationPath.firstUnusedIndex();
+
+        // NOTE: Always show at least one key
+        return Int(max(firstUnusedIndex, 1))
     }
 
     func usedCount(for type: MNKey) -> Int {
