@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -20,40 +20,42 @@ import UIKit
 final class DerivationPathKeysHeaderView: UITableViewHeaderFooterView {
     var titleLabel: UILabel!
     var extraInfoLabel: UILabel!
-    
+
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
-        
+
         configureHierarchy()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override var intrinsicContentSize: CGSize {
         .init(width: DerivationPathKeysHeaderView.noIntrinsicMetric, height: 30)
     }
-    
+
     private func configureHierarchy() {
+        contentView.backgroundColor = .dw_secondaryBackground()
+
         titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .dw_font(forTextStyle: .callout).withWeight(UIFont.Weight.semibold.rawValue)
         titleLabel.textColor = UIColor.dw_label()
         contentView.addSubview(titleLabel)
-     
+
         extraInfoLabel = UILabel()
         extraInfoLabel.translatesAutoresizingMaskIntoConstraints = false
         extraInfoLabel.font = .dw_font(forTextStyle: .footnote)
         extraInfoLabel.textColor = .dw_secondaryText()
         extraInfoLabel.textAlignment = .right
         contentView.addSubview(extraInfoLabel)
-        
+
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 0),
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
             titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 0),
-            
+
             extraInfoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
             extraInfoLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
             extraInfoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 0),
