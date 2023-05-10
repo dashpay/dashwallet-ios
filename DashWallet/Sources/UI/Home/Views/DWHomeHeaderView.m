@@ -78,12 +78,12 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
         [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
                       with:^(typeof(self) self, id value) {
-                        [self.balanceView reloadData];
+                          [self.balanceView reloadData];
                       }];
-        
+
         [self mvvm_observe:DW_KEYPATH(self, model.balanceDisplayOptions.balanceHidden)
                       with:^(typeof(self) self, NSNumber *value) {
-                        [self.balanceView hideBalance: self.model.balanceDisplayOptions.balanceHidden];
+                          [self.balanceView hideBalance:self.model.balanceDisplayOptions.balanceHidden];
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
@@ -95,7 +95,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
                           const DWSyncModelState state = self.model.syncModel.state;
 
                           self.balanceView.state = state == DWSyncModelState_Syncing ? DWHomeBalanceViewState_Syncing : DWHomeBalanceViewState_Default;
-            
+
                           [self.syncView setSyncState:state];
 
                           if (state == DWSyncModelState_SyncFailed || state == DWSyncModelState_NoConnection) {
@@ -129,7 +129,7 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
     self.shortcutsView.model = model.shortcutsModel;
     [self updateProfileView];
-    
+
     self.balanceView.dataSource = model;
 }
 
@@ -190,13 +190,13 @@ static CGSize const AVATAR_SIZE = {72.0, 72.0};
 
 - (void)hideSyncView {
     self.syncView.hidden = YES;
-    
+
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 
 - (void)showSyncView {
     self.syncView.hidden = NO;
-    
+
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 
