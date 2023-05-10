@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_END
     [result endEditing];
 
     [self.syncingButton setAttributedTitle:result forState:UIControlStateNormal];
-    self.syncingButton.hidden = self.syncState != DWSyncModelState_Syncing;
+    self.syncingButton.hidden = !self.isSyncing;
 }
 
 - (void)filterButtonAction:(UIButton *)sender {

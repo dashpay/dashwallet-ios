@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
                               return;
                           }
 
-                          [self.syncingHeaderView setSyncState:self.model.syncModel.state];
+            //TODO: [self.syncingHeaderView setSyncState:self.model.syncModel.state];
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.syncModel.progress)
@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
                               return;
                           }
 
-                          [self.syncingHeaderView setProgress:self.model.syncModel.progress];
+            //TODO:               [self.syncingHeaderView setProgress:self.model.syncModel.progress];
                       }];
     }
     return self;
@@ -191,7 +191,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     DWSyncingHeaderView *headerView = [[DWSyncingHeaderView alloc] initWithFrame:CGRectZero];
     headerView.delegate = self;
-    [headerView setSyncState:self.model.syncModel.state];
+    //TODO: [headerView setSyncState:self.model.syncModel.state];
     [headerView setProgress:self.model.syncModel.progress];
     self.syncingHeaderView = headerView;
     return headerView;

@@ -27,7 +27,6 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWNotificationsViewController.h"
-#import "DWSyncModel.h"
 #import "DWSyncingAlertViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
@@ -224,33 +223,34 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)checkCrowdNodeState {
-    if (self.model.syncModel.state == DWSyncModelState_SyncDone) {
-        [CrowdNodeObjcWrapper restoreState];
-
-        if ([CrowdNodeObjcWrapper isInterrupted]) {
-            // Continue signup
-            [CrowdNodeObjcWrapper continueInterrupted];
-        }
-    }
-    else {
-        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        self.syncStateObserver = [notificationCenter addObserverForName:DWSyncStateChangedNotification
-                                                                 object:nil
-                                                                  queue:nil
-                                                             usingBlock:^(NSNotification *note) {
-                                                                 BOOL isSynced = self.model.syncModel.state == DWSyncModelState_SyncDone;
-
-                                                                 if (isSynced) {
-                                                                     if (self.syncStateObserver) {
-                                                                         // Only need to observe once
-                                                                         [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
-                                                                         self.syncStateObserver = nil;
-                                                                     }
-
-                                                                     [self checkCrowdNodeState];
-                                                                 }
-                                                             }];
-    }
+    //TODO: Rewrite w/o DWSyncStateChangedNotification
+//    if (self.model.syncModel.state == DWSyncModelState_SyncDone) {
+//        [CrowdNodeObjcWrapper restoreState];
+//
+//        if ([CrowdNodeObjcWrapper isInterrupted]) {
+//            // Continue signup
+//            [CrowdNodeObjcWrapper continueInterrupted];
+//        }
+//    }
+//    else {
+//        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+//        self.syncStateObserver = [notificationCenter addObserverForName:DWSyncStateChangedNotification
+//                                                                 object:nil
+//                                                                  queue:nil
+//                                                             usingBlock:^(NSNotification *note) {
+//                                                                 BOOL isSynced = self.model.syncModel.state == DWSyncModelState_SyncDone;
+//
+//                                                                 if (isSynced) {
+//                                                                     if (self.syncStateObserver) {
+//                                                                         // Only need to observe once
+//                                                                         [[NSNotificationCenter defaultCenter] removeObserver:self.syncStateObserver];
+//                                                                         self.syncStateObserver = nil;
+//                                                                     }
+//
+//                                                                     [self checkCrowdNodeState];
+//                                                                 }
+//                                                             }];
+//    }
 }
 
 @end

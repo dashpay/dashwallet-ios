@@ -17,9 +17,16 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWSyncModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
+
+
+typedef NS_ENUM(NSUInteger, DWSyncViewState) {
+    DWSyncViewState_Syncing,
+    DWSyncViewState_SyncDone,
+    DWSyncViewState_SyncFailed,
+    DWSyncViewState_NoConnection,
+};
+
 
 @class DWSyncView;
 
@@ -33,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWSyncViewDelegate> delegate;
 
-- (void)setSyncState:(DWSyncModelState)state;
+- (void)setSyncState:(DWSyncViewState)state;
 - (void)setProgress:(float)progress animated:(BOOL)animated;
 
 @end

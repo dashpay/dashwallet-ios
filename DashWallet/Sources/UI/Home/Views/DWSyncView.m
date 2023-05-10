@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UIButton *retryButton;
 @property (strong, nonatomic) IBOutlet DWProgressView *progressView;
 @property (assign, nonatomic) BOOL viewStateSeeingBlocks;
-@property (assign, nonatomic) DWSyncModelState syncState;
+@property (assign, nonatomic) DWSyncViewState syncState;
 
 @end
 
@@ -80,9 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
     [self.roundedView addGestureRecognizer:tapGestureRecognizer];
 }
 
-- (void)setSyncState:(DWSyncModelState)state {
+- (void)setSyncState:(DWSyncViewState)state {
     _syncState = state;
-    if (state == DWSyncModelState_NoConnection) {
+    if (state == DWSyncViewState_NoConnection) {
         self.titleLabel.textColor = [UIColor dw_lightTitleColor];
         self.descriptionLabel.textColor = [UIColor dw_lightTitleColor];
     }
@@ -92,8 +92,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     switch (state) {
-        case DWSyncModelState_Syncing:
-        case DWSyncModelState_SyncDone: {
+        case DWSyncViewState_Syncing:
+        case DWSyncViewState_SyncDone: {
             self.roundedView.backgroundColor = [UIColor dw_backgroundColor];
             self.percentLabel.hidden = NO;
             self.retryButton.hidden = YES;
@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
             [self updateUIForViewStateSeeingBlocks];
             break;
         }
-        case DWSyncModelState_SyncFailed: {
+        case DWSyncViewState_SyncFailed: {
             self.roundedView.backgroundColor = [UIColor dw_backgroundColor];
             self.percentLabel.hidden = YES;
             self.retryButton.tintColor = [UIColor dw_redColor];
@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
-        case DWSyncModelState_NoConnection: {
+        case DWSyncViewState_NoConnection: {
             self.roundedView.backgroundColor = [UIColor dw_redColor];
             self.percentLabel.hidden = YES;
             self.retryButton.tintColor = [UIColor dw_backgroundColor];
@@ -130,13 +130,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setProgress:(float)progress animated:(BOOL)animated {
     self.percentLabel.text = [NSString stringWithFormat:@"%0.1f%%", progress * 100.0];
     [self.progressView setProgress:progress animated:animated];
-    if (self.viewStateSeeingBlocks && self.syncState == DWSyncModelState_Syncing) {
+    if (self.viewStateSeeingBlocks && self.syncState == DWSyncViewState_Syncing) {
         [self updateUIForViewStateSeeingBlocks];
     }
 }
 
 - (void)updateUIForViewStateSeeingBlocks {
-    if (self.syncState == DWSyncModelState_Syncing || self.syncState == DWSyncModelState_SyncDone) {
+    if (self.syncState == DWSyncViewState_Syncing || self.syncState == DWSyncViewState_SyncDone) {
         if (self.viewStateSeeingBlocks) {
             DWEnvironment *environment = [DWEnvironment sharedInstance];
             DSChain *chain = environment.currentChain;

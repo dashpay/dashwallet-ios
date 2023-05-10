@@ -31,7 +31,6 @@
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
-#import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
@@ -47,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
+
+@property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
@@ -82,10 +83,13 @@ NS_ASSUME_NONNULL_BEGIN
             [_reachability startMonitoring];
         }
 
+        _syncMonitor = SyncingActivityMonitor.shared;
+        [_syncMonitor addObserver:self];
+
+        
         _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
-        _syncModel = [[DWSyncModel alloc] init];
-
+        
 #if DASHPAY_ENABLED
         _dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
@@ -122,10 +126,6 @@ NS_ASSUME_NONNULL_BEGIN
                                    name:DSTransactionManagerTransactionStatusDidChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(syncStateChangedNotification)
-                                   name:DWSyncStateChangedNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
                                selector:@selector(chainWalletsDidChangeNotification:)
                                    name:DSChainWalletsDidChangeNotification
                                  object:nil];
@@ -152,6 +152,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
+    [_syncMonitor removeObserver:self];
+
     DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
@@ -285,9 +287,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)forceStartSyncingActivity {
-    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
-    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
-    [syncModel forceStartSyncingActivity];
+    [[SyncingActivityMonitor shared] forceStartSyncingActivity];
 }
 
 - (void)walletDidWipe {
@@ -578,6 +578,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isBalanceHidden {
     return self.balanceDisplayOptions.balanceHidden;
+}
+
+#pragma mark SyncingActivityMonitorObserver
+
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {}
+
+- (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
+    BOOL isSynced = state == SyncingActivityMonitorStateSyncDone;
+    if (isSynced) {
+        [self.dashPayModel updateUsernameStatus];
+
+        if (self.dashPayModel.username != nil) {
+            [self.receiveModel updateReceivingInfo];
+            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+        }
+    }
+
+    [self updateBalance];
+    [self reloadTxDataSource];
 }
 
 @end

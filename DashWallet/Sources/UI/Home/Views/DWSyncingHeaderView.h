@@ -17,8 +17,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWSyncModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWSyncingHeaderView;
@@ -34,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWSyncingHeaderViewDelegate> delegate;
 
-@property (assign, nonatomic) DWSyncModelState syncState;
+@property (assign, nonatomic) BOOL isSyncing;
 
 - (void)setProgress:(float)progress;
 

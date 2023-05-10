@@ -21,7 +21,6 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
-#import "DWSyncModel.h"
 #import "dashwallet-Swift.h"
 
 #import <DashSync/DSBiometricsAuthenticator.h>
