@@ -194,6 +194,10 @@ NS_ASSUME_NONNULL_BEGIN
     //TODO: [headerView setSyncState:self.model.syncModel.state];
     [headerView setProgress:self.model.syncModel.progress];
     self.syncingHeaderView = headerView;
+    
+    self.syncingHeaderView.isSyncing = YES;
+    [self.syncingHeaderView setProgress:0.5];
+    
     return headerView;
 }
 

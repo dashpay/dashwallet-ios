@@ -27,7 +27,6 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWNotificationsViewController.h"
-#import "DWSyncingAlertViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
@@ -110,7 +109,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView showSyncingStatus:(UIView *)sender {
     DWSyncingAlertViewController *controller = [[DWSyncingAlertViewController alloc] init];
-    controller.model = self.model;
     [self presentViewController:controller animated:YES completion:nil];
 }
 

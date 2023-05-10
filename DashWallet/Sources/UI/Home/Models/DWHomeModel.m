@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource>
+@interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource, SyncingActivityMonitorObserver>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
