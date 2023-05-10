@@ -108,10 +108,6 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
-- (BOOL)isJailbroken {
-    return NO;
-}
-
 - (BOOL)isWalletEmpty {
     return NO;
 }

@@ -39,23 +39,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static BOOL IsJailbroken(void) {
-    struct stat s;
-    BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
-
-    // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
-    for (uint32_t count = _dyld_image_count(), i = 0; i < count && !jailbroken; i++) {
-        if (strstr(_dyld_get_image_name(i), "MobileSubstrate"))
-            jailbroken = YES;
-    }
-
-#if TARGET_IPHONE_SIMULATOR
-    jailbroken = NO;
-#endif
-
-    return jailbroken;
-}
-
 @interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -197,10 +180,6 @@ static BOOL IsJailbroken(void) {
 - (BOOL)isAllowedToShowReclassifyYourTransactions {
     BOOL shouldDisplayReclassifyYourTransactionsFlow = [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
     return _allowedToShowReclassifyYourTransactions && shouldDisplayReclassifyYourTransactionsFlow;
-}
-
-- (BOOL)isJailbroken {
-    return IsJailbroken();
 }
 
 - (BOOL)isWalletEmpty {

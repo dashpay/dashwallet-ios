@@ -56,7 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
 
-@property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
 @property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
 @property (readonly, nonatomic, assign, getter=isAllowedToShowReclassifyYourTransactions) BOOL allowedToShowReclassifyYourTransactions;
 

@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWHomeViewController (DWJailbreakCheck)
 
 - (void)performJailbreakCheck {
-    if (!self.model.isJailbroken) {
+    if (!UIApplication.isJailbroken) {
         return;
     }
 
