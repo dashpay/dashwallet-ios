@@ -1167,9 +1167,6 @@
 "Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "Previously used at IP address";
-
-/* No comment provided by engineer. */
 "Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
@@ -1678,9 +1675,6 @@
 
 /* No comment provided by engineer. */
 "Used" = "Used";
-
-/* No comment provided by engineer. */
-"Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
 "Used at: " = "Used at: ";
