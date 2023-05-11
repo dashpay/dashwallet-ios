@@ -29,7 +29,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
     var cancelHandler: (() -> ())?
     var retryHandler: (() -> ())?
     var supportHandler: (() -> ())?
-    
+
     var headerText: String! {
         didSet {
             titleLabel?.text = headerText
@@ -41,7 +41,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
             descriptionLabel?.text = descriptionText
         }
     }
-    
+
     var supportButtonText: String! {
         didSet {
             contactSupportButton?.setTitle(supportButtonText, for: .normal)
@@ -53,7 +53,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
         retryHandler?()
     }
 
-    @IBAction 
+    @IBAction
     func supportAction() {
         supportHandler?()
     }

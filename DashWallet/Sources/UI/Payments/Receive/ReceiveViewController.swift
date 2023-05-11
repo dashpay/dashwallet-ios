@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,24 +17,28 @@
 
 import Foundation
 
+// MARK: - ReceiveViewType
+
 @objc(DWReceiveViewType)
 enum ReceiveViewType: Int {
     @objc(DWReceiveViewType_Default)
     case `default`
-    
+
     @objc(DWReceiveViewType_QuickReceive)
     case quick
 }
-    
+
 extension ReceiveViewType {
     var secondButtonTitle: String {
         if self == .default {
             return NSLocalizedString("Share address", comment: "Receive screen")
-        }else{
+        } else {
             return NSLocalizedString("Exit", comment: "Receive screen")
         }
     }
 }
+
+// MARK: - ReceiveViewControllerDelegate
 
 @objc(DWReceiveViewControllerDelegate)
 protocol ReceiveViewControllerDelegate: AnyObject {
@@ -42,60 +46,62 @@ protocol ReceiveViewControllerDelegate: AnyObject {
     func importPrivateKeyButtonAction(_ controller: ReceiveViewController)
 }
 
+// MARK: - ReceiveViewController
+
 @objc(DWReceiveViewController)
 class ReceiveViewController: BaseViewController {
     var model: DWReceiveModelProtocol!
-    
+
     @objc
     var viewType: ReceiveViewType = .default
-    
+
     @objc
     weak var delegate: ReceiveViewControllerDelegate?
-    
+
     @objc
-    var allowedToImportPrivateKey: Bool = true
-    
+    var allowedToImportPrivateKey = true
+
     @objc
     init(model: DWReceiveModelProtocol) {
         self.model = model
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     @objc
     func importPrivateKeyButtonAction() {
         let controller = sb("ImportWalletInfo").instantiateInitialViewController() as! DWImportWalletInfoViewController
         controller.delegate = self
-        
+
         let nvc = BaseNavigationController(rootViewController: controller)
         present(nvc, animated: true)
-        
+
         nvc.setCancelButtonHidden(false)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureHierarchy()
     }
 }
 
-private extension ReceiveViewController {
+extension ReceiveViewController {
     private func configureHierarchy() {
         let mainStackView = UIStackView()
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         mainStackView.axis = .vertical
         mainStackView.spacing = stackSpacing
         view.addSubview(mainStackView)
-        
+
         let receiveContentView = ReceiveContentView.view(with: model)
         receiveContentView.viewType = viewType
         receiveContentView.specifyAmountHandler = { [weak self] in
             guard let self else { return }
-            
+
             let vc = SpecifyAmountViewController.controller()
             vc.delegate = self
             self.navigationController?.pushViewController(vc, animated: true)
@@ -103,17 +109,16 @@ private extension ReceiveViewController {
         receiveContentView.shareHandler = { [weak self] sender in
             guard let self else { return }
             self.dw_shareReceiveInfo(self.model, sender: sender)
-            
         }
         receiveContentView.exitHandler = { [weak self] in
             guard let self else { return }
             self.delegate?.receiveViewControllerExitButtonAction(self)
         }
-        
+
         receiveContentView.backgroundColor = .dw_background()
         receiveContentView.layer.cornerRadius = radius
         mainStackView.addArrangedSubview(receiveContentView)
-        
+
         let importPrivateKeyButton = UIButton(type: .custom)
         importPrivateKeyButton.addTarget(self, action: #selector(importPrivateKeyButtonAction), for: .touchUpInside)
         importPrivateKeyButton.backgroundColor = .dw_background()
@@ -127,36 +132,40 @@ private extension ReceiveViewController {
         importPrivateKeyButton.setTitle(NSLocalizedString("Import Private Key", comment: "Import Private Key"), for: .normal)
         importPrivateKeyButton.isHidden = !allowedToImportPrivateKey
         mainStackView.addArrangedSubview(importPrivateKeyButton)
-        
+
         mainStackView.addArrangedSubview(EmptyView())
-        
+
         NSLayoutConstraint.activate([
             mainStackView.topAnchor.constraint(equalTo: view.topAnchor),
             mainStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mainStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             mainStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            
+
             receiveContentView.heightAnchor.constraint(equalToConstant: 373),
             importPrivateKeyButton.heightAnchor.constraint(equalToConstant: 64),
         ])
     }
 }
 
+// MARK: SpecifyAmountViewControllerDelegate
+
 extension ReceiveViewController: SpecifyAmountViewControllerDelegate {
     func specifyAmountViewController(_ vc: SpecifyAmountViewController, didInput amount: UInt64) {
         let model = DWReceiveModel(amount: amount)
-        
+
         let requestController = DWRequestAmountViewController(model: model)
         requestController.delegate = self
-        self.present(requestController, animated: true)
+        present(requestController, animated: true)
     }
 }
+
+// MARK: DWRequestAmountViewControllerDelegate
 
 extension ReceiveViewController: DWRequestAmountViewControllerDelegate {
     func requestAmountViewController(_ controller: DWRequestAmountViewController, didReceiveAmountWithInfo info: String) {
         controller.dismiss(animated: true) {
             self.navigationController?.popViewController(animated: true)
-            
+
             let popAnimationDuration = 300
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(popAnimationDuration)) {
                 self.navigationController?.view.dw_showInfoHUD(withText: info)
@@ -165,11 +174,12 @@ extension ReceiveViewController: DWRequestAmountViewControllerDelegate {
     }
 }
 
+// MARK: DWImportWalletInfoViewControllerDelegate
+
 extension ReceiveViewController: DWImportWalletInfoViewControllerDelegate {
     func importWalletInfoViewControllerScanPrivateKeyAction(_ controller: DWImportWalletInfoViewController) {
         controller.dismiss(animated: true) {
             self.delegate?.importPrivateKeyButtonAction(self)
         }
-        
     }
 }

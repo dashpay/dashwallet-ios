@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,9 +17,11 @@
 
 import UIKit
 
+// MARK: - SyncingAlertViewController
+
 @objc(DWSyncingAlertViewController)
 final class SyncingAlertViewController: BaseViewController, SyncingAlertContentViewDelegate {
-    
+
     var modalTransition = DWModalPopupTransition()
     private lazy var childView: SyncingAlertContentView = {
         let childView = SyncingAlertContentView()
@@ -32,8 +34,8 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
 
     init() {
         super.init(nibName: nil, bundle: nil)
-        self.transitioningDelegate = modalTransition
-        self.modalPresentationStyle = .custom
+        transitioningDelegate = modalTransition
+        modalPresentationStyle = .custom
     }
 
     required init?(coder: NSCoder) {
@@ -42,20 +44,20 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         SyncingActivityMonitor.shared.add(observer: self)
-        
+
         view.backgroundColor = .clear
-        
+
         let contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = UIColor.dw_background()
         contentView.layer.cornerRadius = 8.0
         contentView.layer.masksToBounds = true
         view.addSubview(contentView)
-        
+
         contentView.addSubview(childView)
-        
+
         NSLayoutConstraint.activate([
             contentView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -66,23 +68,25 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
             contentView.bottomAnchor.constraint(equalTo: childView.bottomAnchor, constant: 32.0),
         ])
     }
-    
+
     // MARK: - DWSyncingAlertContentViewDelegate
-    
+
     func syncingAlertContentView(_ view: SyncingAlertContentView, okButtonAction sender: UIButton) {
         dismiss(animated: true, completion: nil)
     }
-    
+
     deinit {
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 }
 
+// MARK: SyncingActivityMonitorObserver
+
 extension SyncingAlertViewController: SyncingActivityMonitorObserver {
     func syncingActivityMonitorProgressDidChange(_ progress: Double) {
         childView.update(with: progress)
     }
-    
+
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         childView.update(with: state)
     }

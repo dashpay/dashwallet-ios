@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,18 +17,20 @@
 
 import UIKit
 
+// MARK: - KeysOverviewViewController
+
 @objc(DWKeysOverviewViewController)
 final class KeysOverviewViewController: BaseViewController {
     private var tableView: UITableView!
     private var model: WalletKeysOverviewModel!
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureModel()
         configureHierarchy()
     }
@@ -38,10 +40,10 @@ extension KeysOverviewViewController {
     private func configureModel() {
         model = WalletKeysOverviewModel()
     }
-    
+
     private func configureHierarchy() {
         title = NSLocalizedString("Masternode Keys", comment: "")
-        
+
         tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.preservesSuperviewLayoutMargins = true
         tableView.rowHeight = 62
@@ -52,7 +54,7 @@ extension KeysOverviewViewController {
         tableView.delegate = self
         tableView.dataSource = self
         view.addSubview(tableView)
-        
+
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
@@ -62,47 +64,51 @@ extension KeysOverviewViewController {
     }
 }
 
+// MARK: UITableViewDataSource, UITableViewDelegate
+
 extension KeysOverviewViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         model.items.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = model.items[indexPath.row]
         let count = model.keyCount(for: item)
         let used = model.usedCount(for: item)
-        
+
         let cell = tableView.dequeueReusableCell(type: KeysOverviewCell.self, for: indexPath)
         cell.accessoryType = .disclosureIndicator
         cell.update(with: item, count: count, used: used)
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
+
         let showVcBlock = { [weak self] in
             guard let self else { return }
-            
+
             let item = model.items[indexPath.row]
             let derivationPath = model.derivationPath(for: item)
             let vc = DerivationPathKeysViewController(with: item, derivationPath: derivationPath)
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
         }
-        
-        if (DSAuthenticationManager.sharedInstance().didAuthenticate) {
+
+        if DSAuthenticationManager.sharedInstance().didAuthenticate {
             showVcBlock()
         }
         else {
             DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
-                
+
                 guard authenticatedOrSuccess else { return }
                 showVcBlock()
             }
         }
     }
 }
+
+// MARK: NavigationBarStyleable
 
 extension KeysOverviewViewController: NavigationBarStyleable {
     var prefersLargeTitles: Bool { true }

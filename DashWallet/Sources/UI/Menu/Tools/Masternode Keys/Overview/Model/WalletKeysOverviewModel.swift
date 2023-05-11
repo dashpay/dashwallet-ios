@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -16,6 +16,8 @@
 //
 
 import Foundation
+
+// MARK: - MNKey
 
 enum MNKey: CaseIterable {
     case owner
@@ -39,25 +41,27 @@ extension MNKey {
     }
 }
 
+// MARK: - WalletKeysOverviewModel
+
 final class WalletKeysOverviewModel {
     var items: [MNKey] = MNKey.allCases
-    
+
     let ownerDerivationPath: DSAuthenticationKeysDerivationPath
     let votingDerivationPath: DSAuthenticationKeysDerivationPath
     let operatorDerivationPath: DSAuthenticationKeysDerivationPath
     let hpmnOperatorDerivationPath: DSAuthenticationKeysDerivationPath
-    
+
     init() {
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let factory = DSDerivationPathFactory.sharedInstance()!
-        
+
         ownerDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
         votingDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
         operatorDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
         hpmnOperatorDerivationPath = operatorDerivationPath
-        //hpmnOperatorDerivationPath = factory.platformNodeKeysDerivationPath(for: wallet) //We will use it in another branch
+        // hpmnOperatorDerivationPath = factory.platformNodeKeysDerivationPath(for: wallet) //We will use it in another branch
     }
-    
+
     func derivationPath(for type: MNKey) -> DSAuthenticationKeysDerivationPath {
         switch type {
         case .owner:
@@ -70,12 +74,12 @@ final class WalletKeysOverviewModel {
             return hpmnOperatorDerivationPath
         }
     }
-    
+
     func keyCount(for type: MNKey) -> Int {
         let derivationPath = derivationPath(for: type)
         return derivationPath.allAddresses.count
     }
-    
+
     func usedCount(for type: MNKey) -> Int {
         let derivationPath = derivationPath(for: type)
         return derivationPath.usedAddresses.count

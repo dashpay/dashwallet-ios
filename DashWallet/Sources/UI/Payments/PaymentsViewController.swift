@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,17 +17,21 @@
 
 import UIKit
 
+// MARK: - PaymentsViewControllerState
+
 @objc(DWPaymentsViewControllerIndex)
 enum PaymentsViewControllerState: Int {
     @objc(DWPaymentsViewControllerIndex_None)
     case none = -1
-    
+
     @objc(DWPaymentsViewControllerIndex_Receive)
     case receive = 0
-    
+
     @objc(DWPaymentsViewControllerIndex_Pay)
     case pay = 1
 }
+
+// MARK: - PaymentsViewControllerDelegate
 
 @objc(DWPaymentsViewControllerDelegate)
 protocol PaymentsViewControllerDelegate: AnyObject {
@@ -36,69 +40,73 @@ protocol PaymentsViewControllerDelegate: AnyObject {
     func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, contact: DWDPBasicUserItem?)
 }
 
+// MARK: - PaymentsViewController
+
 @objc(DWPaymentsViewController)
 class PaymentsViewController: BaseViewController {
     @IBOutlet var segmentedControl: UISegmentedControl!
     @IBOutlet var containerView: UIView!
     @IBOutlet var closeButton: UIButton!
-    
+
     @objc
     weak var delegate: PaymentsViewControllerDelegate?
-    
+
     @objc
-    var demoMode: Bool = false
-    
+    var demoMode = false
+
     @objc
     weak var demoDelegate: DWDemoDelegate?
-    
+
     @objc
     var currentState: PaymentsViewControllerState = .pay {
         didSet {
             if currentState == .none {
                 currentState = PaymentsViewControllerState(rawValue: DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab)!
             }
-            
+
             let idx = currentState.rawValue
-            
+
             segmentedControl?.selectedSegmentIndex = idx
             pageController?.selectedIndex = idx
         }
     }
-    
+
     private var receiveModel: DWReceiveModelProtocol!
     private var payModel: DWPayModelProtocol!
     private var dataProvider: DWTransactionListDataProviderProtocol?
-    
+
     private var payViewController: PayViewController!
     private var receiveViewController: ReceiveViewController!
-    
+
     private var pageController: SendReceivePageController!
-    
-    @IBAction func segmentedControlAction() {
+
+    @IBAction
+    func segmentedControlAction() {
         let idx = segmentedControl.selectedSegmentIndex
         pageController.setSelectedIndex(idx, animated: true)
-        
+
         DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab = idx
     }
-    
-    @IBAction func closeButtonAction() {
+
+    @IBAction
+    func closeButtonAction() {
         delegate?.paymentsViewControllerDidCancel(self)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureHierarchy()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
-    
+
     @objc
     class func controller(withReceiveModel receiveModel: DWReceiveModelProtocol?,
-                              payModel: DWPayModelProtocol?,
-                              dataProvider: DWTransactionListDataProviderProtocol?) -> PaymentsViewController {
+                          payModel: DWPayModelProtocol?,
+                          dataProvider: DWTransactionListDataProviderProtocol?) -> PaymentsViewController {
         let controller = sb("Payments").vc(PaymentsViewController.self)
         controller.receiveModel = receiveModel
         controller.payModel = payModel
@@ -110,17 +118,17 @@ class PaymentsViewController: BaseViewController {
 extension PaymentsViewController {
     func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
-        
+
         segmentedControl.setTitle(NSLocalizedString("Receive", comment: "Receive/Send"), forSegmentAt: 0)
         segmentedControl.setTitle(NSLocalizedString("Send", comment: "Receive/Send"), forSegmentAt: 1)
         segmentedControl.selectedSegmentIndex = currentState.rawValue
-        
+
         payViewController = PayViewController.controller(with: payModel)
         payViewController.delegate = self
-        
+
         receiveViewController = ReceiveViewController(model: receiveModel)
         receiveViewController.delegate = self
-        
+
         pageController = SendReceivePageController()
         pageController.helperDelegate = self
         addChild(pageController)
@@ -129,9 +137,9 @@ extension PaymentsViewController {
         pageController.didMove(toParent: self)
         pageController.controllers = [receiveViewController, payViewController]
         pageController.selectedIndex = currentState.rawValue
-        
+
         closeButton.layer.cornerRadius = 24
-        
+
         NSLayoutConstraint.activate([
             pageController.view.topAnchor.constraint(equalTo: containerView.topAnchor),
             pageController.view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
@@ -141,17 +149,23 @@ extension PaymentsViewController {
     }
 }
 
+// MARK: NavigationBarDisplayable
+
 extension PaymentsViewController: NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 }
 
+// MARK: SendReceivePageControllerDelegate
+
 extension PaymentsViewController: SendReceivePageControllerDelegate {
     func sendReceivePageControllerWillChangeSelectedIndex(to index: Int) {
         segmentedControl.selectedSegmentIndex = index
-        
+
         DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab = index
     }
 }
+
+// MARK: PayViewControllerDelegate
 
 extension PaymentsViewController: PayViewControllerDelegate {
     func payViewControllerDidFinishPayment(_ controller: PayViewController, contact: DWDPBasicUserItem?) {
@@ -159,11 +173,13 @@ extension PaymentsViewController: PayViewControllerDelegate {
     }
 }
 
+// MARK: ReceiveViewControllerDelegate
+
 extension PaymentsViewController: ReceiveViewControllerDelegate {
     func receiveViewControllerExitButtonAction(_ controller: ReceiveViewController) {
-        //NOP
+        // NOP
     }
-    
+
     func importPrivateKeyButtonAction(_ controller: ReceiveViewController) {
         delegate?.paymentsViewControllerWantsToImportPrivateKey(self)
     }

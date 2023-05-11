@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,9 +17,11 @@
 
 import Foundation
 
+// MARK: - ExtendedPublicKeysModel
+
 final class ExtendedPublicKeysModel {
     let derivationPaths: [DSDerivationPath]
-    
+
     init() {
         let currentAccount = DWEnvironment.sharedInstance().currentAccount
         derivationPaths = currentAccount.fundDerivationPaths ?? []
@@ -29,11 +31,11 @@ final class ExtendedPublicKeysModel {
 extension DSDerivationPath {
     var item: DerivationPathKeysItem {
         let title: String
-        
+
         if let dp = self as? DSIncomingFundsDerivationPath,
-            let username = dp.contactDestinationBlockchainIdentity.currentDashpayUsername {
+           let username = dp.contactDestinationBlockchainIdentity.currentDashpayUsername {
             title = username
-        }else{
+        } else {
             title = referenceName
         }
 

@@ -17,12 +17,14 @@
 
 import Foundation
 
+// MARK: - VerifiedSuccessfullyViewController
+
 @objc(DWVerifiedSuccessfullyViewController)
 final class VerifiedSuccessfullyViewController : UIViewController, NavigationFullscreenable {
     let requiresNoNavigationBar = true
     override var preferredStatusBarStyle: UIStatusBarStyle { .default }
     @objc public weak var delegate: DWSecureWalletDelegate? = nil
-    
+
     @IBOutlet var scrollView: UIScrollView!
     @IBOutlet var securityImageView: UIImageView!
     @IBOutlet var titleLabel: UILabel!
@@ -39,12 +41,14 @@ final class VerifiedSuccessfullyViewController : UIViewController, NavigationFul
         scrollView.flashScrollIndicators()
     }
 
-    @objc static func controller() -> VerifiedSuccessfullyViewController {
+    @objc
+    static func controller() -> VerifiedSuccessfullyViewController {
         let storyboard = UIStoryboard(name: "VerifiedSuccessfully", bundle: nil)
         return storyboard.instantiateInitialViewController() as! VerifiedSuccessfullyViewController
     }
-    
-    @IBAction func continueButtonAction() {
+
+    @IBAction
+    func continueButtonAction() {
         delegate?.secureWalletRoutineDidFinish(self)
     }
 }

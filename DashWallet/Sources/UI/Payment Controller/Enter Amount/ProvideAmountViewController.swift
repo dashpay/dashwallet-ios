@@ -45,10 +45,10 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
-        
+
         checkLeftoverBalance { [weak self] canContinue in
             guard canContinue, let wSelf = self else { return }
-            
+
             wSelf.showActivityIndicator()
             let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
             DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency

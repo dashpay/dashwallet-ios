@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -20,13 +20,13 @@ import UIKit
 final class EmptyView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         backgroundColor = .clear
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        
+
         backgroundColor = .clear
     }
 }

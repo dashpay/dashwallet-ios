@@ -79,7 +79,7 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
             Cryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.
             """, comment: "Coinbase/Buy Dash/Fee Info")
         vc.actionButtonText = NSLocalizedString("Learn More...", comment: "Coinbase")
-        
+
         let nvc = BaseNavigationController(rootViewController: vc)
         present(nvc, animated: true)
     }

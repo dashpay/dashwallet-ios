@@ -17,6 +17,8 @@
 
 import UIKit
 
+// MARK: - BadgeView
+
 final class BadgeView: UIView {
 
     private(set) var label: UILabel!
@@ -85,3 +87,4 @@ final class BadgeView: UIView {
         ])
     }
 }
+

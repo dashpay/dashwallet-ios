@@ -140,7 +140,7 @@ extension GettingStartedViewController {
     }
 }
 
-// MARK: DWSecureWalletDelegate
+// MARK: BackupInfoViewControllerDelegate
 
 extension GettingStartedViewController: BackupInfoViewControllerDelegate {
     private func backupPassphrase() {

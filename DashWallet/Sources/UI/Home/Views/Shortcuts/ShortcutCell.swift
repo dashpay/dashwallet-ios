@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -18,19 +18,19 @@
 import UIKit
 
 class ShortcutCell: UICollectionViewCell {
-    
+
     @IBOutlet private weak var centeredView: UIView!
     @IBOutlet private weak var iconImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
-    
+
     private var gradientLayer: CAGradientLayer?
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
         titleLabel.font = UIFont.dw_font(forTextStyle: .caption2)
         centeredView.backgroundColor = .clear
     }
-    
+
     var model: ShortcutAction! {
         didSet {
             titleLabel.text = model.title
@@ -42,7 +42,7 @@ class ShortcutCell: UICollectionViewCell {
             iconImageView.alpha = alpha
         }
     }
-    
+
     override var isHighlighted: Bool {
         didSet {
             guard model.enabled == true else { return }
