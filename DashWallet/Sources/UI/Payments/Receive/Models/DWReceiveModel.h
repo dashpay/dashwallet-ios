@@ -21,7 +21,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWReceiveModel : DWBaseReceiveModel <DWReceiveModelProtocol>
-
+@property (nonatomic, weak) id<DWReceiveModelDelegate> delegate; // NOTE: Temp solution to avoid using mvvm
 @end
 
 NS_ASSUME_NONNULL_END

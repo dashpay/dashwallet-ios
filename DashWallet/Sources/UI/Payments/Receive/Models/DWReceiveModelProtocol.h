@@ -22,12 +22,17 @@ NS_ASSUME_NONNULL_BEGIN
 @class UIImage;
 @class DSPaymentRequest;
 
+@protocol DWReceiveModelDelegate <NSObject>
+- (void)receivingInfoDidUpdate;
+@end
+
 @protocol DWReceiveModelProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, readonly, nonatomic, copy) NSString *paymentAddress;
 @property (readonly, nonatomic, assign) CGSize qrCodeSize;
 @property (readonly, nonatomic, assign) uint64_t amount;
+@property (nonatomic, weak) id<DWReceiveModelDelegate> delegate;
 
 - (NSString *)paymentAddressOrRequestToShare;
 

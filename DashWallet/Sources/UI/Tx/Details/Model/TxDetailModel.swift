@@ -54,11 +54,18 @@ class TxDetailModel: NSObject {
     }
 
     func toggleTaxCategoryOnCurrentTransaction() {
+        if txTaxCategory == .unknown {
+            txTaxCategory = transaction.tx.defaultTaxCategory()
+        }
+
         txTaxCategory = txTaxCategory.nextTaxCategory
         let txHash = transaction.txHashData
 
+        var txUserInfo = transaction.userInfo ?? TxUserInfo(txHash: txHash, taxCategory: txTaxCategory)
+        txUserInfo.taxCategory = txTaxCategory
+
         // TODO: Move it to Domain layer
-        TxUserInfoDAOImpl.shared.update(dto: TxUserInfo(hash: txHash, taxCategory: txTaxCategory))
+        TxUserInfoDAOImpl.shared.update(dto: txUserInfo)
     }
 
     func copyTransactionIdToPasteboard() -> Bool {

@@ -19,14 +19,13 @@
 
 #import "BigIntTypes.h"
 #import "DWEnvironment.h"
-#import "DWExtendedPublicKeysViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
-#import "DWKeysOverviewViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWDisplayError.h"
+#import "dashwallet-Swift.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWToolsMenuViewController () <DWImportWalletInfoViewControllerDelegate>
@@ -164,11 +163,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showMasternodeKeys {
     DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];
+    keysViewController.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:keysViewController animated:YES];
 }
 
 - (void)showExtendedPublicKeys {
     DWExtendedPublicKeysViewController *controller = [[DWExtendedPublicKeysViewController alloc] init];
+    controller.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:controller animated:YES];
 }
 

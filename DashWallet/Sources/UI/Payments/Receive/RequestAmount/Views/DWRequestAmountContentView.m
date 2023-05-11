@@ -17,14 +17,13 @@
 
 #import "DWRequestAmountContentView.h"
 
-#import "DWReceiveContentView.h"
 #import "DWReceiveModelProtocol.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRequestAmountContentView () <DWReceiveContentViewDelegate>
+@interface DWRequestAmountContentView ()
 
 @property (nonatomic, strong) id<DWReceiveModelProtocol> model;
 @property (nonatomic, strong) DWAmountPreviewView *amountView;
@@ -47,10 +46,16 @@ NS_ASSUME_NONNULL_BEGIN
         [self addSubview:amountView];
         _amountView = amountView;
 
-        DWReceiveContentView *contentView = [[DWReceiveContentView alloc] initWithModel:model];
+
+        DWReceiveContentView *contentView = [DWReceiveContentView viewWith:model];
         contentView.translatesAutoresizingMaskIntoConstraints = NO;
-        contentView.delegate = self;
         contentView.viewType = DWReceiveViewType_Default;
+        __weak typeof(self) weakSelf = self;
+
+        contentView.shareHandler = ^(UIButton *sender) {
+            [weakSelf.delegate requestAmountContentView:weakSelf shareButtonAction:sender];
+        };
+
         [contentView setSpecifyAmountButtonHidden:YES];
         [self addSubview:contentView];
         _contentView = contentView;
@@ -67,20 +72,6 @@ NS_ASSUME_NONNULL_BEGIN
         ]];
     }
     return self;
-}
-
-- (void)viewDidAppear {
-    [self.contentView viewDidAppear];
-}
-
-#pragma mark - DWReceiveContentViewDelegate
-
-- (void)receiveContentView:(DWReceiveContentView *)view specifyAmountButtonAction:(UIButton *)sender {
-    // NOP
-}
-
-- (void)receiveContentView:(DWReceiveContentView *)view secondButtonAction:(UIButton *)sender {
-    [self.delegate requestAmountContentView:self shareButtonAction:sender];
 }
 
 @end

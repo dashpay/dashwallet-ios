@@ -56,7 +56,7 @@ static BOOL IsJailbroken(void) {
     return jailbroken;
 }
 
-@interface DWHomeModel () <DWShortcutsModelDataSource>
+@interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
@@ -114,7 +114,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-        
+
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];
@@ -153,6 +153,10 @@ static BOOL IsJailbroken(void) {
         [notificationCenter addObserver:self
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(fiatCurrencyDidChangeNotification)
+                                   name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
 
         [self reloadTxDataSource];
@@ -369,6 +373,11 @@ static BOOL IsJailbroken(void) {
     [self.balanceDisplayOptions hideBalanceIfNeeded];
 }
 
+- (void)fiatCurrencyDidChangeNotification {
+    [self updateBalance];
+    [self reloadTxDataSource];
+}
+
 - (void)syncStateChangedNotification {
     BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
     if (isSynced) {
@@ -578,6 +587,18 @@ static BOOL IsJailbroken(void) {
     }
 
     return [mutableTransactions copy];
+}
+
+- (NSString *)supplementaryAmountString {
+    return [self.balanceModel fiatAmountString];
+}
+
+- (NSString *)mainAmountString {
+    return [self.balanceModel mainAmountString];
+}
+
+- (BOOL)isBalanceHidden {
+    return self.balanceDisplayOptions.balanceHidden;
 }
 
 @end

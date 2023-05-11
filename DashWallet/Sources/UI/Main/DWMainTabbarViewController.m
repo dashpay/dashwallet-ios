@@ -21,10 +21,10 @@
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
@@ -147,15 +147,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 /// helper
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView completion:(void (^_Nullable)(void))completion {
+    [tabBarView setPaymentsButtonOpened:NO];
+
     if (![self.currentController.topController isKindOfClass:[DWPaymentsViewController class]]) {
+        self.tabBarView.userInteractionEnabled = YES;
+
         if (completion)
             completion();
         return;
     }
 
-
     tabBarView.userInteractionEnabled = NO;
-    [tabBarView setPaymentsButtonOpened:NO];
 
     [self.currentController.topController dismissViewControllerAnimated:YES
                                                              completion:^{
@@ -167,6 +169,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 #pragma mark - DWPaymentsViewControllerDelegate
+
+- (void)paymentsViewControllerWantsToImportPrivateKey:(DWPaymentsViewController *)controller {
+    // Make sure we enable tabbar before showing the scanner
+    _tabBarView.userInteractionEnabled = YES;
+    [_tabBarView setPaymentsButtonOpened:NO];
+
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self performScanQRCodeAction];
+                                   }];
+}
 
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller {
     [self tabBarViewDidClosePayments:self.tabBarView];
@@ -305,17 +318,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     id<DWReceiveModelProtocol> receiveModel = homeModel.receiveModel;
     id<DWPayModelProtocol> payModel = homeModel.payModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
+
     DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
                                                                                        payModel:payModel
                                                                                    dataProvider:dataProvider];
     controller.delegate = self;
-    controller.currentIndex = pageIndex;
+    controller.currentState = pageIndex;
     controller.demoMode = self.demoMode;
     controller.demoDelegate = self.demoDelegate;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
-    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    navigationController.modalInPresentation = YES;
 
     if (self.demoMode) {
         [self.demoDelegate presentModalController:navigationController sender:self];

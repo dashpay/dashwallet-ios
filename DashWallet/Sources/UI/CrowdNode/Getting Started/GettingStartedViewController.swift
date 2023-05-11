@@ -142,7 +142,7 @@ extension GettingStartedViewController {
 
 // MARK: DWSecureWalletDelegate
 
-extension GettingStartedViewController: DWSecureWalletDelegate {
+extension GettingStartedViewController: BackupInfoViewControllerDelegate {
     private func backupPassphrase() {
         Task {
             if await viewModel.authenticate(allowBiometric: false) {
@@ -152,9 +152,7 @@ extension GettingStartedViewController: DWSecureWalletDelegate {
     }
 
     private func backupPassphraseAuthenticated() {
-        let model = DWPreviewSeedPhraseModel()
-        model.getOrCreateNewWallet()
-        let controller = DWBackupInfoViewController(model: model)
+        let controller = BackupInfoViewController.controller(with: .setup)
         controller.delegate = self
         let navigationController = BaseNavigationController(rootViewController: controller)
         let cancelButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel, target: self,

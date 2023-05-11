@@ -80,10 +80,8 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 - (void)wipeWallet {
-    [[TxUserInfoDAOImpl shared] deleteAll];
-    [[AddressUserInfoDAOImpl shared] deleteAll];
+    [DWApp cleanUp];
     [[DWEnvironment sharedInstance] clearAllWallets];
-
     [[DWGlobalOptions sharedInstance] restoreToDefaults];
     [[DWAppGroupOptions sharedInstance] restoreToDefaults];
 }

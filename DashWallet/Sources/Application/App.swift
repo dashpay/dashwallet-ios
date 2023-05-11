@@ -17,10 +17,19 @@
 
 import Foundation
 
+
+
+// MARK: - Constants
+private let kDefaultCurrencyCode = "USD"
+private let kFiatCurrencyCodeKey = "LOCAL_CURRENCY_CODE"
+
 // MARK: - AppObjcWrapper
 
 @objc(DWApp)
 class AppObjcWrapper: NSObject {
+    @objc
+    static let fiatCurrencyDidChangeNotification = Notification.Name.fiatCurrencyDidChange
+
     @objc
     static var dashFormatter: NumberFormatter {
         NumberFormatter.dashFormatter
@@ -34,12 +43,67 @@ class AppObjcWrapper: NSObject {
             App.shared.fiatCurrency = newValue
         }
     }
+
+    @objc
+    class func cleanUp() {
+        App.shared.cleanUp()
+    }
 }
 
 // MARK: - App
 
-class App {
+final class App {
+    private var _fiatCurrency: String!
+
+    public var fiatCurrency: String {
+        get {
+            if let currency = _fiatCurrency {
+                return currency
+            }
+
+            guard let currency = UserDefaults.standard.value(forKey: kFiatCurrencyCodeKey) as? String else {
+                if #available(iOS 16, *) {
+                    _fiatCurrency = Locale.current.currency?.identifier ?? kDefaultCurrencyCode
+
+                    return _fiatCurrency
+                } else {
+                    _fiatCurrency = NSLocale.current.currencyCode ?? kDefaultCurrencyCode
+
+                    return _fiatCurrency
+                }
+            }
+
+            _fiatCurrency = currency
+
+            return _fiatCurrency
+        }
+        set {
+            _fiatCurrency = newValue
+
+            UserDefaults.standard.set(newValue, forKey: kFiatCurrencyCodeKey)
+            NotificationCenter.default.post(name: Notification.Name.fiatCurrencyDidChange, object: nil)
+        }
+    }
+
     static func initialize() { }
 
     static let shared = App()
+
+    func cleanUp() {
+        TxUserInfoDAOImpl.shared.deleteAll()
+        AddressUserInfoDAOImpl.shared.deleteAll()
+    }
+}
+
+extension App { }
+
+extension App {
+    static var fiatCurrency: String { shared.fiatCurrency }
+}
+
+// MARK: - Events
+private let kFiatCurrencyDidChange = "FiatCurrencyDidChange"
+
+extension Notification.Name {
+    static let fiatCurrencyDidChange = Notification.Name(kFiatCurrencyDidChange)
 }

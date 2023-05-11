@@ -20,6 +20,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSPriceOperationProvider.h"
 #import "DSOperation.h"
 #import "DSOperationQueue.h"
+#import "DSDerivationPathFactory.h"
 
 //MARK: DashWallet
 #import "DWActionButton.h"
@@ -40,7 +41,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"
-#import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "DWSecureWalletDelegate.h"
@@ -48,11 +48,8 @@ static const bool _SNAPSHOT = 0;
 #import "NSData+Dash.h"
 // end CrowdNode
 
-#import "DWUpholdViewController.h"
-#import "DWUpholdClient.h"
-#import "DWUpholdCardObject.h"
+
 #import "DWBaseActionButtonViewController.h"
-#import "DWBaseViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
@@ -64,8 +61,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWLocalCurrencyViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWDemoDelegate.h"
-#import "DWQRScanViewController.h"
-#import "DWQRScanModel.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
 #import "UIView+DWHUD.h"
@@ -78,6 +73,25 @@ static const bool _SNAPSHOT = 0;
 #import "CALayer+DWShadow.h"
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
+
+
+//MARK: Backup Wallet
+#import "DWBackupSeedPhraseViewController.h"
+#import "DWSecureWalletDelegate.h"
+
+//MARK: Payment flow
+#import "DWQRScanModel.h"
+#import "DWPayOptionModel.h"
+#import "DWPayModelProtocol.h"
+#import "DWReceiveModelProtocol.h"
+#import "DWReceiveModel.h"
+#import "DWTransactionListDataProviderProtocol.h"
+#import "DWQuickReceiveViewController.h"
+#import "DWQRScanViewController.h"
+#import "DWQRScanModel.h"
+#import "DWRequestAmountViewController.h"
+#import "UIViewController+DWShareReceiveInfo.h"
+#import "DWImportWalletInfoViewController.h"
 
 
 //MARK: Uphold
@@ -93,5 +107,7 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
-
 #import "DWPhoneWCSessionManager.h"
+
+//MARK: Platform
+#import "DWDPBasicUserItem.h"

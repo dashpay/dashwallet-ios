@@ -39,10 +39,10 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
     @objc
     func create(dto: AddressUserInfo) {
         do {
-            let userInfo = AddressUserInfo.table.insert(or: .replace, AddressUserInfo.addressColumn <- dto.address,
+            let userInfo = AddressUserInfo.table.insert(or: .replace,
+                                                        AddressUserInfo.addressColumn <- dto.address,
                                                         AddressUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
             try db.run(userInfo)
-
         } catch {
             print(error)
         }

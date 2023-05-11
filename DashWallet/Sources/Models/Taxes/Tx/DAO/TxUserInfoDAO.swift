@@ -23,7 +23,6 @@ import SQLite
 protocol TxUserInfoDAO {
     func create(dto: TxUserInfo)
     func get(by hash: Data) -> TxUserInfo?
-    func all() -> [TxUserInfo]
     func update(dto: TxUserInfo)
     func delete(dto: TxUserInfo)
     func deleteAll()
@@ -31,12 +30,12 @@ protocol TxUserInfoDAO {
 
 // MARK: - TxUserInfoDAOImpl
 
-@objc
 class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [Data: TxUserInfo] = [:]
 
-    @objc
+    private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.tx-user-info-dao", attributes: .concurrent)
+
     func create(dto: TxUserInfo) {
         do {
             let txUserInfo = TxUserInfo.table.insert(or: .replace,
@@ -51,10 +50,11 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
             print(error)
         }
 
-        cache[dto.txHash] = dto
+        queue.async(flags: .barrier) { [weak self] in
+            self?.cache[dto.txHash] = dto
+        }
     }
 
-    @objc
     func all() -> [TxUserInfo] {
         let txUserInfos = TxUserInfo.table
 
@@ -63,7 +63,6 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         do {
             for txInfo in try db.prepare(txUserInfos) {
                 let userInfo = TxUserInfo(row: txInfo)
-                cache[userInfo.txHash] = userInfo
                 userInfos.append(userInfo)
             }
         } catch {
@@ -73,9 +72,8 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return userInfos
     }
 
-    @objc
     func get(by hash: Data) -> TxUserInfo? {
-        if let cached = cache[hash] {
+        if let cached = cachedValue(by: hash) {
             return cached
         }
 
@@ -84,7 +82,9 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         do {
             for txInfo in try db.prepare(txUserInfo) {
                 let userInfo = TxUserInfo(row: txInfo)
-                cache[hash] = userInfo
+                queue.async(flags: .barrier) { [weak self] in
+                    self?.cache[hash] = userInfo
+                }
                 return userInfo
             }
         } catch {
@@ -94,31 +94,41 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return nil
     }
 
-    @objc
+    private func cachedValue(by key: Data) -> TxUserInfo? {
+        var v: TxUserInfo?
+
+        queue.sync {
+            v = cache[key]
+        }
+
+        return v
+    }
+
     func update(dto: TxUserInfo) {
         create(dto: dto)
     }
 
-    @objc
     func delete(dto: TxUserInfo) {
-        cache[dto.txHash] = nil
+        queue.async(flags: .barrier) { [weak self] in
+            self?.cache[dto.txHash] = nil
+        }
     }
 
-    @objc
     func deleteAll() {
         do {
             try db.run(TxUserInfo.table.delete())
-            cache = [:]
+            queue.async(flags: .barrier) { [weak self] in
+                self?.cache = [:]
+            }
         } catch {
             print(error)
         }
     }
 
-    @objc static let shared = TxUserInfoDAOImpl()
+    static let shared = TxUserInfoDAOImpl()
 }
 
 extension TxUserInfoDAOImpl {
-    @objc
     func dictionaryOfAllItems() -> [Data: TxUserInfo] {
         _ = all()
         return cache

@@ -18,8 +18,8 @@
 #import "DWBasePayViewController.h"
 
 #import "DWHomeProtocol.h"
-#import "DWPaymentsViewController.h"
 #import "DWWipeDelegate.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

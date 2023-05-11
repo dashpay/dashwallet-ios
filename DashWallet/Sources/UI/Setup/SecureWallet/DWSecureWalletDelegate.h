@@ -19,7 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSecureWalletInfoViewController;
 @class DWVerifiedSuccessfullyViewController;
 
 @protocol DWSecureWalletDelegate <NSObject>

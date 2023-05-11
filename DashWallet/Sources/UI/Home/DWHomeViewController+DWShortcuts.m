@@ -19,7 +19,6 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWBackupInfoViewController.h"
 #import "DWDashPaySetupFlowController.h"
 #import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
@@ -27,11 +26,11 @@
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWPayModelProtocol.h"
-#import "DWPaymentsViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
 #import "DWUpholdViewController.h"
 #import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate>
@@ -125,13 +124,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)secureWalletActionAuthenticated {
-    DWPreviewSeedPhraseModel *model = [[DWPreviewSeedPhraseModel alloc] init];
-    [model getOrCreateNewWallet];
-
-    DWBackupInfoViewController *controller =
-        [DWBackupInfoViewController controllerWithModel:model];
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith:DWSecureWalletInfoType_Setup];
     controller.delegate = self;
-    [self presentControllerModallyInNavigationController:controller];
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 - (void)buySellDashAction {

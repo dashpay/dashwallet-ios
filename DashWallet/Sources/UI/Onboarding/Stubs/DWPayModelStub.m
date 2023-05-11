@@ -60,10 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         _options = [options copy];
 
-        pasteboardOption.details = @"XrUv3aniSvZEKx2VoFe5fTqFfYL5JYFkbg";
-
         __weak typeof(self) weakSelf = self;
-        [_inputBuilder payFirstFromArray:@[ pasteboardOption.details ]
+        [_inputBuilder payFirstFromArray:@[ @"XrUv3aniSvZEKx2VoFe5fTqFfYL5JYFkbg" ]
                                   source:DWPaymentInputSource_Pasteboard
                               completion:^(DWPaymentInput *_Nonnull paymentInput) {
                                   __strong typeof(weakSelf) strongSelf = weakSelf;

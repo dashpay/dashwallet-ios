@@ -63,7 +63,10 @@ enum TaxReportGenerator {
 
         DispatchQueue.global(qos: .default).async {
             let transactions = transactions
-            let userInfos = TxUserInfoDAOImpl.shared.dictionaryOfAllItems()
+            let userInfosArray = TxUserInfoDAOImpl().all()
+            let userInfos = userInfosArray.reduce(into: [Data: TxUserInfo]()) { partialResult, dto in
+                partialResult[dto.txHash] = dto
+            }
 
             let csv = CSVBuilder<ReportColumns, DSTransaction>()
                 .set(columns: ReportColumns.allCases)

@@ -64,8 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-
-    [self.requestAmountView viewDidAppear];
 }
 
 #pragma mark - DWRequestAmountContentViewDelegate
@@ -99,7 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     return _requestAmountView;
 }
-
 
 @end
 

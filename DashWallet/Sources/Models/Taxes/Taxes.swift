@@ -54,14 +54,6 @@ class Taxes: NSObject {
     var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl.shared
 
     @objc
-    func initialize() {
-        DispatchQueue.main.async {
-            // Prefetch all items
-            let _ = self.addressesUserInfos.all()
-        }
-    }
-
-    @objc
     func mark(address: String, with taxCategory: TxUserInfoTaxCategory) {
         addressesUserInfos.create(dto: AddressUserInfo(address: address, taxCategory: taxCategory))
     }

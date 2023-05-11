@@ -36,9 +36,9 @@ final class DashTextAttachment: NSTextAttachment {
                                    characterIndex charIndex: Int) -> CGRect {
         guard let imageSize = image?.size else { return .zero }
 
-        let height = lineFrag.size.height - 10
+        let height = lineFrag.size.height * 0.6
         let scale = height/imageSize.height
 
-        return CGRect(x: 0, y: -1, width: imageSize.width*scale, height: height);
+        return CGRect(x: 0, y: 0, width: imageSize.width*scale, height: height);
     }
 }
