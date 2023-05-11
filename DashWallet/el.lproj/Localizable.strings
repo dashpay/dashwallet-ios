@@ -118,9 +118,6 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Προσθήκη Νέας Επαφής";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "Προσθήκη Συντόμευσης";
-
 /* No comment provided by engineer. */
 "Address" = "Διεύθυνση";
 
@@ -199,8 +196,8 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Αυτόματη απόκρυψη Υπολοίπου";
 
-/* No comment provided by engineer. */
-"Available balance" = "Διαθέσιμο υπόλοιπο";
+/* Translate it as short as possible! (24 symbols max) */
+"Backup" = "Backup";
 
 /* No comment provided by engineer. */
 "Backup Passphrase" = "Backup της φράσης πρόσβασης";
@@ -211,14 +208,14 @@
 /* No comment provided by engineer. */
 "Backup your passphrase to create a CrowdNode account" = "Δημιουργήστε αντίγραφο ασφαλείας της φράσης πρόσβασης για να δημιουργήσετε έναν λογαριασμό CrowdNode";
 
+/* Back up wallet */
+"Backup your recovery phrase" = "Backup your recovery phrase";
+
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Λάθος φράση ανάκτησης";
 
 /* Send Screen: to address */
 "Balance" = "Υπόλοιπο";
-
-/* No comment provided by engineer. */
-"Balance hidden" = "Το υπόλοιπο αποκρύφτηκε";
 
 /* CrowdNode */
 "Balance: " = "Υπόλοιπο:";
@@ -245,11 +242,11 @@
    buy */
 "Buy" = "Αγορά";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Buy & Sell" = "Buy & Sell";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Αγορά και Πώληση Dash";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "Αγορά / Πώληση Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Αγοράστε μια δωροκάρτα";
@@ -728,6 +725,9 @@
 "How to Use a Gift Card" = "Πώς να χρησιμοποιήσετε μια δωροκάρτα";
 
 /* No comment provided by engineer. */
+"HPMN Operator Keys" = "HPMN Operator Keys";
+
+/* No comment provided by engineer. */
 "I Accept" = "Αποδέχομαι";
 
 /* No comment provided by engineer. */
@@ -738,9 +738,6 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Το έγραψα";
-
-/* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Αν χάσετε αυτή τη συσκευή, θα χάσετε και τα χρήματά σας. Πάρτε τη φράση ανάκτησης σας για να μπορέσετε να επαναφέρετε το πορτοφόλι σας σε άλλη συσκευή.";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Εάν χάσετε τη φράση πρόσβασης για αυτό το πορτοφόλι και χάσετε αυτή τη συσκευή ή απεγκαταστήσετε το Dash Wallet, θα χάσετε την πρόσβαση στα χρήματά σας στο CrowdNode και τα χρήματα σε αυτό το πορτοφόλι.";
@@ -824,13 +821,10 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Φαίνεται ότι προσπαθείτε να επαναφέρετε το πορτοφόλι σας χρησιμοποιώντας μια φράση ανάκτησης 12 λέξεων, ωστόσο έχετε εισαγάγει μόνο 11 λέξεις, θα θέλατε να ανακτήσετε αυτόματα τη λέξη που λείπει;";
 
 /* No comment provided by engineer. */
-"It's Important" = "Είναι σημαντικό";
-
-/* No comment provided by engineer. */
 "Join Evolution" = "Εγγραφείτε στο Evolution";
 
 /* No comment provided by engineer. */
-"Keypair %ld" = "Keypair %ld";
+"Keypair" = "Keypair";
 
 /* Explore Dash */
 "Last device sync" = "Τελευταίος συγχρονισμός συσκευής";
@@ -874,9 +868,6 @@
 
 /* Dash Service Overview */
 "Link your Uphold account" = "Σύνδεση Uphold λογαριασμού";
-
-/* No comment provided by engineer. */
-"Load more" = "Φόρτωσε περισσότερα";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Τοπικό νόμισμα";
@@ -925,6 +916,9 @@
 
 /* Map */
 "Map" = "Χάρτης";
+
+/* No comment provided by engineer. */
+"Masternode Keys" = "Masternode Keys";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "Λίστα masternode #%1$d of %2$d";
@@ -1115,9 +1109,6 @@
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Τύπος πληρωμής";
 
-/* No comment provided by engineer. */
-"Payments" = "Πληρωμές";
-
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1141,6 +1132,9 @@
 
 /* Network Unavailable */
 "Please check your network connection" = "Ελέγξτε τη σύνδεση δικτύου σας";
+
+/* No comment provided by engineer. */
+"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Παρακαλώ εισάγετε το PIN για να αναβαθμίσετε το πορτοφόλι";
@@ -1173,7 +1167,7 @@
 "Please write it down" = "Παρακαλώ να το γράψετε";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "Χρησιμοποιήθηκε προηγουμένως στη διεύθυνση IP";
+"Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
 "Private key" = "Ιδιωτικό κλειδί";
@@ -1310,17 +1304,14 @@
 /* No comment provided by engineer. */
 "Scan QR Code" = "σάρωση QR κωδικού";
 
+/* (Send by) Scanning QR code */
+"Scan QR code" = "Scan QR code";
+
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Σαρώστε το για να πληρώσετε";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Σαρώστε για να πληρώσετε";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "Σαρώστε για να Στείλετε";
-
-/* (Send by) Scanning QR code */
-"Scanning QR code" = "Σάρωση QR κωδικού";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Εντοπίστηκε στιγμιότυπο οθόνης. Νέα φράση ανάκτησης:";
@@ -1345,12 +1336,6 @@
 
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Αναζήτηση για όνομα χρήστη %@ στο Dash Δικτυο";
-
-/* No comment provided by engineer. */
-"Secure now" = "Ασφαλίστε τώρα";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Secure Wallet Now" = "Ασφαλίστε το πορτοφόλι τώρα";
 
 /* No comment provided by engineer. */
 "Security" = "Ασφάλεια";
@@ -1385,9 +1370,6 @@
 /* CrowdNode Confirm */
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Στείλτε %@ Dash από την κύρια διεύθυνση Dash που χρησιμοποιείτε σήμερα για τον λογαριασμό σας στην CrowdNode";
 
-/* Send by (scanning QR code) */
-"Send by" = "Εστάλη από";
-
 /* No comment provided by engineer. */
 "Send Contact Request" = "Αποστολή Αιτήματος Επαφής";
 
@@ -1398,8 +1380,8 @@
 /* No comment provided by engineer. */
 "Send to" = "Εστάλη στο";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Send to Address" = "Αποστολή στη διεύθυνση";
+/* No comment provided by engineer. */
+"Send to copied address or QR code" = "Send to copied address or QR code";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Αποστολή μέσω NFC";
@@ -1449,8 +1431,8 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Εγκατάσταση πορτοφολιού";
 
-/* No comment provided by engineer. */
-"Share" = "Μοιραστείτε";
+/* Receive screen */
+"Share address" = "Share address";
 
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "Αγοράστε με το DASH σε πάνω από 150 χιλιάδες εμπόρους";
@@ -1542,14 +1524,8 @@
 /* Balance */
 "Syncing…" = "Συγχρονισμός...";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Πατήστε";
-
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Πατήστε για να κρύψετε το υπόλοιπο";
-
-/* No comment provided by engineer. */
-"Tap to unhide balance" = "Πατήστε για να αποκαλύψετε το υπόλοιπο";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Φορολογική κατηγορία";
@@ -1598,9 +1574,6 @@
 
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "Αυτό το QR περιέχει ήδη την αίτηση πληρωμής για %@";
-
-/* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "Αυτή η φράση ανάκτησης σας δίνει πρόσβασή στα χρήματα αυτού του πορτοφολιού.";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Αυτό το πορτοφόλι δεν είναι άδειο η ο συγχρονισμός δεν έχει ολοκληρωθεί , δεν θα πρέπει να το καθαρίσετε χωρίς την φράση ανάκτησης";
@@ -1704,7 +1677,7 @@
 "Used" = "Χρησιμοποιήθηκε";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "Χρησιμοποιήθηκε στη διεύθυνση IP";
+"Used at: " = "Used at: ";
 
 /* No comment provided by engineer. */
 "Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";
@@ -1764,16 +1737,10 @@
 "Wallet disabled" = "Το πορτοφόλι απενεργοποιήθηκε";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Κλειδιά Πορτοφολιού";
-
-/* No comment provided by engineer. */
 "Warning" = "Προειδοποίηση";
 
 /* No comment provided by engineer. */
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";
-
-/* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "Θα σας αποκαλύψουμε το μυστικό κλειδί του πορτοφολιού σας.";
 
 /* CrowdNode */
 "We couldn’t create your CrowdNode account." = "Δεν μπορέσαμε να δημιουργήσουμε το λογαριασμό σας στο CrowdNode.";
@@ -1783,9 +1750,6 @@
 
 /* CrowdNode */
 "We couldn’t withdraw from your CrowdNode account." = "Δεν μπορέσαμε να κάνουμε ανάληψη από το λογαριασμό σας στο CrowdNode.";
-
-/* No comment provided by engineer. */
-"We do not store this recovery phrase." = "Δεν αποθηκεύουμε αυτήν την φράση ανάκτησης";
 
 /* No comment provided by engineer. */
 "We have 2 types of merchants" = "Έχουμε 2 τύπους εμπόρων";
@@ -1878,9 +1842,6 @@
 /* Coinbase */
 "You receive" = "Θα λάβετε";
 
-/* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Λάβατε Dash! Αν χάσετε αυτή τη συσκευή, θα χάσετε τα χρήματά σας. Πάρτε τη φράση ανάκτησης για να μπορέσετε να επαναφέρετε το πορτοφόλι σας σε άλλη συσκευή.";
-
 /* Coinbase */
 "You send" = "Θα στείλετε";
 
@@ -1899,8 +1860,8 @@
 /* No comment provided by engineer. */
 "You will lose all your manually reclassified transactions types" = "Θα χάσετε όλους τους χειροκίνητα αναταξινομημένους τύπους συναλλαγών σας";
 
-/* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Θα χρειαστείτε αυτή τη φράση ανάκτησης για να αποκτήσετε πρόσβαση στα χρήματά σας εάν αυτή η συσκευή χαθεί, καταστραφεί ή εάν το Πορτοφόλι Dash απεγκατασταθει τυχαία από αυτήν τη συσκευή.";
+/* Back up wallet */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Θα λάβετε Dash %@ στο Dash Wallet σας σε αυτή τη συσκευή. Λάβετε υπόψη ότι μπορεί να χρειαστούν έως και 2-3 λεπτά για να ολοκληρωθεί η μεταφορά.";
@@ -1946,6 +1907,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Το πορτοφόλι σας είναι ασφαλές τώρα. Μπορείτε να χρησιμοποιήσετε τη φράση ανάκτησης ανά πάσα στιγμή για να ανακτήσετε το λογαριασμό σας σε άλλη συσκευή.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Αντιγραμμένη διεύθυνση ή QR";

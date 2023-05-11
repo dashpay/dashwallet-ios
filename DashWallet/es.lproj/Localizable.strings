@@ -118,9 +118,6 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "Agregar un nuevo contacto";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "Agregar atajo";
-
 /* No comment provided by engineer. */
 "Address" = "Dirección";
 
@@ -199,8 +196,8 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Esconder saldo automáticamente";
 
-/* No comment provided by engineer. */
-"Available balance" = "Saldo disponible";
+/* Translate it as short as possible! (24 symbols max) */
+"Backup" = "Backup";
 
 /* No comment provided by engineer. */
 "Backup Passphrase" = "Contraseña de respaldo";
@@ -211,14 +208,14 @@
 /* No comment provided by engineer. */
 "Backup your passphrase to create a CrowdNode account" = "Haz una copia de seguridad de tu contraseña para crear una cuenta de CrowdNode";
 
+/* Back up wallet */
+"Backup your recovery phrase" = "Backup your recovery phrase";
+
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Frase de recuperación incorrecta";
 
 /* Send Screen: to address */
 "Balance" = "Saldo";
-
-/* No comment provided by engineer. */
-"Balance hidden" = "Saldo oculto";
 
 /* CrowdNode */
 "Balance: " = "Balance:";
@@ -245,11 +242,11 @@
    buy */
 "Buy" = "Comprar";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Buy & Sell" = "Buy & Sell";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Comprar y Vender Dash";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "Comprar / Vender Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Comprar una Tarjeta de regalo";
@@ -728,6 +725,9 @@
 "How to Use a Gift Card" = "Como usar una tarjeta de regalo";
 
 /* No comment provided by engineer. */
+"HPMN Operator Keys" = "HPMN Operator Keys";
+
+/* No comment provided by engineer. */
 "I Accept" = "Yo acepto";
 
 /* No comment provided by engineer. */
@@ -738,9 +738,6 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Ya la escribí";
-
-/* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Si pierdes este dispositivo, podrás perder tus fondos. Obtén tu frase de recuperación para que puedas restaurar tu billetera en otro dispositivo.";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Si pierdes tu contraseña para esta billetera y pierdes este dispositivo o desinstalas la billetera de Dash, perderás el acceso a tus fondos en CrowdNode y a los fondos dentro de esta billetera.";
@@ -824,13 +821,10 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Parece que estás intentando restaurar tu billetera usando una frase de recuperación de 12 palabras, sin embargo, solo has ingresado 11 palabras. ¿Te gustaría recuperar automáticamente la palabra que falta?";
 
 /* No comment provided by engineer. */
-"It's Important" = "Es importante";
-
-/* No comment provided by engineer. */
 "Join Evolution" = "Únete a Evolution";
 
 /* No comment provided by engineer. */
-"Keypair %ld" = "Par de llaves %Id";
+"Keypair" = "Keypair";
 
 /* Explore Dash */
 "Last device sync" = "Sincronización del último dispositivo";
@@ -874,9 +868,6 @@
 
 /* Dash Service Overview */
 "Link your Uphold account" = "Vincula tu cuenta de Uphold";
-
-/* No comment provided by engineer. */
-"Load more" = "Cargar más";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Moneda Local";
@@ -925,6 +916,9 @@
 
 /* Map */
 "Map" = "Mapa";
+
+/* No comment provided by engineer. */
+"Masternode Keys" = "Masternode Keys";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "Lista de masternode #%1$d de %2$d";
@@ -1115,9 +1109,6 @@
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Tipo de pago";
 
-/* No comment provided by engineer. */
-"Payments" = "Pago";
-
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1141,6 +1132,9 @@
 
 /* Network Unavailable */
 "Please check your network connection" = "Comprueba tu conexión de red";
+
+/* No comment provided by engineer. */
+"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Por favor ingrese su PIN para actualizar la billetera";
@@ -1173,7 +1167,7 @@
 "Please write it down" = "Anótala, por favor";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "Usado anteriormente en la dirección de IP";
+"Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
 "Private key" = "Llave privada";
@@ -1310,17 +1304,14 @@
 /* No comment provided by engineer. */
 "Scan QR Code" = "Escanear Código QR";
 
+/* (Send by) Scanning QR code */
+"Scan QR code" = "Scan QR code";
+
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Escanear para Pagar";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Escanear para Paga";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "Escanear para Envia";
-
-/* (Send by) Scanning QR code */
-"Scanning QR code" = "Escaneando código QR";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Pantallazo detectado. Nueva frase de recuperación:";
@@ -1345,12 +1336,6 @@
 
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Buscando nombre de usuaro %@en la red Dash ";
-
-/* No comment provided by engineer. */
-"Secure now" = "Asegurar ahora";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Secure Wallet Now" = "Asegurar Billetera Ahora";
 
 /* No comment provided by engineer. */
 "Security" = "Seguridad";
@@ -1385,9 +1370,6 @@
 /* CrowdNode Confirm */
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Envía %@ desde tu dirección principal de Dash que usas actualmente para tu cuenta de CrowdNode";
 
-/* Send by (scanning QR code) */
-"Send by" = "Enviado por";
-
 /* No comment provided by engineer. */
 "Send Contact Request" = "Enviar solicitud de contacto";
 
@@ -1398,8 +1380,8 @@
 /* No comment provided by engineer. */
 "Send to" = "Enviar para";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Send to Address" = "Enviar a Dirección";
+/* No comment provided by engineer. */
+"Send to copied address or QR code" = "Send to copied address or QR code";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Enviar por NFC";
@@ -1449,8 +1431,8 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Configurar Billetera";
 
-/* No comment provided by engineer. */
-"Share" = "Compartir";
+/* Receive screen */
+"Share address" = "Share address";
 
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "Compra con DASH en más de 150.000 comercios";
@@ -1542,14 +1524,8 @@
 /* Balance */
 "Syncing…" = "Sincronizando...";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "Toca";
-
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tocar para ocultar saldo";
-
-/* No comment provided by engineer. */
-"Tap to unhide balance" = "Tocar para mostrar saldo";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Categoría de impuestos";
@@ -1598,9 +1574,6 @@
 
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "Este QR ya contiene la solicitud de pago de %@";
-
-/* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "Esta frase de recuperación es tu acceso para los fondos en esta billetera.";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Esta cartera no esta vacía o la sincronización no ha terminado, no podrás limpiarla sin la frase de recuperación";
@@ -1704,7 +1677,7 @@
 "Used" = "Utilizado";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "Utilizado en la dirección de IP";
+"Used at: " = "Used at: ";
 
 /* No comment provided by engineer. */
 "Username taken" = "Nombre de usuario ya ha sido tomado";
@@ -1764,16 +1737,10 @@
 "Wallet disabled" = "Billetera deshabilitada";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Llaves de billetera";
-
-/* No comment provided by engineer. */
 "Warning" = "Aviso";
 
 /* No comment provided by engineer. */
 "WARNING" = "ADVERTENCIA";
-
-/* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "Estamos a punto de mostrar la frase de recuperación de tu billetera.";
 
 /* CrowdNode */
 "We couldn’t create your CrowdNode account." = "No pudimos crear tu cuenta de CrowdNode.";
@@ -1783,9 +1750,6 @@
 
 /* CrowdNode */
 "We couldn’t withdraw from your CrowdNode account." = "No pudimos retirar dinero de tu cuenta de CrowdNode.";
-
-/* No comment provided by engineer. */
-"We do not store this recovery phrase." = "Nosotros no guardamos esta frase de recuperación.";
 
 /* No comment provided by engineer. */
 "We have 2 types of merchants" = "Tenemos 2 tipos de comerciantes";
@@ -1878,9 +1842,6 @@
 /* Coinbase */
 "You receive" = "Tu recibes";
 
-/* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Recibiste Dash! Si pierdes este dispositivo, podrás perder sus fondos. Obtén tu frase de recuperación para que puedas restaurar tu billetera en otro dispositivo.";
-
 /* Coinbase */
 "You send" = "Tu envías";
 
@@ -1899,8 +1860,8 @@
 /* No comment provided by engineer. */
 "You will lose all your manually reclassified transactions types" = "Perderás todos tus tipos de transacciones reclasificadas manualmente";
 
-/* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Necesitarás esta frase de recuperación para acceder a tus fondos si este dispositivo se pierde, daña o si la billetera de Dash se desinstala accidentalmente de este dispositivo.";
+/* Back up wallet */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Tu recibirás %@ Dash en tu billetera de Dash en este dispositivo. Ten en cuenta que puede tomar hasta 2-3 minutos completar una transferencia.";
@@ -1946,6 +1907,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Tu billetera está segura ahora. Podrás utilizar tu frase de recuperación en cualquier momento para recuperar tu cuenta en otro dispositivo.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "Dirección o QR copiado";

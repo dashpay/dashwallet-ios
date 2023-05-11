@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,20 +17,24 @@
 
 import Foundation
 
+// MARK: - DerivationPathKeysItem
+
 struct DerivationPathKeysItem {
     let title: String
     let value: String
-    
+
     init(title: String, value: String) {
         self.title = title
         self.value = value
     }
-    
+
     init(info: DerivationPathInfo, value: String) {
-        self.title = info.title
+        title = info.title
         self.value = value
     }
 }
+
+// MARK: - DerivationPathInfo
 
 enum DerivationPathInfo: CaseIterable {
     case address
@@ -54,54 +58,56 @@ extension DerivationPathInfo {
     }
 }
 
+// MARK: - DerivationPathKeysModel
+
 final class DerivationPathKeysModel {
     let key: MNKey
     let derivationPath: DSAuthenticationKeysDerivationPath
-    
+
     let infoItems = DerivationPathInfo.allCases
-    
+
     var visibleIndexes: Int
-    
+
     init(key: MNKey, derivationPath: DSAuthenticationKeysDerivationPath) {
         self.key = key
         self.derivationPath = derivationPath
-        self.visibleIndexes = Int(derivationPath.firstUnusedIndex())
+        visibleIndexes = Int(derivationPath.firstUnusedIndex())
     }
-    
+
     func showNextKey() {
         visibleIndexes += 1
     }
 }
 
-//MARK: UI Helper
+// MARK: UI Helper
 extension DerivationPathKeysModel {
     var title: String {
         key.title
     }
-    
+
     var numberOfSections: Int {
         visibleIndexes + 1
     }
-    
+
     var numberIfItems: Int {
         infoItems.count
     }
-    
+
     func usageInfoForKey(at index: Int) -> String {
         let used = derivationPath.addressIsUsed(at: UInt32(index))
-        
-        if (used) {
+
+        if used {
             if let localMasternode = derivationPath.chain.chainManager!.masternodeManager.localMasternode(using: UInt32(index), at: derivationPath) {
                 return NSLocalizedString("Used at: ", comment: "") + localMasternode.ipAddressAndIfNonstandardPortString
-            }else {
-                guard let localMasternodesArray = self.derivationPath.chain.chainManager!.masternodeManager.localMasternodesPreviously(using: UInt32(index), at: derivationPath) else {
+            } else {
+                guard let localMasternodesArray = derivationPath.chain.chainManager!.masternodeManager.localMasternodesPreviously(using: UInt32(index), at: derivationPath) else {
                     return NSLocalizedString("Not yet used", comment: "")
                 }
-                
+
                 if localMasternodesArray.count == 1 {
                     let localMasternode = localMasternodesArray.first!
                     return NSLocalizedString("Previously used at: ", comment: "") + localMasternode.ipAddressAndIfNonstandardPortString
-                } else if localMasternodesArray.count == 0 {
+                } else if localMasternodesArray.isEmpty {
                     return NSLocalizedString("Used", comment: "")
                 } else {
                     let localMasternode = localMasternodesArray.last!
@@ -112,16 +118,16 @@ extension DerivationPathKeysModel {
             return NSLocalizedString("Not yet used", comment: "")
         }
     }
-    
+
     func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
         let wallet = DWEnvironment.sharedInstance().currentWallet
-        
+
         switch info {
         case .address:
-            let address = self.derivationPath.address(at: UInt32(index))
+            let address = derivationPath.address(at: UInt32(index))
             return DerivationPathKeysItem(info: info, value: address)
         case .publicKey:
-            let publicKeyData = self.derivationPath.publicKeyData(at: UInt32(index))
+            let publicKeyData = derivationPath.publicKeyData(at: UInt32(index))
             return DerivationPathKeysItem(info: info, value: publicKeyData.hexEncodedString())
         case .privateKey:
             return autoreleasepool {
@@ -129,9 +135,9 @@ extension DerivationPathKeysModel {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
                 let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-                
+
                 let key = self.derivationPath.privateKey(at: UInt32(index), fromSeed: seed)!
-         
+
                 return DerivationPathKeysItem(info: info, value: key.secretKeyString)
             }
         case .wifPrivateKey:
@@ -140,37 +146,11 @@ extension DerivationPathKeysModel {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
                 let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-                
+
                 let key = self.derivationPath.privateKey(at: UInt32(index), fromSeed: seed)!
-         
+
                 return DerivationPathKeysItem(info: info, value: key.serializedPrivateKey(for: wallet.chain)!)
             }
-            
-//        case .MasternodeInfo:
-//            let used = self.derivationPath.addressIsUsed(at: index)
-//            if used {
-//                let masternodeManager = self.derivationPath.chain.chainManager.masternodeManager
-//                let localMasternode = masternodeManager.localMasternode(usingIndex: index, at: self.derivationPath)
-//                if localMasternode != nil {
-//                    item.title = NSLocalizedString("Used at IP address", comment: "")
-//                    item.detail = localMasternode!.ipAddressAndIfNonstandardPortString
-//                } else {
-//                    let localMasternodesArray = masternodeManager.localMasternodesPreviouslyUsingIndex(index, at: self.derivationPath)
-//                    if localMasternodesArray.count == 1 {
-//                        item.title = NSLocalizedString("Previously used at IP address", comment: "")
-//                        item.detail = localMasternodesArray[0].ipAddressAndIfNonstandardPortString
-//                    } else if localMasternodesArray.count == 0 {
-//                        item.title = NSLocalizedString("Used", comment: "")
-//                        item.detail = ""
-//                    } else {
-//                        item.title = NSLocalizedString("Previously used at IP address", comment: "")
-//                        item.detail = localMasternodesArray.last!.ipAddressAndIfNonstandardPortString
-//                    }
-//                }
-//            } else {
-//                item.title = NSLocalizedString("Not yet used", comment: "")
-//                item.detail = ""
-//            }
         }
     }
 }

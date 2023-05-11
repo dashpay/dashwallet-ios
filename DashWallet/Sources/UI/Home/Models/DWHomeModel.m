@@ -114,7 +114,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-        
+
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];
@@ -158,7 +158,7 @@ static BOOL IsJailbroken(void) {
                                selector:@selector(fiatCurrencyDidChangeNotification)
                                    name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
-        
+
         [self reloadTxDataSource];
 
         NSDate *date = [NSDate new];
