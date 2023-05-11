@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import UIKit
 
-NS_ASSUME_NONNULL_BEGIN
+class TxListEmptyTableViewCell: UITableViewCell {
 
-@interface DWTxListEmptyTableViewCell : UITableViewCell
+    @IBOutlet var placeholderLabel: UILabel!
 
-@end
+    override func awakeFromNib() {
+        super.awakeFromNib()
 
-NS_ASSUME_NONNULL_END
+        placeholderLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
+        placeholderLabel.text = NSLocalizedString("There are no transactions to display", comment: "")
+    }
+}
