@@ -1,26 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWSyncView">
-            <connections>
-                <outlet property="contentView" destination="iN0-l3-epB" id="nfY-YG-V28"/>
-                <outlet property="descriptionLabel" destination="VKe-Yj-7cK" id="608-yO-gvO"/>
-                <outlet property="percentLabel" destination="tmC-WD-m2y" id="ob9-ve-Rnb"/>
-                <outlet property="progressView" destination="XDT-qQ-rV0" id="1Uw-JW-2de"/>
-                <outlet property="retryButton" destination="UQ0-IA-BOa" id="geq-NA-Fbs"/>
-                <outlet property="roundedView" destination="84Y-h0-Lak" id="3Lv-hr-E0S"/>
-                <outlet property="titleLabel" destination="R4b-Le-Xyn" id="M7D-dK-VG7"/>
-            </connections>
-        </placeholder>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB">
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB" customClass="SyncView" customModule="dashwallet" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="414" height="86"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
@@ -65,14 +55,14 @@
                                     <color key="textColor" name="DashBlueColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XDT-qQ-rV0" userLabel="Progress View" customClass="DWProgressView">
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XDT-qQ-rV0" userLabel="Progress View" customClass="ProgressView" customModule="dashwallet" customModuleProvider="target">
                                     <rect key="frame" x="0.0" y="65" width="374" height="5"/>
                                     <color key="backgroundColor" name="ProgressBackgroundColor"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="5" id="29r-qc-OFs"/>
                                     </constraints>
                                 </view>
-                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UQ0-IA-BOa">
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UQ0-IA-BOa">
                                     <rect key="frame" x="314" y="13" width="44" height="44"/>
                                     <constraints>
                                         <constraint firstAttribute="width" constant="44" id="QIs-GU-dY1"/>
@@ -80,7 +70,7 @@
                                     </constraints>
                                     <state key="normal" image="icon_reload"/>
                                     <connections>
-                                        <action selector="retryButtonAction:" destination="-1" eventType="touchUpInside" id="mVh-rV-3EW"/>
+                                        <action selector="retryButtonAction:" destination="iN0-l3-epB" eventType="touchUpInside" id="FfY-wO-6wA"/>
                                     </connections>
                                 </button>
                             </subviews>
@@ -133,13 +123,21 @@
             <variation key="widthClass=regular">
                 <edgeInsets key="layoutMargins" top="0.0" left="20" bottom="0.0" right="20"/>
             </variation>
+            <connections>
+                <outlet property="descriptionLabel" destination="VKe-Yj-7cK" id="KHV-TH-iL8"/>
+                <outlet property="percentLabel" destination="tmC-WD-m2y" id="iEi-MA-x4h"/>
+                <outlet property="progressView" destination="XDT-qQ-rV0" id="Z6G-mp-ed3"/>
+                <outlet property="retryButton" destination="UQ0-IA-BOa" id="0YK-in-cRL"/>
+                <outlet property="roundedView" destination="84Y-h0-Lak" id="5tF-3S-pte"/>
+                <outlet property="titleLabel" destination="R4b-Le-Xyn" id="gpn-gU-h5O"/>
+            </connections>
             <point key="canvasLocation" x="50.724637681159422" y="34.821428571428569"/>
         </view>
     </objects>
     <resources>
         <image name="icon_reload" width="26" height="29"/>
         <namedColor name="DashBlueColor">
-            <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="ProgressBackgroundColor">
             <color red="0.85882352941176465" green="0.85882352941176465" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
