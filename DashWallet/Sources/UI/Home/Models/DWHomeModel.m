@@ -65,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
-@synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
@@ -100,9 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
-
-        
-        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];
 

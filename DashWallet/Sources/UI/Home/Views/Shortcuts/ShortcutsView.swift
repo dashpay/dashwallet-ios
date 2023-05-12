@@ -85,13 +85,7 @@ class ShortcutsView: UIView {
     @IBOutlet
     var collectionViewHeightConstraint: NSLayoutConstraint!
 
-    @objc
-    var model: ShortcutsModel! {
-        didSet {
-            model.delegate = self
-            collectionView.reloadData()
-        }
-    }
+    var model = ShortcutsModel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -103,7 +97,15 @@ class ShortcutsView: UIView {
         commonInit()
     }
 
+    func reloadData() {
+        model.reloadShortcuts()
+    }
+    
     private func commonInit() {
+        model.shortcutItemsDidChangeHandler = { [weak self] in
+            self?.collectionView.reloadData()
+        }
+
         Bundle.main.loadNibNamed(String(describing: type(of: self)), owner: self, options: nil)
 
         backgroundColor = .dw_secondaryBackground()
@@ -209,12 +211,9 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
 
 // MARK: ShortcutsModelDataSource, ShortcutsModelDelegate
 
-extension ShortcutsView: ShortcutsModelDataSource, ShortcutsModelDelegate {
+extension ShortcutsView {
+    // TODO: DashPay
     func shouldShowCreateUserNameButton() -> Bool {
         false
-    }
-
-    func shortcutItemsDidChange() {
-        collectionView.reloadData()
     }
 }

@@ -29,7 +29,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub () <DWShortcutsModelDataSource, DWBalanceViewDataSource>
+@interface DWHomeModelStub () <DWBalanceViewDataSource>
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 
@@ -48,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
-@synthesize shortcutsModel = _shortcutsModel;
 @synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
@@ -66,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY_ENABLED
         _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
 #endif                                                 /* DASHPAY_ENABLED */
-        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
         _allowedToShowReclassifyYourTransactions = NO;
@@ -110,10 +108,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isWalletEmpty {
     return NO;
-}
-
-- (void)reloadShortcuts {
-    [self.shortcutsModel reloadShortcuts];
 }
 
 - (void)retrySyncing {

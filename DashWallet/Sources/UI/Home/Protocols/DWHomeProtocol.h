@@ -19,10 +19,8 @@
 
 #import "DWBalanceProtocol.h"
 #import "DWDashPayProtocol.h"
-#import "DWShortcutsProtocol.h"
 #import "DWSyncContainerProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,9 +40,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeModel:(id<DWHomeProtocol>)model
     didReceiveNewIncomingTransaction:(DSTransaction *)transaction;
 
+- (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 @end
 
-@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol, DWShortcutsProtocol, DWHomeBalanceViewDataSource>
+@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
@@ -58,8 +57,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
 @property (readonly, nonatomic, assign, getter=isAllowedToShowReclassifyYourTransactions) BOOL allowedToShowReclassifyYourTransactions;
-
-- (void)reloadShortcuts;
 
 - (void)walletBackupReminderWasShown;
 

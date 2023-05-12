@@ -17,37 +17,18 @@
 
 import Foundation
 
-// MARK: - ShortcutsModelDataSource
-
-@objc(DWShortcutsModelDataSource)
-protocol ShortcutsModelDataSource: AnyObject {
-    func shouldShowCreateUserNameButton() -> Bool
-}
-
-// MARK: - ShortcutsModelDelegate
-
-@objc(DWShortcutsModelDelegate)
-protocol ShortcutsModelDelegate: AnyObject {
-    func shortcutItemsDidChange()
-}
 
 let MAX_SHORTCUTS_COUNT = 4
 
 // MARK: - ShortcutsModel
 
-@objc(DWShortcutsModel)
-class ShortcutsModel: NSObject {
+final class ShortcutsModel {
     private var mutableItems: [ShortcutAction] = []
 
-    weak var dataSource: ShortcutsModelDataSource?
-    weak var delegate: ShortcutsModelDelegate?
+    var shortcutItemsDidChangeHandler: (() -> ())?
 
     @objc
-    init(dataSource: ShortcutsModelDataSource) {
-        super.init()
-
-        self.dataSource = dataSource
-
+    init() {
         reloadShortcuts()
     }
 
@@ -58,9 +39,10 @@ class ShortcutsModel: NSObject {
     @objc
     func reloadShortcuts() {
         mutableItems = Self.userShortcuts()
-        delegate?.shortcutItemsDidChange()
+        shortcutItemsDidChangeHandler?()
     }
 
+    //TODO: Move this to HomeModel
     static func userShortcuts() -> [ShortcutAction] {
         let options = DWGlobalOptions.sharedInstance()
         let walletNeedsBackup = options.walletNeedsBackup
