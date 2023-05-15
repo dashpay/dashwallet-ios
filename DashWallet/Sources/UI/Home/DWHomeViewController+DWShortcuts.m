@@ -124,9 +124,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)secureWalletActionAuthenticated {
-    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith: DWSecureWalletInfoType_Setup];
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith:DWSecureWalletInfoType_Setup];
     controller.delegate = self;
-    
+
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];

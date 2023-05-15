@@ -182,16 +182,16 @@ final class DWWatchDataManager: NSObject {
                 if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? Data {
                     if let unwrappedAppleWatchData
                         = NSKeyedUnarchiver.unarchiveObject(with: data) as? BRAppleWatchData {
-                        let previousAppleWatchData = self.appleWatchData
-                        let previousWalletStatus = self.walletStatus
-                        self.appleWatchData = unwrappedAppleWatchData
+                        let previousAppleWatchData = appleWatchData
+                        let previousWalletStatus = walletStatus
+                        appleWatchData = unwrappedAppleWatchData
                         let notificationCenter = NotificationCenter.default
-                        if previousAppleWatchData != self.appleWatchData {
-                            self.archiveData(unwrappedAppleWatchData)
+                        if previousAppleWatchData != appleWatchData {
+                            archiveData(unwrappedAppleWatchData)
                             notificationCenter.post(name: DWWatchDataManager.ApplicationDataDidUpdateNotification,
                                                     object: nil)
                         }
-                        if self.walletStatus != previousWalletStatus {
+                        if walletStatus != previousWalletStatus {
                             notificationCenter.post(name: DWWatchDataManager.WalletStatusDidChangeNotification,
                                                     object: nil)
                         }

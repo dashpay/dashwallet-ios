@@ -118,9 +118,6 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "새로운 연락처 추가하기";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "단축키 추가";
-
 /* No comment provided by engineer. */
 "Address" = "주소";
 
@@ -199,8 +196,8 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "잔고 자동숨김";
 
-/* No comment provided by engineer. */
-"Available balance" = "이용 가능한 잔고";
+/* Translate it as short as possible! (24 symbols max) */
+"Backup" = "Backup";
 
 /* No comment provided by engineer. */
 "Backup Passphrase" = "암호 문구 백업하기";
@@ -211,14 +208,14 @@
 /* No comment provided by engineer. */
 "Backup your passphrase to create a CrowdNode account" = "크라우드노드 계정을 생성하려면 암호 문구를 백업하세요";
 
+/* Back up wallet */
+"Backup your recovery phrase" = "Backup your recovery phrase";
+
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "잘못된 복원 문구";
 
 /* Send Screen: to address */
 "Balance" = "잔액";
-
-/* No comment provided by engineer. */
-"Balance hidden" = "숨긴 잔고";
 
 /* CrowdNode */
 "Balance: " = "잔고:";
@@ -245,11 +242,11 @@
    buy */
 "Buy" = "구매";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Buy & Sell" = "Buy & Sell";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "대시 매수 & 매도";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "대시 매수 / 매도";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "기프트 카드 구매";
@@ -728,6 +725,9 @@
 "How to Use a Gift Card" = "기프트 카드 사용 방법";
 
 /* No comment provided by engineer. */
+"HPMN Operator Keys" = "HPMN Operator Keys";
+
+/* No comment provided by engineer. */
 "I Accept" = "수락합니다";
 
 /* No comment provided by engineer. */
@@ -738,9 +738,6 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "옮겨 적었습니다";
-
-/* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "이 기기를 분실하시게 되면 당신의 자금 역시 잃게 됩니다. 다른 기기에서 당신의 지갑을 복원할 수 있도록 복구 문구를 설정하세요.";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "이 지갑의 암호 문구를 잃어버리고 기기를 잃는 경우 혹은 대시 지갑을 삭제하는 경우에는 크라우드노드의 자금 및 이 지갑 내 자금에 대한 액세스를 잃게 됩니다.";
@@ -824,13 +821,10 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "12 단어로 구성된 복구 문구를 이용하여 지갑을 복구하려고 시도하셨으나, 11 단어만을 입력하셨습니다. 입력되지 않은 단어를 자동으로 복구하시겠습니까?";
 
 /* No comment provided by engineer. */
-"It's Important" = "중요";
-
-/* No comment provided by engineer. */
 "Join Evolution" = "에볼루션에 합류합니다";
 
 /* No comment provided by engineer. */
-"Keypair %ld" = "키페어 %ld";
+"Keypair" = "Keypair";
 
 /* Explore Dash */
 "Last device sync" = "마지막 기기 동기화";
@@ -874,9 +868,6 @@
 
 /* Dash Service Overview */
 "Link your Uphold account" = "업홀드 계정 연결 연결하기";
-
-/* No comment provided by engineer. */
-"Load more" = "더 보기";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "현지 통화";
@@ -925,6 +916,9 @@
 
 /* Map */
 "Map" = "지도";
+
+/* No comment provided by engineer. */
+"Masternode Keys" = "Masternode Keys";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "마스터노드 리스트%2$d 중 #%1$d";
@@ -1115,9 +1109,6 @@
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "지불 유형";
 
-/* No comment provided by engineer. */
-"Payments" = "지불";
-
 /* Coinbase/Payment Methods */
 "PayPal" = "페이팔";
 
@@ -1141,6 +1132,9 @@
 
 /* Network Unavailable */
 "Please check your network connection" = "네트워크 연결을 확인하세요";
+
+/* No comment provided by engineer. */
+"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "지갑을 업그레이드하시려면 PIN을 입력하십시오";
@@ -1173,7 +1167,7 @@
 "Please write it down" = "적어주세요";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "IP 주소에서 이전에 사용됨";
+"Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
 "Private key" = "비밀 키";
@@ -1310,17 +1304,14 @@
 /* No comment provided by engineer. */
 "Scan QR Code" = "QR 코드 스캔";
 
+/* (Send by) Scanning QR code */
+"Scan QR code" = "Scan QR code";
+
 /* A title of the quick receive screen */
 "Scan this to Pay" = "지불을 위해 이를 스캔합니다";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "지불을 위해 스캔합니다";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "전송을 위해 스캔합니다";
-
-/* (Send by) Scanning QR code */
-"Scanning QR code" = "QR 코드를 스캔합니다";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "스크린샷이 삭제되었습니다. 새로운 복원 문구:";
@@ -1345,12 +1336,6 @@
 
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "대시 네트워크에서 사용자 이름 %@ 검색 중";
-
-/* No comment provided by engineer. */
-"Secure now" = "현재 안전합니다";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Secure Wallet Now" = "현재 지갑이 안전합니다";
 
 /* No comment provided by engineer. */
 "Security" = "보안";
@@ -1385,9 +1370,6 @@
 /* CrowdNode Confirm */
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "현재 당신의 크라우드노드 계정에 사용하고 있는 주요 대시 주소에서 %@ 를 송금합니다";
 
-/* Send by (scanning QR code) */
-"Send by" = "다음에서 전송하였습니다";
-
 /* No comment provided by engineer. */
 "Send Contact Request" = "연락처 요청 전송";
 
@@ -1398,8 +1380,8 @@
 /* No comment provided by engineer. */
 "Send to" = "다음에 전송합니다";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Send to Address" = "주소로 전송합니다";
+/* No comment provided by engineer. */
+"Send to copied address or QR code" = "Send to copied address or QR code";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "NFC를 통해 전송합니다";
@@ -1449,8 +1431,8 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "지갑 설정하기";
 
-/* No comment provided by engineer. */
-"Share" = "공유";
+/* Receive screen */
+"Share address" = "Share address";
 
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "15만개 이상의 상점에서 DASH로 쇼핑하세요";
@@ -1542,14 +1524,8 @@
 /* Balance */
 "Syncing…" = "동기화중...";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "탭";
-
 /* No comment provided by engineer. */
 "Tap to hide balance" = "잔고를 숨기시려면 탭하세요";
-
-/* No comment provided by engineer. */
-"Tap to unhide balance" = "잔고를 확인하시려면 탭하세요";
 
 /* No comment provided by engineer. */
 "Tax Category" = "세금 카테고리";
@@ -1598,9 +1574,6 @@
 
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "이 QR은 이미 %@ 에 대한 지불 요청을 포함합니다";
-
-/* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "이 지갑 내에서 자금에 접근하기 위해서는 이 복원 문구가 필요합니다";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "이 지갑은 비어 있지 않거나 동기화가 완료되지 않았습니다. 복구 문구없이 삭제할 수 없습니다.";
@@ -1704,7 +1677,7 @@
 "Used" = "사용됨";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "이 IP 주소에서 사용됨";
+"Used at: " = "Used at: ";
 
 /* No comment provided by engineer. */
 "Username taken" = "이미 사용 중인 사용자 이름";
@@ -1764,16 +1737,10 @@
 "Wallet disabled" = "지갑 사용 중지됨";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "지갑 키";
-
-/* No comment provided by engineer. */
 "Warning" = "경고";
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";
-
-/* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "곧 당신의 지갑에 따른 비밀 키를 표시할 예정입니다.";
 
 /* CrowdNode */
 "We couldn’t create your CrowdNode account." = "당신의 크라우드노드 계정을 생성하지 못했습니다.";
@@ -1783,9 +1750,6 @@
 
 /* CrowdNode */
 "We couldn’t withdraw from your CrowdNode account." = "당신의 크라우드노드 계정에서 출금하지 못했습니다.";
-
-/* No comment provided by engineer. */
-"We do not store this recovery phrase." = "이 복원 문구를 저장하지 마십시오.";
 
 /* No comment provided by engineer. */
 "We have 2 types of merchants" = "두 가지 유형의 상점이 있습니다";
@@ -1878,9 +1842,6 @@
 /* Coinbase */
 "You receive" = "다음을 받습니다";
 
-/* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "당신은 대시를 수령하셨습니다! 이 기기를 분실하시게 되면 당신의 자금 역시 잃게 됩니다. 다른 기기에서 당신의 지갑을 복원할 수 있도록 복구 문구를 설정하세요.";
-
 /* Coinbase */
 "You send" = "다음을 보냅니다";
 
@@ -1899,8 +1860,8 @@
 /* No comment provided by engineer. */
 "You will lose all your manually reclassified transactions types" = "수동으로 재분류한 모든 거래 유형을 잃게 됩니다";
 
-/* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "이 기기를 분실하거나 기기가 파손되는 경우, 혹은 대시 지갑이 이 기기에서 실수로 삭제되는 경우에는 당신의 자금에 접근하기 위해서 이 복구 문구가 필요합니다.";
+/* Back up wallet */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "이 기기의 대시 지갑에 %@ 대시를 받게 됩니다. 거래를 완료하는 데에는 2-3분 가량 소요될 수 있다는 점에 주의 해주십시오.";
@@ -1946,6 +1907,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "이제 당신의 지갑은 안전합니다. 언제든 당신의 복원 문구를 사용하셔서 당신의 계정을 다른 기기에서 복원하실 수 있습니다.";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "복사된 주소 혹은 QR";

@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    
+
     DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWith:DWSecureWalletInfoType_Reminder];
     controller.delegate = self;
     DWNavigationController *navigationController =

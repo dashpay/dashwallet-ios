@@ -103,12 +103,18 @@ extension DerivationPathKeysViewController {
         title = model.title
         view.backgroundColor = .dw_secondaryBackground()
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addNewAction))
+        let plusItem = UIBarButtonItem(image: UIImage(systemName: "plus"),
+                                       style: .plain,
+                                       target: self,
+                                       action: #selector(addNewAction))
+        plusItem.tintColor = UIColor.dw_label()
+        navigationItem.rightBarButtonItem = plusItem
+
         tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.registerClass(for: DerivationPathKeysCell.self)
         tableView.registerClassforHeaderFooterView(for: DerivationPathKeysHeaderView.self)
         tableView.preservesSuperviewLayoutMargins = true
-        tableView.backgroundColor = .dw_secondaryBackground()
+        tableView.backgroundColor = .clear
         tableView.estimatedRowHeight = UITableView.automaticDimension
         tableView.rowHeight = UITableView.automaticDimension
         tableView.translatesAutoresizingMaskIntoConstraints = false

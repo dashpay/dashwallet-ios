@@ -27,14 +27,14 @@ public final class SpendableTransaction: TransactionFilter {
 
     func matches(tx: DSTransaction) -> Bool {
         let hashMatch = tx.txHashData == txHashData
-         
+
         if hashMatch {
             let relayCount = transactionManager.relayCount(forTransaction: tx.txHash)
             DSLogger.log("CrowdNode: SpendableTransaction matched hash \(tx.txHashHexString); relayCount: \(relayCount)")
-            
+
             return relayCount > 0
         }
-        
+
         return false
     }
 }

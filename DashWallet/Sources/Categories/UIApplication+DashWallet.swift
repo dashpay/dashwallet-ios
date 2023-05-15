@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -34,9 +34,9 @@ extension UIApplication {
         }
 
         #if targetEnvironment(simulator)
-            return false
+        return false
         #else
-            return jailbroken
+        return jailbroken
         #endif
     }
 

@@ -151,32 +151,6 @@ extension DerivationPathKeysModel {
 
                 return DerivationPathKeysItem(info: info, value: key.serializedPrivateKey(for: wallet.chain)!)
             }
-
-//        case .MasternodeInfo:
-//            let used = self.derivationPath.addressIsUsed(at: index)
-//            if used {
-//                let masternodeManager = self.derivationPath.chain.chainManager.masternodeManager
-//                let localMasternode = masternodeManager.localMasternode(usingIndex: index, at: self.derivationPath)
-//                if localMasternode != nil {
-//                    item.title = NSLocalizedString("Used at IP address", comment: "")
-//                    item.detail = localMasternode!.ipAddressAndIfNonstandardPortString
-//                } else {
-//                    let localMasternodesArray = masternodeManager.localMasternodesPreviouslyUsingIndex(index, at: self.derivationPath)
-//                    if localMasternodesArray.count == 1 {
-//                        item.title = NSLocalizedString("Previously used at IP address", comment: "")
-//                        item.detail = localMasternodesArray[0].ipAddressAndIfNonstandardPortString
-//                    } else if localMasternodesArray.count == 0 {
-//                        item.title = NSLocalizedString("Used", comment: "")
-//                        item.detail = ""
-//                    } else {
-//                        item.title = NSLocalizedString("Previously used at IP address", comment: "")
-//                        item.detail = localMasternodesArray.last!.ipAddressAndIfNonstandardPortString
-//                    }
-//                }
-//            } else {
-//                item.title = NSLocalizedString("Not yet used", comment: "")
-//                item.detail = ""
-//            }
         }
     }
 }

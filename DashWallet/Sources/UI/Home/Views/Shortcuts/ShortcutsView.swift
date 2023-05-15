@@ -100,7 +100,7 @@ class ShortcutsView: UIView {
     func reloadData() {
         model.reloadShortcuts()
     }
-    
+
     private func commonInit() {
         model.shortcutItemsDidChangeHandler = { [weak self] in
             self?.collectionView.reloadData()

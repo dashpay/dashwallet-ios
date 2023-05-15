@@ -44,10 +44,12 @@ extension KeysOverviewViewController {
     private func configureHierarchy() {
         title = NSLocalizedString("Masternode Keys", comment: "")
 
+        view.backgroundColor = .dw_secondaryBackground()
+
         tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.preservesSuperviewLayoutMargins = true
         tableView.rowHeight = 62
-        tableView.backgroundColor = .dw_secondaryBackground()
+        tableView.backgroundColor = .clear
         tableView.estimatedRowHeight = 62
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.registerClass(for: KeysOverviewCell.self)

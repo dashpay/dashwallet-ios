@@ -36,6 +36,8 @@ final class DerivationPathKeysHeaderView: UITableViewHeaderFooterView {
     }
 
     private func configureHierarchy() {
+        contentView.backgroundColor = .dw_secondaryBackground()
+
         titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .dw_font(forTextStyle: .callout).withWeight(UIFont.Weight.semibold.rawValue)

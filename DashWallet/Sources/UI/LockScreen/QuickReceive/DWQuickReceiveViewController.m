@@ -44,7 +44,7 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
 
     DWModalNavigationController *navigationController =
         [[DWModalNavigationController alloc] initWithRootViewController:controller];
-    [navigationController setCancelButtonHidden: NO];
+    [navigationController setCancelButtonHidden:NO];
     return navigationController;
 }
 
@@ -88,13 +88,13 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
 - (void)setupView {
     self.titleLabel.text = NSLocalizedString(@"Scan this to Pay", @"A title of the quick receive screen");
 
-    //TODO: Implement quick receive
-    
+    // TODO: Implement quick receive
+
     DWReceiveViewController *receiveController = [[DWReceiveViewController alloc] initWithModel:self.receiveModel];
     receiveController.viewType = DWReceiveViewType_QuickReceive;
     receiveController.delegate = self;
     receiveController.allowedToImportPrivateKey = NO;
-    
+
     [self dw_embedChild:receiveController inContainer:self.receiveContentView];
     self.receiveController = receiveController;
 }

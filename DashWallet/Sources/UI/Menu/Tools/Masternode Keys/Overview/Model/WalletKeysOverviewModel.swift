@@ -56,8 +56,8 @@ final class WalletKeysOverviewModel {
         let factory = DSDerivationPathFactory.sharedInstance()!
 
         ownerDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
-        votingDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
-        operatorDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
+        votingDerivationPath = factory.providerVotingKeysDerivationPath(for: wallet)
+        operatorDerivationPath = factory.providerOperatorKeysDerivationPath(for: wallet)
         hpmnOperatorDerivationPath = operatorDerivationPath
         // hpmnOperatorDerivationPath = factory.platformNodeKeysDerivationPath(for: wallet) //We will use it in another branch
     }
@@ -77,7 +77,10 @@ final class WalletKeysOverviewModel {
 
     func keyCount(for type: MNKey) -> Int {
         let derivationPath = derivationPath(for: type)
-        return derivationPath.allAddresses.count
+        let firstUnusedIndex = derivationPath.firstUnusedIndex();
+
+        // NOTE: Always show at least one key
+        return Int(max(firstUnusedIndex, 1))
     }
 
     func usedCount(for type: MNKey) -> Int {

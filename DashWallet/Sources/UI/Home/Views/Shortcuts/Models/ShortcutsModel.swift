@@ -42,7 +42,7 @@ final class ShortcutsModel {
         shortcutItemsDidChangeHandler?()
     }
 
-    //TODO: Move this to HomeModel
+    // TODO: Move this to HomeModel
     static func userShortcuts() -> [ShortcutAction] {
         let options = DWGlobalOptions.sharedInstance()
         let walletNeedsBackup = options.walletNeedsBackup

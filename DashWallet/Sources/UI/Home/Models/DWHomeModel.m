@@ -100,7 +100,6 @@ NS_ASSUME_NONNULL_BEGIN
         [_receiveModel updateReceivingInfo];
 
         _payModel = [[DWPayModel alloc] init];
-
         _balanceDisplayOptions = [[DWBalanceDisplayOptions alloc] init];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -136,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
                                selector:@selector(fiatCurrencyDidChangeNotification)
                                    name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
-        
+
         [self reloadTxDataSource];
 
         NSDate *date = [NSDate new];
