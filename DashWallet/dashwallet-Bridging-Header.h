@@ -24,31 +24,13 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: DashWallet
 #import "DWActionButton.h"
-#import "DWDPBasicUserItem.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
 #import "DWGlobalOptions.h"
-#import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
 #import "DWDateFormatter.h"
-#import "DWDPRegistrationStatus.h"
-#import "DWDPRegistrationErrorTableViewCell.h"
-#import "DWDPRegistrationDoneTableViewCell.h"
-#import "DWDPRegistrationStatusTableViewCell.h"
-#import "DWDPRegistrationErrorRetryDelegate.h"
-
-//MARK: CrowdNode
-#import "DWCheckbox.h"
-#import "DWPreviewSeedPhraseModel.h"
-#import "DWSeedPhraseModel.h"
-#import "DWSecureWalletDelegate.h"
-#import "UIImage+Utils.h"
-#import "NSData+Dash.h"
-// end CrowdNode
-
-
 #import "DWBaseActionButtonViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
@@ -73,7 +55,8 @@ static const bool _SNAPSHOT = 0;
 #import "CALayer+DWShadow.h"
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
-
+#import "DWHomeProtocol.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
 
 //MARK: Backup Wallet
 #import "DWBackupSeedPhraseViewController.h"
@@ -93,6 +76,8 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+DWShareReceiveInfo.h"
 #import "DWImportWalletInfoViewController.h"
 
+//MARK: Tabbar
+#import "DWWipeDelegate.h"
 
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"
@@ -111,3 +96,17 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Platform
 #import "DWDPBasicUserItem.h"
+#import "DWDPAvatarView.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
+#import "DWDPUserObject.h"
+
+//MARK: CrowdNode
+#import "DWCheckbox.h"
+#import "DWPreviewSeedPhraseModel.h"
+#import "DWSeedPhraseModel.h"
+#import "UIImage+Utils.h"
+#import "NSData+Dash.h"

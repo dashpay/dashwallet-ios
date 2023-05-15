@@ -97,7 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setupDidFinish {
-    [self.homeModel.shortcutsModel reloadShortcuts];
+    //TODO: check whether we really need to do that here
+    //[self.homeModel.shortcutsModel reloadShortcuts];
 }
 
 - (void)wipeWallet {

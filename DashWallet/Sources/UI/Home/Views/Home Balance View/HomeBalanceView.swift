@@ -17,35 +17,29 @@
 
 import Foundation
 
-// MARK: - BalanceViewDelegate
+// MARK: - HomeBalanceViewDelegate
 
 @objc(DWHomeBalanceViewDelegate)
-protocol BalanceViewDelegate: AnyObject {
+protocol HomeBalanceViewDelegate: AnyObject {
     func balanceView(_ view: HomeBalanceView, balanceLongPressAction sender: UIControl)
     func balanceViewDidToggleBalanceVisibility(_ view: HomeBalanceView)
 }
 
 // MARK: - HomeBalanceViewDataSource
 
-@objc(DWHomeBalanceViewDataSource)
 protocol HomeBalanceViewDataSource: BalanceViewDataSource {
     var isBalanceHidden: Bool { get }
 }
 
 // MARK: - HomeBalanceViewState
 
-@objc(DWHomeBalanceViewState)
 enum HomeBalanceViewState: Int {
-    @objc(DWHomeBalanceViewState_Default)
     case `default`
-
-    @objc(DWHomeBalanceViewState_Syncing)
     case syncing
 }
 
 // MARK: - HomeBalanceView
 
-@objc(DWHomeBalanceView)
 final class HomeBalanceView: UIView {
     @IBOutlet private weak var contentView: UIView!
     @IBOutlet private var balanceButton: UIControl!
@@ -56,7 +50,6 @@ final class HomeBalanceView: UIView {
     @IBOutlet private var amountsView: UIView!
     @IBOutlet private var balanceView: BalanceView!
 
-    @objc
     weak var dataSource: HomeBalanceViewDataSource? {
         didSet {
             balanceView.dataSource = dataSource
@@ -65,14 +58,16 @@ final class HomeBalanceView: UIView {
         }
     }
 
-    @objc
-    weak var delegate: BalanceViewDelegate?
+    weak var delegate: HomeBalanceViewDelegate?
 
-    @objc
     var state: HomeBalanceViewState = .default {
         didSet {
             reloadView()
         }
+    }
+
+    private var isBalanceHidden: Bool {
+        dataSource?.isBalanceHidden ?? false
     }
 
     override init(frame: CGRect) {
@@ -108,6 +103,7 @@ final class HomeBalanceView: UIView {
         }
 
         titleLabel.text = titleString
+        hideBalance(isBalanceHidden)
     }
 
     @objc
@@ -136,15 +132,23 @@ final class HomeBalanceView: UIView {
 
         eyeSlashImageView.tintColor = UIColor.dw_darkBlue()
 
-
         tapToUnhideLabel.titleLabel?.font = UIFont.dw_font(forTextStyle: .caption1)
         tapToUnhideLabel.setTitle(NSLocalizedString("Tap to hide balance", comment: ""), for: .normal)
         tapToUnhideLabel.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
+        tapToUnhideLabel.isUserInteractionEnabled = true
+
+        let tapRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(balanceButtonAction(_:)))
+        tapToUnhideLabel.addGestureRecognizer(tapRecognizer)
 
         let recognizer = UILongPressGestureRecognizer(target: self, action: #selector(balanceLongPressAction(_:)))
         balanceButton.addGestureRecognizer(recognizer)
 
         balanceView.tint = .white
+
+        let isBalanceHidden = isBalanceHidden
+        hidingView.alpha = isBalanceHidden ? 1.0 : 0.0
+        amountsView.alpha = isBalanceHidden ? 0.0 : 1.0
+        tapToUnhideLabel.alpha = isBalanceHidden ? 0.0 : 1.0
 
         NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(_:)), name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
@@ -174,6 +178,9 @@ final class HomeBalanceView: UIView {
     @objc
     func hideBalance(_ hidden: Bool) {
         let animated = window != nil
+        let isAlreadyHidden = amountsView.alpha == 0
+
+        guard isAlreadyHidden != hidden else { return }
 
         UIView.animate(withDuration: animated ? kAnimationDuration : 0.0) {
             self.hidingView.alpha = hidden ? 1.0 : 0.0

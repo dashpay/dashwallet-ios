@@ -25,11 +25,7 @@ final class ProgressView: UIView {
     private var blueLayer: CALayer!
     private var animating = false
 
-    var progress: Float = 0.0 {
-        didSet {
-            setProgress(progress, animated: false)
-        }
-    }
+    var progress: Float = 0.0
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)

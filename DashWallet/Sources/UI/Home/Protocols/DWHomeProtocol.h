@@ -40,10 +40,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeModel:(id<DWHomeProtocol>)model
     didReceiveNewIncomingTransaction:(DSTransaction *)transaction;
 
+- (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
 - (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 @end
 
-@protocol DWHomeProtocol <DWBalanceProtocol, DWSyncContainerProtocol, DWTxDisplayModeProtocol>
+@protocol DWHomeProtocol <DWBalanceProtocol, DWTxDisplayModeProtocol>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
@@ -69,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)walletDidWipe;
 
+- (void)retrySyncing;
 @end
 
 NS_ASSUME_NONNULL_END

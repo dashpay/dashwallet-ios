@@ -32,6 +32,8 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
         return childView
     }()
 
+    internal lazy var model: SyncModel = SyncModelImpl()
+
     init() {
         super.init(nibName: nil, bundle: nil)
         transitioningDelegate = modalTransition
@@ -45,7 +47,19 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        SyncingActivityMonitor.shared.add(observer: self)
+        model.networkStatusDidChange = { [weak self] _ in
+            // TODO: update view based on network connection instead of passing sync state
+        }
+
+        model.progressDidChange = { [weak self] progress in
+            guard let self else { return }
+            self.childView.update(with: progress)
+            self.childView.update(with: self.model.state)
+        }
+
+        model.stateDidChage = { [weak self] state in
+            self?.childView.update(with: state)
+        }
 
         view.backgroundColor = .clear
 
@@ -73,21 +87,5 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
 
     func syncingAlertContentView(_ view: SyncingAlertContentView, okButtonAction sender: UIButton) {
         dismiss(animated: true, completion: nil)
-    }
-
-    deinit {
-        SyncingActivityMonitor.shared.remove(observer: self)
-    }
-}
-
-// MARK: SyncingActivityMonitorObserver
-
-extension SyncingAlertViewController: SyncingActivityMonitorObserver {
-    func syncingActivityMonitorProgressDidChange(_ progress: Double) {
-        childView.update(with: progress)
-    }
-
-    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        childView.update(with: state)
     }
 }

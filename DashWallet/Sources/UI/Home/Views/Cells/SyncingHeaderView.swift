@@ -34,7 +34,7 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
     weak var delegate: SyncingHeaderViewDelegate?
 
     @objc
-    var progress = 0.0 {
+    var progress: Float = 0.0 {
         didSet {
             refreshView()
         }
@@ -48,6 +48,8 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
     }
 
     private var syncingButton: UIButton!
+
+    internal lazy var model: SyncModel = SyncModelImpl()
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
@@ -97,6 +99,22 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
             filterButton.heightAnchor.constraint(equalToConstant: 44.0),
             filterButton.widthAnchor.constraint(equalToConstant: 44.0),
         ])
+
+        model.networkStatusDidChange = { [weak self] _ in
+        }
+
+        model.progressDidChange = { [weak self] progress in
+            self?.progress = Float(progress)
+        }
+
+        model.stateDidChage = { [weak self] state in
+            self?.isSyncing = state == .syncing
+        }
+
+        progress = Float(model.progress)
+        isSyncing = model.state == .syncing
+
+        refreshView()
     }
 
     required init?(coder: NSCoder) {

@@ -29,11 +29,15 @@ extension UITableView {
     func dequeueReusableCell<T: UITableViewCell>(type: T.Type, for indexPath: IndexPath) -> T {
         dequeueReusableCell(withIdentifier: T.reuseIdentifier, for: indexPath) as! T
     }
-    
+
+    func registerNibForHeaderFooterView<T: UITableViewHeaderFooterView>(for type: T.Type) {
+        register(UINib(nibName: T.reuseIdentifier, bundle: nil), forHeaderFooterViewReuseIdentifier: T.reuseIdentifier)
+    }
+
     func registerClassforHeaderFooterView<T: UITableViewHeaderFooterView>(for type: T.Type) {
         register(T.self, forHeaderFooterViewReuseIdentifier: T.reuseIdentifier)
     }
-    
+
     func dequeueReusableHeaderFooterView<T: UITableViewHeaderFooterView>(type: T.Type) -> T {
         dequeueReusableHeaderFooterView(withIdentifier: T.reuseIdentifier) as! T
     }

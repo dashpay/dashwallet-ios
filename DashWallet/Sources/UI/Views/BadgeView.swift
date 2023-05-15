@@ -57,7 +57,7 @@ final class BadgeView: UIView {
 
     override var backgroundColor: UIColor? {
         didSet {
-            label.backgroundColor = backgroundColor
+            label?.backgroundColor = backgroundColor
         }
     }
 

@@ -54,13 +54,15 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         case unknown
     }
 
+    @objc
     public var progress: Double = 0 {
         didSet {
             observers.forEach { $0.syncingActivityMonitorProgressDidChange(progress) }
         }
     }
 
-    @objc public var state: State = .unknown {
+    @objc
+    public var state: State = .unknown {
         didSet {
             guard state != oldValue else { return }
 
@@ -151,6 +153,16 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         startSyncingActivity()
     }
 
+    @objc
+    func peerManagerConnectedPeersDidChangeNotification(notification: Notification) {
+        let isConnected = DWEnvironment.sharedInstance().currentChainManager.peerManager.connected
+
+        if isConnected {
+            NotificationCenter.default.removeObserver(self, name: .peerManagerConnectedPeersDidChange, object: nil)
+            startSyncingIfNeeded()
+        }
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
         NotificationCenter.default.removeObserver(reachabilityObserver!)
@@ -164,6 +176,9 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 extension SyncingActivityMonitor {
     private func startSyncingIfNeeded() {
         guard DWEnvironment.sharedInstance().currentChainManager.peerManager.connected else {
+            NotificationCenter.default.addObserver(self, selector: #selector(peerManagerConnectedPeersDidChangeNotification(notification:)),
+                                                   name: .peerManagerConnectedPeersDidChange, object: nil)
+
             return
         }
 
@@ -173,7 +188,7 @@ extension SyncingActivityMonitor {
     private func startSyncingActivity() {
         guard !isSyncing else { return }
 
-        progress = 0
+        progress = chainSyncProgress
         lastPeakDate = nil
 
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(syncLoop), object: nil)
@@ -224,9 +239,6 @@ extension SyncingActivityMonitor {
             perform(#selector(syncLoop), with: nil, afterDelay: kSyncLoopInterval)
         }
         else {
-            self.progress = 1.0
-            state = .syncDone
-
             stopSyncingActivity(failed: false)
         }
     }
@@ -300,4 +312,7 @@ extension Notification.Name {
     static let chainManagerSyncFailed: Notification.Name = .init(rawValue: "DSChainManagerSyncFailedNotification")
     static let chainManagerChainSyncBlocksDidChange: Notification
         .Name = .init(rawValue: "DSChainChainSyncBlocksDidChangeNotification")
+    static let peerManagerConnectedPeersDidChange: Notification
+        .Name = .init(rawValue: "DSPeerManagerConnectedPeersDidChangeNotification")
+
 }

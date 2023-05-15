@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,4 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWBalanceDisplayOptionsProtocol.h"
-#import "DWSyncContainerProtocol.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWBalanceModel;
-
-@protocol DWBalanceProtocol
-
-@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
-@property (readonly, nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
-
-@end
-
-NS_ASSUME_NONNULL_END
+import Foundation

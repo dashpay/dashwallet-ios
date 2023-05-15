@@ -23,7 +23,7 @@ let AVATAR_SIZE = CGSize(width: 72.0, height: 72.0)
 
 // MARK: - DashPayProfileView
 
-class DashPayProfileView: UIView {
+class DashPayProfileView: UIControl {
     private(set) var contentView: UIView
     private(set) var avatarView: DWDPAvatarView
     private(set) var bellImageView: UIImageView
@@ -43,7 +43,7 @@ class DashPayProfileView: UIView {
         }
     }
 
-    var isHighlighted = false {
+    override var isHighlighted: Bool {
         didSet {
             self.contentView.dw_pressedAnimation(.medium, pressed: isHighlighted)
         }

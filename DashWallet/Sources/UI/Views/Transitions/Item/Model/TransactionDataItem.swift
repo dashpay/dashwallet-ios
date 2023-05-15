@@ -51,7 +51,7 @@ extension TransactionDataItem {
             return NSAttributedString(string: NSLocalizedString("Syncing...", comment: "Transaction/Amount"))
         }
 
-        var formatted = formattedDashAmountWithDirectionalSymbol
+        let formatted = formattedDashAmountWithDirectionalSymbol
         return formatted.attributedAmountStringWithDashSymbol(tintColor: color, dashSymbolColor: color, font: font)
     }
 }

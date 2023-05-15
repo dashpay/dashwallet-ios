@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource, SyncingActivityMonitorObserver>
+@interface DWHomeModel () <DWBalanceViewDataSource, SyncingActivityMonitorObserver>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
@@ -65,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
-@synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
@@ -224,10 +223,6 @@ NS_ASSUME_NONNULL_BEGIN
     return (secondsSinceBalanceChanged > DAY_TIME_INTERVAL);
 }
 
-- (void)reloadShortcuts {
-    [self.shortcutsModel reloadShortcuts];
-}
-
 - (void)registerForPushNotifications {
     [[AppDelegate appDelegate] registerForPushNotifications];
 }
@@ -274,7 +269,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                               if (needsCheck) {
                                                                   // Show backup reminder shortcut
                                                                   [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
-                                                                  [self reloadShortcuts];
+                                                                  [self.updatesObserver homeModelWantToReloadShortcuts:self];
                                                               }
                                                           }];
                        }];
@@ -318,14 +313,14 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL canRegisterUsername = YES;
     const uint64_t balanceValue = wallet.balance;
     BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
-    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
+    BOOL isSynced = [SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone;
     return canRegisterUsername && isSynced && isEnoughBalance;
 }
 
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
-    [self reloadShortcuts];
+    [self.updatesObserver homeModelWantToReloadShortcuts:self];
 
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
@@ -351,21 +346,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)fiatCurrencyDidChangeNotification {
     [self updateBalance];
     [self reloadTxDataSource];
-}
-
-- (void)syncStateChangedNotification {
-    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
-    if (isSynced) {
-        [self.dashPayModel updateUsernameStatus];
-
-        if (self.dashPayModel.username != nil) {
-            [self.receiveModel updateReceivingInfo];
-            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
-        }
-    }
-
-    [self updateBalance];
-    [self reloadTxDataSource];
+    [self.updatesObserver homeModelDidChangeInnerModels:self];
 }
 
 - (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
@@ -522,7 +503,7 @@ NS_ASSUME_NONNULL_BEGIN
         balanceValue > self.balanceModel.value &&
         self.balanceModel.value > 0 &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground &&
-        self.syncModel.progress > 0.995) {
+        [SyncingActivityMonitor shared].progress > 0.995) {
         [[UIDevice currentDevice] dw_playCoinSound];
     }
 
@@ -535,7 +516,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     options.userHasBalance = balanceValue > 0;
 
-    [self reloadShortcuts];
+    [self.updatesObserver homeModelWantToReloadShortcuts:self];
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions

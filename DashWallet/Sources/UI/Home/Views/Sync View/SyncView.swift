@@ -28,16 +28,12 @@ protocol SyncViewDelegate: AnyObject {
 final class SyncView: UIView {
     weak var delegate: SyncViewDelegate?
 
-    var hasNetwork = true {
-        didSet {
-            updateView()
-        }
+    var hasNetwork: Bool {
+        model.networkStatus == .online
     }
 
-    var syncState: SyncingActivityMonitor.State = .unknown {
-        didSet {
-            updateView()
-        }
+    var syncState: SyncingActivityMonitor.State {
+        model.state
     }
 
     var viewStateSeeingBlocks = false
@@ -49,14 +45,14 @@ final class SyncView: UIView {
     @IBOutlet var retryButton: UIButton!
     @IBOutlet var progressView: ProgressView!
 
+    internal lazy var model: SyncModel = SyncModelImpl()
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        commonInit()
     }
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        commonInit()
     }
 
     private func commonInit() {
@@ -69,9 +65,21 @@ final class SyncView: UIView {
 
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(changeSeeBlocksStateAction(_:)))
         roundedView.addGestureRecognizer(tapGestureRecognizer)
+
+        model.networkStatusDidChange = { [weak self] _ in
+            self?.updateView()
+        }
+
+        model.progressDidChange = { [weak self] progress in
+            self?.set(progress: Float(progress), animated: true)
+        }
+
+        model.stateDidChage = { [weak self] _ in
+            self?.updateView()
+        }
     }
 
-    func set(progress: Float, animated: Bool) {
+    private func set(progress: Float, animated: Bool) {
         percentLabel.text = String(format: "%.1f%%", progress * 100.0)
         progressView.setProgress(progress, animated: animated)
 
@@ -123,6 +131,11 @@ final class SyncView: UIView {
         delegate?.syncViewRetryButtonAction(self)
     }
 
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        commonInit()
+    }
 }
 
 extension SyncView {

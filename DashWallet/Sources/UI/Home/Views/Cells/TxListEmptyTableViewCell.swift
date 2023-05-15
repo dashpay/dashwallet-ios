@@ -24,7 +24,7 @@ class TxListEmptyTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        placeholderLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
-        placeholderLabel.text = NSLocalizedString("There are no transactions to display", comment: "")
+        placeholderLabel?.font = UIFont.preferredFont(forTextStyle: .footnote)
+        placeholderLabel?.text = NSLocalizedString("There are no transactions to display", comment: "")
     }
 }

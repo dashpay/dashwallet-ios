@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (BOOL)balanceHidden {
+    return _balanceHidden;
+}
+
 - (void)hideBalanceIfNeeded {
     if ([DWGlobalOptions sharedInstance].balanceHidden) {
         self.balanceHidden = YES;

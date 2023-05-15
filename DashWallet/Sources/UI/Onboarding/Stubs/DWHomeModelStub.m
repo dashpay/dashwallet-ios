@@ -48,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
-@synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
@@ -56,7 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _syncModel = [[DWSyncModelStub alloc] init];
         _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
 
         _stubTxs = [DWTransactionStub stubs];
